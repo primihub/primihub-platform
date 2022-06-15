@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yyds.biz.repository.primarydb.data.DataModelPrRepository">
+    <insert id="saveDataModel" keyProperty="modelId" useGeneratedKeys="true" parameterType="com.yyds.biz.entity.data.po.DataModel">
+        insert into data_model
+            (
+                model_name,model_desc,model_type,project_id,resource_num,y_value_column,latest_task_id,
+                latest_cost_time,latest_task_status,latest_alignment_ratio,latest_alignment_cost,latest_analyze_ratio,
+                latest_analyze_cost,latest_feature_ratio,latest_feature_cost,latest_sample_ratio,latest_sample_cost,
+                latest_train_ratio,latest_train_cost,latest_lack_ratio,latest_lack_cost,latest_exception_ratio,
+                latest_exception_cost,create_date,update_date,component_speed,train_type,is_draft,user_id,organ_id,component_json
+            )
+        values
+            (
+                #{modelName},#{modelDesc},#{modelType},#{projectId},#{resourceNum},#{yValueColumn},#{latestTaskId},
+                #{latestCostTime},#{latestTaskStatus},#{latestAlignmentRatio},#{latestAlignmentCost},#{latestAnalyzeRatio},
+                #{latestAnalyzeCost},#{latestFeatureRatio},#{latestFeatureCost},#{latestSampleRatio},#{latestSampleCost},
+                #{latestTrainRatio},#{latestTrainCost},#{latestLackRatio},#{latestLackCost},#{latestExceptionRatio},#{latestExceptionCost},
+                now(),now(),#{componentSpeed},#{trainType},#{isDraft},#{userId},#{organId},#{componentJson}
+            )
+    </insert>
+
+    <insert id="saveDataModelResource" keyProperty="id" useGeneratedKeys="true" parameterType="com.yyds.biz.entity.data.po.DataModel">
+        insert into data_mr (model_id,resource_id,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{item.modelId},#{item.resourceId},#{item.alignmentNum},#{item.primitiveParamNum},#{item.modelParamNum},0,now(),now())
+        </foreach>
+    </insert>
+
+    <insert id="saveDataModelQuota" keyProperty="quota_id" useGeneratedKeys="true" parameterType="com.yyds.biz.entity.data.po.DataModelQuota">
+        insert into data_model_quota (quota_type,quota_images,model_id,auc,ks,gini,`precision`,recall,f1_score,create_date,update_date)
+        values (#{quotaType},#{quotaImage},#{modelId},#{auc},#{ks},#{gini},#{precision},#{recall},#{f1Score},now(),now())
+    </insert>
+    <insert id="saveDataComponent" keyProperty="componentId" useGeneratedKeys="true" parameterType="com.yyds.biz.entity.data.po.DataComponent">
+        insert into data_component (front_component_id,model_id,component_code,component_name,shape,width,height,coordinate_y,coordinate_x,data_json,start_time,end_time,is_del,create_date,update_date)
+        values (#{frontComponentId},#{modelId},#{componentCode},#{componentName},#{shape},#{width},#{height},#{coordinateY},#{coordinateX},#{dataJson},0,0,0,now(),now())
+    </insert>
+    <insert id="saveDataModelComponent" keyProperty="mcId" useGeneratedKeys="true" parameterType="com.yyds.biz.entity.data.po.DataModelComponent">
+        insert into data_model_component (model_id,input_component_id,output_component_id,point_type,point_json,is_del,create_date,update_date)
+        values (#{modelId},#{inputComponentId},#{outputComponentId},#{pointType},#{pointJson},0,now(),now())
+    </insert>
+    <insert id="saveDataModelTask" parameterType="com.yyds.biz.entity.data.po.DataModelTask" useGeneratedKeys="true" keyProperty="taskId">
+        insert into data_model_task (task_status,model_id,cost_time,alignment_ratio,alignment_cost,analyze_ratio,analyze_cost,feature_ratio,feature_cost,sample_ratio,sample_cost,train_ratio,train_cost,lack_ratio,lack_cost,exception_ratio,exception_cost,is_del,create_date,update_date)
+        values (#{taskStatus},#{modelId},#{costTime},#{alignmentRatio},#{alignmentCost},#{analyzeRatio},#{analyzeCost},#{featureRatio},#{featureCost},#{sampleRatio},#{sampleCost},#{trainRatio},#{trainCost},#{lackRatio},#{lackCost},#{exceptionRatio},#{exceptionCost},0,now(),now())
+    </insert>
+    <update id="updateDataModel" parameterType="com.yyds.biz.entity.data.po.DataModel">
+        update data_model
+        <set>
+            <if test="modelName!=null">model_name = #{modelName},</if>
+            <if test="modelDesc!=null">model_desc = #{modelDesc},</if>
+            <if test="modelType!=null">model_type = #{modelType},</if>
+            <if test="projectId!=null">project_id = #{projectId},</if>
+            <if test="resourceNum!=null">resource_num = #{resourceNum},</if>
+            <if test="yValueColumn!=null">y_value_column = #{yValueColumn},</if>
+            <if test="latestTaskId!=null">latest_task_id = #{latestTaskId},</if>
+            <if test="latestCostTime!=null">latest_cost_time = #{latestCostTime},</if>
+            <if test="latestTaskStatus!=null">latest_task_status = #{latestTaskStatus},</if>
+            <if test="latestAlignmentRatio!=null">latest_alignment_ratio = #{latestAlignmentRatio},</if>
+            <if test="latestAlignmentCost!=null">latest_alignment_cost = #{latestAlignmentCost},</if>
+            <if test="latestAnalyzeRatio!=null">latest_analyze_ratio = #{latestAnalyzeRatio},</if>
+            <if test="latestAnalyzeCost!=null">latest_analyze_cost = #{latestAnalyzeCost},</if>
+            <if test="latestFeatureRatio!=null">latest_feature_ratio = #{latestFeatureRatio},</if>
+            <if test="latestSampleRatio!=null">latest_sample_ratio = #{latestSampleRatio},</if>
+            <if test="latestSampleCost!=null">latest_sample_cost = #{latestSampleCost},</if>
+            <if test="latestTrainRatio!=null">latest_train_ratio = #{latestTrainRatio},</if>
+            <if test="latestTrainCost!=null">latest_train_cost = #{latestTrainCost},</if>
+            <if test="latestLackRatio!=null">latest_lack_ratio = #{latestLackRatio},</if>
+            <if test="latestLackCost!=null">latest_lack_cost = #{latestLackCost},</if>
+            <if test="latestExceptionRatio!=null">latest_exception_ratio = #{latestExceptionRatio},</if>
+            <if test="latestExceptionCost!=null">latest_exception_cost = #{latestExceptionCost},</if>
+            <if test="trainType!=null">train_type = #{trainType},</if>
+            <if test="isDraft!=null">is_draft = #{isDraft},</if>
+            <if test="userId!=null">user_id = #{userId},</if>
+            <if test="organId!=null">organ_id = #{organId},</if>
+            <if test="componentJson!=null">component_json = #{componentJson},</if>
+            update_date = now()
+        </set>
+        where model_id = #{modelId}
+    </update>
+    <update id="updateDataComponent" parameterType="com.yyds.biz.entity.data.po.DataComponent">
+        update data_component
+        <set>
+            <if test="modelId!=null">model_id = #{modelId},</if>
+            <if test="componentCode!=null">component_code = #{componentCode},</if>
+            <if test="componentName!=null">component_name = #{componentName},</if>
+            <if test="shape!=null">shape = #{shape},</if>
+            <if test="width!=null">width = #{width},</if>
+            <if test="height!=null">height = #{height},</if>
+            <if test="coordinateY!=null">coordinate_y = #{coordinateY},</if>
+            <if test="coordinateX!=null">coordinate_x = #{coordinateX},</if>
+            <if test="dataJson!=null">data_json = #{dataJson},</if>
+            <if test="startTime!=null">start_time = #{startTime},</if>
+            <if test="endTime!=null">end_time = #{endTime},</if>
+            <if test="isDel!=null">is_del = #{isDel},</if>
+            update_date = now()
+        </set>
+        where component_id = #{componentId}
+    </update>
+    <update id="updateDataModelTask" parameterType="com.yyds.biz.entity.data.po.DataModelTask">
+        update data_model_task
+        <set>
+            <if test="taskStatus!=null">task_status = #{taskStatus},</if>
+            <if test="modelId!=null">model_id = #{modelId},</if>
+            <if test="costTime!=null">cost_time = #{costTime},</if>
+            <if test="alignmentRatio!=null">alignment_ratio = #{alignmentRatio},</if>
+            <if test="alignmentCost!=null">alignment_cost = #{alignmentCost},</if>
+            <if test="analyzeRatio!=null">analyze_ratio = #{analyzeRatio},</if>
+            <if test="analyzeCost!=null">analyze_cost = #{analyzeCost},</if>
+            <if test="featureRatio!=null">feature_ratio = #{featureRatio},</if>
+            <if test="featureCost!=null">feature_cost = #{featureCost},</if>
+            <if test="sampleRatio!=null">sample_ratio = #{sampleRatio},</if>
+            <if test="sampleCost!=null">sample_cost = #{sampleCost},</if>
+            <if test="trainRatio!=null">train_ratio = #{trainRatio},</if>
+            <if test="trainCost!=null">train_cost = #{trainCost},</if>
+            <if test="lackRatio!=null">lack_ratio = #{lackRatio},</if>
+            <if test="lackCost!=null">lack_cost = #{lackCost},</if>
+            <if test="exceptionRatio!=null">exception_ratio = #{exceptionRatio},</if>
+            <if test="exceptionCost!=null">exception_cost = #{exceptionCost},</if>
+            <if test="isDel!=null">is_del = #{isDel},</if>
+            update_date = now()
+        </set>
+        where task_id = #{taskId}
+    </update>
+    <delete id="deleteModelByModelId">
+        delete from data_model where model_id = #{modelId}
+    </delete>
+    <delete id="deleteDataComponent">
+        delete from data_component where model_id = #{modelId}
+    </delete>
+    <delete id="deleteDataModelComponent">
+        delete from data_model_component where model_id = #{modelId}
+    </delete>
+    <delete id="deleteDataModelResource">
+        delete from data_mr where model_id = #{modelId}
+    </delete>
+
+</mapper>

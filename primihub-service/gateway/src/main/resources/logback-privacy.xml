@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="normal-pattern" value="%d{HH:mm:ss.SSS} [%-5level] [%thread] [%logger] %msg%n"/>
+    <property name="log_dir" value="/data/log"/>
+    <springProperty name="applicationName" source="spring.application.name" />
+    <springProperty name="log_level" source="logging.level.root"/>
+    <property name="maxHistory" value="15"/>
+
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${normal-pattern}</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${log_dir}/${applicationName}/${applicationName}.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${log_dir}/${applicationName}/bak/${applicationName}-%d{yyyy-MM-dd}.log</FileNamePattern>
+            <maxHistory>${maxHistory}</maxHistory>
+        </rollingPolicy>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>${normal-pattern}</Pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.alibaba.nacos.common.remote.client.grpc.GrpcClient" level="OFF" />
+    <logger name="com.alibaba.nacos.client.Worker" level="OFF" />
+    <logger name="com.alibaba.nacos.client.config.impl.ClientWorker" level="OFF" />
+    <logger name="com.alibaba.nacos.common.remote.client" level="OFF" />
+
+    <root level="${log_level}">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

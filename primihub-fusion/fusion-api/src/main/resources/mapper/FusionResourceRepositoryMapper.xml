@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.repository.FusionResourceRepository">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="FusionResourceBaseResultMap" type="com.primihub.entity.resource.po.FusionResource">
+        <id column="id" property="id" />
+        <result column="resource_id" property="resourceId" />
+        <result column="resource_name" property="resourceName" />
+        <result column="resource_desc" property="resourceDesc" />
+        <result column="resource_type" property="resourceType" />
+        <result column="resource_auth_type" property="resourceAuthType" />
+        <result column="resource_rows_count" property="resourceRowsCount" />
+        <result column="resource_column_count" property="resourceColumnCount" />
+        <result column="resource_column_name_list" property="resourceColumnNameList" />
+        <result column="resource_contains_y" property="resourceContainsY" />
+        <result column="resource_y_rows_count" property="resourceYRowsCount" />
+        <result column="resource_y_ratio" property="resourceYRatio" />
+        <result column="resource_tag" property="resourceTag" />
+        <result column="organ_id" property="organId" />
+        <result column="is_del" property="isDel" />
+        <result column="c_time" property="cTime" />
+        <result column="u_time" property="uTime" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Fusion_Resource_Base_Column_List">
+        id, resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id, is_del, c_time, u_time
+    </sql>
+
+    <insert id="saveFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource" keyProperty="id" useGeneratedKeys="true">
+        insert into fusion_resource (resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id, is_del, c_time, u_time)
+        values (#{resourceId},#{resourceName},#{resourceDesc},#{resourceType},#{resourceAuthType},#{resourceRowsCount},#{resourceColumnCount},#{resourceColumnNameList},#{resourceContainsY},#{resourceYRowsCount},#{resourceYRatio},#{resourceTag},#{organId},0,now(),now())
+    </insert>
+
+    <insert id="saveBatchFusionPublicRo" parameterType="com.primihub.entity.resource.po.FusionPublicRo">
+        insert into fusion_public_ro (resource_id,organ_id, is_del, c_time, u_time)
+        values
+        <foreach collection="publics" index="index" item="item" separator=",">
+            (#{item.resourceId},#{item.organId},0,now(),now())
+        </foreach>
+    </insert>
+
+    <insert id="saveBatchResourceTag" parameterType="java.lang.String">
+        insert into fusion_resource_tag (name, is_del, c_time, u_time)
+        values
+        <foreach collection="tags" index="index" item="item" separator=",">
+            (#{item},0,now(),now())
+        </foreach>
+    </insert>
+
+    <update id="updateFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource">
+        update fusion_resource
+        <set>
+            <if test="resourceName!=null">resource_name = #{resourceName},</if>
+            <if test="resourceDesc!=null">resource_desc = #{resourceDesc},</if>
+            <if test="resourceType!=null">resource_type = #{resourceType},</if>
+            <if test="resourceAuthType!=null">resource_auth_type = #{resourceAuthType},</if>
+            <if test="resourceRowsCount!=null">resource_rows_count = #{resourceRowsCount},</if>
+            <if test="resourceColumnCount!=null">resource_column_count = #{resourceColumnCount},</if>
+            <if test="resourceColumnNameList!=null">resource_column_name_list = #{resourceColumnNameList},</if>
+            <if test="resourceContainsY!=null">resource_contains_y = #{resourceContainsY},</if>
+            <if test="resourceYRowsCount!=null">resource_y_rows_count = #{resourceYRowsCount},</if>
+            <if test="resourceYRatio!=null">resource_y_ratio = #{resourceYRatio},</if>
+            <if test="resourceTag!=null">resource_tag = #{resourceTag},</if>
+            <if test="organId!=null">organ_id = #{organId},</if>
+            u_time = now()
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteFusionPublicRoByResourceId">
+        delete from fusion_public_ro where resource_id = #{resourceId}
+    </delete>
+    <select id="selectFusionResourceById" resultMap="FusionResourceBaseResultMap">
+        select
+               id,
+               resource_id,
+               resource_tag
+        from fusion_resource
+        where resource_id in
+        <foreach collection="resourceIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+
+    </select>
+    <select id="selectFusionResource" parameterType="com.primihub.entity.resource.param.ResourceParam" resultMap="FusionResourceBaseResultMap">
+        select <include refid="Fusion_Resource_Base_Column_List"/>
+        from (
+            select * from fusion_resource
+            <if test="organId!=null and organId!=''">
+                where organ_id = #{organId}  <if test="globalId!=organId">and resource_auth_type = 1 </if>
+                <if test="cancelUnion==0">
+                    UNION ALL
+                    select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{organId})
+                </if>
+            </if>
+        ) t
+        where t.is_del = 0
+        <include refid="fusionResourceCondition"></include>
+        ORDER BY t.id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="selectFusionResourceCount" parameterType="com.primihub.entity.resource.param.ResourceParam" resultType="java.lang.Integer">
+        select count(t.id)
+        from (
+        select * from fusion_resource
+        <if test="organId!=null and organId!=''">
+            where organ_id = #{organId}
+            UNION ALL
+            select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{organId})
+        </if>
+        ) t
+        where t.is_del = 0
+        <include refid="fusionResourceCondition"></include>
+    </select>
+    <select id="selectFusionResourceTag" resultType="java.lang.String">
+        select DISTINCT name from fusion_resource_tag
+    </select>
+    <select id="selectFusionResourceByResourceId" resultMap="FusionResourceBaseResultMap">
+        select <include refid="Fusion_Resource_Base_Column_List"/> from fusion_resource where resource_id = #{resourceId}
+    </select>
+
+    <sql id="fusionResourceCondition">
+        <if test="resourceId!=null and resourceId!=''">and t.resource_id = #{resourceId}</if>
+        <if test="resourceName!=null and resourceName!=''">and t.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="resourceType!=null and resourceType!=0">and t.resource_type = #{resourceType}</if>
+        <if test="tagName!=null and tagName!=''">and FIND_IN_SET(#{tagName}, t.resource_tag)</if>
+    </sql>
+
+</mapper>

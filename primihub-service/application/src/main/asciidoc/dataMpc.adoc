@@ -1,0 +1,63 @@
+=== 2.5.1 保存或修改脚本
+include::{snippets}\saveOrUpdateScript\curl-request.adoc[]
+include::{snippets}\saveOrUpdateScript\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\saveOrUpdateScript\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\saveOrUpdateScript\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\saveOrUpdateScript\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\saveOrUpdateScript\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\saveOrUpdateScript\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\saveOrUpdateScript\http-response.adoc[]
+
+=== 2.5.2 脚本列表
+include::{snippets}\getDataScriptList\curl-request.adoc[]
+include::{snippets}\getDataScriptList\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\getDataScriptList\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\getDataScriptList\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\getDataScriptList\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\getDataScriptList\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\getDataScriptList\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\getDataScriptList\http-response.adoc[]
+
+=== 2.5.3 脚本删除
+include::{snippets}\delDataScript\curl-request.adoc[]
+include::{snippets}\delDataScript\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\delDataScript\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\delDataScript\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\delDataScript\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\delDataScript\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\delDataScript\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\delDataScript\http-response.adoc[]
+
+=== 2.5.4 MPC项目列表
+include::{snippets}\getMpcProjectResourceData\curl-request.adoc[]
+include::{snippets}\getMpcProjectResourceData\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\getMpcProjectResourceData\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\getMpcProjectResourceData\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\getMpcProjectResourceData\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\getMpcProjectResourceData\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\getMpcProjectResourceData\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\getMpcProjectResourceData\http-response.adoc[]

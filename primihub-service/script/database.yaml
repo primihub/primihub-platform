@@ -1,0 +1,153 @@
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    sql-script-encoding: utf-8
+    druid:
+      primary:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        url: jdbc:mysql://127.0.0.1:3306/privacy?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+        password: 1qazmko0
+        connection-properties: config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJI/xqbyvpVttxfAKulKeSTIb7tZAGaFcPyTnE2r7AHTQ8kOnqKXDda4u59umt9XBFxi7db28KxeVooB138zuRUCAwEAAQ==
+        filter:
+          config:
+            enabled: true
+        initial-size: 3
+        min-idle: 3
+        max-active: 20
+        max-wait: 60000
+        test-while-idle: true
+        time-between-connect-error-millis: 60000
+        min-evictable-idle-time-millis: 30000
+        validationQuery: select 'x'
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        use-global-data-source-stat: false
+        filters: stat,wall,slf4j
+        connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        time-between-log-stats-millis: 300000
+        web-stat-filter:
+          enabled: true
+          url-pattern: '/*'
+          exclusions: '*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*'
+        stat-view-servlet:
+          enabled: true
+          url-pattern: '/druid/*'
+          allow: 127.0.0.1,192.168.0.1
+          deny: 192.168.0.128
+          reset-enable: false
+          login-username: admin
+          login-password: admin
+      secondary:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        url: jdbc:mysql://127.0.0.1:3306/privacy?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+        password: 1qazmko0
+        connection-properties: config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJI/xqbyvpVttxfAKulKeSTIb7tZAGaFcPyTnE2r7AHTQ8kOnqKXDda4u59umt9XBFxi7db28KxeVooB138zuRUCAwEAAQ==
+        filter:
+          config:
+            enabled: true
+        initial-size: 3
+        min-idle: 3
+        max-active: 20
+        max-wait: 60000
+        test-while-idle: true
+        time-between-connect-error-millis: 60000
+        min-evictable-idle-time-millis: 30000
+        validationQuery: select 'x'
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        use-global-data-source-stat: false
+        filters: stat,wall,slf4j
+        connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        time-between-log-stats-millis: 300000
+        web-stat-filter:
+          enabled: true
+          url-pattern: '/*'
+          exclusions: '*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*'
+        stat-view-servlet:
+          enabled: true
+          url-pattern: '/druid/*'
+          allow: 127.0.0.1,192.168.0.1
+          deny: 192.168.0.128
+          reset-enable: false
+          login-username: admin
+          login-password: admin
+      resourcePrimary:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        url: jdbc:mysql://127.0.0.1:3306/resource?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+        password: 1qazmko0
+        connection-properties: config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJI/xqbyvpVttxfAKulKeSTIb7tZAGaFcPyTnE2r7AHTQ8kOnqKXDda4u59umt9XBFxi7db28KxeVooB138zuRUCAwEAAQ==
+        filter:
+          config:
+            enabled: true
+        initial-size: 3
+        min-idle: 3
+        max-active: 20
+        max-wait: 60000
+        test-while-idle: true
+        time-between-connect-error-millis: 60000
+        min-evictable-idle-time-millis: 30000
+        validationQuery: select 'x'
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        use-global-data-source-stat: false
+        filters: stat,wall,slf4j
+        connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        time-between-log-stats-millis: 300000
+        web-stat-filter:
+          enabled: true
+          url-pattern: '/*'
+          exclusions: '*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*'
+        stat-view-servlet:
+          enabled: true
+          url-pattern: '/druid/*'
+          allow: 127.0.0.1,192.168.0.1
+          deny: 192.168.0.128
+          reset-enable: false
+          login-username: admin
+          login-password: admin
+      resourceSecondary:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: root
+        url: jdbc:mysql://127.0.0.1:3306/resource?characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+        password: 1qazmko0
+        connection-properties: config.decrypt=true;config.decrypt.key=MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAJI/xqbyvpVttxfAKulKeSTIb7tZAGaFcPyTnE2r7AHTQ8kOnqKXDda4u59umt9XBFxi7db28KxeVooB138zuRUCAwEAAQ==
+        filter:
+          config:
+            enabled: true
+        initial-size: 3
+        min-idle: 3
+        max-active: 20
+        max-wait: 60000
+        test-while-idle: true
+        time-between-connect-error-millis: 60000
+        min-evictable-idle-time-millis: 30000
+        validationQuery: select 'x'
+        test-on-borrow: false
+        test-on-return: false
+        pool-prepared-statements: true
+        max-pool-prepared-statement-per-connection-size: 20
+        use-global-data-source-stat: false
+        filters: stat,wall,slf4j
+        connect-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
+        time-between-log-stats-millis: 300000
+        web-stat-filter:
+          enabled: true
+          url-pattern: '/*'
+          exclusions: '*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*'
+        stat-view-servlet:
+          enabled: true
+          url-pattern: '/druid/*'
+          allow: 127.0.0.1,192.168.0.1
+          deny: 192.168.0.128
+          reset-enable: false
+          login-username: admin
+          login-password: admin

@@ -1,0 +1,130 @@
+
+=== 1.4.1 保存或更新用户
+include::{snippets}\saveOrUpdateUser\curl-request.adoc[]
+include::{snippets}\saveOrUpdateUser\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\saveOrUpdateUser\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\saveOrUpdateUser\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\saveOrUpdateUser\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\saveOrUpdateUser\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\saveOrUpdateUser\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\saveOrUpdateUser\http-response.adoc[]
+
+=== 1.4.2 删除用户
+include::{snippets}\deleteSysUser\curl-request.adoc[]
+include::{snippets}\deleteSysUser\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\deleteSysUser\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\deleteSysUser\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\deleteSysUser\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\deleteSysUser\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\deleteSysUser\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\deleteSysUser\http-response.adoc[]
+
+=== 1.4.3 查找用户分页
+include::{snippets}\findUserPage\curl-request.adoc[]
+include::{snippets}\findUserPage\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\findUserPage\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\findUserPage\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\findUserPage\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\findUserPage\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\findUserPage\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\findUserPage\http-response.adoc[]
+
+=== 1.4.4 初始化密码
+include::{snippets}\initPassword\curl-request.adoc[]
+include::{snippets}\initPassword\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\initPassword\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\initPassword\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\initPassword\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\initPassword\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\initPassword\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\initPassword\http-response.adoc[]
+
+
+=== 1.4.5 获取rsa公钥
+include::{snippets}\getValidatePublicKey\curl-request.adoc[]
+include::{snippets}\getValidatePublicKey\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\getValidatePublicKey\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\getValidatePublicKey\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\getValidatePublicKey\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\getValidatePublicKey\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\getValidatePublicKey\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\getValidatePublicKey\http-response.adoc[]
+
+
+=== 1.4.6 登录
+include::{snippets}\login\curl-request.adoc[]
+include::{snippets}\login\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\login\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\login\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\login\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\login\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\login\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\login\http-response.adoc[]
+
+=== 1.4.7 登出
+include::{snippets}\logout\curl-request.adoc[]
+include::{snippets}\logout\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\logout\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\logout\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\logout\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\logout\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\logout\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\logout\http-response.adoc[]
+
+=== 1.4.8 修改密码
+include::{snippets}\updatePassword\curl-request.adoc[]
+include::{snippets}\updatePassword\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\updatePassword\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\updatePassword\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\updatePassword\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\updatePassword\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\updatePassword\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\updatePassword\http-response.adoc[]

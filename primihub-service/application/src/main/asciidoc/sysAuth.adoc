@@ -1,0 +1,64 @@
+
+=== 1.1.1 获取权限树
+include::{snippets}\getAuthTree\curl-request.adoc[]
+include::{snippets}\getAuthTree\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\getAuthTree\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\getAuthTree\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\getAuthTree\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\getAuthTree\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\getAuthTree\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\getAuthTree\http-response.adoc[]
+
+=== 1.1.2 创建权限节点
+include::{snippets}\createAuthNode\curl-request.adoc[]
+include::{snippets}\createAuthNode\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\createAuthNode\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\createAuthNode\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\createAuthNode\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\createAuthNode\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\createAuthNode\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\createAuthNode\http-response.adoc[]
+
+=== 1.1.3 更改节点显式字段
+include::{snippets}\alterAuthNodeStatus\curl-request.adoc[]
+include::{snippets}\alterAuthNodeStatus\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\alterAuthNodeStatus\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\alterAuthNodeStatus\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\alterAuthNodeStatus\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\alterAuthNodeStatus\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\alterAuthNodeStatus\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\alterAuthNodeStatus\http-response.adoc[]
+
+=== 1.1.4 删除节点
+include::{snippets}\deleteAuthNode\curl-request.adoc[]
+include::{snippets}\deleteAuthNode\httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}\deleteAuthNode\request-body.adoc[]
+.http-request 请求样例
+include::{snippets}\deleteAuthNode\http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}\deleteAuthNode\request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}\deleteAuthNode\request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}\deleteAuthNode\response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}\deleteAuthNode\http-response.adoc[]

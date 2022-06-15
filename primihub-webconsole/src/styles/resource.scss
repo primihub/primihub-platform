@@ -1,0 +1,38 @@
+@import "~@/styles/variables.scss";
+::v-deep .el-tabs__header,.resource-row,h2{
+  margin: 0;
+  padding: 20px 30px 10px;
+  background-color: #fff;
+}
+::v-deep .el-form-item__label{
+  width: auto!important;
+}
+::v-deep .el-form--inline .el-form-item{
+  margin: 10px 20px;
+}
+.upload-button{
+  margin:0 0 20px 20px;
+}
+.resource {
+  padding: 0 30px;
+  background-color: #fff;
+}
+.tag{
+  margin: 0 2px;
+}
+.search-area{
+  margin-bottom: 30px;
+}
+.search-button{
+  margin-left: 20px;
+}
+.search-area, .resource{
+  padding: 30px;
+  background-color: #fff;
+  border-radius: $sectionBorderRadius;
+}
+.pagination-container {
+  padding-top: 50px;
+  display: flex;
+  justify-content: center;
+}

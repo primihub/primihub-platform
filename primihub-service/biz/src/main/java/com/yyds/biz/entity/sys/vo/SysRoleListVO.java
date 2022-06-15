@@ -1,0 +1,16 @@
+package com.yyds.biz.entity.sys.vo;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.yyds.biz.entity.sys.po.SysRole;
+import lombok.Data;
+
+import java.util.Date;
+
+@Data
+public class SysRoleListVO extends SysRole {
+    /**
+     * 创建时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    private Date cTime;
+}

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yyds.biz.repository.secondarydb.data.DataProjectRepository">
+    <sql id="projectColumns">
+        project_id as projectId,
+        project_name as projectName,
+        project_desc as projectDesc,
+        organ_id as organId,
+        organ_num as organNum,
+        resource_num as resourceNum,
+        resource_organ_ids as resourceOrganIds,
+        auth_resource_num as authResourceNum,
+        user_id as userId,
+        create_date as createDate
+    </sql>
+
+
+    <select id="queryDataProject" resultType="com.yyds.biz.entity.data.po.DataProject">
+        select
+        <include refid="projectColumns"></include>
+        from data_project
+        where is_del = 0 and (user_id = #{userId} or organ_id = #{organId})
+        <include refid="queryCondition"></include>
+        ORDER BY project_id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="queryDataProjectCount" resultType="java.lang.Integer">
+        select
+        count(project_id)
+        from data_project
+        where is_del = 0 and (user_id = #{userId} or organ_id = #{organId})
+        <include refid="queryCondition"></include>
+    </select>
+
+    <select id="queryDataProjectById" resultType="com.yyds.biz.entity.data.po.DataProject">
+        select
+        <include refid="projectColumns"></include>
+        from data_project
+        where is_del = 0 and project_id = #{projectId}
+    </select>
+
+    <select id="queryProjectResourceByProjectId" resultType="com.yyds.biz.entity.data.po.DataProjectResource">
+        SELECT
+            id,project_id as projectId,resource_id AS resourceId,is_authed as isAuthed
+        from data_pr where is_del = 0 and project_id = #{projectId}
+    </select>
+
+    <sql id="queryCondition">
+        <if test="projectName!=null and projectName!=''">
+            and project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="isAuthed!=null and isAuthed==1">
+            and auth_resource_num = resource_num
+        </if>
+    </sql>
+</mapper>
