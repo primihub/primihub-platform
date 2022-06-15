@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_package = "java_worker";
+option java_multiple_files = true;
+
+package primihub.rpc;
+
+import "common.proto";
+
+message PushTaskRequest {
+  bytes intended_worker_id = 1;
+  Task task = 2;
+  int64 sequence_number = 3;
+  int64 client_processed_up_to = 4;
+}
+
+message PushTaskReply {
+  int32 ret_code = 1;  // 0: success  1: doing  2: error
+  bytes job_id = 2;
+}
+
+service VMNode {
+  rpc SubmitTask(PushTaskRequest) returns (PushTaskReply);
+}

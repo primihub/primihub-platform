@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository">
+    <insert id="saveCopyInfo" parameterType="com.primihub.biz.entity.data.po.DataFusionCopyTask">
+        insert into data_fusion_copy_task (task_type,current_offset,target_offset,task_table,fusion_server_address,latest_error_msg,is_del,c_time,u_time)
+        values
+            (#{taskType},#{currentOffset},#{targetOffset},#{taskTable},#{fusionServerAddress},#{latestErrorMsg},0,now(),now())
+    </insert>
+
+    <update id="updateCopyInfo">
+        update data_fusion_copy_task
+        <set>
+            <if test="latestErrorMsg!=null and latestErrorMsg!='' ">latest_error_msg=#{latestErrorMsg},</if>
+            <if test="currentOffset!=null">current_offset=#{currentOffset},</if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+</mapper>

@@ -1,0 +1,112 @@
+=== 2.3.1 模型添加接口
+include::{snippets}/savemodel/curl-request.adoc[]
+include::{snippets}/savemodel/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/savemodel/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/savemodel/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/savemodel/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/savemodel/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/savemodel/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/savemodel/http-response.adoc[]
+
+=== 2.3.2 查询模型列表接口
+include::{snippets}/getmodellist/curl-request.adoc[]
+include::{snippets}/getmodellist/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getmodellist/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getmodellist/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/getmodellist/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getmodellist/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getmodellist/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getmodellist/http-response.adoc[]
+
+=== 2.3.3 查询模型列表接口
+include::{snippets}/getdatamodel/curl-request.adoc[]
+include::{snippets}/getdatamodel/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getdatamodel/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getdatamodel/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/getdatamodel/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getdatamodel/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getdatamodel/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getdatamodel/http-response.adoc[]
+
+=== 2.3.4 v0.2 查询模型左侧组件列表接口
+include::{snippets}/getModelComponent/curl-request.adoc[]
+include::{snippets}/getModelComponent/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getModelComponent/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getModelComponent/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/getModelComponent/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getModelComponent/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getModelComponent/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getModelComponent/http-response.adoc[]
+
+=== 2.3.5 v0.2 模型实时草稿和保存接口接口
+include::{snippets}/saveModelAndComponent/curl-request.adoc[]
+include::{snippets}/saveModelAndComponent/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/saveModelAndComponent/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/saveModelAndComponent/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/saveModelAndComponent/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/saveModelAndComponent/request-fields.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/saveModelAndComponent/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/saveModelAndComponent/http-response.adoc[]
+
+=== 2.3.6 v0.2 模型组件详情接口
+include::{snippets}/getModelComponentDetail/curl-request.adoc[]
+include::{snippets}/getModelComponentDetail/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getModelComponentDetail/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getModelComponentDetail/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/getModelComponentDetail/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getModelComponentDetail/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getModelComponentDetail/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getModelComponentDetail/http-response.adoc[]
+
+=== 2.3.7 v0.2 模型删除接口
+include::{snippets}/deleteModel/curl-request.adoc[]
+include::{snippets}/deleteModel/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/deleteModel/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/deleteModel/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/deleteModel/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/deleteModel/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/deleteModel/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/deleteModel/http-response.adoc[]
+

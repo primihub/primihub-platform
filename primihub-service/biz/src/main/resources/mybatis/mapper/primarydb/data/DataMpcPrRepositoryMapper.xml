@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.DataMpcPrRepository">
+
+    <insert id="saveDataScript" parameterType="com.primihub.biz.entity.data.po.DataScript" useGeneratedKeys="true" keyProperty="scriptId">
+        insert into data_script (`name`,catalogue,p_script_id,script_type,script_status,script_content,user_id,organ_id,is_del,create_date,update_date)
+        values (#{name},#{catalogue},#{pScriptId},#{scriptType},#{scriptStatus},#{scriptContent},#{userId},#{organId},0,now(),now())
+    </insert>
+    <insert id="saveDataMpcTask" parameterType="com.primihub.biz.entity.data.po.DataMpcTask" useGeneratedKeys="true" keyProperty="taskId">
+        insert into data_mpc_task (task_id_name,script_id,user_id,project_id,task_status,task_desc,log_data,result_file_path,is_del,create_date,update_date)
+        values (#{taskIdName},#{scriptId},#{userId},#{projectId},#{taskStatus},#{taskDesc},#{logData},#{resultFilePath},0,now(),now())
+    </insert>
+    <update id="updateDataScript" parameterType="com.primihub.biz.entity.data.po.DataScript">
+        update data_script
+        <set>
+            <if test="name!=null"> `name` = #{name}, </if>
+            <if test="catalogue!=null">catalogue=#{catalogue},</if>
+            <if test="pScriptId!=null">p_script_id=#{pScriptId},</if>
+            <if test="scriptType!=null">script_type=#{scriptType},</if>
+            <if test="scriptStatus!=null">script_status=#{scriptStatus},</if>
+            <if test="scriptContent!=null">script_content=#{scriptContent},</if>
+            <if test="userId!=null">user_id=#{userId},</if>
+            <if test="organId!=null">organ_id=#{organId},</if>
+            update_date = now()
+        </set>
+        where script_id = #{scriptId}
+    </update>
+    <update id="updateDataMpcTask" parameterType="com.primihub.biz.entity.data.po.DataMpcTask">
+        update data_mpc_task
+        <set>
+            <if test="taskIdName!=null"> task_id_name = #{taskIdName}, </if>
+            <if test="scriptId!=null"> script_id = #{scriptId}, </if>
+            <if test="userId!=null"> user_id = #{userId}, </if>
+            <if test="projectId!=null"> project_id = #{projectId}, </if>
+            <if test="taskStatus!=null"> task_status = #{taskStatus}, </if>
+            <if test="taskDesc!=null"> task_desc = #{taskDesc}, </if>
+            <if test="logData!=null"> log_data = #{logData}, </if>
+            <if test="resultFilePath!=null"> result_file_path = #{resultFilePath}, </if>
+            update_date = now()
+        </set>
+        where task_id = #{taskId}
+    </update>
+    <delete id="deleteDataScript">
+        delete from data_script where script_id = #{scriptId}
+    </delete>
+</mapper>

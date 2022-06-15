@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    redis:
+      primary:
+        hostName: localhost
+        port: 6379
+        password:
+        database: 0
+        minIdle: 0
+        maxIdle: 10
+        maxTotal: 100
+        lifo: false
+        maxWaitMillis: 1000
+        minEvictableIdleTimeMillis: 1800000
+        softMinEvictableIdleTimeMillis: 1800000

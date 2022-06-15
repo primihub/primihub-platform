@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.sys.SysRolePrimarydbRepository">
+
+    <insert id="insertSysRole" keyProperty="roleId" useGeneratedKeys="true">
+        insert into sys_role(role_name,is_editable,is_del)
+        values(#{roleName},#{isEditable},#{isDel})
+    </insert>
+
+    <update id="updateSysRole">
+        update sys_role
+        <set>
+            <if test="roleName!=null">role_name = #{roleName},</if>
+        </set>
+        where role_id=#{roleId}
+    </update>
+    
+    <delete id="deleteSysRole">
+        delete from sys_role where role_id=#{roleId}
+    </delete>
+
+    <delete id="deleteSysRa">
+        delete from sys_ra where role_id=#{roleId}
+    </delete>
+
+    <insert id="insertSysRaBatch">
+        insert into sys_ra(role_id,auth_id,is_del)
+        values
+        <foreach collection="raList" item="ra" separator=",">
+            (#{ra.roleId},#{ra.authId},#{ra.isDel})
+        </foreach>
+    </insert>
+
+    <delete id="deleteSysRaBatch">
+        delete from sys_ra
+        WHERE role_id=#{roleId} and auth_id IN
+        <foreach collection="authArray" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

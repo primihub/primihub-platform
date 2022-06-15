@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository">
+
+    <insert id="insertSysFile" useGeneratedKeys="true" keyProperty="fileId">
+        insert into sys_file(file_source,file_url,file_name,file_suffix,file_size,file_current_size,file_area,is_del)
+        values(#{fileSource},#{fileUrl},#{fileName},#{fileSuffix},#{fileSize},#{fileCurrentSize},#{fileArea},#{isDel})
+    </insert>
+
+    <update id="updateSysFileCurrentSize">
+        update sys_file set file_current_size=#{fileCurrentSize} where file_id=#{fileId}
+    </update>
+
+</mapper>

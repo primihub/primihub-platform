@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository">
+    <update id="createDataTable">
+        CREATE TABLE `${tableName}`  (
+        <foreach collection="columnList" index="index" item="item" separator=",">
+            `${item}` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT '' COMMENT ''
+        </foreach>
+        ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+    </update>
+
+    <update id="dropDataTable">
+        drop TABLE IF EXISTS `${tableName}`
+    </update>
+
+    <insert id="insertDataTable">
+        insert into `${tableName}`
+        <foreach collection="columnList" index="index" item="item" open="("
+                 separator="," close=")">
+            `${item}`
+        </foreach>
+        values
+        <foreach collection="dataList" index="index1" item="dataItem"
+                 separator=",">
+            <foreach collection="dataItem"  index="index2" item="data" open="("
+                     separator="," close=")">
+                #{data}
+            </foreach>
+        </foreach>
+    </insert>
+</mapper>

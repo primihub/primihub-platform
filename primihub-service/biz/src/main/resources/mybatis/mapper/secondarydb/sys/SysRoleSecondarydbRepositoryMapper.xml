@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.sys.SysRoleSecondarydbRepository">
+
+    <select id="selectSysRoleByRoleId" resultType="com.primihub.biz.entity.sys.po.SysRole">
+        select role_id roleId,role_name roleName,is_editable isEditable,is_del isDel,c_time cTime,u_time uTime
+        from sys_role where role_id=#{roleId} limit 1
+    </select>
+
+    <select id="selectRaByRoleId" resultType="Long">
+        select distinct auth_id from sys_ra where role_id=#{roleId}
+    </select>
+
+    <select id="selectRaByBatchRoleId" resultType="Long">
+        select distinct auth_id from sys_ra where role_id in
+        <foreach collection="roleIdSet" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectSysRoleByBatchRoleId" resultType="com.primihub.biz.entity.sys.po.SysRole">
+        select role_id roleId,role_name roleName
+        from sys_role where role_id in
+        <foreach collection="roleIdSet" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectRoleListByParam" resultType="com.primihub.biz.entity.sys.vo.SysRoleListVO">
+        select role_id roleId,role_name roleName,is_editable isEditable,is_del isDel,c_time cTime,u_time uTime from sys_role
+        <trim prefix="where" prefixOverrides="and">
+            <if test="roleName != null and roleName!='' ">and role_name like CONCAT('%',#{roleName},'%')</if>
+        </trim>
+        order by role_id desc
+        <if test=" pageIndex != null and pageSize != null">
+            limit #{pageIndex},#{pageSize}
+        </if>
+    </select>
+
+    <select id="selectRoleListCountByParam" resultType="Long">
+        select count(1) from sys_role
+        <trim prefix="where" prefixOverrides="and">
+            <if test="roleName != null and roleName!='' ">and role_name like CONCAT('%',#{roleName},'%')</if>
+        </trim>
+    </select>
+    <select id="selectUserCountByRole" resultType="java.lang.Long">
+        select count(user_id) from sys_ur where role_id=#{roleId}
+    </select>
+
+</mapper>

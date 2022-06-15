@@ -1,0 +1,127 @@
+=== 1.5.1 健康连接
+include::{snippets}/healthConnection/curl-request.adoc[]
+include::{snippets}/healthConnection/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/healthConnection/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/healthConnection/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/healthConnection/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/healthConnection/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/healthConnection/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/healthConnection/http-response.adoc[]
+
+=== 1.5.2 注册连接
+include::{snippets}/registerConnection/curl-request.adoc[]
+include::{snippets}/registerConnection/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/registerConnection/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/registerConnection/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/registerConnection/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/registerConnection/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/registerConnection/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/registerConnection/http-response.adoc[]
+
+=== 1.5.3 删除注册连接
+include::{snippets}/deleteConnection/curl-request.adoc[]
+include::{snippets}/deleteConnection/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/deleteConnection/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/deleteConnection/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/deleteConnection/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/deleteConnection/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/deleteConnection/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/deleteConnection/http-response.adoc[]
+
+=== 1.5.4 创建群组
+include::{snippets}/createGroup/curl-request.adoc[]
+include::{snippets}/createGroup/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/createGroup/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/createGroup/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/createGroup/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/createGroup/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/createGroup/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/createGroup/http-response.adoc[]
+
+=== 1.5.5 查询全部群组
+include::{snippets}/findAllGroup/curl-request.adoc[]
+include::{snippets}/findAllGroup/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/findAllGroup/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/findAllGroup/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/findAllGroup/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/findAllGroup/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/findAllGroup/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/findAllGroup/http-response.adoc[]
+
+=== 1.5.6 加入群组
+include::{snippets}/joinGroup/curl-request.adoc[]
+include::{snippets}/joinGroup/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/joinGroup/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/joinGroup/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/joinGroup/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/joinGroup/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/joinGroup/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/joinGroup/http-response.adoc[]
+
+=== 1.5.7 退出群组
+include::{snippets}/exitGroup/curl-request.adoc[]
+include::{snippets}/exitGroup/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/exitGroup/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/exitGroup/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/exitGroup/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/exitGroup/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/exitGroup/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/exitGroup/http-response.adoc[]
+
+=== 1.5.8 查询群组下的机构列表
+include::{snippets}/findOrganInGroup/curl-request.adoc[]
+include::{snippets}/findOrganInGroup/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/findOrganInGroup/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/findOrganInGroup/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/findOrganInGroup/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/findOrganInGroup/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/findOrganInGroup/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/findOrganInGroup/http-response.adoc[]

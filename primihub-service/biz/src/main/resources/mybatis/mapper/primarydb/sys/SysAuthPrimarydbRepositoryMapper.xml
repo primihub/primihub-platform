@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.sys.SysAuthPrimarydbRepository">
+
+    <insert id="insertSysAuth" keyProperty="authId" useGeneratedKeys="true">
+        insert into sys_auth (auth_name,auth_type,auth_code,p_auth_id,r_auth_id,full_path,auth_url,data_auth_code,auth_index,auth_depth,is_show,is_editable,is_del)
+        values (#{authName},#{authType},#{authCode},#{pAuthId},#{rAuthId},#{fullPath},#{authUrl},#{dataAuthCode},#{authIndex},#{authDepth},#{isShow},#{isEditable},#{isDel})
+    </insert>
+
+    <update id="updateRAuthIdAndFullPath">
+        update sys_auth set <if test="rAuthId!=null">r_auth_id=#{rAuthId},</if>full_path=#{fullPath} where auth_id=#{authId}
+    </update>
+
+    <update id="updateSysAuthExplicit">
+        update sys_auth
+        <set>
+            <if test="authName!=null">auth_name = #{authName},</if>
+            <if test="authType!=null">auth_type = #{authType},</if>
+            <if test="authCode!=null">auth_code = #{authCode},</if>
+            <if test="dataAuthCode!=null">data_auth_code = #{dataAuthCode},</if>
+            <if test="isShow!=null">is_show = #{isShow},</if>
+            <if test="authUrl!=null">auth_url = #{authUrl},</if>
+        </set>
+        where auth_id = #{authId}
+    </update>
+
+    <delete id="deleteSysAuth">
+        delete from sys_auth where FIND_IN_SET(#{authId},full_path)
+    </delete>
+</mapper>

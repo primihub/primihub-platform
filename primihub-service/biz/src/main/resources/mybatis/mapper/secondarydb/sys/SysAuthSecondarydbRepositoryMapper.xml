@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.sys.SysAuthSecondarydbRepository">
+
+    <select id="selectSysAuthByAuthId" resultType="com.primihub.biz.entity.sys.po.SysAuth">
+        select
+            auth_id authId,auth_name authName,auth_type authType,auth_code authCode,p_auth_id pAuthId,r_auth_id rAuthId,full_path fullPath,auth_url authUrl,
+            data_auth_code dataAuthCode,auth_index authIndex,auth_depth authDepth,is_show isShow,is_editable isEditable,
+            is_del isDel,c_time cTime,u_time uTime
+        from sys_auth
+        where auth_id=#{authId} limit 1
+    </select>
+
+    <select id="selectAllSysAuthForBFS" resultType="com.primihub.biz.entity.sys.vo.SysAuthNodeVO">
+        select
+            auth_id authId,auth_name authName,auth_type authType,auth_code authCode,p_auth_id pAuthId,r_auth_id rAuthId,full_path fullPath,auth_url authUrl,
+            data_auth_code dataAuthCode,auth_index authIndex,auth_depth authDepth,is_show isShow,is_editable isEditable,
+            is_del isDel,c_time cTime,u_time uTime
+        from sys_auth
+        order by auth_depth,auth_index,auth_id
+    </select>
+
+</mapper>

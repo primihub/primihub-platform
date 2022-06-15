@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataCopySecondarydbRepository">
+
+    <select id="selectNotFinishedTask" resultType="com.primihub.biz.entity.data.po.DataFusionCopyTask">
+        select
+            id,task_type taskType,current_offset currentOffset,target_offset targetOffset,task_table taskTable,
+            fusion_server_address fusionServerAddress,latest_error_msg latestErrorMsg,is_del isDel,c_time cTime,u_time uTime
+        from
+            data_fusion_copy_task
+        where
+            c_time> #{threeDayAgo} and current_offset!=target_offset and <![CDATA[u_time<= #{tenMinuteAgo} ]]>
+        order by id
+    </select>
+
+</mapper>

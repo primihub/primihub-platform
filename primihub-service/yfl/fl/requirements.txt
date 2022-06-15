@@ -1,0 +1,3 @@
+Django
+nacos-sdk-python
+pymysql

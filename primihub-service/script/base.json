@@ -1,0 +1,226 @@
+{
+    "tokenValidateUriBlackList":[
+        "/user/login",
+        "/common/getValidatePublicKey"
+    ],
+    "needSignUriList":[
+
+    ],
+    "defaultPassword":"123456",
+    "defaultPasswordVector":"excalibur",
+    "grpcClientAddress": "192.168.99.20",
+    "grpcClientPort": 50050,
+    "grpcDataSetClientAddress": "192.168.99.20",
+    "grpcDataSetClientPort": 50051,
+    "grpcDataSet1ClientPort": 50052,
+    "grpcServerPort": 9090,
+    "uploadUrlDirPrefix": "/data/upload/",
+    "resultUrlDirPrefix": "/data/result/",
+    "runModelFileUrlDirPrefix": "/data/result/runModel/",
+    "model_components":[
+        {
+            "component_code": "dataAlignment",
+            "component_name": "数据对齐",
+            "is_show": 0,
+            "is_mandatory": 0,
+            "component_types": [
+                {
+                    "is_show": 1,
+                    "type_code": "projectName",
+                    "type_name": "项目名称",
+                    "input_type": "label",
+                    "input_value": ""
+                },{
+                    "is_show": 0,
+                    "type_code": "modelName",
+                    "type_name": "模型名称",
+                    "input_type": "text",
+                    "input_value": ""
+                },{
+                    "is_show": 0,
+                    "type_code": "selectData",
+                    "type_name": "选择数据",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": []
+                },{
+                    "is_show": 0,
+                    "type_code": "yField",
+                    "type_name": "Y值字段",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": []
+                }
+            ]
+        },{
+            "component_code": "features",
+            "component_name": "特征筛选",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": [
+                {
+                    "is_show": 0,
+                    "type_code": "features",
+                    "type_name": "特征筛选",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": [
+                        {
+                            "key": "1",
+                            "val": "唯一值筛选"
+                        },{
+                            "key": "2",
+                            "val": "缺失值比例筛选"
+                        },{
+                            "key": "3",
+                            "val": "IV值筛选"
+                        },{
+                            "key": "4",
+                            "val": "相关性筛选"
+                        },{
+                            "key": "5",
+                            "val": "用户自定义筛选"
+                        }
+                    ]
+                }
+            ]
+        },{
+            "component_code": "sample",
+            "component_name": "样本抽样设计",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": [
+                {
+                    "is_show": 0,
+                    "type_code": "sample",
+                    "type_name": "样本抽样设计",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": [
+                        {
+                            "key": "1",
+                            "val": "最大/最小样本"
+                        },{
+                            "key": "2",
+                            "val": "提出灰样本"
+                        },{
+                            "key": "3",
+                            "val": "处理样本不均衡和分层"
+                        }
+                    ]
+                }
+            ]
+        },{
+            "component_code": "exception",
+            "component_name": "异常处理",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": [
+                {
+                    "is_show": 0,
+                    "type_code": "exception",
+                    "type_name": "异常处理",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": [
+                        {
+                            "key": "1",
+                            "val": "删除"
+                        },{
+                            "key": "2",
+                            "val": "视为缺失值"
+                        },{
+                            "key": "3",
+                            "val": "平均值修正"
+                        },{
+                            "key": "4",
+                            "val": "盖帽法"
+                        },{
+                            "key": "5",
+                            "val": "分箱法"
+                        },{
+                            "key": "6",
+                            "val": "回归插补"
+                        },{
+                            "key": "7",
+                            "val": "多重插补"
+                        },{
+                            "key": "8",
+                            "val": "不处理"
+                        }
+                    ]
+                }
+            ]
+        },{
+            "component_code": "featureCoding",
+            "component_name": "特征编码",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": [
+                {
+                    "is_show": 0,
+                    "type_code": "featureCoding",
+                    "type_name": "特征编码",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": [
+                        {
+                            "key": "1",
+                            "val": "标签编码"
+                        },{
+                            "key": "2",
+                            "val": "哈希编码"
+                        },{
+                            "key": "3",
+                            "val": "独热编码"
+                        },{
+                            "key": "4",
+                            "val": "计数编码"
+                        },{
+                            "key": "5",
+                            "val": "直方图编码"
+                        },{
+                            "key": "6",
+                            "val": "WOE编码"
+                        },{
+                            "key": "7",
+                            "val": "目标编码"
+                        },{
+                            "key": "8",
+                            "val": "平均编码"
+                        },{
+                            "key": "9",
+                            "val": "模型编码"
+                        }
+                    ]
+                }
+            ]
+        },{
+            "component_code": "model",
+            "component_name": "模型选择",
+            "is_show": 0,
+            "is_mandatory": 0,
+            "component_types": [
+                {
+                    "is_show": 0,
+                    "type_code": "modelType",
+                    "type_name": "模型选择",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": [
+                        {
+                            "key": "2",
+                            "val": "V-XGBoost"
+                        }
+                    ]
+                }
+            ]
+        },{
+            "component_code": "assessment",
+            "component_name": "评估模型",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": []
+        }
+    ]
+}

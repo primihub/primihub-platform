@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataResourceRepository">
+    <sql id="resourceColumns">
+        resource_id as resourceId,
+        resource_name as resourceName,
+        resource_desc as resourceDesc,
+        resource_auth_type as resourceAuthType,
+        resource_source as resourceSource,
+        resource_num as resourceNum,
+        file_id as fileId,
+        file_size as fileSize,
+        file_suffix as fileSuffix,
+        file_columns as fileColumns,
+        file_rows as fileRows,
+        file_handle_field as fileHandleField,
+        file_handle_status as fileHandleStatus,
+        file_contains_y as fileContainsY,
+        file_y_rows as fileYRows,
+        file_y_ratio as fileYRatio,
+        resource_fusion_id as resourceFusionId,
+        public_organ_id as publicOrganId,
+        db_id as dbId,
+        user_id as userId,
+        organ_id as organId,
+        url as url,
+        create_date as createDate
+    </sql>
+
+    <select id="queryAllResourceTag" resultType="java.lang.String">
+        select distinct tag_name from data_resource_tag WHERE is_del = 0
+    </select>
+
+    <select id="queryDataResource" resultType="com.primihub.biz.entity.data.po.DataResource">
+        SELECT
+        <include refid="resourceColumns"></include>
+        FROM
+        data_resource where is_del = 0
+        <include refid="queryCondition"></include>
+        ORDER BY resource_id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="queryDataResourceCount" resultType="java.lang.Integer">
+        SELECT
+        count(resource_id)
+        FROM
+        data_resource where is_del = 0
+        <choose>
+            <when test="isPsi!=null">
+                and organ_id = #{organId}
+                <if test="isOwn==null">and resource_auth_type = 1</if>
+            </when>
+            <otherwise>
+                and (resource_auth_type = 1 or resource_auth_type = 3)
+            </otherwise>
+        </choose>
+        <include refid="queryCondition"></include>
+    </select>
+
+    <sql id="queryCondition">
+        <if test="resourceId!=null and resourceId!=0">
+            and resource_id = #{resourceId}
+        </if>
+        <if test="resourceAuthType!=null and resourceAuthType!=0">
+            and resource_auth_type = #{resourceAuthType}
+        </if>
+        <if test="resourceName!=null and resourceName!=''">
+            and resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tag!=null and tag!=''">
+            and resource_id in
+            (
+                select DISTINCT rt.resource_id from data_resource_tag drt,data_rt rt
+                where drt.tag_id = rt.tag_id
+                <choose>
+                    <when test="selectTag==0">
+                        and drt.tag_name = #{tag}
+                    </when>
+                    <otherwise>
+                        and drt.tag_name like CONCAT('%',#{tag,jdbcType=VARCHAR},'%')
+                    </otherwise>
+                </choose>
+            )
+        </if>
+    </sql>
+
+    <select id="queryDataResourceById" resultType="com.primihub.biz.entity.data.po.DataResource">
+        SELECT
+        <include refid="resourceColumns"></include>
+        FROM
+        data_resource where is_del = 0 and resource_id = #{resourceId}
+    </select>
+    <select id="queryTagsByResourceId" resultType="com.primihub.biz.entity.data.po.DataResourceTag">
+            SELECT
+                tag_id AS tagId,
+                tag_name AS tagName
+            FROM
+                data_resource_tag
+            WHERE is_del = 0
+                AND tag_id in (select tag_id from data_rt where resource_id = #{resourceId} and is_del = 0)
+    </select>
+
+    <select id="queryResourceTagRelation" resultType="java.lang.Long">
+        select tag_id from data_rt where resource_id = #{resourceId} and is_del = 0
+    </select>
+
+    <select id="queryDataResourceByIds" resultType="com.primihub.biz.entity.data.vo.DataResourceRecordVo">
+        SELECT
+            resource_id AS resourceId,
+            resource_name AS resourceName,
+            file_size AS fileSize,
+            user_id AS userId,
+            organ_id AS organId,
+            create_date AS createDate
+        from data_resource
+        where is_del = 0 and resource_id in
+        <foreach collection="resourceIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="queryDataResourceListTags" resultType="com.primihub.biz.entity.data.vo.ResourceTagListVo">
+        select
+            rt.resource_id as resourceId,
+            drt.tag_id as tagId,
+            drt.tag_name as tagName
+        from data_rt rt,data_resource_tag drt
+        where rt.tag_id = drt.tag_id
+        and resource_id in
+        <foreach collection="resourceIds" index="index" item="item" open="("
+                                    separator="," close=")">
+        #{item}
+    </foreach>
+    </select>
+
+    <select id="queryResourceAuthRecord" resultType="com.primihub.biz.entity.data.vo.DataResourceAuthRecordVo">
+        SELECT
+            drar.record_id as recordId,
+            drar.record_status as recordStatus,
+            drar.user_id as userId,
+            drar.user_name as userName,
+            drar.project_id as projectId,
+            dp.project_name as projectName,
+            drar.resource_id as resourceId,
+            dr.resource_name as resourceName,
+            dp.organ_id as organId,
+            drar.create_date as createDate
+        FROM
+            data_resource_auth_record drar,
+            data_project dp,
+            data_resource dr
+        WHERE
+            drar.project_id = dp.project_id
+            and drar.resource_id = dr.resource_id
+            and dr.user_id = #{userId}
+            <if test="status!=null">and drar.record_status = #{status}</if>
+        ORDER BY drar.record_status asc,drar.create_date desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="queryResourceAuthRecordCount" resultType="java.lang.Long">
+        SELECT
+            count(drar.record_id)
+        FROM
+            data_resource_auth_record drar,
+            data_project dp,
+            data_resource dr
+        WHERE
+            drar.project_id = dp.project_id
+            and drar.resource_id = dr.resource_id
+            and dr.user_id = #{userId}
+        <if test="status!=null">and drar.record_status = #{status}</if>
+    </select>
+
+    <select id="queryDataResourceAuthRecordById"
+            resultType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
+        SELECT
+            record_id AS recordId,
+            record_status AS recordStatus,
+            user_id AS userId,
+            user_name AS userName,
+            project_id AS projectId,
+            resource_id AS resourceId,
+            create_date AS createDate
+        FROM
+            data_resource_auth_record
+        WHERE
+            record_id = #{recordId}
+    </select>
+    <select id="queryResourceProjectRelationCount" resultType="java.lang.Integer">
+        select count(id) from data_pr where resource_id = #{resourceId}
+    </select>
+    <select id="queryDataResourceByResourceIds" resultType="com.primihub.biz.entity.data.po.DataResource">
+        SELECT
+        <include refid="resourceColumns"></include>
+        FROM
+        data_resource where is_del = 0 and resource_id in
+        <foreach collection="resourceIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="queryDataFileField" resultType="com.primihub.biz.entity.data.po.DataFileField">
+        select
+            field_id as fieldId,
+            file_id as fileId,
+            resource_id as resourceId,
+            field_name as fieldName,
+            field_as as fieldAs,
+            field_type as fieldType,
+            field_desc as fieldDesc,
+            `relevance`,
+            `grouping`,
+            protection_status as protectionStatus,
+            create_date as createDate,
+            update_date as updateDate
+        from
+            data_file_field
+        where
+        <choose>
+            <when test="resourceIds!=null">
+                resource_id in
+                <foreach collection="resourceIds" index="index" item="item" open="("
+                         separator="," close=")">
+                    #{item}
+                </foreach>
+            </when>
+            <otherwise>
+                resource_id = #{resourceId}
+            </otherwise>
+        </choose>
+        <if test="fieldType!=null">and `fieldType` = #{fieldType}</if>
+        <if test="relevance!=null">and `relevance` = #{relevance}</if>
+        <if test="grouping!=null">and `grouping` = #{grouping}</if>
+        <if test="protectionStatus!=null">and `protection_status` = #{protectionStatus}</if>
+        ORDER BY field_id asc
+        <if test="isPage!=null">LIMIT #{offset},#{pageSize}</if>
+    </select>
+    <select id="queryDataFileFieldCount" resultType="java.lang.Integer">
+        select
+            count(field_id)
+        from
+            data_file_field
+        where
+            resource_id = #{resourceId}
+        <if test="fieldType!=null">and `fieldType` = #{fieldType}</if>
+        <if test="relevance!=null">and `relevance` = #{relevance}</if>
+        <if test="grouping!=null">and `grouping` = #{grouping}</if>
+        <if test="protectionStatus!=null">and `protectionStatus` = #{protectionStatus}</if>
+    </select>
+    <select id="queryDataFileFieldByFileId" resultType="com.primihub.biz.entity.data.po.DataFileField">
+        select
+            field_id as fieldId,
+            file_id as fileId,
+            resource_id as resourceId,
+            field_name as fieldName,
+            field_as as fieldAs,
+            field_type as fieldType,
+            field_desc as fieldDesc,
+            `relevance`,
+            `grouping`,
+            protection_status as protectionStatus,
+            create_date as createDate,
+            update_date as updateDate
+        from
+            data_file_field
+        where
+            file_id = #{fileId} and resource_id = #{resourceId}
+    </select>
+
+    <select id="findCopyResourceList" resultType="com.primihub.biz.entity.data.po.DataResource">
+        select
+        <include refid="resourceColumns"></include>
+        from data_resource
+        where resource_id>=#{startOffset} and <![CDATA[ resource_id<=#{endOffset} ]]>
+    </select>
+    <select id="queryqueryDataResourceIds" resultType="java.lang.Long">
+        select resource_id from data_resource where resource_id > #{pId} ORDER BY resource_id asc LIMIT #{pageSize}
+    </select>
+
+    <select id="findMaxDataResource" resultType="Long">
+        select max(resource_id) from data_resource
+    </select>
+
+    <select id="findAuthOrganByResourceId" resultType="com.primihub.biz.entity.data.po.DataResourceVisibilityAuth">
+        select
+            id,resource_id resourceId,organ_global_id organGlobalId,organ_name organName,organ_server_address organServerAddress,is_del isDel,c_time cTime,u_time uTime
+        from
+            data_resource_visibility_auth
+        where
+            resource_id in
+            <foreach collection="resourceIds" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+    </select>
+
+</mapper>
