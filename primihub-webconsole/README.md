@@ -3,11 +3,8 @@ You will need [node](https://nodejs.org/en/), [git](https://git-scm.com/). The p
 
 ## Getting Started
 ```bash
-# clone the project
-git clone https://gitlab.openmpc.com/frontend/privacy-platform
-
 # enter the project directory
-cd privacy-platform
+cd primihub-webconcole
 
 # install dependency
 npm install
