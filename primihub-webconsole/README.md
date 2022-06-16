@@ -4,7 +4,7 @@ You will need [node](https://nodejs.org/en/), [git](https://git-scm.com/). The p
 ## Getting Started
 ```bash
 # enter the project directory
-cd primihub-webconcole
+cd primihub-webconsole
 
 # install dependency
 npm install
