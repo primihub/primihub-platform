@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     :visible.sync="visible"
-    width="900px"
+    width="920px"
     top="5vh"
     center
     @close="handleClose"
@@ -12,7 +12,7 @@
       <div v-loading="listLoading" class="project-list">
         <NoData v-if="noData" />
         <template v-else>
-          <ResourceItem v-for="resource in resourceList" :key="resource.resourceId" class="resource" :has-check-box="true" :resource="resource" :selected="selectedIds && selectedIds.indexOf(resource.resourceId) !== -1" @click="handleResourceClick" />
+          <ResourceItem v-for="resource in resourceList" :key="resource.resourceId" class="resource-item" :has-check-box="true" :resource="resource" :selected="selectedIds && selectedIds.indexOf(resource.resourceId) !== -1" @click="handleResourceClick" />
         </template>
       </div>
     </div>
@@ -158,7 +158,9 @@ export default {
   display: flex;
   flex-wrap: wrap;
   min-height: 80px;
-  justify-content: space-between;
+}
+.resource-item{
+  margin: 10px;
 }
 .pagination-container {
   padding: 10px 0 0 0;
@@ -166,10 +168,10 @@ export default {
   justify-content: center;
 }
 ::v-deep .el-dialog--center .el-dialog__body{
-  padding: 10px 30px 0 30px;
+  padding: 10px 20px 0 20px;
 }
 .input-with-search{
   width: 300px;
-  margin: 0 0 10px 0;
+  margin: 0 0 10px 10px;
 }
 </style>

@@ -10,7 +10,7 @@
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
           <img src="/images/avatar.png" class="user-avatar">
           <div class="user-info">
-            {{ userInfo.organIdListDesc }}
+            {{ organName }}
             <br>
             {{ userInfo.userName }}
           </div>
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapState } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 
@@ -44,14 +44,23 @@ export default {
   },
   data() {
     return {
-      userInfo: {}
+      userInfo: {},
+      organName: ''
     }
   },
   computed: {
+    ...mapState('user', ['organChange']),
     ...mapGetters([
       'sidebar',
       'avatar'
     ])
+  },
+  watch: {
+    organChange(newVal) {
+      if (newVal) {
+        this.getUserInfo()
+      }
+    }
   },
   created() {
     this.getUserInfo()
@@ -66,9 +75,8 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     getUserInfo() {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      this.userInfo = userInfo
-      console.log('userInfo', this.userInfo)
+      this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      this.organName = this.userInfo.organIdListDesc
     }
   }
 }

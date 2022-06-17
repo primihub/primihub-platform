@@ -71,6 +71,7 @@ import { getLocalOrganInfo, changeLocalOrganInfo, healthConnection, registerConn
 import ConnectTree from '@/components/ConnectTree'
 
 const connectIcon = require('@/assets/connect-icon.svg')
+const USER_INFO = 'userInfo'
 
 export default {
   name: 'Center',
@@ -109,7 +110,8 @@ export default {
       groupList: [],
       organList: [],
       organId: '',
-      organName: ''
+      organName: '',
+      organChange: this.$store.state.user.organChange
     }
   },
   async created() {
@@ -163,7 +165,12 @@ export default {
             message
           })
           this.closeOrganDialog()
-          this.getLocalOrganInfo()
+          await this.getLocalOrganInfo()
+          const userInfo = JSON.parse(localStorage.getItem(USER_INFO))
+          userInfo.organIdList = this.organId
+          userInfo.organIdListDesc = this.organName
+          localStorage.setItem(USER_INFO, JSON.stringify(userInfo))
+          this.$store.commit('user/SET_ORGAN_CHANGE', true)
         }
       })
     },

@@ -64,7 +64,6 @@
               <el-radio :label="3">指定机构可见</el-radio>
             </el-radio-group>
             <template v-if="dataForm.resourceAuthType === 3 && (fusionList || authOrganList) && showCascader">
-              {{ cascaderValue }}
               <el-cascader-panel ref="connectRef" :key="modelKey" v-model="cascaderValue" :show-all-levels="false" :options="cascaderOptions" :props="props" @change="handleOrganCascaderChange">
                 <template slot-scope="{ node, data }">
                   <span>{{ data.label }}</span>
@@ -438,7 +437,7 @@ export default {
       console.log('authOrganList', this.authOrganList)
       for (let index = 0; index < this.authOrganList.length; index++) {
         const item = this.authOrganList[index]
-        const serverAddressValue = this.cascaderOptions.filter(n => n.label === item.organServerAddress)[0].value
+        // const serverAddressValue = this.cascaderOptions.filter(n => n.label === item.organServerAddress)[0].value
         const id = 9
         const organGlobalId = item.organGlobalId
         const current = [index, id, organGlobalId]
