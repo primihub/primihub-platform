@@ -83,7 +83,6 @@
             data_resource dr
         WHERE
             dp.id = dpt.psi_id
-            and dp.result_organ_ids like CONCAT('%',#{organId},'%')
             and dp.user_id = #{userId}
             <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
         ORDER BY dp.id desc
