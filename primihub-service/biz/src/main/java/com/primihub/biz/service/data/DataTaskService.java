@@ -180,7 +180,7 @@ public class DataTaskService {
     }
 
     public void batchDataFusionResource(String paramStr){
-        log.info(paramStr);
+//        log.info(paramStr);
         SysOrganFusion sysOrganFusion = JSONObject.parseObject(paramStr, SysOrganFusion.class);
         Long maxId=dataResourceRepository.findMaxDataResource();
         DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress());
@@ -189,7 +189,7 @@ public class DataTaskService {
     }
 
     public void singleDataFusionResource(String paramStr){
-        log.info(paramStr);
+//        log.info(paramStr);
         DataResource dataResource = JSONObject.parseObject(paramStr, DataResource.class);
         Iterator<Map.Entry<String, SysOrganFusion>> iterator = organConfiguration.getSysLocalOrganInfo().getFusionMap().entrySet().iterator();
         while (iterator.hasNext()){

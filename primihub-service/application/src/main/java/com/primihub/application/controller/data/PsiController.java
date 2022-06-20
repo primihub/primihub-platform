@@ -107,16 +107,11 @@ public class PsiController {
     @GetMapping("getOrganPsiTask")
     public BaseResultEntity getOrganPsiTask(@RequestHeader("userId") Long userId,
                                             @RequestHeader("organId") Long ownOrganId,
-                                            Long organId,
                                             String resultName,
                                             PageReq req){
         if (userId<=0)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        if (ownOrganId<=0)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownOrganId");
-        if (organId<=0)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        return dataPsiService.getOrganPsiTask(userId,ownOrganId,organId,resultName,req);
+        return dataPsiService.getOrganPsiTask(userId,resultName,req);
     }
 
     @GetMapping("getPsiTaskDetails")

@@ -86,19 +86,6 @@
             and dp.result_organ_ids like CONCAT('%',#{organId},'%')
             and dp.user_id = #{userId}
             <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
-            <if test="other==null">AND dp.own_resource_id = dr.resource_id</if>
-            <if test="other!=null">AND dp.other_resource_id = dr.resource_id</if>
-           <!-- AND (dp.own_organ_id = #{ownOrganId} or dp.other_organ_id = #{ownOrganId})
-            <choose>
-                <when test="other!=null">
-                    AND dp.other_resource_id = dr.resource_id
-                    AND dpt.ascription_type = 1
-                    and dp.other_organ_id = #{organId}
-                </when>
-                <otherwise>
-                    AND dp.own_resource_id = dr.resource_id
-                </otherwise>
-            </choose>-->
         ORDER BY dp.id desc
         LIMIT #{offset},#{pageSize}
     </select>

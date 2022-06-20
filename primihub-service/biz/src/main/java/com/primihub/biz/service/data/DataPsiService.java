@@ -203,18 +203,12 @@ public class DataPsiService {
         return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataPsiTaskVos));
     }
 
-    public BaseResultEntity getOrganPsiTask(Long userId, Long ownOrganId, Long organId, String resultName, PageReq req) {
+    public BaseResultEntity getOrganPsiTask(Long userId, String resultName, PageReq req) {
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("ownOrganId",ownOrganId);
-        paramMap.put("organId",organId);
         paramMap.put("resultName",resultName);
-        if (ownOrganId.compareTo(organId)!=0){//其他机构
-            paramMap.put("other",1);
-//            paramMap.put("organId",organId);
-        }
         List<DataOrganPsiTaskVo> dataOrganPsiTaskVos = dataPsiRepository.selectOrganPsiTaskPage(paramMap);
         if (dataOrganPsiTaskVos.size()==0)
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
