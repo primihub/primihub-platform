@@ -5,6 +5,7 @@ import java_data_service.DataServiceGrpc;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class DataService1GrpcClient {
@@ -13,12 +14,12 @@ public class DataService1GrpcClient {
     private Channel channel;
 
     public <Result> Result run(Functional<DataServiceGrpc.DataServiceBlockingStub,Result> functional){
-        DataServiceGrpc.DataServiceBlockingStub dataServiceBlockingStub = DataServiceGrpc.newBlockingStub(channel);
+        DataServiceGrpc.DataServiceBlockingStub dataServiceBlockingStub = DataServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
         return functional.run(dataServiceBlockingStub);
     }
 
     public <Result> Result run(Functional<DataServiceGrpc.DataServiceBlockingStub,Result> functional, Channel channel){
-        DataServiceGrpc.DataServiceBlockingStub dataServiceBlockingStub = DataServiceGrpc.newBlockingStub(channel);
+        DataServiceGrpc.DataServiceBlockingStub dataServiceBlockingStub = DataServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
         return functional.run(dataServiceBlockingStub);
     }
 }

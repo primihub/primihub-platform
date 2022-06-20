@@ -230,10 +230,17 @@ public class DataPsiService {
         if (dataPsi==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到PSI信息");
         DataResource dataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
-        BaseResultEntity baseResult = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
         Map<String, Object> otherDataResource = null;
-        if (baseResult.getCode()==0){
-            otherDataResource = (LinkedHashMap)baseResult.getResult();
+        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
+            DataResource otherResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+            otherDataResource = new LinkedHashMap<>();
+            otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
+            otherDataResource.put("resourceName",otherResource.getResourceName());
+        }else {
+            BaseResultEntity baseResult = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            if (baseResult.getCode()==0){
+                otherDataResource = (LinkedHashMap)baseResult.getResult();
+            }
         }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,dataResource,otherDataResource,sysLocalOrganInfo));

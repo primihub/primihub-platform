@@ -83,6 +83,9 @@
                 </choose>
             )
         </if>
+        <if test="userName!=null and userName!=''">
+            and user_id in (select user_id from sys_user where is_del=0 and is_forbid=0 and user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%'))
+        </if>
     </sql>
 
     <select id="queryDataResourceById" resultType="com.primihub.biz.entity.data.po.DataResource">

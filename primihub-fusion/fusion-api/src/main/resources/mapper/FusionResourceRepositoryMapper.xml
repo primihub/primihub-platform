@@ -84,17 +84,25 @@
         </foreach>
 
     </select>
+
+    <sql id="selectResourceMainSql">
+        <if test="organId==null or organId=='' or globalId==organId">
+            select * from fusion_resource where organ_id = #{globalId}
+            UNION ALL
+            select * from fusion_resource where organ_id != #{globalId} and resource_auth_type = 1
+            UNION ALL
+            select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{globalId})
+        </if>
+        <if test="organId!=null and organId!='' and globalId!=organId">
+            select * from fusion_resource where organ_id = #{organId} and resource_auth_type = 1
+            UNION ALL
+            select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{organId})
+        </if>
+    </sql>
     <select id="selectFusionResource" parameterType="com.primihub.entity.resource.param.ResourceParam" resultMap="FusionResourceBaseResultMap">
         select <include refid="Fusion_Resource_Base_Column_List"/>
         from (
-            select * from fusion_resource
-            <if test="organId!=null and organId!=''">
-                where organ_id = #{organId}  <if test="globalId!=organId">and resource_auth_type = 1 </if>
-                <if test="cancelUnion==0">
-                    UNION ALL
-                    select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{organId})
-                </if>
-            </if>
+            <include refid="selectResourceMainSql"></include>
         ) t
         where t.is_del = 0
         <include refid="fusionResourceCondition"></include>
@@ -104,12 +112,7 @@
     <select id="selectFusionResourceCount" parameterType="com.primihub.entity.resource.param.ResourceParam" resultType="java.lang.Integer">
         select count(t.id)
         from (
-        select * from fusion_resource
-        <if test="organId!=null and organId!=''">
-            where organ_id = #{organId}
-            UNION ALL
-            select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{organId})
-        </if>
+            <include refid="selectResourceMainSql"></include>
         ) t
         where t.is_del = 0
         <include refid="fusionResourceCondition"></include>

@@ -1,5 +1,6 @@
 package com.primihub.biz.config.grpc;
 
+import com.primihub.biz.grpc.server.DataGrpcService;
 import com.primihub.biz.grpc.server.TestGrpcService;
 import com.primihub.biz.grpc.server.WorkGrpcService;
 import com.primihub.biz.config.base.BaseConfiguration;
@@ -20,6 +21,7 @@ public class GrpcServerConfiguration {
         Server server=ServerBuilder.forPort(baseConfiguration.getGrpcServerPort())
                 .addService(new TestGrpcService())
                 .addService(new WorkGrpcService())
+                .addService(new DataGrpcService())
                 .build();
         try {
             server.start();

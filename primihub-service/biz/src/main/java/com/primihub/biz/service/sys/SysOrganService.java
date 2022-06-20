@@ -133,9 +133,13 @@ public class SysOrganService {
     public BaseResultEntity getLocalOrganInfo(){
         String group=environment.getProperty("nacos.config.group");
         String serverAddr=environment.getProperty("nacos.config.server-addr");
+        String namespace=environment.getProperty("nacos.config.namespace");
         ConfigService configService;
         try {
-            configService= NacosFactory.createConfigService(serverAddr);
+            Properties properties = new Properties();
+            properties.put("serverAddr",serverAddr);
+            properties.put("namespace",namespace);
+            configService= NacosFactory.createConfigService(properties);
             String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
             SysLocalOrganInfo sysLocalOrganInfo=JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
             if (sysLocalOrganInfo!=null){
@@ -162,9 +166,13 @@ public class SysOrganService {
            return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW);
        String group=environment.getProperty("nacos.config.group");
        String serverAddr=environment.getProperty("nacos.config.server-addr");
+       String namespace=environment.getProperty("nacos.config.namespace");
        ConfigService configService;
        try {
-           configService= NacosFactory.createConfigService(serverAddr);
+           Properties properties = new Properties();
+           properties.put("serverAddr",serverAddr);
+           properties.put("namespace",namespace);
+           configService= NacosFactory.createConfigService(properties);
            String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
            SysLocalOrganInfo sysLocalOrganInfo=JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
            int flag=0;

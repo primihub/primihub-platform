@@ -114,7 +114,7 @@ public class DataPsiConvert {
 
     }
 
-    public static Object DataPsiConvertVo(DataPsiTask task, DataPsi dataPsi, DataResource dataResource, Map<String, Object> otherDataResource, SysLocalOrganInfo sysLocalOrganInfo) {
+    public static DataPsiVo DataPsiConvertVo(DataPsiTask task, DataPsi dataPsi, DataResource dataResource, Map<String, Object> otherDataResource, SysLocalOrganInfo sysLocalOrganInfo) {
         DataPsiVo dataPsiVo = new DataPsiVo();
         dataPsiVo.setId(task.getId());
         dataPsiVo.setOwnOrganId(dataPsi.getOwnOrganId());
@@ -123,9 +123,9 @@ public class DataPsiConvert {
         dataPsiVo.setOwnResourceName(dataResource.getResourceName());
         dataPsiVo.setOwnKeyword(dataPsi.getOwnKeyword());
         dataPsiVo.setOtherOrganId(dataPsi.getOtherOrganId());
-        dataPsiVo.setOtherOrganName(otherDataResource.get("organName")==null?"":otherDataResource.get("organName").toString());
+        dataPsiVo.setOtherOrganName(otherDataResource==null?"":otherDataResource.get("organName")==null?"":otherDataResource.get("organName").toString());
         dataPsiVo.setOtherResourceId(dataPsi.getOtherResourceId());
-        dataPsiVo.setOtherResourceName(otherDataResource.get("resourceName")==null?"":otherDataResource.get("resourceName").toString());
+        dataPsiVo.setOtherResourceName(otherDataResource==null?"":otherDataResource.get("resourceName")==null?"":otherDataResource.get("resourceName").toString());
         dataPsiVo.setOtherKeyword(dataPsi.getOtherKeyword());
         dataPsiVo.setOutputFilePathType(dataPsi.getOutputFilePathType());
         dataPsiVo.setOutputNoRepeat(dataPsi.getOutputNoRepeat());

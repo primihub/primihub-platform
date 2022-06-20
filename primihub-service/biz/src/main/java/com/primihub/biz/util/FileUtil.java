@@ -1,8 +1,10 @@
 package com.primihub.biz.util;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -134,13 +136,13 @@ public class FileUtil {
 
     public static List<LinkedHashMap<String, Object>> getCsvData(String filePath,Integer pageNo, Integer pageSize){
         List<LinkedHashMap<String, Object>> dataList = new ArrayList<>();
-        try(Stream<String> curStream= Files.lines(Paths.get(filePath))) {
+        try(Stream<String> curStream= Files.lines(Paths.get(filePath), Charset.forName(charset(new File(filePath))))) {
             List<String> list=curStream.skip(pageNo).limit(pageSize+1).collect(Collectors.toList());
             if (list.size()==0)
                 return dataList;
             String[] fields = list.get(0).split(",");
             for(int i=1;i<list.size();i++) {
-                String[] data = list.get(i).split(",");
+                String[] data = StringUtils.splitPreserveAllTokens(list.get(i), ",");
                 if (Integer.valueOf(data.length)==Integer.valueOf(fields.length))
                     dataList.add(readValues(data,fields));
             }

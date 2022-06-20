@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 @Slf4j
 @Service
@@ -55,10 +56,14 @@ public class SysFusionService {
     public BaseResultEntity registerConnection(String serverAddress){
         String group=environment.getProperty("nacos.config.group");
         String serverAddr=environment.getProperty("nacos.config.server-addr");
+        String namespace=environment.getProperty("nacos.config.namespace");
         ConfigService configService;
         SysLocalOrganInfo sysLocalOrganInfo;
         try {
-            configService= NacosFactory.createConfigService(serverAddr);
+            Properties properties = new Properties();
+            properties.put("serverAddr",serverAddr);
+            properties.put("namespace",namespace);
+            configService= NacosFactory.createConfigService(properties);
             String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
             sysLocalOrganInfo = JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
         } catch (NacosException e) {
@@ -115,10 +120,14 @@ public class SysFusionService {
     public BaseResultEntity deleteConnection(String serverAddress) {
         String group=environment.getProperty("nacos.config.group");
         String serverAddr=environment.getProperty("nacos.config.server-addr");
+        String namespace=environment.getProperty("nacos.config.namespace");
         ConfigService configService;
         SysLocalOrganInfo sysLocalOrganInfo;
         try {
-            configService= NacosFactory.createConfigService(serverAddr);
+            Properties properties = new Properties();
+            properties.put("serverAddr",serverAddr);
+            properties.put("namespace",namespace);
+            configService= NacosFactory.createConfigService(properties);
             String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
             sysLocalOrganInfo = JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
         } catch (NacosException e) {
@@ -150,7 +159,11 @@ public class SysFusionService {
     public SysLocalOrganInfo getSysLocalOrganInfo() throws NacosException{
         String group=environment.getProperty("nacos.config.group");
         String serverAddr=environment.getProperty("nacos.config.server-addr");
-        ConfigService configService= NacosFactory.createConfigService(serverAddr);
+        String namespace=environment.getProperty("nacos.config.namespace");
+        Properties properties = new Properties();
+        properties.put("serverAddr",serverAddr);
+        properties.put("namespace",namespace);
+        ConfigService configService= NacosFactory.createConfigService(properties);
         String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
         return JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
     }

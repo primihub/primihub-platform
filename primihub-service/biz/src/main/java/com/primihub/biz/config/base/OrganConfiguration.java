@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 
@@ -60,7 +61,11 @@ public class OrganConfiguration {
         try {
             String group=environment.getProperty("nacos.config.group");
             String serverAddr=environment.getProperty("nacos.config.server-addr");
-            ConfigService configService= NacosFactory.createConfigService(serverAddr);
+            String namespace=environment.getProperty("nacos.config.namespace");
+            Properties properties = new Properties();
+            properties.put("serverAddr",serverAddr);
+            properties.put("namespace",namespace);
+            ConfigService configService= NacosFactory.createConfigService(properties);
             String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
             log.info(" nacos organ_info data:{}",organInfoContent);
             if (StringUtils.isNotBlank(organInfoContent)){

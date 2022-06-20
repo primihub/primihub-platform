@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataResource;
@@ -14,6 +15,7 @@ import com.primihub.biz.util.crypt.DateUtil;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -45,16 +47,26 @@ public class PsiAsyncService {
     private DataPsiService dataPsiService;
     @Autowired
     private FusionResourceService fusionResourceService;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     @Async
     public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi){
         DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
-        BaseResultEntity dataResource = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
-        if (dataResource.getCode()!=0)
-            return;
-        Map<String, Object> otherDataResource = (LinkedHashMap)dataResource.getResult();
-        String resourceId = otherDataResource.getOrDefault("resourceId","").toString();
-        String resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
+        String resourceId,resourceColumnNameList;
+        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
+            DataResource otherDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOtherResourceId()));
+            resourceId = StringUtils.isNotBlank(otherDataResource.getResourceFusionId())?otherDataResource.getResourceFusionId():otherDataResource.getResourceId().toString();
+            resourceColumnNameList = otherDataResource.getFileHandleField();
+        }else {
+            BaseResultEntity dataResource = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            if (dataResource.getCode()!=0)
+                return;
+            Map<String, Object> otherDataResource = (LinkedHashMap)dataResource.getResult();
+            resourceId = otherDataResource.getOrDefault("resourceId","").toString();
+            resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
+        }
+
         Date date=new Date();
         StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
         psiTask.setFilePath(sb.toString());

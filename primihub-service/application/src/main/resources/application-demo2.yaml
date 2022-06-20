@@ -1,0 +1,39 @@
+server:
+  port: 8090
+spring:
+  application:
+    name: platform
+  rabbitmq:
+    host: rabbitmq2.primihub-demo.svc.cluster.local
+    port: 5672
+    username: guest
+    password: guest
+    virtual-host: /
+  cloud:
+    stream:
+      bindings:
+        singleTaskOutput:
+          destination: singlTaskChannel
+        singleTaskInput:
+          destination: singlTaskChannel
+          group: single
+    nacos:
+      discovery:
+        server-addr: nacos.primihub-demo.svc.cluster.local:8848
+        namespace: 71843998-b60a-42ed-81d7-c3c9940d11c0
+nacos:
+  config:
+    server-addr: nacos.primihub-demo.svc.cluster.local:8848
+    namespace: 71843998-b60a-42ed-81d7-c3c9940d11c0
+    max-retry: 3
+    config-long-poll-timeout: 1000
+    config-retry-time: 1000
+    auto-refresh: true
+    username: nacos
+    password: nacos
+    context-path: /nacos
+    group: DEFAULT_GROUP
+    file-extension: yaml
+logging:
+  level:
+    root: info
