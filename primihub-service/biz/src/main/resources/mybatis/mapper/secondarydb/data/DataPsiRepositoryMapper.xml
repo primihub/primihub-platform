@@ -73,14 +73,12 @@
             dp.result_name as resultName,
             dpt.create_date as createDate,
             dpt.update_date as updateDate,
-            dr.file_columns as fileColumns,
             dpt.file_rows as fileRows,
             dpt.id as taskId,
             dpt.task_id as taskIdName
         FROM
             data_psi dp,
-            data_psi_task dpt,
-            data_resource dr
+            data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
             and dp.user_id = #{userId}
@@ -93,26 +91,11 @@
             count(dp.id)
         FROM
             data_psi dp,
-            data_psi_task dpt,
-            data_resource dr
+            data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
-            and result_organ_ids like CONCAT('%',#{organId},'%')
             and dp.user_id = #{userId}
         <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
-        <if test="other==null">AND dp.own_resource_id = dr.resource_id</if>
-        <if test="other!=null">AND dp.other_resource_id = dr.resource_id</if>
-            <!--AND dp.own_organ_id = #{ownOrganId}
-            <choose>
-                <when test="other!=null">
-                    AND dp.other_resource_id = dr.resource_id
-                    AND dpt.ascription_type = 1
-                    and dp.other_organ_id = #{organId}
-                </when>
-                <otherwise>
-                    AND dp.own_resource_id = dr.resource_id
-                </otherwise>
-            </choose>-->
     </select>
     <select id="selectPsiTaskById" resultType="com.primihub.biz.entity.data.po.DataPsiTask">
         SELECT

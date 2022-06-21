@@ -147,7 +147,8 @@ public class PsiController {
             // 告诉浏览器用什么软件可以打开此文件
             response.setHeader("content-Type","application/vnd.ms-excel");
             // 下载文件的默认名称
-            response.setHeader("Content-disposition","attachment;filename="+ URLEncoder.encode(new String(fileName.getBytes("UTF-8"),"iso-8859-1"),"utf-8"));
+            response.setHeader("Content-disposition","attachment;filename="+ new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
+            response.setCharacterEncoding("UTF-8");
             outputStream = response.getOutputStream();
             outputStream.write(currentLogByte);
             outputStream.close();

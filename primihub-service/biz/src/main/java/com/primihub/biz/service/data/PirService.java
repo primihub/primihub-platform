@@ -37,10 +37,7 @@ public class PirService {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
 
-    public BaseResultEntity pirSubmitTask(Long resourceId, String pirParam) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
-        if (dataResource==null|| StringUtils.isBlank(dataResource.getUrl()))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam) {
         Date date = new Date();
         Map<String, Object> map = new HashMap<>();
         try {
@@ -50,9 +47,9 @@ public class PirService {
             map.put("taskDate",formatDate);
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(uuId).append(".csv");
             PushTaskReply reply = null;
-            log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), dataResource.getFileId(), pirParam, System.currentTimeMillis());
+            log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis());
             Common.ParamValue queryIndeiesParamValue = Common.ParamValue.newBuilder().setValueString(pirParam).build();
-            Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(dataResource.getResourceFusionId()).build();
+            Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(resourceId).build();
             Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("queryIndeies", queryIndeiesParamValue)
@@ -77,7 +74,7 @@ public class PirService {
                     .setClientProcessedUpTo(22)
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc end pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{} - reply:{}", sb.toString(), dataResource.getFileId(), pirParam, System.currentTimeMillis(),reply.toString());
+            log.info("grpc end pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{} - reply:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis(),reply.toString());
         } catch (Exception e) {
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL);
