@@ -6,20 +6,12 @@
       <el-tag v-if="data.isAuthed !== undefined" size="mini" :type="data.isAuthed === 1? 'success':data.isAuthed === 2?'danger':'info'">{{ data.isAuthed | authStatusFilter }}</el-tag>
     </div>
     <div class="main">
-      <div class="info-item">
-        <span class="label">数据大小：</span>
-        <span class="context">{{ data.fileSize | fileSizeFilter }}</span>
-      </div>
-      <div class="info-item">
-        <span class="label">创建时间：</span>
-        <span class="context">{{ data.createDate }}</span>
-      </div>
-      <!-- <div class="info-item">
-        <span class="label">所属机构：</span>
-        <span class="context">
-          {{ data.organName }}
-        </span>
-      </div> -->
+      <div class="info-item"><span class="label">是否包含Y值：</span><span class="context">{{ data.fileContainsY === 1? '是' : '否' }}</span></div>
+      <div class="info-item"><span class="label">特征量：</span><span class="context">{{ data.resourceColumnCount || 0 }}</span></div>
+      <div class="info-item"><span class="label">样本量：</span><span class="context">{{ data.resourceRowsCount || 0 }}</span></div>
+      <div class="info-item"><span class="label">正例样本数量：</span><span class="context">{{ data.resourceYRowsCount || 0 }}</span></div>
+      <div class="info-item"><span class="label">正例样本比例：</span><span class="context">{{ data.resourceYRatio || 0 }}%</span></div>
+      <div class="info-item"><span class="label">创建时间：</span><span class="context">{{ data.createDate }}</span></div>
     </div>
   </div>
 </template>
@@ -54,17 +46,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
   .resource-item{
     display: flex;
     flex-direction: column;
     border: 1px solid #ccc;
     box-sizing: border-box;
-    padding: 5px 12px;
+    padding: 10px 15px 12px;
     border-radius: 5px;
     font-size: 14px;
     border: 1px solid #e5e5e5;
     width: 230px;
-    height: 100px;
+    // height: 100px;
     cursor: pointer;
     &:hover {
       box-shadow: 2px 4px 8px rgba(0,0,0,.05);
@@ -86,7 +79,7 @@ export default {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      margin-top: 5px;
+      margin-bottom: 5px;
       line-height: 1;
       &-title{
         max-width: 70%;
@@ -94,6 +87,10 @@ export default {
         text-overflow: ellipsis;
         white-space: nowrap;
         line-height: 1;
+        font-size: 16px;
+        font-weight: bold;
+        overflow: hidden;
+        color: $mainColor;
         }
       font-size: 16px;
       font-weight: 500;
@@ -109,7 +106,6 @@ export default {
         display: flex;
         .label {
           text-align: right;
-          width: 60px;
           flex-shrink: 0;
         }
       }

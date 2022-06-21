@@ -7,7 +7,7 @@
             <div class="task-setting">
               <h3>求交数据配置</h3>
               <div class="select-organ">
-                <OrganCascader :show-all-levels="false" @change="handleOrganSelect" />
+                <OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" />
               </div>
               <el-row :gutter="20" :class="{'mt20':showOtherOrgan }">
                 <el-col :span="12">

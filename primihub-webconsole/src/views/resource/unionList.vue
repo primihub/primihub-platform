@@ -149,7 +149,6 @@ export default {
         groupId: 0,
         organId: 0
       },
-      userList: [],
       resourceSourceList: [{
         label: '文件上传',
         value: 1
@@ -261,14 +260,6 @@ export default {
         this.pageCount = totalPage
         if (data.length > 0) {
           this.resourceList = data
-          this.resourceList.forEach((item, index) => {
-            if (this.userList.findIndex(user => user.userName === item.userName) === -1) {
-              this.userList.push({
-                userName: item.userName,
-                userId: item.userId
-              })
-            }
-          })
         }
       }
     },
