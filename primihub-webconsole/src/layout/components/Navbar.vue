@@ -10,9 +10,8 @@
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
           <img src="/images/avatar.png" class="user-avatar">
           <div class="user-info">
-            {{ organName }}
-            <br>
-            {{ userInfo.userName }}
+            <p>{{ organName }}</p>
+            <p>{{ userInfo.userName }}</p>
           </div>
           <i class="el-icon-arrow-down el-icon--right" />
         </div>
@@ -36,7 +35,6 @@
 import { mapGetters, mapState } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
-
 export default {
   components: {
     Breadcrumb,
@@ -83,6 +81,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+p{
+  margin-block-start: 0;
+    margin-block-end: 0;
+}
 .navbar {
   height: 50px;
   overflow: hidden;
@@ -142,9 +144,9 @@ export default {
         position: relative;
         .user-info{
           display: inline-block;
-          vertical-align: middle;
           line-height: 1;
           margin: 0 3px;
+          vertical-align: middle;
         }
         .user-avatar {
           cursor: pointer;

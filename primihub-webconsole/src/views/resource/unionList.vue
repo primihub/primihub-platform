@@ -2,6 +2,26 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
+        <el-form-item label="中心节点">
+          <el-select v-model="query.serverAddressValue" placeholder="请选择" @change="handleServerAddressChange">
+            <el-option
+              v-for="item in serverAddressList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="机构">
+          <el-select v-model="query.organId" placeholder="请选择" @change="handleOrganCascaderChange">
+            <el-option
+              v-for="item in cascaderOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item label="数据资源ID">
           <el-input v-model="query.resourceId" placeholder="请输入资源ID" />
         </el-form-item>
@@ -20,23 +40,6 @@
               :value="item.value"
             />
           </el-select>
-        </el-form-item>
-        <el-form-item label="中心节点">
-          <el-select v-model="query.serverAddressValue" placeholder="请选择" @change="handleServerAddressChange">
-            <el-option
-              v-for="item in serverAddressList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="机构">
-          <el-cascader ref="connectRef" v-model="cascaderValue" :options="cascaderOptions" :props="props" @change="handleOrganCascaderChange">
-            <template slot-scope="{ node, data }">
-              <span>{{ data.label }}</span>
-            </template>
-          </el-cascader>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
@@ -99,10 +102,10 @@
           <template slot-scope="{row}">
             特征量：{{ row.resourceRowsCount }}<br>
             样本量：{{ row.resourceColumnCount }} <br>
-            正例样本数量：{{ row.resourceYRowsCount }}<br>
-            正例样本比例：{{ row.resourceYRatio }}%<br>
-            <el-tag v-if="row.resourceContainsY" type="primary">包含Y值</el-tag>
-            <el-tag v-else type="danger">不包含Y值</el-tag>
+            正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
+            正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
+            <el-tag v-if="row.resourceContainsY" class="containsy-tag" type="primary" size="mini">包含Y值</el-tag>
+            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含Y值</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -122,11 +125,9 @@
 
 <script>
 import { getResourceList, getResourceTagList } from '@/api/fusionResource'
-import { getLocalOrganInfo, findAllGroup, findOrganInGroup } from '@/api/center'
+import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 import Pagination from '@/components/Pagination'
 import TagsSelect from '@/components/TagsSelect'
-
-let serverAddress = ''
 
 export default {
   components: { Pagination, TagsSelect },
@@ -147,38 +148,13 @@ export default {
         resourceSource: '',
         serverAddressValue: '',
         groupId: 0,
-        organId: 0
+        organId: ''
       },
       resourceSourceList: [{
         label: '文件上传',
         value: 1
       }],
       cascaderValue: [],
-      props: {
-        lazy: true,
-        lazyLoad(node, resolve) {
-          const { level } = node
-          if (level === 1) {
-            const params = {
-              groupId: node.value,
-              serverAddress: serverAddress
-            }
-            findOrganInGroup(params).then(({ code = -1, result }) => {
-              this.organList = result.dataList.organList
-              const data = this.organList.map(item => {
-                return {
-                  label: item.globalName,
-                  value: item.globalId,
-                  leaf: true
-                }
-              })
-              resolve(data)
-            })
-          } else {
-            resolve([])
-          }
-        }
-      },
       resourceList: [],
       total: 0,
       pageCount: 0,
@@ -187,7 +163,7 @@ export default {
       resourceName: '',
       resourceSortType: 0,
       resourceAuthType: 0,
-      serverAddress: '',
+      serverAddress: null,
       groupId: 0,
       organId: 0
     }
@@ -201,6 +177,13 @@ export default {
   methods: {
     async search() {
       this.pageNo = 1
+      if (!this.serverAddress) {
+        this.$message({
+          message: '中心节点为空，请前往系统设置-中心管理，添加节点',
+          type: 'warning'
+        })
+        return
+      }
       await this.fetchData()
     },
     async getResourceTagList() {
@@ -218,8 +201,7 @@ export default {
     },
     async handleServerAddressChange(value) {
       this.serverAddress = this.serverAddressList.filter(item => item.value === value)[0]?.label
-      serverAddress = this.serverAddress
-      await this.findAllGroup()
+      await this.findMyGroupOrgan()
     },
     searchResource(tagName) {
       this.pageNo = 1
@@ -294,35 +276,27 @@ export default {
       })
       this.query.serverAddressValue = 0
       this.serverAddress = this.serverAddressList[this.query.serverAddressValue].label
-      serverAddress = this.serverAddress
     },
-    async findAllGroup() {
-      const { result } = await findAllGroup({ serverAddress: this.serverAddress })
-      this.groupList = result.organList.groupList
-      this.cascaderOptions = this.groupList.map((item) => {
+    async findMyGroupOrgan() {
+      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
+      this.organList = result.dataList.organList
+      this.cascaderOptions = this.organList.map((item) => {
         return {
-          label: item.groupName,
-          value: item.id,
-          serverAddress: this.serverAddress
+          label: item.globalName,
+          value: item.globalId,
+          leaf: true
         }
       })
     },
-    async findOrganInGroup() {
-      const params = {
-        groupId: this.query.groupId,
-        serverAddress: this.serverAddress
-      }
-      const { result } = await findOrganInGroup(params)
-      this.organList = result.dataList.organList
-    },
+
     async handleOrganCascaderChange(value) {
-      this.query.groupId = value[0]
-      await this.findOrganInGroup()
+      console.log(value)
+      this.query.organId = value
     },
     async initData() {
       await this.getLocalOrganInfo()
       if (this.sysLocalOrganInfo) {
-        await this.findAllGroup()
+        await this.findMyGroupOrgan()
         await this.getResourceTagList()
       }
     }

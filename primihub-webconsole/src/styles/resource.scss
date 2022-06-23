@@ -1,4 +1,14 @@
 @import "~@/styles/variables.scss";
+::v-deep .el-table,::v-deep .el-divider__text, .el-link{
+  font-size: 12px;
+}
+::v-deep .el-table th.el-table__cell{
+  font-size: 14px;
+}
+
+::v-deep .el-table .cell{
+  line-height: 1.5
+}
 ::v-deep .el-tabs__header,.resource-row,h2{
   margin: 0;
   padding: 20px 30px 10px;
@@ -35,4 +45,7 @@
   padding-top: 50px;
   display: flex;
   justify-content: center;
+}
+.containsy-tag{
+  margin-top: 3px;
 }

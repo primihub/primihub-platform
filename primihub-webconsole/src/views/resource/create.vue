@@ -128,7 +128,7 @@ import Upload from '@/components/Upload'
 import ResourceTable from '@/components/ResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
-import { getLocalOrganInfo, findAllGroup, findOrganInGroup } from '@/api/center'
+import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
 export default {
   components: {
@@ -371,42 +371,6 @@ export default {
         })
       })
     },
-    // async getLocalOrganInfo() {
-    //   const { result } = await getLocalOrganInfo()
-    //   this.sysLocalOrganInfo = result.sysLocalOrganInfo
-    //   if (!result.sysLocalOrganInfo) return
-    //   this.fusionList = result.sysLocalOrganInfo?.fusionList
-    //   const data = this.fusionList && this.fusionList.map((item, index) => {
-    //     return {
-    //       label: item.serverAddress,
-    //       value: index,
-    //       registered: item.registered,
-    //       show: item.show
-    //     }
-    //   })
-    //   return data
-    // },
-    async findAllGroup(serverAddress) {
-      const { result } = await findAllGroup({ serverAddress })
-      this.groupList = result.organList.groupList
-      const data = this.groupList.map((item, index) => {
-        return {
-          label: item.groupName,
-          value: item.id,
-          serverAddress: this.serverAddress
-        }
-      })
-      return data
-    },
-    async findOrganInGroup() {
-      const params = {
-        groupId: this.query.groupId,
-        serverAddress: this.serverAddress
-      }
-      const { result } = await findOrganInGroup(params)
-      this.organList = result.dataList.organList
-    },
-
     async handleAuthTypeChange(value) {
       if (value === 3) {
         this.resourceAuthType = value
@@ -425,8 +389,8 @@ export default {
       const fusionOrganList = this.cascaderValue.map(item => {
         return {
           organServerAddress: this.cascaderOptions[item[0]].label,
-          organGlobalId: item[2],
-          organName: nodes.filter(n => n.value === item[2])[0].label
+          organGlobalId: item[1],
+          organName: nodes.filter(n => n.value === item[1])[0].label
         }
       })
       this.dataForm.fusionOrganList = fusionOrganList
@@ -452,23 +416,8 @@ export default {
         const params = {
           serverAddress: node.label
         }
-        findAllGroup(params).then(({ result }) => {
-          const data = result.organList.groupList.map((item) => {
-            return {
-              label: item.groupName,
-              value: item.id
-            }
-          })
-          resolve(data)
-        })
-      } else if (level === 2) {
-        const params = {
-          groupId: node.value,
-          serverAddress: node.parent.label
-        }
-        findOrganInGroup(params).then(({ code = -1, result }) => {
-          this.organList = result.dataList.organList
-          const data = this.organList.map(item => {
+        findMyGroupOrgan(params).then(({ result }) => {
+          const data = result.dataList.organList.map((item) => {
             return {
               label: item.globalName,
               value: item.globalId,

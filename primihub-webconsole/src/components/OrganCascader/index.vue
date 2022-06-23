@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import { getLocalOrganInfo, findAllGroup, findOrganInGroup } from '@/api/center'
+import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
 export default {
   name: 'OrganCascader',
@@ -29,23 +29,8 @@ export default {
             const params = {
               serverAddress: node.label
             }
-            findAllGroup(params).then(({ result }) => {
-              const data = result.organList.groupList.map((item) => {
-                return {
-                  label: item.groupName,
-                  value: item.id
-                }
-              })
-              resolve(data)
-            })
-          } else if (level === 2) {
-            const params = {
-              groupId: node.value,
-              serverAddress: node.parent.label
-            }
-            findOrganInGroup(params).then(({ code = -1, result }) => {
-              this.organList = result.dataList.organList
-              const data = this.organList.map(item => {
+            findMyGroupOrgan(params).then(({ result }) => {
+              const data = result.dataList.organList.map((item) => {
                 return {
                   label: item.globalName,
                   value: item.globalId,
@@ -81,30 +66,11 @@ export default {
       this.serverAddressValue = 0
       this.serverAddress = this.cascaderOptions[this.serverAddressValue].label
     },
-    async findAllGroup() {
-      const { result } = await findAllGroup({ serverAddress: this.serverAddress })
-      this.groupList = result.organList.groupList
-      const data = this.groupList.map((item) => {
-        return {
-          label: item.groupName,
-          value: item.id,
-          serverAddress: this.serverAddress
-        }
-      })
-      return data
-    },
-    async findOrganInGroup() {
-      const params = {
-        groupId: this.query.groupId,
-        serverAddress: this.serverAddress
-      }
-      const { result } = await findOrganInGroup(params)
-      this.organList = result.dataList.organList
-    },
     async handleOrganCascaderChange(value) {
       this.cascaderValue = value
+      console.log(value)
       const nodes = this.$refs.connectRef.getCheckedNodes()
-      const organId = value[2]
+      const organId = value[1]
       const organName = nodes[0].label
       const serverAddress = this.cascaderOptions.filter(item => item.value === value[0])[0].label
       this.$emit('change', {
