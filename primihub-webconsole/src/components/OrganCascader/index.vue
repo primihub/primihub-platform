@@ -1,5 +1,5 @@
 <template>
-  <el-cascader ref="connectRef" v-model="cascaderValue" placeholder="请选择求交机构" :options="cascaderOptions" :props="props" v-bind="$attrs" @change="handleOrganCascaderChange">
+  <el-cascader ref="connectRef" v-model="cascaderValue" :options="cascaderOptions" :props="props" v-bind="$attrs" @change="handleOrganCascaderChange">
     <template slot-scope="{ node, data }">
       <span>{{ data.label }}</span>
     </template>

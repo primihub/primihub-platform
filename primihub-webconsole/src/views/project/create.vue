@@ -18,18 +18,23 @@
           <el-input v-model="dataForm.projectDesc" type="textarea" />
         </div>
       </el-form-item>
+      <!-- <el-form-item label="中心节点" prop="organId">
+        <OrganCascader placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
+      </el-form-item> -->
       <el-form-item label="添加资源" prop="resources">
         <div class="resource-box">
           <ResourceItemCreate class="item" @click="openDialog" />
           <ResourceItemSimple v-for="item in selectResources" :key="item.resourceId" class="item" :data="item" :show-close="true" @delete="handleDelete" />
         </div>
-        <ResourceDialog :dialog-visible="dialogVisible" :select-ids="selectIds" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+        <ProjectResourceDialog :dialog-visible="dialogVisible" :select-ids="selectIds" @close="handleDialogCancel" @submit="handleDialogSubmit" />
       </el-form-item>
       <el-form-item>
         <el-button
           type="primary"
           @click="submitForm('dataForm')"
-        >立即创建</el-button>
+        >
+          立即创建
+        </el-button>
         <el-button @click="goBack()">返回</el-button>
       </el-form-item>
     </el-form>
@@ -40,10 +45,10 @@
 import { saveProject } from '@/api/project'
 import ResourceItemCreate from '@/components/ResourceItemCreate'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
-import ResourceDialog from '@/components/ResourceDialog'
+import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 
 export default {
-  components: { ResourceItemSimple, ResourceItemCreate, ResourceDialog },
+  components: { ResourceItemSimple, ResourceItemCreate, ProjectResourceDialog },
   data() {
     // const checkResource = (rule, value, cb) => {
     //   console.log('value', value.length)
@@ -55,6 +60,7 @@ export default {
       dataForm: {
         projectName: '',
         projectDesc: '',
+        organId: '',
         resources: []
       },
       dialogVisible: false,
@@ -67,16 +73,28 @@ export default {
         projectDesc: [
           { required: true, message: '请输入项目描述', trigger: 'blur' },
           { min: 0, max: 200, message: '长度200字符以内', trigger: 'blur' }
+        ],
+        organId: [
+          { required: true, message: '请选择中心节点', trigger: 'blur' }
         ]
-        // resources: [
-        //   { validator: checkResource, trigger: 'change' }
-        // ]
       },
       selectResources: [],
-      selectIds: []
+      selectIds: [],
+      serverAddress: '',
+      organId: ''
     }
   },
   methods: {
+    addResource() {
+      if (!this.serverAddress) {
+        this.$message({
+          message: '请先选择机构',
+          type: 'warning'
+        })
+        return
+      }
+      this.openDialog()
+    },
     openDialog() {
       console.log('open')
       this.dialogVisible = true
@@ -127,6 +145,10 @@ export default {
       this.$router.replace({
         name: 'ProjectList'
       })
+    },
+    handleOrganSelect(data) {
+      this.serverAddress = data.serverAddress
+      this.dataForm.organId = data.organId
     }
   }
 }
