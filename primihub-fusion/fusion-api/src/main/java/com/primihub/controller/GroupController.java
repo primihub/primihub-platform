@@ -47,4 +47,9 @@ public class GroupController {
         return groupService.findOrganInGroup(groupId);
     }
 
+    @RequestMapping("findMyGroupOrgan")
+    public BaseResultEntity findMyGroupOrgan(String globalId){
+        return groupService.findMyGroupOrgan(globalId);
+    }
+
 }

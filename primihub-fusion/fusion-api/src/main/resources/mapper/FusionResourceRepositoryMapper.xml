@@ -33,14 +33,6 @@
         values (#{resourceId},#{resourceName},#{resourceDesc},#{resourceType},#{resourceAuthType},#{resourceRowsCount},#{resourceColumnCount},#{resourceColumnNameList},#{resourceContainsY},#{resourceYRowsCount},#{resourceYRatio},#{resourceTag},#{organId},0,now(),now())
     </insert>
 
-    <insert id="saveBatchFusionPublicRo" parameterType="com.primihub.entity.resource.po.FusionPublicRo">
-        insert into fusion_public_ro (resource_id,organ_id, is_del, c_time, u_time)
-        values
-        <foreach collection="publics" index="index" item="item" separator=",">
-            (#{item.resourceId},#{item.organId},0,now(),now())
-        </foreach>
-    </insert>
-
     <insert id="saveBatchResourceTag" parameterType="java.lang.String">
         insert into fusion_resource_tag (name, is_del, c_time, u_time)
         values
@@ -68,9 +60,7 @@
         </set>
         where id = #{id}
     </update>
-    <delete id="deleteFusionPublicRoByResourceId">
-        delete from fusion_public_ro where resource_id = #{resourceId}
-    </delete>
+
     <select id="selectFusionResourceById" resultMap="FusionResourceBaseResultMap">
         select
                id,
@@ -82,53 +72,74 @@
                  separator="," close=")">
             #{item}
         </foreach>
-
     </select>
 
-    <sql id="selectResourceMainSql">
-        <choose>
-            <when test="organId==null or organId=='' or globalId==organId">
-                select * from fusion_resource where organ_id = #{globalId}
-                UNION ALL
-                select * from fusion_resource where organ_id != #{globalId} and resource_auth_type = 1
-                UNION ALL
-                select * from fusion_resource where id in (select resource_id from fusion_public_ro where organ_id = #{globalId})
-            </when>
-            <otherwise>
-                select * from fusion_resource where organ_id = #{organId} and resource_auth_type = 1
-            </otherwise>
-        </choose>
-    </sql>
     <select id="selectFusionResource" parameterType="com.primihub.entity.resource.param.ResourceParam" resultMap="FusionResourceBaseResultMap">
-        select <include refid="Fusion_Resource_Base_Column_List"/>
-        from (
-            <include refid="selectResourceMainSql"></include>
-        ) t
-        where t.is_del = 0
-        <include refid="fusionResourceCondition"></include>
-        ORDER BY t.id desc
-        LIMIT #{offset},#{pageSize}
+        select
+            distinct r.id,resource_id resourceId,resource_name resourceName,resource_desc resourceDesc,resource_type resourceType,
+            resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
+            resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
+            resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
+        from fusion_resource r
+        left join fusion_go go on go.organ_global_id =r.organ_id
+        where
+            go.group_id in
+            <foreach collection="groupList" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+            and (r.resource_auth_type=1
+                or r.organ_id=#{globalId}
+                or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 ))
+            and r.is_del=0
+            <include refid="fusionResourceCondition"></include>
+        order by r.id desc
+        limit #{offset},#{pageSize}
     </select>
+
     <select id="selectFusionResourceCount" parameterType="com.primihub.entity.resource.param.ResourceParam" resultType="java.lang.Integer">
-        select count(t.id)
-        from (
-            <include refid="selectResourceMainSql"></include>
-        ) t
-        where t.is_del = 0
+        select
+            count(1)
+        from fusion_resource r
+        left join fusion_go go on go.organ_global_id =r.organ_id
+        where
+        go.group_id in
+        <foreach collection="groupList" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        and (r.resource_auth_type=1 or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 ))
+        and r.is_del=0
         <include refid="fusionResourceCondition"></include>
+
     </select>
+
     <select id="selectFusionResourceTag" resultType="java.lang.String">
         select DISTINCT name from fusion_resource_tag
     </select>
+
     <select id="selectFusionResourceByResourceId" resultMap="FusionResourceBaseResultMap">
         select <include refid="Fusion_Resource_Base_Column_List"/> from fusion_resource where resource_id = #{resourceId}
     </select>
 
     <sql id="fusionResourceCondition">
-        <if test="resourceId!=null and resourceId!=''">and t.resource_id = #{resourceId}</if>
-        <if test="resourceName!=null and resourceName!=''">and t.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
-        <if test="resourceType!=null and resourceType!=0">and t.resource_type = #{resourceType}</if>
-        <if test="tagName!=null and tagName!=''">and FIND_IN_SET(#{tagName}, t.resource_tag)</if>
+        <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
+        <if test="resourceId!=null and resourceId!=''">and r.resource_id = #{resourceId}</if>
+        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="resourceType!=null and resourceType!=0">and r.resource_type = #{resourceType}</if>
+        <if test="tagName!=null and tagName!=''">and FIND_IN_SET(#{tagName}, r.resource_tag)</if>
     </sql>
+
+    <delete id="deleteResourceAuthOrgan">
+        delete from fusion_resource_visibility_auth where resource_id=#{resourceId}
+    </delete>
+
+    <insert id="saveBatchResourceAuthOrgan">
+        insert into fusion_resource_visibility_auth (resource_id,organ_global_id, is_del)
+        values
+        <foreach collection="authOrganList" index="index" item="item" separator=",">
+            (#{item.resourceId},#{item.organGlobalId},0)
+        </foreach>
+    </insert>
 
 </mapper>

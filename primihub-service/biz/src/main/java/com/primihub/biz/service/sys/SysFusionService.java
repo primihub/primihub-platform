@@ -91,10 +91,13 @@ public class SysFusionService {
             map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
             map.put("globalName", new ArrayList(){{add(sysLocalOrganInfo.getOrganName());}});
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
+            map.put("gatewayAddress", new ArrayList(){{add(sysLocalOrganInfo.getGatewayAddress());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/registerConnection",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
-                isRegistered=false;
+            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode()) {
+                isRegistered = false;
+                fusionMsg = resultEntity.getMsg();
+            }
         }catch (Exception e){
             isRegistered=false;
             fusionMsg=e.getMessage();
@@ -311,5 +314,32 @@ public class SysFusionService {
         return BaseResultEntity.success(result);
     }
 
+    public BaseResultEntity findMyGroupOrgan(String serverAddress){
+        SysLocalOrganInfo sysLocalOrganInfo;
+        try {
+            sysLocalOrganInfo = getSysLocalOrganInfo();
+        } catch (NacosException e) {
+            log.info("nacos-get",e);
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
+        }
+        String fusionMsg="查询成功";
+        Map result=new HashMap();
+        try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap map = new LinkedMultiValueMap<>();
+            map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
+            map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+            BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/findMyGroupOrgan",request, BaseResultEntity.class);
+            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+                fusionMsg=resultEntity.getMsg();
+            result.put("dataList",resultEntity.getResult());
+        }catch (Exception e){
+            fusionMsg=e.getMessage();
+        }
+        result.put("fusionMsg",fusionMsg);
+        return BaseResultEntity.success(result);
+    }
 
 }

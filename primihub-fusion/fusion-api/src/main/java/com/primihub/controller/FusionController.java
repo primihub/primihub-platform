@@ -31,16 +31,18 @@ public class FusionController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalName");
         if(registerConnectionParam.getPinCode()==null||registerConnectionParam.getPinCode().trim().equals(""))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pinCode");
+        if(registerConnectionParam.getGatewayAddress()==null||registerConnectionParam.getGatewayAddress().trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gatewayAddress");
         return fusionService.registerConnection(registerConnectionParam);
     }
 
     @RequestMapping("changeConnection")
-    public BaseResultEntity changeConnection(String globalId,String globalName){
-        if(globalId==null||globalId.equals(""))
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId");
+    public BaseResultEntity changeConnection(String globalId,String globalName,String gatewayAddress){
         if(globalName==null||globalName.trim().equals(""))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalName");
-        return fusionService.changeConnection(globalId,globalName);
+        if(gatewayAddress==null||gatewayAddress.equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gatewayAddress");
+        return fusionService.changeConnection(globalId,globalName,gatewayAddress);
     }
 
     @RequestMapping("findOrganByGlobalId")

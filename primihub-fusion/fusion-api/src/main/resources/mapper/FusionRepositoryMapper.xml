@@ -3,17 +3,17 @@
 <mapper namespace="com.primihub.repository.FusionRepository">
 
     <insert id="insertFusionOrgan" useGeneratedKeys="true" keyProperty="id">
-        insert into fusion_organ(global_id,global_name,pin_code_md,register_time,is_del)
-        values(#{globalId},#{globalName},#{pinCodeMd},#{registerTime},#{isDel})
+        insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,is_del)
+        values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{isDel})
     </insert>
 
     <update id="updateFusionOrganSpeByGlobalId">
-        update fusion_organ set global_name=#{globalName} where global_id=#{globalId}
+        update fusion_organ set global_name=#{globalName},gateway_address=#{gatewayAddress} where global_id=#{globalId}
     </update>
 
     <select id="getFusionOrganByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrgan">
         select
-            id,global_id globalId,global_name globalName,pin_code_md pinCodeMd,register_time registerTime,is_del isDel,c_time cTime,u_time uTime
+            id,global_id globalId,global_name globalName,pin_code_md pinCodeMd,gateway_address gatewayAddress,register_time registerTime,is_del isDel,c_time cTime,u_time uTime
         from
             fusion_organ
         where global_id=#{globalId}
@@ -22,7 +22,7 @@
 
     <select id="selectFusionOrganByGlobalIds" resultType="com.primihub.entity.fusion.po.FusionOrgan">
         select
-            id,global_id globalId,global_name globalName,register_time registerTime,is_del isDel,c_time cTime,u_time uTime
+            id,global_id globalId,global_name globalName,gateway_address gatewayAddress,register_time registerTime,is_del isDel,c_time cTime,u_time uTime
         from
             fusion_organ
         where global_id in

@@ -190,29 +190,40 @@ public class SysOrganService {
                sysLocalOrganInfo.setOrganName(changeLocalOrganInfoParam.getOrganName());
                flag|=1;
            }
-           if(sysLocalOrganInfo!=null&&(sysLocalOrganInfo.getOrganName()==null||changeLocalOrganInfoParam.getOrganName().trim().equals(""))) {
-               sysCommonPrimaryRedisRepository.unlock(SysConstant.SYS_LOCAL_ORGAN_INFO_LOCK);
-               return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "缺少参数organName");
+           if(changeLocalOrganInfoParam.getGatewayAddress()!=null&&!changeLocalOrganInfoParam.getGatewayAddress().trim().equals("")){
+               sysLocalOrganInfo.setGatewayAddress(changeLocalOrganInfoParam.getGatewayAddress());
+               flag|=1;
            }
-           if(flag==1)
-               configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,JSON.toJSONString(sysLocalOrganInfo),ConfigType.JSON.getType());
-           if (sysLocalOrganInfo.getFusionMap()!=null&&sysLocalOrganInfo.getFusionMap().size()>0){
-               String organId = sysLocalOrganInfo.getOrganId();
-               String organName = sysLocalOrganInfo.getOrganName();
-               HttpHeaders headers = new HttpHeaders();
-               headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-               Iterator<Map.Entry<String, SysOrganFusion>> iterator = sysLocalOrganInfo.getFusionMap().entrySet().iterator();
-               while(iterator.hasNext()){
-                   SysOrganFusion sysOrganFusion = iterator.next().getValue();
-                   try{
-                       MultiValueMap map = new LinkedMultiValueMap<>();
-                       map.put("globalId", new ArrayList(){{add(organId);}});
-                       map.put("globalName", new ArrayList(){{add(organName);}});
-                       HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-                       BaseResultEntity resultEntity=restTemplate.postForObject(sysOrganFusion.getServerAddress()+"/fusion/changeConnection",request, BaseResultEntity.class);
-                       log.info("changeOrganInfo serverAddress:{} | param -- organId:{},globalName:{}  | result -- code:{},msg:{},result:{}",sysOrganFusion.getServerAddress(),organId,organName,resultEntity.getCode(),resultEntity.getMsg(),resultEntity.getResult());
-                   }catch (Exception e){
-                       log.info("changeOrganInfoException serverAddress:{} | param -- organId:{},globalName:{} | message:{}",sysOrganFusion.getServerAddress(),organId,organName,e.getMessage());
+           if(sysLocalOrganInfo!=null&&(
+                   sysLocalOrganInfo.getOrganName()==null||changeLocalOrganInfoParam.getOrganName().trim().equals("")
+                ||sysLocalOrganInfo.getGatewayAddress()==null||changeLocalOrganInfoParam.getGatewayAddress().trim().equals(""))) {
+               sysCommonPrimaryRedisRepository.unlock(SysConstant.SYS_LOCAL_ORGAN_INFO_LOCK);
+               return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "缺少参数organName和gatewayAddress");
+           }
+           if(flag==1) {
+               configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
+               if (sysLocalOrganInfo.getFusionMap() != null && sysLocalOrganInfo.getFusionMap().size() > 0) {
+                   String organId = sysLocalOrganInfo.getOrganId();
+                   String organName = sysLocalOrganInfo.getOrganName();
+                   String gatewayAddress = sysLocalOrganInfo.getGatewayAddress();
+                   String pinCode = sysLocalOrganInfo.getPinCode();
+                   HttpHeaders headers = new HttpHeaders();
+                   headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                   Iterator<Map.Entry<String, SysOrganFusion>> iterator = sysLocalOrganInfo.getFusionMap().entrySet().iterator();
+                   while (iterator.hasNext()) {
+                       SysOrganFusion sysOrganFusion = iterator.next().getValue();
+                       try {
+                           MultiValueMap map = new LinkedMultiValueMap<>();
+                           map.put("globalId", new ArrayList() {{add(organId);}});
+                           map.put("globalName", new ArrayList() {{add(organName);}});
+                           map.put("pinCode", new ArrayList() {{add(pinCode);}});
+                           map.put("gatewayAddress", new ArrayList() {{add(gatewayAddress);}});
+                           HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+                           BaseResultEntity resultEntity = restTemplate.postForObject(sysOrganFusion.getServerAddress() + "/fusion/changeConnection", request, BaseResultEntity.class);
+                           log.info("changeOrganInfo serverAddress:{} | param -- organId:{},globalName:{}  | result -- code:{},msg:{},result:{}", sysOrganFusion.getServerAddress(), organId, organName, resultEntity.getCode(), resultEntity.getMsg(), resultEntity.getResult());
+                       } catch (Exception e) {
+                           log.info("changeOrganInfoException serverAddress:{} | param -- organId:{},globalName:{} | message:{}", sysOrganFusion.getServerAddress(), organId, organName, e.getMessage());
+                       }
                    }
                }
            }

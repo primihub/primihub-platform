@@ -10,6 +10,7 @@ public class FusionOrgan {
     private String globalId;
     private String globalName;
     private String pinCodeMd;
+    private String gatewayAddress;
     private Date registerTime;
     private Integer isDel;
     private Date cTime;

@@ -2,8 +2,8 @@ package com.primihub.repository;
 
 
 import com.primihub.entity.resource.param.ResourceParam;
-import com.primihub.entity.resource.po.FusionPublicRo;
 import com.primihub.entity.resource.po.FusionResource;
+import com.primihub.entity.resource.po.FusionResourceVisibilityAuth;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -28,7 +28,7 @@ public interface FusionResourceRepository {
 
     void saveBatchResourceTag(@Param("tags") Set<String> tags);
 
-    void saveBatchFusionPublicRo(@Param("publics")List<FusionPublicRo> publics);
+    void saveBatchResourceAuthOrgan(@Param("authOrganList")List<FusionResourceVisibilityAuth> authOrganList);
 
-    void deleteFusionPublicRoByResourceId(@Param("resourceId") Long resourceId);
+    void deleteResourceAuthOrgan(@Param("resourceId")String resourceId);
 }

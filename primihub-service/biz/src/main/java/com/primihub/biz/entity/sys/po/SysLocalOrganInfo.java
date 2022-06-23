@@ -10,6 +10,7 @@ public class SysLocalOrganInfo {
     private String organId;
     private String organName;
     private String pinCode;
+    private String gatewayAddress;
 
     private Map<String,SysOrganFusion> fusionMap;
     private List<SysOrganFusion> fusionList;

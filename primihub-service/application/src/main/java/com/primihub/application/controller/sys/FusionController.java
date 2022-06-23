@@ -35,8 +35,6 @@ public class FusionController {
         return sysFusionService.deleteConnection(serverAddress);
     }
 
-
-
     @RequestMapping("createGroup")
     public BaseResultEntity createGroup(String serverAddress,String groupName){
         if(serverAddress==null||serverAddress.trim().equals(""))
@@ -78,6 +76,13 @@ public class FusionController {
         if(groupId==null)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"groupId");
         return sysFusionService.findOrganInGroup(serverAddress,groupId);
+    }
+
+    @RequestMapping("findMyGroupOrgan")
+    public BaseResultEntity findMyGroupOrgan(String serverAddress){
+        if(serverAddress==null||serverAddress.trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
+        return sysFusionService.findMyGroupOrgan(serverAddress);
     }
 
 }

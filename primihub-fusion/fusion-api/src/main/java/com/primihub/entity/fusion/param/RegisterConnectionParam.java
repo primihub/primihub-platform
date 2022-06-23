@@ -7,4 +7,5 @@ public class RegisterConnectionParam {
     private String globalId;
     private String globalName;
     private String pinCode;
+    private String gatewayAddress;
 }

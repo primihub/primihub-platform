@@ -5,6 +5,7 @@ import com.primihub.entity.group.po.FusionGo;
 import com.primihub.entity.group.po.FusionGroup;
 import com.primihub.entity.group.vo.FusionGroupVo;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,4 +18,5 @@ public interface GroupRepository {
     boolean selectFusionGo(Long groupId,String organGlobalId);
     List<Long> findOrganInGroup(String globalId);
     List<FusionOrgan> findOrganDetailInGroup(Long groupId);
+    List<String> findOrganGlobalIdByGroupIdList(@Param("groupIdList")List<Long> groupIdList);
 }
