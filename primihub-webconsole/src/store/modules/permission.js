@@ -49,8 +49,7 @@ function getRoutes(routers, rootList) {
     }
   })
 
-  return routers
-  // return realRoutes
+  return realRoutes
 }
 
 /**

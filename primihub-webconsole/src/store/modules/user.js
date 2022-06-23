@@ -21,7 +21,8 @@ const getDefaultState = () => {
     userId: null,
     userName: '',
     token: getToken(),
-    avatar: ''
+    avatar: '',
+    organChange: false
   }
 }
 
@@ -47,6 +48,10 @@ const mutations = {
   },
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
+  },
+  SET_ORGAN_CHANGE: (state, organChange) => {
+    console.log('SET_ORGAN_CHANGE', organChange)
+    state.organChange = organChange
   }
 }
 

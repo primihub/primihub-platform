@@ -34,7 +34,6 @@
             filterable
             placeholder="请选择用户角色"
             value-key="value"
-            @focus="handleRoleFocus"
           >
             <el-option
               v-for="(item,index) in authOptions"
@@ -191,9 +190,9 @@ export default {
         })
       }
     },
-    handleRoleFocus() {
-      this.getRoles()
-    },
+    // handleRoleFocus() {
+    //   this.getRoles()
+    // },
     async searchRole(query) {
       if (query !== '') {
         await this.getRoles(query)
@@ -206,25 +205,13 @@ export default {
     async openEdit(row) {
       this.dialogFlag = 'edit'
       this.dialogTitle = '编辑用户'
+      await this.getRoles()
       this.userInfo.userId = row.userId
       this.userInfo.userName = row.userName
       this.userInfo.userAccount = row.userAccount
-      this.userInfo.roleIdList = row.roleIdList.split(',')
-      this.userInfo.roleName = row.roleIdListDesc.split(',')
-      this.initRoles()
+      this.userInfo.roleIdList = row.roleIdList
+      this.userInfo.roleName = row.roleIdListDesc
       this.dialogVisible = true
-    },
-    initRoles() {
-      this.authOptions = []
-      const len = this.userInfo.roleIdList.length
-      for (let i = 0; i < len; i++) {
-        const roleId = this.userInfo.roleIdList[i]
-        const roleName = this.userInfo.roleName[i]
-        this.authOptions.push({
-          roleName: roleName,
-          roleId: roleId
-        })
-      }
     },
     async addUser() {
       this.dialogTitle = '新增用户'

@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     :visible.sync="visible"
-    width="900px"
+    width="920px"
     top="5vh"
     center
     @close="handleClose"
@@ -12,7 +12,7 @@
       <div v-loading="listLoading" class="resource-list">
         <NoData v-if="noData" />
         <template v-else>
-          <ResourceItem v-for="resource in resourceList" :key="resource.resourceId" class="resource" :has-check-box="true" :resource="resource" :selected="selectedIds && selectedIds.indexOf(resource.resourceId) !== -1" @click="handleResourceClick" />
+          <ResourceItem v-for="resource in resourceList" :key="resource.resourceId" class="resource-item" :has-check-box="true" :resource="resource" :selected="selectedIds && selectedIds.indexOf(resource.resourceId) !== -1" @click="handleResourceClick" />
         </template>
       </div>
     </div>
