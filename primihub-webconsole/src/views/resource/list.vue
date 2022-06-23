@@ -4,7 +4,7 @@
       <el-button v-if="hasUploadAuth" type="primary" class="upload-button" @click="toResourceCreatePage"> <i class="el-icon-upload" /> 添加资源</el-button>
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="数据资源ID">
-          <el-input v-model="query.resourceId" placeholder="请输入资源ID" />
+          <el-input v-model.number="query.resourceId" placeholder="请输入资源ID" />
         </el-form-item>
         <el-form-item label="名称">
           <el-input v-model="query.resourceName" placeholder="请输入资源名称" />
@@ -126,7 +126,6 @@ export default {
       query: {
         resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0
       },
-      userList: [],
       tags: [],
       resourceSourceList: [{
         label: '文件上传',
@@ -237,7 +236,15 @@ export default {
     },
     fetchData() {
       this.resourceList = []
-      const { resourceId, resourceName, tag, userName, resourceSource, selectTag } = this.query
+      const { resourceName, tag, userName, resourceSource, selectTag } = this.query
+      const resourceId = Number(this.query.resourceId)
+      if (resourceId !== '' && isNaN(resourceId)) {
+        this.$message({
+          message: '资源id为数字',
+          type: 'warning'
+        })
+        return
+      }
       const params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,

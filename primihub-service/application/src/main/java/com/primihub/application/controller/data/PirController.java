@@ -26,8 +26,8 @@ public class PirController {
     private PirService pirService;
 
     @RequestMapping("pirSubmitTask")
-    public BaseResultEntity pirSubmitTask(Long resourceId,String pirParam){
-        if (resourceId==null||resourceId==0L){
+    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam){
+        if (StringUtils.isBlank(resourceId)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
         if (StringUtils.isBlank(pirParam)){

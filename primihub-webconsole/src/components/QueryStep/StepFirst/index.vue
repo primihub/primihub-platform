@@ -10,10 +10,9 @@
         </div>
         <div v-else class="dialog-con">
           <el-form-item label="选择查询资源" prop="resourceName">
-            <el-input ref="resourceInputRef" v-model="form.resourceName" placeholder="选择查询资源" @click="openDialog" @keyup.enter.native="openDialog">
-              <el-button slot="append" icon="el-icon-search" type="primary" @click="openDialog" />
-            </el-input>
-            <ResourceDialog ref="dialogRef" :dialog-visible="dialogVisible" :search-name="form.resourceName" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+            <OrganCascader placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
+            <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button>
+            <ResourceDialog ref="dialogRef" :server-address="serverAddress" :organ-id="organId" :dialog-visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
           </el-form-item>
         </div>
         <el-form-item label="检索ID" prop="pirParam">
@@ -29,11 +28,13 @@
 import { pirSubmitTask } from '@/api/PIR'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceDialog from '@/components/ResourceDialog'
+import OrganCascader from '@/components/OrganCascader'
 
 export default {
   components: {
     ResourceItemSimple,
-    ResourceDialog
+    ResourceDialog,
+    OrganCascader
   },
   props: {
     hasPermission: {
@@ -60,7 +61,9 @@ export default {
       },
       dialogVisible: false,
       listLoading: false,
-      selectResources: [] // 选中资源
+      selectResources: [], // selected resource id list
+      serverAddress: '',
+      organId: ''
     }
   },
   computed: {
@@ -100,28 +103,31 @@ export default {
       })
     },
     openDialog() {
-      // if (!this.form.resourceName) {
-      //   this.$message({
-      //     message: '请输入查询资源名称',
-      //     type: 'warning'
-      //   })
-      //   return
-      // }
+      if (!this.serverAddress) {
+        this.$message({
+          message: '请先选择机构',
+          type: 'warning'
+        })
+        return
+      }
       this.dialogVisible = true
     },
     handleDialogCancel() {
-      this.form.resourceName = ''
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
       this.selectResources = data.list
       this.dialogVisible = false
-      this.form.resourceName = ''
-      console.log(this.selectResources)
+      this.serverAddress = ''
+      this.organId = ''
     },
     handleDelete(data) {
       const index = this.selectResources.findIndex(item => item.resourceId === data.id)
       this.selectResources.splice(index, 1)
+    },
+    handleOrganSelect(data) {
+      this.serverAddress = data.serverAddress
+      this.organId = data.organId
     }
   }
 }
@@ -164,5 +170,12 @@ export default {
   width: 100%;
   display: inline-block;
   text-align: center;
+}
+::v-deep .el-cascader{
+  width: 410px;
+  margin-right: 10px;
+}
+::v-deep .el-form-item__content{
+  text-align: left;
 }
 </style>

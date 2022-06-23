@@ -4,7 +4,7 @@ spring:
   application:
     name: platform
   rabbitmq:
-    host: rabbitmq-1.primihub.svc.cluster.local
+    host: rabbitmq1.primihub-demo.svc.cluster.local
     port: 5672
     username: guest
     password: guest
@@ -19,12 +19,12 @@ spring:
           group: single
     nacos:
       discovery:
-        server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace: 9be74df3-dd0d-46d7-a223-cbeaf4520769
+        server-addr: nacos.primihub-demo.svc.cluster.local:8848
+        namespace: 46b6b568-e6ae-45ca-baa1-819932fc8947
 nacos:
   config:
-    server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace: 9be74df3-dd0d-46d7-a223-cbeaf4520769
+    server-addr: nacos.primihub-demo.svc.cluster.local:8848
+    namespace: 46b6b568-e6ae-45ca-baa1-819932fc8947
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -32,7 +32,7 @@ nacos:
     username: nacos
     password: nacos
     context-path: /nacos
-    group: DEFAULT_GROUP_1
+    group: DEFAULT_GROUP
     file-extension: yaml
 logging:
   level:

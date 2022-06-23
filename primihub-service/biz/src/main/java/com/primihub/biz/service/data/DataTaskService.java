@@ -136,7 +136,6 @@ public class DataTaskService {
         }
         int totalPage = dataList.size() % DataConstant.INSERT_DATA_TABLE_PAGESIZE == 0 ? dataList.size() / DataConstant.INSERT_DATA_TABLE_PAGESIZE : dataList.size() / DataConstant.INSERT_DATA_TABLE_PAGESIZE + 1;
         for (int i = 0; i < totalPage; i++) {
-//            log.info("第{}页",i);
             map.put("dataList", dataList.stream().skip(i * DataConstant.INSERT_DATA_TABLE_PAGESIZE).limit(DataConstant.INSERT_DATA_TABLE_PAGESIZE).collect(Collectors.toList()));
             dataResourcePrimaryRepository.insertDataTable(map);
         }
@@ -181,7 +180,7 @@ public class DataTaskService {
     }
 
     public void batchDataFusionResource(String paramStr){
-        log.info(paramStr);
+//        log.info(paramStr);
         SysOrganFusion sysOrganFusion = JSONObject.parseObject(paramStr, SysOrganFusion.class);
         Long maxId=dataResourceRepository.findMaxDataResource();
         DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress());
@@ -190,7 +189,7 @@ public class DataTaskService {
     }
 
     public void singleDataFusionResource(String paramStr){
-        log.info(paramStr);
+//        log.info(paramStr);
         DataResource dataResource = JSONObject.parseObject(paramStr, DataResource.class);
         Iterator<Map.Entry<String, SysOrganFusion>> iterator = organConfiguration.getSysLocalOrganInfo().getFusionMap().entrySet().iterator();
         while (iterator.hasNext()){
@@ -267,18 +266,6 @@ public class DataTaskService {
             }
         }
     }
-
-//    public static void main(String[] args) {
-//        int total = 35;
-//        List<Integer> dataList = new ArrayList<>();
-//        for (int i = 1; i <= total; i++) {
-//            dataList.add(i);
-//        }
-//        int totalPage = dataList.size() % DataConstant.INSERT_DATA_TABLE_PAGESIZE == 0 ? dataList.size() / DataConstant.INSERT_DATA_TABLE_PAGESIZE : dataList.size() / DataConstant.INSERT_DATA_TABLE_PAGESIZE + 1;
-//        for (int i = 0; i < totalPage; i++) {
-//            System.out.println(dataList.stream().skip(i*DataConstant.INSERT_DATA_TABLE_PAGESIZE).limit(DataConstant.INSERT_DATA_TABLE_PAGESIZE).collect(Collectors.toList()));
-//        }
-//    }
 
 }
 

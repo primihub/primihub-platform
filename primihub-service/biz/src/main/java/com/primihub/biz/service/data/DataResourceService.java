@@ -83,6 +83,7 @@ public class DataResourceService {
         paramMap.put("resourceName",req.getResourceName());
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
+        paramMap.put("userName",req.getUserName());
         if (isPsi){
             paramMap.put("isPsi","true");
         }
@@ -132,6 +133,9 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateResourceFusionId());
             }
+            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl())){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
+            }
             dataResourcePrRepository.saveResource(dataResource);
             List<DataFileField> dataFileFieldList = fieldList.stream().map(field -> DataResourceConvert.DataFileFieldReqConvertPo(field, sysFile.getFileId(), dataResource.getResourceId())).collect(Collectors.toList());
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
@@ -153,7 +157,6 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
                 singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             }
-            resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl());
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
@@ -188,6 +191,10 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
+        }
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
         resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
@@ -353,7 +360,7 @@ public class DataResourceService {
             csvVo.setFileId(sysFile.getFileId());
         }catch (Exception e){
             log.info("fileUrl:【{}】Exception Message : {}",sysFile.getFileUrl(),e.getMessage());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL);
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL,"请检查文件编码格式");
         }
         return BaseResultEntity.success(csvVo);
     }
@@ -485,7 +492,7 @@ public class DataResourceService {
         return yRow;
     }
 
-    public void resourceSynGRPCDataSet(String suffix,String id,String url){
+    public Boolean resourceSynGRPCDataSet(String suffix,String id,String url){
         log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",suffix,id,url,System.currentTimeMillis());
         NewDatasetRequest request = NewDatasetRequest.newBuilder()
                 .setDriver(suffix)
@@ -497,12 +504,15 @@ public class DataResourceService {
             NewDatasetResponse response = dataServiceGrpcClient.run(o -> o.newDataset(request));
             log.info("dataServiceGrpc Response:{}",response.toString());
             int retCode = response.getRetCode();
-            if (retCode==0)
+            if (retCode==0){
                 log.info("dataServiceGrpc success");
+                return true;
+            }
         }catch (Exception e){
             log.info("dataServiceGrpcException:{}",e.getMessage());
         }
         log.info("end dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{}  - time:{}",suffix,id,url,System.currentTimeMillis());
+        return false;
     }
 
 

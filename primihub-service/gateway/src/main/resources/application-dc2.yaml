@@ -3,7 +3,7 @@ server:
 nacos:
   config:
     server-addr: nacos-server:8848
-    namespace: 
+    namespace: 71843998-b60a-42ed-81d7-c3c9940d11c0
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -18,7 +18,7 @@ spring:
     nacos:
       discovery:
         server-addr: nacos-server:8848
-        namespace: 
+        namespace: 71843998-b60a-42ed-81d7-c3c9940d11c0
 logging:
   level:
     root: info

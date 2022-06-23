@@ -22,24 +22,23 @@
     </div>
     <div class="main">
       <div><span>是否包含Y值：</span><span>{{ resource.fileContainsY === 1? '是' : '否' }}</span></div>
-      <div><span>特征量：</span><span>{{ resource.fileColumns }}</span></div>
-      <div><span>样本量：</span><span>{{ resource.fileRows }}</span></div>
-      <div><span>正例样本数量：</span><span>{{ resource.fileYRows }}</span></div>
-      <div><span>正例样本比例：</span><span>{{ resource.fileYRatio }}%</span></div>
-      <!-- <div><span>数据大小：</span><span>{{ resource.fileSize | fileSizeFilter }}</span></div> -->
+      <div><span>特征量：</span><span>{{ resource.resourceColumnCount || 0 }}</span></div>
+      <div><span>样本量：</span><span>{{ resource.resourceRowsCount || 0 }}</span></div>
+      <div><span>正例样本数量：</span><span>{{ resource.resourceYRowsCount || 0 }}</span></div>
+      <div><span>正例样本比例：</span><span>{{ resource.resourceYRatio || 0 }}%</span></div>
       <div><span>创建时间：</span><span>{{ resource.createDate }}</span></div>
     </div>
     <div class="footer">
       <div class="labels">
         <el-tag
-          v-for="item in resource.tags"
-          :key="item.tagId"
+          v-for="(item,index) in resource.resourceTag"
+          :key="index"
           size="mini"
         >
-          {{ item.tagName }}
+          {{ item }}
         </el-tag>
       </div>
-      <div class="username">{{ resource.userName }}</div>
+      <div class="username">{{ resource.organName }}</div>
     </div>
 
   </div>
@@ -228,7 +227,7 @@ export default {
   justify-content: space-between;
   border-top: 1px solid #e9e9e9;
   flex-shrink: 0;
-  height: 30px;
+  height: 40px;
   padding-top: 10px;
   padding-bottom: 5px;
   line-height: 24px;
@@ -236,8 +235,8 @@ export default {
   margin-top: 10px;
 }
 .labels{
-  width: 80%;
-  height: 50px;
+  width: 70%;
+  height: 100%;
   overflow: hidden;
   .el-tag{
     margin: 0 2px;

@@ -203,18 +203,12 @@ public class DataPsiService {
         return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataPsiTaskVos));
     }
 
-    public BaseResultEntity getOrganPsiTask(Long userId, Long ownOrganId, Long organId, String resultName, PageReq req) {
+    public BaseResultEntity getOrganPsiTask(Long userId, String resultName, PageReq req) {
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("ownOrganId",ownOrganId);
-        paramMap.put("organId",organId);
         paramMap.put("resultName",resultName);
-        if (ownOrganId.compareTo(organId)!=0){//其他机构
-            paramMap.put("other",1);
-//            paramMap.put("organId",organId);
-        }
         List<DataOrganPsiTaskVo> dataOrganPsiTaskVos = dataPsiRepository.selectOrganPsiTaskPage(paramMap);
         if (dataOrganPsiTaskVos.size()==0)
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -230,10 +224,17 @@ public class DataPsiService {
         if (dataPsi==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到PSI信息");
         DataResource dataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
-        BaseResultEntity baseResult = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
         Map<String, Object> otherDataResource = null;
-        if (baseResult.getCode()==0){
-            otherDataResource = (LinkedHashMap)baseResult.getResult();
+        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
+            DataResource otherResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+            otherDataResource = new LinkedHashMap<>();
+            otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
+            otherDataResource.put("resourceName",otherResource.getResourceName());
+        }else {
+            BaseResultEntity baseResult = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            if (baseResult.getCode()==0){
+                otherDataResource = (LinkedHashMap)baseResult.getResult();
+            }
         }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,dataResource,otherDataResource,sysLocalOrganInfo));

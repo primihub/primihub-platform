@@ -33,8 +33,8 @@ export default {
   border-radius: 5px;
   font-size: 14px;
   border: 1px solid #e5e5e5;
-  width: 200px;
-  height: 100px;
+  width: 230px;
+  height: 186px;
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);
   }
