@@ -47,14 +47,9 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
             }
 
             String userIdStr=sysUserListVO.getUserId().toString();
-            String[] rOrganList=sysUserListVO.getROrganIdList().split(",");
-//            String organId=rOrganList.length>0&&rOrganList[0]!=null&&!rOrganList[0].equals("")?rOrganList[0]:"-1";
-            String organId=rOrganList.length>0&&rOrganList[0]!=null&&!rOrganList[0].equals("")?rOrganList[0]:"1";
             ServerHttpRequest newRequest = exchange.getRequest().mutate()
                     .header("userId", userIdStr)
-                    .header("organId", organId)
                     .header("token", token)
-                    .header("organCode", "USER,ORGAN")
                     .build();
             return chain.filter(exchange.mutate().request(newRequest).build());
         }));

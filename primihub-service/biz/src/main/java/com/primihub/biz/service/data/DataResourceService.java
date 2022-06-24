@@ -4,28 +4,24 @@ import com.alibaba.fastjson.JSON;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
-import com.primihub.biz.entity.base.*;
-import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
-import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataResourceFieldReq;
-import com.primihub.biz.entity.data.vo.*;
-import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
-import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
+import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
 import com.primihub.biz.entity.data.req.DataSourceOrganReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
-import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.DataServiceGrpcClient;
+import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.sys.SysUserService;
 import com.primihub.biz.util.FileUtil;
@@ -105,13 +101,10 @@ public class DataResourceService {
         Map<Long, List<ResourceTagListVo>> resourceTagMap = dataResourceRepository.queryDataResourceListTags(resourceIds).stream().collect(Collectors.groupingBy(ResourceTagListVo::getResourceId));
         // 用户信息
         Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
-        Map<Long, SysOrgan> sysOrganMap = sysOrganService.getSysOrganMap(organIds);
         for (DataResourceVo dataResourceVo : voList) {
             // TODO 查询用户信息 liweihua -- 完成
             SysUser sysUser = sysUserMap.get(dataResourceVo.getUserId());
             dataResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
-            SysOrgan sysOrgan = sysOrganMap.get(dataResourceVo.getOrganId());
-            dataResourceVo.setOrganName(sysOrgan==null?"":sysOrgan.getOrganName());
             dataResourceVo.setTags(resourceTagMap.get(dataResourceVo.getResourceId()));
             dataResourceVo.setUrl("");
         }
@@ -263,11 +256,6 @@ public class DataResourceService {
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
         Set<Long> organids = dataResourceAuthRecordVos.stream().map(DataResourceAuthRecordVo::getOrganId).collect(Collectors.toSet());
-        Map<Long, SysOrgan> sysOrganMap = sysOrganService.getSysOrganMap(organids);
-        dataResourceAuthRecordVos.forEach(vo->{
-            SysOrgan sysOrgan = sysOrganMap.get(vo.getOrganId());
-            vo.setOrganName(sysOrgan==null?"":sysOrgan.getOrganName());
-        });
         Long count = dataResourceRepository.queryResourceAuthRecordCount(userId,status);
         return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResourceAuthRecordVos));
     }

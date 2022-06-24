@@ -31,14 +31,6 @@ public class SysUser {
      */
     private String roleIdList;
     /**
-     * 机构id集合
-     */
-    private String organIdList;
-    /**
-     * 根机构id集合
-     */
-    private String rOrganIdList;
-    /**
      * 是否禁用
      */
     private Integer isForbid;

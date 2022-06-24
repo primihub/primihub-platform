@@ -1,25 +1,25 @@
 package com.primihub.biz.service.sys;
 
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.SysConstant;
-import com.primihub.biz.entity.sys.po.*;
-import com.primihub.biz.repository.primarydb.sys.SysUserPrimarydbRepository;
-import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
-import com.primihub.biz.repository.primaryredis.sys.SysUserPrimaryRedisRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysRoleSecondarydbRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
-import com.primihub.biz.tool.PlatformHelper;
-import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageParam;
 import com.primihub.biz.entity.sys.param.FindUserPageParam;
 import com.primihub.biz.entity.sys.param.LoginParam;
 import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
-import com.primihub.biz.entity.sys.po.*;
+import com.primihub.biz.entity.sys.po.SysRole;
+import com.primihub.biz.entity.sys.po.SysUr;
+import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.entity.sys.vo.SysAuthNodeVO;
 import com.primihub.biz.entity.sys.vo.SysUserListVO;
+import com.primihub.biz.repository.primarydb.sys.SysUserPrimarydbRepository;
+import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
+import com.primihub.biz.repository.primaryredis.sys.SysUserPrimaryRedisRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysRoleSecondarydbRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
+import com.primihub.biz.tool.PlatformHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.SignUtil;
 import org.springframework.beans.BeanUtils;
@@ -40,8 +40,6 @@ public class SysUserService {
     private SysUserSecondarydbRepository sysUserSecondarydbRepository;
     @Autowired
     private SysRoleSecondarydbRepository sysRoleSecondarydbRepository;
-    @Autowired
-    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
     @Autowired
     private SysCommonPrimaryRedisRepository sysCommonPrimaryRedisRepository;
     @Autowired
@@ -76,22 +74,13 @@ public class SysUserService {
         Set<Long> roleIdSet=Stream.of(sysUser.getRoleIdList().split(",")).filter(item->!item.equals(""))
                 .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
         Set<Long> authIdList=sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
-//        List<SysAuthNodeVO> roleAuthRootList=sysAuthService.getSysAuthTree(authIdList);
         List<SysAuthNodeVO> roleAuthRootList=sysAuthService.getSysAuthForBfs();
         List<SysAuthNodeVO> grantAuthRootList=roleAuthRootList.stream().filter(item->authIdList.contains(item.getAuthId()))
                 .map(item->{item.setIsGrant(1); return item;}).collect(Collectors.toList());
 
 
-        Set<Long> organIdSet=new HashSet<>();
-        organIdSet.addAll(Stream.of(sysUser.getOrganIdList().split(",")).filter(item->!item.equals(""))
-                .map(item->(Long.parseLong(item))).collect(Collectors.toSet()));
-        organIdSet.addAll(Stream.of(sysUser.getROrganIdList().split(",")).filter(item->!item.equals(""))
-                .map(item->(Long.parseLong(item))).collect(Collectors.toSet()));
-
         List<SysRole> roleList=roleIdSet.size()==0?new ArrayList<>():sysRoleSecondarydbRepository.selectSysRoleByBatchRoleId(roleIdSet);
-        List<SysOrgan> organList=organIdSet.size()==0?new ArrayList<>():sysOrganSecondarydbRepository.selectSysOrganByBatchOrganId(organIdSet);
         Map<Long,String> roleMap=roleList.stream().collect(Collectors.toMap(SysRole::getRoleId,SysRole::getRoleName,(x,y)->x));
-        Map<Long,String> organMap=organList.stream().collect(Collectors.toMap(SysOrgan::getOrganId,SysOrgan::getOrganName,(x,y)->x));
 
         SysUserListVO sysUserListVO=new SysUserListVO();
         BeanUtils.copyProperties(sysUser,sysUserListVO);
@@ -100,11 +89,8 @@ public class SysUserService {
 
         String roleIdListDesc = formIdDesc(roleMap, sysUserListVO.getRoleIdList());
         sysUserListVO.setRoleIdListDesc(roleIdListDesc);
-//        String organIdListDesc = formIdDesc(organMap, sysUserListVO.getOrganIdList());
-        String organIdListDesc = organConfiguration.getSysLocalOrganName();
-        sysUserListVO.setOrganIdListDesc(organIdListDesc);
-        String rOrganIdListDesc = formIdDesc(organMap, sysUserListVO.getROrganIdList());
-        sysUserListVO.setROrganIdListDesc(rOrganIdListDesc);
+        sysUserListVO.setOrganIdListDesc(organConfiguration.getSysLocalOrganName());
+        sysUserListVO.setOrganIdList(organConfiguration.getSysLocalOrganId());
 
         Date date=new Date();
 
@@ -114,7 +100,6 @@ public class SysUserService {
 
         Map map=new HashMap<>();
         map.put("sysUser",sysUserListVO);
-//        map.put("roleAuthRootList",roleAuthRootList);
         map.put("grantAuthRootList",grantAuthRootList);
         map.put("token",token);
         return BaseResultEntity.success(map);
@@ -145,8 +130,6 @@ public class SysUserService {
             StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(baseConfiguration.getDefaultPassword());
             sysUser.setUserPassword(SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString()));
             sysUser.setRoleIdList("");
-            sysUser.setOrganIdList("");
-            sysUser.setROrganIdList("");
             sysUser.setIsForbid(saveOrUpdateUserParam.getIsForbid());
             sysUser.setIsEditable(1);
             sysUser.setIsDel(0);
@@ -188,31 +171,13 @@ public class SysUserService {
             sysUserPrimarydbRepository.insertSysUrBatch(urList);
         }
 
-        boolean organFlag=false;
-        if(saveOrUpdateUserParam.getOrganIdList()!=null&&saveOrUpdateUserParam.getOrganIdList().length!=0){
-            organFlag=true;
-            sysUserPrimarydbRepository.deleteSysUoBatch(saveOrUpdateUserParam.getOrganIdList(),userId);
-            List<SysUo> uoList=new ArrayList<>();
-            for(Long roleId:saveOrUpdateUserParam.getRoleIdList()){
-                SysUo sysUo=new SysUo();
-                sysUo.setOrganId(roleId);
-                sysUo.setUserId(userId);
-                sysUo.setIsDel(0);
-                uoList.add(sysUo);
-            }
-            sysUserPrimarydbRepository.insertSysUoBatch(uoList);
-        }
 
         String roleIdListStr=roleFlag?Stream.of(saveOrUpdateUserParam.getRoleIdList()).map(item->(String.valueOf(item))).collect(Collectors.joining(",")):"";
-        String organIdListStr=organFlag?Stream.of(saveOrUpdateUserParam.getOrganIdList()).map(item->(String.valueOf(item))).collect(Collectors.joining(",")):"";
-        String rOrganIdListStr=organFlag?Stream.of(saveOrUpdateUserParam.getROrganIdList()).map(item->(String.valueOf(item))).collect(Collectors.joining(",")):"";
-        if(!roleIdListStr.equals("")||!organIdListStr.equals("")||!rOrganIdListStr.equals("")){
+        if(!roleIdListStr.equals("")){
             Map paramMap=new HashMap(){
                 {
                     put("userId",sysUser.getUserId());
                     put("roleIdList",roleIdListStr);
-                    put("organIdList",organIdListStr);
-                    put("rOrganIdList",rOrganIdListStr);
                 }
             };
             sysUserPrimarydbRepository.updateSysUserExplicit(paramMap);
@@ -241,8 +206,6 @@ public class SysUserService {
         Map paramMap=new HashMap(){
             {
                 put("userName",findUserPageParam.getUserName());
-                put("organId",findUserPageParam.getOrganId());
-                put("rOrganId",findUserPageParam.getROrganId());
                 put("roleId",findUserPageParam.getRoleId());
                 put("pageIndex",pageParam.getPageIndex());
                 put("pageSize",pageParam.getPageSize()+1);
@@ -255,22 +218,12 @@ public class SysUserService {
         for(SysUserListVO sysUserListVO:sysUserList){
             roleIdSet.addAll(Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!item.equals(""))
                     .map(item->(Long.parseLong(item))).collect(Collectors.toSet()));
-            organIdSet.addAll(Stream.of(sysUserListVO.getOrganIdList().split(",")).filter(item->!item.equals(""))
-                    .map(item->(Long.parseLong(item))).collect(Collectors.toSet()));
-            organIdSet.addAll(Stream.of(sysUserListVO.getROrganIdList().split(",")).filter(item->!item.equals(""))
-                    .map(item->(Long.parseLong(item))).collect(Collectors.toSet()));
         }
         List<SysRole> roleList=roleIdSet.size()==0?new ArrayList<>():sysRoleSecondarydbRepository.selectSysRoleByBatchRoleId(roleIdSet);
-        List<SysOrgan> organList=organIdSet.size()==0?new ArrayList<>():sysOrganSecondarydbRepository.selectSysOrganByBatchOrganId(organIdSet);
         Map<Long,String> roleMap=roleList.stream().collect(Collectors.toMap(SysRole::getRoleId,SysRole::getRoleName,(x,y)->x));
-        Map<Long,String> organMap=organList.stream().collect(Collectors.toMap(SysOrgan::getOrganId,SysOrgan::getOrganName,(x,y)->x));
         for(SysUserListVO sysUserListVO:sysUserList){
             String roleIdListDesc = formIdDesc(roleMap, sysUserListVO.getRoleIdList());
             sysUserListVO.setRoleIdListDesc(roleIdListDesc);
-            String organIdListDesc = formIdDesc(organMap, sysUserListVO.getOrganIdList());
-            sysUserListVO.setOrganIdListDesc(organIdListDesc);
-            String rOrganIdListDesc = formIdDesc(organMap, sysUserListVO.getROrganIdList());
-            sysUserListVO.setROrganIdListDesc(rOrganIdListDesc);
         }
         pageParam.isLoadMore(sysUserList);
         pageParam.initItemTotalCount(count);
@@ -298,15 +251,6 @@ public class SysUserService {
     }
 
     public BaseResultEntity initPassword(Long userId){
-//        StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(baseConfiguration.getDefaultPassword());
-//        String userPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
-//        Map paramMap=new HashMap(){
-//            {
-//                put("userId",userId);
-//                put("userPassword",userPassword);
-//            }
-//        };
-//        sysUserPrimarydbRepository.updateSysUserExplicit(paramMap);
         updatePassword(userId,baseConfiguration.getDefaultPassword());
         return BaseResultEntity.success();
     }

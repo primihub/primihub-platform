@@ -36,14 +36,6 @@ public class SysUserListVO {
      */
     private String organIdListDesc;
     /**
-     * 根机构id集合
-     */
-    private String rOrganIdList;
-    /**
-     * 根机构id集合描述
-     */
-    private String rOrganIdListDesc;
-    /**
      * 是否禁用
      */
     private Integer isForbid;

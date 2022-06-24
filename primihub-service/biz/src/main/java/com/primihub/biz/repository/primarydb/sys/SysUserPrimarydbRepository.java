@@ -1,6 +1,5 @@
 package com.primihub.biz.repository.primarydb.sys;
 
-import com.primihub.biz.entity.sys.po.SysUo;
 import com.primihub.biz.entity.sys.po.SysUr;
 import com.primihub.biz.entity.sys.po.SysUser;
 import org.apache.ibatis.annotations.Param;
@@ -15,7 +14,5 @@ public interface SysUserPrimarydbRepository {
     void updateSysUserExplicit(Map paramMap);
     void insertSysUrBatch(@Param("urList") List<SysUr> urList);
     void deleteSysUrBatch(/*@Param("roleArray") Long[] roleArray,*/ @Param("userId")Long userId);
-    void insertSysUoBatch(@Param("uoList") List<SysUo> uoList);
-    void deleteSysUoBatch(@Param("organArray") Long[] organArray, @Param("userId")Long userId);
     void updateSysUserDelStatus(@Param("userId")Long userId);
 }

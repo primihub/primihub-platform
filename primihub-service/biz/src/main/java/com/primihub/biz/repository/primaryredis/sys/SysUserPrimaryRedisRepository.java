@@ -28,8 +28,6 @@ public class SysUserPrimaryRedisRepository {
         map.put("roleIdListDesc",sysUserListVO.getRoleIdListDesc());
         map.put("organIdList",sysUserListVO.getOrganIdList());
         map.put("organIdListDesc",sysUserListVO.getOrganIdListDesc());
-        map.put("rOrganIdList",sysUserListVO.getROrganIdList());
-        map.put("rOrganIdListDesc",sysUserListVO.getROrganIdListDesc());
         map.put("isForbid",sysUserListVO.getIsForbid().toString());
         map.put("authIdList",sysUserListVO.getAuthIdList());
         map.put("token",token);
@@ -50,8 +48,6 @@ public class SysUserPrimaryRedisRepository {
         sysUserListVO.setUserAccount(map.get("userAccount").toString());
         sysUserListVO.setRoleIdList(map.get("roleIdList").toString());
         sysUserListVO.setRoleIdListDesc(map.get("roleIdListDesc").toString());
-        sysUserListVO.setROrganIdList(map.get("rOrganIdList").toString());
-        sysUserListVO.setROrganIdListDesc(map.get("rOrganIdListDesc").toString());
         sysUserListVO.setOrganIdList(map.get("organIdList").toString());
         sysUserListVO.setOrganIdListDesc(map.get("organIdListDesc").toString());
         sysUserListVO.setIsForbid(Integer.parseInt(map.get("isForbid").toString()));
