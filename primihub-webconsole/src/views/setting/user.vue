@@ -217,7 +217,7 @@ export default {
       this.dialogTitle = '新增用户'
       this.dialogVisible = true
       this.dialogFlag = 'add'
-      // await this.getRoles()
+      await this.getRoles()
       // await this.getOrgans()
     },
     clearForm() {
