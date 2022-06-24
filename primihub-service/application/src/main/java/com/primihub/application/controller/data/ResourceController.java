@@ -38,12 +38,8 @@ public class ResourceController {
      */
     @GetMapping("getdataresourcelist")
     public BaseResultEntity getDataResourceList(@RequestHeader("userId") Long userId,
-                                                @RequestHeader("organId")Long organId,
                                                 DataResourceReq req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        return dataResourceService.getDataResourceList(req,userId,organId,false);
+        return dataResourceService.getDataResourceList(req,userId,false);
     }
 
     /**

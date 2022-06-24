@@ -68,10 +68,9 @@ public class DataResourceService {
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
 
-    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, Long organId, boolean isPsi){
+    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, boolean isPsi){
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("userId",userId);
-        paramMap.put("organId",organId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceId",req.getResourceId());
