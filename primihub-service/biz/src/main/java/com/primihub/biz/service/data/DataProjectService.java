@@ -1,12 +1,5 @@
 package com.primihub.biz.service.data;
 
-import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.vo.*;
-import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
-import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
-import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
-import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -15,8 +8,12 @@ import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataProjectReq;
 import com.primihub.biz.entity.data.vo.*;
-import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysUser;
+import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.sys.SysUserService;
 import lombok.extern.slf4j.Slf4j;
@@ -137,23 +134,11 @@ public class DataProjectService {
                 continue;
             orgIds.add(Long.valueOf(id));
         }
-        Map<Long, SysOrgan> sysOrganMap = sysOrganService.getSysOrganMap(orgIds);
-        dataProjectVo.setOrganId(dataProject.getOrganId());
-        SysOrgan sysOrgan = sysOrganMap.get(dataProject.getOrganId());
-        dataProjectVo.setOrganName(sysOrgan==null?"":sysOrgan.getOrganName());
-        Iterator<Map.Entry<Long, SysOrgan>> iterator = sysOrganMap.entrySet().iterator();
-        while (iterator.hasNext()){
-            Map.Entry<Long, SysOrgan> next = iterator.next();
-            if (!dataProject.getOrganId().equals(next.getKey())){
-                dataProjectVo.getOrganNames().add(next.getValue().getOrganName());
-            }
-        }
         // 模型信息
         dataProjectVo.setModels(dataModelRepository.queryModelListByProjectId(projectId));
         // 资源机构
         dataResourceRecordVos.forEach(vo->{
             vo.setIsAuthed(isAuthedMap.get(vo.getResourceId()));
-            vo.setOrganName(sysOrganMap.get(vo.getOrganId())==null?"":sysOrganMap.get(vo.getOrganId()).getOrganName());
         });
         return BaseResultEntity.success(dataProjectVo);
     }
@@ -208,18 +193,12 @@ public class DataProjectService {
                 put("protectionStatus", 1);
             }});
             Map<Long, List<DataResource>> organResourceMap = dataResourceRecordVos.stream().collect(Collectors.groupingBy(DataResource::getOrganId));
-            Map<Long, SysOrgan> sysOrganMap = sysOrganService.getSysOrganMap(organResourceMap.keySet());
             Map<Long, List<DataFileField>> resourceFieldMap = fileFields.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
             Iterator<Map.Entry<Long, List<DataResource>>> iterator = organResourceMap.entrySet().iterator();
             while (iterator.hasNext()){
                 Map.Entry<Long, List<DataResource>> next = iterator.next();
                 Long key = next.getKey();
                 List<DataResource> value = next.getValue();
-                MpcProjectResource mpcProject = new MpcProjectResource(key,sysOrganMap.get(key)==null?"":sysOrganMap.get(key).getOrganName());
-                for (DataResource dataResource : value) {
-                    mpcProject.getChildren().add(new MpcProjectResource(dataResource.getResourceId(),dataResource.getResourceName(),resourceFieldMap.get(dataResource.getResourceId())));
-                }
-                list.add(mpcProject);
             }
         }
         return BaseResultEntity.success(list);

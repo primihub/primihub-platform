@@ -12,12 +12,4 @@ public class FindUserPageParam {
      * 角色id
      */
     private Long roleId;
-    /**
-     * 机构id
-     */
-    private Long organId;
-    /**
-     * 根机构id
-     */
-    private Long rOrganId;
 }

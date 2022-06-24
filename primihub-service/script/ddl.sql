@@ -477,32 +477,7 @@ INSERT INTO `sys_auth` VALUES (39, '菜单新增', 'MenuAdd', 3, 38, 24, '24,38,
 INSERT INTO `sys_auth` VALUES (40, '菜单编辑', 'MenuEdit', 3, 38, 24, '24,38,40', '', 'own', 2, 2, 1, 0, 0, '2022-04-12 18:46:43.000', '2022-04-12 19:10:12.574');
 INSERT INTO `sys_auth` VALUES (41, '菜单删除', 'MenuDelete', 3, 38, 24, '24,38,41', '', 'own', 3, 2, 1, 0, 0, '2022-04-12 18:48:22.000', '2022-04-12 19:10:12.574');
 INSERT INTO `sys_auth` VALUES (42, '匿踪查询列表', 'PrivateSearchList', 2, 12, 12, '12,42', '', 'own', 1, 1, 1, 1, 0, '2022-04-18 03:05:12.000', '2022-04-18 03:05:12.000');
--- ----------------------------
--- Table structure for sys_organ
--- ----------------------------
-DROP TABLE IF EXISTS `sys_organ`;
-CREATE TABLE `sys_organ`  (
-                              `organ_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '机构id',
-                              `organ_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构名称',
-                              `p_organ_id` bigint(20) NOT NULL COMMENT '父机构id',
-                              `r_organ_id` bigint(20) NOT NULL COMMENT '根机构id',
-                              `full_path` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '完整路径',
-                              `organ_index` int(12) NOT NULL COMMENT '顺序',
-                              `organ_depth` int(12) NOT NULL COMMENT '深度',
-                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                              PRIMARY KEY (`organ_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '机构表' ROW_FORMAT = DYNAMIC;
 
-
--- ----------------------------
--- Records of sys_organ
--- ----------------------------
-INSERT INTO `sys_organ` VALUES (1000, '北京原语科技', 0, 1000, '1000', 1, 0, 0, '2022-04-27 17:46:59.024', '2022-04-27 17:46:59.034');
-INSERT INTO `sys_organ` VALUES (1001, '北京招商银行(西红门支行)', 0, 1001, '1001', 1, 0, 0, '2022-04-27 17:47:27.399', '2022-04-27 17:47:27.408');
-INSERT INTO `sys_organ` VALUES (1002, '北京建设银行(天通苑支行)', 0, 1002, '1002', 1, 0, 0, '2022-04-27 17:47:43.366', '2022-04-27 17:47:43.374');
-INSERT INTO `sys_organ` VALUES (1003, '华建集团', 0, 1003, '1003', 1, 0, 0, '2022-04-27 17:48:49.533', '2022-04-27 17:48:55.822');
 -- ----------------------------
 -- Table structure for sys_ra
 -- ----------------------------
@@ -602,32 +577,6 @@ INSERT INTO `sys_role` VALUES (1, '超级管理员', 0, 0, '2022-03-25 17:08:52.
 INSERT INTO `sys_role` VALUES (1000, '业务权限', 1, 0, '2022-04-27 17:50:02.139', '2022-04-27 17:50:02.139');
 
 -- ----------------------------
--- Table structure for sys_uo
--- ----------------------------
-DROP TABLE IF EXISTS `sys_uo`;
-CREATE TABLE `sys_uo`  (
-                           `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
-                           `user_id` bigint(20) NOT NULL COMMENT '用户id',
-                           `organ_id` bigint(20) NOT NULL COMMENT '机构id',
-                           `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                           `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                           `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                           PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户机构关系表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_uo
--- ----------------------------
-INSERT INTO `sys_uo` VALUES (1000, 1000, 1000, 0, '2022-04-27 17:51:02.232', '2022-04-27 17:51:02.232');
-INSERT INTO `sys_uo` VALUES (1001, 1001, 1000, 0, '2022-04-27 17:51:23.012', '2022-04-27 17:51:23.012');
-INSERT INTO `sys_uo` VALUES (1002, 1002, 1000, 0, '2022-04-27 17:51:53.924', '2022-04-27 17:51:53.924');
-INSERT INTO `sys_uo` VALUES (1003, 1003, 1000, 0, '2022-04-27 17:52:23.441', '2022-04-27 17:52:23.441');
-INSERT INTO `sys_uo` VALUES (1004, 1004, 1000, 0, '2022-04-27 17:52:55.595', '2022-04-27 17:52:55.595');
-INSERT INTO `sys_uo` VALUES (1005, 1005, 1, 0, '2022-04-27 17:53:26.348', '2022-04-27 17:53:26.348');
-INSERT INTO `sys_uo` VALUES (1006, 1006, 1, 0, '2022-04-27 17:53:47.146', '2022-04-27 17:53:47.146');
-INSERT INTO `sys_uo` VALUES (1007, 1007, 1, 0, '2022-04-27 17:54:14.287', '2022-04-27 17:54:14.287');
-INSERT INTO `sys_uo` VALUES (1008, 1008, 1000, 0, '2022-04-27 17:54:37.563', '2022-04-27 17:54:37.563');
--- ----------------------------
 -- Table structure for sys_ur
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_ur`;
@@ -665,8 +614,6 @@ CREATE TABLE `sys_user`  (
                              `user_password` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '账户密码',
                              `user_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户昵称',
                              `role_id_list` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色id集合',
-                             `organ_id_List` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构id集合',
-                             `r_organ_id_list` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '根机构id集合',
                              `is_forbid` tinyint(4) NOT NULL COMMENT '是否禁用',
                              `is_editable` tinyint(4) NOT NULL COMMENT '是否可编辑',
                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
@@ -679,16 +626,8 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'admin', 'a0f34ffac5a82245e4fca2e21f358a42', 'admin', '1', '', '', 0, 1, 0, '2022-03-25 17:55:53.048', '2022-03-25 18:03:07.552');
-INSERT INTO `sys_user` VALUES (1000, 'jszhangsan', 'a0f34ffac5a82245e4fca2e21f358a42', '建设银行员工张三', '1000', '1002', '1002', 0, 1, 0, '2022-04-27 17:51:02.217', '2022-04-27 17:51:02.235');
-INSERT INTO `sys_user` VALUES (1001, 'jslisi', 'a0f34ffac5a82245e4fca2e21f358a42', '建设银行员工李四', '1000', '1002', '1002', 0, 1, 0, '2022-04-27 17:51:22.997', '2022-04-27 17:51:23.014');
-INSERT INTO `sys_user` VALUES (1002, 'zszhanghua', 'a0f34ffac5a82245e4fca2e21f358a42', '招商银行员工张华', '1000', '1001', '1001', 0, 1, 0, '2022-04-27 17:51:53.917', '2022-04-27 17:51:53.927');
-INSERT INTO `sys_user` VALUES (1003, 'zslilele', 'a0f34ffac5a82245e4fca2e21f358a42', '招商银行员工李乐乐', '1000', '1001', '1001', 0, 1, 0, '2022-04-27 17:52:23.429', '2022-04-27 17:52:23.444');
-INSERT INTO `sys_user` VALUES (1004, 'zszhudong', 'a0f34ffac5a82245e4fca2e21f358a42', '招商银行员工朱东', '1000', '1001', '1001', 0, 1, 0, '2022-04-27 17:52:55.581', '2022-04-27 17:52:55.597');
-INSERT INTO `sys_user` VALUES (1005, 'yyliweihua', 'a0f34ffac5a82245e4fca2e21f358a42', '原语李伟华', '1', '1000', '1000', 0, 1, 0, '2022-04-27 17:53:26.337', '2022-04-27 17:53:26.351');
-INSERT INTO `sys_user` VALUES (1006, 'yyzhanjingjing', 'a0f34ffac5a82245e4fca2e21f358a42', '原语占晶晶', '1', '1000', '1000', 0, 1, 0, '2022-04-27 17:53:47.138', '2022-04-27 17:53:47.148');
-INSERT INTO `sys_user` VALUES (1007, 'yyleiyannan', 'a0f34ffac5a82245e4fca2e21f358a42', '原语雷艳南', '1', '1000', '1000', 0, 1, 0, '2022-04-27 17:54:14.280', '2022-04-27 17:54:14.289');
-INSERT INTO `sys_user` VALUES (1008, 'hjwangwu', 'a0f34ffac5a82245e4fca2e21f358a42', '华建集团员工王五', '1000', '1003', '1003', 0, 1, 0, '2022-04-27 17:54:37.554', '2022-04-27 17:54:37.565');
+INSERT INTO `sys_user` VALUES (1, 'admin', 'a0f34ffac5a82245e4fca2e21f358a42', 'admin', '1', 0, 1, 0, '2022-03-25 17:55:53.048', '2022-03-25 18:03:07.552');
+
 -- ----------------------------
 -- Table structure for sys_file
 -- ----------------------------

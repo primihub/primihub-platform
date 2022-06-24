@@ -1,13 +1,6 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONObject;
-import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.*;
-import com.primihub.biz.entity.data.vo.*;
-import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
-import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
-import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
@@ -17,7 +10,10 @@ import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
-import com.primihub.biz.entity.sys.po.SysOrgan;
+import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.service.sys.SysOrganService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -90,11 +86,6 @@ public class DataModelService {
         List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelId);
         // TODO 补充modelResourceVos 机构名称 - 完成
         Set<Long> organIds = modelResourceVos.stream().map(ModelResourceVo::getOrganId).collect(Collectors.toSet());
-        Map<Long, SysOrgan> sysOrganMap = sysOrganService.getSysOrganMap(organIds);
-        modelResourceVos.forEach(vo->{
-            SysOrgan sysOrgan = sysOrganMap.get(vo.getOrganId());
-            vo.setOrganName(sysOrgan==null?"":sysOrgan.getOrganName());
-        });
         // 模型评估
         List<ModelQuotaVo> modelQuotaVos = dataModelRepository.queryModelQuotaVoList(modelId);
         Map<String,Object> map = new HashMap();
