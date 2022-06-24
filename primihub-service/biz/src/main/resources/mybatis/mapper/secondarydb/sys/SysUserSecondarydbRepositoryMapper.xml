@@ -4,7 +4,7 @@
 
     <select id="selectSysUserListByParam" resultType="com.primihub.biz.entity.sys.vo.SysUserListVO">
         select
-            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,organ_id_List organIdList,r_organ_id_list rOrganIdList,is_forbid isForbid,is_editable isEditable,c_time cTime
+            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,c_time cTime
         from sys_user
         <trim prefix="where" prefixOverrides="and">
             is_del=0
