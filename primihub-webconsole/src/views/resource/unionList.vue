@@ -217,7 +217,7 @@ export default {
     },
     async fetchData() {
       this.resourceList = []
-      const { resourceId, resourceName, tagName, resourceAuthType } = this.query
+      const { resourceId, resourceName, tagName, resourceAuthType, organId } = this.query
       const params = {
         serverAddress: this.serverAddress,
         pageNo: this.pageNo,
@@ -226,7 +226,7 @@ export default {
         resourceName,
         tagName,
         resourceAuthType,
-        organId: this.cascaderValue[1]
+        organId
       }
       console.log(params)
       const { code, result } = await getResourceList(params)

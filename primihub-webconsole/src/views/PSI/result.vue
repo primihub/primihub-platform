@@ -28,32 +28,6 @@
         </el-table>
         <pagination v-show="totalPage>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
       </div>
-      <!-- <div v-if="otherOrganName" class="organ">
-        <div class="header">
-          <p>{{ otherOrganName }}</p>
-          <search-input @click="handelSearchB" @change="handleSearchNameChangeB" />
-        </div>
-        <el-table
-          v-loading="listLoading2"
-          :data="tableDataB"
-          class="table-list"
-          :default-sort="{prop: 'resourceName', order: 'descending'}"
-        >
-          <el-table-column label="结果表名" prop="resultName" sortable width="120">
-            <template slot-scope="{row}">
-              <span class="resource-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.resultName }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="产出时间" prop="updateDate" width="100" sortable />
-          <el-table-column align="center" label="总行数" prop="fileColumns" width="100" sortable />
-          <el-table-column label="关联任务" prop="taskIdName" sortable width="200">
-            <template slot-scope="{row}">
-              <span class="resource-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
-        <pagination v-show="totalPage2 > 1" :limit.sync="pageSize2" :page.sync="pageNo2" :total="total2" layout="total, prev, pager, next" @pagination="handlePagination2" />
-      </div> -->
     </div>
     <el-dialog
       :visible.sync="dialogVisible"
@@ -65,7 +39,6 @@
 </template>
 
 <script>
-import { getOrgans } from '@/api/organ'
 import { getOrganPsiTask, getPsiTaskDetails } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
@@ -116,7 +89,6 @@ export default {
   },
   async created() {
     this.getUserInfo()
-    this.getOrgans()
     this.listLoading = true
     getOrganPsiTask({
       organId: this.ownOrganId,
@@ -137,13 +109,6 @@ export default {
       this.ownOrganId = userInfo.organIdList
       this.ownOrganName = userInfo.organIdListDesc
       console.log('userInfo', this.userInfo)
-    },
-    async getOrgans() {
-      const res = await getOrgans()
-      if (res.code === 0) {
-        const { sysOrganList } = res.result
-        this.organList = sysOrganList
-      }
     },
     handleOrganSelect(data) {
       this.otherOrganId = data.organId
