@@ -1,65 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataProjectPrRepository">
-
-    <insert id="saveProject" useGeneratedKeys="true" keyProperty="projectId" parameterType="com.primihub.biz.entity.data.po.DataProject">
-        insert into data_project (project_name,project_desc,organ_id,organ_num,resource_num,resource_organ_ids,auth_resource_num,user_id,create_date,update_date)
-        values (#{projectName},#{projectDesc},#{organId},#{organNum},#{resourceNum},#{resourceOrganIds},#{authResourceNum},#{userId},now(),now())
+    <insert id="saveDataProject" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProject">
+        insert into data_project (project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, server_address, status, is_del, create_date, update_date)
+        values (#{projectId},#{projectName},#{projectDesc},#{createdOrganId},#{createdOrganName},#{createdUsername},#{resourceNum},#{providerOrganNames},#{serverAddress},#{status},0,now(),now())
     </insert>
-
-    <insert id="saveProjectResource" parameterType="com.primihub.biz.entity.data.po.DataProjectResource">
-        insert into data_pr (project_id,resource_id,is_authed,create_date,update_date)
-        values
-        <foreach collection="projectResources" index="index" item="item" separator=",">
-            (#{item.projectId},#{item.resourceId},#{item.isAuthed},now(),now())
-        </foreach>
-    </insert>
-
-    <update id="editProject" parameterType="com.primihub.biz.entity.data.po.DataProject">
+    <update id="updateDataProject" parameterType="com.primihub.biz.entity.data.po.DataProject">
         update data_project
         <set>
-            <if test="projectName!=null">
-                project_name = #{projectName},
-            </if>
-            <if test="projectDesc!=null">
-                project_desc = #{projectDesc},
-            </if>
-            <if test="organId!=null">
-                organ_id = #{organId},
-            </if>
-            <if test="organNum!=null">
-                organ_num = #{organNum},
-            </if>
-            <if test="resourceNum!=null">
-                resource_num = #{resourceNum},
-            </if>
-            <if test="resourceOrganIds!=null">
-                resource_organ_ids = #{resourceOrganIds},
-            </if>
-            <if test="authResourceNum!=null">
-                auth_resource_num = #{authResourceNum},
-            </if>
-            <if test="userId!=null">
-                user_id = #{userId},
-            </if>
+            <if test="projectName!=null">project_name = #{projectName},</if>
+            <if test="projectDesc!=null">project_desc = #{projectDesc},</if>
+            <if test="createdOrganId!=null">created_organ_id = #{createdOrganId},</if>
+            <if test="createdOrganName!=null">created_organ_name = #{createdOrganName},</if>
+            <if test="createdUsername!=null">created_username = #{createdUsername},</if>
+            <if test="resourceNum!=null">resource_num = #{resourceNum},</if>
+            <if test="providerOrganNames!=null">provider_organ_names = #{providerOrganNames},</if>
+            <if test="serverAddress!=null">server_address = #{serverAddress},</if>
             update_date = now()
         </set>
-        where project_id = #{projectId}
+        where id = #{id}
     </update>
-
-    <update id="updateProjectResourceStatus">
-        update data_pr
-         set
-            is_authed = #{status},
+    <insert id="saveDataProjcetOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
+        insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date)
+        values (#{poId},#{projectId},#{organId},#{initiateOrganId},#{participationIdentity},#{auditStatus},#{auditOpinion},#{secretkeyId},#{serverAddress},0,now(),now())
+    </insert>
+    <update id="updateDataProjcetOrgan" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
+        update data_project_organ
+        <set>
+            <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
+            <if test="auditOpinion!=null">audit_opinion = #{auditOpinion},</if>
+            <if test="secretkeyId!=null">secretkey_id = #{secretkeyId},</if>
+            <if test="serverAddress!=null">server_address = #{serverAddress},</if>
             update_date = now()
-        where project_id = #{projectId} and resource_id = #{resourceId}
+        </set>
+        where id = #{id}
     </update>
-    <update id="updateProjectAuthNum">
-        update data_project set auth_resource_num = auth_resource_num + 1 where project_id = #{projectId}
+    <insert id="saveDataProjectResource" parameterType="com.primihub.biz.entity.data.po.DataProjectResource">
+        insert into data_project_resource (pr_id, project_id, initiate_organ_id, organ_id, participation_identity, resource_id, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date)
+        values (#{prId},#{projectId},#{initiateOrganId},#{organId},#{participationIdentity},#{resourceId},#{auditStatus},#{auditOpinion},#{secretkeyId},#{serverAddress},0,now(),now())
+    </insert>
+    <update id="updateDataProjectResource" parameterType="com.primihub.biz.entity.data.po.DataProjectResource">
+        update data_project_resource
+        <set>
+            <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
+            <if test="auditOpinion!=null">audit_opinion = #{auditOpinion},</if>
+            <if test="secretkeyId!=null">secretkey_id = #{secretkeyId},</if>
+            <if test="serverAddress!=null">server_address = #{serverAddress},</if>
+            update_date = now()
+        </set>
+        where id = #{id}
     </update>
 
-    <delete id="delDataProject">
-        delete from data_project where project_id = #{projectId}
-    </delete>
+    <sql id="DataProjectBaseColumnList">
+        id, project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, server_address, status, is_del, create_date, update_date
+    </sql>
+
+
+    <sql id="DataProjcetOrganBaseColumnList">
+        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date
+    </sql>
+
+    <sql id="DataProjectResourceBaseColumnList">
+        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, secretkey_id, server_address, create_date, update_date
+    </sql>
 
 </mapper>

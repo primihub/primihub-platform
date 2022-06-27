@@ -149,40 +149,66 @@ CREATE TABLE `data_mr`  (
                             PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '模型资源表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for data_pr
--- ----------------------------
-DROP TABLE IF EXISTS `data_pr`;
-CREATE TABLE `data_pr`  (
-                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                            `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                            `is_authed` int(2) DEFAULT NULL COMMENT '是否授权',
-                            `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                            PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目资源关系表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for data_project
--- ----------------------------
 DROP TABLE IF EXISTS `data_project`;
-CREATE TABLE `data_project`  (
-                                 `project_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '项目id',
-                                 `project_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '项目名称',
-                                 `project_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '项目描述',
-                                 `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                 `organ_num` int(8) DEFAULT NULL COMMENT '机构数',
-                                 `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
-                                 `resource_organ_ids` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '机构id数组',
-                                 `auth_resource_num` int(8) DEFAULT NULL COMMENT '已授权资源数',
-                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`project_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目表' ROW_FORMAT = Dynamic;
+CREATE TABLE `data_project` (
+                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                                `project_id` varchar(141) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目ID 机构后12位+UUID',
+                                `project_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目名称',
+                                `project_desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目描述',
+                                `created_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构id',
+                                `created_organ_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构名称',
+                                `created_username` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建者名称',
+                                `resource_num` int DEFAULT '0' COMMENT '资源数',
+                                `provider_organ_names` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '协作方机构名称 保存三个',
+                                `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                `status` tinyint DEFAULT '0' COMMENT '项目状态 0审核中 1可用 2关闭',
+                                `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                PRIMARY KEY (`id`) USING BTREE,
+                                UNIQUE INDEX `project_id_ix`(`project_id`) USING BTREE,
+                                INDEX `created_organ_id_ix`(`created_organ_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci  COMMENT='项目表' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `data_project_organ`;
+CREATE TABLE `data_project_organ` (
+                                      `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                      `po_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目机构关联ID UUID',
+                                      `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目ID',
+                                      `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
+                                      `initiate_organ_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
+                                      `participation_identity` tinyint DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                      `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                      `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
+                                      `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
+                                      `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                      `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                      PRIMARY KEY (`id`) USING BTREE,
+                                      INDEX `project_id_ix`(`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT='项目资源授权审核表' ROW_FORMAT = Dynamic;
+
+
+DROP TABLE IF EXISTS `data_project_resource`;
+CREATE TABLE `data_project_resource` (
+                                         `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                         `pr_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目资源ID  UUID',
+                                         `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目id',
+                                         `initiate_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
+                                         `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
+                                         `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                         `is_del` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+                                         `resource_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '0' COMMENT '资源ID',
+                                         `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                         `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
+                                         `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
+                                         `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                         PRIMARY KEY (`id`) USING BTREE,
+                                         INDEX `project_id_ix`(`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT='项目资源关系表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for data_psi
@@ -284,23 +310,6 @@ CREATE TABLE `data_resource`  (
                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                                   PRIMARY KEY (`resource_id`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资源表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for data_resource_auth_record
--- ----------------------------
-DROP TABLE IF EXISTS `data_resource_auth_record`;
-CREATE TABLE `data_resource_auth_record`  (
-                                              `record_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                                              `record_status` int(2) DEFAULT NULL COMMENT '审核状态',
-                                              `user_id` bigint(20) DEFAULT NULL COMMENT '审核人员id',
-                                              `user_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '审核人姓名',
-                                              `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                                              `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                              PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目资源授权审核表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for data_resource_tag

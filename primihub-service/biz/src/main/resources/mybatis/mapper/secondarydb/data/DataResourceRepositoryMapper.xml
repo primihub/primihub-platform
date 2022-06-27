@@ -177,7 +177,7 @@
         <if test="status!=null">and drar.record_status = #{status}</if>
     </select>
 
-    <select id="queryDataResourceAuthRecordById"
+    <!--<select id="queryDataResourceAuthRecordById"
             resultType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
         SELECT
             record_id AS recordId,
@@ -191,7 +191,7 @@
             data_resource_auth_record
         WHERE
             record_id = #{recordId}
-    </select>
+    </select>-->
     <select id="queryResourceProjectRelationCount" resultType="java.lang.Integer">
         select count(id) from data_pr where resource_id = #{resourceId}
     </select>

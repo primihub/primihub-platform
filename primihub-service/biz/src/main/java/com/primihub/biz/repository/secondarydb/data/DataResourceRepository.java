@@ -40,7 +40,7 @@ public interface DataResourceRepository {
 
     List<ResourceTagListVo> queryDataResourceListTags(@Param("resourceIds") List<Long> resourceIds);
 
-    DataResourceAuthRecord queryDataResourceAuthRecordById(Long recordId);
+//    DataResourceAuthRecord queryDataResourceAuthRecordById(Long recordId);
 
     Integer queryResourceProjectRelationCount(Long resourceId);
 

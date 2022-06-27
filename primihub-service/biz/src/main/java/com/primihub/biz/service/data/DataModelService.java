@@ -47,33 +47,34 @@ public class DataModelService {
     public BaseResultEntity saveDataModel(Long userId, Long organId, DataModelReq req) {
         DataModel dataModel = DataModelConvert.dataModelReqConvertPo(req, userId, organId);
         BaseResultEntity baseResultEntity = modelProjectResourceAuthed(dataModel, req.getProjectId());
-        if (baseResultEntity.getCode()!=0){
-            baseResultEntity.setResult(null);
-            return baseResultEntity;
-        }
-//        initialSampleDataModel(dataModel);
-        dataModelPrRepository.saveDataModel(dataModel);
-        List<DataProjectResource> dataProjectResources = (List<DataProjectResource>)baseResultEntity.getResult();
-        // 资源关联信息处理
-        List<DataModelResource> dmrList = new ArrayList<>();
-        for (DataProjectResource dpr : dataProjectResources) {
-            DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId(), dpr.getResourceId());
-            // TODO 模型详情模拟数据-后续删除 liwiehua
-            dataModelResource.setAlignmentNum(getrandom(1,10000));
-            dataModelResource.setPrimitiveParamNum(getrandom(1,100));
-            dataModelResource.setModelParamNum(getrandom(1,100));
-            dmrList.add(dataModelResource);
-//            dmrList.add(new DataModelResource(dataModel.getModelId(),dpr.getResourceId()));
-        }
-        dataModelPrRepository.saveDataModelResource(dmrList);
-        // TODO 模型详情模拟数据-后续删除 liwiehua
-//        initialSampleDataModelQuota(dataModel.getModelId());
-        modelInitService.updateDataModel(dataModel);
-        Map<String,Object> map = new HashMap<>();
-        map.put("modelId",dataModel.getModelId());
-        map.put("modelName",dataModel.getModelName());
-        map.put("modelDesc",dataModel.getModelDesc());
-        return BaseResultEntity.success(map);
+        return baseResultEntity;
+//        if (baseResultEntity.getCode()!=0){
+//            baseResultEntity.setResult(null);
+//            return baseResultEntity;
+//        }
+////        initialSampleDataModel(dataModel);
+//        dataModelPrRepository.saveDataModel(dataModel);
+//        List<DataProjectResource> dataProjectResources = (List<DataProjectResource>)baseResultEntity.getResult();
+//        // 资源关联信息处理
+//        List<DataModelResource> dmrList = new ArrayList<>();
+//        for (DataProjectResource dpr : dataProjectResources) {
+//            DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId(), dpr.getResourceId());
+//            // TODO 模型详情模拟数据-后续删除 liwiehua
+//            dataModelResource.setAlignmentNum(getrandom(1,10000));
+//            dataModelResource.setPrimitiveParamNum(getrandom(1,100));
+//            dataModelResource.setModelParamNum(getrandom(1,100));
+//            dmrList.add(dataModelResource);
+////            dmrList.add(new DataModelResource(dataModel.getModelId(),dpr.getResourceId()));
+//        }
+//        dataModelPrRepository.saveDataModelResource(dmrList);
+//        // TODO 模型详情模拟数据-后续删除 liwiehua
+////        initialSampleDataModelQuota(dataModel.getModelId());
+//        modelInitService.updateDataModel(dataModel);
+//        Map<String,Object> map = new HashMap<>();
+//        map.put("modelId",dataModel.getModelId());
+//        map.put("modelName",dataModel.getModelName());
+//        map.put("modelDesc",dataModel.getModelDesc());
+//        return BaseResultEntity.success(map);
     }
 
     public BaseResultEntity getDataModel(Long modelId) {
@@ -233,80 +234,82 @@ public class DataModelService {
     }
 
     private BaseResultEntity extracteModelData(DataModel dataModel,DataModelAndComponentReq params, Map<String, Object> map){
-        if(StringUtils.isBlank(params.getModelDesc()))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"模型描述不可以为空");
-        List<DataComponentReq> modelComponents = params.getModelComponents();
-        if (modelComponents==null||modelComponents.size()==0)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件为空");
-        // 获取项目、资源、y值字段相关信息
-        Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
-        if (StringUtils.isBlank(paramValuesMap.get("modelName")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型名称");
-        dataModel.setModelName(paramValuesMap.get("modelName"));
-        if (StringUtils.isBlank(paramValuesMap.get("projectId")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少项目");
-        DataProject dataProject = dataProjectRepository.queryDataProjectById(Long.parseLong(paramValuesMap.get("projectId")));
-        if (dataProject==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到项目");
-        dataModel.setProjectId(dataProject.getProjectId());
-        //资源
-        if (StringUtils.isBlank(paramValuesMap.get("selectData")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少资源");
-        List<DataProjectResource> projectResource = dataProjectRepository.queryProjectResourceByProjectId(dataProject.getProjectId()).stream().filter(pr -> pr.getResourceId().compareTo(Long.parseLong(paramValuesMap.get("selectData"))) == 0).collect(Collectors.toList());
-        if (projectResource.size()==0){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到资源");
-        }
-//        DataProjectResource dataProjectResource = projectResource.get(0);
-        // y 值
-        if (StringUtils.isBlank(paramValuesMap.get("yField")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少Y值字段");
-        dataModel.setYValueColumn(paramValuesMap.get("yField"));
-        // 模型类型
-        if (StringUtils.isBlank(paramValuesMap.get("modelType")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型类型");
-        dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
-        BaseResultEntity baseResultEntity = modelProjectResourceAuthed(dataModel, dataProject.getProjectId());
-        if (baseResultEntity.getCode()!=0){
-            baseResultEntity.setResult(null);
-            return baseResultEntity;
-        }
-
-        map.put("dataModel",dataModel);
-        List<DataProjectResource> dataProjectResources = (List<DataProjectResource>)baseResultEntity.getResult();
-        // 资源关联信息处理
-        List<DataModelResource> dmrList = new ArrayList<>();
-        for (DataProjectResource dpr : dataProjectResources) {
-            // TODO 模型详情模拟数据-后续删除 liwiehua
-            DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId(), dpr.getResourceId());
-            dataModelResource.setAlignmentNum(getrandom(1,10000));
-            dataModelResource.setPrimitiveParamNum(getrandom(1,100));
-            dataModelResource.setModelParamNum(getrandom(1,100));
-            dmrList.add(dataModelResource);
-//            dmrList.add(new DataModelResource(dataModel.getModelId(),dpr.getResourceId()));
-        }
-        map.put("dmrList",dmrList);
-        return BaseResultEntity.success();
+        return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"模型描述不可以为空");
+//        if(StringUtils.isBlank(params.getModelDesc()))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"模型描述不可以为空");
+//        List<DataComponentReq> modelComponents = params.getModelComponents();
+//        if (modelComponents==null||modelComponents.size()==0)
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件为空");
+//        // 获取项目、资源、y值字段相关信息
+//        Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
+//        if (StringUtils.isBlank(paramValuesMap.get("modelName")))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型名称");
+//        dataModel.setModelName(paramValuesMap.get("modelName"));
+//        if (StringUtils.isBlank(paramValuesMap.get("projectId")))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少项目");
+//        DataProject dataProject = dataProjectRepository.queryDataProjectById(Long.parseLong(paramValuesMap.get("projectId")));
+//        if (dataProject==null)
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到项目");
+//        dataModel.setProjectId(dataProject.getProjectId());
+//        //资源
+//        if (StringUtils.isBlank(paramValuesMap.get("selectData")))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少资源");
+//        List<DataProjectResource> projectResource = dataProjectRepository.queryProjectResourceByProjectId(dataProject.getProjectId()).stream().filter(pr -> pr.getResourceId().compareTo(Long.parseLong(paramValuesMap.get("selectData"))) == 0).collect(Collectors.toList());
+//        if (projectResource.size()==0){
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到资源");
+//        }
+////        DataProjectResource dataProjectResource = projectResource.get(0);
+//        // y 值
+//        if (StringUtils.isBlank(paramValuesMap.get("yField")))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少Y值字段");
+//        dataModel.setYValueColumn(paramValuesMap.get("yField"));
+//        // 模型类型
+//        if (StringUtils.isBlank(paramValuesMap.get("modelType")))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型类型");
+//        dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
+//        BaseResultEntity baseResultEntity = modelProjectResourceAuthed(dataModel, dataProject.getProjectId());
+//        if (baseResultEntity.getCode()!=0){
+//            baseResultEntity.setResult(null);
+//            return baseResultEntity;
+//        }
+//
+//        map.put("dataModel",dataModel);
+//        List<DataProjectResource> dataProjectResources = (List<DataProjectResource>)baseResultEntity.getResult();
+//        // 资源关联信息处理
+//        List<DataModelResource> dmrList = new ArrayList<>();
+//        for (DataProjectResource dpr : dataProjectResources) {
+//            // TODO 模型详情模拟数据-后续删除 liwiehua
+//            DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId(), dpr.getResourceId());
+//            dataModelResource.setAlignmentNum(getrandom(1,10000));
+//            dataModelResource.setPrimitiveParamNum(getrandom(1,100));
+//            dataModelResource.setModelParamNum(getrandom(1,100));
+//            dmrList.add(dataModelResource);
+////            dmrList.add(new DataModelResource(dataModel.getModelId(),dpr.getResourceId()));
+//        }
+//        map.put("dmrList",dmrList);
+//        return BaseResultEntity.success();
     }
 
     private BaseResultEntity modelProjectResourceAuthed(DataModel dataModel,Long projectId){
-        List<DataProjectResource> dataProjectResources = dataProjectRepository.queryProjectResourceByProjectId(projectId);
-        if (dataProjectResources.size()==0){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有资源数据");
-        }
-        // 判断是否都授权了
-        boolean isAuthed = true;
-        for (DataProjectResource dpr : dataProjectResources) {
-            if(dpr.getIsAuthed()==0){
-                isAuthed = false;
-                break;
-            }
-        }
-        if (!isAuthed){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"存在未授权的资源");
-        }
-        dataModel.setResourceNum(dataProjectResources.size());
-        dataModel.dataInit();
-        return BaseResultEntity.success(dataProjectResources);
+        return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有资源数据");
+//        List<DataProjectResource> dataProjectResources = dataProjectRepository.queryProjectResourceByProjectId(projectId);
+//        if (dataProjectResources.size()==0){
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有资源数据");
+//        }
+//        // 判断是否都授权了
+//        boolean isAuthed = true;
+//        for (DataProjectResource dpr : dataProjectResources) {
+//            if(dpr.getIsAuthed()==0){
+//                isAuthed = false;
+//                break;
+//            }
+//        }
+//        if (!isAuthed){
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"存在未授权的资源");
+//        }
+//        dataModel.setResourceNum(dataProjectResources.size());
+//        dataModel.dataInit();
+//        return BaseResultEntity.success(dataProjectResources);
     }
 
 

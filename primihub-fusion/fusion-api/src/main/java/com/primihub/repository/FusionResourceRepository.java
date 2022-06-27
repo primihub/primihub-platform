@@ -17,6 +17,7 @@ public interface FusionResourceRepository {
     List<FusionResource> selectFusionResource(ResourceParam param);
 
     FusionResource selectFusionResourceByResourceId(@Param("resourceId") String resourceId);
+    List<FusionResource> selectFusionResourceByResourceIds(@Param("resourceIds") Set<String> resourceIds);
 
     List<String> selectFusionResourceTag();
 

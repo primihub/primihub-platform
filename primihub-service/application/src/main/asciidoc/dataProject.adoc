@@ -8,13 +8,61 @@ include::{snippets}/saveproject/http-request.adoc[]
 .request-headers 请求头说明
 include::{snippets}/saveproject/request-headers.adoc[]
 .request-parameters 请求参数说明
-include::{snippets}/saveproject/request-parameters.adoc[]
+include::{snippets}/saveproject/request-fields.adoc[]
 .response-fields 返回字段说明
 include::{snippets}/saveproject/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/saveproject/http-response.adoc[]
 
-=== 2.2.2 查询项目列表接口
+=== 2.2.2 项目编辑接口
+include::{snippets}/updateProject/curl-request.adoc[]
+include::{snippets}/updateProject/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/updateProject/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/updateProject/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/updateProject/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/updateProject/request-fields.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/updateProject/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/updateProject/http-response.adoc[]
+
+=== 2.2.3 项目增加发起者或协作者接口
+include::{snippets}/addProjectOrgan/curl-request.adoc[]
+include::{snippets}/addProjectOrgan/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/addProjectOrgan/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/addProjectOrgan/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/addProjectOrgan/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/addProjectOrgan/request-fields.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/addProjectOrgan/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/addProjectOrgan/http-response.adoc[]
+
+=== 2.2.4 项目增加发起者或协作者资源接口
+include::{snippets}/addProjectOrganResource/curl-request.adoc[]
+include::{snippets}/addProjectOrganResource/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/addProjectOrganResource/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/addProjectOrganResource/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/addProjectOrganResource/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/addProjectOrganResource/request-fields.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/addProjectOrganResource/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/addProjectOrganResource/http-response.adoc[]
+
+=== 2.2.5 项目列表接口
 include::{snippets}/getprojectlist/curl-request.adoc[]
 include::{snippets}/getprojectlist/httpie-request.adoc[]
 .request-body 请求体
@@ -30,68 +78,39 @@ include::{snippets}/getprojectlist/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getprojectlist/http-response.adoc[]
 
-=== 2.2.3 查询项目详情接口
-include::{snippets}/getdataproject/curl-request.adoc[]
-include::{snippets}/getdataproject/httpie-request.adoc[]
+=== 2.2.6 项目详情接口
+include::{snippets}/getProjectDetails/curl-request.adoc[]
+include::{snippets}/getProjectDetails/httpie-request.adoc[]
 .request-body 请求体
-include::{snippets}/getdataproject/request-body.adoc[]
+include::{snippets}/getProjectDetails/request-body.adoc[]
 .http-request 请求样例
-include::{snippets}/getdataproject/http-request.adoc[]
+include::{snippets}/getProjectDetails/http-request.adoc[]
 .request-headers 请求头说明
-include::{snippets}/getdataproject/request-headers.adoc[]
+include::{snippets}/getProjectDetails/request-headers.adoc[]
 .request-parameters 请求参数说明
-include::{snippets}/getdataproject/request-parameters.adoc[]
+include::{snippets}/getProjectDetails/request-parameters.adoc[]
+.request-parameters- 请求参数说明
+include::{snippets}/getProjectDetails/request-parameters.adoc[]
 .response-fields 返回字段说明
-include::{snippets}/getdataproject/response-fields.adoc[]
+include::{snippets}/getProjectDetails/response-fields.adoc[]
 .http-response 返回结果样例
-include::{snippets}/getdataproject/http-response.adoc[]
+include::{snippets}/getProjectDetails/http-response.adoc[]
 
-=== 2.2.4 删除项目接口
-include::{snippets}/deldataproject/curl-request.adoc[]
-include::{snippets}/deldataproject/httpie-request.adoc[]
+=== 2.2.7 项目审核接口
+include::{snippets}/projectApproval/curl-request.adoc[]
+include::{snippets}/projectApproval/httpie-request.adoc[]
 .request-body 请求体
-include::{snippets}/deldataproject/request-body.adoc[]
+include::{snippets}/projectApproval/request-body.adoc[]
 .http-request 请求样例
-include::{snippets}/deldataproject/http-request.adoc[]
+include::{snippets}/projectApproval/http-request.adoc[]
 .request-headers 请求头说明
-include::{snippets}/deldataproject/request-headers.adoc[]
+include::{snippets}/projectApproval/request-headers.adoc[]
 .request-parameters 请求参数说明
-include::{snippets}/deldataproject/request-parameters.adoc[]
+include::{snippets}/projectApproval/request-parameters.adoc[]
 .response-fields 返回字段说明
-include::{snippets}/deldataproject/response-fields.adoc[]
+include::{snippets}/projectApproval/response-fields.adoc[]
 .http-response 返回结果样例
-include::{snippets}/deldataproject/http-response.adoc[]
+include::{snippets}/projectApproval/http-response.adoc[]
 
 
-=== 2.2.5 v0.2 审核通过的项目列表接口
-include::{snippets}/getProjectAuthedeList/curl-request.adoc[]
-include::{snippets}/getProjectAuthedeList/httpie-request.adoc[]
-.request-body 请求体
-include::{snippets}/getProjectAuthedeList/request-body.adoc[]
-.http-request 请求样例
-include::{snippets}/getProjectAuthedeList/http-request.adoc[]
-.request-headers 请求头说明
-include::{snippets}/getProjectAuthedeList/request-headers.adoc[]
-.request-parameters 请求参数说明
-include::{snippets}/getProjectAuthedeList/request-parameters.adoc[]
-.response-fields 返回字段说明
-include::{snippets}/getProjectAuthedeList/response-fields.adoc[]
-.http-response 返回结果样例
-include::{snippets}/getProjectAuthedeList/http-response.adoc[]
-
-=== 2.2.6 v0.2 根据项目id查询资源、y字段接口
-include::{snippets}/getProjectResourceData/curl-request.adoc[]
-include::{snippets}/getProjectResourceData/httpie-request.adoc[]
-.request-body 请求体
-include::{snippets}/getProjectResourceData/request-body.adoc[]
-.http-request 请求样例
-include::{snippets}/getProjectResourceData/http-request.adoc[]
-.request-headers 请求头说明
-include::{snippets}/getProjectResourceData/request-headers.adoc[]
-.request-parameters 请求参数说明
-include::{snippets}/getProjectResourceData/request-parameters.adoc[]
-.response-fields 返回字段说明
-include::{snippets}/getProjectResourceData/response-fields.adoc[]
-.http-response 返回结果样例
-include::{snippets}/getProjectResourceData/http-response.adoc[]
 

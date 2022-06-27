@@ -2,8 +2,12 @@ package com.primihub.application.controller.data;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.req.DataProjectApprovalReq;
+import com.primihub.biz.entity.data.req.DataProjectQueryReq;
 import com.primihub.biz.entity.data.req.DataProjectReq;
 import com.primihub.biz.service.data.DataProjectService;
+import com.primihub.biz.util.crypt.DateUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,109 +18,67 @@ public class ProjectController {
     @Autowired
     private DataProjectService dataProjectService;
 
+
     /**
-     * 创建项目
+     * 创建编辑项目接口
      * @return
      */
-    @PostMapping("saveproject")
-    public BaseResultEntity saveDataProject(@RequestHeader("userId") Long userId,
-                                            @RequestHeader("organId")Long organId,
-                                            DataProjectReq req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+    @RequestMapping("saveOrUpdateProject")
+    public BaseResultEntity saveOrUpdateProject(@RequestBody DataProjectReq req,
+                                                @RequestHeader("userId") Long userId){
+        if (req.getId()==null || req.getId()==0L){
+            if (StringUtils.isBlank(req.getProjectName()))
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectName");
+            if (StringUtils.isBlank(req.getServerAddress()))
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
+            if (req.getProjectOrgans()==null||req.getProjectOrgans().isEmpty())
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectOrgans");
         }
-        if (req.getProjectName()==null || req.getProjectName().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectName");
-        }
-        if (req.getProjectDesc()==null || req.getProjectDesc().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectDesc");
-        }
-        if (req.getResources()==null||req.getResources().size()==0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resources");
-        }
-        return dataProjectService.saveDataProject(userId,organId,req);
+        return dataProjectService.saveOrUpdateProject(req,userId);
     }
 
     /**
-     * 修改项目
+     * 项目列表接口
      * @return
      */
-//    @PostMapping("/project/editproject")
-//    public BaseResultEntity editDataProject(@RequestHeader(value = "userId",defaultValue = "1") Long userId,
-//                                            @RequestHeader(value = "organId",defaultValue = "1")Long organId,
-//                                            @Validated DataProjectReq req){
-//        return dataProjectService.editDataProject(userId,organId,req);
-//    }
-
-    /**
-     * 获取项目列表
-     * @return
-     */
-    @GetMapping("getprojectlist")
-    public BaseResultEntity getDataProjectList(@RequestHeader("userId") Long userId,
-                                               @RequestHeader("organId")Long organId,
-                                               DataProjectReq req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+    @RequestMapping("getProjectList")
+    public BaseResultEntity getProjectList(DataProjectQueryReq req){
+        try {
+            if (StringUtils.isNotBlank(req.getStartDate()))
+                DateUtil.parseDate(req.getStartDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat());
+            if (StringUtils.isNotBlank(req.getEndDate()))
+                DateUtil.parseDate(req.getEndDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat());
+        }catch (Exception e){
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"开始时间或结束时间校验失败");
         }
-        return dataProjectService.getDataProjectList(userId,organId,req);
+        return dataProjectService.getProjectList(req);
     }
 
     /**
-     * 获取项目详情
+     * 项目列表接口
      * @return
      */
-    @GetMapping("getdataproject")
-    public BaseResultEntity getDataProject(Long projectId){
-        if (projectId==null||projectId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        return dataProjectService.getDataProject(projectId);
+    @RequestMapping("getProjectDetails")
+    public BaseResultEntity getProjectDetails(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.getProjectDetails(id);
     }
 
     /**
-     * 删除项目信息
+     * 项目机构、资源审核接口
      * @return
      */
-    @GetMapping("deldataproject")
-    public BaseResultEntity delDataProject(Long projectId){
-        if (projectId==null||projectId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        return dataProjectService.delDataProject(projectId);
+    @RequestMapping("approval")
+    public BaseResultEntity approval(DataProjectApprovalReq req){
+        if (req.getId()==null || req.getId() == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        if (req.getType()==null || req.getType()==0 || req.getType() >=3)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"type");
+        if (req.getAuditStatus()==null||req.getAuditStatus()==0||req.getAuditStatus()>=3)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
+        return dataProjectService.approval(req);
     }
-
-    //---------------------------------v0.2----------------------------------
-    /**
-     * 获取项目资源、y字段接口
-     * @return
-     */
-    @GetMapping("getProjectResourceData")
-    public BaseResultEntity getProjectResourceData(Long projectId){
-        if (projectId==null||projectId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        return dataProjectService.getProjectResourceData(projectId);
-    }
-    /**
-     * 获取审核通过的项目列表
-     * @return
-     */
-    @GetMapping("getProjectAuthedeList")
-    public BaseResultEntity getProjectAuthedeList(@RequestHeader("userId") Long userId,
-                                                  @RequestHeader("organId")Long organId,
-                                                  DataProjectReq req){
-        return dataProjectService.getProjectAuthedeList(req,userId,organId);
-    }
-
-    @GetMapping("getMpcProjectResourceData")
-    public BaseResultEntity getMpcProjectResourceData(Long projectId){
-        if (projectId==null||projectId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        return dataProjectService.getMpcProjectResourceData(projectId);
-    }
-
 
 
 }

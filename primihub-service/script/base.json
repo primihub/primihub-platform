@@ -1,7 +1,8 @@
 {
     "tokenValidateUriBlackList":[
         "/user/login",
-        "/common/getValidatePublicKey"
+        "/common/getValidatePublicKey",
+        "/shareData/syncProject"
     ],
     "needSignUriList":[
 

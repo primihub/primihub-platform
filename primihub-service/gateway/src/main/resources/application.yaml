@@ -63,6 +63,15 @@ spring:
             - BaseParam
             - SysAuth
             - SysLog
+        - id: share-url-proxy
+          uri: lb://platform
+          predicates:
+            - Path=/share/**
+          filters:
+            - StripPrefix=1
+            - BaseParam
+            - SysAuth
+            - SysLog
 logging:
   level:
     root: debug

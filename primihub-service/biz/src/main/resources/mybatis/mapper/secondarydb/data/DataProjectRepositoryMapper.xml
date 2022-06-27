@@ -1,57 +1,169 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.secondarydb.data.DataProjectRepository">
-    <sql id="projectColumns">
-        project_id as projectId,
-        project_name as projectName,
-        project_desc as projectDesc,
-        organ_id as organId,
-        organ_num as organNum,
-        resource_num as resourceNum,
-        resource_organ_ids as resourceOrganIds,
-        auth_resource_num as authResourceNum,
-        user_id as userId,
-        create_date as createDate
+    <resultMap id="DataProjectBaseResultMap" type="com.primihub.biz.entity.data.po.DataProject">
+        <id column="id" property="id" />
+        <result column="project_id" property="projectId" />
+        <result column="project_name" property="projectName" />
+        <result column="project_desc" property="projectDesc" />
+        <result column="created_organ_id" property="createdOrganId" />
+        <result column="created_organ_name" property="createdOrganName" />
+        <result column="created_username" property="createdUsername" />
+        <result column="resource_num" property="resourceNum" />
+        <result column="provider_organ_names" property="providerOrganNames" />
+        <result column="server_address" property="serverAddress" />
+        <result column="status" property="status" />
+        <result column="is_del" property="isDel" />
+        <result column="create_date" property="createDate" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+    <resultMap id="DataProjcetOrganBaseResultMap" type="com.primihub.biz.entity.data.po.DataProjectOrgan">
+        <id column="id" property="id" />
+        <result column="po_id" property="poId" />
+        <result column="project_id" property="projectId" />
+        <result column="organ_id" property="organId" />
+        <result column="initiate_organ_id" property="initiateOrganId" />
+        <result column="participation_identity" property="participationIdentity" />
+        <result column="audit_status" property="auditStatus" />
+        <result column="audit_opinion" property="auditOpinion" />
+        <result column="secretkey_id" property="secretkeyId" />
+        <result column="server_address" property="serverAddress" />
+        <result column="is_del" property="isDel" />
+        <result column="create_date" property="createDate" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+    <resultMap id="DataProjectResourceBaseResultMap" type="com.primihub.biz.entity.data.po.DataProjectResource">
+        <id column="id" property="id" />
+        <result column="pr_id" property="prId" />
+        <result column="project_id" property="projectId" />
+        <result column="initiate_organ_id" property="initiateOrganId" />
+        <result column="organ_id" property="organId" />
+        <result column="participation_identity" property="participationIdentity" />
+        <result column="is_del" property="isDel" />
+        <result column="resource_id" property="resourceId" />
+        <result column="audit_status" property="auditStatus" />
+        <result column="audit_opinion" property="auditOpinion" />
+        <result column="secretkey_id" property="secretkeyId" />
+        <result column="server_address" property="serverAddress" />
+        <result column="create_date" property="createDate" />
+        <result column="update_date" property="updateDate" />
+    </resultMap>
+    <sql id="DataProjectBaseColumnList">
+        id, project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, server_address, status, is_del, create_date, update_date
     </sql>
-
-
-    <select id="queryDataProject" resultType="com.primihub.biz.entity.data.po.DataProject">
+    <sql id="DataProjectOrganBaseColumnList">
+        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date
+    </sql>
+    <sql id="DataProjectResourceBaseColumnList">
+        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, secretkey_id, server_address, create_date, update_date
+    </sql>
+    <select id="selectProjectResourceByProjectId" resultMap="DataProjectResourceBaseResultMap">
         select
-        <include refid="projectColumns"></include>
+            <include refid="DataProjectResourceBaseColumnList"/>
+        from data_project_resource
+        where project_id = #{projectId}
+    </select>
+    <select id="selectProjectResourceByProjectIds" resultMap="DataProjectResourceBaseResultMap">
+        select
+        <include refid="DataProjectResourceBaseColumnList"/>
+        from data_project_resource
+        where
+        project_id in
+        <foreach collection="projectIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectDataProjectByProjectId" resultMap="DataProjectBaseResultMap">
+        select
+        <include refid="DataProjectBaseColumnList"/>
         from data_project
-        where is_del = 0 and (user_id = #{userId} or organ_id = #{organId})
-        <include refid="queryCondition"></include>
-        ORDER BY project_id desc
+        where
+        <choose>
+            <when test="id!=null">
+                id = #{id}
+            </when>
+            <otherwise>
+                project_id = #{projectId}
+            </otherwise>
+        </choose>
+
+    </select>
+    <select id="selectDataProjcetOrganByProjectId" resultMap="DataProjcetOrganBaseResultMap">
+        select
+            <include refid="DataProjectOrganBaseColumnList"/>
+        from
+            data_project_organ
+        where
+            project_id = #{projectId}
+    </select>
+    <select id="selectDataProjcetOrganByProjectIds" resultMap="DataProjcetOrganBaseResultMap">
+        select
+        <include refid="DataProjectOrganBaseColumnList"/>
+        from
+        data_project_organ
+        where
+        project_id in
+        <foreach collection="projectIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectDataProjectPage" parameterType="com.primihub.biz.entity.data.req.DataProjectQueryReq" resultMap="DataProjectBaseResultMap">
+        select
+            <include refid="DataProjectBaseColumnList"/>
+        from
+            data_project
+        where is_del = 0
+            <include refid="selectDataProjectCondition"/>
+        ORDER BY id desc
         LIMIT #{offset},#{pageSize}
     </select>
-
-    <select id="queryDataProjectCount" resultType="java.lang.Integer">
+    <select id="selectDataProjectCount" resultType="java.lang.Integer">
         select
-        count(project_id)
-        from data_project
-        where is_del = 0 and (user_id = #{userId} or organ_id = #{organId})
-        <include refid="queryCondition"></include>
+            count(id)
+        from
+            data_project
+        where is_del = 0
+        <include refid="selectDataProjectCondition"/>
     </select>
-
-    <select id="queryDataProjectById" resultType="com.primihub.biz.entity.data.po.DataProject">
+    <select id="selectDataProjcetOrganById" resultMap="DataProjcetOrganBaseResultMap">
         select
-        <include refid="projectColumns"></include>
-        from data_project
-        where is_del = 0 and project_id = #{projectId}
+        <include refid="DataProjectOrganBaseColumnList"/>
+        from
+        data_project_organ
+        where
+        id = #{id}
+    </select>
+    <select id="selectProjectResourceById" resultMap="DataProjectResourceBaseResultMap">
+        select
+        <include refid="DataProjectResourceBaseColumnList"/>
+        from data_project_resource
+        where id = #{id}
     </select>
 
-    <select id="queryProjectResourceByProjectId" resultType="com.primihub.biz.entity.data.po.DataProjectResource">
-        SELECT
-            id,project_id as projectId,resource_id AS resourceId,is_authed as isAuthed
-        from data_pr where is_del = 0 and project_id = #{projectId}
-    </select>
 
-    <sql id="queryCondition">
-        <if test="projectName!=null and projectName!=''">
-            and project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')
+    <sql id="selectDataProjectCondition">
+        <if test="queryType==1">
+            and organ_id = #{ownOrganId}
         </if>
-        <if test="isAuthed!=null and isAuthed==1">
-            and auth_resource_num = resource_num
+        <if test="queryType==2">
+            and organ_id != #{ownOrganId}
         </if>
+        <if test="projectName!=null and projectName!=''"> and project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
+        <if test="status!=null">and status = #{status}</if>
+        <if test="(organId!=null and organId!='') or (participationIdentity!=null and participationIdentity!=0)">
+            and project_id in (
+                select project_id from data_project_organ where is_del = 0
+                <if test="organId!=''">
+                    and organ_id = #{organId}
+                </if>
+                <if test="participationIdentity!=null and participationIdentity!=0">
+                    and participation_identity = #{participationIdentity}
+                </if>
+            )
+        </if>
+        <if test="startDate!=null and startDate!=''">and create_date <![CDATA[ >= ]]> #{startDate}  </if>
+        <if test="endDate!=null and endDate!=''">and create_date <![CDATA[ <= ]]> #{endDate}  </if>
     </sql>
 </mapper>

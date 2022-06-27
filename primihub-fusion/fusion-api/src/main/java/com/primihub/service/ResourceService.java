@@ -116,4 +116,13 @@ public class ResourceService {
     public String getOrganShortCode(String globalId){
         return globalId.substring(24,36);
     }
+
+    public BaseResultEntity getResourceListById(String[] resourceIdArray) {
+        List<FusionResource> fusionResources = resourceRepository.selectFusionResourceByResourceIds(Arrays.stream(resourceIdArray).collect(Collectors.toSet()));
+        if (fusionResources.size()==0)
+            return BaseResultEntity.success();
+        Set<String> organIds = fusionResources.stream().map(FusionResource::getOrganId).collect(Collectors.toSet());
+        Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
+        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()))).collect(Collectors.toList()));
+    }
 }

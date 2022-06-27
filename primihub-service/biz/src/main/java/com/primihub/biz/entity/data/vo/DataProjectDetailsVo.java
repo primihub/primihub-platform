@@ -6,9 +6,9 @@ import lombok.Data;
 import java.util.Date;
 import java.util.List;
 
-@Data
-public class DataProjectListVo {
 
+@Data
+public class DataProjectDetailsVo {
     /**
      * 本地真实ID
      */
@@ -25,41 +25,29 @@ public class DataProjectListVo {
      * 项目描述
      */
     private String projectDesc;
-
+    /**
+     * 是否创建者
+     */
+    private Boolean creator = false;
     /**
      * 创建者名称
      */
     private String userName;
-
-    /**
-     * 机构名称
-     */
-    private String createdOrganName;
-
-    /**
-     * 资源数
-     */
-    private Integer resourceNum;
-
-    private Integer modelNum = 0;
-    private Integer modelAssembleNum = 0;
-    private Integer modelRunNum = 0;
-    private Integer modelSuccessNum = 0;
-
-    /**
-     * 协作方机构名称 保存三个
-     */
-    private String providerOrganNames;
-
     /**
      * 项目状态 0审核中 1可用 2关闭
      */
     private Integer status;
     /**
+     * 中心节点地址
+     */
+    private String serverAddress;
+    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date createDate;
-
-
+    /**
+     * 机构信息
+     */
+    private List<DataProjectOrganVo> organs;
 }

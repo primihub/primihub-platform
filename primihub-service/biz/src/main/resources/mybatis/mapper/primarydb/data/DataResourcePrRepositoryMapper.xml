@@ -20,18 +20,18 @@
         values (#{tagName},now(),now())
     </insert>
 
-    <insert id="saveResourceAuthRecordList" parameterType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
+    <!--<insert id="saveResourceAuthRecordList" parameterType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
         insert into data_resource_auth_record (record_status,user_id,user_name,project_id,resource_id,create_date,update_date)
         values
         <foreach collection="list" index="index" item="item" separator=",">
             (#{item.recordStatus},#{item.userId},#{item.userName},#{item.projectId},#{item.resourceId},now(),now())
         </foreach>
-    </insert>
+    </insert>-->
 
-    <insert id="saveResourceAuthRecord" parameterType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
+    <!--<insert id="saveResourceAuthRecord" parameterType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
         insert into data_resource_auth_record (record_status,user_id,user_name,project_id,resource_id,create_date,update_date)
         values (#{recordStatus},#{userId},#{userName},#{projectId},#{resourceId},now(),now())
-    </insert>
+    </insert>-->
     <insert id="saveResourceFileFieldBatch">
         insert into data_file_field (file_id,resource_id,field_name,field_as,field_type,field_desc,`relevance`,`grouping`,protection_status,is_del,create_date,update_date)
         values

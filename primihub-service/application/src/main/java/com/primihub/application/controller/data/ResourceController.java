@@ -32,7 +32,6 @@ public class ResourceController {
     /**
      * 资源概览列表信息接口
      * @param userId    用户id
-     * @param organId   机构id
      * @param req       分页、条件信息
      * @return
      */
@@ -46,16 +45,11 @@ public class ResourceController {
      * 增加或删除资源接口
      * @param req       资源信息
      * @param userId    用户id
-     * @param organId   机构id
      * @return
      */
     @PostMapping("saveorupdateresource")
     public BaseResultEntity saveDataResource(@RequestBody DataResourceReq req,
-                                             @RequestHeader("userId") Long userId,
-                                             @RequestHeader("organId")Long organId){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
+                                             @RequestHeader("userId") Long userId){
         if (req.getResourceId()!=null&&req.getResourceId()!=0L){
             if ((req.getResourceName()==null||req.getResourceName().trim().equals(""))
                     &&(req.getResourceDesc()==null||req.getResourceDesc().trim().equals(""))
@@ -67,7 +61,7 @@ public class ResourceController {
             }
             if(!DataResourceAuthType.AUTH_TYPE_MAP.containsKey(req.getResourceAuthType()))
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"resourceAuthType");
-            return dataResourceService.editDataResource(req,userId,organId);
+            return dataResourceService.editDataResource(req,userId);
         }else {
             if (req.getResourceName()==null||req.getResourceName().trim().equals("")){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceName");
@@ -92,7 +86,7 @@ public class ResourceController {
             }
             if (req.getFieldList()==null || req.getFieldList().size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldList");
-            return dataResourceService.saveDataResource(req,userId,organId);
+            return dataResourceService.saveDataResource(req,userId);
         }
     }
 
@@ -134,25 +128,6 @@ public class ResourceController {
                                                  Integer status,
                                                  PageReq req){
         return dataResourceService.getAuthorizationList(req,userId,status);
-    }
-
-    /**
-     * 审批
-     * @param userId
-     * @param recordId
-     * @param status 1 通过 2拒绝
-     * @return
-     */
-    @PostMapping("approval")
-    public BaseResultEntity approvalAuthorization(@RequestHeader("userId") Long userId,
-                                                  Long recordId,Integer status){
-        if (recordId==null||recordId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"recordId");
-        }
-        if (status==0||status>2){
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"status");
-        }
-        return dataResourceService.approvalauthorization(recordId,userId,status);
     }
 
     @RequestMapping("resourceFilePreview")

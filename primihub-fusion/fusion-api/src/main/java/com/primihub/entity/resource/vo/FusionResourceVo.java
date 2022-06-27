@@ -69,7 +69,7 @@ public class FusionResourceVo {
     /**
      * 资源标签
      */
-    private String[] resourceTag;
+    private List<String> resourceTag;
 
     /**
      * 机构ID

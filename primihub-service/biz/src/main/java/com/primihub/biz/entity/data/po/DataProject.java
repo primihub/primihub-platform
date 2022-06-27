@@ -1,60 +1,94 @@
 package com.primihub.biz.entity.data.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
 
 /**
+ * <p>
  * 项目表
+ * </p>
+ *
+ * @author 
+ * @since 2022-06-22
  */
 @Data
 public class DataProject {
+
     /**
-     * 项目id
+     * 自增ID
      */
-    private Long projectId;
+    @JsonIgnore
+    private Long id;
+
+    /**
+     * 项目ID 机构后12位+UUID
+     */
+    private String projectId;
+
     /**
      * 项目名称
      */
     private String projectName;
+
     /**
      * 项目描述
      */
     private String projectDesc;
+
     /**
      * 机构id
      */
-    private Long organId;
+    private String createdOrganId;
+
     /**
-     * 机构数
+     * 机构名称
      */
-    private Integer organNum;
+    private String createdOrganName;
+
+    /**
+     * 创建者名称
+     */
+    private String createdUsername;
+
     /**
      * 资源数
      */
     private Integer resourceNum;
+
     /**
-     * 机构id数组 ,间隔
+     * 协作方机构名称 保存三个
      */
-    private String resourceOrganIds;
+    private String providerOrganNames;
+
     /**
-     * 已授权资源数
+     * 中心节点地址
      */
-    private Integer authResourceNum;
+    private String serverAddress;
+
     /**
-     * 用户id
+     * 项目状态 0审核中 1可用 2关闭
      */
-    private Long userId;
+    private Integer status;
+
     /**
      * 是否删除
      */
+    @JsonIgnore
     private Integer isDel;
+
     /**
      * 创建时间
      */
+    @JsonIgnore
     private Date createDate;
+
     /**
      * 修改时间
      */
+    @JsonIgnore
     private Date updateDate;
+
+
 }
