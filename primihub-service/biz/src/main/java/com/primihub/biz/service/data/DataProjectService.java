@@ -184,7 +184,7 @@ public class DataProjectService {
         Map<String, Map> organListMap = getOrganListMap(organIds, dataProject.getServerAddress());
         List<DataProjectOrganVo> organs = new ArrayList<>();
         for (DataProjectOrgan projectOrgan : dataProjectOrgans) {
-            DataProjectOrganVo dataProjectOrganVo = DataProjectConvert.DataProjectOrganConvertVo(projectOrgan, sysLocalOrganInfo.getOrganId().equals(projectOrgan.getOrganId()), sysLocalOrganInfo,organListMap.get(projectOrgan.getOrganId()));
+            DataProjectOrganVo dataProjectOrganVo = DataProjectConvert.DataProjectOrganConvertVo(projectOrgan, dataProject.getCreatedOrganId().equals(projectOrgan.getOrganId()), sysLocalOrganInfo,organListMap.get(projectOrgan.getOrganId()));
             List<DataProjectResource> projectResources = organResourceMap.get(dataProjectOrganVo.getOrganId());
             if (projectResources!=null){
                 for (DataProjectResource projectResource : projectResources) {
@@ -193,6 +193,7 @@ public class DataProjectService {
             }
             organs.add(dataProjectOrganVo);
         }
+        organs = organs.stream().sorted(Comparator.comparing(DataProjectOrganVo::getCreator,Comparator.reverseOrder())).collect(Collectors.toList());
         dataProjectDetailsVo.setOrgans(organs);
         return BaseResultEntity.success(dataProjectDetailsVo);
     }

@@ -151,7 +151,7 @@
     </select>
     <select id="selectProjectStatics" resultType="java.util.Map">
         SELECT
-            if(STRCMP(created_organ_id,'819c0832-aa27-43dc-9098-f65ad18b8564') = 0, 'own', 'other' ) AS staticsType,
+            if(STRCMP(created_organ_id,#{organId}) = 0, 'own', 'other' ) AS staticsType,
 	        count(id) as amount
         FROM
             data_project
