@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.CommonConstant;
@@ -221,6 +222,11 @@ public class DataProjectService {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"非本机构无法审核");
             if (dataProjectResource.getAuditStatus()!=0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"不可以重复审核");
+            DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganByProjectIdAndOrganId(dataProjectResource.getProjectId(), dataProjectResource.getOrganId());
+            if (dataProjectOrgan==null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"无资源机构信息");
+            if (dataProjectOrgan.getAuditStatus()!=1)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"该资源机构审核中或已拒绝,无法进行资源审核");
             dataProjectResource.setAuditStatus(req.getAuditStatus());
             dataProjectResource.setAuditOpinion(req.getAuditOpinion());
             dataProjectPrRepository.updateDataProjectResource(dataProjectResource);
@@ -278,6 +284,7 @@ public class DataProjectService {
     }
 
     public BaseResultEntity syncProject(ShareProjectVo vo) {
+        log.info(JSONObject.toJSONString(vo));
         if (StringUtils.isBlank(vo.getProjectId()))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
         DataProject project = vo.getProject();
@@ -318,5 +325,28 @@ public class DataProjectService {
             }
         }
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity getListStatistics() {
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        if (StringUtils.isBlank(sysLocalOrganId))
+            return BaseResultEntity.success();
+        List<Map<String, Object>> projectStatics = dataProjectRepository.selectProjectStatics(sysLocalOrganId);
+        if (projectStatics.size()==0)
+            return BaseResultEntity.success();
+        Map<String,Object> map = new HashMap<>();
+        Integer total = 0;
+        for (Map<String, Object> projectStatic : projectStatics) {
+            Object amount = projectStatic.get("amount");
+            if (amount != null) {
+                Integer num = Integer.valueOf(amount.toString());
+                total = total + num;
+                map.put(projectStatic.get("staticsType").toString(), num);
+            } else {
+                map.put(projectStatic.get("staticsType").toString(), 0);
+            }
+        }
+        map.put("total",total);
+        return BaseResultEntity.success(map);
     }
 }

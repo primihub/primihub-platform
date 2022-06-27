@@ -18,6 +18,11 @@ public class ProjectController {
     @Autowired
     private DataProjectService dataProjectService;
 
+    @RequestMapping("getListStatistics")
+    public BaseResultEntity getListStatistics(){
+        return dataProjectService.getListStatistics();
+    }
+
 
     /**
      * 创建编辑项目接口

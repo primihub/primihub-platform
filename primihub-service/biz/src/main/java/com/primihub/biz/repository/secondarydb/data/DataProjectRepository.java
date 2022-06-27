@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Repository
@@ -18,6 +19,7 @@ public interface DataProjectRepository {
     Integer selectDataProjectCount(DataProjectQueryReq req);
 
     DataProjectOrgan selectDataProjcetOrganById(@Param("id") Long id);
+    DataProjectOrgan selectDataProjcetOrganByProjectIdAndOrganId(@Param("projectId") String projectId,@Param("organId") String organId);
     List<DataProjectOrgan> selectDataProjcetOrganByProjectId(@Param("projectId") String projectId);
     List<DataProjectOrgan> selectDataProjcetOrganByProjectIds(@Param("projectIds") Set<String> projectIds);
 
@@ -27,5 +29,5 @@ public interface DataProjectRepository {
     List<DataProjectResource> selectProjectResourceByProjectIds(@Param("projectIds") Set<String> projectIds);
 
 
-
+    List<Map<String,Object>> selectProjectStatics(String sysLocalOrganId);
 }
