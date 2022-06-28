@@ -24,4 +24,8 @@ public class SaveOrUpdateUserParam {
      * 是否禁用
      */
     private Integer isForbid;
+    /**
+     * 密码
+     */
+    private String password;
 }

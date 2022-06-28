@@ -18,6 +18,11 @@ public class ProjectController {
     @Autowired
     private DataProjectService dataProjectService;
 
+    @RequestMapping("getListStatistics")
+    public BaseResultEntity getListStatistics(){
+        return dataProjectService.getListStatistics();
+    }
+
 
     /**
      * 创建编辑项目接口
@@ -78,6 +83,29 @@ public class ProjectController {
         if (req.getAuditStatus()==null||req.getAuditStatus()==0||req.getAuditStatus()>=3)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
         return dataProjectService.approval(req);
+    }
+
+    /**
+     * 删除项目资源
+     * @return
+     */
+    @RequestMapping("removeResource")
+    public BaseResultEntity removeResource(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.removeResource(id);
+    }
+
+    /**
+     * 关闭项目
+     * @param id
+     * @return
+     */
+    @RequestMapping("closeProject")
+    public BaseResultEntity closeProject(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.closeProject(id);
     }
 
 

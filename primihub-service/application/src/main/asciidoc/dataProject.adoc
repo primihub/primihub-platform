@@ -112,5 +112,54 @@ include::{snippets}/projectApproval/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/projectApproval/http-response.adoc[]
 
+=== 2.2.8 项目列表统计接口
+include::{snippets}/getListStatistics/curl-request.adoc[]
+include::{snippets}/getListStatistics/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getListStatistics/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getListStatistics/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/getListStatistics/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getListStatistics/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getListStatistics/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getListStatistics/http-response.adoc[]
+
+=== 2.2.9 项目关闭接口
+include::{snippets}/closeProject/curl-request.adoc[]
+include::{snippets}/closeProject/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/closeProject/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/closeProject/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/closeProject/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/closeProject/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/closeProject/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/closeProject/http-response.adoc[]
+
+=== 2.2.10 项目资源删除接口
+include::{snippets}/removeResource/curl-request.adoc[]
+include::{snippets}/removeResource/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/removeResource/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/removeResource/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/removeResource/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/removeResource/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/removeResource/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/removeResource/http-response.adoc[]
+
+
 
 

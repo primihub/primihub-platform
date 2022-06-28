@@ -28,4 +28,5 @@ public class BaseConfiguration {
     private String resultUrlDirPrefix;
     private String runModelFileUrlDirPrefix;
     private List<ModelComponent> modelComponents;
+    private String usefulToken;
 }

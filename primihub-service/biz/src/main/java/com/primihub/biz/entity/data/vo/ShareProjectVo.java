@@ -10,6 +10,15 @@ import java.util.List;
 
 @Data
 public class ShareProjectVo {
+
+    public ShareProjectVo() {
+    }
+
+    public ShareProjectVo(String projectId, String serverAddress) {
+        this.projectId = projectId;
+        this.serverAddress = serverAddress;
+    }
+
     private String projectId;
     private String serverAddress;
     private DataProject project;

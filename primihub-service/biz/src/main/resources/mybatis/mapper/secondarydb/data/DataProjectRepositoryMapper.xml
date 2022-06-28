@@ -141,14 +141,32 @@
         from data_project_resource
         where id = #{id}
     </select>
+    <select id="selectDataProjcetOrganByProjectIdAndOrganId" resultMap="DataProjcetOrganBaseResultMap">
+        select
+            <include refid="DataProjectOrganBaseColumnList"/>
+        from
+            data_project_organ
+        where
+            project_id = #{projectId} and organ_id = #{organId}
+    </select>
+    <select id="selectProjectStatics" resultType="java.util.Map">
+        SELECT
+            if(STRCMP(created_organ_id,#{organId}) = 0, 'own', 'other' ) AS staticsType,
+	        count(id) as amount
+        FROM
+            data_project
+        GROUP BY
+            created_organ_id
+
+    </select>
 
 
     <sql id="selectDataProjectCondition">
         <if test="queryType==1">
-            and organ_id = #{ownOrganId}
+            and created_organ_id = #{ownOrganId}
         </if>
         <if test="queryType==2">
-            and organ_id != #{ownOrganId}
+            and created_organ_id != #{ownOrganId}
         </if>
         <if test="projectName!=null and projectName!=''"> and project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="status!=null">and status = #{status}</if>

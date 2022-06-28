@@ -64,8 +64,7 @@ public class DataProjectResource {
     /**
      * 是否删除
      */
-    @JsonIgnore
-    private Boolean isDel;
+    private Integer isDel;
 
     /**
      * 资源ID

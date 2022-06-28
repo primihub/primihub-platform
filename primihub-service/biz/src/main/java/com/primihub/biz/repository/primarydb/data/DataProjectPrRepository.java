@@ -3,6 +3,7 @@ package com.primihub.biz.repository.primarydb.data;
 import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectResource;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -19,5 +20,7 @@ public interface DataProjectPrRepository {
     void saveDataProjectResource(DataProjectResource dataProjectResource);
 
     void updateDataProjectResource(DataProjectResource dataProjectResource);
+
+    void deleteDataProjectResource(@Param("id") Long id);
 
 }
