@@ -217,7 +217,7 @@ public class DataProjectService {
             dataProjectOrgan.setAuditOpinion(req.getAuditOpinion());
             dataProjectPrRepository.updateDataProjcetOrgan(dataProjectOrgan);
             // update Project status
-            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, req.getProjectId());
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, dataProjectOrgan.getProjectId());
             dataProject.setStatus(1);
             dataProjectPrRepository.updateDataProject(dataProject);
             shareProjectVo.setProjectId(dataProjectOrgan.getProjectId());
