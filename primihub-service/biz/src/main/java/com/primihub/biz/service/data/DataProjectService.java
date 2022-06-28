@@ -124,12 +124,16 @@ public class DataProjectService {
         shareProjectVo.setServerAddress(dataProject.getServerAddress());
         shareProjectVo.setProject(dataProject);
         shareProjectVo.setProjectId(dataProject.getProjectId());
-        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_PROJECT_DATA_TASK.getHandleType(),shareProjectVo))).build());
+        sendTask(shareProjectVo);
 //        dataTaskService.spreadProjectData(JSON.toJSONString(shareProjectVo));
         Map<String,String> map = new HashMap<>();
         map.put("id", dataProject.getId().toString());
         map.put("projectId", dataProject.getProjectId());
         return BaseResultEntity.success(map);
+    }
+
+    public void sendTask(ShareProjectVo shareProjectVo){
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_PROJECT_DATA_TASK.getHandleType(),shareProjectVo))).build());
     }
 
     public Boolean updateProjectProviderOrganName(List<DataProjectOrganReq> organList,DataProject dataProject){
@@ -212,6 +216,10 @@ public class DataProjectService {
             dataProjectOrgan.setAuditStatus(req.getAuditStatus());
             dataProjectOrgan.setAuditOpinion(req.getAuditOpinion());
             dataProjectPrRepository.updateDataProjcetOrgan(dataProjectOrgan);
+            // update Project status
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, dataProjectOrgan.getProjectId());
+            dataProject.setStatus(1);
+            dataProjectPrRepository.updateDataProject(dataProject);
             shareProjectVo.setProjectId(dataProjectOrgan.getProjectId());
             shareProjectVo.setServerAddress(dataProjectOrgan.getServerAddress());
             shareProjectVo.getProjectOrgans().add(dataProjectOrgan);
@@ -235,7 +243,7 @@ public class DataProjectService {
             shareProjectVo.setServerAddress(dataProjectResource.getServerAddress());
             shareProjectVo.getProjectResources().add(dataProjectResource);
         }
-        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_PROJECT_DATA_TASK.getHandleType(),shareProjectVo))).build());
+        sendTask(shareProjectVo);
         return BaseResultEntity.success();
     }
 
@@ -295,6 +303,8 @@ public class DataProjectService {
                 dataProjectPrRepository.saveDataProject(vo.getProject());
             }else {
                 project.setId(dataProject.getId());
+                if(dataProject.getStatus()!=null&&dataProject.getStatus()!=2)
+                    dataProject.setStatus(null);
                 dataProjectPrRepository.updateDataProject(vo.getProject());
             }
         }
@@ -318,7 +328,11 @@ public class DataProjectService {
                 DataProjectResource dataProjectResource = projectResourceMap.get(projectResource.getResourceId());
                 if (dataProjectResource!=null){
                     projectResource.setId(dataProjectResource.getId());
-                    dataProjectPrRepository.updateDataProjectResource(projectResource);
+                    if (projectResource.getIsDel()!=null&&projectResource.getIsDel()==1){
+                        dataProjectPrRepository.deleteDataProjectResource(dataProjectResource.getId());
+                    }else {
+                        dataProjectPrRepository.updateDataProjectResource(projectResource);
+                    }
                 }else {
                     projectResource.setPrId(UUID.randomUUID().toString());
                     dataProjectPrRepository.saveDataProjectResource(projectResource);
@@ -349,5 +363,37 @@ public class DataProjectService {
         }
         map.put("total",total);
         return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity removeResource(Long id) {
+        DataProjectResource dataProjectResource = dataProjectRepository.selectProjectResourceById(id);
+        if (dataProjectResource==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无资源信息");
+        }
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        if (sysLocalOrganId.equals(dataProjectResource.getInitiateOrganId())||sysLocalOrganId.equals(dataProjectResource.getOrganId())){
+            dataProjectPrRepository.deleteDataProjectResource(id);
+            ShareProjectVo vo = new ShareProjectVo(dataProjectResource.getProjectId(), dataProjectResource.getServerAddress());
+            dataProjectResource.setIsDel(1);
+            vo.getProjectResources().add(dataProjectResource);
+            sendTask(vo);
+        }else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"非创建机构和操作机构不能操作");
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity closeProject(Long id) {
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(id, null);
+        if (dataProject==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无项目信息");
+        if (dataProject.getStatus()==0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"项目已关闭,不可重复操作");
+        dataProject.setStatus(2);
+        dataProjectPrRepository.updateDataProject(dataProject);
+        ShareProjectVo vo = new ShareProjectVo(dataProject.getProjectId(), dataProject.getServerAddress());
+        vo.setProject(dataProject);
+        sendTask(vo);
+        return BaseResultEntity.success();
     }
 }

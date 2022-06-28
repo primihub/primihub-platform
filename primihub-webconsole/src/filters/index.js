@@ -75,6 +75,23 @@ const modelTypeFilter = (type) => {
   return typeMap[type]
 }
 
+const projectAuditStatusFilter = (status) => {
+  const sourceMap = {
+    0: '审核中',
+    1: '可用',
+    2: '关闭'
+  }
+  return sourceMap[status]
+}
+const resourceAuditStatusFilter = (status) => {
+  const sourceMap = {
+    0: '审核中',
+    1: '已授权',
+    2: '已拒绝'
+  }
+  return sourceMap[status]
+}
+
 export default {
   authTypeFilter,
   sortTypeFilter,
@@ -82,5 +99,7 @@ export default {
   sourceFilter,
   statusFilter,
   modelTypeFilter,
-  authStatusFilter
+  authStatusFilter,
+  projectAuditStatusFilter,
+  resourceAuditStatusFilter
 }

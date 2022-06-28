@@ -5,7 +5,7 @@
         <el-input v-model="searchForm.projectName" />
       </el-form-item>
       <el-form-item label="中心节点">
-        <el-select v-model="searchForm.serverAddress" placeholder="请选择">
+        <el-select v-model="searchForm.serverAddress" clearable placeholder="请选择" @change="handleServerAddressChange">
           <el-option
             v-for="center in sysLocalOrganInfo.fusionList"
             :key="center.serverAddress"
@@ -15,7 +15,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="参与机构">
-        <el-select v-model="searchForm.organId" placeholder="请选择">
+        <el-select v-model="searchForm.organId" placeholder="请选择" clearable @focus="handleOrganSelect">
           <el-option
             v-for="organ in organList"
             :key="organ.organId"
@@ -25,13 +25,13 @@
         </el-select>
       </el-form-item>
       <el-form-item label="参与角色">
-        <el-select v-model="searchForm.participationIdentity" placeholder="请选择">
+        <el-select v-model="searchForm.participationIdentity" placeholder="请选择" clearable>
           <el-option label="发起者" value="1" />
           <el-option label="协作者" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="项目状态">
-        <el-select v-model="searchForm.status" placeholder="请选择">
+        <el-select v-model="searchForm.status" placeholder="请选择" clearable>
           <el-option label="审核中" value="0" />
           <el-option label="可用" value="1" />
           <el-option label="关闭" value="2" />
@@ -44,15 +44,15 @@
           range-separator="至"
           start-placeholder="开始日期"
           end-placeholder="结束日期"
-          value-format="yyyy-MM-dd+HH:mm:ss"
+          value-format="yyyy-MM-dd HH:mm:ss"
         />
       </el-form-item>
       <el-button class="search-button" type="primary" @click="searchProject">查询</el-button>
     </el-form>
     <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
-      <el-menu-item index="0"><el-badge :value="total" class="select-item">全部项目</el-badge></el-menu-item>
-      <el-menu-item index="1"><el-badge :value="total" class="select-item">我发起的</el-badge></el-menu-item>
-      <el-menu-item index="2"><el-badge :value="total" class="select-item">我协作的</el-badge></el-menu-item>
+      <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item>
+      <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
+      <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item>
       <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
     </el-menu>
     <div v-loading="listLoading" class="project-list">
@@ -73,11 +73,11 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getProjectList } from '@/api/project'
+import { getProjectList, getListStatistics } from '@/api/project'
 import ProjectItem from '@/components/ProjectItem'
 import NoData from '@/components/NoData'
 import Pagination from '@/components/Pagination'
-import { getLocalOrganInfo } from '@/api/center'
+import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
 export default {
   components: { ProjectItem, NoData, Pagination },
@@ -95,27 +95,14 @@ export default {
     return {
       projectList: null,
       sysLocalOrganInfo: [],
-      organList: [
-        {
-          'organId': 'testOrganId1',
-          'organName': '数据库加的机构'
-        },
-        {
-          'organId': 'testOrganId2',
-          'organName': '快乐机构'
-        },
-        {
-          'organId': 'testOrganId3',
-          'organName': '没有权限的机构'
-        }
-      ],
+      organList: [],
       activeIndex: '0',
       listLoading: true,
       params: {
         pageNo: 1,
         pageSize: 11,
         projectName: '',
-        // serverAddress: '',
+        serverAddress: '',
         queryType: 0,
         organId: '',
         participationIdentity: '',
@@ -132,6 +119,9 @@ export default {
         createDate: []
       },
       total: 0,
+      totalNum: 0,
+      other: 0,
+      own: 0,
       pageCount: 0,
       noData: false,
       currentPage: 0,
@@ -149,8 +139,16 @@ export default {
   async created() {
     await this.getLocalOrganInfo()
     this.fetchData()
+    this.getListStatistics()
   },
   methods: {
+    getListStatistics() {
+      getListStatistics().then(({ result }) => {
+        this.totalNum = result.total
+        this.other = result.other
+        this.own = result.own
+      })
+    },
     async getLocalOrganInfo() {
       const { result = {}} = await getLocalOrganInfo()
       this.sysLocalOrganInfo = result.sysLocalOrganInfo
@@ -160,14 +158,37 @@ export default {
         name: 'ProjectCreate'
       })
     },
+    handleServerAddressChange(value) {
+      console.log(value)
+    },
+    handleOrganSelect() {
+      this.findMyGroupOrgan()
+    },
+    findMyGroupOrgan() {
+      if (this.searchForm.serverAddress === '') {
+        this.$message({
+          message: '请先选择中心节点',
+          type: 'warning'
+        })
+        return
+      }
+      findMyGroupOrgan({ serverAddress: this.searchForm.serverAddress }).then(res => {
+        this.organList = res.result.dataList.organList && res.result.dataList.organList.map((item) => {
+          return {
+            organName: item.globalName,
+            organId: item.globalId
+          }
+        })
+      })
+    },
     searchProject() {
       this.params.projectName = this.searchForm.projectName
-      // this.params.serverAddress = this.searchForm.serverAddress
+      this.params.serverAddress = this.searchForm.serverAddress
       this.params.organId = this.searchForm.organId
       this.params.participationIdentity = this.searchForm.participationIdentity
       this.params.status = this.searchForm.status
-      this.params.startDate = this.searchForm.createDate[0]
-      this.params.endDate = this.searchForm.createDate[1]
+      this.params.startDate = this.searchForm.createDate && this.searchForm.createDate[0]
+      this.params.endDate = this.searchForm.createDate && this.searchForm.createDate[1]
       this.fetchData()
       this.params.pageNo = 1
     },
@@ -189,6 +210,7 @@ export default {
       })
     },
     handleSelect(key) {
+      console.log(key)
       this.params.queryType = parseInt(key)
       this.params.projectName = ''
       this.params.organId = ''

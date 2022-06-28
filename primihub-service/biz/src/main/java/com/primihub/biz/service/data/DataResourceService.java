@@ -292,7 +292,13 @@ public class DataResourceService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity resourceFilePreview(Long fileId) {
+    public BaseResultEntity resourceFilePreview(Long fileId,String resourceId) {
+        if(StringUtils.isNotBlank(resourceId)){
+            DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+            if (dataResource==null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+            fileId = dataResource.getFileId();
+        }
         SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(fileId);
         if (sysFile==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);

@@ -1,137 +1,240 @@
 <template>
-  <el-table
-    :data="data"
-    class="table-list"
-    v-bind="$attrs"
-  >
-    <el-table-column align="center" label="字段名称" prop="fieldName" />
-    <el-table-column align="center" label="数据类型" prop="fieldType">
+  <div>
+    <el-table
+      ref="table"
+      class="table"
+      :row-key="rowKey"
+      border
+      :data="data"
+      v-bind="$attrs"
+      highlight-current-row
+      @selection-change="handleSelectionChange"
+    >
+      <el-table-column
+        v-if="multiple"
+        :reserve-selection="true"
+        :selectable="checkSelectable"
+        type="selection"
+        width="55"
+      />
+      <el-table-column
+        label="资源 / Id"
+        min-width="200"
+      >
+        <template slot-scope="{row}">
+          <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+          {{ row.resourceId }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="resourceTag"
+        label="关键词"
+      >
+        <template slot-scope="{row}">
+          <el-tag v-for="(tag,index) in row.resourceTag" :key="index" type="success" size="mini" class="tag">{{ tag }}</el-tag>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column
+      prop="resourceAuthType"
+      label="可见性"
+      align="center"
+    >
       <template slot-scope="{row}">
-        <el-select v-model="row.fieldType" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
-          <el-option
-            v-for="(item,index) in fieldTypeList"
-            :key="index"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        {{ row.resourceAuthType | authTypeFilter }}
       </template>
-    </el-table-column>
-    <el-table-column label="关联键" prop="relevance" align="center" width="60">
+    </el-table-column> -->
+      <!-- <el-table-column
+      prop="resourceType"
+      label="资源类型"
+      align="center"
+    >
       <template slot-scope="{row}">
-        <el-checkbox v-model="row.relevance" :disabled="!isEditable" @change="handleChange(row)" />
+        {{ row.resourceType | sourceFilter }}
       </template>
-    </el-table-column>
-    <el-table-column label="分组键" prop="grouping" align="center" width="60">
-      <template slot-scope="{row}">
-        <el-checkbox v-model="row.grouping" :disabled="!isEditable" @change="handleChange(row)" />
-      </template>
-    </el-table-column>
-    <el-table-column label="保护开关" prop="protectionStatus" align="center" width="80">
-      <template slot-scope="{row}">
-        <el-switch
-          v-model="row.protectionStatus"
-          :disabled="!isEditable"
-          active-color="#13ce66"
-          inactive-color="#ccc"
-          @change="handleChange(row)"
-        />
-      </template>
-    </el-table-column>
-    <el-table-column align="center" label="描述" prop="fieldDesc">
-      <template slot-scope="{row}">
-        <el-input
-          v-model="row.fieldDesc"
-          :disabled="!isEditable"
-          size="mini"
-          @change="handleChange(row)"
-        />
-      </template>
-    </el-table-column>
-  </el-table>
+    </el-table-column> -->
+      <el-table-column
+        label="数据信息"
+        min-width="200"
+      >
+        <template slot-scope="{row}">
+          特征量：{{ row.resourceRowsCount }}<br>
+          样本量：{{ row.resourceColumnCount }} <br>
+          正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
+          正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
+        </template>
+      </el-table-column>
+      <el-table-column
+        v-if="showStatus"
+        prop="auditStatus"
+        label="审核状态"
+        align="center"
+      >
+        <template slot-scope="{row}">
+          {{ row.auditStatus === 0 && thisInstitution && row.participationIdentity === 2 ? 0:!row.auditStatus && thisInstitution ? 1 : row.auditStatus ? row.auditStatus : 0 | resourceAuditStatusFilter }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="是否包含Y值"
+      >
+        <template slot-scope="{row}">
+          {{ row.resourceContainsY? '是' : '否' }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        v-if="showButtons"
+        label="操作"
+        fixed="right"
+        min-width="200"
+        align="center"
+      >
+        <template slot-scope="{row}">
+          <template v-if="thisInstitution && projectAuditStatus && row.auditStatus === 0">
+            <el-button size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
+            <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
+          </template>
+          <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
+          <el-button size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
 </template>
 
 <script>
-import { updateDataResourceField } from '@/api/resource'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'ResourceTable',
   props: {
     data: {
       type: Array,
-      default: () => {
-        return []
-      },
-      required: true
+      default: () => []
     },
-    isEditable: { // if not editable, parent component must set it false
+    rowKey: {
+      type: String,
+      default: '',
+      require: true
+    },
+    selectedData: {
+      type: Array,
+      default: () => []
+    },
+    multiple: {
+      type: Boolean,
+      default: false
+    },
+    projectAuditStatus: {
+      type: Boolean,
+      default: false
+    },
+    showStatus: {
       type: Boolean,
       default: true
     },
-    isEditPage: { // if is not edit page, don not call updateDataResourceField Api
+    showButtons: {
       type: Boolean,
-      default: false
+      default: true
+    },
+    thisInstitution: {
+      type: Boolean,
+      default: true
+    },
+    serverAddress: {
+      type: String,
+      default: '',
+      require: true
     }
   },
   data() {
     return {
-      tableLoading: false,
-      fieldTypeList: [{
-        value: 1,
-        label: 'Integer'
-      }, {
-        value: 2,
-        label: 'Long'
-      }, {
-        value: 3,
-        label: 'Double'
-      }, {
-        value: 4,
-        label: 'Enum'
-      }, {
-        value: 5,
-        label: 'String'
-      }],
-      params: []
+      currentData: this.selectedData.filter(item => item.organId === this.select)
+    }
+  },
+  watch: {
+    selectedData(val) {
+      if (val) {
+        console.log('watch', val)
+        if (this.selectedData.length > 0) {
+          this.toggleSelection(this.selectedData)
+        }
+      }
+    }
+  },
+  mounted() {
+    console.log('selectedData', this.selectedData)
+    if (this.selectedData.length > 0) {
+      this.toggleSelection(this.selectedData)
     }
   },
   methods: {
-    handleChange(row) {
-      if (this.isEditPage) {
-        this.updateDataResourceField(row)
-        this.$emit('change', this.data)
-        return
+    toggleSelection(rows) {
+      if (rows) {
+        rows.forEach(row => {
+          this.$refs.table.toggleRowSelection(row)
+        })
       } else {
-        this.$emit('change', this.data)
+        this.$refs.table.clearSelection()
       }
     },
-    updateDataResourceField(row) {
-      const { fieldId, fieldName, fieldType, fieldDesc = '', relevance, grouping, protectionStatus } = row
-      const data = {
-        fieldId,
-        fieldAs: fieldName,
-        fieldType,
-        fieldDesc,
-        relevance: relevance === true ? 1 : 0,
-        grouping: grouping === true ? 1 : 0,
-        protectionStatus: protectionStatus === true ? 1 : 0
-      }
-      updateDataResourceField(data).then(res => {
-        if (res.code === 0) {
-          this.$message({
-            message: '设置成功',
-            type: 'success'
-          })
+    handleSelectionChange(value) {
+      if (!this.multiple) return
+      this.multipleSelection = value
+      this.$emit('change', this.multipleSelection)
+    },
+    handlePreview(row) {
+      this.$emit('preview', row)
+    },
+    handleAgree(row) {
+      this.$emit('handleAgree', row)
+    },
+    handleRefused(row) {
+      this.$emit('handleRefused', row)
+    },
+    handleRemove(row) {
+      this.$confirm('删除后将不能使用此数据集, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$emit('remove', row)
+      }).catch(() => {})
+    },
+    toResourceDetailPage(id) {
+      this.$router.push({
+        name: 'UnionResourceDetail',
+        params: { id },
+        query: {
+          serverAddress: this.serverAddress
         }
       })
-    }
+    },
+    checkSelectable(row) {
+      const res = !(this.selectedData.length > 0 && this.selectedData.filter(item => item[this.rowKey] === row[this.rowKey]).length > 0)
+      return res
+    },
+    searchResource() {
+      this.pageNo = 1
+      this.$emit('search', this.resourceName)
+      this.fetchData()
+    },
+    handleSearchNameChange(searchName) {
+      this.resourceName = searchName
+    },
+    showButton(row) {
+      console.log('showButton', row)
+      if (row.auditStatus === 0) {
+        return row.auditStatus === 0
+      }
+      return true
+    },
+    ...mapActions('user', ['getInfo'])
   }
 
 }
 </script>
-
 <style lang="scss" scoped>
-::v-deep .el-table .el-table__cell{
-  padding: 5px 0;
+.table{
+  margin: 15px 0;
 }
 </style>
+

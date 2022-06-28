@@ -16,10 +16,14 @@
             <if test="resourceNum!=null">resource_num = #{resourceNum},</if>
             <if test="providerOrganNames!=null">provider_organ_names = #{providerOrganNames},</if>
             <if test="serverAddress!=null">server_address = #{serverAddress},</if>
+            <if test="status!=null">status = #{status},</if>
             update_date = now()
         </set>
         where id = #{id}
     </update>
+    <delete id="deleteDataProjectResource">
+        delete from data_project_resource where id = #{id}
+    </delete>
     <insert id="saveDataProjcetOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date)
         values (#{poId},#{projectId},#{organId},#{initiateOrganId},#{participationIdentity},#{auditStatus},#{auditOpinion},#{secretkeyId},#{serverAddress},0,now(),now())
