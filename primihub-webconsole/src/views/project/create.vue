@@ -168,14 +168,15 @@ export default {
     },
     submitForm() {
       const { projectName, projectDesc } = this.dataForm
-      const projectOrgans = this.getProjectOrgans()
+      this.getProjectOrgans()
       let params = {
         serverAddress: this.serverAddress,
         projectName,
         projectDesc,
-        projectOrgans
+        projectOrgans: this.saveParams.projectOrgans
       }
       params = JSON.stringify(params)
+      console.log('params', params)
       this.$refs.dataForm.validate((valid) => {
         if (valid) {
           saveProject(params).then(res => {
@@ -194,22 +195,16 @@ export default {
       })
     },
     getProjectOrgans() {
-      const projectOrgans = []
       for (const key in this.resourceList) {
         const item = this.resourceList[key]
-        console.log('key', key)
-        projectOrgans.push({
-          organId: key,
-          participationIdentity: 2,
-          resourceIds: item.map(r => r.resourceId)
-        })
+        if (this.resourceList[key].length > 0) {
+          const current = this.saveParams.projectOrgans.filter(item => item.organId === key)
+          console.log(current)
+          // current[0].resourceIds = []
+          current[0].resourceIds = item.map(r => r.resourceId)
+        }
       }
-      const initiateOrgan = projectOrgans.filter(item => item.organId === this.dataForm.initiateOrganId)
-      if (initiateOrgan.length > 0) {
-        initiateOrgan[0].participationIdentity = 1
-      }
-      console.log(projectOrgans)
-      return projectOrgans
+      console.log(this.saveParams.projectOrgans)
     },
     handleRemove({ organId, resourceId }) {
       console.log(this.resourceList[organId])
@@ -252,20 +247,13 @@ export default {
       console.log(data)
       this.selectedData = data
       this.dataForm.providerOrganIds = data
-      // data.map(item => {
-      //   this.saveParams.projectOrgans.push({
-      //     organId: item.globalId,
-      //     participationIdentity: 2
-      //   })
-      // })
-
-      // this.saveParams.projectOrgans = data.map(item => {
-      //   return {
-      //     organId: item.globalId,
-      //     participationIdentity: 2
-      //   }
-      // })
-      // console.log(this.selectedData)
+      data.map(item => {
+        this.saveParams.projectOrgans.push({
+          organId: item.globalId,
+          participationIdentity: 2
+        })
+      })
+      console.log('projectOrgans', this.saveParams.projectOrgans)
       this.providerOrganDialogVisible = false
     },
     async findMyGroupOrgan() {

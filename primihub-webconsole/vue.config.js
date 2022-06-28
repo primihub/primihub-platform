@@ -40,8 +40,8 @@ module.exports = {
     proxy: {
       '/dev-api': {
         // target: 'http://118.190.39.100:27933',
-        // target: 'http://test.primihub.com/prod-api/',
-        target: 'http://test1.primihub.com/prod-api/',
+        target: 'http://test.primihub.com/prod-api/',
+        // target: 'http://test1.primihub.com/prod-api/',
         // target: 'http://172.31.31.250:8080',
         // target: 'http://172.31.31.61:8080',
         ws: true,

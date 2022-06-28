@@ -39,10 +39,10 @@
             <span class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
             <span class="identity">{{ item.auditStatus === 0? '&lt;审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span>
           </p>
-          <el-button type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
-          <p>{{ item.auditOpinion }}</p>
+          <el-button v-if="item.auditStatus === 1" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
+          <p v-if="!item.auditOpinion === ''" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
           <ResourceTable
-            v-if="item.resources && item.resources.length >0"
+            v-if="item.auditStatus === 1 && item.resources && item.resources.length >0"
             :project-audit-status="projectAuditStatus"
             :this-institution="thisInstitution"
             :server-address="serverAddress"
@@ -56,6 +56,11 @@
           />
         </el-tab-pane>
       </el-tabs>
+    </section>
+    <section class="organs">
+      <h3>模型列表</h3>
+      <el-button type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
+      <Model />
     </section>
     <!-- add resource dialog -->
     <ProjectResourceDialog ref="dialogRef" top="10px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
@@ -83,13 +88,15 @@ import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import ProviderOrganDialog from '@/components/ProviderOrganDialog'
 import ResourceTable from '@/components/ResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
+import Model from '@/components/Model'
 
 export default {
   components: {
     ProjectResourceDialog,
     ProviderOrganDialog,
     ResourceTable,
-    ResourcePreviewTable
+    ResourcePreviewTable,
+    Model
   },
   data() {
     return {
@@ -318,7 +325,7 @@ export default {
         this.saveProject()
       }
       this.selectedData = data
-      console.log('handleDialogSubmit', this.saveParams.projectOrgans)
+      console.log('handleDialogSubmit', this.resourceList)
       this.resourceList[this.selectedOrganId] = data.filter(item => item.organId === this.selectedOrganId)
       this.dialogVisible = false
     },
@@ -446,6 +453,12 @@ export default {
       console.log('result', result)
       return result
     },
+    toModelCreate() {
+      this.$router.push({
+        path: '/model/create',
+        query: { projectId: this.list.id }
+      })
+    },
     ...mapActions('user', ['getInfo'])
   }
 }
@@ -478,6 +491,9 @@ section{
   font-size: 12px;
 }
 .identity{
+  color: $dangerColor;
+}
+.danger{
   color: $dangerColor;
 }
 .organs{

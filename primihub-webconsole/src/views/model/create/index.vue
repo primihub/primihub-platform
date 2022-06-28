@@ -26,7 +26,8 @@ import DagNodeComponent from './components/DagNode.vue'
 // import data from './graph/data'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectAuthedeList, getProjectResourceData, runTaskModel, getTaskModelComponent } from '@/api/model'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectAuthedeList, runTaskModel, getTaskModelComponent } from '@/api/model'
+import { getProjectDetail } from '@/api/project'
 
 const lineAttr = { // 线样式
   'line': {
@@ -378,7 +379,8 @@ export default {
           //   this.getProjectResourceData()
           // }
           this.projectId = Number(this.$route.query.projectId) || 0
-          this.getProjectResourceData()
+          console.log('projectId', this.$route.query.projectId)
+          this.getProjectDetail()
         }
         // if (result && result.componentValues[0]) {
         //   this.nodeData.componentTypes[0].inputValue = result.componentValues[0].val
@@ -475,10 +477,11 @@ export default {
         this.rightInfoLoading = false
       })
     },
-    getProjectResourceData() {
-      getProjectResourceData({ projectId: this.projectId }).then(res => {
+    getProjectDetail() {
+      console.log(this.projectId)
+      getProjectDetail({ id: 8 }).then(res => {
         this.projectName = res.result.projectName
-        this.resourceList = res.result.resource
+        // this.resourceList = res.result.resource
         const index = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'projectName')
         const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
         this.nodeData.componentTypes[index].inputValue = this.projectName
@@ -520,7 +523,8 @@ export default {
       const yIndex = componentTypes.findIndex(item => item.typeCode === 'yField')
       if (typeCode === 'projectName') {
         this.projectId = data.inputValue
-        this.getProjectResourceData()
+        console.log('111', this.projectId)
+        this.getProjectDetail()
         // 切换项目时初始化资源和y值字段
         this.nodeData.componentTypes[dataIndex].inputValue = ''
         this.nodeData.componentTypes[dataIndex].inputValues = []

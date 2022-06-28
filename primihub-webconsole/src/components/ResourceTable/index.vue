@@ -70,7 +70,7 @@
         align="center"
       >
         <template slot-scope="{row}">
-          {{ row.auditStatus === 0 && thisInstitution && row.participationIdentity === 2 ? 0:!row.auditStatus && thisInstitution ? 1 : row.auditStatus ? row.auditStatus : 0 | resourceAuditStatusFilter }}
+          {{ row.participationIdentity === 1 ? 1:row.auditStatus === 0 && thisInstitution && row.participationIdentity === 2 ? 0:!row.auditStatus && thisInstitution ? 1 : row.auditStatus ? row.auditStatus : 0 | resourceAuditStatusFilter }}
         </template>
       </el-table-column>
       <el-table-column
@@ -88,7 +88,7 @@
         align="center"
       >
         <template slot-scope="{row}">
-          <template v-if="thisInstitution && projectAuditStatus && row.auditStatus === 0">
+          <template v-if="thisInstitution && row.participationIdentity === 2 && projectAuditStatus && row.auditStatus === 0">
             <el-button size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
             <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
           </template>
