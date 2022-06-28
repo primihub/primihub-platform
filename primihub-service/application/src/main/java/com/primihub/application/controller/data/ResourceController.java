@@ -131,11 +131,14 @@ public class ResourceController {
     }
 
     @RequestMapping("resourceFilePreview")
-    public BaseResultEntity resourceFilePreview(Long fileId){
-        if(fileId==null||fileId==0L)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
-        return dataResourceService.resourceFilePreview(fileId);
+    public BaseResultEntity resourceFilePreview(Long fileId,String resourceId){
+        if (StringUtils.isBlank(resourceId)){
+            if(fileId==null||fileId==0L)
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId or resourceId");
+        }
+        return dataResourceService.resourceFilePreview(fileId,resourceId);
     }
+
 
     /**
      * 获取资源文件字段

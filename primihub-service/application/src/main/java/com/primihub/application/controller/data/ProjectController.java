@@ -85,5 +85,28 @@ public class ProjectController {
         return dataProjectService.approval(req);
     }
 
+    /**
+     * 删除项目资源
+     * @return
+     */
+    @RequestMapping("removeResource")
+    public BaseResultEntity removeResource(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.removeResource(id);
+    }
+
+    /**
+     * 关闭项目
+     * @param id
+     * @return
+     */
+    @RequestMapping("closeProject")
+    public BaseResultEntity closeProject(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.closeProject(id);
+    }
+
 
 }

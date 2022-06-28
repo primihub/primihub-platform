@@ -308,8 +308,12 @@ public class DataTaskService {
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareProjectVo, headers);
                         log.info(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
-                        BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                        log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                        try {
+                            BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                        }catch (Exception e){
+                            log.info("projectId:{} - OrganId:{} gatewayAddress api Exception:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),e.getMessage());
+                        }
                         log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                     }
                 }
