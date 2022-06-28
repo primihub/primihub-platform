@@ -134,10 +134,10 @@ public class DataModelService {
 
 
 
-    public BaseResultEntity saveModelAndComponent(Long userId, Long organId, DataModelAndComponentReq params) {
+    public BaseResultEntity saveModelAndComponent(Long userId, DataModelAndComponentReq params) {
         if (modelIsRunTask(params.getModelId()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL, "模型运行任务中");
-        DataModel dataModel = DataModelConvert.dataModelReqConvertPo(params, userId, organId);
+        DataModel dataModel = DataModelConvert.dataModelReqConvertPo(params, userId);
         Map<String, Object> map = new HashMap<>();
         try {
             if (params.getIsDraft() == 0) {

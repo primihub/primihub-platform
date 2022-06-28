@@ -33,7 +33,7 @@ public class DataModelConvert {
         return po;
     }
 
-    public static DataModel dataModelReqConvertPo(DataModelAndComponentReq req, Long userId, Long organId){
+    public static DataModel dataModelReqConvertPo(DataModelAndComponentReq req, Long userId){
         DataModel po = new DataModel();
         po.setModelId(StringUtils.isNotBlank(req.getModelId())?Long.parseLong(req.getModelId()):null);
 //        po.setModelName(req.getModelName());
@@ -41,7 +41,6 @@ public class DataModelConvert {
         po.setIsDraft(req.getIsDraft());
         po.setTrainType(req.getTrainType());
         po.setUserId(userId);
-        po.setOrganId(organId);
         po.setResourceNum(0);
         return po;
     }

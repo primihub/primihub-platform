@@ -104,15 +104,11 @@ public class ModelController {
      */
     @PostMapping("saveModelAndComponent")
     public BaseResultEntity saveModelAndComponent(@RequestHeader("userId") Long userId,
-                                                  @RequestHeader("organId")Long organId,
                                                   @RequestBody BaseJsonParam<DataModelAndComponentReq> req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
         if (userId<0){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
         }
-        return dataModelService.saveModelAndComponent(userId,organId,req.getParam());
+        return dataModelService.saveModelAndComponent(userId,req.getParam());
     }
 
     /***
