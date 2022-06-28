@@ -96,7 +96,7 @@
         >
           <el-col v-if="fieldList.length > 0" :span="12">
             <h3>字段信息</h3>
-            <ResourceTable
+            <EditResourceTable
               border
               height="500"
               :data="fieldList"
@@ -125,7 +125,7 @@
 
 <script>
 import Upload from '@/components/Upload'
-import ResourceTable from '@/components/ResourceTable'
+import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
 import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
@@ -133,7 +133,7 @@ import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 export default {
   components: {
     Upload,
-    ResourceTable,
+    EditResourceTable,
     ResourcePreviewTable
   },
   filters: {

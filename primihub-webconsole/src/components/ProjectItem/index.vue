@@ -1,9 +1,7 @@
 <template>
   <div class="item" @click="toProjectDetail">
     <div class="header">
-      <el-tag v-if="project.status===0">审核中</el-tag>
-      <el-tag v-else-if="project.status===1" type="success">可用</el-tag>
-      <el-tag v-else-if="project.status===2" type="danger">关闭</el-tag>
+      <el-tag :type="statusStyle(project.status)">{{ project.status | projectAuditStatusFilter }}</el-tag>
     </div>
     <div class="header"><span class="header-title">{{ project.projectName }}</span></div>
     <div class="main">
@@ -49,11 +47,14 @@ export default {
     toProjectDetail() {
       this.$router.push({
         name: 'ProjectDetail',
-        params: { id: this.project.projectId }
+        params: { id: this.project.id }
       })
     },
     toggleClick() {
       this.$emit('toggleClick')
+    },
+    statusStyle(status) {
+      return status === 0 ? 'primary' : status === 1 ? 'success' : status === 2 ? 'danger' : 'primary'
     }
   }
 }

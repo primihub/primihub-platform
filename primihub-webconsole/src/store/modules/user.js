@@ -11,15 +11,11 @@ const getDefaultState = () => {
     ctime: '', // 2022-03-25 09:55:53
     isEditable: 1,
     isForbid: 0,
-    organIdList: '',
-    organIdListDesc: '',
-    roleIdList: '',
-    roleIdListDesc: '',
-    rorganIdList: '',
-    rorganIdListDesc: '',
     userAccount: '',
     userId: null,
     userName: '',
+    userOrganId: '',
+    userOrganName: '',
     token: getToken(),
     avatar: '',
     organChange: false
@@ -32,6 +28,15 @@ const mutations = {
   SET_USER_INFO: (state, userInfo) => {
     Object.assign(state, userInfo)
     localStorage.setItem(USER_INFO, JSON.stringify(userInfo))
+  },
+  SET_USER_ORGAN_ID: (state, organId) => {
+    state.userOrganId = organId
+  },
+  SET_USER_NAME: (state, name) => {
+    state.userName = name
+  },
+  SET_USER_ORGAN_NAME: (state, name) => {
+    state.userOrganName = name
   },
   SET_PERMISSION(state, list) {
     localStorage.setItem(PER_KEY, JSON.stringify(list))
@@ -76,6 +81,9 @@ const actions = {
     return new Promise((resolve, reject) => {
       const userData = JSON.parse(localStorage.getItem(USER_INFO))
       commit('SET_USER_INFO', userData)
+      commit('SET_USER_NAME', userData.userName)
+      commit('SET_USER_ORGAN_ID', userData.organIdList)
+      commit('SET_USER_ORGAN_NAME', userData.organIdListDesc)
       resolve(userData)
     })
   },

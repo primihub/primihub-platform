@@ -10,8 +10,8 @@
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
           <img src="/images/avatar.png" class="user-avatar">
           <div class="user-info">
-            <p>{{ organName }}</p>
-            <p>{{ userInfo.userName }}</p>
+            <p>{{ userOrganName }}</p>
+            <p>{{ userName }}</p>
           </div>
           <i class="el-icon-arrow-down el-icon--right" />
         </div>
@@ -32,7 +32,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import { mapGetters, mapState, mapActions } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 export default {
@@ -50,18 +50,21 @@ export default {
     ...mapState('user', ['organChange']),
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'avatar',
+      'userOrganId',
+      'userOrganName',
+      'userName'
     ])
   },
   watch: {
     organChange(newVal) {
       if (newVal) {
-        this.getUserInfo()
+        this.getInfo()
       }
     }
   },
   created() {
-    this.getUserInfo()
+    this.getInfo()
   },
   methods: {
     toggleSideBar() {
@@ -72,10 +75,11 @@ export default {
       // location.reload()
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    getUserInfo() {
-      this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      this.organName = this.userInfo.organIdListDesc
-    }
+    ...mapActions('user', ['getInfo'])
+    // getUserInfo() {
+    //   this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    //   this.organName = this.userInfo.organIdListDesc
+    // }
   }
 }
 </script>
