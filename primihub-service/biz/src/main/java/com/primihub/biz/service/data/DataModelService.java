@@ -102,12 +102,12 @@ public class DataModelService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getDataModelList(Long userId, Long organId, PageReq req, String projectName, String modelName, Integer taskStatus) {
-        List<ModelListVo> modelListVos = dataModelRepository.queryModelList(userId, organId, req.getPageSize(), req.getOffset(),projectName,modelName,taskStatus);
+    public BaseResultEntity getDataModelList(PageReq req, String projectName, String modelName, Integer taskStatus) {
+        List<ModelListVo> modelListVos = dataModelRepository.queryModelList(req.getPageSize(), req.getOffset(),projectName,modelName,taskStatus);
         if (modelListVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
-        Integer tolal = dataModelRepository.queryModelListCount(userId, organId,projectName,modelName,taskStatus);
+        Integer tolal = dataModelRepository.queryModelListCount(projectName,modelName,taskStatus);
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelListVos));
     }
 

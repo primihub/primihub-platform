@@ -25,10 +25,10 @@ public interface DataModelRepository {
     List<ModelQuotaVo> queryModelQuotaVoList(Long modelId);
 
 
-    List<ModelListVo> queryModelList(@Param("userId") Long userId, @Param("organId") Long organId, @Param("pageSize") Integer pageSize, @Param("offset") Integer offset,
+    List<ModelListVo> queryModelList(@Param("pageSize") Integer pageSize, @Param("offset") Integer offset,
                                      @Param("projectName")String projectName, @Param("modelName")String modelName, @Param("taskStatus") Integer taskStatus);
 
-    Integer queryModelListCount(@Param("userId") Long userId,@Param("organId") Long organId,@Param("projectName")String projectName,@Param("modelName")String modelName,@Param("taskStatus") Integer taskStatus);
+    Integer queryModelListCount(@Param("projectName")String projectName,@Param("modelName")String modelName,@Param("taskStatus") Integer taskStatus);
 
     List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode);
 

@@ -57,16 +57,11 @@ public class ModelController {
      * @return
      */
     @GetMapping("getmodellist")
-    public BaseResultEntity getDataModelList(@RequestHeader("userId") Long userId,
-                                               @RequestHeader("organId")Long organId,
-                                               String projectName,
+    public BaseResultEntity getDataModelList( String projectName,
                                                String modelName,
                                                Integer taskStatus,
                                                PageReq req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        return dataModelService.getDataModelList(userId,organId,req,projectName,modelName,taskStatus);
+        return dataModelService.getDataModelList(req,projectName,modelName,taskStatus);
     }
 
     /**
