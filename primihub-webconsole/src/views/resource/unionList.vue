@@ -280,7 +280,7 @@ export default {
     async findMyGroupOrgan() {
       const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
       this.organList = result.dataList.organList
-      this.cascaderOptions = this.organList.map((item) => {
+      this.cascaderOptions = this.organList && this.organList.map((item) => {
         return {
           label: item.globalName,
           value: item.globalId,

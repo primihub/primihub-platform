@@ -1,4 +1,6 @@
 $mainColor: #4596ff;
+$dangerColor: #F56C6C;
+
 // sidebar
 $menuText:#fff;
 $menuActiveText:#4596ff;
@@ -26,4 +28,5 @@ $sectionBorderRadius: 20px;
   subMenuBg: $subMenuBg;
   subMenuHover: $subMenuHover;
   sideBarWidth: $sideBarWidth;
+  sectionBorderRadius: $sectionBorderRadius
 }

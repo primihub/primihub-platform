@@ -132,7 +132,10 @@ export default {
       const index = this.selectedIds.indexOf(resourceId)
       if (index === -1) {
         this.selectedIds.push(resourceId)
-        this.selectedResources.push(resource)
+        if (!this.selectedResources[this.organId]) {
+          this.selectedResources[this.organId] = []
+        }
+        this.selectedResources[this.organId].push(resource)
       } else {
         this.selectedIds.splice(index, 1)
         const i = this.selectedResources.findIndex(item => item.resourceId === resource.resourceId)
@@ -140,6 +143,7 @@ export default {
       }
     },
     submit() {
+      console.log('dialog', this.selectedResources)
       this.$emit('submit', {
         list: this.selectedResources,
         selectIds: this.selectedIds,

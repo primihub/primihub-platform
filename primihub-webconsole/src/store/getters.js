@@ -3,9 +3,11 @@ const getters = {
   device: state => state.app.device,
   token: state => state.user.token,
   avatar: state => state.user.avatar,
-  name: state => state.user.userName,
-  routes: state => state.permission.routes, // 有权限路由
-  permissionList: state => state.user.permissionList, // 后端返回权限列表
-  buttonPermissionList: state => state.permission.buttonPermissionList // 按钮权限列表
+  userName: state => state.user.userName,
+  userOrganId: state => state.user.userOrganId,
+  userOrganName: state => state.user.userOrganName,
+  routes: state => state.permission.routes, // has permission router
+  permissionList: state => state.user.permissionList, // the permissionList from server
+  buttonPermissionList: state => state.permission.buttonPermissionList // permission button list
 }
 export default getters
