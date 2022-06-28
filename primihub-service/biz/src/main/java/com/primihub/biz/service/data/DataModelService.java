@@ -315,7 +315,7 @@ public class DataModelService {
 
 
 
-    public BaseResultEntity getModelComponentDetail(Long modelId, Long userId, Long organId) {
+    public BaseResultEntity getModelComponentDetail(Long modelId, Long userId) {
         DataModelAndComponentReq req = null;
         if (modelId==null||modelId==0L){
             req = saveOrGetModelComponentCache(false,userId, null,null);

@@ -92,15 +92,11 @@ public class ModelController {
      */
     @GetMapping("getModelComponentDetail")
     public BaseResultEntity getModelComponentDetail(@RequestHeader("userId") Long userId,
-                                                    @RequestHeader("organId")Long organId,
                                                     Long modelId){
         if (userId==null||userId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
         }
-        if (organId==null||organId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        return dataModelService.getModelComponentDetail(modelId,userId,organId);
+        return dataModelService.getModelComponentDetail(modelId,userId);
     }
     /**
      * 创建模型
