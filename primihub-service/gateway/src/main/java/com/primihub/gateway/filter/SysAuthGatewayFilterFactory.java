@@ -1,5 +1,6 @@
 package com.primihub.gateway.filter;
 
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.entity.base.BaseParamEnum;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.vo.SysAuthNodeVO;
@@ -25,6 +26,8 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
     private SysUserPrimaryRedisRepository sysUserPrimaryRedisRepository;
     @Autowired
     private SysAuthService sysAuthService;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     @Override
     public GatewayFilter apply(Object config) {
@@ -33,20 +36,26 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
             if(token==null||token.equals(""))
                 return chain.filter(exchange).then();
 
-            SysUserListVO sysUserListVO=sysUserPrimaryRedisRepository.findUserLoginStatus(token);
-            if(sysUserListVO==null)
-                return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.TOKEN_INVALIDATION);
-            sysUserPrimaryRedisRepository.expireUserLoginStatus(token,sysUserListVO.getUserId());
+            String userIdStr;
+            String rawPath = exchange.getRequest().getURI().getRawPath();
+            if(token.equals(baseConfiguration.getUsefulToken())){
+                userIdStr="1";
+            }else {
+                SysUserListVO sysUserListVO = sysUserPrimaryRedisRepository.findUserLoginStatus(token);
+                if (sysUserListVO == null)
+                    return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.TOKEN_INVALIDATION);
+                sysUserPrimaryRedisRepository.expireUserLoginStatus(token, sysUserListVO.getUserId());
 
-            String rawPath=exchange.getRequest().getURI().getRawPath();
-            Map<String, SysAuthNodeVO> mapping=sysAuthService.getSysAuthUrlMapping();
-            SysAuthNodeVO sysAuthNodeVO=mapping.get(rawPath);
-            if(sysAuthNodeVO!=null){
-                if(!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString()))
-                    return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
+                Map<String, SysAuthNodeVO> mapping = sysAuthService.getSysAuthUrlMapping();
+                SysAuthNodeVO sysAuthNodeVO = mapping.get(rawPath);
+                if (sysAuthNodeVO != null) {
+                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString()))
+                        return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
+                }
+
+                userIdStr = sysUserListVO.getUserId().toString();
             }
 
-            String userIdStr=sysUserListVO.getUserId().toString();
             ServerHttpRequest newRequest = exchange.getRequest().mutate()
                     .header("userId", userIdStr)
                     .header("token", token)
