@@ -114,17 +114,12 @@ public class ModelController {
     /***
      *  删除模型
      * @param userId
-     * @param organId
      * @param modelId
      * @return
      */
     @GetMapping("deleteModel")
     public BaseResultEntity deleteModel(@RequestHeader("userId") Long userId,
-                                         @RequestHeader("organId")Long organId,
                                          Long modelId){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
         if (userId<0){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
         }
@@ -136,49 +131,29 @@ public class ModelController {
 
     /**
      * 运行模型
-     * @param userId
-     * @param organId
      * @param modelId
      * @return
      */
     @GetMapping("runTaskModel")
-    public BaseResultEntity runTaskModel(@RequestHeader("userId") Long userId,
-                                         @RequestHeader("organId")Long organId,
-                                         Long modelId){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        if (userId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        }
+    public BaseResultEntity runTaskModel(Long modelId){
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
-        return dataModelService.runTaskModel(modelId,userId,organId);
+        return dataModelService.runTaskModel(modelId);
     }
 
 
     /**
      * 获取运行模型信息
-     * @param userId
-     * @param organId
      * @param modelId
      * @return
      */
     @GetMapping("getTaskModelComponent")
-    public BaseResultEntity getTaskModelComponent(@RequestHeader("userId") Long userId,
-                                         @RequestHeader("organId")Long organId,
-                                         Long modelId){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        if (userId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        }
+    public BaseResultEntity getTaskModelComponent(Long modelId){
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
-        return dataModelService.getTaskModelComponent(modelId,userId,organId);
+        return dataModelService.getTaskModelComponent(modelId);
     }
 
     @RequestMapping("getModelPrediction")

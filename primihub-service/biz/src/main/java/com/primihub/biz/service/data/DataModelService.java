@@ -379,7 +379,7 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity runTaskModel(Long modelId, Long userId, Long organId) {
+    public BaseResultEntity runTaskModel(Long modelId) {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
@@ -400,7 +400,7 @@ public class DataModelService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getTaskModelComponent(Long modelId, Long userId, Long organId) {
+    public BaseResultEntity getTaskModelComponent(Long modelId) {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
