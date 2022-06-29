@@ -26,8 +26,8 @@ import DagNodeComponent from './components/DagNode.vue'
 // import data from './graph/data'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectAuthedeList, runTaskModel, getTaskModelComponent } from '@/api/model'
-import { getProjectDetail } from '@/api/project'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, getProjectAuthedeList, runTaskModel, getTaskModelComponent } from '@/api/model'
+// import { getProjectDetail } from '@/api/project'
 
 const lineAttr = { // 线样式
   'line': {
@@ -380,7 +380,7 @@ export default {
           // }
           this.projectId = Number(this.$route.query.projectId) || 0
           console.log('projectId', this.$route.query.projectId)
-          this.getProjectDetail()
+          this.getProjectResourceData()
         }
         // if (result && result.componentValues[0]) {
         //   this.nodeData.componentTypes[0].inputValue = result.componentValues[0].val
@@ -477,11 +477,11 @@ export default {
         this.rightInfoLoading = false
       })
     },
-    getProjectDetail() {
-      console.log(this.projectId)
-      getProjectDetail({ id: this.projectId }).then(res => {
+    getProjectResourceData() {
+      console.log('projectId', this.projectId)
+      getProjectResourceData({ projectId: this.projectId }).then(res => {
         this.projectName = res.result.projectName
-        // this.resourceList = res.result.organs
+        this.resourceList = res.result.resource
         const index = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'projectName')
         const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
         this.nodeData.componentTypes[index].inputValue = this.projectName
@@ -496,10 +496,9 @@ export default {
         })
         // 设置资源选项
         this.nodeData.componentTypes[dataIndex].inputValues = options
-
         const yOptions = []
         const yIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'yField')
-        const curResource = this.resourceList.find(item => Number(item.resourceId) === Number(this.resourceId))
+        const curResource = this.resourceList.find(item => item.resourceId === this.resourceId)
         // 设置y值字段选项
         curResource && curResource.yfile.forEach(item => {
           yOptions.push({
@@ -534,9 +533,10 @@ export default {
         // 切换资源时初始化y值字段
         this.nodeData.componentTypes[yIndex].inputValue = ''
         this.nodeData.componentTypes[yIndex].inputValues = []
-        const curResource = this.resourceList.find(item => Number(item.resourceId) === Number(data.inputValue))
+        const curResource = this.resourceList.find(item => item.resourceId === data.inputValue)
         const yOptions = []
-        curResource.yfile.forEach(item => {
+        console.log('curResource', curResource)
+        curResource && curResource.yfile.forEach(item => {
           yOptions.push({
             key: item.yid.toString(),
             val: item.yname
@@ -643,6 +643,7 @@ export default {
           })
           if (complete) {
             taskResult.push(componentCode)
+            console.log('taskResult', taskResult)
             node.setData({
               ...data,
               componentState: componentState,

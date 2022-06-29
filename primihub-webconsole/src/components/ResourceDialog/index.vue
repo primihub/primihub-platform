@@ -181,7 +181,8 @@ export default {
   width: 300px;
   margin: 0 0 10px 5px;
 }
-.resource{
+.resource-item{
   margin: 5px;
 }
+
 </style>

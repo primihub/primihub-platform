@@ -260,17 +260,16 @@ export default {
       const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
       this.organList = result.dataList.organList
     },
-    handlePreview(id) {
-      this.fileId = id
+    handlePreview(row) {
+      this.resourceId = row.resourceId
       this.resourceFilePreview()
       this.previewDialogVisible = true
     },
     resourceFilePreview() {
       this.fieldListLoading = true
-      resourceFilePreview({ fileId: this.fileId }).then(res => {
+      resourceFilePreview({ resourceId: this.resourceId }).then(res => {
         this.dataList = res.result.dataList
-        this.fieldList = res.result.fieldList
-        this.dataForm.fieldList = this.formatParams()
+        this.previewList = res.result.fieldList
         this.fieldListLoading = false
       })
     },
