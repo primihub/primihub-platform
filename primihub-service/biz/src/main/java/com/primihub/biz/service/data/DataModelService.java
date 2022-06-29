@@ -113,6 +113,17 @@ public class DataModelService {
         }
         map.put("modelResources",modelResourceVos);
         map.put("modelQuotas",modelQuotaVos);
+
+        map.put("anotherQuotas",new HashMap(){
+            {
+                put("meanSquaredError",4.725711343212531);
+                put("explainedVariance",0.15919721839861312);
+                put("meanAbsoluteError",1.9888892110900143);
+                put("meanSquaredLogError",0.5848543124612581);
+                put("medianAbsoluteError",1.3484169265390695);
+                put("r2Score",-4.1600402950393045);
+                put("rootMeanSquaredError",22.33234769936758);
+            }});
         return BaseResultEntity.success(map);
     }
 
