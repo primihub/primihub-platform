@@ -51,12 +51,15 @@ public class DataProjectConvert {
                 if (latestTaskStatus!=null){
                     if ("0".equals(latestTaskStatus.toString())){
                         dataProjectListVo.setModelAssembleNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelAssembleNum());
                     }
                     if ("1".equals(latestTaskStatus.toString())){
                         dataProjectListVo.setModelRunNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelRunNum());
                     }
                     if ("2".equals(latestTaskStatus.toString())){
                         dataProjectListVo.setModelSuccessNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelSuccessNum());
                     }
                 }
             }
