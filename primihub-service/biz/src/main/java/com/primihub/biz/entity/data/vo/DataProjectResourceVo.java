@@ -5,6 +5,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class DataProjectResourceVo {
@@ -36,7 +37,7 @@ public class DataProjectResourceVo {
     /**
      * 资源标签
      */
-    private String[] resourceTag;
+    private List<String> resourceTag;
 
     /**
      * 资源行数

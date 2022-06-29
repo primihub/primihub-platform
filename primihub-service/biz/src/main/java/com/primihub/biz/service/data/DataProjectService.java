@@ -72,6 +72,8 @@ public class DataProjectService {
             dataProject = DataProjectConvert.dataProjectReqConvertPo(req,sysLocalOrganInfo,sysUser.getUserName());
             if (StringUtils.isBlank(req.getProjectId()))
                 dataProject.setProjectId(organConfiguration.generateUniqueCode());
+            // Available by default
+            dataProject.setStatus(1);
             updateProjectProviderOrganName(req.getProjectOrgans(),dataProject);
             dataProjectPrRepository.saveDataProject(dataProject);
             req.setProjectId(dataProject.getProjectId());
@@ -129,7 +131,6 @@ public class DataProjectService {
         shareProjectVo.setProject(dataProject);
         shareProjectVo.setProjectId(dataProject.getProjectId());
         sendTask(shareProjectVo);
-//        dataTaskService.spreadProjectData(JSON.toJSONString(shareProjectVo));
         Map<String,String> map = new HashMap<>();
         map.put("id", dataProject.getId().toString());
         map.put("projectId", dataProject.getProjectId());
