@@ -103,7 +103,7 @@ public class DataProjectConvert {
         dataProjectResourceVo.setParticipationIdentity(dataProjectResource.getParticipationIdentity());
         dataProjectResourceVo.setResourceId(dataProjectResource.getResourceId());
         dataProjectResourceVo.setResourceName(resourceMap==null?"":resourceMap.get("resourceName")==null?"":resourceMap.get("resourceName").toString());
-        dataProjectResourceVo.setResourceTag(resourceMap==null?null:resourceMap.get("resourceTag")==null?new String[]{}:resourceMap.get("resourceTag").toString().split(","));
+        dataProjectResourceVo.setResourceTag(resourceMap==null?new ArrayList<>():resourceMap.get("resourceTag")==null?new ArrayList<>():(List<String>) resourceMap.get("resourceTag"));
         dataProjectResourceVo.setResourceRowsCount(resourceMap==null?null:resourceMap.get("resourceRowsCount")==null?0:Integer.valueOf(resourceMap.get("resourceRowsCount").toString()));
         dataProjectResourceVo.setResourceColumnCount(resourceMap==null?null:resourceMap.get("resourceColumnCount")==null?0:Integer.valueOf(resourceMap.get("resourceColumnCount").toString()));
         dataProjectResourceVo.setResourceContainsY(resourceMap==null?null:resourceMap.get("resourceContainsY")==null?0:Integer.valueOf(resourceMap.get("resourceContainsY").toString()));
