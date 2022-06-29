@@ -41,14 +41,14 @@
       <el-form-item label="发起方" prop="initiateOrganId">
         <p class="organ"><i class="el-icon-office-building" />  {{ dataForm.initiateOrganName }}</p>
         <el-button type="primary" plain @click="openDialog(dataForm.initiateOrganId)">添加资源到此项目</el-button>
-        <ResourceTable v-if="filterData(dataForm.initiateOrganId).length>0" row-key="resourceId" :data="filterData(dataForm.initiateOrganId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
+        <ResourceTable v-if="filterData(dataForm.initiateOrganId).length>0" :show-status="false" row-key="resourceId" :data="filterData(dataForm.initiateOrganId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
       </el-form-item>
       <el-form-item label="协作方" prop="providerOrganIds">
         <el-button plain @click="openProviderOrganDialog">添加协作者</el-button>
         <div v-for="(organ) in selectedData" :key="organ.globalId" class="organ-item">
           <p class="organ"><i class="el-icon-office-building" />  {{ organ.globalName }}</p>
           <el-button v-if="selectedData" type="primary" plain @click="openDialog(organ.globalId)">添加资源到此项目</el-button>
-          <ResourceTable v-if="filterData(organ.globalId).length>0" :this-institution="thisInstitution" row-key="resourceId" :data="filterData(organ.globalId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
+          <ResourceTable v-if="filterData(organ.globalId).length>0" :show-status="false" :this-institution="thisInstitution" row-key="resourceId" :data="filterData(organ.globalId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
         </div>
 
       </el-form-item>
@@ -268,8 +268,7 @@ export default {
     resourceFilePreview() {
       this.fieldListLoading = true
       resourceFilePreview({ resourceId: this.resourceId }).then(res => {
-        this.dataList = res.result.dataList
-        this.previewList = res.result.fieldList
+        this.previewList = res.result.dataList
         this.fieldListLoading = false
       })
     },
