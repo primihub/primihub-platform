@@ -479,9 +479,9 @@ export default {
     },
     getProjectDetail() {
       console.log(this.projectId)
-      getProjectDetail({ id: 8 }).then(res => {
+      getProjectDetail({ id: this.projectId }).then(res => {
         this.projectName = res.result.projectName
-        // this.resourceList = res.result.resource
+        // this.resourceList = res.result.organs
         const index = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'projectName')
         const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
         this.nodeData.componentTypes[index].inputValue = this.projectName
