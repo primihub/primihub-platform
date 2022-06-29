@@ -104,7 +104,8 @@ export default {
         projectName: '',
         taskStatus: '',
         pageNo: 1,
-        pageSize: 5
+        pageSize: 5,
+        projectId: this.$route.params.id
       },
       total: 0,
       pageCount: 0,

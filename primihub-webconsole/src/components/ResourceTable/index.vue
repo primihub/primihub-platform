@@ -22,7 +22,8 @@
         min-width="200"
       >
         <template slot-scope="{row}">
-          <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+          <!-- <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br> -->
+          {{ row.resourceName }}<br>
           {{ row.resourceId }}
         </template>
       </el-table-column>
@@ -70,7 +71,7 @@
         align="center"
       >
         <template slot-scope="{row}">
-          {{ row.participationIdentity === 1 ? 1:row.auditStatus === 0 && thisInstitution && row.participationIdentity === 2 ? 0:!row.auditStatus && thisInstitution ? 1 : row.auditStatus ? row.auditStatus : 0 | resourceAuditStatusFilter }}
+          {{ row.auditStatus ? row.auditStatus : row.participationIdentity === 1 ? 1:row.auditStatus === 0 && thisInstitution && row.participationIdentity === 2 ? 0:!row.auditStatus && thisInstitution && row.participationIdentity === 2 ? 1 : 0 | resourceAuditStatusFilter }}
         </template>
       </el-table-column>
       <el-table-column
@@ -81,7 +82,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        v-if="showButtons"
+        v-if="thisInstitution && showButtons"
         label="操作"
         fixed="right"
         min-width="200"
@@ -93,7 +94,7 @@
             <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
           </template>
           <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-          <el-button size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+          <el-button v-if="thisInstitution && row.participationIdentity === 1" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>

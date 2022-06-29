@@ -288,7 +288,7 @@ export default {
     async getUserInfo() {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       const { organIdList, organIdListDesc } = userInfo
-      this.formData.ownOrganId = Number(organIdList)
+      this.formData.ownOrganId = organIdList
       this.formData.ownOrganName = organIdListDesc
       this.formData.resultOrgan.push(this.formData.ownOrganId)
     },

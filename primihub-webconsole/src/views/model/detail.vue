@@ -108,26 +108,20 @@
         />
       </el-table>
     </div>
-    <div class="section">
+    <!-- <div class="section">
       <h3>模型ks值</h3>
-      <!-- <div class="img-container">
-        <div v-for="item in modelQuotas" :key="item.quotaId">
-          <p>{{ item.quotaType | quotaTypeFilter }}</p>
-          <img :src="item.quotaImage" alt="">
-        </div>
-      </div> -->
       <line-chart :chart-data="lineChartData" />
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
 import { getModelDetail, getModelPrediction } from '@/api/model'
-import LineChart from '@/components/Charts/LineChart.vue'
+// import LineChart from '@/components/Charts/LineChart.vue'
 
 export default {
   components: {
-    LineChart
+    // LineChart
   },
   filters: {
     quotaTypeFilter(type) {
