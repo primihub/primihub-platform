@@ -39,12 +39,13 @@
             <span class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
             <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span>
           </p>
-          <el-button v-if="item.auditStatus === 1 && item.participationIdentity === 1 && thisInstitution" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
-          <p v-if="item.participationIdentity !== 1 && item.auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
+          <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
+          <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
           <ResourceTable
             v-if="item.auditStatus === 1 && (item.resources && item.resources.length >0 || resourceList[selectedOrganId].length>0)"
             :project-audit-status="projectAuditStatus"
             :this-institution="thisInstitution"
+            :creator="creator"
             :server-address="serverAddress"
             :selected-data="selectedData"
             row-key="resourceId"
@@ -59,7 +60,7 @@
     </section>
     <section class="organs">
       <h3>模型列表</h3>
-      <el-button v-if="list.creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
+      <el-button v-if="creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
       <Model />
     </section>
     <!-- add resource dialog -->
@@ -129,7 +130,8 @@ export default {
       saveParams: {
         id: '',
         projectOrgans: [] // save params
-      }
+      },
+      creator: false
     }
   },
   computed: {
@@ -413,8 +415,9 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectId, projectDesc, userName, createDate, organs, serverAddress } = this.list
+          const { projectName, projectId, projectDesc, userName, createDate, organs, serverAddress, creator } = this.list
           this.serverAddress = serverAddress
+          this.creator = creator
           this.projectName = projectName
           this.projectId = projectId
           this.projectDesc = projectDesc
@@ -525,5 +528,9 @@ section{
 ::v-deep .el-descriptions-item__container{
   flex-wrap: wrap;
 
+}
+.auditOpinion{
+  font-size: 14px;
+  margin: 10px 0;
 }
 </style>

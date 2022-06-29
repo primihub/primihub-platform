@@ -82,7 +82,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        v-if="thisInstitution && showButtons"
+        v-if="showButtons"
         label="操作"
         fixed="right"
         min-width="200"
@@ -93,8 +93,8 @@
             <el-button size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
             <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
           </template>
-          <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-          <el-button v-if="thisInstitution && row.participationIdentity === 1" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+          <el-button v-if="!row.participationIdentity || row.participationIdentity === 1" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
+          <el-button v-if="creator" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -139,6 +139,10 @@ export default {
     thisInstitution: {
       type: Boolean,
       default: true
+    },
+    creator: {
+      type: Boolean,
+      default: false
     },
     serverAddress: {
       type: String,
