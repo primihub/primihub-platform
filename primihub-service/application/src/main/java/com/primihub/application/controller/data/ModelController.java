@@ -57,11 +57,12 @@ public class ModelController {
      * @return
      */
     @GetMapping("getmodellist")
-    public BaseResultEntity getDataModelList( String projectName,
-                                               String modelName,
-                                               Integer taskStatus,
-                                               PageReq req){
-        return dataModelService.getDataModelList(req,projectName,modelName,taskStatus);
+    public BaseResultEntity getDataModelList(String projectName,
+                                             String modelName,
+                                             Integer taskStatus,
+                                             Long projectId,
+                                             PageReq req){
+        return dataModelService.getDataModelList(req,projectName,modelName,taskStatus,projectId);
     }
 
     /**
@@ -141,7 +142,6 @@ public class ModelController {
         }
         return dataModelService.runTaskModel(modelId);
     }
-
 
     /**
      * 获取运行模型信息

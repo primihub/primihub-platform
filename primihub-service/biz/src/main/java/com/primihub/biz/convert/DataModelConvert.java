@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Map;
 
 @Slf4j
 public class DataModelConvert {
@@ -71,10 +72,22 @@ public class DataModelConvert {
     }
 
     public static ComponentResourceVo resourceRecordVoConvertComponentResourceVo(DataResource dataResource){
-        // TODO y字段后期补齐
         ComponentResourceVo vo= new ComponentResourceVo(dataResource.getFileHandleField());
-        vo.setResourceId(dataResource.getResourceId());
+        vo.setResourceId(dataResource.getResourceId().toString());
         vo.setResourceName(dataResource.getResourceName());
+        return vo;
+    }
+
+    public static ComponentResourceVo resourceRecordMapConvertComponentResourceVo(Map<String,Object> dataResource){
+        Object resourceColumnNameList = dataResource.get("resourceColumnNameList");
+        ComponentResourceVo vo;
+        if (resourceColumnNameList!=null){
+            vo = new ComponentResourceVo(resourceColumnNameList.toString());
+        }else {
+            vo = new ComponentResourceVo();
+        }
+        vo.setResourceId(dataResource.get("resourceId").toString());
+        vo.setResourceName(dataResource.get("resourceName").toString());
         return vo;
     }
 

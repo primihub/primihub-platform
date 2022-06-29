@@ -108,5 +108,17 @@ public class ProjectController {
         return dataProjectService.closeProject(id);
     }
 
+    /**
+     * 获取项目资源、y字段接口
+     * @return
+     */
+    @GetMapping("getProjectResourceData")
+    public BaseResultEntity getProjectResourceData(Long projectId){
+        if (projectId==null||projectId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
+        }
+        return dataProjectService.getProjectResourceData(projectId);
+    }
+
 
 }

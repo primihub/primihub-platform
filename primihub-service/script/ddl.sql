@@ -139,7 +139,7 @@ DROP TABLE IF EXISTS `data_mr`;
 CREATE TABLE `data_mr`  (
                             `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
                             `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                            `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
                             `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
                             `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
                             `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',

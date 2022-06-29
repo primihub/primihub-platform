@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Repository
@@ -25,10 +26,9 @@ public interface DataModelRepository {
     List<ModelQuotaVo> queryModelQuotaVoList(Long modelId);
 
 
-    List<ModelListVo> queryModelList(@Param("pageSize") Integer pageSize, @Param("offset") Integer offset,
-                                     @Param("projectName")String projectName, @Param("modelName")String modelName, @Param("taskStatus") Integer taskStatus);
+    List<ModelListVo> queryModelList(Map<String,Object> paramMap);
 
-    Integer queryModelListCount(@Param("projectName")String projectName,@Param("modelName")String modelName,@Param("taskStatus") Integer taskStatus);
+    Integer queryModelListCount(Map<String,Object> paramMap);
 
     List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode);
 

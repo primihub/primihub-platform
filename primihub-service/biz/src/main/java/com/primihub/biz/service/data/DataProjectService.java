@@ -5,15 +5,18 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.CommonConstant;
+import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.po.DataProjectResource;
+import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.req.DataProjectApprovalReq;
 import com.primihub.biz.entity.data.req.DataProjectOrganReq;
 import com.primihub.biz.entity.data.req.DataProjectQueryReq;
 import com.primihub.biz.entity.data.req.DataProjectReq;
+import com.primihub.biz.entity.data.vo.ComponentResourceVo;
 import com.primihub.biz.entity.data.vo.DataProjectDetailsVo;
 import com.primihub.biz.entity.data.vo.DataProjectOrganVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
@@ -395,5 +398,31 @@ public class DataProjectService {
         vo.setProject(dataProject);
         sendTask(vo);
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity getProjectResourceData(Long projectId) {
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId,null);
+        if (dataProject==null){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到项目详情");
+        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("projectId",dataProject.getProjectId());
+        map.put("projectName",dataProject.getProjectName());
+        List<DataProjectResource> projectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
+        List<String> resourceIds = projectResources.stream().filter(pr->pr.getAuditStatus()==1).map(DataProjectResource::getResourceId).collect(Collectors.toList());
+        Map<String, Map> resourceListMap = getResourceListMap(resourceIds, dataProject.getServerAddress());
+        if (resourceListMap.isEmpty()){
+            map.put("resource",new ArrayList<>());
+        }else {
+            Iterator<Map.Entry<String, Map>> iterator = resourceListMap.entrySet().iterator();
+            List<ComponentResourceVo> componentResources = new ArrayList<>();
+            while (iterator.hasNext()){
+                Map.Entry<String, Map> next = iterator.next();
+                ComponentResourceVo componentResourceVo = DataModelConvert.resourceRecordMapConvertComponentResourceVo(next.getValue());
+                componentResources.add(componentResourceVo);
+            }
+            map.put("resource",componentResources);
+        }
+        return BaseResultEntity.success(map);
     }
 }
