@@ -23,6 +23,7 @@ import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +59,7 @@ public class DataProjectService {
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
-    private DataTaskService dataTaskService;
+    private DataModelRepository dataModelRepository;
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -155,8 +156,11 @@ public class DataProjectService {
                 for (String organId : organIds) {
                     Map organMap = organListMap.get(organId);
                     if (organMap!=null){
-                        if(organMap.get("globalName")!=null)
-                            organNames.add(organMap.get("globalName").toString());
+                        if(organMap.get("globalName")!=null){
+                            if (!organNames.contains(organMap.get("globalName").toString())){
+                                organNames.add(organMap.get("globalName").toString());
+                            }
+                        }
                     }
                 }
                 dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
@@ -171,7 +175,10 @@ public class DataProjectService {
         if (dataProjects.isEmpty())
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         Integer count = dataProjectRepository.selectDataProjectCount(req);
-        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataProjects.stream().map(dp->DataProjectConvert.dataProjectConvertListVo(dp)).collect(Collectors.toList())));
+        Set<Long> projectIds = dataProjects.stream().map(DataProject::getId).collect(Collectors.toSet());
+        List<Map<String, Object>> projectNumMapList = dataModelRepository.queryModelNumByProjectIds(projectIds);
+        Map<Object, List<Map<String, Object>>> projectNumMap = projectNumMapList.stream().collect(Collectors.groupingBy(m -> m.get("projectId")));
+        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataProjects.stream().map(dp->DataProjectConvert.dataProjectConvertListVo(dp,projectNumMap.get(dp.getId()))).collect(Collectors.toList())));
     }
 
     public BaseResultEntity getProjectDetails(Long id) {
@@ -353,6 +360,8 @@ public class DataProjectService {
         if (projectStatics.size()==0)
             return BaseResultEntity.success();
         Map<String,Object> map = new HashMap<>();
+        map.put("own",0);
+        map.put("other",0);
         Integer total = 0;
         for (Map<String, Object> projectStatic : projectStatics) {
             Object amount = projectStatic.get("amount");

@@ -4,6 +4,7 @@ import com.primihub.biz.entity.data.po.DataComponent;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.data.vo.*;
+import org.apache.ibatis.annotations.MapKey;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -34,5 +35,6 @@ public interface DataModelRepository {
 
     ModelComponentJson queryModelComponenJsonByUserId(@Param("userId")Long userId, @Param("isDraft") Integer isDraft, @Param("modelId")Long modelId);
 
+    List<Map<String, Object>> queryModelNumByProjectIds(@Param("projectIds")Set<Long> projectIds);
 
 }

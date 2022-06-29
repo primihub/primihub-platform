@@ -224,5 +224,17 @@
         WHERE
             model_id = #{modelId}
     </select>
+    <select id="queryModelNumByProjectIds" resultType="java.util.Map">
+        select
+                project_id projectId,latest_task_status latestTaskStatus,count(latest_task_status) statusCount
+        from
+                data_model
+        where project_id in
+        <foreach collection="projectIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY project_id,latest_task_status ORDER BY project_id
+    </select>
 
 </mapper>
