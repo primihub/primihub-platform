@@ -36,6 +36,7 @@ import primihub.rpc.Common;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -93,94 +94,86 @@ public class ModelInitService {
             }
         }
         List<DataComponentReq> modelComponents = fedlearnerJobApi.getModelComponents();
-        List<DataComponentReq> list = modelComponents.stream().filter(req -> req.getComponentCode().equals("model")).collect(Collectors.toList());
-        log.info("检索model组件 数量:{}",list.size());
-        if (!list.isEmpty()){
-            List<DataComponentValue> modelType = list.get(0).getComponentValues().stream().filter(cv -> cv.getKey().equals("modelType")).collect(Collectors.toList());
-            log.info("检索model组件->modelType 数量:{}",modelType.size());
-            if (!modelType.isEmpty()){
-                DataComponentValue dataComponentValue = modelType.get(0);
-                log.info("检索model组件->modelType value:{}",dataComponentValue.toString());
-                if (dataComponentValue.getVal().equals("2")){
-                    DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataModel.getProjectId(), null);
-                    if (dataProject!=null){
-                        List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
-                        log.info("查询数据数量:{}",dataProjectResources.size());
-                        if (dataProjectResources.size()>=2){
-                            Long startTime= System.currentTimeMillis();
-                            Map<String,String> map = new HashMap<>();
-                            List<DataModelResource> dmrList = new ArrayList<>();
-                            for (DataProjectResource modelResourceVo : dataProjectResources) {
-                                if (map.size()==2)
-                                    break;
-                                if (map.isEmpty()){
-                                    map.put(DataConstant.PYTHON_GUEST_DATASET,modelResourceVo.getResourceId());
-                                }else {
-                                    map.put(DataConstant.PYTHON_LABEL_DATASET,modelResourceVo.getResourceId());
+        Map<String, DataComponentReq> reqMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
+        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null);
+        log.info("检索model组件 数量:{}",modelComponents.size());
+        for (DataComponent dataComponent : dataComponents) {
+            dataComponent.setStartTime(System.currentTimeMillis());
+            dataComponent.setComponentState(2);
+            dataModelPrRepository.updateDataComponent(dataComponent);
+            if ("model".equals(dataComponent.getComponentCode())){
+                List<DataComponentValue> modelType = reqMap.get(dataComponent.getComponentCode()).getComponentValues().stream().filter(cv -> cv.getKey().equals("modelType")).collect(Collectors.toList());
+                log.info("检索model组件->modelType 数量:{}",modelType.size());
+                if (!modelType.isEmpty()){
+                    DataComponentValue dataComponentValue = modelType.get(0);
+                    log.info("检索model组件->modelType value:{}",dataComponentValue.toString());
+                    if (dataComponentValue.getVal().equals("2")){
+                        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataModel.getProjectId(), null);
+                        if (dataProject!=null){
+                            List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
+                            log.info("查询数据数量:{}",dataProjectResources.size());
+                            if (dataProjectResources.size()>=2){
+                                Map<String,String> map = new HashMap<>();
+                                List<DataModelResource> dmrList = new ArrayList<>();
+                                for (DataProjectResource modelResourceVo : dataProjectResources) {
+                                    if (map.size()==2)
+                                        break;
+                                    if (map.isEmpty()){
+                                        map.put(DataConstant.PYTHON_GUEST_DATASET,modelResourceVo.getResourceId());
+                                    }else {
+                                        map.put(DataConstant.PYTHON_LABEL_DATASET,modelResourceVo.getResourceId());
+                                    }
+                                    DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId());
+                                    dataModelResource.setResourceId(modelResourceVo.getResourceId());
+                                    dataModelResource.setAlignmentNum(getrandom(1,10000));
+                                    dataModelResource.setPrimitiveParamNum(getrandom(1,100));
+                                    dataModelResource.setModelParamNum(getrandom(1,100));
+                                    dmrList.add(dataModelResource);
                                 }
-                                DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId());
-                                dataModelResource.setResourceId(modelResourceVo.getResourceId());
-                                dataModelResource.setAlignmentNum(getrandom(1,10000));
-                                dataModelResource.setPrimitiveParamNum(getrandom(1,100));
-                                dataModelResource.setModelParamNum(getrandom(1,100));
-                                dmrList.add(dataModelResource);
-                            }
-                            dataModelPrRepository.saveDataModelResource(dmrList);
-                            List<String> pahts=new ArrayList<>();
-                            pahts.add(FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_PAHT,freeMarkerConfigurer, map));
-                            pahts.add(FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT,freeMarkerConfigurer, map));
-                            for (String freemarkerContent : pahts) {
-//                            log.info("python 文件生成的路径:{}",freemarkerPath);
-                                if (freemarkerContent!=null){
-                                    try {
-                                        Date date= new Date();
-                                        StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(UUID.randomUUID().toString()).append(".csv");
-                                        Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
-                                        Common.Params params=Common.Params.newBuilder().putParamMap("outputFullFilename",outputFullFilenameParamValue).build();
-                                        Common.Task task = Common.Task.newBuilder()
-                                                .setType(Common.TaskType.ACTOR_TASK)
-                                                .setParams(params)
-                                                .setName("modelTask")
-                                                .setLanguage(Common.Language.PYTHON)
-                                                .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                                                .setJobId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
-                                                .setTaskId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
-                                                .build();
-                                        log.info("grpc Common.Task :\n{}",task.toString());
-                                        PushTaskRequest request = PushTaskRequest.newBuilder()
-                                                .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                                                .setTask(task)
-                                                .setSequenceNumber(11)
-                                                .setClientProcessedUpTo(22)
-                                                .build();
-                                        PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                                        log.info("grpc结果:{}",reply.toString());
-                                    }catch (Exception e){
-                                        log.info("grpc Exception:{}",e.getMessage());
+                                dataModelPrRepository.saveDataModelResource(dmrList);
+                                List<String> pahts=new ArrayList<>();
+                                pahts.add(FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_PAHT,freeMarkerConfigurer, map));
+                                pahts.add(FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT,freeMarkerConfigurer, map));
+                                for (String freemarkerContent : pahts) {
+                                    if (freemarkerContent!=null){
+                                        try {
+                                            Date date= new Date();
+                                            StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(UUID.randomUUID().toString()).append(".csv");
+                                            Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
+                                            Common.Params params=Common.Params.newBuilder().putParamMap("outputFullFilename",outputFullFilenameParamValue).build();
+                                            Common.Task task = Common.Task.newBuilder()
+                                                    .setType(Common.TaskType.ACTOR_TASK)
+                                                    .setParams(params)
+                                                    .setName("modelTask")
+                                                    .setLanguage(Common.Language.PYTHON)
+                                                    .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                                                    .setJobId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
+                                                    .setTaskId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
+                                                    .build();
+                                            log.info("grpc Common.Task :\n{}",task.toString());
+                                            PushTaskRequest request = PushTaskRequest.newBuilder()
+                                                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                                                    .setTask(task)
+                                                    .setSequenceNumber(11)
+                                                    .setClientProcessedUpTo(22)
+                                                    .build();
+                                            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+                                            log.info("grpc结果:{}",reply.toString());
+                                        }catch (Exception e){
+                                            log.info("grpc Exception:{}",e.getMessage());
+                                        }
                                     }
                                 }
                             }
-                            Long endTime = System.currentTimeMillis();
-                            // 完成
-                            List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null);
-                            for (DataComponent dataComponent : dataComponents) {
-                                if("model".equals(dataComponent.getComponentName())){
-                                    dataComponent.setStartTime(startTime);
-                                    dataComponent.setEndTime(endTime);
-                                }else {
-                                    dataComponent.setStartTime(System.currentTimeMillis());
-                                    dataComponent.setEndTime(System.currentTimeMillis()+1000L);
-                                }
-                                dataComponent.setComponentState(1);
-                                dataModelPrRepository.updateDataComponent(dataComponent);
-                            }
-                            dataModel.setLatestTaskStatus(2);
-                            dataModelPrRepository.updateDataModel(dataModel);
                         }
                     }
                 }
-
             }
+            dataComponent.setEndTime(System.currentTimeMillis());
+            dataComponent.setComponentState(1);
+            dataModelPrRepository.updateDataComponent(dataComponent);
+            dataModel.setLatestTaskStatus(2);
+            dataModelPrRepository.updateDataModel(dataModel);
         }
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
     }

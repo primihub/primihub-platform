@@ -12,6 +12,7 @@ import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class DataProjectConvert {
@@ -32,7 +33,7 @@ public class DataProjectConvert {
         return dataProject;
     }
 
-    public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject){
+    public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject, List<Map<String, Object>> list){
         DataProjectListVo dataProjectListVo = new DataProjectListVo();
         dataProjectListVo.setId(dataProject.getId());
         dataProjectListVo.setProjectId(dataProject.getProjectId());
@@ -44,6 +45,23 @@ public class DataProjectConvert {
         dataProjectListVo.setProviderOrganNames(dataProject.getProviderOrganNames());
         dataProjectListVo.setStatus(dataProject.getStatus());
         dataProjectListVo.setCreateDate(dataProject.getCreateDate());
+        if (list!=null){
+            for (Map<String, Object> objectMap : list) {
+                Object latestTaskStatus = objectMap.get("latestTaskStatus");
+                if (latestTaskStatus!=null){
+                    if ("0".equals(latestTaskStatus.toString())){
+                        dataProjectListVo.setModelAssembleNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                    }
+                    if ("1".equals(latestTaskStatus.toString())){
+                        dataProjectListVo.setModelRunNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                    }
+                    if ("2".equals(latestTaskStatus.toString())){
+                        dataProjectListVo.setModelSuccessNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                    }
+                }
+            }
+
+        }
         return dataProjectListVo;
     }
 
