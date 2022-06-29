@@ -248,7 +248,7 @@ export default {
   padding: 0 30px;
 }
 .select-item {
-  margin: 13px 20px 0 20px;
+  margin: 10px 20px 0 20px;
   font-size: initial;
 }
 .add-button {
@@ -263,7 +263,7 @@ export default {
   border-radius: $sectionBorderRadius;
 }
 .add-card {
-  width: 260px;
+  width: 285px;
   box-sizing: border-box;
   border-radius: 10px;
   font-size: 14px;
@@ -274,6 +274,7 @@ export default {
   display: flex;
   justify-content: center;
   flex-direction: column;
+  border: 1px dashed $borderColor;
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);
   }
@@ -281,10 +282,14 @@ export default {
 .icon-wrap {
   font-size: 45px;
   text-align: center;
-
+  color: rgba(0,0,0,0.65);
 }
 .text {
   text-align: center;
+}
+::v-deep .el-badge__content.is-fixed{
+  top: 10px;
+  right: 0;
 }
 .pagination-container {
   padding-top: 50px;

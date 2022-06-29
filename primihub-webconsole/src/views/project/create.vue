@@ -268,7 +268,7 @@ export default {
     resourceFilePreview() {
       this.fieldListLoading = true
       resourceFilePreview({ resourceId: this.resourceId }).then(res => {
-        this.previewList = res.result.dataList
+        this.previewList = res?.result.dataList
         this.fieldListLoading = false
       })
     },

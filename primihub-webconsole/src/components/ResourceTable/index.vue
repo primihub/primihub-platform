@@ -71,7 +71,7 @@
         align="center"
       >
         <template slot-scope="{row}">
-          {{ row.auditStatus ? row.auditStatus : row.participationIdentity === 1 ? 1:row.auditStatus === 0 && thisInstitution && row.participationIdentity === 2 ? 0:!row.auditStatus && thisInstitution && row.participationIdentity === 2 ? 1 : 0 | resourceAuditStatusFilter }}
+          {{ row.auditStatus | resourceAuditStatusFilter }}
         </template>
       </el-table-column>
       <el-table-column
@@ -82,7 +82,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        v-if="showButtons"
+        v-if="creator && showButtons"
         label="操作"
         fixed="right"
         min-width="200"
@@ -93,7 +93,7 @@
             <el-button size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
             <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
           </template>
-          <el-button v-if="!row.participationIdentity || row.participationIdentity === 1" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
+          <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
           <el-button v-if="creator" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
         </template>
       </el-table-column>
@@ -173,6 +173,7 @@ export default {
   },
   methods: {
     toggleSelection(rows) {
+      console.log('toggleSelection', rows)
       if (rows) {
         rows.forEach(row => {
           this.$refs.table.toggleRowSelection(row)

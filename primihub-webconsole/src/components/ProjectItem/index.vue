@@ -1,9 +1,9 @@
 <template>
   <div class="item" @click="toProjectDetail">
     <div class="header">
-      <el-tag :type="statusStyle(project.status)">{{ project.status | projectAuditStatusFilter }}</el-tag>
+      <p><el-tag :type="statusStyle(project.status)" size="medium">{{ project.status | projectAuditStatusFilter }}</el-tag></p>
+      <p class="header-title">{{ project.projectName }}</p>
     </div>
-    <div class="header"><span class="header-title">{{ project.projectName }}</span></div>
     <div class="main">
       <div class="text"><span>发起方：</span><span>{{ project.createdOrganName }}</span></div>
       <div class="text"><span>协作方：</span><span>{{ project.providerOrganNames }}</span></div>
@@ -12,15 +12,15 @@
       <div class="text"><span>创建时间：</span><span>{{ project.createDate }}</span></div>
     </div>
     <div class="footer">
-      <div class="model-Status text">
+      <div class="model-status text">
         <span>{{ project.modelAssembleNum }}</span>
         <span>配置中 <i class="el-icon-setting icon-1" /></span>
       </div>
-      <div class="model-Status text">
+      <div class="model-status text">
         <span>{{ project.modelRunNum }}</span>
         <span>运行中 <i class="el-icon-refresh icon-2" /></span>
       </div>
-      <div class="model-Status text">
+      <div class="model-status text">
         <span>{{ project.modelSuccessNum }}</span>
         <span>成功 <i class="el-icon-circle-check icon-3" /></span>
       </div>
@@ -62,8 +62,12 @@ export default {
 
 <style lang="scss" scoped>
 @import "../../styles/variables.scss";
+p {
+  margin-block-start:0;
+  margin-block-end:0;
+}
 .item {
-  width: 260px;
+  width: 285px;
   box-sizing: border-box;
   padding: 10px 0 0 0;
   border-radius: 10px;
@@ -81,12 +85,11 @@ export default {
 .header {
   font-size: 16px;
   color: rgba(0,0,0,.85);
-  height: 35px;
-  line-height: 40px;
-  display: flex;
-  flex-shrink: 0;
-  margin: 5px 20px 0 20px ;
+  padding: 5px 20px;
   &-title{
+    padding: 0 5px 5px;
+    margin-top: 10px;
+    line-height: 1.5;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -99,8 +102,9 @@ export default {
   flex-grow: 1;
   line-height: 20px;
   font-size: 12px;
-  margin: 5px 20px;
-  color: rgba(0,0,0,.85);
+  margin: 5px 20px 10px 20px;
+  padding: 0 5px;
+  color: rgba(0,0,0,.65);
 }
 .footer {
   display: flex;
@@ -112,12 +116,17 @@ export default {
   font-size: 12px;
   background-color: rgba(242, 245, 255, 0.75);
 }
-.model-Status {
+.model-status {
   margin: 0;
   display: flex;
   justify-content: center;
   flex-direction: column;
   text-align: center;
+  border-right: 1px solid $borderColor;
+  flex: 1;
+  &:last-child{
+    border: none;
+  }
 }
 .icon-1 {
   color: rgb(144, 147, 153);

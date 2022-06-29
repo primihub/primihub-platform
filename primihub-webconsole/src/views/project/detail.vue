@@ -32,7 +32,7 @@
     </section>
     <section class="organs">
       <h3>参与机构</h3>
-      <el-button type="primary" class="add-provider-button" @click="openProviderOrganDialog">添加更多协作者</el-button>
+      <el-button v-if="creator" type="primary" class="add-provider-button" @click="openProviderOrganDialog">添加更多协作者</el-button>
       <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
         <el-tab-pane v-for="item in organs" :key="item.organId" :label="item.organId">
           <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
@@ -303,7 +303,7 @@ export default {
     resourceFilePreview() {
       this.fieldListLoading = true
       resourceFilePreview({ resourceId: this.resourceId }).then(res => {
-        this.previewList = res.result.dataList
+        this.previewList = res?.result.dataList
         this.fieldListLoading = false
       })
     },
@@ -357,8 +357,7 @@ export default {
           this.organs.push({
             organId: item.globalId,
             organName: item.globalName,
-            participationIdentity: 2,
-            creator: false
+            participationIdentity: 2
           })
         })
 
@@ -377,6 +376,7 @@ export default {
             message: '添加成功',
             type: 'success'
           })
+          this.fetchData()
           return true
         } else {
           return false
@@ -434,7 +434,6 @@ export default {
     },
     // compare array diffrent
     getArrDifSameValue(arr1, arr2) {
-      console.log(arr1, arr2)
       const result = []
       for (let i = 0; i < arr2.length; i++) {
         const obj = arr2[i]

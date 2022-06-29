@@ -2,8 +2,7 @@
   <div class="login-container">
     <div class="poster-wrap">
       <div class="poster-inner">
-        <!-- <h1>Primihub</h1> -->
-        <img src="/images/logo.png" alt="">
+        <img src="/images/logo-text.png" alt="">
         <p class="slogan">致力于以隐私计算技术构建数据信任与安全</p>
       </div>
     </div>
