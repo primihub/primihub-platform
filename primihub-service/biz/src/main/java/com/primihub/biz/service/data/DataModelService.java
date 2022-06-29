@@ -102,12 +102,12 @@ public class DataModelService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getDataModelList(Long userId, Long organId, PageReq req, String projectName, String modelName, Integer taskStatus) {
-        List<ModelListVo> modelListVos = dataModelRepository.queryModelList(userId, organId, req.getPageSize(), req.getOffset(),projectName,modelName,taskStatus);
+    public BaseResultEntity getDataModelList(PageReq req, String projectName, String modelName, Integer taskStatus) {
+        List<ModelListVo> modelListVos = dataModelRepository.queryModelList(req.getPageSize(), req.getOffset(),projectName,modelName,taskStatus);
         if (modelListVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
-        Integer tolal = dataModelRepository.queryModelListCount(userId, organId,projectName,modelName,taskStatus);
+        Integer tolal = dataModelRepository.queryModelListCount(projectName,modelName,taskStatus);
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelListVos));
     }
 
@@ -134,10 +134,10 @@ public class DataModelService {
 
 
 
-    public BaseResultEntity saveModelAndComponent(Long userId, Long organId, DataModelAndComponentReq params) {
+    public BaseResultEntity saveModelAndComponent(Long userId, DataModelAndComponentReq params) {
         if (modelIsRunTask(params.getModelId()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL, "模型运行任务中");
-        DataModel dataModel = DataModelConvert.dataModelReqConvertPo(params, userId, organId);
+        DataModel dataModel = DataModelConvert.dataModelReqConvertPo(params, userId);
         Map<String, Object> map = new HashMap<>();
         try {
             if (params.getIsDraft() == 0) {
@@ -315,7 +315,7 @@ public class DataModelService {
 
 
 
-    public BaseResultEntity getModelComponentDetail(Long modelId, Long userId, Long organId) {
+    public BaseResultEntity getModelComponentDetail(Long modelId, Long userId) {
         DataModelAndComponentReq req = null;
         if (modelId==null||modelId==0L){
             req = saveOrGetModelComponentCache(false,userId, null,null);
@@ -379,7 +379,7 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity runTaskModel(Long modelId, Long userId, Long organId) {
+    public BaseResultEntity runTaskModel(Long modelId) {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
@@ -400,7 +400,7 @@ public class DataModelService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getTaskModelComponent(Long modelId, Long userId, Long organId) {
+    public BaseResultEntity getTaskModelComponent(Long modelId) {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);

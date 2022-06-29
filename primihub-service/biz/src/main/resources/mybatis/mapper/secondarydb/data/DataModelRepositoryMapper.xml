@@ -33,7 +33,6 @@
         WHERE
             dm.project_id = dp.project_id
             and dm.is_draft = 1
-            and (dp.user_id = #{userId} or dp.organ_id = #{organId})
             <include refid="listwhere"></include>
         GROUP BY
             dm.model_id,
@@ -54,7 +53,6 @@
         WHERE
             dm.project_id = dp.project_id
             and dm.is_draft = 1
-            and (dp.user_id = #{userId} or dp.organ_id = #{organId})
             <include refid="listwhere"></include>
     </select>
 
