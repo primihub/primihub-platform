@@ -82,7 +82,7 @@
         </template>
       </el-table-column>
       <el-table-column
-        v-if="creator && showButtons"
+        v-if="showButtons"
         label="操作"
         fixed="right"
         min-width="200"
