@@ -78,7 +78,6 @@ export default {
           message: '请选择资源',
           type: 'error'
         })
-        this.$refs.resourceInputRef.focus()
         return
       }
       this.dialogVisible = false
@@ -116,7 +115,7 @@ export default {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
-      this.selectResources = data.list
+      this.selectResources = data.list[this.organId]
       this.dialogVisible = false
       this.serverAddress = ''
       this.organId = ''

@@ -13,7 +13,10 @@ public class FusionConfig {
     public WebMvcConfigurer WebMvcConfigurer(PinCodeInterceptor pinCodeInterceptor) {
         return new WebMvcConfigurer() {
             public void addInterceptors(InterceptorRegistry registry) {
-                registry.addInterceptor(pinCodeInterceptor).addPathPatterns("/**").excludePathPatterns("/fusion/**");
+                registry.addInterceptor(pinCodeInterceptor)
+                        .addPathPatterns("/**")
+                        .excludePathPatterns("/fusion/healthConnection")
+                        .excludePathPatterns("/fusion/registerConnection");
             }
         };
     }

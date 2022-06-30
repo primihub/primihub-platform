@@ -41,10 +41,6 @@ public class UserController {
             if(saveOrUpdateUserParam.getUserId()<0)
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"userId");
         }
-        if((saveOrUpdateUserParam.getOrganIdList()==null&&saveOrUpdateUserParam.getROrganIdList()!=null)
-                ||(saveOrUpdateUserParam.getOrganIdList()!=null&&saveOrUpdateUserParam.getROrganIdList()==null)
-                ||(saveOrUpdateUserParam.getOrganIdList()!=null&&saveOrUpdateUserParam.getROrganIdList()!=null&&saveOrUpdateUserParam.getOrganIdList().length!=saveOrUpdateUserParam.getROrganIdList().length))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"organIdList和rOrganIdList");
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 
@@ -61,12 +57,8 @@ public class UserController {
     public BaseResultEntity findUserPage(FindUserPageParam findUserPageParam,
                                          @RequestParam(defaultValue = "1") Integer pageNum,
                                          @RequestParam(defaultValue = "10")Integer pageSize){
-        if(findUserPageParam.getOrganId()!=null&&findUserPageParam.getOrganId()<0)
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"organId");
         if(findUserPageParam.getRoleId()!=null&&findUserPageParam.getRoleId()<0)
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"roleId");
-        if(findUserPageParam.getROrganId()!=null&&findUserPageParam.getROrganId()<0)
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"rOrganId");
         return sysUserService.findUserPage(findUserPageParam,pageNum,pageSize);
     }
 
@@ -92,6 +84,13 @@ public class UserController {
         if(validateKeyName==null||validateKeyName.trim().equals(""))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"validateKeyName");
         return sysUserService.updatePassword(userId,password,validateKeyName);
+    }
+
+    @RequestMapping("findUserByAccount")
+    public BaseResultEntity findUserByAccount(String userAccount){
+        if(userAccount==null||userAccount.trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
+        return sysUserService.findUserByAccount(userAccount);
     }
 
 }

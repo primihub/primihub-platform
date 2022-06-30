@@ -90,6 +90,7 @@ export const asyncRoutes = [
     name: 'ModelMenu',
     meta: { icon: 'el-icon-s-opportunity', title: '模型管理' },
     redirect: '/model/list',
+    hidden: true,
     children: [
       {
         path: 'list',

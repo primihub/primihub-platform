@@ -21,6 +21,13 @@ public class FusionResourceController {
         return resourceService.getResourceList(resourceParam);
     }
 
+    @RequestMapping("getResourceListById")
+    public BaseResultEntity getResourceListById(String[] resourceIdArray){
+        if(resourceIdArray==null||resourceIdArray.length==0)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIdArray");
+        return resourceService.getResourceListById(resourceIdArray);
+    }
+
     @RequestMapping("getResourceTagList")
     public BaseResultEntity getResourceTagList(){
         return resourceService.getResourceTagList();

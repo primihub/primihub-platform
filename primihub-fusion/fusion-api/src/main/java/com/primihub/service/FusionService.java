@@ -26,17 +26,19 @@ public class FusionService {
         fusionOrgan.setGlobalName(registerConnectionParam.getGlobalName());
         fusionOrgan.setGlobalId(registerConnectionParam.getGlobalId());
         fusionOrgan.setPinCodeMd(SignUtil.getMD5ValueUpperCaseByDefaultEncode(registerConnectionParam.getPinCode()));
+        fusionOrgan.setGatewayAddress(registerConnectionParam.getGatewayAddress());
         fusionOrgan.setRegisterTime(new Date());
         fusionOrgan.setIsDel(0);
         fusionRepository.insertFusionOrgan(fusionOrgan);
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity changeConnection(String globalId,String globalName) {
+    public BaseResultEntity changeConnection(String globalId,String globalName,String gatewayAddress) {
         FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(globalId);
         if (fusionOrgan==null)
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"无机构信息");
         fusionOrgan.setGlobalName(globalName);
+        fusionOrgan.setGatewayAddress(gatewayAddress);
         fusionRepository.updateFusionOrganSpeByGlobalId(fusionOrgan);
         return BaseResultEntity.success();
     }

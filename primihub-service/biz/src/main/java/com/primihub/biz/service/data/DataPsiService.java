@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.convert.DataPsiConvert;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -12,15 +13,10 @@ import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
 import com.primihub.biz.entity.data.vo.DataPsiResourceVo;
 import com.primihub.biz.entity.data.vo.DataPsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
-import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.sys.SysOrganService;
-import com.primihub.biz.convert.DataPsiConvert;
-import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -43,8 +39,6 @@ public class DataPsiService {
     @Autowired
     private DataResourceService dataResourceService;
     @Autowired
-    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
-    @Autowired
     private FusionResourceService fusionResourceService;
     @Autowired
     private SysOrganService sysOrganService;
@@ -66,8 +60,6 @@ public class DataPsiService {
         map.put("resourceName",dataResource.getResourceName());
         map.put("resourceState",0);
         map.put("resourceOrganId",dataResource.getOrganId());
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(dataResource.getOrganId());
-        map.put("resourceOrganName",sysOrgan!=null?sysOrgan.getOrganName():"");
         List<DataFileHandleFieldVo> voList = new ArrayList<>();
         if (dataResource.getFileHandleField()!=null){
             List<String> keywordList = new ArrayList<>();
@@ -102,7 +94,7 @@ public class DataPsiService {
 
 
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId) {
-        return dataResourceService.getDataResourceList(req,null,organId,true);
+        return dataResourceService.getDataResourceList(req,null,true);
     }
 
     public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress) {
@@ -132,7 +124,6 @@ public class DataPsiService {
             DataFResourceReq fResourceReq = new DataFResourceReq();
             fResourceReq.setPageNo(req.getPageNo());
             fResourceReq.setPageSize(req.getPageSize());
-            fResourceReq.setCancelUnion(1);
             fResourceReq.setServerAddress(serverAddress);
             BaseResultEntity baseResult = fusionResourceService.getResourceList(fResourceReq);
             if (baseResult.getCode()!=0)

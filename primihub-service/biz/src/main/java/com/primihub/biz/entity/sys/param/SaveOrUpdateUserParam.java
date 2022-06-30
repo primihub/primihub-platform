@@ -21,15 +21,11 @@ public class SaveOrUpdateUserParam {
      */
     private Long[] roleIdList;
     /**
-     * 机构id集合
-     */
-    private Long[] organIdList;
-    /**
-     * 根机构id集合
-     */
-    private Long[] rOrganIdList;
-    /**
      * 是否禁用
      */
     private Integer isForbid;
+    /**
+     * 密码
+     */
+    private String password;
 }

@@ -35,9 +35,21 @@
         where organ_global_id=#{organGlobalId}
     </select>
 
+    <select id="findOrganGlobalIdByGroupIdList" resultType="String">
+        select
+            distinct organ_global_id
+        from
+            fusion_go
+        where group_id in
+        <foreach collection="groupIdList" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
     <select id="findOrganDetailInGroup" resultType="com.primihub.entity.fusion.po.FusionOrgan">
         select
-            fo.global_id globalId,fo.global_name globalName,fo.register_time registerTime
+            fo.global_id globalId,fo.global_name globalName,fo.gateway_address gatewayAddress,fo.register_time registerTime
         from fusion_go fgo
         left join fusion_organ fo on fgo.organ_global_id=fo.global_id
         where fgo.group_id=#{groupId}

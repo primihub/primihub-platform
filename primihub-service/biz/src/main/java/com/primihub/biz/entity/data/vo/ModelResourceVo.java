@@ -8,7 +8,7 @@ public class ModelResourceVo {
     /**
      * 资源id
      */
-    private Long resourceId;
+    private String resourceId;
 
     /**
      * 资源名称
@@ -18,7 +18,7 @@ public class ModelResourceVo {
     /**
      * 机构id
      */
-    private Long organId;
+    private String organId;
     /**
      * 机构名称
      */

@@ -176,22 +176,6 @@
             and dr.user_id = #{userId}
         <if test="status!=null">and drar.record_status = #{status}</if>
     </select>
-
-    <select id="queryDataResourceAuthRecordById"
-            resultType="com.primihub.biz.entity.data.po.DataResourceAuthRecord">
-        SELECT
-            record_id AS recordId,
-            record_status AS recordStatus,
-            user_id AS userId,
-            user_name AS userName,
-            project_id AS projectId,
-            resource_id AS resourceId,
-            create_date AS createDate
-        FROM
-            data_resource_auth_record
-        WHERE
-            record_id = #{recordId}
-    </select>
     <select id="queryResourceProjectRelationCount" resultType="java.lang.Integer">
         select count(id) from data_pr where resource_id = #{resourceId}
     </select>
@@ -279,7 +263,7 @@
         from data_resource
         where resource_id>=#{startOffset} and <![CDATA[ resource_id<=#{endOffset} ]]>
     </select>
-    <select id="queryqueryDataResourceIds" resultType="java.lang.Long">
+    <select id="queryDataResourceIds" resultType="java.lang.Long">
         select resource_id from data_resource where resource_id > #{pId} ORDER BY resource_id asc LIMIT #{pageSize}
     </select>
 
@@ -298,6 +282,12 @@
                      separator="," close=")">
                 #{item}
             </foreach>
+    </select>
+    <select id="queryDataResourceByResourceFusionId" resultType="com.primihub.biz.entity.data.po.DataResource">
+        SELECT
+        <include refid="resourceColumns"></include>
+        FROM
+        data_resource where is_del = 0 and resource_fusion_id = #{resourceFusionId}
     </select>
 
 </mapper>

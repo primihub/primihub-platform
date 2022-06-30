@@ -2,6 +2,11 @@
   <div class="right-drawer">
     <template v-if="nodeData && showDataConfig">
       <el-form ref="form" v-loading="listLoading" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
+        <!-- <template v-if="nodeData.componentCode">
+          {{ nodeData }}
+          <p>发起方：</p>
+          <p>{{}}</p>
+        </template> -->
         <div v-for="item in nodeData.componentTypes" :key="item.typeCode">
           <el-form-item :label="item.typeName " :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">

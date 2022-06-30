@@ -25,7 +25,7 @@ public class ComponentResourceVo {
         }
     }
 
-    private Long resourceId;
+    private String resourceId;
     private String resourceName;
     private List<ComponentResourceYVo> yfile;
 }

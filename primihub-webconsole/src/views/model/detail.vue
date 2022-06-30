@@ -1,8 +1,9 @@
 <template>
-  <div v-loading="listLoading" class="app-container">
-    <h2>模型详情</h2>
+  <div v-loading="listLoading" class="container">
+    <!-- <h2>模型详情</h2> -->
     <div class="section">
-      <el-descriptions title="">
+      <h3>模型信息</h3>
+      <el-descriptions>
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
@@ -68,66 +69,33 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div v-if="modelQuotas.length>0" class="section">
+    <div v-if="model.latestTaskStatus === 2" class="section">
       <h3>模型评估指标</h3>
-      <el-table
-        :data="modelQuotas"
-        style="width: 100%"
-      >
-        <el-table-column
-          prop="quotaType"
-          label=""
-        >
-          <template slot-scope="{row}">
-            <span>{{ row.quotaType | quotaTypeFilter }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="auc"
-          label="AUC"
-        />
-        <el-table-column
-          prop="ks"
-          label="KS"
-        />
-        <el-table-column
-          prop="gini"
-          label="Gini"
-        />
-        <el-table-column
-          prop="precision"
-          label="Precision"
-        />
-        <el-table-column
-          prop="recall"
-          label="Recall"
-        />
-        <el-table-column
-          prop="f1Score"
-          label="F1-score"
-        />
-      </el-table>
+      <el-descriptions class="quotas" :column="1" border :label-style="{'width':'300px'}">
+        <el-descriptions-item label="① ROOT MEAN SQUARED ERROR">{{ anotherQuotas.rootMeanSquaredError }}</el-descriptions-item>
+        <el-descriptions-item label="② MEAN SQUARED ERROR">{{ anotherQuotas.meanSquaredError }}</el-descriptions-item>
+        <el-descriptions-item label="③ EXPLAINED VARIANCE">{{ anotherQuotas.explainedVariance }}</el-descriptions-item>
+        <el-descriptions-item label="④ EXPLAINED VARIANCE">{{ anotherQuotas.explainedVariance }}</el-descriptions-item>
+        <el-descriptions-item label="⑤ MEAN SQUARED LOG ERROR">{{ anotherQuotas.meanSquaredLogError }}</el-descriptions-item>
+        <el-descriptions-item label="⑥ R2 SCORE">{{ anotherQuotas.r2Score }}</el-descriptions-item>
+        <el-descriptions-item label="⑦ MEAN ABSOLUTE ERROR">{{ anotherQuotas.meanAbsoluteError }}</el-descriptions-item>
+        <el-descriptions-item label="⑧ MEDIAN ABSOLUTE ERROR">{{ anotherQuotas.medianAbsoluteError }}</el-descriptions-item>
+      </el-descriptions>
     </div>
-    <div class="section">
+    <!-- <div class="section">
       <h3>模型ks值</h3>
-      <!-- <div class="img-container">
-        <div v-for="item in modelQuotas" :key="item.quotaId">
-          <p>{{ item.quotaType | quotaTypeFilter }}</p>
-          <img :src="item.quotaImage" alt="">
-        </div>
-      </div> -->
       <line-chart :chart-data="lineChartData" />
-    </div>
+    </div> -->
   </div>
 </template>
 
 <script>
 import { getModelDetail, getModelPrediction } from '@/api/model'
-import LineChart from '@/components/Charts/LineChart.vue'
+// import LineChart from '@/components/Charts/LineChart.vue'
 
 export default {
   components: {
-    LineChart
+    // LineChart
   },
   filters: {
     quotaTypeFilter(type) {
@@ -152,12 +120,13 @@ export default {
       modelResources: [],
       modelId: 24,
       modelComponent: [],
-      lineChartData: []
+      lineChartData: [],
+      anotherQuotas: []
     }
   },
   created() {
     this.fetchData()
-    this.getChartsData()
+    // this.getChartsData()
   },
   methods: {
     toProjectCreatePage() {
@@ -174,8 +143,9 @@ export default {
       getModelDetail({ modelId: this.modelId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas } = response.result
         this.model = model
+        this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
@@ -194,7 +164,7 @@ export default {
 ::v-deep .time-consuming-label {
   width: 100px;
 }
-.app-container {
+.container {
   .total-time-label{
     font-size: 18px;
     margin-right: 10px;
@@ -211,7 +181,10 @@ export default {
     margin-right: 3px;
   }
   .section {
-    padding:10px 30px;
+    padding: 10px 30px 30px;
+    border-radius: 20px;
+    background-color: #fff;
+    margin-bottom: 30px;
   }
   .img-container{
     display: flex;
@@ -226,5 +199,8 @@ export default {
 }
 ::v-deep .el-descriptions-item__label:not(.is-bordered-label){
   margin-right: 0;
+}
+.quotas{
+  max-width: 800px;
 }
 </style>

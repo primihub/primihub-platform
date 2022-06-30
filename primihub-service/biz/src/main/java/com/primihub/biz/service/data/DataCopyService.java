@@ -100,22 +100,26 @@ public class DataCopyService implements ApplicationContextAware {
 
                 boolean isSuccess=true;
                 String errorMsg="";
-                try{
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                    MultiValueMap map = new LinkedMultiValueMap<>();
-                    map.put("copyPart", new ArrayList(){{add(JSON.toJSONString(copyDto));}});
-                    map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
-                    map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
-                    HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-                    BaseResultEntity resultEntity=restTemplate.postForObject(task.getFusionServerAddress()+"/copy/batchSave",request, BaseResultEntity.class);
-                    if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode()) {
+                if(!copyDto.getCopyPart().equals("[]")) {
+                    try {
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                        MultiValueMap map = new LinkedMultiValueMap<>();
+                        map.put("copyPart", new ArrayList() {{add(JSON.toJSONString(copyDto));}});
+                        map.put("globalId", new ArrayList() {{add(sysLocalOrganInfo.getOrganId());}});
+                        map.put("pinCode", new ArrayList() {{add(sysLocalOrganInfo.getPinCode());}});
+                        HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+                        BaseResultEntity resultEntity = restTemplate.postForObject(task.getFusionServerAddress() + "/copy/batchSave", request, BaseResultEntity.class);
+                        if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode()) {
+                            isSuccess = false;
+                            if (++errorCount >= 3)
+                                errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
+                        }
+                    } catch (Exception e) {
                         isSuccess = false;
-                        if(++errorCount>=3) errorMsg=resultEntity.getMsg().substring(0,Math.min(1000,resultEntity.getMsg().length()));
+                        if (++errorCount >= 3)
+                            errorMsg = e.getMessage().substring(0, Math.min(1000, e.getMessage().length()));
                     }
-                }catch (Exception e){
-                    isSuccess=false;
-                    if(++errorCount>=3) errorMsg=e.getMessage().substring(0,Math.min(1000,e.getMessage().length()));
                 }
 
                 if(isSuccess) {

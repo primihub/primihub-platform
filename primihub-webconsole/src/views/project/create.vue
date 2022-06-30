@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <h2>新建项目</h2>
     <el-form
       ref="dataForm"
       :model="dataForm"
@@ -10,61 +9,111 @@
     >
       <el-form-item label="项目名称" prop="projectName">
         <div class="item-wrap-normal">
-          <el-input v-model="dataForm.projectName" />
+          <el-input
+            v-model="dataForm.projectName"
+            maxlength="20"
+            minlength="3"
+            show-word-limit
+          />
         </div>
       </el-form-item>
       <el-form-item label="项目描述" prop="projectDesc">
         <div class="item-wrap-normal">
-          <el-input v-model="dataForm.projectDesc" type="textarea" />
+          <el-input
+            v-model="dataForm.projectDesc"
+            type="textarea"
+            maxlength="200"
+            minlength="3"
+            show-word-limit
+          />
         </div>
       </el-form-item>
-      <!-- <el-form-item label="中心节点" prop="organId">
-        <OrganCascader placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
-      </el-form-item> -->
-      <el-form-item label="添加资源" prop="resources">
-        <div class="resource-box">
-          <ResourceItemCreate class="item" @click="openDialog" />
-          <ResourceItemSimple v-for="item in selectResources" :key="item.resourceId" class="item" :data="item" :show-close="true" @delete="handleDelete" />
+      <el-form-item label="中心节点" prop="serverAddressValue">
+        <el-select v-if="serverAddressList.length > 0" v-model="dataForm.serverAddressValue" class="item-wrap-normal" placeholder="请选择中心节点" @change="handleChange">
+          <el-option
+            v-for="item in serverAddressList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="发起方" prop="initiateOrganId">
+        <p class="organ"><i class="el-icon-office-building" />  {{ dataForm.initiateOrganName }}</p>
+        <el-button type="primary" plain @click="openDialog(dataForm.initiateOrganId)">添加资源到此项目</el-button>
+        <ResourceTable v-if="filterData(dataForm.initiateOrganId).length>0" :show-status="false" row-key="resourceId" :data="filterData(dataForm.initiateOrganId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
+      </el-form-item>
+      <el-form-item label="协作方" prop="providerOrganIds">
+        <el-button plain @click="openProviderOrganDialog">添加协作者</el-button>
+        <div v-for="(organ) in selectedData" :key="organ.globalId" class="organ-item">
+          <p class="organ"><i class="el-icon-office-building" />  {{ organ.globalName }}</p>
+          <el-button v-if="selectedData" type="primary" plain @click="openDialog(organ.globalId)">添加资源到此项目</el-button>
+          <ResourceTable v-if="filterData(organ.globalId).length>0" :show-status="false" :this-institution="thisInstitution" row-key="resourceId" :data="filterData(organ.globalId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
         </div>
-        <ProjectResourceDialog :dialog-visible="dialogVisible" :select-ids="selectIds" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+
       </el-form-item>
       <el-form-item>
         <el-button
           type="primary"
-          @click="submitForm('dataForm')"
+          :disabled="dataForm.providerOrganIds.length === 0"
+          @click="submitForm"
         >
           立即创建
         </el-button>
         <el-button @click="goBack()">返回</el-button>
       </el-form-item>
     </el-form>
+    <!-- add resource dialog -->
+    <ProjectResourceDialog ref="dialogRef" top="10px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <!-- add provider organ dialog -->
+    <ProviderOrganDialog :selected-provider-organ-list="selectedData" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <!-- preview dialog -->
+    <el-dialog
+      :visible.sync="previewDialogVisible"
+      :before-close="closeDialog"
+      append-to-body
+    >
+      <ResourcePreviewTable :data="previewList" height="500" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { saveProject } from '@/api/project'
-import ResourceItemCreate from '@/components/ResourceItemCreate'
-import ResourceItemSimple from '@/components/ResourceItemSimple'
+import { resourceFilePreview } from '@/api/resource'
+import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
+import ResourceTable from '@/components/ResourceTable'
+import ProviderOrganDialog from '@/components/ProviderOrganDialog'
+import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 
 export default {
-  components: { ResourceItemSimple, ResourceItemCreate, ProjectResourceDialog },
+  components: { ProjectResourceDialog, ResourceTable, ProviderOrganDialog, ResourcePreviewTable },
   data() {
-    // const checkResource = (rule, value, cb) => {
-    //   console.log('value', value.length)
-    //   if (value.length === 0) {
-    //     cb(new Error('请选择资源'))
-    //   }
-    // }
     return {
+      fieldListLoading: false,
       dataForm: {
         projectName: '',
         projectDesc: '',
-        organId: '',
-        resources: []
+        serverAddressValue: '',
+        initiateOrganId: '',
+        providerOrganIds: []
       },
+      serverAddressList: [],
       dialogVisible: false,
+      previewDialogVisible: false,
+      providerOrganDialogVisible: false,
       resourceList: [],
+      serverAddress: '',
+      selectedOrganId: '',
+      initiateOrganId: '',
+      providerOrganId: '',
+      initiateOrganName: '',
+      providerOrganName: '',
+      organList: [],
+      selectedData: [],
+      previewList: [],
+      fileId: '',
       dataRules: {
         projectName: [
           { required: true, message: '请输入项目名称', trigger: 'blur' },
@@ -74,61 +123,70 @@ export default {
           { required: true, message: '请输入项目描述', trigger: 'blur' },
           { min: 0, max: 200, message: '长度200字符以内', trigger: 'blur' }
         ],
-        organId: [
+        serverAddressValue: [
           { required: true, message: '请选择中心节点', trigger: 'blur' }
+        ],
+        initiateOrganId: [
+          { required: true, message: '请选择发起方', trigger: 'blur' }
+        ],
+        providerOrganIds: [
+          { required: true, message: '请选择协作方', trigger: 'blur' }
         ]
       },
-      selectResources: [],
-      selectIds: [],
-      serverAddress: '',
-      organId: ''
+      saveParams: {
+        id: '',
+        projectOrgans: [] // save params
+      }
     }
   },
+  computed: {
+    thisInstitution() {
+      return this.$store.getters.userOrganId === this.selectedOrganId
+    }
+  },
+  async created() {
+    await this.getLocalOrganInfo()
+  },
   methods: {
-    addResource() {
-      if (!this.serverAddress) {
-        this.$message({
-          message: '请先选择机构',
-          type: 'warning'
-        })
-        return
-      }
-      this.openDialog()
+    async openProviderOrganDialog() {
+      await this.findMyGroupOrgan()
+      this.providerOrganDialogVisible = true
     },
-    openDialog() {
-      console.log('open')
+    openDialog(id) {
+      this.selectedOrganId = id
       this.dialogVisible = true
     },
     handleDialogCancel() {
       this.dialogVisible = false
     },
-    handleDialogSubmit({ list, selectIds }) {
-      console.log(list)
-      this.selectResources = list
-      this.selectIds = selectIds
-      console.log('handleDialogSubmit selectIds', this.selectIds)
-      this.dataForm.resources = selectIds
+    handleDialogSubmit(data) {
+      this.resourceList[this.selectedOrganId] = data.filter(item => item.organId === this.selectedOrganId)
       this.dialogVisible = false
     },
-    submitForm(formName) {
-      if (this.selectResources.length === 0) {
-        this.$message({
-          message: '请先选择资源',
-          type: 'warning'
-        })
-        return
+    filterData(organId) {
+      return this.resourceList[organId] || []
+    },
+    submitForm() {
+      const { projectName, projectDesc } = this.dataForm
+      this.getProjectOrgans()
+      let params = {
+        serverAddress: this.serverAddress,
+        projectName,
+        projectDesc,
+        projectOrgans: this.saveParams.projectOrgans
       }
-      this.$refs[formName].validate((valid) => {
+      params = JSON.stringify(params)
+      console.log('params', params)
+      this.$refs.dataForm.validate((valid) => {
         if (valid) {
-          saveProject(this.dataForm).then(res => {
+          saveProject(params).then(res => {
             if (res.code === 0) {
-              const id = res.result.projectId
+              const id = res.result.id
               this.$router.push({
                 name: 'ProjectDetail',
                 params: { id }
               })
             }
-            console.log(res)
           })
         } else {
           console.log('error submit!!')
@@ -136,34 +194,119 @@ export default {
         }
       })
     },
-    handleDelete(data) {
-      const index = this.selectIds.indexOf(data.id)
-      this.selectIds.splice(index, 1)
-      this.selectResources.splice(index, 1)
+    getProjectOrgans() {
+      for (const key in this.resourceList) {
+        const item = this.resourceList[key]
+        if (this.resourceList[key].length > 0) {
+          const current = this.saveParams.projectOrgans.filter(item => item.organId === key)
+          console.log(current)
+          // current[0].resourceIds = []
+          current[0].resourceIds = item.map(r => r.resourceId)
+        }
+      }
+      console.log(this.saveParams.projectOrgans)
+    },
+    handleRemove({ organId, resourceId }) {
+      console.log(this.resourceList[organId])
+      const index = this.resourceList[organId].findIndex(item => item.resourceId === resourceId)
+      console.log('handleRemove', this.selectedData, resourceId, index)
+      this.resourceList[organId].splice(index, 1)
     },
     goBack() {
       this.$router.replace({
         name: 'ProjectList'
       })
     },
-    handleOrganSelect(data) {
-      this.serverAddress = data.serverAddress
-      this.dataForm.organId = data.organId
+    handleChange(val) {
+      console.log(val)
+      this.serverAddress = this.serverAddressList.filter(item => item.value === val)[0].label
+    },
+    async getLocalOrganInfo() {
+      const { result = {}} = await getLocalOrganInfo()
+      this.sysLocalOrganInfo = result.sysLocalOrganInfo
+      this.dataForm.initiateOrganId = this.sysLocalOrganInfo?.organId
+      this.dataForm.initiateOrganName = this.sysLocalOrganInfo?.organName
+      this.serverAddressList = this.sysLocalOrganInfo.fusionList.map((item, index) => {
+        return {
+          label: item.serverAddress,
+          value: index
+        }
+      })
+      this.dataForm.serverAddressValue = 0
+      this.serverAddress = this.sysLocalOrganInfo.fusionList[this.dataForm.serverAddressValue].serverAddress
+      this.saveParams.projectOrgans.push({
+        organId: this.dataForm.initiateOrganId,
+        participationIdentity: 1
+      })
+      console.log('sysLocalOrganInfo', this.sysLocalOrganInfo)
+    },
+    closeProviderOrganDialog() {
+      this.providerOrganDialogVisible = false
+    },
+    handleProviderOrganSubmit(data) {
+      console.log(data)
+      this.selectedData = data
+      this.dataForm.providerOrganIds = data
+      data.map(item => {
+        this.saveParams.projectOrgans.push({
+          organId: item.globalId,
+          participationIdentity: 2
+        })
+      })
+      console.log('projectOrgans', this.saveParams.projectOrgans)
+      this.providerOrganDialogVisible = false
+    },
+    async findMyGroupOrgan() {
+      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
+      this.organList = result.dataList.organList
+    },
+    handlePreview(row) {
+      this.resourceId = row.resourceId
+      this.resourceFilePreview()
+      this.previewDialogVisible = true
+    },
+    resourceFilePreview() {
+      this.fieldListLoading = true
+      resourceFilePreview({ resourceId: this.resourceId }).then(res => {
+        this.previewList = res?.result.dataList
+        this.fieldListLoading = false
+      })
+    },
+    closeDialog() {
+      this.previewDialogVisible = false
     }
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
+@import "~@/styles/resource.scss";
+  p{
+    margin-block-start: 0;
+      margin-block-end: 0;
+  }
   .item-wrap-normal {
     width: 400px;
   }
-  .resource-box {
-    display: flex;
-    flex-wrap: wrap;
-    .item {
-      flex-shrink: 0;
-      margin-bottom: 20px;
-      margin-right: 20px;
+  .organ-item{
+    .el-button{
+      margin-bottom: 10px;
     }
+  }
+  .organ{
+    font-size: 16px;
+    color: #666;
+    font-weight: bold;
+  }
+  ::v-deep .el-table,::v-deep .el-divider__text, .el-link{
+  font-size: 12px!important;
+  }
+  ::v-deep .el-table th.el-table__cell{
+    font-size: 14px;
+  }
+  ::v-deep .el-table th.el-table__cell{
+    padding: 5px 0!important;
+  }
+  ::v-deep .el-table .cell{
+    font-size: 12px;
   }
 </style>

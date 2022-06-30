@@ -1,10 +1,65 @@
 <template>
   <div class="container">
-    <div class="search-area">
-      <div><el-button v-if="hasCreateAuth" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button></div>
-      <search-input class="input-with-search" @click="searchProject" @change="handleSearchNameChange" />
-    </div>
+    <el-form :inline="true" :model="searchForm" class="search-area">
+      <el-form-item label="项目名称">
+        <el-input v-model="searchForm.projectName" />
+      </el-form-item>
+      <el-form-item label="中心节点">
+        <el-select v-model="searchForm.serverAddress" clearable placeholder="请选择" @change="handleServerAddressChange">
+          <el-option
+            v-for="center in sysLocalOrganInfo.fusionList"
+            :key="center.serverAddress"
+            :label="center.serverAddress"
+            :value="center.serverAddress"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="参与机构">
+        <el-select v-model="searchForm.organId" placeholder="请选择" clearable @focus="handleOrganSelect">
+          <el-option
+            v-for="organ in organList"
+            :key="organ.organId"
+            :label="organ.organName"
+            :value="organ.organId"
+          />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="参与角色">
+        <el-select v-model="searchForm.participationIdentity" placeholder="请选择" clearable>
+          <el-option label="发起者" value="1" />
+          <el-option label="协作者" value="2" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="项目状态">
+        <el-select v-model="searchForm.status" placeholder="请选择" clearable>
+          <el-option label="审核中" value="0" />
+          <el-option label="可用" value="1" />
+          <el-option label="关闭" value="2" />
+        </el-select>
+      </el-form-item>
+      <el-form-item label="创建时间">
+        <el-date-picker
+          v-model="searchForm.createDate"
+          type="daterange"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="yyyy-MM-dd HH:mm:ss"
+        />
+      </el-form-item>
+      <el-button class="search-button" type="primary" @click="searchProject">查询</el-button>
+    </el-form>
+    <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
+      <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item>
+      <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
+      <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item>
+      <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
+    </el-menu>
     <div v-loading="listLoading" class="project-list">
+      <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
+        <div class="icon-wrap"><i class="el-icon-document-add" /></div>
+        <div class="text">添加项目</div>
+      </div>
       <template v-if="noData">
         <no-data />
       </template>
@@ -18,14 +73,14 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getProjectList } from '@/api/project'
+import { getProjectList, getListStatistics } from '@/api/project'
 import ProjectItem from '@/components/ProjectItem'
 import NoData from '@/components/NoData'
 import Pagination from '@/components/Pagination'
-import SearchInput from '@/components/SearchInput'
+import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
 export default {
-  components: { ProjectItem, NoData, Pagination, SearchInput },
+  components: { ProjectItem, NoData, Pagination },
   filters: {
     statusFilter(status) {
       const statusMap = {
@@ -38,15 +93,35 @@ export default {
   },
   data() {
     return {
-      searchName: '',
       projectList: null,
+      sysLocalOrganInfo: [],
+      organList: [],
+      activeIndex: '0',
       listLoading: true,
       params: {
         pageNo: 1,
-        pageSize: 12,
-        projectName: ''
+        pageSize: 11,
+        projectName: '',
+        serverAddress: '',
+        queryType: 0,
+        organId: '',
+        participationIdentity: '',
+        startDate: '',
+        endDate: '',
+        status: ''
+      },
+      searchForm: {
+        projectName: '',
+        serverAddress: '',
+        organId: '',
+        participationIdentity: '',
+        status: '',
+        createDate: []
       },
       total: 0,
+      totalNum: 0,
+      other: 0,
+      own: 0,
       pageCount: 0,
       noData: false,
       currentPage: 0,
@@ -61,26 +136,64 @@ export default {
       return this.buttonPermissionList.includes('ProjectCreate')
     }
   },
-  created() {
+  async created() {
+    await this.getLocalOrganInfo()
     this.fetchData()
+    this.getListStatistics()
   },
   methods: {
+    getListStatistics() {
+      getListStatistics().then(({ result }) => {
+        this.totalNum = result.total
+        this.other = result.other
+        this.own = result.own
+      })
+    },
+    async getLocalOrganInfo() {
+      const { result = {}} = await getLocalOrganInfo()
+      this.sysLocalOrganInfo = result.sysLocalOrganInfo
+    },
     toProjectCreatePage() {
       this.$router.push({
         name: 'ProjectCreate'
       })
     },
+    handleServerAddressChange(value) {
+      console.log(value)
+    },
+    handleOrganSelect() {
+      this.findMyGroupOrgan()
+    },
+    findMyGroupOrgan() {
+      if (this.searchForm.serverAddress === '') {
+        this.$message({
+          message: '请先选择中心节点',
+          type: 'warning'
+        })
+        return
+      }
+      findMyGroupOrgan({ serverAddress: this.searchForm.serverAddress }).then(res => {
+        this.organList = res.result.dataList.organList && res.result.dataList.organList.map((item) => {
+          return {
+            organName: item.globalName,
+            organId: item.globalId
+          }
+        })
+      })
+    },
     searchProject() {
-      this.params.projectName = this.searchName
+      this.params.projectName = this.searchForm.projectName
+      this.params.serverAddress = this.searchForm.serverAddress
+      this.params.organId = this.searchForm.organId
+      this.params.participationIdentity = this.searchForm.participationIdentity
+      this.params.status = this.searchForm.status
+      this.params.startDate = this.searchForm.createDate && this.searchForm.createDate[0]
+      this.params.endDate = this.searchForm.createDate && this.searchForm.createDate[1]
       this.fetchData()
       this.params.pageNo = 1
     },
-    handleSearchNameChange(searchName) {
-      this.searchName = searchName
-    },
     fetchData() {
       this.listLoading = true
-      this.noData = false
       this.projectList = []
       getProjectList(this.params).then((res) => {
         if (res.code === 0) {
@@ -96,6 +209,18 @@ export default {
         }
       })
     },
+    handleSelect(key) {
+      console.log(key)
+      this.params.queryType = parseInt(key)
+      this.params.projectName = ''
+      this.params.organId = ''
+      this.params.participationIdentity = ''
+      this.params.status = ''
+      this.params.startDate = ''
+      this.params.endDate = ''
+      this.params.pageNo = 1
+      this.fetchData()
+    },
     handlePagination(data) {
       this.params.pageNo = data.page
       this.fetchData()
@@ -104,20 +229,67 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "~@/styles/variables.scss";
+@import "../../styles/variables.scss";
 .search-area {
-  padding: 0 10px;
-  border-radius: $sectionBorderRadius;
+  padding: 30px 30px 20px 20px;
+  background-color: #fff;
+  display: flex;
+  flex-wrap: wrap;
 }
-.input-with-search {
-  width: 300px;
-  margin-top: 10px;
+.search-button {
+  margin-left: auto;
+  height: 38px;
+  width: 100px;
+  border-radius: 4.5px;
+}
+.select-menu {
+  margin-top: 40px;
+  display: flex;
+  padding: 0 30px;
+}
+.select-item {
+  margin: 10px 20px 0 20px;
+  font-size: initial;
+}
+.add-button {
+  height: 38px;
+  align-self: center;
+  margin-left: auto;
 }
 .project-list {
   margin-top: 40px;
   display: flex;
   flex-wrap: wrap;
   border-radius: $sectionBorderRadius;
+}
+.add-card {
+  width: 285px;
+  box-sizing: border-box;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fff;
+  margin: 10px;
+  color: rgba(0,0,0,0.85);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  border: 1px dashed $borderColor;
+  &:hover {
+    box-shadow: 2px 4px 8px rgba(0,0,0,.05);
+  }
+}
+.icon-wrap {
+  font-size: 45px;
+  text-align: center;
+  color: rgba(0,0,0,0.65);
+}
+.text {
+  text-align: center;
+}
+::v-deep .el-badge__content.is-fixed{
+  top: 10px;
+  right: 0;
 }
 .pagination-container {
   padding-top: 50px;

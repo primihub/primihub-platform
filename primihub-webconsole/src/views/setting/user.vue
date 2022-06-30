@@ -75,7 +75,6 @@
 
 <script>
 import { getUserList, deleteUser, saveOrUpdateUser, initPassword } from '@/api/userAdmin'
-import { getOrgans } from '@/api/organ'
 import { getRoles } from '@/api/role'
 import Pagination from '@/components/Pagination'
 import { mapGetters } from 'vuex'
@@ -172,24 +171,6 @@ export default {
         })
       }
     },
-    async getOrgans(query) {
-      this.organOptions = []
-      const params = {
-        ...query,
-        pageSize: 20 // 为加载更多机构留空间
-      }
-      const res = await getOrgans(params)
-      if (res.code === 0) {
-        const { sysOrganList } = res.result
-        this.sysOrganList = sysOrganList
-        this.sysOrganList.map(item => {
-          this.organOptions.push({
-            organName: item.organName,
-            organId: item.organId.toString()
-          })
-        })
-      }
-    },
     // handleRoleFocus() {
     //   this.getRoles()
     // },
@@ -217,8 +198,7 @@ export default {
       this.dialogTitle = '新增用户'
       this.dialogVisible = true
       this.dialogFlag = 'add'
-      // await this.getRoles()
-      // await this.getOrgans()
+      await this.getRoles()
     },
     clearForm() {
       this.$refs['userForm'].resetFields()

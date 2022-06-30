@@ -31,8 +31,6 @@ public class ScheduleService {
         if(true||currentAtom.equals(1L)){
             Date threeDayAgo= DateUtil.changeDate(date, Calendar.DAY_OF_WEEK,-3);
             Date tenMinuteAgo= DateUtil.changeDate(date, Calendar.MINUTE,-3);
-//            System.out.println(DateUtil.formatDate(threeDayAgo,"yyyy-MM-dd HH:mm:ss"));
-//            System.out.println(DateUtil.formatDate(tenMinuteAgo,"yyyy-MM-dd HH:mm:ss"));
             List<DataFusionCopyTask> notFinishedTask=dataCopyService.selectNotFinishedTask(threeDayAgo,tenMinuteAgo);
             for(DataFusionCopyTask task:notFinishedTask){
                 dataCopyService.handleFusionCopyTask(task);

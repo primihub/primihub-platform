@@ -11,7 +11,6 @@ import com.primihub.biz.entity.data.vo.DataPsiVo;
 import com.primihub.biz.entity.data.vo.DataResourceRecordVo;
 import com.primihub.biz.entity.data.vo.PsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
-import com.primihub.biz.entity.sys.po.SysOrgan;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.Map;
@@ -62,42 +61,6 @@ public class DataPsiConvert {
         dataPsiResource.setKeywordList(req.getKeywordList());
         dataPsiResource.setPsiResourceDesc(req.getPsiResourceDesc());
         return dataPsiResource;
-
-    }
-
-    public static DataPsiVo DataPsiConvertVo(DataPsiTask task, DataPsi dataPsi, Map<Long, SysOrgan> sysOrganMap, Map<Long, DataResourceRecordVo> resourceMap){
-        DataPsiVo dataPsiVo = new DataPsiVo();
-        dataPsiVo.setId(task.getId());
-        dataPsiVo.setOwnOrganId(dataPsi.getOwnOrganId());
-        dataPsiVo.setOwnOrganName(sysOrganMap.containsKey(dataPsi.getOwnOrganId())?sysOrganMap.get(dataPsi.getOwnOrganId()).getOrganName():"");
-        dataPsiVo.setOwnResourceId(dataPsi.getOwnResourceId());
-        dataPsiVo.setOwnResourceName(resourceMap.containsKey(dataPsi.getOwnResourceId())?resourceMap.get(dataPsi.getOwnResourceId()).getResourceName():"");
-        dataPsiVo.setOwnKeyword(dataPsi.getOwnKeyword());
-        dataPsiVo.setOtherOrganId(dataPsi.getOtherOrganId());
-        dataPsiVo.setOtherOrganName(sysOrganMap.containsKey(dataPsi.getOtherOrganId())?sysOrganMap.get(dataPsi.getOtherOrganId()).getOrganName():"");
-        dataPsiVo.setOtherResourceId(dataPsi.getOtherResourceId());
-        dataPsiVo.setOtherResourceName(resourceMap.containsKey(dataPsi.getOtherResourceId())?resourceMap.get(dataPsi.getOtherResourceId()).getResourceName():"");
-        dataPsiVo.setOtherKeyword(dataPsi.getOtherKeyword());
-        dataPsiVo.setOutputFilePathType(dataPsi.getOutputFilePathType());
-        dataPsiVo.setOutputNoRepeat(dataPsi.getOutputNoRepeat());
-        dataPsiVo.setColumnCompleteStatistics(dataPsi.getColumnCompleteStatistics());
-        dataPsiVo.setResultName(dataPsi.getResultName());
-        dataPsiVo.setOutputContent(dataPsi.getOutputContent());
-        dataPsiVo.setOutputFormat(dataPsi.getOutputFormat());
-        dataPsiVo.setResultOrganIds(dataPsi.getResultOrganIds());
-        dataPsiVo.setResultOrganName(dataPsi.getResultOrganIds());
-        if (StringUtils.isNotBlank(dataPsi.getResultOrganIds())){
-            String[] organIds = dataPsi.getResultOrganIds().split(",");
-            for (String organId : organIds) {
-                dataPsiVo.setResultOrganName(dataPsiVo.getResultOrganName().replace(organId,(sysOrganMap.containsKey(Long.valueOf(organId))?sysOrganMap.get(Long.valueOf(organId)).getOrganName():organId)));
-            }
-        }
-        dataPsiVo.setRemarks(dataPsi.getRemarks());
-        dataPsiVo.setCreateDate(task.getCreateDate());
-        dataPsiVo.setTaskId(task.getId());
-        dataPsiVo.setTaskIdName(task.getTaskId());
-        dataPsiVo.setTaskState(task.getTaskState());
-        return dataPsiVo;
 
     }
 

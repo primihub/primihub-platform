@@ -43,7 +43,6 @@ public class FusionResourceService {
             map.put("resourceName", new ArrayList(){{add(req.getResourceName());}});
             map.put("resourceType", new ArrayList(){{add(req.getResourceType());}});
             map.put("organId", new ArrayList(){{add(req.getOrganId());}});
-            map.put("cancelUnion", new ArrayList(){{add(req.getCancelUnion());}});
             map.put("tagName", new ArrayList(){{add(req.getTagName());}});
             map.put("pageNo", new ArrayList(){{add(req.getPageNo());}});
             map.put("pageSize", new ArrayList(){{add(req.getPageSize());}});

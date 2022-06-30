@@ -10,9 +10,8 @@
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
           <img src="/images/avatar.png" class="user-avatar">
           <div class="user-info">
-            {{ organName }}
-            <br>
-            {{ userInfo.userName }}
+            <p>{{ userOrganName }}</p>
+            <p>{{ userName }}</p>
           </div>
           <i class="el-icon-arrow-down el-icon--right" />
         </div>
@@ -33,10 +32,9 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from 'vuex'
+import { mapGetters, mapState, mapActions } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
-
 export default {
   components: {
     Breadcrumb,
@@ -52,18 +50,21 @@ export default {
     ...mapState('user', ['organChange']),
     ...mapGetters([
       'sidebar',
-      'avatar'
+      'avatar',
+      'userOrganId',
+      'userOrganName',
+      'userName'
     ])
   },
   watch: {
     organChange(newVal) {
       if (newVal) {
-        this.getUserInfo()
+        this.getInfo()
       }
     }
   },
   created() {
-    this.getUserInfo()
+    this.getInfo()
   },
   methods: {
     toggleSideBar() {
@@ -74,15 +75,20 @@ export default {
       // location.reload()
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    getUserInfo() {
-      this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      this.organName = this.userInfo.organIdListDesc
-    }
+    ...mapActions('user', ['getInfo'])
+    // getUserInfo() {
+    //   this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
+    //   this.organName = this.userInfo.organIdListDesc
+    // }
   }
 }
 </script>
 
 <style lang="scss" scoped>
+p{
+  margin-block-start: 0;
+    margin-block-end: 0;
+}
 .navbar {
   height: 50px;
   overflow: hidden;
@@ -142,9 +148,9 @@ export default {
         position: relative;
         .user-info{
           display: inline-block;
-          vertical-align: middle;
           line-height: 1;
           margin: 0 3px;
+          vertical-align: middle;
         }
         .user-avatar {
           cursor: pointer;

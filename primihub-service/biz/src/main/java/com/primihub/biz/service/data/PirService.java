@@ -8,6 +8,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
@@ -80,5 +81,20 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL);
         }
         return BaseResultEntity.success(map);
+    }
+
+    public static void main(String[] args) {
+//        String id = UUID.randomUUID().toString();
+//        System.out.println(id);
+//        System.out.println(id.length());
+        try {
+            String[] strings = CryptUtil.genRsaKeyPair();
+            System.out.println(strings[0]);
+            System.out.println(strings[0].length());
+            System.out.println(strings[1]);
+            System.out.println(strings[1].length());
+        }catch (Exception e){
+
+        }
     }
 }

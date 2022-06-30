@@ -3,8 +3,8 @@
 <mapper namespace="com.primihub.biz.repository.primarydb.sys.SysUserPrimarydbRepository">
 
     <insert id="insertSysUser" useGeneratedKeys="true" keyProperty="userId">
-        insert into sys_user(user_account,user_password,user_name,role_id_list,organ_id_List,r_organ_id_list,is_forbid,is_editable,is_del)
-        values(#{userAccount},#{userPassword},#{userName},#{roleIdList},#{organIdList},#{rOrganIdList},#{isForbid},#{isEditable},#{isDel})
+        insert into sys_user(user_account,user_password,user_name,role_id_list,is_forbid,is_editable,is_del)
+        values(#{userAccount},#{userPassword},#{userName},#{roleIdList},#{isForbid},#{isEditable},#{isDel})
     </insert>
 
     <update id="updateSysUserExplicit">
@@ -14,8 +14,6 @@
             <if test="userPassword!=null and userPassword!='' ">user_password = #{userPassword},</if>
             <if test="userName!=null and userName!='' ">user_name = #{userName},</if>
             <if test="roleIdList!=null and roleIdList!='' ">role_id_list = #{roleIdList},</if>
-            <if test="rOrganIdList!=null and rOrganIdList!='' ">r_organ_id_list = #{rOrganIdList},</if>
-            <if test="organIdList!=null and organIdList!='' ">organ_id_list = #{organIdList},</if>
         </set>
         where user_id=#{userId}
     </update>
@@ -35,22 +33,6 @@
         <foreach collection="roleArray" item="id" open="(" separator="," close=")">
             #{id}
         </foreach>-->
-    </delete>
-
-    <insert id="insertSysUoBatch">
-        insert into sys_uo(user_id,organ_id,is_del)
-        values
-        <foreach collection="uoList" item="uo" separator=",">
-            (#{uo.userId},#{uo.organId},#{uo.isDel})
-        </foreach>
-    </insert>
-
-    <delete id="deleteSysUoBatch">
-        delete from sys_uo
-        WHERE user_id=#{userId} and organ_id IN
-        <foreach collection="organArray" item="id" open="(" separator="," close=")">
-            #{id}
-        </foreach>
     </delete>
 
     <update id="updateSysUserDelStatus">

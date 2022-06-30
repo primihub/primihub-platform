@@ -2,6 +2,8 @@ package com.primihub.entity.resource.param;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ResourceParam extends PageParam {
     private String resourceId;
@@ -10,5 +12,6 @@ public class ResourceParam extends PageParam {
     private String organId;
     private String tagName;
     private String globalId;
-    private Integer cancelUnion=0;
+
+    private List<Long> groupList;
 }

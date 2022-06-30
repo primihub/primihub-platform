@@ -111,7 +111,7 @@ public class DataMpcService {
         }
         if (astMysqlSelectProperty == null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"sql 校验失败");
-        List<DataProjectResource> dataProjectResources = dataProjectRepository.queryProjectResourceByProjectId(projectId);
+        List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(null);
         if (dataProjectResources.size()==0)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"未找到资源数据");
         Map<String, DataRunScript> dataRunScriptMap = getDataRunScript(dataProjectResources);
@@ -184,21 +184,21 @@ public class DataMpcService {
 
     public Map<String, DataRunScript> getDataRunScript(List<DataProjectResource> dataProjectResources){
         Map<String, DataRunScript> map = new HashMap<>();
-        Set<Long> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toSet());
-        List<DataFileField> dataFileField = dataResourceRepository.queryDataFileField(new HashMap() {{
-            put("resourceIds", resourceIds);
-            put("protectionStatus", 1);
-        }});
-        Map<Long, List<DataFileField>> dataFileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
-        List<DataResource> dataResources = dataResourceRepository.queryDataResourceByResourceIds(resourceIds);
-        Set<Long> fileIds = dataResources.stream().map(DataResource::getFileId).collect(Collectors.toSet());
-        Map<Long, String> fileNameMap = sysFileSecondarydbRepository.selectSysFileByFileIds(fileIds).stream().collect(Collectors.toMap(SysFile::getFileId, SysFile::getFileName));
-        DataRunScript dataRunScript = null;
-        for (DataResource dataResource : dataResources) {
-            dataRunScript = new DataRunScript(dataResource.getResourceId(), dataResource.getResourceName(), dataResource.getFileId(), fileNameMap.get(dataResource.getFileId()), dataFileFieldMap.get(dataResource.getResourceId()));
-            map.put(cnToUnicode(dataResource.getResourceName()),dataRunScript);
-            map.put("60"+cnToUnicode(dataResource.getResourceName())+"60",dataRunScript);
-        }
+//        Set<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toSet());
+//        List<DataFileField> dataFileField = dataResourceRepository.queryDataFileField(new HashMap() {{
+//            put("resourceIds", resourceIds);
+//            put("protectionStatus", 1);
+//        }});
+//        Map<Long, List<DataFileField>> dataFileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
+//        List<DataResource> dataResources = dataResourceRepository.queryDataResourceByResourceIds(resourceIds);
+//        Set<Long> fileIds = dataResources.stream().map(DataResource::getFileId).collect(Collectors.toSet());
+//        Map<Long, String> fileNameMap = sysFileSecondarydbRepository.selectSysFileByFileIds(fileIds).stream().collect(Collectors.toMap(SysFile::getFileId, SysFile::getFileName));
+//        DataRunScript dataRunScript = null;
+//        for (DataResource dataResource : dataResources) {
+//            dataRunScript = new DataRunScript(dataResource.getResourceId(), dataResource.getResourceName(), dataResource.getFileId(), fileNameMap.get(dataResource.getFileId()), dataFileFieldMap.get(dataResource.getResourceId()));
+//            map.put(cnToUnicode(dataResource.getResourceName()),dataRunScript);
+//            map.put("60"+cnToUnicode(dataResource.getResourceName())+"60",dataRunScript);
+//        }
         return map;
     }
 

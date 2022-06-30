@@ -12,6 +12,7 @@
           </template>
           <el-descriptions-item label="机构ID"><span>{{ sysLocalOrganInfo.organId }}</span></el-descriptions-item>
           <el-descriptions-item label="机构名称">{{ sysLocalOrganInfo.organName }}</el-descriptions-item>
+          <el-descriptions-item label="机构网关地址">{{ sysLocalOrganInfo.gatewayAddress }}</el-descriptions-item>
         </template>
       </el-descriptions>
     </div>
@@ -35,9 +36,12 @@
       width="600px"
       :before-close="closeOrganDialog"
     >
-      <el-form ref="organForm" :model="organForm" :rules="organFormRules" label-width="80px">
+      <el-form ref="organForm" :model="organForm" :rules="organFormRules">
         <el-form-item label="机构名称" prop="organName">
           <el-input v-model="organForm.organName" autocomplete="off" />
+        </el-form-item>
+        <el-form-item label="机构网关地址" prop="organName">
+          <el-input v-model="organForm.gatewayAddress" autocomplete="off" />
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -88,7 +92,8 @@ export default {
       dialogTitle: '创建机构',
       organForm: {
         organId: '',
-        organName: ''
+        organName: '',
+        gatewayAddress: ''
       },
       serverAddress: '',
       connectForm: {
@@ -134,12 +139,14 @@ export default {
       this.dialogTitle = '编辑机构信息'
       this.organForm.organId = this.sysLocalOrganInfo.organId
       this.organForm.organName = this.sysLocalOrganInfo.organName
+      this.organForm.gatewayAddress = this.sysLocalOrganInfo.gatewayAddress
       this.organDialogVisible = true
     },
     closeOrganDialog() {
       this.$refs.organForm.resetFields()
       this.organForm.organName = ''
       this.organForm.organId = ''
+      this.organForm.gatewayAddress = ''
       this.organDialogVisible = false
     },
     addConnect() {
@@ -154,7 +161,8 @@ export default {
     organConfirmDialog() {
       const params = {
         organId: this.organForm.organId,
-        organName: this.organForm.organName
+        organName: this.organForm.organName,
+        gatewayAddress: this.organForm.gatewayAddress
       }
       this.$refs['organForm'].validate(async valid => {
         if (valid) {

@@ -139,7 +139,7 @@ DROP TABLE IF EXISTS `data_mr`;
 CREATE TABLE `data_mr`  (
                             `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
                             `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                            `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
                             `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
                             `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
                             `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',
@@ -149,40 +149,66 @@ CREATE TABLE `data_mr`  (
                             PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '模型资源表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for data_pr
--- ----------------------------
-DROP TABLE IF EXISTS `data_pr`;
-CREATE TABLE `data_pr`  (
-                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                            `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                            `is_authed` int(2) DEFAULT NULL COMMENT '是否授权',
-                            `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                            PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目资源关系表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for data_project
--- ----------------------------
 DROP TABLE IF EXISTS `data_project`;
-CREATE TABLE `data_project`  (
-                                 `project_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '项目id',
-                                 `project_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '项目名称',
-                                 `project_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '项目描述',
-                                 `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                 `organ_num` int(8) DEFAULT NULL COMMENT '机构数',
-                                 `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
-                                 `resource_organ_ids` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '机构id数组',
-                                 `auth_resource_num` int(8) DEFAULT NULL COMMENT '已授权资源数',
-                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`project_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目表' ROW_FORMAT = Dynamic;
+CREATE TABLE `data_project` (
+                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                                `project_id` varchar(141) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目ID 机构后12位+UUID',
+                                `project_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目名称',
+                                `project_desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目描述',
+                                `created_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构id',
+                                `created_organ_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构名称',
+                                `created_username` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建者名称',
+                                `resource_num` int DEFAULT '0' COMMENT '资源数',
+                                `provider_organ_names` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '协作方机构名称 保存三个',
+                                `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                `status` tinyint DEFAULT '0' COMMENT '项目状态 0审核中 1可用 2关闭',
+                                `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                PRIMARY KEY (`id`) USING BTREE,
+                                UNIQUE INDEX `project_id_ix`(`project_id`) USING BTREE,
+                                INDEX `created_organ_id_ix`(`created_organ_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci  COMMENT='项目表' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `data_project_organ`;
+CREATE TABLE `data_project_organ` (
+                                      `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                      `po_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目机构关联ID UUID',
+                                      `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目ID',
+                                      `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
+                                      `initiate_organ_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
+                                      `participation_identity` tinyint DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                      `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                      `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
+                                      `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
+                                      `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                      `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                      PRIMARY KEY (`id`) USING BTREE,
+                                      INDEX `project_id_ix`(`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT='项目资源授权审核表' ROW_FORMAT = Dynamic;
+
+
+DROP TABLE IF EXISTS `data_project_resource`;
+CREATE TABLE `data_project_resource` (
+                                         `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                         `pr_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目资源ID  UUID',
+                                         `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目id',
+                                         `initiate_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
+                                         `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
+                                         `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                         `is_del` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+                                         `resource_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '0' COMMENT '资源ID',
+                                         `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                         `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
+                                         `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
+                                         `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                         PRIMARY KEY (`id`) USING BTREE,
+                                         INDEX `project_id_ix`(`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT='项目资源关系表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for data_psi
@@ -284,23 +310,6 @@ CREATE TABLE `data_resource`  (
                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                                   PRIMARY KEY (`resource_id`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资源表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for data_resource_auth_record
--- ----------------------------
-DROP TABLE IF EXISTS `data_resource_auth_record`;
-CREATE TABLE `data_resource_auth_record`  (
-                                              `record_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                                              `record_status` int(2) DEFAULT NULL COMMENT '审核状态',
-                                              `user_id` bigint(20) DEFAULT NULL COMMENT '审核人员id',
-                                              `user_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '审核人姓名',
-                                              `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                                              `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                              PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目资源授权审核表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for data_resource_tag
@@ -477,32 +486,7 @@ INSERT INTO `sys_auth` VALUES (39, '菜单新增', 'MenuAdd', 3, 38, 24, '24,38,
 INSERT INTO `sys_auth` VALUES (40, '菜单编辑', 'MenuEdit', 3, 38, 24, '24,38,40', '', 'own', 2, 2, 1, 0, 0, '2022-04-12 18:46:43.000', '2022-04-12 19:10:12.574');
 INSERT INTO `sys_auth` VALUES (41, '菜单删除', 'MenuDelete', 3, 38, 24, '24,38,41', '', 'own', 3, 2, 1, 0, 0, '2022-04-12 18:48:22.000', '2022-04-12 19:10:12.574');
 INSERT INTO `sys_auth` VALUES (42, '匿踪查询列表', 'PrivateSearchList', 2, 12, 12, '12,42', '', 'own', 1, 1, 1, 1, 0, '2022-04-18 03:05:12.000', '2022-04-18 03:05:12.000');
--- ----------------------------
--- Table structure for sys_organ
--- ----------------------------
-DROP TABLE IF EXISTS `sys_organ`;
-CREATE TABLE `sys_organ`  (
-                              `organ_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '机构id',
-                              `organ_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构名称',
-                              `p_organ_id` bigint(20) NOT NULL COMMENT '父机构id',
-                              `r_organ_id` bigint(20) NOT NULL COMMENT '根机构id',
-                              `full_path` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '完整路径',
-                              `organ_index` int(12) NOT NULL COMMENT '顺序',
-                              `organ_depth` int(12) NOT NULL COMMENT '深度',
-                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                              PRIMARY KEY (`organ_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '机构表' ROW_FORMAT = DYNAMIC;
 
-
--- ----------------------------
--- Records of sys_organ
--- ----------------------------
-INSERT INTO `sys_organ` VALUES (1000, '北京原语科技', 0, 1000, '1000', 1, 0, 0, '2022-04-27 17:46:59.024', '2022-04-27 17:46:59.034');
-INSERT INTO `sys_organ` VALUES (1001, '北京招商银行(西红门支行)', 0, 1001, '1001', 1, 0, 0, '2022-04-27 17:47:27.399', '2022-04-27 17:47:27.408');
-INSERT INTO `sys_organ` VALUES (1002, '北京建设银行(天通苑支行)', 0, 1002, '1002', 1, 0, 0, '2022-04-27 17:47:43.366', '2022-04-27 17:47:43.374');
-INSERT INTO `sys_organ` VALUES (1003, '华建集团', 0, 1003, '1003', 1, 0, 0, '2022-04-27 17:48:49.533', '2022-04-27 17:48:55.822');
 -- ----------------------------
 -- Table structure for sys_ra
 -- ----------------------------
@@ -602,32 +586,6 @@ INSERT INTO `sys_role` VALUES (1, '超级管理员', 0, 0, '2022-03-25 17:08:52.
 INSERT INTO `sys_role` VALUES (1000, '业务权限', 1, 0, '2022-04-27 17:50:02.139', '2022-04-27 17:50:02.139');
 
 -- ----------------------------
--- Table structure for sys_uo
--- ----------------------------
-DROP TABLE IF EXISTS `sys_uo`;
-CREATE TABLE `sys_uo`  (
-                           `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
-                           `user_id` bigint(20) NOT NULL COMMENT '用户id',
-                           `organ_id` bigint(20) NOT NULL COMMENT '机构id',
-                           `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                           `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                           `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                           PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户机构关系表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of sys_uo
--- ----------------------------
-INSERT INTO `sys_uo` VALUES (1000, 1000, 1000, 0, '2022-04-27 17:51:02.232', '2022-04-27 17:51:02.232');
-INSERT INTO `sys_uo` VALUES (1001, 1001, 1000, 0, '2022-04-27 17:51:23.012', '2022-04-27 17:51:23.012');
-INSERT INTO `sys_uo` VALUES (1002, 1002, 1000, 0, '2022-04-27 17:51:53.924', '2022-04-27 17:51:53.924');
-INSERT INTO `sys_uo` VALUES (1003, 1003, 1000, 0, '2022-04-27 17:52:23.441', '2022-04-27 17:52:23.441');
-INSERT INTO `sys_uo` VALUES (1004, 1004, 1000, 0, '2022-04-27 17:52:55.595', '2022-04-27 17:52:55.595');
-INSERT INTO `sys_uo` VALUES (1005, 1005, 1, 0, '2022-04-27 17:53:26.348', '2022-04-27 17:53:26.348');
-INSERT INTO `sys_uo` VALUES (1006, 1006, 1, 0, '2022-04-27 17:53:47.146', '2022-04-27 17:53:47.146');
-INSERT INTO `sys_uo` VALUES (1007, 1007, 1, 0, '2022-04-27 17:54:14.287', '2022-04-27 17:54:14.287');
-INSERT INTO `sys_uo` VALUES (1008, 1008, 1000, 0, '2022-04-27 17:54:37.563', '2022-04-27 17:54:37.563');
--- ----------------------------
 -- Table structure for sys_ur
 -- ----------------------------
 DROP TABLE IF EXISTS `sys_ur`;
@@ -665,8 +623,6 @@ CREATE TABLE `sys_user`  (
                              `user_password` varchar(128) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '账户密码',
                              `user_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '用户昵称',
                              `role_id_list` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '角色id集合',
-                             `organ_id_List` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构id集合',
-                             `r_organ_id_list` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '根机构id集合',
                              `is_forbid` tinyint(4) NOT NULL COMMENT '是否禁用',
                              `is_editable` tinyint(4) NOT NULL COMMENT '是否可编辑',
                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
@@ -679,16 +635,8 @@ CREATE TABLE `sys_user`  (
 -- ----------------------------
 -- Records of sys_user
 -- ----------------------------
-INSERT INTO `sys_user` VALUES (1, 'admin', 'a0f34ffac5a82245e4fca2e21f358a42', 'admin', '1', '', '', 0, 1, 0, '2022-03-25 17:55:53.048', '2022-03-25 18:03:07.552');
-INSERT INTO `sys_user` VALUES (1000, 'jszhangsan', 'a0f34ffac5a82245e4fca2e21f358a42', '建设银行员工张三', '1000', '1002', '1002', 0, 1, 0, '2022-04-27 17:51:02.217', '2022-04-27 17:51:02.235');
-INSERT INTO `sys_user` VALUES (1001, 'jslisi', 'a0f34ffac5a82245e4fca2e21f358a42', '建设银行员工李四', '1000', '1002', '1002', 0, 1, 0, '2022-04-27 17:51:22.997', '2022-04-27 17:51:23.014');
-INSERT INTO `sys_user` VALUES (1002, 'zszhanghua', 'a0f34ffac5a82245e4fca2e21f358a42', '招商银行员工张华', '1000', '1001', '1001', 0, 1, 0, '2022-04-27 17:51:53.917', '2022-04-27 17:51:53.927');
-INSERT INTO `sys_user` VALUES (1003, 'zslilele', 'a0f34ffac5a82245e4fca2e21f358a42', '招商银行员工李乐乐', '1000', '1001', '1001', 0, 1, 0, '2022-04-27 17:52:23.429', '2022-04-27 17:52:23.444');
-INSERT INTO `sys_user` VALUES (1004, 'zszhudong', 'a0f34ffac5a82245e4fca2e21f358a42', '招商银行员工朱东', '1000', '1001', '1001', 0, 1, 0, '2022-04-27 17:52:55.581', '2022-04-27 17:52:55.597');
-INSERT INTO `sys_user` VALUES (1005, 'yyliweihua', 'a0f34ffac5a82245e4fca2e21f358a42', '原语李伟华', '1', '1000', '1000', 0, 1, 0, '2022-04-27 17:53:26.337', '2022-04-27 17:53:26.351');
-INSERT INTO `sys_user` VALUES (1006, 'yyzhanjingjing', 'a0f34ffac5a82245e4fca2e21f358a42', '原语占晶晶', '1', '1000', '1000', 0, 1, 0, '2022-04-27 17:53:47.138', '2022-04-27 17:53:47.148');
-INSERT INTO `sys_user` VALUES (1007, 'yyleiyannan', 'a0f34ffac5a82245e4fca2e21f358a42', '原语雷艳南', '1', '1000', '1000', 0, 1, 0, '2022-04-27 17:54:14.280', '2022-04-27 17:54:14.289');
-INSERT INTO `sys_user` VALUES (1008, 'hjwangwu', 'a0f34ffac5a82245e4fca2e21f358a42', '华建集团员工王五', '1000', '1003', '1003', 0, 1, 0, '2022-04-27 17:54:37.554', '2022-04-27 17:54:37.565');
+INSERT INTO `sys_user` VALUES (1, 'admin', 'a0f34ffac5a82245e4fca2e21f358a42', 'admin', '1', 0, 1, 0, '2022-03-25 17:55:53.048', '2022-03-25 18:03:07.552');
+
 -- ----------------------------
 -- Table structure for sys_file
 -- ----------------------------

@@ -53,7 +53,6 @@
             data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
-            and dp.user_id = #{userId}
         ORDER BY dp.id desc
         LIMIT #{offset},#{pageSize}
     </select>
@@ -65,7 +64,6 @@
             data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
-            and dp.user_id = #{userId}
     </select>
     <select id="selectOrganPsiTaskPage" resultType="com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo">
         SELECT
@@ -81,7 +79,6 @@
             data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
-            and dp.user_id = #{userId}
             <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
         ORDER BY dp.id desc
         LIMIT #{offset},#{pageSize}
@@ -94,7 +91,6 @@
             data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
-            and dp.user_id = #{userId}
         <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
     </select>
     <select id="selectPsiTaskById" resultType="com.primihub.biz.entity.data.po.DataPsiTask">

@@ -106,7 +106,6 @@ public class PsiController {
     }
     @GetMapping("getOrganPsiTask")
     public BaseResultEntity getOrganPsiTask(@RequestHeader("userId") Long userId,
-                                            @RequestHeader("organId") Long ownOrganId,
                                             String resultName,
                                             PageReq req){
         if (userId<=0)

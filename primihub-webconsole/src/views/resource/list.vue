@@ -82,8 +82,8 @@
             样本量：{{ row.fileColumns }} <br>
             正例样本数量：{{ row.fileYRows }}<br>
             正例样本比例：{{ row.fileYRatio }}% <br>
-            <el-tag v-if="row.fileContainsY" type="primary">包含Y值</el-tag>
-            <el-tag v-else type="danger">不包含Y值</el-tag>
+            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含Y值</el-tag>
+            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含Y值</el-tag>
           </template>
         </el-table-column>
         <el-table-column

@@ -50,7 +50,7 @@ public class OrganConfiguration {
         return sysLocalOrganInfo.getOrganId().substring(24,36);
     }
 
-    public String generateResourceFusionId(){
+    public String generateUniqueCode(){
         if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null)
             return null;
         return getLocalOrganShortCode()+"-"+ UUID.randomUUID().toString();
