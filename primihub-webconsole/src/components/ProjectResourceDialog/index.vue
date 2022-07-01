@@ -3,7 +3,6 @@
     :visible.sync="visible"
     :before-close="closeDialog"
     v-bind="$attrs"
-    width="1000px"
   >
     <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
     <ResourceTable :server-address="serverAddress" :show-buttons="false" :show-status="false" :multiple="true" :organ-id="organId" :selected-data="selectedData" row-key="resourceId" :data="resourceList" @change="handleChange" />

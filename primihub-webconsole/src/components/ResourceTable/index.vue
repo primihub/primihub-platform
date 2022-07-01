@@ -160,17 +160,24 @@ export default {
     selectedData(val) {
       if (val) {
         console.log('watch', val)
-        if (this.selectedData.length > 0) {
-          this.toggleSelection(this.selectedData)
-        }
+        this.$nextTick(() => {
+          if (this.selectedData.length) {
+            this.toggleSelection(this.selectedData)
+          }
+        })
+        // if (this.selectedData.length > 0) {
+        //   this.toggleSelection(this.selectedData)
+        // }
+        // this.toggleSelection(this.selectedData)
       }
     }
   },
-  mounted() {
-    console.log('selectedData', this.selectedData)
-    if (this.selectedData.length > 0) {
-      this.toggleSelection(this.selectedData)
-    }
+  created() {
+    this.$nextTick(() => {
+      if (this.selectedData.length) {
+        this.toggleSelection(this.selectedData)
+      }
+    })
   },
   methods: {
     toggleSelection(rows) {
@@ -180,6 +187,7 @@ export default {
           this.$refs.table.toggleRowSelection(row)
         })
       } else {
+        debugger
         this.$refs.table.clearSelection()
       }
     },
