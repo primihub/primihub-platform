@@ -4,7 +4,7 @@ spring:
   application:
     name: platform
   rabbitmq:
-    host: rabbitmq2
+    host: rabbitmq3
     port: 5672
     username: guest
     password: guest
@@ -20,11 +20,11 @@ spring:
     nacos:
       discovery:
         server-addr: nacos-server:8848
-        namespace: 71843998-b60a-42ed-81d7-c3c9940d11c0
+        namespace: 1812fdf8-9fce-4bd5-bc5e-08736f343fae
 nacos:
   config:
     server-addr: nacos-server:8848
-    namespace: 71843998-b60a-42ed-81d7-c3c9940d11c0
+    namespace: 1812fdf8-9fce-4bd5-bc5e-08736f343fae
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
