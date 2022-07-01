@@ -311,6 +311,7 @@ public class DataProjectService {
         if (project!=null){
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, project.getProjectId());
             if (dataProject==null){
+                vo.getProject().setStatus(0);
                 dataProjectPrRepository.saveDataProject(vo.getProject());
             }else {
                 project.setId(dataProject.getId());
