@@ -1,4 +1,4 @@
-# primihub management platform
+# primihub management platform service
 primihub management platform is based on spring cloud,use maven to compile and package.
 ## Getting Started
 First of all ,when we run the project, we need some service dependencies like this:
