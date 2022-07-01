@@ -125,6 +125,7 @@ public class DataPsiService {
             fResourceReq.setPageNo(req.getPageNo());
             fResourceReq.setPageSize(req.getPageSize());
             fResourceReq.setServerAddress(serverAddress);
+            fResourceReq.setOrganId(organId);
             BaseResultEntity baseResult = fusionResourceService.getResourceList(fResourceReq);
             if (baseResult.getCode()!=0)
                 return baseResult;
