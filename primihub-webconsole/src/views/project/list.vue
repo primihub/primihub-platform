@@ -75,7 +75,7 @@
         </template>
         <template v-else>
           <el-row :gutter="10">
-            <el-col v-for="item in projectList" :key="item.projectId" :sm="6" :lg="6">
+            <el-col v-for="item in projectList" :key="item.projectId" :sm="8" :lg="6">
               <project-item :project="item" />
             </el-col>
           </el-row>
