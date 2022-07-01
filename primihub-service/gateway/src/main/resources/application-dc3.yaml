@@ -2,8 +2,8 @@ server:
   port: 8080
 nacos:
   config:
-    server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace: 73f0641f-d121-473b-8600-b2e270dc7326
+    server-addr: nacos-server:8848
+    namespace: 1812fdf8-9fce-4bd5-bc5e-08736f343fae
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -17,8 +17,8 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace: 73f0641f-d121-473b-8600-b2e270dc7326
+        server-addr: nacos-server:8848
+        namespace: 1812fdf8-9fce-4bd5-bc5e-08736f343fae
 logging:
   level:
     root: info
