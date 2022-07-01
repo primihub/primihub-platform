@@ -19,7 +19,7 @@
       />
       <el-table-column
         label="资源 / Id"
-        min-width="200"
+        min-width="150"
       >
         <template slot-scope="{row}">
           <!-- <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br> -->
@@ -27,14 +27,14 @@
           {{ row.resourceId }}
         </template>
       </el-table-column>
-      <el-table-column
+      <!-- <el-table-column
         prop="resourceTag"
         label="关键词"
       >
         <template slot-scope="{row}">
           <el-tag v-for="(tag,index) in row.resourceTag" :key="index" type="success" size="mini" class="tag">{{ tag }}</el-tag>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <!-- <el-table-column
       prop="resourceAuthType"
       label="可见性"
@@ -54,8 +54,8 @@
       </template>
     </el-table-column> -->
       <el-table-column
-        label="数据信息"
-        min-width="200"
+        label="资源信息"
+        min-width="120"
       >
         <template slot-scope="{row}">
           特征量：{{ row.resourceRowsCount }}<br>
@@ -76,6 +76,7 @@
       </el-table-column>
       <el-table-column
         label="是否包含Y值"
+        width="80"
       >
         <template slot-scope="{row}">
           {{ row.resourceContainsY? '是' : '否' }}
@@ -85,8 +86,8 @@
         v-if="showButtons"
         label="操作"
         fixed="right"
-        min-width="200"
         align="center"
+        min-width="120"
       >
         <template slot-scope="{row}">
           <template v-if="thisInstitution && row.participationIdentity === 2 && projectAuditStatus && row.auditStatus === 0">
@@ -241,6 +242,9 @@ export default {
 <style lang="scss" scoped>
 .table{
   margin: 15px 0;
+}
+::v-deep .el-button{
+  margin: 2px 5px;
 }
 </style>
 
