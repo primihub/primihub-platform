@@ -117,7 +117,7 @@ public class ModelInitService {
                                 map.put(DataConstant.PYTHON_TEST_DATASET,"xgb_predict_test_data");
                                 List<DataModelResource> dmrList = new ArrayList<>();
                                 for (DataProjectResource modelResourceVo : dataProjectResources) {
-                                    if (map.size()==2)
+                                    if (map.size()==3)
                                         break;
                                     if (map.isEmpty()){
                                         map.put(DataConstant.PYTHON_GUEST_DATASET,modelResourceVo.getResourceId());
