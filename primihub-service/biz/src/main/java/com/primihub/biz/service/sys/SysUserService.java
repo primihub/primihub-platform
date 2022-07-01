@@ -127,7 +127,7 @@ public class SysUserService {
 
             sysUser = new SysUser();
             BeanUtils.copyProperties(saveOrUpdateUserParam,sysUser);
-            String password=saveOrUpdateUserParam.getPassword()!=null&&saveOrUpdateUserParam.getPassword().equals("")?saveOrUpdateUserParam.getPassword():baseConfiguration.getDefaultPassword();
+            String password=saveOrUpdateUserParam.getPassword()!=null&&!saveOrUpdateUserParam.getPassword().equals("")?saveOrUpdateUserParam.getPassword():baseConfiguration.getDefaultPassword();
             StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(password);
             sysUser.setUserPassword(SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString()));
             sysUser.setRoleIdList("");
