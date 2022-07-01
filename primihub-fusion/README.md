@@ -8,7 +8,7 @@ First of all ,when we run the project, we need some service dependencies like th
 
 
 ##Modify Configuration
-Now we should locate the next pathe:
+Now we should locate the next path:
 
     ./fusion-api/src/main/resources/
 
