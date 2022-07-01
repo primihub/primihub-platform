@@ -1,16 +1,7 @@
 <template>
   <div class="container">
-    <el-tabs v-model="activeName" @tab-click="handleTabClick">
-      <el-tab-pane label="创建求交任务" name="create">
-        <PSITaskCreate v-loading="listLoading" :is-reset="isReset" @change="handelTaskChange" @submit="handleSubmit" @cancel="handelCancel" />
-        <PSITaskResult v-if="dataPsiTask.length>0" v-loading="resultLoading" :data="dataPsiTask" @delete="handleSingleResultDelete" />
-      </el-tab-pane>
-      <el-tab-pane label="查看求交任务" name="view" class="panel">
-        <PSITaskResult v-loading="taskLoading" :data="allDataPsiTask" :is-clickable="true" @delete="handleDelete" @complete="handelTaskComplete" />
-        <pagination v-show="totalPage>1" :background="true" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" @change="handleListChange" />
-      </el-tab-pane>
-    </el-tabs>
-
+    <PSITaskCreate v-loading="listLoading" :is-reset="isReset" @change="handelTaskChange" @submit="handleSubmit" @cancel="handelCancel" />
+    <PSITaskResult v-if="dataPsiTask.length>0" v-loading="resultLoading" :data="dataPsiTask" @delete="handleSingleResultDelete" />
   </div>
 </template>
 
@@ -18,14 +9,12 @@
 import { getPsiTaskList } from '@/api/PSI'
 import PSITaskCreate from '@/components/PSITaskCreate'
 import PSITaskResult from '@/components/PSITaskResult'
-import Pagination from '@/components/Pagination'
 
 export default {
   name: 'PSITask',
   components: {
     PSITaskCreate,
-    PSITaskResult,
-    Pagination
+    PSITaskResult
   },
   data() {
     return {
@@ -49,9 +38,6 @@ export default {
     handelTaskChange(result) {
       this.dataPsiTask = [result]
       this.resultLoading = false
-    },
-    handleSingleResultDelete() {
-      this.dataPsiTask = []
     },
     handleTabClick(tab) {
       if (tab.index === '1') {
@@ -100,6 +86,9 @@ export default {
     handelCancel() {
       this.resultLoading = false
       this.dataPsiTask[0].taskState = 4
+    },
+    handleSingleResultDelete() {
+      this.dataPsiTask = []
     }
   }
 }

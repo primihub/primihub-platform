@@ -212,12 +212,11 @@ export default {
       }
     },
     handleChange(value) {
-      console.log(this.$refs['connectRef'].currentLabels)
       console.log(value, this.$refs.connectRef.getCheckedNodes())
     },
     async fetchData() {
       this.resourceList = []
-      const { resourceId, resourceName, tagName, resourceAuthType } = this.query
+      const { resourceId, resourceName, tagName, resourceAuthType, organId } = this.query
       const params = {
         serverAddress: this.serverAddress,
         pageNo: this.pageNo,
@@ -226,9 +225,8 @@ export default {
         resourceName,
         tagName,
         resourceAuthType,
-        organId: this.cascaderValue[1]
+        organId
       }
-      console.log(params)
       const { code, result } = await getResourceList(params)
       if (code === -1) {
         this.$message({
@@ -290,7 +288,6 @@ export default {
     },
 
     async handleOrganCascaderChange(value) {
-      console.log(value)
       this.query.organId = value
     },
     async initData() {

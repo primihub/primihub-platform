@@ -40,7 +40,7 @@
         <el-form-item label="机构名称" prop="organName">
           <el-input v-model="organForm.organName" autocomplete="off" />
         </el-form-item>
-        <el-form-item label="机构网关地址" prop="organName">
+        <el-form-item label="机构网关地址" prop="gatewayAddress">
           <el-input v-model="organForm.gatewayAddress" autocomplete="off" />
         </el-form-item>
       </el-form>
@@ -103,6 +103,9 @@ export default {
         organName: [
           { required: true, message: '请输入机构名称', trigger: 'blur' },
           { max: 20, message: '机构名称需少于20字符' }
+        ],
+        gatewayAddress: [
+          { required: true, message: '机构网关地址', trigger: 'blur' }
         ]
       },
       connectFormRules: {
