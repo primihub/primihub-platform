@@ -67,7 +67,7 @@ p {
   margin-block-end:0;
 }
 .item {
-  width: 285px;
+  // width: 280px;
   box-sizing: border-box;
   padding: 10px 0 0 0;
   border-radius: 10px;
