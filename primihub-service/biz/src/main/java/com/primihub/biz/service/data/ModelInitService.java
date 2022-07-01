@@ -114,10 +114,9 @@ public class ModelInitService {
                             log.info("查询数据数量:{}",dataProjectResources.size());
                             if (dataProjectResources.size()>=2){
                                 Map<String,String> map = new HashMap<>();
-                                map.put(DataConstant.PYTHON_TEST_DATASET,"xgb_predict_test_data");
                                 List<DataModelResource> dmrList = new ArrayList<>();
                                 for (DataProjectResource modelResourceVo : dataProjectResources) {
-                                    if (map.size()==3)
+                                    if (map.size()==2)
                                         break;
                                     if (map.isEmpty()){
                                         map.put(DataConstant.PYTHON_GUEST_DATASET,modelResourceVo.getResourceId());
@@ -131,6 +130,7 @@ public class ModelInitService {
                                     dataModelResource.setModelParamNum(getrandom(1,100));
                                     dmrList.add(dataModelResource);
                                 }
+                                map.put(DataConstant.PYTHON_TEST_DATASET,"xgb_predict_test_data");
                                 dataModelPrRepository.saveDataModelResource(dmrList);
                                 String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT,freeMarkerConfigurer, map);
                                 if (freemarkerContent!=null){
