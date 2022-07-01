@@ -155,7 +155,7 @@
         FROM (
                  SELECT
                         if(STRCMP(created_organ_id, #{organId}) = 0, 'own', 'other') AS staticsType,
-                        count(id) as amount
+                        count(id) as amountCount
                  FROM data_project
                  GROUP BY created_organ_id
              ) t
