@@ -20,11 +20,11 @@ spring:
     nacos:
       discovery:
         server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace: 9be74df3-dd0d-46d7-a223-cbeaf4520769
+        namespace: 590f415b-f12c-4a90-bbb1-7e2398f53b5b
 nacos:
   config:
     server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace: 9be74df3-dd0d-46d7-a223-cbeaf4520769
+    namespace: 590f415b-f12c-4a90-bbb1-7e2398f53b5b
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -32,7 +32,7 @@ nacos:
     username: nacos
     password: nacos
     context-path: /nacos
-    group: DEFAULT_GROUP_1
+    group: DEFAULT_GROUP
     file-extension: yaml
 logging:
   level:
