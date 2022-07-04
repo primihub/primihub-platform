@@ -123,7 +123,7 @@ def xgb_host_logic(cry_pri="paillier"):
 
         output_path = ph.context.Context.get_output()
         print("output_path: ", output_path)
-        return xgb_host.predict_prob(data_test).to_csv(output_path)
+        return None
 
 
 @ph.context.function(role='guest', protocol='xgboost', datasets=["${guest_dataset}"], next_peer="localhost:5555")
