@@ -286,8 +286,10 @@ public class DataTaskService {
         ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
         shareProjectVo.setTimestamp(System.currentTimeMillis());
         shareProjectVo.setNonce((int)Math.random()*100);
-        shareProjectVo.setProjectOrgans(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
-        shareProjectVo.setProjectResources(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
+        if (shareProjectVo.getProjectOrgans().size()==0)
+            shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
+        if (shareProjectVo.getProjectResources().size()==0)
+            shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId());
             log.info("select ProjectOrgans size:{}",dataProjectOrgans.size());

@@ -65,7 +65,6 @@ public class DataProjectService {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         if (sysLocalOrganInfo==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无机构信息");
-        ShareProjectVo shareProjectVo = new ShareProjectVo();
         DataProject dataProject;
         if (req.getId()==null){
             SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(userId);
@@ -105,7 +104,6 @@ public class DataProjectService {
                         dataProjectOrgan.setAuditOpinion("项目发起者自动同意");
                     }
                     dataProjectPrRepository.saveDataProjcetOrgan(dataProjectOrgan);
-                    shareProjectVo.getProjectOrgans().add(dataProjectOrgan);
                 }
                 Set<String> existenceResourceIds = dataProjectRepository.selectProjectResourceByProjectId(req.getProjectId()).stream().map(DataProjectResource::getResourceId).collect(Collectors.toSet());
                 List<String> resourceIds = projectOrgan.getResourceIds();
@@ -127,10 +125,7 @@ public class DataProjectService {
             }
         }
         dataProjectPrRepository.updateDataProject(dataProject);
-        shareProjectVo.setServerAddress(dataProject.getServerAddress());
-        shareProjectVo.setProject(dataProject);
-        shareProjectVo.setProjectId(dataProject.getProjectId());
-        sendTask(shareProjectVo);
+        sendTask(new ShareProjectVo(dataProject));
         Map<String,String> map = new HashMap<>();
         map.put("id", dataProject.getId().toString());
         map.put("projectId", dataProject.getProjectId());
@@ -361,7 +356,7 @@ public class DataProjectService {
         List<Map<String, Object>> projectStatics = dataProjectRepository.selectProjectStatics(sysLocalOrganId);
         if (projectStatics.size()==0)
             return BaseResultEntity.success();
-        Map<String,Object> map = new HashMap<>();
+        Map<String,Integer> map = new HashMap<>();
         map.put("own",0);
         map.put("other",0);
         Integer total = 0;
