@@ -117,7 +117,6 @@ public class DataProjectService {
                                 dataProjectResource.setAuditOpinion("项目发起者自动同意");
                             }
                             dataProjectPrRepository.saveDataProjectResource(dataProjectResource);
-                            shareProjectVo.getProjectResources().add(dataProjectResource);
                             dataProject.setResourceNum(dataProject.getResourceNum()+1);
                         }
                     }
