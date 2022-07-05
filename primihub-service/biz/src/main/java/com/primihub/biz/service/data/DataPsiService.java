@@ -182,11 +182,11 @@ public class DataPsiService {
         dataPsiPrRepository.updateDataPsiTask(task);
     }
 
-    public BaseResultEntity getPsiTaskList(PageReq req, Long userId) {
+    public BaseResultEntity getPsiTaskList(PageReq req,String resultName) {
         Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
+        paramMap.put("resultName",resultName);
         List<DataPsiTaskVo> dataPsiTaskVos = dataPsiRepository.selectPsiTaskPage(paramMap);
         if (dataPsiTaskVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

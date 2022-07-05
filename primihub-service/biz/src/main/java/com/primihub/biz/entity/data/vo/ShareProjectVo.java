@@ -19,6 +19,12 @@ public class ShareProjectVo {
         this.serverAddress = serverAddress;
     }
 
+    public ShareProjectVo(DataProject project) {
+        this.projectId = project.getProjectId();
+        this.serverAddress = project.getServerAddress();
+        this.project = project;
+    }
+
     private String projectId;
     private String serverAddress;
     private DataProject project;

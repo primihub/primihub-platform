@@ -53,6 +53,7 @@
             data_psi_task dpt
         WHERE
             dp.id = dpt.psi_id
+        <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
         ORDER BY dp.id desc
         LIMIT #{offset},#{pageSize}
     </select>

@@ -20,11 +20,11 @@ spring:
     nacos:
       discovery:
         server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace:
+        namespace: f1015a60-0dbd-4151-85a6-0b6ca7cc28f0
 nacos:
   config:
     server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace:
+    namespace: f1015a60-0dbd-4151-85a6-0b6ca7cc28f0
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
