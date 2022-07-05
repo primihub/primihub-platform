@@ -21,7 +21,20 @@
         </el-form-item>
         <el-button v-if="hasPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
       </div>
-      <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectResources" title="添加资源" :server-address="serverAddress" :organ-id="organId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+      <ProjectResourceDialog
+        ref="dialogRef"
+        class="dialog"
+        :center="false"
+        top="10px"
+        width="800px"
+        :selected-data="selectResources"
+        title="添加资源"
+        :server-address="serverAddress"
+        :organ-id="organId"
+        :visible="dialogVisible"
+        @close="handleDialogCancel"
+        @submit="handleDialogSubmit"
+      />
     </el-form>
   </div>
 </template>
@@ -173,6 +186,9 @@ export default {
   color: #999;
   margin: 0 auto;
   text-align: center;
+}
+.dialog{
+  text-align: left;
 }
 .dialog-footer{
   width: 100%;

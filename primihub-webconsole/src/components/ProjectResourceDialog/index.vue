@@ -5,7 +5,7 @@
     v-bind="$attrs"
   >
     <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
-    <ResourceTable :server-address="serverAddress" :show-buttons="false" :show-status="false" :multiple="true" :organ-id="organId" :selected-data="selectedData" row-key="resourceId" :data="resourceList" @change="handleChange" />
+    <ResourceTable v-loading="listLoading" :server-address="serverAddress" :show-buttons="false" :show-status="false" :multiple="true" :organ-id="organId" :selected-data="selectedData" row-key="resourceId" :data="resourceList" @change="handleChange" />
     <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
     <span slot="footer" class="dialog-footer">
       <el-button @click="closeDialog">取 消</el-button>
@@ -55,7 +55,8 @@ export default {
       pageSize: 5,
       selectedResources: [],
       pageCount: 0,
-      resourceName: ''
+      resourceName: '',
+      listLoading: false
     }
   },
   watch: {
@@ -67,6 +68,7 @@ export default {
   },
   methods: {
     async fetchData() {
+      this.listLoading = true
       this.resourceList = []
       const params = {
         serverAddress: this.serverAddress,
@@ -93,6 +95,7 @@ export default {
           this.noData = true
         }
       }
+      this.listLoading = false
     },
     handleChange(data) {
       this.selectedResources = data

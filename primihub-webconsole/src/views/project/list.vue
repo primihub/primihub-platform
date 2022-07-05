@@ -113,6 +113,7 @@
 
           <el-table-column
             label="参与机构"
+            min-width="150"
           >
             <template slot-scope="{row}">
               <span>发起方: {{ row.createdOrganName }}</span><br>
@@ -312,7 +313,6 @@ export default {
       })
     },
     handleSelect(key) {
-      console.log(key)
       this.params.queryType = parseInt(key)
       this.params.projectName = ''
       this.params.organId = ''
