@@ -73,11 +73,11 @@ p {
   border-radius: 10px;
   font-size: 14px;
   background: #fff;
-  margin: 10px;
   color: rgba(0,0,0,0.85);
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  margin-bottom: 15px;
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);
   }

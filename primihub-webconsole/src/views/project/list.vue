@@ -74,8 +74,8 @@
           <no-data />
         </template>
         <template v-else>
-          <el-row :gutter="10">
-            <el-col v-for="item in projectList" :key="item.projectId" :sm="8" :lg="6">
+          <el-row :gutter="15">
+            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6">
               <project-item :project="item" />
             </el-col>
           </el-row>
@@ -370,8 +370,6 @@ export default {
 }
 .project-list {
   margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
   border-radius: $sectionBorderRadius;
 }
 .add-card {
