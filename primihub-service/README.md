@@ -55,7 +55,7 @@ Also modify the configuration which is just created in nacos.
             url: 
             password: 
 
-At last, you should execute the "ddl.sql" and "init.sql" in your mysql.
+At last, you should execute the "ddl.sql" in your mysql.
 
 ## Compile and Package
 if your environment in linux,you should run this command:
