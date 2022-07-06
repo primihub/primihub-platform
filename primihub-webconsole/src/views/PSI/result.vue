@@ -111,19 +111,7 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.listLoading = true
-      getOrganPsiTask({
-        organId: this.ownOrganId,
-        pageSize: this.pageSize,
-        pageNo: this.pageNo,
-        resultName: this.resultNameA
-      }).then(res => {
-        this.listLoading = false
-        const { data, totalPage, total } = res.result
-        this.allDataPsiTask = data
-        this.totalPage = totalPage
-        this.total = total
-      })
+      this.getPsiTaskList()
     },
     async search(searchName, organId, pageSize) {
       console.log('searchName', searchName)

@@ -18,8 +18,8 @@
             <template v-if="item.inputType === 'select'">
               <el-select v-model="item.inputValue" placeholder="请选择" :value-key="item.typeCode" @change="handleChange(item)">
                 <el-option
-                  v-for="v in item.inputValues"
-                  :key="v.key"
+                  v-for="(v,index) in item.inputValues"
+                  :key="index"
                   :label="v.val"
                   :value="v.key"
                 />
@@ -98,7 +98,7 @@ export default {
   },
   methods: {
     handleChange(item) {
-      // console.log('modelData', this.modelData)
+      console.log('item', item)
       this.$emit('change', item.typeCode, item)
     }
   }
