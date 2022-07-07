@@ -33,7 +33,14 @@
           <div v-if="isShowAuditForm" class="audit">
             <el-form ref="auditForm" :model="auditForm">
               <el-form-item label="参与合作审核意见:">
-                <el-input ref="auditInput" v-model="auditForm.auditOpinion" type="textarea" />
+                <el-input
+                  ref="auditInput"
+                  v-model="auditForm.auditOpinion"
+                  type="textarea"
+                  maxlength="200"
+                  minlength="3"
+                  show-word-limit
+                />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" size="small" @click="handleSubmit">同意</el-button>
@@ -261,6 +268,13 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
+        if (value.length > 200) {
+          this.$message({
+            type: 'error',
+            message: '拒绝理由最多200字'
+          })
+          return
+        }
         this.approval({
           type: 2,
           id: row.id,
@@ -273,7 +287,7 @@ export default {
         })
         this.isShowAuditForm = false
         location.reload()
-      }).catch(() => {})
+      })
     },
     handleClick({ label = '' }) {
       this.differents = []
