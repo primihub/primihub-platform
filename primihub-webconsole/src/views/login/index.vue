@@ -49,8 +49,7 @@
         <!-- <div class="forgot">
           <el-link type="primary" href="javascript:void(0);">忘记密码？</el-link>
         </div> -->
-
-        <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
+        <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="handleLogin">登录</el-button>
 
         <!-- <div class="tips">
           <span style="margin-right:20px;">username: admin</span>
@@ -87,8 +86,8 @@ export default {
     return {
       publicKeyData: {},
       loginForm: {
-        username: 'admin',
-        password: '123456'
+        username: '',
+        password: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
@@ -107,14 +106,15 @@ export default {
       immediate: true
     }
   },
-  mounted() {
-    getValidatePublicKey()
-      .then(({ result }) => {
-        const { publicKey, publicKeyName } = result
-        this.publicKeyData = { publicKey, publicKeyName }
-      })
+  async mounted() {
+    await this.getValidatePublicKey()
   },
   methods: {
+    async getValidatePublicKey() {
+      const { result = {}} = await getValidatePublicKey()
+      const { publicKey, publicKeyName } = result
+      this.publicKeyData = { publicKey, publicKeyName }
+    },
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''

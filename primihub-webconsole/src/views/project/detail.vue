@@ -8,14 +8,39 @@
             <p class="infos-des">{{ projectId }}</p>
           </div>
           <el-descriptions :column="1" label-class-name="detail-title">
-            <el-descriptions-item label="创建人">{{ userName }}</el-descriptions-item>
-            <el-descriptions-item label="项目描述">{{ projectDesc }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ createDate }}</el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-user" />
+                <strong>创建人</strong>
+              </template>
+              {{ userName }}
+            </el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-tickets" />
+                <strong>项目描述</strong>
+              </template>
+              {{ projectDesc }}
+            </el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-time" />
+                <strong>创建时间</strong>
+              </template>
+              {{ createDate }}
+            </el-descriptions-item>
           </el-descriptions>
           <div v-if="isShowAuditForm" class="audit">
             <el-form ref="auditForm" :model="auditForm">
               <el-form-item label="参与合作审核意见:">
-                <el-input ref="auditInput" v-model="auditForm.auditOpinion" type="textarea" />
+                <el-input
+                  ref="auditInput"
+                  v-model="auditForm.auditOpinion"
+                  type="textarea"
+                  maxlength="200"
+                  minlength="3"
+                  show-word-limit
+                />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" size="small" @click="handleSubmit">同意</el-button>
@@ -65,9 +90,9 @@
     </el-row>
 
     <!-- add resource dialog -->
-    <ProjectResourceDialog ref="dialogRef" top="10px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ProviderOrganDialog :selected-provider-organ-list="selectedData" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
     <!-- preview dialog -->
     <el-dialog
       :visible.sync="previewDialogVisible"
@@ -133,7 +158,8 @@ export default {
         projectOrgans: [] // save params
       },
       creator: false,
-      tabPosition: 'left'
+      tabPosition: 'left',
+      providerOrganIds: []
     }
   },
   computed: {
@@ -149,7 +175,7 @@ export default {
     ])
   },
   async created() {
-    this.fetchData()
+    await this.fetchData()
   },
   methods: {
     statusStyle(status) {
@@ -242,6 +268,13 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
+        if (value.length > 200) {
+          this.$message({
+            type: 'error',
+            message: '拒绝理由最多200字'
+          })
+          return
+        }
         this.approval({
           type: 2,
           id: row.id,
@@ -254,13 +287,12 @@ export default {
         })
         this.isShowAuditForm = false
         location.reload()
-      }).catch(() => {})
+      })
     },
     handleClick({ label = '' }) {
       this.differents = []
       this.saveParams.projectOrgans = []
       this.selectedOrganId = label
-      console.log('handleClick', this.selectedOrganId)
       this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
       this.resourceList[this.selectedOrganId] = this.currentOrgan.resources
       this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0
@@ -285,9 +317,7 @@ export default {
       removeResource({ id }).then(({ code = -1 }) => {
         if (code === 0) {
           const index = this.resourceList[this.selectedOrganId].findIndex(item => item.id === id)
-          console.log(index, id)
           this.resourceList[this.selectedOrganId].splice(index, 1)
-          console.log('remove', this.resourceList[this.selectedOrganId])
           this.$message({
             message: '已移除',
             type: 'success'
@@ -320,7 +350,7 @@ export default {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
-      this.differents = this.getArrDifSameValue(this.selectedData, data)
+      this.differents = this.getArrDifSameValue(this.selectedData, data, 'resourceId')
       if (this.differents.length > 0) {
         this.saveParams.projectOrgans.push({
           organId: this.selectedOrganId,
@@ -329,9 +359,7 @@ export default {
         })
         this.saveProject()
       }
-      // this.selectedData = data
-      // this.resourceList[this.selectedOrganId] = data.filter(item => item.organId === this.selectedOrganId)
-      // console.log('handleDialogSubmit', this.resourceList[this.selectedOrganId])
+      this.selectedData = data
       this.dialogVisible = false
     },
     closeDialog() {
@@ -341,19 +369,16 @@ export default {
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      data.map(item => {
-        this.saveParams.projectOrgans.push({
-          organId: item.globalId,
-          participationIdentity: 2
+      const diffrents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
+      console.log('handleProviderOrganSubmit diffrents', diffrents)
+      if (diffrents.length > 0) {
+        this.saveParams.projectOrgans = diffrents.map(item => {
+          return {
+            organId: item.globalId,
+            participationIdentity: 2
+          }
         })
-      })
-
-      this.projectOrgans = data.map(item => {
-        return {
-          organId: item.globalId,
-          participationIdentity: 2
-        }
-      })
+      }
       const success = this.saveProject()
       if (success) {
         data.map(item => {
@@ -363,17 +388,15 @@ export default {
             participationIdentity: 2
           })
         })
-
-        this.providerOrganIds = data
-        this.providerOrganDialogVisible = false
       }
+      this.providerOrganIds = data
+      this.providerOrganDialogVisible = false
     },
     saveProject() {
       // const { projectName, projectDesc, projectOrgans } = this
       this.saveParams.id = this.list.id
       const params = JSON.stringify(this.saveParams)
       saveProject(params).then(res => {
-        console.log(res)
         if (res.code === 0) {
           this.$message({
             message: '添加成功',
@@ -434,19 +457,26 @@ export default {
           this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
           this.projectAuditStatus = this.currentOrgan.auditStatus === 1
           this.isShowAuditForm = !this.projectAuditStatus
+          this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
+          this.providerOrganIds = this.providerOrganIds.map(item => {
+            return {
+              globalId: item.organId,
+              globalName: item.organName
+            }
+          })
         }
       })
     },
     // compare array diffrent
-    getArrDifSameValue(arr1, arr2) {
+    getArrDifSameValue(arr1, arr2, key) {
       const result = []
       for (let i = 0; i < arr2.length; i++) {
         const obj = arr2[i]
-        const id = obj.resourceId
+        const id = obj[key]
         let isExist = false
         for (let j = 0; j < arr1.length; j++) {
           const aj = arr1[j]
-          const n = aj.resourceId
+          const n = aj[key]
           if (n === id) {
             isExist = true
             break
@@ -456,7 +486,6 @@ export default {
           result.push(obj)
         }
       }
-      console.log('result', result)
       return result
     },
     toModelCreate() {
@@ -518,6 +547,19 @@ section{
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+::v-deep .el-descriptions-item__container{
+  display: block;
+  margin: 5px 0;
+  strong{
+    margin-left: 5px;
+  }
+}
+::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
+  padding-bottom: 0;
+}
+::v-deep .el-descriptions-row{
+  margin-bottom: 20px;
 }
 ::v-deep .el-descriptions-item__container{
   flex-wrap: wrap;

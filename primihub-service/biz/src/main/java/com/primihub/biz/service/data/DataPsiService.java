@@ -114,7 +114,6 @@ public class DataPsiService {
             List<DataFileField> dataFileField = dataResourceRepository.queryDataFileField(new HashMap() {{
                 put("resourceIds", resourceIds);
                 put("relevance", 1);
-                put("protectionStatus", 1);
             }});
             Map<Long, List<DataFileField>> fileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.DataResourcePoConvertAllocationVo(re,fileFieldMap.get(re.getResourceId()),localOrganId)).collect(Collectors.toList())));
@@ -182,11 +181,11 @@ public class DataPsiService {
         dataPsiPrRepository.updateDataPsiTask(task);
     }
 
-    public BaseResultEntity getPsiTaskList(PageReq req, Long userId) {
+    public BaseResultEntity getPsiTaskList(PageReq req,String resultName) {
         Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
+        paramMap.put("resultName",resultName);
         List<DataPsiTaskVo> dataPsiTaskVos = dataPsiRepository.selectPsiTaskPage(paramMap);
         if (dataPsiTaskVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

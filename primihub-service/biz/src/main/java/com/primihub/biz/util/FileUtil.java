@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -137,19 +138,27 @@ public class FileUtil {
     public static List<LinkedHashMap<String, Object>> getCsvData(String filePath,Integer pageNo, Integer pageSize){
         List<LinkedHashMap<String, Object>> dataList = new ArrayList<>();
         try(Stream<String> curStream= Files.lines(Paths.get(filePath), Charset.forName(charset(new File(filePath))))) {
-            List<String> list=curStream.skip(pageNo).limit(pageSize+1).collect(Collectors.toList());
+            List<String> list=curStream.parallel().skip(pageNo).limit(pageSize+1).collect(Collectors.toList());
             if (list.size()==0)
                 return dataList;
             String[] fields = list.get(0).split(",");
+            log.info(Arrays.toString(fields));
             for(int i=1;i<list.size();i++) {
                 String[] data = StringUtils.splitPreserveAllTokens(list.get(i), ",");
-                if (Integer.valueOf(data.length)==Integer.valueOf(fields.length))
+                log.info(Arrays.toString(data));
+                if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length)))
                     dataList.add(readValues(data,fields));
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.info("getCsvData",e);
         }
         return dataList;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(FileUtil.getCsvData("E://x.csv",0,50));
+        System.out.println(FileUtil.getCsvData("E://1.csv",0,50));
+        System.out.println(FileUtil.getCsvData("E://2.csv",0,50));
     }
 
     public static LinkedHashMap<String,Object> readValues(String[] values, String[] headers){

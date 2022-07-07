@@ -53,9 +53,12 @@
     </el-form>
     <div class="tab-container">
       <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
-        <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item>
-        <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
-        <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item>
+        <!-- <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item> -->
+        <!-- <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
+        <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item> -->
+        <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
+        <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
+        <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
       </el-menu>
       <div class="buttons">
         <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
@@ -74,8 +77,8 @@
           <no-data />
         </template>
         <template v-else>
-          <el-row :gutter="10">
-            <el-col v-for="item in projectList" :key="item.projectId" :sm="6" :lg="6">
+          <el-row :gutter="15">
+            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="5">
               <project-item :project="item" />
             </el-col>
           </el-row>
@@ -93,15 +96,6 @@
             align="center"
           />
           <el-table-column
-            label="项目状态"
-            prop="status"
-            width="80"
-          >
-            <template slot-scope="{row}">
-              <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
             label="项目名称 / ID"
             min-width="200"
           >
@@ -113,10 +107,20 @@
 
           <el-table-column
             label="参与机构"
+            min-width="150"
           >
             <template slot-scope="{row}">
               <span>发起方: {{ row.createdOrganName }}</span><br>
               <span>协作方: {{ row.providerOrganNames }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="项目状态"
+            prop="status"
+            width="80"
+          >
+            <template slot-scope="{row}">
+              <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
             </template>
           </el-table-column>
           <el-table-column
@@ -143,6 +147,14 @@
             prop="createDate"
             min-width="160"
           />
+          <el-table-column
+            label="操作"
+            min-width="160"
+          >
+            <template slot-scope="{row}">
+              <el-button type="text" icon="el-icon-view" @click="toProjectDetail(row.id)">查看</el-button>
+            </template>
+          </el-table-column>
         </el-table>
       </template>
     </div>
@@ -312,7 +324,6 @@ export default {
       })
     },
     handleSelect(key) {
-      console.log(key)
       this.params.queryType = parseInt(key)
       this.params.projectName = ''
       this.params.organId = ''
@@ -333,6 +344,15 @@ export default {
 <style lang="scss" scoped>
 @import "../../styles/variables.scss";
 @import "~@/styles/resource.scss";
+h2 {
+    display: block;
+    font-size: 16px;
+    font-weight: normal;
+    margin-block-start: 0.2em;
+    margin-block-end: 0;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
 .search-area {
   padding: 30px 30px 20px 20px;
   background-color: #fff;
@@ -345,9 +365,22 @@ export default {
   width: 100px;
   border-radius: 4.5px;
 }
+.el-menu-item *{
+  vertical-align: top;
+}
+.el-menu--horizontal>.el-menu-item.is-active{
+  h2{
+    font-weight: bold;
+    span{
+      color: $dangerColor;
+    }
+  }
+
+}
 .select-item {
   margin: 10px 20px 0 20px;
   font-size: initial;
+  font-weight: bold;
 }
 .tab-container{
   display: flex;
@@ -370,8 +403,6 @@ export default {
 }
 .project-list {
   margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
   border-radius: $sectionBorderRadius;
 }
 .add-card {

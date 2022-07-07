@@ -41,14 +41,17 @@
       <el-form-item label="发起方" prop="initiateOrganId">
         <p class="organ"><i class="el-icon-office-building" />  {{ dataForm.initiateOrganName }}</p>
         <el-button type="primary" plain @click="openDialog(dataForm.initiateOrganId)">添加资源到此项目</el-button>
-        <ResourceTable v-if="filterData(dataForm.initiateOrganId).length>0" :show-status="false" row-key="resourceId" :data="filterData(dataForm.initiateOrganId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
+        <ResourceTable v-if="filterData(dataForm.initiateOrganId).length>0" :creator="true" :show-status="false" row-key="resourceId" :data="filterData(dataForm.initiateOrganId)" @remove="handleRemove" @preview="handlePreview" />
       </el-form-item>
       <el-form-item label="协作方" prop="providerOrganIds">
         <el-button plain @click="openProviderOrganDialog">添加协作者</el-button>
-        <div v-for="(organ) in selectedData" :key="organ.globalId" class="organ-item">
-          <p class="organ"><i class="el-icon-office-building" />  {{ organ.globalName }}</p>
+        <div v-for="(organ,index) in dataForm.providerOrganIds" :key="organ.globalId" class="organ-item">
+          <p>
+            <span class="organ"><i class="el-icon-office-building" />  {{ organ.globalName }} </span>
+            <i class="el-icon-delete remove-provider" @click="handleProviderRemove(index)" />
+          </p>
           <el-button v-if="selectedData" type="primary" plain @click="openDialog(organ.globalId)">添加资源到此项目</el-button>
-          <ResourceTable v-if="filterData(organ.globalId).length>0" :show-status="false" :this-institution="thisInstitution" row-key="resourceId" :data="filterData(organ.globalId)" :buttons="['preview','remove']" @remove="handleRemove" @preview="handlePreview" />
+          <ResourceTable v-if="filterData(organ.globalId).length>0" :show-status="false" :creator="true" :this-institution="thisInstitution" row-key="resourceId" :data="filterData(organ.globalId)" @remove="handleRemove" @preview="handlePreview" />
         </div>
 
       </el-form-item>
@@ -66,7 +69,7 @@
     <!-- add resource dialog -->
     <ProjectResourceDialog ref="dialogRef" top="10px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ProviderOrganDialog :selected-provider-organ-list="selectedData" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ProviderOrganDialog :server-address="serverAddress" :selected-data="dataForm.providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
     <!-- preview dialog -->
     <el-dialog
       :visible.sync="previewDialogVisible"
@@ -149,7 +152,7 @@ export default {
   },
   methods: {
     async openProviderOrganDialog() {
-      await this.findMyGroupOrgan()
+      // await this.findMyGroupOrgan()
       this.providerOrganDialogVisible = true
     },
     openDialog(id) {
@@ -176,7 +179,6 @@ export default {
         projectOrgans: this.saveParams.projectOrgans
       }
       params = JSON.stringify(params)
-      console.log('params', params)
       this.$refs.dataForm.validate((valid) => {
         if (valid) {
           saveProject(params).then(res => {
@@ -195,21 +197,26 @@ export default {
       })
     },
     getProjectOrgans() {
+      this.saveParams.projectOrgans = this.dataForm.providerOrganIds.map(item => {
+        return {
+          organId: item.globalId,
+          participationIdentity: 2
+        }
+      })
+      this.saveParams.projectOrgans.push({
+        organId: this.dataForm.initiateOrganId,
+        participationIdentity: 1
+      })
       for (const key in this.resourceList) {
         const item = this.resourceList[key]
         if (this.resourceList[key].length > 0) {
           const current = this.saveParams.projectOrgans.filter(item => item.organId === key)
-          console.log(current)
-          // current[0].resourceIds = []
           current[0].resourceIds = item.map(r => r.resourceId)
         }
       }
-      console.log(this.saveParams.projectOrgans)
     },
     handleRemove({ organId, resourceId }) {
-      console.log(this.resourceList[organId])
       const index = this.resourceList[organId].findIndex(item => item.resourceId === resourceId)
-      console.log('handleRemove', this.selectedData, resourceId, index)
       this.resourceList[organId].splice(index, 1)
     },
     goBack() {
@@ -218,7 +225,6 @@ export default {
       })
     },
     handleChange(val) {
-      console.log(val)
       this.serverAddress = this.serverAddressList.filter(item => item.value === val)[0].label
     },
     async getLocalOrganInfo() {
@@ -234,27 +240,17 @@ export default {
       })
       this.dataForm.serverAddressValue = 0
       this.serverAddress = this.sysLocalOrganInfo.fusionList[this.dataForm.serverAddressValue].serverAddress
-      this.saveParams.projectOrgans.push({
-        organId: this.dataForm.initiateOrganId,
-        participationIdentity: 1
-      })
-      console.log('sysLocalOrganInfo', this.sysLocalOrganInfo)
     },
-    closeProviderOrganDialog() {
+    closeProviderOrganDialog(data) {
+      this.dataForm.providerOrganIds = data
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      console.log(data)
-      this.selectedData = data
       this.dataForm.providerOrganIds = data
-      data.map(item => {
-        this.saveParams.projectOrgans.push({
-          organId: item.globalId,
-          participationIdentity: 2
-        })
-      })
-      console.log('projectOrgans', this.saveParams.projectOrgans)
       this.providerOrganDialogVisible = false
+    },
+    handleProviderRemove(index) {
+      this.dataForm.providerOrganIds.splice(index, 1)
     },
     async findMyGroupOrgan() {
       const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
@@ -296,6 +292,9 @@ export default {
     font-size: 16px;
     color: #666;
     font-weight: bold;
+  }
+  .remove-provider{
+    color: $dangerColor;
   }
   ::v-deep .el-table,::v-deep .el-divider__text, .el-link{
   font-size: 12px!important;

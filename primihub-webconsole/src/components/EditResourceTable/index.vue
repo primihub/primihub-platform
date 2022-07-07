@@ -109,7 +109,7 @@ export default {
       const { fieldId, fieldName, fieldType, fieldDesc = '', relevance, grouping, protectionStatus } = row
       const data = {
         fieldId,
-        fieldAs: fieldName,
+        fieldName,
         fieldType,
         fieldDesc,
         relevance: relevance === true ? 1 : 0,

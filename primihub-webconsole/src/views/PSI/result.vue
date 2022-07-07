@@ -4,7 +4,7 @@
       <div class="organ">
         <div class="header">
           <p class="organ-name"><i class="el-icon-office-building" />{{ ownOrganName }}</p>
-          <!-- <search-input @click="handelSearchA" @change="handleSearchNameChangeA" /> -->
+          <search-input @click="handelSearchA" @change="handleSearchNameChangeA" />
         </div>
         <PSITaskResult v-if="allDataPsiTask.length>0" v-loading="listLoading" :data="allDataPsiTask" @delete="handleDelete" />
         <pagination v-show="totalPage>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
@@ -20,10 +20,10 @@
 </template>
 
 <script>
-import { getOrganPsiTask, getPsiTaskDetails, getPsiTaskList } from '@/api/PSI'
+import { getPsiTaskDetails, getPsiTaskList } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
-// import SearchInput from '@/components/SearchInput'
+import SearchInput from '@/components/SearchInput'
 import PSITaskResult from '@/components/PSITaskResult'
 
 export default {
@@ -31,7 +31,7 @@ export default {
   components: {
     PSITaskDetail,
     Pagination,
-    // SearchInput,
+    SearchInput,
     PSITaskResult
   },
   data() {
@@ -48,7 +48,7 @@ export default {
       otherOrganId: '',
       otherOrganName: '',
       organList: [],
-      pageSize: 5,
+      pageSize: 10,
       totalPage: 0,
       total: 0,
       pageNo: 1,
@@ -59,16 +59,9 @@ export default {
       dialogVisible: false,
       taskData: [],
       taskId: 0,
-      resultNameA: '',
+      resultName: '',
       resultNameB: ''
     }
-  },
-  beforeRouteLeave(to, from, next) {
-    if (to.name === 'PSITask') {
-      to.query.targetOrganId = this.otherOrganId
-      to.query.organName = this.organName
-    }
-    next()
   },
   async created() {
     this.getUserInfo()
@@ -86,7 +79,8 @@ export default {
       this.listLoading = true
       getPsiTaskList({
         pageNo: this.pageNo,
-        pageSize: this.pageSize
+        pageSize: this.pageSize,
+        resultName: this.resultName
       }).then(res => {
         const { data, totalPage, total } = res.result
         this.allDataPsiTask = data
@@ -111,56 +105,18 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.listLoading = true
-      getOrganPsiTask({
-        organId: this.ownOrganId,
-        pageSize: this.pageSize,
-        pageNo: this.pageNo,
-        resultName: this.resultNameA
-      }).then(res => {
-        this.listLoading = false
-        const { data, totalPage, total } = res.result
-        this.allDataPsiTask = data
-        this.totalPage = totalPage
-        this.total = total
-      })
+      this.getPsiTaskList()
     },
     async search(searchName, organId, pageSize) {
+      this.resultName = searchName
       console.log('searchName', searchName)
-      const res = await getOrganPsiTask({
-        organId: organId,
-        pageSize: pageSize,
-        resultName: searchName
-      })
-      return res
+      this.getPsiTaskList()
     },
     async handelSearchA(searchName) {
-      this.listLoading = true
-      this.pageNo = 1
-      this.resultNameA = searchName
-      const res = await this.search(searchName, this.ownOrganId, this.pageSize)
-      this.listLoading = false
-      const { data, totalPage, total } = res.result
-      this.allDataPsiTask = data
-      this.total = total
-      this.totalPage = totalPage
-    },
-    async handelSearchB(searchName) {
-      this.listLoading2 = true
-      this.pageNo2 = 1
-      this.resultNameB = searchName
-      const res = await this.search(searchName, this.otherOrganId, this.pageSize2)
-      this.listLoading2 = false
-      const { data, totalPage, total } = res.result
-      this.tableDataB = data
-      this.total2 = total
-      this.totalPage2 = totalPage
+      this.getPsiTaskList()
     },
     handleSearchNameChangeA(value) {
-      this.resultNameA = value
-    },
-    handleSearchNameChangeB(value) {
-      this.resultNameB = value
+      this.resultName = value
     }
   }
 
@@ -185,9 +141,6 @@ export default {
     background-color: #fff;
     border-radius: 20px;
     // border: 1px solid #DCDFE6;
-    &:nth-child(1){
-      margin-right: 20px;
-    }
     .organ-name{
       color: $mainColor;
       font-weight: bold;

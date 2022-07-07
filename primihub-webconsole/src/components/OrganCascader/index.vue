@@ -1,5 +1,5 @@
 <template>
-  <el-cascader ref="connectRef" v-model="cascaderValue" :options="cascaderOptions" :props="props" v-bind="$attrs" @change="handleOrganCascaderChange">
+  <el-cascader ref="connectRef" :options="cascaderOptions" :props="props" v-bind="$attrs" @change="handleOrganCascaderChange">
     <template slot-scope="{ node, data }">
       <span>{{ data.label }}</span>
     </template>
@@ -11,9 +11,15 @@ import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
 export default {
   name: 'OrganCascader',
+  props: {
+    cascaderValue: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
-      cascaderValue: [],
+      // cascaderValue: [],
       cascaderOptions: [],
       sysLocalOrganInfo: null,
       fusionList: [],
@@ -58,7 +64,7 @@ export default {
       this.fusionList && this.fusionList.map((item, index) => {
         this.cascaderOptions.push({
           label: item.serverAddress,
-          value: index,
+          value: item.serverAddress,
           registered: item.registered,
           show: item.show
         })
@@ -67,8 +73,7 @@ export default {
       this.serverAddress = this.cascaderOptions[this.serverAddressValue].label
     },
     async handleOrganCascaderChange(value) {
-      this.cascaderValue = value
-      console.log(value)
+      // this.cascaderValue = value
       const nodes = this.$refs.connectRef.getCheckedNodes()
       const organId = value[1]
       const organName = nodes[0].label
@@ -76,7 +81,8 @@ export default {
       this.$emit('change', {
         serverAddress: serverAddress,
         organId,
-        organName
+        organName,
+        cascaderValue: value
       })
     }
   }
