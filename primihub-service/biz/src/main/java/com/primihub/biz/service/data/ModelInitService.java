@@ -136,9 +136,15 @@ public class ModelInitService {
                                 if (freemarkerContent!=null){
                                     try {
                                         Date date= new Date();
-                                        StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(UUID.randomUUID().toString()).append(".csv");
-                                        Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
-                                        Common.Params params=Common.Params.newBuilder().putParamMap("outputFullFilename",outputFullFilenameParamValue).build();
+                                        StringBuilder baseSb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
+                                        StringBuilder predictFileName=new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
+                                        StringBuilder indicatorFileName=new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
+                                        Common.ParamValue predictFileNameParamValue=Common.ParamValue.newBuilder().setValueString(predictFileName.toString()).build();
+                                        Common.ParamValue indicatorFileNameParamValue=Common.ParamValue.newBuilder().setValueString(indicatorFileName.toString()).build();
+                                        Common.Params params=Common.Params.newBuilder()
+                                                .putParamMap("predictFileName",predictFileNameParamValue)
+                                                .putParamMap("indicatorFileName",indicatorFileNameParamValue)
+                                                .build();
                                         Common.Task task = Common.Task.newBuilder()
                                                 .setType(Common.TaskType.ACTOR_TASK)
                                                 .setParams(params)
