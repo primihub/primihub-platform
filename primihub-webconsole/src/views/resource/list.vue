@@ -75,15 +75,21 @@
         </el-table-column>
         <el-table-column
           label="数据信息"
-          min-width="200"
+          min-width="180"
         >
           <template slot-scope="{row}">
             特征量：{{ row.fileRows }}<br>
             样本量：{{ row.fileColumns }} <br>
             正例样本数量：{{ row.fileYRows }}<br>
             正例样本比例：{{ row.fileYRatio }}% <br>
-            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含Y值</el-tag>
-            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含Y值</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="是否包含Y值"
+        >
+          <template slot-scope="{row}">
+            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含</el-tag>
+            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -98,12 +104,13 @@
         <el-table-column
           label="操作"
           fixed="right"
-          width="220"
+          width="160"
           align="center"
         >
           <template slot-scope="{row}">
-            <el-button v-if="hasEditPermission" icon="el-icon-edit" size="mini" type="primary" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
-            <el-button v-if="hasDeletePermission" size="mini" icon="el-icon-delete" type="danger" @click="handleResourceDelete(row.resourceId)">删除</el-button>
+            <el-button type="text" icon="el-icon-view" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+            <el-button v-if="hasEditPermission" icon="el-icon-edit" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
+            <!-- <el-button v-if="hasDeletePermission" size="mini" icon="el-icon-delete" type="danger" @click="handleResourceDelete(row.resourceId)">删除</el-button> -->
           </template>
         </el-table-column>
       </el-table>

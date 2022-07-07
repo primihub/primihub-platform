@@ -2,14 +2,30 @@
 You will need [node](https://nodejs.org/en/), [git](https://git-scm.com/). The project is based on [ES2015+](https://es6.ruanyifeng.com/)、[Vue.Js](https://vuejs.org/)、[Vuex](https://vuex.vuejs.org/)、[Vue-Router](https://router.vuejs.org/)、[antv-x6](https://x6.antv.vision/zh) and [vue-element-admin](https://panjiachen.github.io/vue-element-admin-site/). It would be helpful if you have pre-existing knowledge on those.
 
 ## Getting Started
+
+1.enter the project directory
 ```bash
-# enter the project directory
 cd primihub-webconsole
-
-# install dependency
+```
+2.install dependency
+```bash
 npm install
-
-# develop
+```
+3.modify vue.config.js file, the target is your gateway url 
+```bash
+proxy: {
+  '/dev-api': {
+    target: 'your gateway url',
+    ws: true,
+    changeOrigin: true,
+    pathRewrite: {
+      '^/dev-api': ''
+    }
+  }
+}
+```
+4.start the project
+```bash
 npm run dev
 ```
 
