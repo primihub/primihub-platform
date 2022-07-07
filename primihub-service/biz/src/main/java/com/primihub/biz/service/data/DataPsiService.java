@@ -114,7 +114,6 @@ public class DataPsiService {
             List<DataFileField> dataFileField = dataResourceRepository.queryDataFileField(new HashMap() {{
                 put("resourceIds", resourceIds);
                 put("relevance", 1);
-                put("protectionStatus", 1);
             }});
             Map<Long, List<DataFileField>> fileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.DataResourcePoConvertAllocationVo(re,fileFieldMap.get(re.getResourceId()),localOrganId)).collect(Collectors.toList())));
