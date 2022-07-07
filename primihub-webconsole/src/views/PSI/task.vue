@@ -4,7 +4,6 @@
       v-loading="taskLoading"
       class="steps"
       element-loading-text="任务创建中"
-      element-loading-background="rgba(0, 0, 0, 0.7)"
     >
       <div class="step">
         <div class="step-icon">
@@ -83,7 +82,7 @@
         <div class="inner-con">
           <el-form ref="form" :model="formData" :rules="rules" label-width="140px">
             <el-form-item label="求交结果名称" prop="resultName">
-              <el-input v-model="formData.resultName" placeholder="请输入内容" />
+              <el-input v-model="resultName" placeholder="请输入内容" />
             </el-form-item>
             <el-row>
               <el-col :span="8">
@@ -121,7 +120,15 @@
               </el-checkbox-group>
             </el-form-item> -->
             <el-form-item label="备注（可选）" prop="remarks">
-              <el-input v-model="formData.remarks" size="mini" type="textarea" resize="none" />
+              <el-input
+                v-model="formData.remarks"
+                size="mini"
+                type="textarea"
+                resize="none"
+                maxlength="200"
+                minlength="3"
+                show-word-limit
+              />
             </el-form-item>
           </el-form>
         </div>
@@ -192,7 +199,8 @@ export default {
         remarks: null,
         serverAddress: ''
       },
-      resultName: '',
+      ownResourceName: '',
+      otherResourceName: '',
       rules: {
         ownResourceId: [
           { required: true, message: '请选择资源' }
@@ -248,6 +256,18 @@ export default {
     },
     centerImg() {
       return this.formData.outputContent === 0 ? intersection : this.formData.outputContent === 1 ? diffsection : intersection
+    },
+    resultName() {
+      return `${this.ownResourceName}-${this.otherResourceName}`
+    }
+  },
+  watch: {
+    resultName(newVal) {
+      if (newVal) {
+        this.formData.resultName = this.resultName
+      } else {
+        this.formData.resultName = ''
+      }
     }
   },
   created() {
@@ -357,11 +377,13 @@ export default {
       this.formData.otherKeyword = this.otherOrganResourceField[index].name
     },
     handleOwnResourceChange(resourceId) {
+      console.log(resourceId)
       this.ownOrganResourceField = []
       this.formData.ownResourceId = resourceId
       this.formData.ownKeyword = ''
       const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
-      this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${currentResource.resourceName}` : currentResource.resourceName
+      this.ownResourceName = currentResource.resourceName
+      // this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${resourceName}` : resourceName
       console.log('resultName', this.formData.resultName)
       currentResource.keywordList.forEach((item, index) => {
         this.ownOrganResourceField.push({
@@ -375,7 +397,12 @@ export default {
       this.formData.otherResourceId = resourceId
       this.formData.otherKeyword = ''
       const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
-      this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${currentResource.resourceName}` : currentResource.resourceName
+      this.otherResourceName = currentResource.resourceName
+      // const resourceName = currentResource.resourceName
+      // if (this.formData.resourceId !== resourceId) {
+      //   resourceName = ''
+      // }
+      // this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${resourceName}` : resourceName
       currentResource.keywordList.forEach((item, index) => {
         this.otherOrganResourceField.push({
           value: index,

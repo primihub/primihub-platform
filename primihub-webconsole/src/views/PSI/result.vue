@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import { getOrganPsiTask, getPsiTaskDetails, getPsiTaskList } from '@/api/PSI'
+import { getPsiTaskDetails, getPsiTaskList } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
 import SearchInput from '@/components/SearchInput'
@@ -59,16 +59,9 @@ export default {
       dialogVisible: false,
       taskData: [],
       taskId: 0,
-      resultNameA: '',
+      resultName: '',
       resultNameB: ''
     }
-  },
-  beforeRouteLeave(to, from, next) {
-    if (to.name === 'PSITask') {
-      to.query.targetOrganId = this.otherOrganId
-      to.query.organName = this.organName
-    }
-    next()
   },
   async created() {
     this.getUserInfo()
@@ -86,7 +79,8 @@ export default {
       this.listLoading = true
       getPsiTaskList({
         pageNo: this.pageNo,
-        pageSize: this.pageSize
+        pageSize: this.pageSize,
+        resultName: this.resultName
       }).then(res => {
         const { data, totalPage, total } = res.result
         this.allDataPsiTask = data
@@ -114,41 +108,15 @@ export default {
       this.getPsiTaskList()
     },
     async search(searchName, organId, pageSize) {
+      this.resultName = searchName
       console.log('searchName', searchName)
-      const res = await getOrganPsiTask({
-        organId: organId,
-        pageSize: pageSize,
-        resultName: searchName
-      })
-      return res
+      this.getPsiTaskList()
     },
     async handelSearchA(searchName) {
-      this.listLoading = true
-      this.pageNo = 1
-      this.resultNameA = searchName
-      const res = await this.search(searchName, this.ownOrganId, this.pageSize)
-      this.listLoading = false
-      const { data, totalPage, total } = res.result
-      this.allDataPsiTask = data
-      this.total = total
-      this.totalPage = totalPage
-    },
-    async handelSearchB(searchName) {
-      this.listLoading2 = true
-      this.pageNo2 = 1
-      this.resultNameB = searchName
-      const res = await this.search(searchName, this.otherOrganId, this.pageSize2)
-      this.listLoading2 = false
-      const { data, totalPage, total } = res.result
-      this.tableDataB = data
-      this.total2 = total
-      this.totalPage2 = totalPage
+      this.getPsiTaskList()
     },
     handleSearchNameChangeA(value) {
-      this.resultNameA = value
-    },
-    handleSearchNameChangeB(value) {
-      this.resultNameB = value
+      this.resultName = value
     }
   }
 

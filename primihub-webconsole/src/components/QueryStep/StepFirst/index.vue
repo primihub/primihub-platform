@@ -6,12 +6,12 @@
           <el-form-item label="已选资源" prop="selectResources" />
           <div class="resource-box">
             <ResourceItemSimple v-for="item in selectResources" :key="item.resourceId" :data="item" :show-close="true" class="select-item" @delete="handleDelete" />
-            <ResourceItemCreate @click="openDialog" />
+            <ResourceItemCreate @click="openDialog(true)" />
           </div>
         </div>
         <div v-else class="dialog-con">
           <el-form-item label="选择查询资源" prop="resourceName">
-            <OrganCascader placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
+            <OrganCascader v-model="cascaderValue" placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
             <!-- <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button> -->
           </el-form-item>
         </div>
@@ -69,9 +69,9 @@ export default {
         selectResources: []
       },
       rules: {
-        // resourceName: [
-        //   { required: true, message: '请选择资源', trigger: 'blur' }
-        // ],
+        resourceName: [
+          { required: true, message: '请选择资源', trigger: 'blur' }
+        ],
         pirParam: [
           { required: true, message: '请输入检索ID', trigger: 'blur' },
           { max: 10, message: '长度在10个字符以内', trigger: 'blur' }
@@ -81,7 +81,10 @@ export default {
       listLoading: false,
       selectResources: [], // selected resource id list
       serverAddress: '',
-      organId: ''
+      organId: '',
+      isReset: false,
+      cascaderValue: [],
+      type: 'add'
     }
   },
   computed: {
@@ -119,8 +122,8 @@ export default {
         }
       })
     },
-    openDialog() {
-      console.log(this.serverAddress)
+    openDialog(isAdd) {
+      this.type = isAdd ? 'add' : ''
       if (!this.serverAddress) {
         this.$message({
           message: '请先选择机构',
@@ -132,23 +135,29 @@ export default {
     },
     handleDialogCancel() {
       this.dialogVisible = false
+      this.cascaderValue = this.type === 'add' ? this.cascaderValue : []
     },
     handleDialogSubmit(data) {
-      console.log('handleDialogSubmit', data)
-      this.selectResources = data.filter(item => item.organId === this.organId)
-      // console.log(this.selectResources)
-      this.dialogVisible = false
-      // this.serverAddress = ''
-      // this.organId = ''
+      if (data.length > 0) {
+        this.selectResources = data.filter(item => item.organId === this.organId)
+        this.dialogVisible = false
+      } else {
+        this.$message({
+          message: '请选择资源',
+          type: 'warning'
+        })
+      }
     },
     handleDelete(data) {
       const index = this.selectResources.findIndex(item => item.resourceId === data.id)
       this.selectResources.splice(index, 1)
+      this.cascaderValue = []
     },
     handleOrganSelect(data) {
       this.serverAddress = data.serverAddress
       this.organId = data.organId
-      this.openDialog()
+      this.cascaderValue = data.cascaderValue
+      this.openDialog(false)
     }
   }
 }
@@ -157,7 +166,7 @@ export default {
 <style lang="scss" scoped>
 .search-area {
   margin: 20px auto;
-  width: 560px;
+  width: 595px;
   text-align: center;
 }
 .query-button {
@@ -196,7 +205,7 @@ export default {
   text-align: center;
 }
 ::v-deep .el-cascader{
-  width: 450px;
+  width: 485px;
   margin-right: 10px;
 }
 ::v-deep .el-form-item__content{
