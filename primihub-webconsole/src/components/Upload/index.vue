@@ -19,7 +19,10 @@
       </uploader-drop>
       <uploader-list />
     </uploader>
-    <p class="upload-tip">只能上传.csv文件，且不超过1MB</p>
+    <p class="upload-tip">
+      1.只能上传.csv文件，且不超过1MB <br>
+      2.请确保上传的资源文件编码为UTF8
+    </p>
   </div>
 </template>
 
@@ -267,7 +270,8 @@ p{
   }
 }
 .upload-tip{
-  font-size: 12px;
+  font-size: 14px;
   color: #606266;
+  line-height: 1.75;
 }
 </style>

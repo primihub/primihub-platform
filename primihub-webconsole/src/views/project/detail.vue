@@ -8,9 +8,27 @@
             <p class="infos-des">{{ projectId }}</p>
           </div>
           <el-descriptions :column="1" label-class-name="detail-title">
-            <el-descriptions-item label="创建人">{{ userName }}</el-descriptions-item>
-            <el-descriptions-item label="项目描述">{{ projectDesc }}</el-descriptions-item>
-            <el-descriptions-item label="创建时间">{{ createDate }}</el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-user" />
+                <strong>创建人</strong>
+              </template>
+              {{ userName }}
+            </el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-tickets" />
+                <strong>项目描述</strong>
+              </template>
+              {{ projectDesc }}
+            </el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-time" />
+                <strong>创建时间</strong>
+              </template>
+              {{ createDate }}
+            </el-descriptions-item>
           </el-descriptions>
           <div v-if="isShowAuditForm" class="audit">
             <el-form ref="auditForm" :model="auditForm">
@@ -515,6 +533,19 @@ section{
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+::v-deep .el-descriptions-item__container{
+  display: block;
+  margin: 5px 0;
+  strong{
+    margin-left: 5px;
+  }
+}
+::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
+  padding-bottom: 0;
+}
+::v-deep .el-descriptions-row{
+  margin-bottom: 20px;
 }
 ::v-deep .el-descriptions-item__container{
   flex-wrap: wrap;

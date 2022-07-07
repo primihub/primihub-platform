@@ -81,8 +81,12 @@ export default {
 ::v-deep  .el-descriptions{
   margin-bottom:20px;
 }
+::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
+  padding-bottom: 5px;
+}
 ::v-deep .el-descriptions-item__container{
   align-items: center;
+  font-size: 12px;
 }
 ::v-deep .el-descriptions__header{
   margin-bottom: 10px;
@@ -92,6 +96,7 @@ export default {
 }
 .result-name{
   cursor: pointer;
+  font-size: 12px;
   &:hover{
     color: #1989fa;
   }

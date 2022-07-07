@@ -31,7 +31,7 @@ export default {
   components: {
     PSITaskDetail,
     Pagination,
-    // SearchInput,
+    SearchInput,
     PSITaskResult
   },
   data() {

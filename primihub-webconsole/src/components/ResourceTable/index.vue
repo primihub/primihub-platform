@@ -76,6 +76,7 @@
     <el-table-column
       label="是否包含Y值"
       min-width="80"
+      align="center"
     >
       <template slot-scope="{row}">
         {{ row.resourceContainsY? '是' : '否' }}
@@ -84,7 +85,6 @@
     <el-table-column
       v-if="showButtons"
       label="操作"
-      fixed="right"
       align="center"
       min-width="120"
     >

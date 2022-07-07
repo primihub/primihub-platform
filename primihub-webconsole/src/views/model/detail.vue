@@ -75,11 +75,10 @@
         <el-descriptions-item label="① ROOT MEAN SQUARED ERROR">{{ anotherQuotas.rootMeanSquaredError }}</el-descriptions-item>
         <el-descriptions-item label="② MEAN SQUARED ERROR">{{ anotherQuotas.meanSquaredError }}</el-descriptions-item>
         <el-descriptions-item label="③ EXPLAINED VARIANCE">{{ anotherQuotas.explainedVariance }}</el-descriptions-item>
-        <el-descriptions-item label="④ EXPLAINED VARIANCE">{{ anotherQuotas.explainedVariance }}</el-descriptions-item>
-        <el-descriptions-item label="⑤ MEAN SQUARED LOG ERROR">{{ anotherQuotas.meanSquaredLogError }}</el-descriptions-item>
-        <el-descriptions-item label="⑥ R2 SCORE">{{ anotherQuotas.r2Score }}</el-descriptions-item>
-        <el-descriptions-item label="⑦ MEAN ABSOLUTE ERROR">{{ anotherQuotas.meanAbsoluteError }}</el-descriptions-item>
-        <el-descriptions-item label="⑧ MEDIAN ABSOLUTE ERROR">{{ anotherQuotas.medianAbsoluteError }}</el-descriptions-item>
+        <el-descriptions-item label="④ MEAN SQUARED LOG ERROR">{{ anotherQuotas.meanSquaredLogError }}</el-descriptions-item>
+        <el-descriptions-item label="⑤ R2 SCORE">{{ anotherQuotas.r2Score }}</el-descriptions-item>
+        <el-descriptions-item label="⑥ MEAN ABSOLUTE ERROR">{{ anotherQuotas.meanAbsoluteError }}</el-descriptions-item>
+        <el-descriptions-item label="⑦ MEDIAN ABSOLUTE ERROR">{{ anotherQuotas.medianAbsoluteError }}</el-descriptions-item>
       </el-descriptions>
     </div>
     <!-- <div class="section">

@@ -157,7 +157,7 @@ export default {
 <style lang="scss" scoped>
 .search-area {
   margin: 20px auto;
-  width: 620px;
+  width: 560px;
   text-align: center;
 }
 .query-button {
@@ -196,7 +196,7 @@ export default {
   text-align: center;
 }
 ::v-deep .el-cascader{
-  width: 510px;
+  width: 450px;
   margin-right: 10px;
 }
 ::v-deep .el-form-item__content{
