@@ -58,7 +58,7 @@ export default {
       this.fusionList && this.fusionList.map((item, index) => {
         this.cascaderOptions.push({
           label: item.serverAddress,
-          value: index,
+          value: item.serverAddress,
           registered: item.registered,
           show: item.show
         })

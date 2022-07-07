@@ -75,7 +75,7 @@
     </el-table-column>
     <el-table-column
       label="是否包含Y值"
-      width="80"
+      min-width="80"
     >
       <template slot-scope="{row}">
         {{ row.resourceContainsY? '是' : '否' }}

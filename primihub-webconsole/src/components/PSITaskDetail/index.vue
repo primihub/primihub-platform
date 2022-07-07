@@ -1,6 +1,6 @@
 <template>
   <div class="task-detail">
-    <el-descriptions title="" :column="2" label-class-name="detail-title">
+    <el-descriptions title="" :column="1" label-class-name="detail-title">
       <el-descriptions-item label="求交结果名称">{{ data.resultName }}</el-descriptions-item>
       <el-descriptions-item label="任务Id">{{ data.taskIdName }}</el-descriptions-item>
     </el-descriptions>
@@ -15,14 +15,14 @@
     <el-descriptions title="求交配置方式" :column="2" label-class-name="detail-title">
       <el-descriptions-item label="输出内容">{{ data.outputContent=== 0? '交集': '差集' }}</el-descriptions-item>
       <el-descriptions-item label="输出格式">{{ data.outputFormat === '0'? '资源文件(csv)': '' }}</el-descriptions-item>
-      <el-descriptions-item label="结果获取方">{{ data.resultOrganName }}</el-descriptions-item>
+      <!-- <el-descriptions-item label="结果获取方">{{ data.resultOrganName }}</el-descriptions-item> -->
       <el-descriptions-item v-if="data.remarks !== null " label="备注">{{ data.remarks }}</el-descriptions-item>
     </el-descriptions>
     <el-descriptions title="高级设置" :column="1" label-class-name="detail-title">
       <el-descriptions-item label="输出资源路径">{{ data.outputFilePathType === 0? '自动生成': '' }}</el-descriptions-item>
       <el-descriptions-item v-if="data.taskState === 1" :label="`${data.resultOrganName}`"><el-button type="text" @click="downloadPsiTask">{{ data.resultName }}.csv <i class="el-icon-download" /></el-button></el-descriptions-item>
       <el-descriptions-item label="关键键有重复值时">{{ data.outputNoRepeat === 1? '去重': '不去重' }}</el-descriptions-item>
-      <el-descriptions-item label="是否对&quot;可统计&quot;的附加列做全表统计">{{ data.columnCompleteStatistics === 1? '否': '是' }}</el-descriptions-item>
+      <!-- <el-descriptions-item label="是否对&quot;可统计&quot;的附加列做全表统计">{{ data.columnCompleteStatistics === 1? '否': '是' }}</el-descriptions-item> -->
     </el-descriptions>
   </div>
 </template>

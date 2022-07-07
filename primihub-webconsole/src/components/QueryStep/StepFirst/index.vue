@@ -12,8 +12,7 @@
         <div v-else class="dialog-con">
           <el-form-item label="选择查询资源" prop="resourceName">
             <OrganCascader placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
-            <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button>
-            <!-- <ResourceDialog ref="dialogRef" :server-address="serverAddress" :organ-id="organId" :dialog-visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" /> -->
+            <!-- <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button> -->
           </el-form-item>
         </div>
         <el-form-item label="检索ID" prop="pirParam">
@@ -149,6 +148,7 @@ export default {
     handleOrganSelect(data) {
       this.serverAddress = data.serverAddress
       this.organId = data.organId
+      this.openDialog()
     }
   }
 }
@@ -196,7 +196,7 @@ export default {
   text-align: center;
 }
 ::v-deep .el-cascader{
-  width: 410px;
+  width: 510px;
   margin-right: 10px;
 }
 ::v-deep .el-form-item__content{

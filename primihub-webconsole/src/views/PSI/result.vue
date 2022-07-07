@@ -4,7 +4,7 @@
       <div class="organ">
         <div class="header">
           <p class="organ-name"><i class="el-icon-office-building" />{{ ownOrganName }}</p>
-          <!-- <search-input @click="handelSearchA" @change="handleSearchNameChangeA" /> -->
+          <search-input @click="handelSearchA" @change="handleSearchNameChangeA" />
         </div>
         <PSITaskResult v-if="allDataPsiTask.length>0" v-loading="listLoading" :data="allDataPsiTask" @delete="handleDelete" />
         <pagination v-show="totalPage>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
@@ -23,7 +23,7 @@
 import { getOrganPsiTask, getPsiTaskDetails, getPsiTaskList } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
-// import SearchInput from '@/components/SearchInput'
+import SearchInput from '@/components/SearchInput'
 import PSITaskResult from '@/components/PSITaskResult'
 
 export default {
@@ -48,7 +48,7 @@ export default {
       otherOrganId: '',
       otherOrganName: '',
       organList: [],
-      pageSize: 5,
+      pageSize: 10,
       totalPage: 0,
       total: 0,
       pageNo: 1,
@@ -173,9 +173,6 @@ export default {
     background-color: #fff;
     border-radius: 20px;
     // border: 1px solid #DCDFE6;
-    &:nth-child(1){
-      margin-right: 20px;
-    }
     .organ-name{
       color: $mainColor;
       font-weight: bold;

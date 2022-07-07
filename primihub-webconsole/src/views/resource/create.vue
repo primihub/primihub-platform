@@ -64,11 +64,17 @@
               <el-radio :label="3">指定机构可见</el-radio>
             </el-radio-group>
             <template v-if="dataForm.resourceAuthType === 3 && (fusionList || authOrganList) && showCascader">
-              <el-cascader-panel ref="connectRef" :key="modelKey" v-model="cascaderValue" :show-all-levels="false" :options="cascaderOptions" :props="props" @change="handleOrganCascaderChange">
+              {{ showCascader }}
+              <lazy-cascader
+                v-model="cascaderValue"
+                filterable
+                :props="props"
+              />
+              <!-- <el-cascader ref="connectRef" v-model="cascaderValue" :show-all-levels="false" :options="cascaderOptions" :props="props" @change="handleOrganCascaderChange">
                 <template slot-scope="{ node, data }">
                   <span>{{ data.label }}</span>
                 </template>
-              </el-cascader-panel>
+              </el-cascader> -->
             </template>
           </div>
         </el-form-item>
@@ -127,6 +133,7 @@
 import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
+import LazyCascader from '@/components/LazyCascader'
 import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
 import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
@@ -134,7 +141,8 @@ export default {
   components: {
     Upload,
     EditResourceTable,
-    ResourcePreviewTable
+    ResourcePreviewTable,
+    LazyCascader
   },
   filters: {
     sourceFilter(source) {
@@ -202,9 +210,20 @@ export default {
       }],
       dataList: [], // resource preview
       fieldList: [], // resource field info
-      cascaderValue: [],
+      cascaderValue: [['http://fusion.primihub.svc.cluster.local:8080', 'c4703670-9094-45c9-a8fd-9b545859a4bb']],
       showCascader: true,
       modelKey: 0,
+      // cascaderOptions: [{
+      //   label: 'http://fusion.primihub.svc.cluster.local:8080',
+      //   registered: true,
+      //   show: true,
+      //   value: 'http://fusion.primihub.svc.cluster.local:8080',
+      //   children: [{
+      //     label: 'test2',
+      //     leaf: true,
+      //     value: 'c4703670-9094-45c9-a8fd-9b545859a4bb'
+      //   }]
+      // }],
       cascaderOptions: [],
       sysLocalOrganInfo: null,
       fusionList: null,
@@ -216,9 +235,46 @@ export default {
         lazy: true,
         multiple: true,
         leaf: 'leaf',
-        lazyLoad: this.lazyLoad
+        lazyLoad: this.lazyLoad,
+        value: 'id',
+        label: 'name'
       },
-      authOrganList: null
+      props2: {
+        multiple: true,
+        checkStrictly: false,
+        value: 'id',
+        label: 'name',
+        leaf: 'leaf',
+        lazyLoad: this.lazyLoad,
+        lazySearch: this.lazySearch
+      },
+      authOrganList: null,
+      options: [
+        {
+          id: 'http://fusion.primihub.svc.cluster.local:8080',
+          name: 'http://fusion.primihub.svc.cluster.local:8080',
+          children: [
+            {
+              id: 'test2',
+              name: 'c4703670-9094-45c9-a8fd-9b545859a4bb'
+            }
+          ]
+        },
+        {
+          id: 2,
+          name: '数码',
+          children: [
+            {
+              id: 5,
+              name: '手机'
+            },
+            {
+              id: 6,
+              name: '电脑'
+            }
+          ]
+        }
+      ]
     }
   },
   async created() {
@@ -226,7 +282,7 @@ export default {
     this.resourceId = this.$route.params.id
     if (this.isEditPage) {
       await this.getResourceDetail()
-      this.showCascader = false
+      // this.showCascader = false
       // await this.getLocalOrganInfo()
     }
   },
@@ -357,38 +413,20 @@ export default {
         name: 'ResourceList'
       })
     },
-    async getLocalOrganInfo() {
-      const { result } = await getLocalOrganInfo()
-      this.sysLocalOrganInfo = result.sysLocalOrganInfo
-      if (!result.sysLocalOrganInfo) return
-      this.fusionList = result.sysLocalOrganInfo?.fusionList
-      this.fusionList && this.fusionList.map((item, index) => {
-        this.cascaderOptions.push({
-          label: item.serverAddress,
-          value: index,
-          registered: item.registered,
-          show: item.show
-        })
-      })
-    },
     async handleAuthTypeChange(value) {
       if (value === 3) {
         this.resourceAuthType = value
-        if (this.isEditPage) {
-          this.showCascader = false
-        } else {
-          this.showCascader = true
-          await this.getLocalOrganInfo()
-        }
+        // await this.getLocalOrganInfo()
       }
     },
     async handleOrganCascaderChange(value) {
-      console.log(value)
       this.cascaderValue = value
+      console.log('11', value)
       const nodes = this.$refs.connectRef.getCheckedNodes(true)
       const fusionOrganList = this.cascaderValue.map(item => {
+        console.log(item)
         return {
-          organServerAddress: this.cascaderOptions[item[0]].label,
+          organServerAddress: item[0],
           organGlobalId: item[1],
           organName: nodes.filter(n => n.value === item[1])[0].label
         }
@@ -410,24 +448,105 @@ export default {
       this.showCascader = true
       console.log(this.cascaderValue)
     },
-    async lazyLoad(node, resolve) {
-      const { level } = node
-      if (level === 1) {
-        const params = {
-          serverAddress: node.label
+    async formatCascaderOptions() {
+      await this.getLocalOrganInfo()
+      console.log('formatCascaderOptions', this.cascaderOptions)
+      this.cascaderValue.forEach((item, index) => {
+        const organs = this.findMyGroupOrgan(item[0])
+        this.cascaderOptions[index].children = organs
+      })
+    },
+    async getLocalOrganInfo(node, resolve) {
+      const { result } = await getLocalOrganInfo()
+      this.sysLocalOrganInfo = result.sysLocalOrganInfo
+      if (!result.sysLocalOrganInfo) return
+      this.fusionList = result.sysLocalOrganInfo?.fusionList
+      const data = this.fusionList && this.fusionList.map((item, index) => {
+        return {
+          label: item.serverAddress,
+          value: item.serverAddress,
+          registered: item.registered,
+          show: item.show
         }
-        findMyGroupOrgan(params).then(({ result }) => {
-          const data = result.dataList.organList.map((item) => {
-            return {
-              label: item.globalName,
-              value: item.globalId,
-              leaf: true
-            }
-          })
-          resolve(data)
+      })
+      this.cascaderOptions = data
+      console.log(this.cascaderOptions)
+      resolve && resolve(data)
+    },
+    findMyGroupOrgan(serverAddress, resolve) {
+      findMyGroupOrgan({ serverAddress }).then(({ result }) => {
+        const data = result.dataList.organList.map((item) => {
+          return {
+            label: item.globalName,
+            value: item.globalId,
+            leaf: true
+          }
+        })
+        resolve && resolve(data)
+        return data
+      })
+    },
+    // async lazyLoad(node, resolve) {
+    //   const { level } = node
+    //   if (level === 0) {
+    //     if (this.cascaderValue.length > 0) {
+    //       this.formatCascaderOptions()
+    //       console.log(this.cascaderOptions)
+    //       console.log(this.cascaderValue)
+    //     } else {
+    //       await this.getLocalOrganInfo(node, resolve)
+    //     }
+    //   } else if (level === 1) {
+    //     this.findMyGroupOrgan(node.label, resolve)
+    //   } else {
+    //     resolve([])
+    //   }
+    // },
+    // 加载级联的方法
+    lazyLoad(nodeValue, resolve) {
+      setTimeout(() => {
+        resolve(this.getCateList(nodeValue))
+      }, 200)
+    },
+    // 获取节点数据
+    getCateList(parent) {
+      if (parent == 0) {
+        return this.options.map(item => {
+          const obj = {
+            id: item.id,
+            name: item.name,
+            leaf: true
+          }
+          if (item.children && item.children.length > 0) {
+            obj.leaf = false
+          }
+          return obj
         })
       } else {
-        resolve([])
+        this.current = []
+        this.findCate(parent, this.options)
+        return this.current.map(item => {
+          const obj = {
+            id: item.id,
+            name: item.name,
+            leaf: true
+          }
+          if (item.children && item.children.length > 0) {
+            obj.leaf = false
+          }
+          return obj
+        })
+      }
+    },
+    findCate(parent, children) {
+      for (let i = 0; i < children.length; i++) {
+        if (parent == children[i].id) {
+          this.current = children[i].children
+        } else {
+          if (children[i].children) {
+            this.findCate(parent, children[i].children)
+          }
+        }
       }
     }
   }
