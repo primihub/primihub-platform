@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -141,8 +142,10 @@ public class FileUtil {
             if (list.size()==0)
                 return dataList;
             String[] fields = list.get(0).split(",");
+            log.info(Arrays.toString(fields));
             for(int i=1;i<list.size();i++) {
                 String[] data = StringUtils.splitPreserveAllTokens(list.get(i), ",");
+                log.info(Arrays.toString(fields));
                 if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length)))
                     dataList.add(readValues(data,fields));
             }
