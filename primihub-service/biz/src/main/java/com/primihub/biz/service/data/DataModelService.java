@@ -410,7 +410,7 @@ public class DataModelService {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
-        if (dataModel.getLatestTaskStatus()==0)
+        if (dataModel.getLatestTaskStatus()==null||dataModel.getLatestTaskStatus()==0)
             return BaseResultEntity.success();
         List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(modelId, null);
         if (dataComponents.size()==0)
