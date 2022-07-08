@@ -619,13 +619,21 @@ export default {
         return
       }
       runTaskModel({ modelId: this.modelId }).then(res => {
-        this.modelStartRun = true
-        clearInterval(this.timmer)
-        this.$notify({
-          message: '开始运行',
-          type: 'info',
-          duration: 5000
-        })
+        if (res.code !== 0) {
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+          return
+        } else {
+          this.modelStartRun = true
+          clearInterval(this.timmer)
+          this.$notify({
+            message: '开始运行',
+            type: 'info',
+            duration: 5000
+          })
+        }
       })
     },
     getTaskModelComponent() {
