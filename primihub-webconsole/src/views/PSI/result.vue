@@ -1,31 +1,12 @@
 <template>
   <div class="container">
-    <!-- <organ-select @change="handleOrganSelect" /> -->
     <div class="organ-container">
       <div class="organ">
         <div class="header">
           <p class="organ-name"><i class="el-icon-office-building" />{{ ownOrganName }}</p>
           <search-input @click="handelSearchA" @change="handleSearchNameChangeA" />
         </div>
-        <el-table
-          v-loading="listLoading"
-          :data="tableDataA"
-          class="table-list"
-          :default-sort="{prop: 'resourceName', order: 'descending'}"
-        >
-          <el-table-column label="结果表名" prop="resultName" sortable width="200">
-            <!-- <template slot-scope="{row}">
-              <span class="resource-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.resultName }}</span>
-            </template> -->
-          </el-table-column>
-          <el-table-column label="产出时间" prop="updateDate" sortable align="center" />
-          <el-table-column align="center" label="总行数" prop="fileRows" sortable />
-          <el-table-column label="关联任务" prop="taskIdName" sortable>
-            <template slot-scope="{row}">
-              <span class="resource-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
+        <PSITaskResult v-if="allDataPsiTask.length>0" v-loading="listLoading" :data="allDataPsiTask" @delete="handleDelete" />
         <pagination v-show="totalPage>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
       </div>
     </div>
@@ -39,17 +20,19 @@
 </template>
 
 <script>
-import { getOrganPsiTask, getPsiTaskDetails } from '@/api/PSI'
+import { getPsiTaskDetails, getPsiTaskList } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
 import SearchInput from '@/components/SearchInput'
+import PSITaskResult from '@/components/PSITaskResult'
 
 export default {
   name: 'PSIDirectory',
   components: {
     PSITaskDetail,
     Pagination,
-    SearchInput
+    SearchInput,
+    PSITaskResult
   },
   data() {
     return {
@@ -60,7 +43,7 @@ export default {
       userId: 0,
       ownOrganId: 0,
       ownOrganName: '原语科技',
-      tableDataA: [],
+      allDataPsiTask: [],
       tableDataB: [],
       otherOrganId: '',
       otherOrganName: '',
@@ -76,55 +59,42 @@ export default {
       dialogVisible: false,
       taskData: [],
       taskId: 0,
-      resultNameA: '',
+      resultName: '',
       resultNameB: ''
     }
-  },
-  beforeRouteLeave(to, from, next) {
-    if (to.name === 'PSITask') {
-      to.query.targetOrganId = this.otherOrganId
-      to.query.organName = this.organName
-    }
-    next()
   },
   async created() {
     this.getUserInfo()
     this.listLoading = true
-    getOrganPsiTask({
-      organId: this.ownOrganId,
-      pageSize: this.pageSize,
-      pageNo: this.pageNo
-    }).then(res => {
-      this.listLoading = false
-      const { data, totalPage, total } = res.result
-      this.tableDataA = data
-      this.totalPage = totalPage
-      this.total = total
-    })
+    this.getPsiTaskList()
   },
   methods: {
+    handleDelete(data) {
+      this.getPsiTaskList()
+    },
+    handleSingleResultDelete() {
+      this.dataPsiTask = []
+    },
+    getPsiTaskList() {
+      this.listLoading = true
+      getPsiTaskList({
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
+        resultName: this.resultName
+      }).then(res => {
+        const { data, totalPage, total } = res.result
+        this.allDataPsiTask = data
+        this.totalPage = totalPage
+        this.total = total
+        this.listLoading = false
+      })
+    },
     getUserInfo() {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       this.userInfo = userInfo
       this.ownOrganId = userInfo.organIdList
       this.ownOrganName = userInfo.organIdListDesc
       console.log('userInfo', this.userInfo)
-    },
-    handleOrganSelect(data) {
-      this.otherOrganId = data.organId
-      this.otherOrganName = data.organName
-      this.listLoading2 = true
-      getOrganPsiTask({
-        organId: this.otherOrganId,
-        pageSize: this.pageSize2,
-        pageNo: this.pageNo2
-      }).then(res => {
-        this.listLoading2 = false
-        const { data, totalPage, total } = res.result
-        this.tableDataB = data
-        this.totalPage2 = totalPage
-        this.total2 = total
-      })
     },
     openDialog(id) {
       this.taskId = id
@@ -135,72 +105,18 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.listLoading = true
-      getOrganPsiTask({
-        organId: this.ownOrganId,
-        pageSize: this.pageSize,
-        pageNo: this.pageNo,
-        resultName: this.resultNameA
-      }).then(res => {
-        this.listLoading = false
-        const { data, totalPage, total } = res.result
-        this.tableDataA = data
-        this.totalPage = totalPage
-        this.total = total
-      })
-    },
-    handlePagination2(data) {
-      this.pageNo2 = data.page
-      this.listLoading2 = true
-      getOrganPsiTask({
-        organId: this.otherOrganId,
-        pageSize: this.pageSize2,
-        pageNo: this.pageNo2,
-        resultName: this.resultNameA
-      }).then(res => {
-        const { data, totalPage, total } = res.result
-        this.tableDataB = data
-        this.totalPage2 = totalPage
-        this.total2 = total
-        this.listLoading2 = false
-      })
+      this.getPsiTaskList()
     },
     async search(searchName, organId, pageSize) {
+      this.resultName = searchName
       console.log('searchName', searchName)
-      const res = await getOrganPsiTask({
-        organId: organId,
-        pageSize: pageSize,
-        resultName: searchName
-      })
-      return res
+      this.getPsiTaskList()
     },
     async handelSearchA(searchName) {
-      this.listLoading = true
-      this.pageNo = 1
-      this.resultNameA = searchName
-      const res = await this.search(searchName, this.ownOrganId, this.pageSize)
-      this.listLoading = false
-      const { data, totalPage, total } = res.result
-      this.tableDataA = data
-      this.total = total
-      this.totalPage = totalPage
-    },
-    async handelSearchB(searchName) {
-      this.listLoading2 = true
-      this.pageNo2 = 1
-      this.resultNameB = searchName
-      const res = await this.search(searchName, this.otherOrganId, this.pageSize2)
-      this.listLoading2 = false
-      const { data, totalPage, total } = res.result
-      this.tableDataB = data
-      this.total2 = total
-      this.totalPage2 = totalPage
+      this.getPsiTaskList()
     },
     handleSearchNameChangeA(value) {
-      this.resultNameA = value
-    },
-    handleSearchNameChangeB(value) {
-      this.resultNameB = value
+      this.resultName = value
     }
   }
 
@@ -225,9 +141,6 @@ export default {
     background-color: #fff;
     border-radius: 20px;
     // border: 1px solid #DCDFE6;
-    &:nth-child(1){
-      margin-right: 20px;
-    }
     .organ-name{
       color: $mainColor;
       font-weight: bold;

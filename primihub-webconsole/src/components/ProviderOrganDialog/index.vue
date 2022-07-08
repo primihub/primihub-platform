@@ -5,10 +5,11 @@
     v-bind="$attrs"
   >
     <el-table
-      ref="multipleTable"
+      ref="table"
+      v-loading="loading"
       border
       row-key="globalId"
-      :data="data"
+      :data="organList"
       @selection-change="handleSelectionChange"
     >
       <el-table-column
@@ -34,6 +35,8 @@
 </template>
 
 <script>
+import { findMyGroupOrgan } from '@/api/center'
+
 export default {
   props: {
     data: {
@@ -57,13 +60,29 @@ export default {
   },
   data() {
     return {
+      loading: false,
       organList: [],
       multipleSelection: []
     }
   },
+  watch: {
+    visible(newVal) {
+      console.log(newVal)
+      if (newVal) {
+        this.findMyGroupOrgan()
+        this.toggleSelection(this.selectedData)
+      } else {
+        this.organList = []
+      }
+    }
+  },
+  // mounted() {
+  //   this.toggleSelection(this.selectedData)
+  // },
   methods: {
     closeDialog() {
-      this.$emit('close')
+      console.log('close', this.selectedData)
+      this.$emit('close', this.selectedData)
     },
     handleSubmit() {
       this.$emit('submit', this.multipleSelection)
@@ -74,6 +93,27 @@ export default {
     checkSelectable(row, index) {
       const res = !(this.selectedData.length > 0 && this.selectedData.filter(item => item.globalId === row.globalId).length > 0)
       return res
+    },
+    async findMyGroupOrgan() {
+      this.loading = true
+      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
+      this.organList = result.dataList.organList
+      this.loading = false
+    },
+    toggleSelection(rows) {
+      console.log('toggleSelection', rows)
+      console.log('selectedData', this.selectedData)
+      this.$nextTick(() => {
+        if (rows) {
+          this.$refs.table.clearSelection()
+          rows.forEach(row => {
+            console.log(row.globalId)
+            this.$refs.table.toggleRowSelection(row, true)
+          })
+        } else {
+          this.$refs.table.clearSelection()
+        }
+      })
     }
   }
 

@@ -322,7 +322,7 @@ public class DataResourceService {
             csvVo.setFieldDataList(dataFileFieldList);
             csvVo.setFileId(sysFile.getFileId());
         }catch (Exception e){
-            log.info("fileUrl:【{}】Exception Message : {}",sysFile.getFileUrl(),e.getMessage());
+            log.info("fileUrl:【{}】Exception Message : {}",sysFile.getFileUrl(),e);
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL,"请检查文件编码格式");
         }
         return BaseResultEntity.success(csvVo);

@@ -79,6 +79,7 @@ export default {
   },
   filters: {
     modelStatusFilter(status) {
+      status = status || 0
       const statusMap = {
         0: '未开始',
         1: '运行中',

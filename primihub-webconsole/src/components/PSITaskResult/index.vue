@@ -5,13 +5,22 @@
       border
       class="table-list"
     >
-      <el-table-column label="求交结果名称" prop="resultName" width="150">
+      <el-table-column
+        type="index"
+        align="center"
+        width="50"
+      />
+      <el-table-column label="任务名称">
         <template slot-scope="{row}">
-          <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.resultName }}</span>
+          <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.resultName }}</span> <br>
         </template>
       </el-table-column>
-      <el-table-column label="任务ID" prop="taskIdName" width="320" />
-      <el-table-column label="状态" prop="taskState" width="100">
+      <el-table-column label="任务ID">
+        <template slot-scope="{row}">
+          <span>{{ row.taskIdName }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" prop="taskState">
         <template slot-scope="{row}">
           <i :class="statusStyle(row.taskState)" />
           <span>{{ row.taskState | taskStateFilter }}</span>
@@ -19,19 +28,18 @@
       </el-table-column>
       <el-table-column label="求交结果归属" prop="ascription" />
       <el-table-column label="时间" prop="createDate" />
-      <el-table-column label="操作">
+      <el-table-column label="操作" min-width="120px" align="center">
         <template slot-scope="{row}">
-          <div>
-            <el-button v-if="isClickable" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">查看</el-button>
-            <!-- <el-button v-if="data.length > 1 && (row.taskState === 3 || row.taskState === 4)" type="text" icon="el-icon-refresh" @click="retry(row.taskId)">重试</el-button> -->
-            <el-button type="text" icon="el-icon-delete" @click="delPsiTask(row.taskId)">删除</el-button>
-          </div>
+          <el-button type="primary" size="mini" icon="el-icon-view" @click="openDialog(row.taskId)">查看</el-button>
+          <el-button type="danger" size="mini" icon="el-icon-delete" @click="delPsiTask(row.taskId)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
     <el-dialog
       :visible.sync="dialogVisible"
-      width="70%"
+      :append-to-body="true"
+      top="5vh"
+      width="50%"
     >
       <PSI-task-detail :data="taskData" />
     </el-dialog>
@@ -86,7 +94,6 @@ export default {
   },
   methods: {
     openDialog(id) {
-      if (!this.isClickable) return
       this.taskId = id
       getPsiTaskDetails({ taskId: this.taskId }).then(res => {
         this.taskData = res.result
@@ -163,6 +170,10 @@ export default {
 <style lang="scss" scoped>
 ::v-deep .el-table th{
   background: #fafafa;
+  font-size: 14px;
+}
+::v-deep .el-table,::v-deep .el-divider__text, .el-link{
+  font-size: 12px;
 }
 ::v-deep .el-descriptions__body{
   background-color: #fafafa;
@@ -182,6 +193,7 @@ export default {
 }
 .result-name{
   cursor: pointer;
+  color: #1989fa;
   &:hover{
     color: #1989fa;
   }

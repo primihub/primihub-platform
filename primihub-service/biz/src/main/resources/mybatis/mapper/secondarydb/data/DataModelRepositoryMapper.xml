@@ -226,7 +226,7 @@
     </select>
     <select id="queryModelNumByProjectIds" resultType="java.util.Map">
         select
-                project_id projectId,latest_task_status latestTaskStatus,count(latest_task_status) statusCount
+                project_id projectId,latest_task_status latestTaskStatus,count(model_id) statusCount
         from
                 data_model
         where project_id in

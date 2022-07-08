@@ -130,38 +130,41 @@ public class ModelInitService {
                                     dataModelResource.setModelParamNum(getrandom(1,100));
                                     dmrList.add(dataModelResource);
                                 }
+                                map.put(DataConstant.PYTHON_TEST_DATASET,"xgb_predict_test_data");
                                 dataModelPrRepository.saveDataModelResource(dmrList);
-                                List<String> pahts=new ArrayList<>();
-                                pahts.add(FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_PAHT,freeMarkerConfigurer, map));
-                                pahts.add(FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT,freeMarkerConfigurer, map));
-                                for (String freemarkerContent : pahts) {
-                                    if (freemarkerContent!=null){
-                                        try {
-                                            Date date= new Date();
-                                            StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(UUID.randomUUID().toString()).append(".csv");
-                                            Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
-                                            Common.Params params=Common.Params.newBuilder().putParamMap("outputFullFilename",outputFullFilenameParamValue).build();
-                                            Common.Task task = Common.Task.newBuilder()
-                                                    .setType(Common.TaskType.ACTOR_TASK)
-                                                    .setParams(params)
-                                                    .setName("modelTask")
-                                                    .setLanguage(Common.Language.PYTHON)
-                                                    .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                                                    .setJobId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
-                                                    .setTaskId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
-                                                    .build();
-                                            log.info("grpc Common.Task :\n{}",task.toString());
-                                            PushTaskRequest request = PushTaskRequest.newBuilder()
-                                                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                                                    .setTask(task)
-                                                    .setSequenceNumber(11)
-                                                    .setClientProcessedUpTo(22)
-                                                    .build();
-                                            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                                            log.info("grpc结果:{}",reply.toString());
-                                        }catch (Exception e){
-                                            log.info("grpc Exception:{}",e.getMessage());
-                                        }
+                                String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT,freeMarkerConfigurer, map);
+                                if (freemarkerContent!=null){
+                                    try {
+                                        Date date= new Date();
+                                        StringBuilder baseSb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
+                                        StringBuilder predictFileName=new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
+                                        StringBuilder indicatorFileName=new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
+                                        Common.ParamValue predictFileNameParamValue=Common.ParamValue.newBuilder().setValueString(predictFileName.toString()).build();
+                                        Common.ParamValue indicatorFileNameParamValue=Common.ParamValue.newBuilder().setValueString(indicatorFileName.toString()).build();
+                                        Common.Params params=Common.Params.newBuilder()
+                                                .putParamMap("predictFileName",predictFileNameParamValue)
+                                                .putParamMap("indicatorFileName",indicatorFileNameParamValue)
+                                                .build();
+                                        Common.Task task = Common.Task.newBuilder()
+                                                .setType(Common.TaskType.ACTOR_TASK)
+                                                .setParams(params)
+                                                .setName("modelTask")
+                                                .setLanguage(Common.Language.PYTHON)
+                                                .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                                                .setJobId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
+                                                .setTaskId(ByteString.copyFrom(dataModel.getModelId().toString().getBytes(StandardCharsets.UTF_8)))
+                                                .build();
+                                        log.info("grpc Common.Task :\n{}",task.toString());
+                                        PushTaskRequest request = PushTaskRequest.newBuilder()
+                                                .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                                                .setTask(task)
+                                                .setSequenceNumber(11)
+                                                .setClientProcessedUpTo(22)
+                                                .build();
+                                        PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+                                        log.info("grpc结果:{}",reply.toString());
+                                    }catch (Exception e){
+                                        log.info("grpc Exception:{}",e.getMessage());
                                     }
                                 }
                             }

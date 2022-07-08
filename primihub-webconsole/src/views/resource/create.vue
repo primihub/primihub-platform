@@ -129,7 +129,6 @@ import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
 import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
-
 export default {
   components: {
     Upload,
@@ -267,7 +266,6 @@ export default {
     handleClose(tag) {
       this.dataForm.tags.splice(this.dataForm.tags.indexOf(tag), 1)
     },
-
     showInput() {
       if (this.dataForm.tags.length > 4) {
         this.$message({

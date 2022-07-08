@@ -47,24 +47,115 @@
           value-format="yyyy-MM-dd HH:mm:ss"
         />
       </el-form-item>
-      <el-button class="search-button" type="primary" @click="searchProject">查询</el-button>
+      <el-form-item>
+        <el-button class="search-button" type="primary" @click="searchProject">查询</el-button>
+      </el-form-item>
     </el-form>
-    <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
-      <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item>
-      <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
-      <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item>
-      <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
-    </el-menu>
+    <div class="tab-container">
+      <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
+        <!-- <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item> -->
+        <!-- <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
+        <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item> -->
+        <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
+        <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
+        <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
+      </el-menu>
+      <div class="buttons">
+        <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
+        <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
+      </div>
+
+    </div>
+
     <div v-loading="listLoading" class="project-list">
-      <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
+      <!-- <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
         <div class="icon-wrap"><i class="el-icon-document-add" /></div>
         <div class="text">添加项目</div>
-      </div>
-      <template v-if="noData">
-        <no-data />
+      </div> -->
+      <template v-if="projectType=== 'card'">
+        <template v-if="noData">
+          <no-data />
+        </template>
+        <template v-else>
+          <el-row :gutter="15">
+            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="5">
+              <project-item :project="item" />
+            </el-col>
+          </el-row>
+
+        </template>
       </template>
       <template v-else>
-        <project-item v-for="item in projectList" :key="item.projectId" :project="item" />
+        <el-table
+          :data="projectList"
+          border
+        >
+          <el-table-column
+            type="index"
+            width="40"
+            align="center"
+          />
+          <el-table-column
+            label="项目名称 / ID"
+            min-width="200"
+          >
+            <template slot-scope="{row}">
+              <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
+              <span>{{ row.projectId }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column
+            label="参与机构"
+            min-width="150"
+          >
+            <template slot-scope="{row}">
+              <span>发起方: {{ row.createdOrganName }}</span><br>
+              <span>协作方: {{ row.providerOrganNames }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="项目状态"
+            prop="status"
+            width="80"
+          >
+            <template slot-scope="{row}">
+              <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column
+            label="模型状态"
+          >
+            <template slot-scope="{row}">
+              配置中：{{ row.modelAssembleNum }}<br>
+              运行中：{{ row.modelRunNum }} <br>
+              成功：{{ row.modelSuccessNum || 0 }}<br>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="resourceNum"
+            label="资源数量"
+            align="center"
+          />
+          <el-table-column
+            prop="modelNum"
+            label="模型数量"
+            align="center"
+          />
+          <el-table-column
+            label="创建时间"
+            prop="createDate"
+            min-width="160"
+          />
+          <el-table-column
+            label="操作"
+            min-width="160"
+          >
+            <template slot-scope="{row}">
+              <el-button type="text" icon="el-icon-view" @click="toProjectDetail(row.id)">查看</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
       </template>
     </div>
     <pagination v-show="pageCount>1" :limit.sync="params.pageSize" :page.sync="params.pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
@@ -93,6 +184,7 @@ export default {
   },
   data() {
     return {
+      projectType: 'table',
       projectList: null,
       sysLocalOrganInfo: [],
       organList: [],
@@ -100,7 +192,7 @@ export default {
       listLoading: true,
       params: {
         pageNo: 1,
-        pageSize: 11,
+        pageSize: 10,
         projectName: '',
         serverAddress: '',
         queryType: 0,
@@ -129,19 +221,41 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
-      'buttonPermissionList'
-    ]),
     hasCreateAuth() {
       return this.buttonPermissionList.includes('ProjectCreate')
-    }
+    },
+    ...mapGetters([
+      'buttonPermissionList'
+    ])
   },
   async created() {
+    this.projectType = localStorage.getItem('projectType') || this.projectType
+    this.params.pageSize = this.projectType === 'table' ? 10 : 12
     await this.getLocalOrganInfo()
     this.fetchData()
     this.getListStatistics()
   },
   methods: {
+    toggleType() {
+      if (this.projectType === 'table') {
+        this.projectType = 'card'
+        this.params.pageSize = 12
+      } else {
+        this.params.pageSize = 10
+        this.projectType = 'table'
+      }
+      this.fetchData()
+      localStorage.setItem('projectType', this.projectType)
+    },
+    toProjectDetail(id) {
+      this.$router.push({
+        name: 'ProjectDetail',
+        params: { id }
+      })
+    },
+    statusStyle(status) {
+      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : 'status-0 el-icon-refresh'
+    },
     getListStatistics() {
       getListStatistics().then(({ result }) => {
         this.totalNum = result.total
@@ -210,7 +324,6 @@ export default {
       })
     },
     handleSelect(key) {
-      console.log(key)
       this.params.queryType = parseInt(key)
       this.params.projectName = ''
       this.params.organId = ''
@@ -230,6 +343,16 @@ export default {
 </script>
 <style lang="scss" scoped>
 @import "../../styles/variables.scss";
+@import "~@/styles/resource.scss";
+h2 {
+    display: block;
+    font-size: 16px;
+    font-weight: normal;
+    margin-block-start: 0.2em;
+    margin-block-end: 0;
+    margin-inline-start: 0px;
+    margin-inline-end: 0px;
+}
 .search-area {
   padding: 30px 30px 20px 20px;
   background-color: #fff;
@@ -242,24 +365,44 @@ export default {
   width: 100px;
   border-radius: 4.5px;
 }
-.select-menu {
-  margin-top: 40px;
-  display: flex;
-  padding: 0 30px;
+.el-menu-item *{
+  vertical-align: top;
+}
+.el-menu--horizontal>.el-menu-item.is-active{
+  h2{
+    font-weight: bold;
+    span{
+      color: $dangerColor;
+    }
+  }
+
 }
 .select-item {
   margin: 10px 20px 0 20px;
   font-size: initial;
+  font-weight: bold;
+}
+.tab-container{
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  padding: 0 30px;
+}
+.buttons{
+  margin-left: auto;
+  .type{
+    font-size: 24px;
+    line-height: 1;
+    vertical-align: middle;
+  }
 }
 .add-button {
   height: 38px;
   align-self: center;
-  margin-left: auto;
+
 }
 .project-list {
-  margin-top: 40px;
-  display: flex;
-  flex-wrap: wrap;
+  margin-top: 20px;
   border-radius: $sectionBorderRadius;
 }
 .add-card {
@@ -296,5 +439,14 @@ export default {
   display: flex;
   justify-content: center;
   // background-color: #fff;
+}
+.status-0{
+  color: $mainColor;
+}
+.status-1{
+  color: #67C23A;
+}
+.status-2{
+  color: #F56C6C;
 }
 </style>

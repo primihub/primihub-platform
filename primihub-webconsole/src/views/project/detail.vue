@@ -1,25 +1,46 @@
 <template>
   <div class="container">
-    <section>
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <div class="infos">
-            <div class="infos-title">
-              <h2>{{ projectName }}</h2>
-              <p class="infos-des">{{ projectId }}</p>
-            </div>
-            <el-descriptions :column="1" label-class-name="detail-title">
-              <el-descriptions-item label="创建人">{{ userName }}</el-descriptions-item>
-              <el-descriptions-item label="项目描述">{{ projectDesc }}</el-descriptions-item>
-              <el-descriptions-item label="创建时间">{{ createDate }}</el-descriptions-item>
-            </el-descriptions>
+    <el-row :gutter="20">
+      <el-col :span="6">
+        <section class="infos">
+          <div class="infos-title">
+            <h2>{{ projectName }}</h2>
+            <p class="infos-des">{{ projectId }}</p>
           </div>
-        </el-col>
-        <el-col :span="8">
+          <el-descriptions :column="1" label-class-name="detail-title">
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-user" />
+                <strong>创建人</strong>
+              </template>
+              {{ userName }}
+            </el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-tickets" />
+                <strong>项目描述</strong>
+              </template>
+              {{ projectDesc }}
+            </el-descriptions-item>
+            <el-descriptions-item>
+              <template slot="label">
+                <i class="el-icon-time" />
+                <strong>创建时间</strong>
+              </template>
+              {{ createDate }}
+            </el-descriptions-item>
+          </el-descriptions>
           <div v-if="isShowAuditForm" class="audit">
             <el-form ref="auditForm" :model="auditForm">
               <el-form-item label="参与合作审核意见:">
-                <el-input ref="auditInput" v-model="auditForm.auditOpinion" type="textarea" />
+                <el-input
+                  ref="auditInput"
+                  v-model="auditForm.auditOpinion"
+                  type="textarea"
+                  maxlength="200"
+                  minlength="3"
+                  show-word-limit
+                />
               </el-form-item>
               <el-form-item>
                 <el-button type="primary" size="small" @click="handleSubmit">同意</el-button>
@@ -27,46 +48,51 @@
               </el-form-item>
             </el-form>
           </div>
-        </el-col>
-      </el-row>
-    </section>
-    <section class="organs">
-      <h3>参与机构</h3>
-      <el-button v-if="creator" type="primary" class="add-provider-button" @click="openProviderOrganDialog">添加更多协作者</el-button>
-      <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
-        <el-tab-pane v-for="item in organs" :key="item.organId" :label="item.organId">
-          <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
-            <span class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
-            <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span>
-          </p>
-          <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
-          <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
-          <ResourceTable
-            v-if="item.auditStatus === 1 && (item.resources && item.resources.length >0 || resourceList[selectedOrganId].length>0)"
-            :project-audit-status="projectAuditStatus"
-            :this-institution="thisInstitution"
-            :creator="creator"
-            :server-address="serverAddress"
-            :selected-data="selectedData"
-            row-key="resourceId"
-            :data="resourceList[selectedOrganId]"
-            @preview="handlePreview"
-            @remove="handleRemove"
-            @handleRefused="handleResourceRefused"
-            @handleAgree="handleAgree"
-          />
-        </el-tab-pane>
-      </el-tabs>
-    </section>
-    <section class="organs">
-      <h3>模型列表</h3>
-      <el-button v-if="creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
-      <Model />
-    </section>
+        </section>
+
+      </el-col>
+      <el-col :span="18">
+        <section class="organs">
+          <h3>参与机构</h3>
+          <el-button v-if="creator" type="primary" class="add-provider-button" @click="openProviderOrganDialog">添加更多协作者</el-button>
+          <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
+            <el-tab-pane v-for="item in organs" :key="item.organId" :name="item.organId" :label="item.organId">
+              <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
+                <span v-if="item.creator" class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
+                <span v-else :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
+                <!-- <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span> -->
+              </p>
+              <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
+              <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
+              <ResourceTable
+                v-if="item.auditStatus === 1 && (item.resources && item.resources.length >0 || resourceList[selectedOrganId].length>0)"
+                :project-audit-status="projectAuditStatus"
+                :this-institution="thisInstitution"
+                :creator="creator"
+                :server-address="serverAddress"
+                :selected-data="selectedData"
+                row-key="resourceId"
+                :data="resourceList[selectedOrganId]"
+                @preview="handlePreview"
+                @remove="handleRemove"
+                @handleRefused="handleResourceRefused"
+                @handleAgree="handleAgree"
+              />
+            </el-tab-pane>
+          </el-tabs>
+        </section>
+        <section class="organs">
+          <h3>模型列表</h3>
+          <el-button v-if="creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
+          <Model />
+        </section>
+      </el-col>
+    </el-row>
+
     <!-- add resource dialog -->
-    <ProjectResourceDialog ref="dialogRef" top="10px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ProviderOrganDialog :selected-provider-organ-list="selectedData" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
     <!-- preview dialog -->
     <el-dialog
       :visible.sync="previewDialogVisible"
@@ -120,7 +146,7 @@ export default {
       previewDialogVisible: false,
       dialogVisible: false,
       previewList: [],
-      selectedOrganId: '',
+      selectedOrganId: null,
       organList: [],
       tableButtons: ['preview'],
       userInfo: [],
@@ -131,7 +157,9 @@ export default {
         id: '',
         projectOrgans: [] // save params
       },
-      creator: false
+      creator: false,
+      tabPosition: 'left',
+      providerOrganIds: []
     }
   },
   computed: {
@@ -147,9 +175,12 @@ export default {
     ])
   },
   async created() {
-    this.fetchData()
+    await this.fetchData()
   },
   methods: {
+    statusStyle(status) {
+      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : ''
+    },
     async openProviderOrganDialog() {
       await this.findMyGroupOrgan()
       this.providerOrganDialogVisible = true
@@ -159,11 +190,9 @@ export default {
       this.organList = result.dataList.organList
     },
     showAuditForm() {
-      console.log(this.organs.filter(item => item.organId === this.selectedOrganId)[0].auditStatus)
       return this.organs.filter(item => item.organId === this.selectedOrganId)[0].auditStatus === 0
     },
     getTableButtons(item) {
-      console.log(item.organId === this.userInfo.organIdList)
       if (item.participationIdentity === 1) { // The initiator
         return ['preview', 'remove']
       } else if (item.auditStatus === 1) {
@@ -239,6 +268,13 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
+        if (value.length > 200) {
+          this.$message({
+            type: 'error',
+            message: '拒绝理由最多200字'
+          })
+          return
+        }
         this.approval({
           type: 2,
           id: row.id,
@@ -251,7 +287,7 @@ export default {
         })
         this.isShowAuditForm = false
         location.reload()
-      }).catch(() => {})
+      })
     },
     handleClick({ label = '' }) {
       this.differents = []
@@ -260,7 +296,6 @@ export default {
       this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
       this.resourceList[this.selectedOrganId] = this.currentOrgan.resources
       this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0
-      console.log(this.currentOrgan)
       this.projectAuditStatus = this.currentOrgan.auditStatus === 1
       this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
     },
@@ -281,8 +316,8 @@ export default {
     removeResource(id) {
       removeResource({ id }).then(({ code = -1 }) => {
         if (code === 0) {
-          const index = this.selectedData.findIndex(item => item.resourceId === id)
-          this.selectedData.splice(index, 1)
+          const index = this.resourceList[this.selectedOrganId].findIndex(item => item.id === id)
+          this.resourceList[this.selectedOrganId].splice(index, 1)
           this.$message({
             message: '已移除',
             type: 'success'
@@ -315,8 +350,7 @@ export default {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
-      this.differents = this.getArrDifSameValue(this.selectedData, data)
-      console.log('333', this.differents)
+      this.differents = this.getArrDifSameValue(this.selectedData, data, 'resourceId')
       if (this.differents.length > 0) {
         this.saveParams.projectOrgans.push({
           organId: this.selectedOrganId,
@@ -326,8 +360,6 @@ export default {
         this.saveProject()
       }
       this.selectedData = data
-      this.resourceList[this.selectedOrganId] = data.filter(item => item.organId === this.selectedOrganId)
-      console.log('handleDialogSubmit', this.resourceList[this.selectedOrganId])
       this.dialogVisible = false
     },
     closeDialog() {
@@ -337,20 +369,16 @@ export default {
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      console.log('handleProviderOrganSubmit', data)
-      data.map(item => {
-        this.saveParams.projectOrgans.push({
-          organId: item.globalId,
-          participationIdentity: 2
+      const diffrents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
+      console.log('handleProviderOrganSubmit diffrents', diffrents)
+      if (diffrents.length > 0) {
+        this.saveParams.projectOrgans = diffrents.map(item => {
+          return {
+            organId: item.globalId,
+            participationIdentity: 2
+          }
         })
-      })
-
-      this.projectOrgans = data.map(item => {
-        return {
-          organId: item.globalId,
-          participationIdentity: 2
-        }
-      })
+      }
       const success = this.saveProject()
       if (success) {
         data.map(item => {
@@ -360,22 +388,21 @@ export default {
             participationIdentity: 2
           })
         })
-
-        this.providerOrganIds = data
-        this.providerOrganDialogVisible = false
       }
+      this.providerOrganIds = data
+      this.providerOrganDialogVisible = false
     },
     saveProject() {
       // const { projectName, projectDesc, projectOrgans } = this
       this.saveParams.id = this.list.id
       const params = JSON.stringify(this.saveParams)
       saveProject(params).then(res => {
-        console.log(res)
         if (res.code === 0) {
           this.$message({
             message: '添加成功',
             type: 'success'
           })
+
           this.fetchData()
           return true
         } else {
@@ -423,25 +450,33 @@ export default {
           this.userName = userName
           this.createDate = createDate
           this.organs = organs
-          this.selectedOrganId = this.organs[0].organId
+          this.selectedOrganId = this.selectedOrganId || this.userOrganId
+          this.activeName = this.selectedOrganId
           this.resourceList[this.selectedOrganId] = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
           this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
           this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
-          this.projectAuditStatus = this.currentOrgan.auditStatus === 0
-          this.isShowAuditForm = this.projectAuditStatus === 0
+          this.projectAuditStatus = this.currentOrgan.auditStatus === 1
+          this.isShowAuditForm = !this.projectAuditStatus
+          this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
+          this.providerOrganIds = this.providerOrganIds.map(item => {
+            return {
+              globalId: item.organId,
+              globalName: item.organName
+            }
+          })
         }
       })
     },
     // compare array diffrent
-    getArrDifSameValue(arr1, arr2) {
+    getArrDifSameValue(arr1, arr2, key) {
       const result = []
       for (let i = 0; i < arr2.length; i++) {
         const obj = arr2[i]
-        const id = obj.resourceId
+        const id = obj[key]
         let isExist = false
         for (let j = 0; j < arr1.length; j++) {
           const aj = arr1[j]
-          const n = aj.resourceId
+          const n = aj[key]
           if (n === id) {
             isExist = true
             break
@@ -451,7 +486,6 @@ export default {
           result.push(obj)
         }
       }
-      console.log('result', result)
       return result
     },
     toModelCreate() {
@@ -484,6 +518,9 @@ section{
   padding: 30px;
   margin-bottom: 30px;
 }
+.infos{
+  height: 100vh;
+}
 .infos-title{
   margin-bottom: 10px;
 }
@@ -511,24 +548,48 @@ section{
   display: flex;
   justify-content: space-between;
 }
-.detail-panel {
-  padding: 20px 0 20px 20px;
-  border-top: 1px solid #f0f0f0;
-  .card-box {
-    display: flex;
-    flex-wrap: wrap;
-    .item {
-      margin-right: 20px;
-      margin-bottom: 20px;
-    }
+::v-deep .el-descriptions-item__container{
+  display: block;
+  margin: 5px 0;
+  strong{
+    margin-left: 5px;
   }
+}
+::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
+  padding-bottom: 0;
+}
+::v-deep .el-descriptions-row{
+  margin-bottom: 20px;
 }
 ::v-deep .el-descriptions-item__container{
   flex-wrap: wrap;
-
+}
+::v-deep .el-tabs--border-card>.el-tabs__content{
+  background-color: #ffffff;
+  min-height: 200px;
+}
+::v-deep .el-tabs--left .el-tabs__header.is-left{
+  margin-right: 0;
+}
+::v-deep .el-tabs--left.el-tabs--border-card .el-tabs__item.is-left{
+  margin: 0;
+  border-top: none;
 }
 .auditOpinion{
   font-size: 14px;
   margin: 10px 0;
+}
+
+.tabs{
+  background-color: #F5F7FA;
+}
+.status-0{
+  color: $mainColor;
+}
+.status-1{
+  color: #67C23A;
+}
+.status-2{
+  color: #F56C6C;
 }
 </style>
