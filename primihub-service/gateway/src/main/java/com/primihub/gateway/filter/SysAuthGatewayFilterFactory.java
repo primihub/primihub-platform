@@ -6,6 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.vo.SysAuthNodeVO;
 import com.primihub.biz.entity.sys.vo.SysUserListVO;
 import com.primihub.biz.repository.primaryredis.sys.SysUserPrimaryRedisRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysRoleSecondarydbRepository;
 import com.primihub.biz.service.sys.SysAuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,9 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Order(11)
@@ -26,6 +30,8 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
     private SysUserPrimaryRedisRepository sysUserPrimaryRedisRepository;
     @Autowired
     private SysAuthService sysAuthService;
+    @Autowired
+    private SysRoleSecondarydbRepository sysRoleSecondarydbRepository;
     @Autowired
     private BaseConfiguration baseConfiguration;
 
@@ -46,10 +52,13 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
                     return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.TOKEN_INVALIDATION);
                 sysUserPrimaryRedisRepository.expireUserLoginStatus(token, sysUserListVO.getUserId());
 
+                Set<Long> roleIdSet= Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!item.equals(""))
+                        .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
+                Set<Long> authIdList = sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
                 Map<String, SysAuthNodeVO> mapping = sysAuthService.getSysAuthUrlMapping();
                 SysAuthNodeVO sysAuthNodeVO = mapping.get(rawPath);
                 if (sysAuthNodeVO != null) {
-                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString()))
+                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString())||!authIdList.contains(sysAuthNodeVO.getAuthId()))
                         return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
                 }
 
