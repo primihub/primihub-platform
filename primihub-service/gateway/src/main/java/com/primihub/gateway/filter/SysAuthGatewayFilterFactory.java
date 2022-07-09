@@ -58,7 +58,7 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
                 Map<String, SysAuthNodeVO> mapping = sysAuthService.getSysAuthUrlMapping();
                 SysAuthNodeVO sysAuthNodeVO = mapping.get(rawPath);
                 if (sysAuthNodeVO != null) {
-                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString())||!authIdList.contains(sysAuthNodeVO.getAuthId()))
+                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString())&&!authIdList.contains(sysAuthNodeVO.getAuthId()))
                         return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
                 }
 
