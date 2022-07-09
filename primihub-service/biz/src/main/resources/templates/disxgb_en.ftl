@@ -19,7 +19,7 @@ from primihub.FL.model.xgboost.xgb_guest_en import XGB_GUEST_EN
 from primihub.FL.model.xgboost.xgb_host_en import XGB_HOST_EN
 from primihub.FL.model.xgboost.xgb_guest import XGB_GUEST
 from primihub.FL.model.xgboost.xgb_host import XGB_HOST
-from primihub.FL.model.evaluation.evaluation import Regression_eva as regression_eva
+from primihub.FL.model.evaluation import evaluation
 import pandas as pd
 import numpy as np
 
@@ -30,7 +30,7 @@ DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
 logging.basicConfig(level=logging.DEBUG,
                     format=LOG_FORMAT, datefmt=DATE_FORMAT)
 logger = logging.getLogger("xgb")
-
+regression_eva = evaluation.regression_eva
 ph.dataset.dataset.define("${guest_dataset}")
 ph.dataset.dataset.define("${label_dataset}")
 ph.dataset.dataset.define("${test_dataset}")
