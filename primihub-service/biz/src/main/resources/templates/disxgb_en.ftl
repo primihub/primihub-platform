@@ -41,7 +41,7 @@ ph.dataset.dataset.define("${test_dataset}")
 
 
 @ph.context.function(role='host', protocol='xgboost', datasets=["${label_dataset}", "${test_dataset}"], next_peer="*:5555")
-def xgb_host_logic(cry_pri):
+def xgb_host_logic(cry_pri = "paillier"):
     next_peer = ph.context.Context.nodes_context["host"].next_peer
     ip, port = next_peer.split(":")
 
@@ -141,7 +141,7 @@ def xgb_host_logic(cry_pri):
 
 
 @ph.context.function(role='guest', protocol='xgboost', datasets=["${guest_dataset}"], next_peer="localhost:5555")
-def xgb_guest_logic(cry_pri):
+def xgb_guest_logic(cry_pri = "paillier"):
     print("start xgb guest logic...")
 
     ios = IOService()
