@@ -19,7 +19,7 @@ from primihub.FL.model.xgboost.xgb_guest_en import XGB_GUEST_EN
 from primihub.FL.model.xgboost.xgb_host_en import XGB_HOST_EN
 from primihub.FL.model.xgboost.xgb_guest import XGB_GUEST
 from primihub.FL.model.xgboost.xgb_host import XGB_HOST
-from primihub.FL.model.evaluation.evaluation import regression_eva
+from primihub.FL.model.evaluation.evaluation import Regression_eva as regression_eva
 import pandas as pd
 import numpy as np
 
