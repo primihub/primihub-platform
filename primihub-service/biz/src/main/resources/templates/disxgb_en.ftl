@@ -48,7 +48,7 @@ ph.context.Context.func_params_map = {
 def xgb_host_logic(cry_pri = "paillier"):
     next_peer = ph.context.Context.nodes_context["host"].next_peer
     ip, port = next_peer.split(":")
-
+    print("next peer: ", next_peer)
     ios = IOService()
     server = Session(ios, ip, port, "server")
 
@@ -151,7 +151,7 @@ def xgb_guest_logic(cry_pri = "paillier"):
     ios = IOService()
     next_peer = ph.context.Context.nodes_context["guest"].next_peer
     ip, port = next_peer.split(":")
-
+    print("next peer: ", next_peer)
     client = Session(ios, ip, port, "client")
     channel = client.addChannel()
 
