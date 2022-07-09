@@ -39,6 +39,10 @@ ph.dataset.dataset.define("${guest_dataset}")
 ph.dataset.dataset.define("${label_dataset}")
 ph.dataset.dataset.define("${test_dataset}")
 
+ph.context.Context.func_params_map = {
+"xgb_host_logic": "paillier",
+"xgb_guest_logic": "paillier"
+}
 
 @ph.context.function(role='host', protocol='xgboost', datasets=["${label_dataset}", "${test_dataset}"], next_peer="*:5555")
 def xgb_host_logic(cry_pri = "paillier"):
