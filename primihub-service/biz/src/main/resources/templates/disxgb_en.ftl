@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 """
  Copyright 2022 Primihub
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
+
       https://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -13,13 +16,14 @@
  limitations under the License.
  """
 import primihub as ph
+from primihub import dataset,context
 from primihub.primitive.opt_paillier_c2py_warpper import *
 from primihub.channel.zmq_channel import IOService, Session
 from primihub.FL.model.xgboost.xgb_guest_en import XGB_GUEST_EN
 from primihub.FL.model.xgboost.xgb_host_en import XGB_HOST_EN
 from primihub.FL.model.xgboost.xgb_guest import XGB_GUEST
 from primihub.FL.model.xgboost.xgb_host import XGB_HOST
-from primihub.FL.model.evaluation import evaluation
+from primihub.FL.model.evaluation.evaluation import Regression_eva
 import pandas as pd
 import numpy as np
 
@@ -30,13 +34,13 @@ DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
 logging.basicConfig(level=logging.DEBUG,
                     format=LOG_FORMAT, datefmt=DATE_FORMAT)
 logger = logging.getLogger("xgb")
-regression_eva = evaluation.regression_eva
+
 ph.dataset.dataset.define("${guest_dataset}")
 ph.dataset.dataset.define("${label_dataset}")
 ph.dataset.dataset.define("${test_dataset}")
 
 
-@ph.function(role='host', protocol='xgboost', datasets=["${label_dataset}", "${test_dataset}"], next_peer="*:5555")
+@ph.context.function(role='host', protocol='xgboost', datasets=["${label_dataset}", "${test_dataset}"], next_peer="*:5555")
 def xgb_host_logic(cry_pri):
     next_peer = ph.context.Context.nodes_context["host"].next_peer
     ip, port = next_peer.split(":")
@@ -108,7 +112,7 @@ def xgb_host_logic(cry_pri):
         logger.error("Output path is {}".format(predict_file_path))
         logger.error("Test data path is {}".format(data_test))
         y_pre = xgb_host.predict_raw(data_test)
-        regression_eva.getResult(y_true, y_pre)
+        Regression_eva.get_result(y_true, y_pre)
         return xgb_host.predict_raw(data_test).to_csv(predict_file_path)
     elif cry_pri == "plaintext":
         xgb_host = XGB_HOST(n_estimators=5, max_depth=5, reg_lambda=1,
@@ -132,11 +136,11 @@ def xgb_host_logic(cry_pri):
         logger.error("Output path is {}".format(predict_file_path))
         logger.error("Test data path is {}".format(data_test))
         y_pre = xgb_host.predict_raw(data_test)
-        regression_eva.getResult(y_true, y_pre)
+        Regression_eva.get_result(y_true, y_pre)
         return xgb_host.predict_raw(data_test).to_csv(predict_file_path)
 
 
-@ph.function(role='guest', protocol='xgboost', datasets=["${guest_dataset}"], next_peer="localhost:5555")
+@ph.context.function(role='guest', protocol='xgboost', datasets=["${guest_dataset}"], next_peer="localhost:5555")
 def xgb_guest_logic(cry_pri):
     print("start xgb guest logic...")
 
