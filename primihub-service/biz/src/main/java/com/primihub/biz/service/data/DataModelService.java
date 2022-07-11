@@ -410,8 +410,8 @@ public class DataModelService {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
-        if (dataModel.getLatestTaskStatus()==0)
-            return BaseResultEntity.success();
+        if (dataModel.getLatestTaskStatus()==null||dataModel.getLatestTaskStatus()==0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"请检查模型运行状态");
         List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(modelId, null);
         if (dataComponents.size()==0)
             return BaseResultEntity.success();

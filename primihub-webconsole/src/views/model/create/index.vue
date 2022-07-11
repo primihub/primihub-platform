@@ -619,13 +619,21 @@ export default {
         return
       }
       runTaskModel({ modelId: this.modelId }).then(res => {
-        this.modelStartRun = true
-        clearInterval(this.timmer)
-        this.$notify({
-          message: '开始运行',
-          type: 'info',
-          duration: 5000
-        })
+        if (res.code !== 0) {
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+          return
+        } else {
+          this.modelStartRun = true
+          clearInterval(this.timmer)
+          this.$notify({
+            message: '开始运行',
+            type: 'info',
+            duration: 5000
+          })
+        }
       })
     },
     getTaskModelComponent() {
@@ -918,12 +926,20 @@ export default {
       this.saveParams.param.modelPointComponents = modelPointComponents
       console.log(this.saveParams)
       saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
-        this.modelId = res.result.modelId
-        this.$notify({
-          message: '保存成功',
-          type: 'success',
-          duration: '1000'
-        })
+        if (res.code === 0) {
+          this.modelId = res.result.modelId
+          this.$notify({
+            message: '保存成功',
+            type: 'success',
+            duration: '1000'
+          })
+        } else {
+          debugger
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+        }
       })
     }
   }

@@ -7,7 +7,7 @@
     <el-table-column align="center" label="字段名称" prop="fieldName" />
     <el-table-column align="center" label="数据类型" prop="fieldType">
       <template slot-scope="{row}">
-        <el-select v-model="row.fieldType" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
+        <el-select v-model="row.fieldType" size="mini" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
           <el-option
             v-for="(item,index) in fieldTypeList"
             :key="index"

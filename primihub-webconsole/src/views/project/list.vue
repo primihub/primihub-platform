@@ -7,7 +7,7 @@
       <el-form-item label="中心节点">
         <el-select v-model="searchForm.serverAddress" clearable placeholder="请选择" @change="handleServerAddressChange">
           <el-option
-            v-for="center in sysLocalOrganInfo.fusionList"
+            v-for="center in fusionList"
             :key="center.serverAddress"
             :label="center.serverAddress"
             :value="center.serverAddress"
@@ -100,7 +100,12 @@
             min-width="200"
           >
             <template slot-scope="{row}">
-              <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
+              <template v-if="hasViewPermission">
+                <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
+              </template>
+              <template v-else>
+                {{ row.projectName }}<br>
+              </template>
               <span>{{ row.projectId }}</span>
             </template>
           </el-table-column>
@@ -148,11 +153,12 @@
             min-width="160"
           />
           <el-table-column
+            v-if="hasViewPermission"
             label="操作"
             min-width="160"
           >
             <template slot-scope="{row}">
-              <el-button type="text" icon="el-icon-view" @click="toProjectDetail(row.id)">查看</el-button>
+              <el-button v-if="hasViewPermission" type="text" icon="el-icon-view" @click="toProjectDetail(row.id)">查看</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -187,6 +193,7 @@ export default {
       projectType: 'table',
       projectList: null,
       sysLocalOrganInfo: [],
+      fusionList: [],
       organList: [],
       activeIndex: '0',
       listLoading: true,
@@ -221,6 +228,9 @@ export default {
     }
   },
   computed: {
+    hasViewPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ProjectDetail')
+    },
     hasCreateAuth() {
       return this.buttonPermissionList.includes('ProjectCreate')
     },
@@ -258,14 +268,32 @@ export default {
     },
     getListStatistics() {
       getListStatistics().then(({ result }) => {
-        this.totalNum = result.total
-        this.other = result.other
-        this.own = result.own
+        this.totalNum = result?.total
+        this.other = result?.other
+        this.own = result?.own
       })
     },
     async getLocalOrganInfo() {
       const { result = {}} = await getLocalOrganInfo()
       this.sysLocalOrganInfo = result.sysLocalOrganInfo
+      this.fusionList = this.sysLocalOrganInfo?.fusionList
+      if (this.$store.getters.userOrganId === '') {
+        console.log(this.$store.getters.permissionList)
+        if (this.$store.getters.permissionList.filter(item => item.authCode === 'CenterManage').length > 0) {
+          this.$message({
+            message: '暂无机构信息，请前往中心管理页面创建机构',
+            duration: 2000
+          })
+          this.$router.push({
+            name: 'CenterManage'
+          })
+        } else {
+          this.$message({
+            message: '请联系管理员创建机构信息'
+          })
+        }
+      }
+      console.log(this.$store.getters.userOrganId)
     },
     toProjectCreatePage() {
       this.$router.push({
@@ -312,8 +340,8 @@ export default {
       getProjectList(this.params).then((res) => {
         if (res.code === 0) {
           this.listLoading = false
-          const { data, total, totalPage } = res.result
-          this.total = total
+          const { data, totalPage } = res.result
+          this.total = res.result.total || 0
           this.pageCount = totalPage
           if (data.length > 0) {
             this.projectList = data

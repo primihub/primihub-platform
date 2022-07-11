@@ -125,7 +125,7 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
-            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl())){
+            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl())){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
             }
             dataResourcePrRepository.saveResource(dataResource);
@@ -188,7 +188,7 @@ public class DataResourceService {
         if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
-        resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl());
+        resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
