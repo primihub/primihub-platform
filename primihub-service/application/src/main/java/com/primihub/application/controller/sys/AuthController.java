@@ -63,4 +63,9 @@ public class AuthController {
         return sysAuthService.getAuthTree();
     }
 
+    @RequestMapping("generateAllAuth")
+    public BaseResultEntity generateAllAuth(){
+        return sysAuthService.generateAllAuth();
+    }
+
 }
