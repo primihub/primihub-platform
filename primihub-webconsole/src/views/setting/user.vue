@@ -26,7 +26,12 @@
           <el-input v-model="userInfo.userAccount" :disabled="dialogFlag === 'edit'" />
         </el-form-item>
         <el-form-item label="昵称" prop="userName">
-          <el-input v-model="userInfo.userName" />
+          <el-input
+            v-model="userInfo.userName"
+            maxlength="20"
+            minlength="3"
+            show-word-limit
+          />
         </el-form-item>
         <el-form-item label="用户角色" prop="roleIdList">
           <el-select
@@ -102,11 +107,10 @@ export default {
       rules: {
         userAccount: [
           { required: true, message: '请输入账户名称', trigger: 'blur' },
-          { min: 3, max: 20, message: '账户名称在3到20个字符之间', trigger: 'blur' }
+          { min: 3, max: 50, message: '账户名称在3到50个字符之间', trigger: 'blur' }
         ],
         userName: [
-          { required: true, message: '请输入用户昵称', trigger: 'blur' },
-          { min: 3, max: 10, message: '用户昵称在3到10个字符之间', trigger: 'blur' }
+          { required: true, message: '请输入用户昵称', trigger: 'blur' }
         ],
         roleIdList: [
           { required: true, message: '请选择用户角色', trigger: 'blur' }

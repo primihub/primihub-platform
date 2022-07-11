@@ -114,7 +114,8 @@ service.interceptors.response.use(
         MessageBox.confirm('登录失效，请重新登录', '确认信息', {
           confirmButtonText: '重新登录',
           cancelButtonText: '取消',
-          type: 'warning'
+          type: 'warning',
+          closeOnClickModal: false
         }).then(() => {
           store.dispatch('user/resetToken').then(() => {
             location.reload()
