@@ -169,7 +169,7 @@ public class SysAuthService {
                 {"菜单新增","MenuAdd","3","MenuManage","/auth/createAuthNode","1","0"},
                 {"菜单编辑","MenuEdit","3","MenuManage","/auth/alterAuthNodeStatus","1","0"},
                 {"菜单编辑","MenuDelete","3","MenuManage","/auth/deleteAuthNode","1","0"},
-                {"中心管理","CenterManage","2","Setting","/organ/getLocalOrganInfo","1","0"},
+                {"中心管理","CenterManage","2","Setting","","1","0"},
                 {"编辑机构信息","OrganChange","3","CenterManage","/organ/changeLocalOrganInfo","1","0"},
                 {"添加中心节点","FusionAdd","3","CenterManage","/fusion/registerConnection","1","0"},
                 {"删除中心节点","FusionDelete","3","CenterManage","/fusion/deleteConnection","1","0"},
@@ -217,6 +217,7 @@ public class SysAuthService {
                 sysAuth.setFullPath(sysAuth.getAuthId().toString());
             }
             if(sysAuth.getRAuthId().equals(0L)) {
+                sysAuth.setRAuthId(sysAuth.getAuthId());
                 sysAuthPrimarydbRepository.updateRAuthIdAndFullPath(sysAuth.getAuthId(),sysAuth.getAuthId(),sysAuth.getFullPath());
             }else {
                 sysAuthPrimarydbRepository.updateRAuthIdAndFullPath(sysAuth.getAuthId(),null,sysAuth.getFullPath());
@@ -239,7 +240,7 @@ public class SysAuthService {
 
 
         sysRolePrimarydbRepository.insertSysRaBatch(adminRaList);
-        sysRolePrimarydbRepository.insertSysRaBatch(anotherRaList);
+        if(anotherRaList.size()!=0)sysRolePrimarydbRepository.insertSysRaBatch(anotherRaList);
         return BaseResultEntity.success();
     }
 
