@@ -44,7 +44,12 @@
           label="名称"
         >
           <template slot-scope="{row}">
-            <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link>
+            <template v-if="hasViewPermission">
+              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+            </template>
+            <template v-else>
+              {{ row.resourceName }}<br>
+            </template>
           </template>
         </el-table-column>
         <el-table-column
@@ -148,6 +153,9 @@ export default {
     }
   },
   computed: {
+    hasViewPermission() { // view resource permission
+      return this.buttonPermissionList.indexOf('ResourceDetail') !== -1
+    },
     hasUploadAuth() { // upload resource permission
       return this.buttonPermissionList.indexOf('ResourceUpload') !== -1
     },
