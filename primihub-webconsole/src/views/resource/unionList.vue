@@ -65,7 +65,12 @@
           min-width="210"
         >
           <template slot-scope="{row}">
-            <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+            <template v-if="hasViewPermission">
+              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+            </template>
+            <template v-else>
+              {{ row.resourceName }}<br>
+            </template>
             {{ row.resourceId }}
           </template>
         </el-table-column>
@@ -166,6 +171,11 @@ export default {
       serverAddress: null,
       groupId: 0,
       organId: 0
+    }
+  },
+  computed: {
+    hasViewPermission() {
+      return this.$store.getters.buttonPermissionList.includes('UnionResourceDetail')
     }
   },
   async created() {

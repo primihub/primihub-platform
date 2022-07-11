@@ -1,6 +1,6 @@
 import Cookies from 'js-cookie'
-
-const TokenKey = 'primihub_token'
+import md5 from 'js-md5'
+const TokenKey = `${md5(window.location.host)}_primihub_token`
 
 export function getToken() {
   return Cookies.get(TokenKey)

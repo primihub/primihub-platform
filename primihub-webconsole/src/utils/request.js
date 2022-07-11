@@ -29,7 +29,7 @@ function endLoading() {
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 5000 // request timeout
+  timeout: 20 * 1000 // request timeout
 })
 
 const timestamp = new Date().getTime()
@@ -98,7 +98,7 @@ service.interceptors.response.use(
     const { data } = response
     const { code, msg } = data
     if (code !== 0) {
-      if (code === -1 || code === 1001) {
+      if (code === -1 || code === 1001 || code === 1007) {
         return data
       } else if (code === 100) {
         message({
@@ -114,7 +114,8 @@ service.interceptors.response.use(
         MessageBox.confirm('登录失效，请重新登录', '确认信息', {
           confirmButtonText: '重新登录',
           cancelButtonText: '取消',
-          type: 'warning'
+          type: 'warning',
+          closeOnClickModal: false
         }).then(() => {
           store.dispatch('user/resetToken').then(() => {
             location.reload()
@@ -160,8 +161,6 @@ service.interceptors.response.use(
         case 505: err.message = 'HTTP版本不受支持(505)'; break
         default: err.message = `连接出错(${err.response.status})!`
       }
-    } else {
-      err.message = '连接服务器失败!'
     }
     console.log('err' + err.message) // for debug
     endLoading()

@@ -142,7 +142,8 @@ export default {
         this.$message({
           message: '登录失效，请重新登录',
           type: 'error',
-          duration: 2000
+          duration: 2000,
+          closeOnClickModal: false
         })
         setTimeout(() => {
           store.dispatch('user/resetToken').then(() => {
