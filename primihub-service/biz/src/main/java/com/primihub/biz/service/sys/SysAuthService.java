@@ -1,6 +1,8 @@
 package com.primihub.biz.service.sys;
 
+import com.primihub.biz.entity.sys.po.SysRa;
 import com.primihub.biz.repository.primarydb.sys.SysAuthPrimarydbRepository;
+import com.primihub.biz.repository.primarydb.sys.SysRolePrimarydbRepository;
 import com.primihub.biz.repository.primaryredis.sys.SysAuthPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysAuthSecondarydbRepository;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -25,6 +27,8 @@ public class SysAuthService {
     private SysAuthSecondarydbRepository sysAuthSecondarydbRepository;
     @Autowired
     private SysAuthPrimaryRedisRepository sysAuthPrimaryRedisRepository;
+    @Autowired
+    private SysRolePrimarydbRepository sysRolePrimarydbRepository;
 
     public BaseResultEntity createAuthNode(CreateAuthNodeParam createAuthNodeParam){
         SysAuth parentSysAuth=createAuthNodeParam.getPAuthId().equals(0L)?null: sysAuthSecondarydbRepository.selectSysAuthByAuthId(createAuthNodeParam.getPAuthId());
@@ -176,6 +180,8 @@ public class SysAuthService {
 
         Map<String,SysAuth> map=new HashMap<>();
         Map<String,Integer> indexMap=new HashMap();
+        List<SysRa> adminRaList=new ArrayList<>();
+        List<SysRa> anotherRaList=new ArrayList<>();
         for(String[] auth:authArray) {
             SysAuth sysAuth=new SysAuth();
             sysAuth.setAuthName(auth[0]);
@@ -216,7 +222,24 @@ public class SysAuthService {
                 sysAuthPrimarydbRepository.updateRAuthIdAndFullPath(sysAuth.getAuthId(),null,sysAuth.getFullPath());
             }
             map.put(auth[1],sysAuth);
+            SysRa sysRa=new SysRa();
+            sysRa.setAuthId(sysAuth.getAuthId());
+            sysRa.setRoleId(1L);
+            sysRa.setIsDel(0);
+            adminRaList.add(sysRa);
+
+            if(sysAuth.getAuthId()<24) {
+                SysRa anotherSysRa = new SysRa();
+                anotherSysRa.setAuthId(sysAuth.getAuthId());
+                anotherSysRa.setRoleId(1000L);
+                anotherSysRa.setIsDel(0);
+                anotherRaList.add(anotherSysRa);
+            }
         }
+
+
+        sysRolePrimarydbRepository.insertSysRaBatch(adminRaList);
+        sysRolePrimarydbRepository.insertSysRaBatch(anotherRaList);
         return BaseResultEntity.success();
     }
 
