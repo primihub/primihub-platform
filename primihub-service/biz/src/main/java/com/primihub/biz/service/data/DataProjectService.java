@@ -349,15 +349,16 @@ public class DataProjectService {
     }
 
     public BaseResultEntity getListStatistics() {
-        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
-        if (StringUtils.isBlank(sysLocalOrganId))
-            return BaseResultEntity.success();
-        List<Map<String, Object>> projectStatics = dataProjectRepository.selectProjectStatics(sysLocalOrganId);
-        if (projectStatics.size()==0)
-            return BaseResultEntity.success();
         Map<String,Integer> map = new HashMap<>();
         map.put("own",0);
         map.put("other",0);
+        map.put("total",0);
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        if (StringUtils.isBlank(sysLocalOrganId))
+            return BaseResultEntity.success(map);
+        List<Map<String, Object>> projectStatics = dataProjectRepository.selectProjectStatics(sysLocalOrganId);
+        if (projectStatics.size()==0)
+            return BaseResultEntity.success(map);
         Integer total = 0;
         for (Map<String, Object> projectStatic : projectStatics) {
             Object amount = projectStatic.get("amount");

@@ -102,3 +102,23 @@ CREATE TABLE `fusion_resource_visibility_auth`  (
                                                     INDEX `resource_id_ix`(`resource_id`) USING BTREE,
                                                     INDEX `organ_global_id_ix`(`organ_global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for fusion_resource_field
+-- ----------------------------
+DROP TABLE IF EXISTS `fusion_resource_field`;
+CREATE TABLE `fusion_resource_field` (
+                                         `field_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字段id',
+                                         `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                                         `field_name` varchar(255) DEFAULT NULL COMMENT '字段名称',
+                                         `field_as` varchar(255) DEFAULT NULL COMMENT '字段别名',
+                                         `field_type` int(11) DEFAULT '0' COMMENT '字段类型 默认0 string',
+                                         `field_desc` varchar(255) DEFAULT NULL COMMENT '字段描述',
+                                         `relevance` int(11) DEFAULT '0' COMMENT '关键字 0否 1是',
+                                         `grouping` int(11) DEFAULT '0' COMMENT '分组 0否 1是',
+                                         `protection_status` int(11) DEFAULT '0' COMMENT '保护开关 0关闭 1开启',
+                                         `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                         `c_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                         `u_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                         PRIMARY KEY (`field_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;

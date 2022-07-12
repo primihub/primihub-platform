@@ -383,7 +383,6 @@ public class DataResourceService {
         if (resourceList.isEmpty())
             return new ArrayList<>();
         List<Long> resourceIds = resourceList.stream().map(DataResource::getResourceId).collect(Collectors.toList());
-        // 标签信息
         Map<Long, List<ResourceTagListVo>> resourceTagMap = dataResourceRepository.queryDataResourceListTags(resourceIds).stream().collect(Collectors.groupingBy(ResourceTagListVo::getResourceId));
         List<Long> filterIdList=resourceList.stream().filter(item->item.getResourceAuthType().equals(DataResourceAuthType.ASSIGN.getAuthType())).map(DataResource::getResourceId).collect(Collectors.toList());
         Map<Long, List<DataResourceVisibilityAuth>> resourceAuthMap=new HashMap<>();
@@ -391,21 +390,26 @@ public class DataResourceService {
             List<DataResourceVisibilityAuth> authList=dataResourceRepository.findAuthOrganByResourceId(filterIdList);
             resourceAuthMap=authList.stream().filter(item->item.getOrganServerAddress().equals(fusionServerAddress)).collect(Collectors.groupingBy(DataResourceVisibilityAuth::getResourceId));
         }
+        List<DataFileField> fileFieldList = dataResourceRepository.queryDataFileField(new HashMap() {{
+            put("resourceIds", resourceIds);
+        }});
+        Map<Long, List<DataFileField>> fileFieldListMap = fileFieldList.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
         List<DataResourceCopyVo> copyVolist = new ArrayList();
         for (DataResource dataResource : resourceList) {
             if (dataResource.getResourceFusionId()==null||dataResource.getResourceFusionId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
+                dataResourcePrRepository.editResource(dataResource);
             }else {
                 String organShortCode = dataResource.getResourceFusionId().substring(0, 12);
                 if (!localOrganShortCode.equals(organShortCode)){
                     dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
+                    dataResourcePrRepository.editResource(dataResource);
                 }
             }
-            dataResourcePrRepository.editResource(dataResource);
             List<String> tags = Optional.ofNullable(resourceTagMap.get(dataResource.getResourceId())).map(list -> list.stream().map(ResourceTagListVo::getTagName).collect(Collectors.toList())).orElse(null);
             resourceAuthMap.get(dataResource.getResourceId());
             List<String> authOrganList = Optional.ofNullable(resourceAuthMap.get(dataResource.getResourceId())).map(list -> list.stream().map(DataResourceVisibilityAuth::getOrganGlobalId).collect(Collectors.toList())).orElse(null);
-            copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organId,StringUtils.join(tags,","),authOrganList));
+            copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organId,StringUtils.join(tags,","),authOrganList,fileFieldListMap.get(dataResource.getResourceId())));
         }
         return copyVolist;
     }

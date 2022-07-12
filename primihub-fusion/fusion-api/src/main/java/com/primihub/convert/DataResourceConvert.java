@@ -1,7 +1,9 @@
 package com.primihub.convert;
 
 import com.primihub.entity.copy.dto.CopyResourceDto;
+import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.resource.po.FusionResource;
+import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.vo.FusionResourceVo;
 
 import java.nio.charset.Charset;
@@ -52,6 +54,19 @@ public class DataResourceConvert {
         fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setCreateDate(fusionResource.getCTime());
         return fusionResourceVo;
+    }
 
+    public static FusionResourceField copyResourceFieldDtoConvertPo(CopyResourceFieldDto dto,Long resourceId,Long fieldId){
+        FusionResourceField fusionResourceField = new FusionResourceField();
+        fusionResourceField.setFieldId(fieldId);
+        fusionResourceField.setResourceId(resourceId);
+        fusionResourceField.setFieldName(dto.getFieldName());
+        fusionResourceField.setFieldAs(dto.getFieldAs());
+        fusionResourceField.setFieldType(dto.getFieldType());
+        fusionResourceField.setFieldDesc(dto.getFieldDesc());
+        fusionResourceField.setRelevance(dto.getRelevance());
+        fusionResourceField.setGrouping(dto.getGrouping());
+        fusionResourceField.setProtectionStatus(dto.getProtectionStatus());
+        return fusionResourceField;
     }
 }
