@@ -20,39 +20,6 @@ public class ModelController {
     private DataModelService dataModelService;
 
     /**
-     * 创建模型
-     * @return
-     */
-    @PostMapping("savemodel")
-    public BaseResultEntity saveDataProject(@RequestHeader("userId") Long userId,
-                                            @RequestHeader("organId")Long organId,
-                                            DataModelReq req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        if (req.getProjectId()==null || req.getProjectId()==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        if (req.getModelName()==null || req.getModelName().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelName");
-        }
-        if (req.getModelDesc()==null || req.getModelDesc().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelDesc");
-        }
-        if (req.getModelType()==null || req.getModelType()==0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelType");
-        }
-        if (req.getYValueColumn()==null || req.getYValueColumn().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"yValueColumn");
-        }
-        if (req.getResourceId()==null||req.getResourceId()==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        }
-        return dataModelService.saveDataModel(userId,organId,req);
-    }
-
-
-    /**
      * 获取模型列表
      * @return
      */

@@ -32,6 +32,27 @@ public class FileUtil {
         return -0;
     }
 
+    public static String getFileContent(String filePath){
+        try {
+            File file = new File(filePath);
+            if (!file.exists()){
+                log.info("{}-不存在",filePath);
+                return null;
+            }
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath),charset(file)));
+            StringBuilder sb = new StringBuilder();
+            String str;
+            while((str = bufferedReader.readLine())!=null) {
+                sb.append(str);
+            }
+            bufferedReader.close();
+            return sb.toString();
+        } catch (IOException e) {
+            log.info("{}-IOException: {}",filePath,e.getMessage());
+        }
+        return null;
+    }
+
     public static List<String> getFileContent(String filePath,Integer severalLines) {
         List<String> list = new ArrayList<>();
         try {

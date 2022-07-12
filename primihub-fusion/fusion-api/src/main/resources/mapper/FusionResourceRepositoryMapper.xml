@@ -180,6 +180,7 @@
         select
             <include refid="Fusion_Resource_Field_Base_Column_List"/>
         from fusion_resource_field where resource_id = #{resourceId}
+        and protection_status = 1
     </select>
     <select id="selectFusionResourceFieldByIds" resultMap="FusionResourceFieldBaseResultMap">
         select
@@ -188,6 +189,7 @@
         <foreach collection="resourceIds" index="index" item="item" separator="," open="(" close=")" >
             #{item}
         </foreach>
+        and protection_status = 1
     </select>
 
     <sql id="fusionResourceCondition">

@@ -41,39 +41,6 @@ public class DataModelService {
     @Autowired
     private BaseConfiguration baseConfiguration;
 
-    public BaseResultEntity saveDataModel(Long userId, Long organId, DataModelReq req) {
-        DataModel dataModel = DataModelConvert.dataModelReqConvertPo(req, userId, organId);
-        BaseResultEntity baseResultEntity = modelProjectResourceAuthed(dataModel, req.getProjectId());
-        return baseResultEntity;
-//        if (baseResultEntity.getCode()!=0){
-//            baseResultEntity.setResult(null);
-//            return baseResultEntity;
-//        }
-////        initialSampleDataModel(dataModel);
-//        dataModelPrRepository.saveDataModel(dataModel);
-//        List<DataProjectResource> dataProjectResources = (List<DataProjectResource>)baseResultEntity.getResult();
-//        // 资源关联信息处理
-//        List<DataModelResource> dmrList = new ArrayList<>();
-//        for (DataProjectResource dpr : dataProjectResources) {
-//            DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId(), dpr.getResourceId());
-//            // TODO 模型详情模拟数据-后续删除 liwiehua
-//            dataModelResource.setAlignmentNum(getrandom(1,10000));
-//            dataModelResource.setPrimitiveParamNum(getrandom(1,100));
-//            dataModelResource.setModelParamNum(getrandom(1,100));
-//            dmrList.add(dataModelResource);
-////            dmrList.add(new DataModelResource(dataModel.getModelId(),dpr.getResourceId()));
-//        }
-//        dataModelPrRepository.saveDataModelResource(dmrList);
-//        // TODO 模型详情模拟数据-后续删除 liwiehua
-////        initialSampleDataModelQuota(dataModel.getModelId());
-//        modelInitService.updateDataModel(dataModel);
-//        Map<String,Object> map = new HashMap<>();
-//        map.put("modelId",dataModel.getModelId());
-//        map.put("modelName",dataModel.getModelName());
-//        map.put("modelDesc",dataModel.getModelDesc());
-//        return BaseResultEntity.success(map);
-    }
-
     public BaseResultEntity getDataModel(Long modelId) {
         // 模型信息
         ModelVo modelVo = dataModelRepository.queryModelById(modelId);
@@ -143,11 +110,6 @@ public class DataModelService {
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelListVos));
     }
 
-    public static int getrandom(int start,int end) {
-        int num=(int) (Math.random()*(end-start+1)+start);
-        return num;
-    }
-
     public BaseResultEntity getModelComponent() {
         List<ModelComponent> modelComponents  = baseConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow()==0).collect(Collectors.toList());
         return BaseResultEntity.success(modelComponents);
@@ -163,8 +125,6 @@ public class DataModelService {
             return true;
         return false;
     }
-
-
 
     public BaseResultEntity saveModelAndComponent(Long userId, DataModelAndComponentReq params) {
         if (modelIsRunTask(params.getModelId()))
@@ -296,31 +256,6 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    private BaseResultEntity modelProjectResourceAuthed(DataModel dataModel,Long projectId){
-        return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有资源数据");
-//        List<DataProjectResource> dataProjectResources = dataProjectRepository.queryProjectResourceByProjectId(projectId);
-//        if (dataProjectResources.size()==0){
-//            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有资源数据");
-//        }
-//        // 判断是否都授权了
-//        boolean isAuthed = true;
-//        for (DataProjectResource dpr : dataProjectResources) {
-//            if(dpr.getIsAuthed()==0){
-//                isAuthed = false;
-//                break;
-//            }
-//        }
-//        if (!isAuthed){
-//            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"存在未授权的资源");
-//        }
-//        dataModel.setResourceNum(dataProjectResources.size());
-//        dataModel.dataInit();
-//        return BaseResultEntity.success(dataProjectResources);
-    }
-
-
-
-
     public BaseResultEntity getModelComponentDetail(Long modelId, Long userId) {
         DataModelAndComponentReq req = null;
         if (modelId==null||modelId==0L){
@@ -392,15 +327,11 @@ public class DataModelService {
         }
         if (dataModel.getIsDraft()!=1)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型未保存");
-//        // 处理模拟数据
-//        modelInitService.runModelTask(dataModel);
         if (dataModel.getLatestTaskStatus()!=null && (dataModel.getLatestTaskStatus()==1||dataModel.getLatestTaskStatus()==2))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型已运行或运行完成");
         dataModel.setLatestTaskStatus(1);
         dataModelPrRepository.updateDataModel(dataModel);
-        // feign 调用
         modelInitService.runModelTaskFeign(dataModel);
-
         Map<String,Object> map = new HashMap<>();
         map.put("modelId",modelId);
         return BaseResultEntity.success(map);

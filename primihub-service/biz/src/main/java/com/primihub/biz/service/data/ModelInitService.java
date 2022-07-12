@@ -4,6 +4,7 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.entity.data.dto.ModelEvaluationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
@@ -19,6 +20,7 @@ import com.primihub.biz.entity.data.vo.ModelComponentJson;
 import com.primihub.biz.entity.data.vo.ModelResourceVo;
 import com.primihub.biz.entity.feign.FedlearnerJobApi;
 import com.primihub.biz.entity.sys.po.SysFile;
+import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import java_worker.PushTaskReply;
@@ -410,6 +412,13 @@ public class ModelInitService {
     public static int getrandom(int start,int end) {
         int num=(int) (Math.random()*(end-start+1)+start);
         return num;
+    }
+
+    public static void main(String[] args) {
+        String path = "/Users/zhongziqian/2.json";
+        String fileContent = FileUtil.getFileContent(path);
+        ModelEvaluationDto modelEvaluationDto = JSONObject.parseObject(fileContent, ModelEvaluationDto.class);
+        System.out.println();
     }
 
 
