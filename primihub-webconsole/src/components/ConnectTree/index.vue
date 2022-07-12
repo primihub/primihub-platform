@@ -74,7 +74,7 @@
       width="600px"
       :before-close="closeGroupDialog"
     >
-      <el-form ref="groupForm" :model="groupForm">
+      <el-form ref="groupForm" :model="groupForm" :rules="rules">
         <el-form-item label="群组名称" prop="groupName">
           <el-input v-model="groupForm.groupName" />
         </el-form-item>
@@ -119,6 +119,11 @@ export default {
       groupDialogVisible: false,
       groupForm: {
         groupName: ''
+      },
+      rules: {
+        groupName: [
+          { required: true, message: '请输入群组名称' }
+        ]
       }
     }
   },
