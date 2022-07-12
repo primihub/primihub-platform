@@ -1,17 +1,9 @@
 server:
-  port: 8090
-spring:
-  application:
-    name: platform
-  cloud:
-    nacos:
-      discovery:
-        server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace: 73f0641f-d121-473b-8600-b2e270dc7326
+  port: 8080
 nacos:
   config:
     server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace: 73f0641f-d121-473b-8600-b2e270dc7326
+    namespace: 590f415b-f12c-4a90-bbb1-7e2398f53b5b
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -21,6 +13,12 @@ nacos:
     context-path: /nacos
     group: DEFAULT_GROUP
     file-extension: yaml
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: nacos.primihub.svc.cluster.local:8848
+        namespace: 590f415b-f12c-4a90-bbb1-7e2398f53b5b
 logging:
   level:
     root: info

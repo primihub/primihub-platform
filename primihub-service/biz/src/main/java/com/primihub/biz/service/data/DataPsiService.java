@@ -94,7 +94,7 @@ public class DataPsiService {
 
 
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId) {
-        return dataResourceService.getDataResourceList(req,null,organId,true);
+        return dataResourceService.getDataResourceList(req,null,true);
     }
 
     public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress) {
@@ -114,7 +114,6 @@ public class DataPsiService {
             List<DataFileField> dataFileField = dataResourceRepository.queryDataFileField(new HashMap() {{
                 put("resourceIds", resourceIds);
                 put("relevance", 1);
-                put("protectionStatus", 1);
             }});
             Map<Long, List<DataFileField>> fileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.DataResourcePoConvertAllocationVo(re,fileFieldMap.get(re.getResourceId()),localOrganId)).collect(Collectors.toList())));
@@ -125,6 +124,7 @@ public class DataPsiService {
             fResourceReq.setPageNo(req.getPageNo());
             fResourceReq.setPageSize(req.getPageSize());
             fResourceReq.setServerAddress(serverAddress);
+            fResourceReq.setOrganId(organId);
             BaseResultEntity baseResult = fusionResourceService.getResourceList(fResourceReq);
             if (baseResult.getCode()!=0)
                 return baseResult;
@@ -181,11 +181,11 @@ public class DataPsiService {
         dataPsiPrRepository.updateDataPsiTask(task);
     }
 
-    public BaseResultEntity getPsiTaskList(PageReq req, Long userId) {
+    public BaseResultEntity getPsiTaskList(PageReq req,String resultName) {
         Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
+        paramMap.put("resultName",resultName);
         List<DataPsiTaskVo> dataPsiTaskVos = dataPsiRepository.selectPsiTaskPage(paramMap);
         if (dataPsiTaskVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

@@ -28,6 +28,8 @@ public interface DataResourceRepository {
 
     DataResource queryDataResourceById(Long resourceId);
 
+    DataResource queryDataResourceByResourceFusionId(String resourceFusionId);
+
     Integer queryDataResourceCount(Map<String,Object> paramMap);
 
     List<Long> queryResourceTagRelation(Long resourceId);
@@ -40,8 +42,6 @@ public interface DataResourceRepository {
 
     List<ResourceTagListVo> queryDataResourceListTags(@Param("resourceIds") List<Long> resourceIds);
 
-    DataResourceAuthRecord queryDataResourceAuthRecordById(Long recordId);
-
     Integer queryResourceProjectRelationCount(Long resourceId);
 
     List<DataFileField> queryDataFileField(Map<String,Object> paramMap);
@@ -52,7 +52,7 @@ public interface DataResourceRepository {
 
     List<DataResource> findCopyResourceList(@Param("startOffset")Long startOffset, @Param("endOffset")Long endOffset);
 
-    List<Long> queryqueryDataResourceIds(@Param("pageSize") Integer pageSize,@Param("pId")Long pId);
+    List<Long> queryDataResourceIds(@Param("pageSize") Integer pageSize,@Param("pId")Long pId);
 
     Long findMaxDataResource();
 

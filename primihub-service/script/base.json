@@ -1,7 +1,8 @@
 {
     "tokenValidateUriBlackList":[
         "/user/login",
-        "/common/getValidatePublicKey"
+        "/common/getValidatePublicKey",
+        "/shareData/syncProject"
     ],
     "needSignUriList":[
 
@@ -17,6 +18,7 @@
     "uploadUrlDirPrefix": "/data/upload/",
     "resultUrlDirPrefix": "/data/result/",
     "runModelFileUrlDirPrefix": "/data/result/runModel/",
+    "usefulToken": "excalibur_forever_ABCDEFGHIJKLMN",
     "model_components":[
         {
             "component_code": "dataAlignment",

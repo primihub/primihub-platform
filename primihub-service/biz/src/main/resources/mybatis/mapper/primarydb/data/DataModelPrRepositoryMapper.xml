@@ -92,6 +92,7 @@
             <if test="dataJson!=null">data_json = #{dataJson},</if>
             <if test="startTime!=null">start_time = #{startTime},</if>
             <if test="endTime!=null">end_time = #{endTime},</if>
+            <if test="componentState!=null">component_state = #{componentState},</if>
             <if test="isDel!=null">is_del = #{isDel},</if>
             update_date = now()
         </set>

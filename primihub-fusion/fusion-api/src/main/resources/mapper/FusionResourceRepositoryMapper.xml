@@ -121,6 +121,13 @@
     <select id="selectFusionResourceByResourceId" resultMap="FusionResourceBaseResultMap">
         select <include refid="Fusion_Resource_Base_Column_List"/> from fusion_resource where resource_id = #{resourceId}
     </select>
+    <select id="selectFusionResourceByResourceIds" resultMap="FusionResourceBaseResultMap">
+        select <include refid="Fusion_Resource_Base_Column_List"/>
+        from fusion_resource where resource_id in
+        <foreach collection="resourceIds" index="index" item="item" separator="," open="(" close=")" >
+            #{item}
+        </foreach>
+    </select>
 
     <sql id="fusionResourceCondition">
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>

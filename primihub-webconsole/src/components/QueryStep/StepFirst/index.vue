@@ -6,13 +6,13 @@
           <el-form-item label="已选资源" prop="selectResources" />
           <div class="resource-box">
             <ResourceItemSimple v-for="item in selectResources" :key="item.resourceId" :data="item" :show-close="true" class="select-item" @delete="handleDelete" />
+            <ResourceItemCreate @click="openDialog(true)" />
           </div>
         </div>
         <div v-else class="dialog-con">
           <el-form-item label="选择查询资源" prop="resourceName">
-            <OrganCascader placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
-            <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button>
-            <ResourceDialog ref="dialogRef" :server-address="serverAddress" :organ-id="organId" :dialog-visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+            <OrganCascader v-model="cascaderValue" placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
+            <!-- <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button> -->
           </el-form-item>
         </div>
         <el-form-item label="检索ID" prop="pirParam">
@@ -20,6 +20,20 @@
         </el-form-item>
         <el-button v-if="hasPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
       </div>
+      <ProjectResourceDialog
+        ref="dialogRef"
+        class="dialog"
+        :center="false"
+        top="10px"
+        width="800px"
+        :selected-data="selectResources"
+        title="添加资源"
+        :server-address="serverAddress"
+        :organ-id="organId"
+        :visible="dialogVisible"
+        @close="handleDialogCancel"
+        @submit="handleDialogSubmit"
+      />
     </el-form>
   </div>
 </template>
@@ -27,13 +41,17 @@
 <script>
 import { pirSubmitTask } from '@/api/PIR'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
-import ResourceDialog from '@/components/ResourceDialog'
+import ResourceItemCreate from '@/components/ResourceItemCreate'
+// import ResourceDialog from '@/components/ResourceDialog'
+import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import OrganCascader from '@/components/OrganCascader'
 
 export default {
   components: {
     ResourceItemSimple,
-    ResourceDialog,
+    ResourceItemCreate,
+    // ResourceDialog,
+    ProjectResourceDialog,
     OrganCascader
   },
   props: {
@@ -51,9 +69,9 @@ export default {
         selectResources: []
       },
       rules: {
-        // resourceName: [
-        //   { required: true, message: '请选择资源', trigger: 'blur' }
-        // ],
+        resourceName: [
+          { required: true, message: '请选择资源', trigger: 'blur' }
+        ],
         pirParam: [
           { required: true, message: '请输入检索ID', trigger: 'blur' },
           { max: 10, message: '长度在10个字符以内', trigger: 'blur' }
@@ -63,7 +81,10 @@ export default {
       listLoading: false,
       selectResources: [], // selected resource id list
       serverAddress: '',
-      organId: ''
+      organId: '',
+      isReset: false,
+      cascaderValue: [],
+      type: 'add'
     }
   },
   computed: {
@@ -78,7 +99,6 @@ export default {
           message: '请选择资源',
           type: 'error'
         })
-        this.$refs.resourceInputRef.focus()
         return
       }
       this.dialogVisible = false
@@ -102,7 +122,8 @@ export default {
         }
       })
     },
-    openDialog() {
+    openDialog(isAdd) {
+      this.type = isAdd ? 'add' : ''
       if (!this.serverAddress) {
         this.$message({
           message: '请先选择机构',
@@ -114,20 +135,29 @@ export default {
     },
     handleDialogCancel() {
       this.dialogVisible = false
+      this.cascaderValue = this.type === 'add' ? this.cascaderValue : []
     },
     handleDialogSubmit(data) {
-      this.selectResources = data.list
-      this.dialogVisible = false
-      this.serverAddress = ''
-      this.organId = ''
+      if (data.length > 0) {
+        this.selectResources = data.filter(item => item.organId === this.organId)
+        this.dialogVisible = false
+      } else {
+        this.$message({
+          message: '请选择资源',
+          type: 'warning'
+        })
+      }
     },
     handleDelete(data) {
       const index = this.selectResources.findIndex(item => item.resourceId === data.id)
       this.selectResources.splice(index, 1)
+      this.cascaderValue = []
     },
     handleOrganSelect(data) {
       this.serverAddress = data.serverAddress
       this.organId = data.organId
+      this.cascaderValue = data.cascaderValue
+      this.openDialog(false)
     }
   }
 }
@@ -136,7 +166,7 @@ export default {
 <style lang="scss" scoped>
 .search-area {
   margin: 20px auto;
-  width: 620px;
+  width: 595px;
   text-align: center;
 }
 .query-button {
@@ -166,13 +196,16 @@ export default {
   margin: 0 auto;
   text-align: center;
 }
+.dialog{
+  text-align: left;
+}
 .dialog-footer{
   width: 100%;
   display: inline-block;
   text-align: center;
 }
 ::v-deep .el-cascader{
-  width: 410px;
+  width: 485px;
   margin-right: 10px;
 }
 ::v-deep .el-form-item__content{

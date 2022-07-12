@@ -58,20 +58,6 @@ public interface DataResourcePrRepository {
      */
     void saveResourceTagRelation(@Param("tagId") Long tagId, @Param("resourceId") Long resourceId);
 
-    /**
-     * 批量插入审核授权表
-     * @param list
-     * @return
-     */
-    void saveResourceAuthRecordList(@Param("list")List<DataResourceAuthRecord> list);
-
-    /**
-     * 插入审核授权表
-     * @param authRecord
-     * @return
-     */
-    void saveResourceAuthRecord(DataResourceAuthRecord authRecord);
-
 
     void updateAuthRecordStatus(@Param("status")Integer status,@Param("recordId")Long recordId,@Param("userId")Long userId,@Param("userName")String userName);
 

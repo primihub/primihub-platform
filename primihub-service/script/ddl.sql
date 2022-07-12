@@ -139,7 +139,7 @@ DROP TABLE IF EXISTS `data_mr`;
 CREATE TABLE `data_mr`  (
                             `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
                             `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                            `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
                             `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
                             `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
                             `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',
@@ -149,40 +149,66 @@ CREATE TABLE `data_mr`  (
                             PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '模型资源表' ROW_FORMAT = Dynamic;
 
--- ----------------------------
--- Table structure for data_pr
--- ----------------------------
-DROP TABLE IF EXISTS `data_pr`;
-CREATE TABLE `data_pr`  (
-                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                            `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                            `is_authed` int(2) DEFAULT NULL COMMENT '是否授权',
-                            `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                            PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目资源关系表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for data_project
--- ----------------------------
 DROP TABLE IF EXISTS `data_project`;
-CREATE TABLE `data_project`  (
-                                 `project_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '项目id',
-                                 `project_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '项目名称',
-                                 `project_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '项目描述',
-                                 `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                 `organ_num` int(8) DEFAULT NULL COMMENT '机构数',
-                                 `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
-                                 `resource_organ_ids` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '机构id数组',
-                                 `auth_resource_num` int(8) DEFAULT NULL COMMENT '已授权资源数',
-                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`project_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目表' ROW_FORMAT = Dynamic;
+CREATE TABLE `data_project` (
+                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                                `project_id` varchar(141) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目ID 机构后12位+UUID',
+                                `project_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目名称',
+                                `project_desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目描述',
+                                `created_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构id',
+                                `created_organ_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构名称',
+                                `created_username` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建者名称',
+                                `resource_num` int DEFAULT '0' COMMENT '资源数',
+                                `provider_organ_names` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '协作方机构名称 保存三个',
+                                `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                `status` tinyint DEFAULT '0' COMMENT '项目状态 0审核中 1可用 2关闭',
+                                `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                PRIMARY KEY (`id`) USING BTREE,
+                                UNIQUE INDEX `project_id_ix`(`project_id`) USING BTREE,
+                                INDEX `created_organ_id_ix`(`created_organ_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci  COMMENT='项目表' ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `data_project_organ`;
+CREATE TABLE `data_project_organ` (
+                                      `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                      `po_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目机构关联ID UUID',
+                                      `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目ID',
+                                      `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
+                                      `initiate_organ_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
+                                      `participation_identity` tinyint DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                      `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                      `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
+                                      `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
+                                      `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                      `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                      PRIMARY KEY (`id`) USING BTREE,
+                                      INDEX `project_id_ix`(`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT='项目资源授权审核表' ROW_FORMAT = Dynamic;
+
+
+DROP TABLE IF EXISTS `data_project_resource`;
+CREATE TABLE `data_project_resource` (
+                                         `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                         `pr_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目资源ID  UUID',
+                                         `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目id',
+                                         `initiate_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
+                                         `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
+                                         `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                         `is_del` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+                                         `resource_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '0' COMMENT '资源ID',
+                                         `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                         `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
+                                         `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
+                                         `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                         PRIMARY KEY (`id`) USING BTREE,
+                                         INDEX `project_id_ix`(`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT='项目资源关系表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for data_psi
@@ -284,23 +310,6 @@ CREATE TABLE `data_resource`  (
                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                                   PRIMARY KEY (`resource_id`) USING BTREE
 ) ENGINE = InnoDB  CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '资源表' ROW_FORMAT = Dynamic;
-
--- ----------------------------
--- Table structure for data_resource_auth_record
--- ----------------------------
-DROP TABLE IF EXISTS `data_resource_auth_record`;
-CREATE TABLE `data_resource_auth_record`  (
-                                              `record_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                                              `record_status` int(2) DEFAULT NULL COMMENT '审核状态',
-                                              `user_id` bigint(20) DEFAULT NULL COMMENT '审核人员id',
-                                              `user_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '审核人姓名',
-                                              `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                                              `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                              PRIMARY KEY (`record_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '项目资源授权审核表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Table structure for data_resource_tag
@@ -435,48 +444,51 @@ CREATE TABLE `sys_auth`  (
 -- ----------------------------
 -- Records of sys_auth
 -- ----------------------------
-INSERT INTO `sys_auth` VALUES (1, '项目管理', 'Project', 1, 0, 1, '1', '', 'own', 1, 0, 1, 1, 0, '2022-04-12 13:59:16.000', '2022-04-24 10:33:51.979');
-INSERT INTO `sys_auth` VALUES (2, '项目列表', 'ProjectList', 2, 1, 1, '1,2', '', 'own', 1, 1, 1, 1, 0, '2022-04-12 14:00:05.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (3, '项目详情', 'ProjectDetail', 4, 1, 1, '1,3', '', 'own', 2, 1, 1, 1, 0, '2022-04-12 14:01:36.098', '2022-04-15 02:58:42.183');
-INSERT INTO `sys_auth` VALUES (4, '新建项目', 'ProjectCreate', 3, 2, 1, '1,2,4', '', 'own', 1, 2, 1, 1, 0, '2022-04-12 14:02:39.000', '2022-04-15 02:53:48.167');
-INSERT INTO `sys_auth` VALUES (5, '删除项目', 'ProjectDelete', 3, 2, 1, '1,2,5', '', 'own', 2, 2, 1, 1, 0, '2022-04-12 14:03:27.000', '2022-04-15 02:53:50.484');
-INSERT INTO `sys_auth` VALUES (6, '模型管理', 'ModelMenu', 1, 0, 6, '6', '', 'own', 2, 0, 1, 1, 0, '2022-04-12 14:04:31.000', '2022-04-12 19:04:41.268');
-INSERT INTO `sys_auth` VALUES (7, '模型列表', 'ModelList', 2, 6, 6, '6,7', '', 'own', 1, 1, 1, 1, 0, '2022-04-12 14:05:57.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (8, '模型详情', 'ModelDetail', 4, 6, 6, '6,8', '', 'own', 2, 1, 1, 1, 0, '2022-04-12 14:07:38.000', '2022-04-15 03:00:45.136');
-INSERT INTO `sys_auth` VALUES (9, '模型查看', 'ModelView', 3, 7, 6, '6,7,9', '', 'own', 1, 2, 1, 1, 0, '2022-04-12 14:08:25.000', '2022-04-15 02:56:12.398');
-INSERT INTO `sys_auth` VALUES (10, '添加模型', 'ModelCreate', 3, 7, 6, '6,7,10', '', 'own', 2, 2, 1, 1, 0, '2022-04-12 14:09:32.000', '2022-04-15 02:56:14.857');
-INSERT INTO `sys_auth` VALUES (11, '模型编辑', 'ModelEdit', 3, 7, 6, '6,7,11', '', 'own', 3, 2, 1, 1, 0, '2022-04-12 14:11:28.000', '2022-04-15 02:56:16.826');
-INSERT INTO `sys_auth` VALUES (12, '匿踪查询', 'PrivateSearch', 1, 0, 12, '12', '', 'own', 3, 0, 1, 1, 0, '2022-04-12 14:12:57.000', '2022-04-12 19:04:41.268');
-INSERT INTO `sys_auth` VALUES (13, '匿踪查询按钮', 'PrivateSearchButton', 3, 12, 12, '12,13', '', 'own', 1, 1, 1, 1, 0, '2022-04-12 14:14:52.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (14, '资源管理', 'ResourceMenu', 1, 0, 14, '14', '', 'own', 4, 0, 1, 1, 0, '2022-04-12 14:17:03.000', '2022-04-12 19:04:41.268');
-INSERT INTO `sys_auth` VALUES (15, '资源概览', 'ResourceList', 2, 14, 14, '14,15', '', 'own', 1, 1, 1, 1, 0, '2022-04-12 14:18:04.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (16, '资源详情', 'ResourceDetail', 4, 14, 14, '14,16', '', 'own', 2, 1, 1, 1, 0, '2022-04-12 14:19:16.000', '2022-04-15 03:02:01.488');
-INSERT INTO `sys_auth` VALUES (17, '上传资源', 'ResourceUpload', 3, 15, 14, '14,15,17', '', 'own', 1, 2, 1, 1, 0, '2022-04-12 14:35:56.000', '2022-04-15 03:02:04.775');
-INSERT INTO `sys_auth` VALUES (18, '编辑资源', 'ResourceEdit', 3, 15, 14, '14,15,18', '', 'own', 2, 2, 1, 1, 0, '2022-04-12 14:37:32.000', '2022-04-15 03:02:07.847');
-INSERT INTO `sys_auth` VALUES (19, '删除资源', 'ResourceDelete', 3, 15, 14, '14,15,19', '', 'own', 3, 2, 1, 1, 0, '2022-04-12 14:38:54.000', '2022-04-15 03:02:10.279');
-INSERT INTO `sys_auth` VALUES (20, '授权申请记录', 'ResourceRecord', 2, 14, 14, '14,20', '', 'own', 2, 1, 1, 1, 0, '2022-04-12 14:42:14.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (21, '授权审批', 'ResourceApproval', 3, 20, 14, '14,20,21', '', 'own', 1, 2, 1, 1, 0, '2022-04-12 14:43:45.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (22, '授权审批', 'ResourceApprovalList', 2, 14, 14, '14,22', '', 'own', 3, 1, 1, 1, 0, '2022-04-12 18:10:01.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (23, '授权审批按钮', 'ResourceApprovalButton', 3, 22, 14, '14,22,23', '', 'own', 1, 2, 1, 1, 0, '2022-04-12 18:10:52.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (24, '系统设置', 'Setting', 1, 0, 24, '24', '', 'own', 5, 0, 1, 0, 0, '2022-04-12 18:15:46.000', '2022-04-12 19:04:41.268');
-INSERT INTO `sys_auth` VALUES (25, '用户管理', 'UserManage', 2, 24, 24, '24,25', '', 'own', 1, 1, 1, 0, 0, '2022-04-12 18:18:19.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (26, '用户新增', 'UserAdd', 3, 25, 24, '24,25,26', '', 'own', 1, 2, 1, 0, 0, '2022-04-12 18:24:12.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (27, '用户编辑', 'UserEdit', 3, 25, 24, '24,25,27', '', 'own', 2, 2, 1, 0, 0, '2022-04-12 18:25:08.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (28, '用户删除', 'UserDelete', 3, 25, 24, '24,25,28', '', 'own', 3, 2, 1, 0, 0, '2022-04-12 18:25:49.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (29, '密码重置', 'UserPasswordReset', 3, 25, 24, '24,25,29', '', 'own', 4, 2, 1, 0, 0, '2022-04-12 18:26:31.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (30, '角色管理', 'RoleManage', 2, 24, 24, '24,30', '', 'own', 2, 1, 1, 0, 0, '2022-04-12 18:27:45.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (31, '角色新增', 'RoleAdd', 3, 30, 24, '24,30,31', '', 'own', 1, 2, 1, 0, 0, '2022-04-12 18:28:46.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (32, '角色编辑', 'RoleEdit', 3, 30, 24, '24,30,32', '', 'own', 2, 2, 1, 0, 0, '2022-04-12 18:29:29.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (33, '角色删除', 'RoleDelete', 3, 30, 24, '24,30,33', '', 'own', 3, 2, 1, 0, 0, '2022-04-12 18:30:42.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (34, '机构管理', 'OrganManage', 2, 24, 24, '24,34', '', 'own', 3, 1, 1, 0, 0, '2022-04-12 18:32:26.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (35, '机构新增', 'OrganAdd', 3, 34, 24, '24,34,35', '', 'own', 1, 2, 1, 0, 0, '2022-04-12 18:34:11.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (36, '机构编辑', 'OrganEdit', 3, 34, 24, '24,34,36', '', 'own', 2, 2, 1, 0, 0, '2022-04-12 18:35:10.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (37, '机构删除', 'OrganDelete', 3, 34, 24, '24,34,37', '', 'own', 3, 2, 1, 0, 0, '2022-04-12 18:35:56.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (38, '菜单管理', 'MenuManage', 2, 24, 24, '24,38', '', 'own', 4, 1, 1, 0, 0, '2022-04-12 18:38:00.000', '2022-04-12 19:08:46.133');
-INSERT INTO `sys_auth` VALUES (39, '菜单新增', 'MenuAdd', 3, 38, 24, '24,38,39', '', 'own', 1, 2, 1, 0, 0, '2022-04-12 18:45:34.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (40, '菜单编辑', 'MenuEdit', 3, 38, 24, '24,38,40', '', 'own', 2, 2, 1, 0, 0, '2022-04-12 18:46:43.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (41, '菜单删除', 'MenuDelete', 3, 38, 24, '24,38,41', '', 'own', 3, 2, 1, 0, 0, '2022-04-12 18:48:22.000', '2022-04-12 19:10:12.574');
-INSERT INTO `sys_auth` VALUES (42, '匿踪查询列表', 'PrivateSearchList', 2, 12, 12, '12,42', '', 'own', 1, 1, 1, 1, 0, '2022-04-18 03:05:12.000', '2022-04-18 03:05:12.000');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1, '项目管理', 'Project', 1, 0, 1, '1', '', 'own', 1, 0, 1, 1, 0, '2022-07-11 18:39:03.044', '2022-07-11 18:39:03.088');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (2, '项目列表', 'ProjectList', 2, 1, 1, '1,2', '/project/getProjectList', 'own', 1, 1, 1, 1, 0, '2022-07-11 18:39:03.093', '2022-07-11 18:39:03.096');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (3, '项目详情', 'ProjectDetail', 3, 1, 1, '1,3', '/project/getProjectDetails', 'own', 2, 1, 1, 1, 0, '2022-07-11 18:39:03.098', '2022-07-11 18:39:03.101');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (4, '新建项目', 'ProjectCreate', 3, 2, 1, '1,2,4', '/project/saveOrUpdateProject', 'own', 1, 2, 1, 1, 0, '2022-07-11 18:39:03.103', '2022-07-11 18:39:03.105');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (5, '关闭项目', 'ProjectDelete', 3, 2, 1, '1,2,5', '/project/closeProject', 'own', 2, 2, 1, 1, 0, '2022-07-11 18:39:03.106', '2022-07-11 18:39:03.108');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (6, '模型列表', 'ModelList', 2, 3, 1, '1,3,6', '/model/getmodellist', 'own', 1, 2, 1, 1, 0, '2022-07-11 18:39:03.109', '2022-07-11 18:39:03.110');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (7, '模型详情', 'ModelDetail', 3, 6, 1, '1,3,6,7', '/model/getdatamodel', 'own', 1, 3, 1, 1, 0, '2022-07-11 18:39:03.112', '2022-07-11 18:39:03.114');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (8, '模型查看', 'ModelView', 3, 6, 1, '1,3,6,8', '/model/getdatamodel', 'own', 2, 3, 1, 1, 0, '2022-07-11 18:39:03.115', '2022-07-11 18:39:03.117');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (9, '添加模型', 'ModelCreate', 3, 6, 1, '1,3,6,9', '/model/saveModelAndComponent', 'own', 3, 3, 1, 1, 0, '2022-07-11 18:39:03.118', '2022-07-11 18:39:03.119');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (10, '模型编辑', 'ModelEdit', 3, 6, 1, '1,3,6,10', '/model/saveModelAndComponent', 'own', 4, 3, 1, 1, 0, '2022-07-11 18:39:03.120', '2022-07-11 18:39:03.121');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (11, '匿踪查询', 'PrivateSearch', 1, 0, 11, '11', '/fusionResource/getResourceList', 'own', 2, 0, 1, 1, 0, '2022-07-11 18:39:03.122', '2022-07-11 18:39:03.124');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (12, '匿踪查询按钮', 'PrivateSearchButton', 3, 11, 11, '11,12', '/pir/pirSubmitTask', 'own', 1, 1, 1, 1, 0, '2022-07-11 18:39:03.125', '2022-07-11 18:39:03.128');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (13, '匿踪查询列表', 'PrivateSearchList', 2, 11, 11, '11,13', '/pir/downloadPirTask', 'own', 2, 1, 1, 1, 0, '2022-07-11 18:39:03.128', '2022-07-11 18:39:03.130');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (14, '隐私求交', 'PSI', 1, 0, 14, '14', '', 'own', 3, 0, 1, 1, 0, '2022-07-11 18:39:03.131', '2022-07-11 18:39:03.133');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (15, '求交任务', 'PSITask', 2, 14, 14, '14,15', '/psi/getPsiResourceAllocationList', 'own', 1, 1, 1, 1, 0, '2022-07-11 18:39:03.134', '2022-07-11 18:39:03.135');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (16, '求交结果', 'PSIResult', 2, 14, 14, '14,16', '/psi/getPsiTaskList', 'own', 2, 1, 1, 1, 0, '2022-07-11 18:39:03.139', '2022-07-11 18:39:03.142');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (17, '资源管理', 'ResourceMenu', 1, 0, 17, '17', '', 'own', 4, 0, 1, 1, 0, '2022-07-11 18:39:03.143', '2022-07-11 18:39:03.145');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (18, '资源概览', 'ResourceList', 2, 17, 17, '17,18', '/resource/getdataresourcelist', 'own', 1, 1, 1, 1, 0, '2022-07-11 18:39:03.147', '2022-07-11 18:39:03.148');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (19, '资源详情', 'ResourceDetail', 3, 17, 17, '17,19', '/resource/getdataresource', 'own', 2, 1, 1, 1, 0, '2022-07-11 18:39:03.149', '2022-07-11 18:39:03.151');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (20, '上传资源', 'ResourceUpload', 3, 17, 17, '17,20', '/resource/saveorupdateresource', 'own', 3, 1, 1, 1, 0, '2022-07-11 18:39:03.152', '2022-07-11 18:39:03.155');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (21, '编辑资源', 'ResourceEdit', 3, 17, 17, '17,21', '/resource/saveorupdateresource', 'own', 4, 1, 1, 1, 0, '2022-07-11 18:39:03.156', '2022-07-11 18:39:03.158');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (22, '联邦资源', 'UnionList', 2, 17, 17, '17,22', '/fusionResource/getResourceList', 'own', 5, 1, 1, 1, 0, '2022-07-11 18:39:03.159', '2022-07-11 18:39:03.161');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (23, '联邦资源详情', 'UnionResourceDetail', 3, 22, 17, '17,22,23', '/fusionResource/getDataResource', 'own', 1, 2, 1, 1, 0, '2022-07-11 18:39:03.162', '2022-07-11 18:39:03.164');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (24, '系统设置', 'Setting', 1, 0, 24, '24', '', 'own', 5, 0, 1, 0, 0, '2022-07-11 18:39:03.166', '2022-07-11 18:39:03.168');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (25, '用户管理', 'UserManage', 2, 24, 24, '24,25', '/user/findUserPage', 'own', 1, 1, 1, 0, 0, '2022-07-11 18:39:03.169', '2022-07-11 18:39:03.171');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (26, '用户新增', 'UserAdd', 3, 25, 24, '24,25,26', '/user/saveOrUpdateUser', 'own', 1, 2, 1, 0, 0, '2022-07-11 18:39:03.173', '2022-07-11 18:39:03.174');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (27, '用户编辑', 'UserEdit', 3, 25, 24, '24,25,27', '/user/saveOrUpdateUser', 'own', 2, 2, 1, 0, 0, '2022-07-11 18:39:03.176', '2022-07-11 18:39:03.177');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (28, '用户删除', 'UserDelete', 3, 25, 24, '24,25,28', '/user/deleteSysUser', 'own', 3, 2, 1, 0, 0, '2022-07-11 18:39:03.179', '2022-07-11 18:39:03.180');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (29, '密码重置', 'UserPasswordReset', 3, 25, 24, '24,25,29', '/user/initPassword', 'own', 4, 2, 1, 0, 0, '2022-07-11 18:39:03.182', '2022-07-11 18:39:03.183');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (30, '角色管理', 'RoleManage', 2, 24, 24, '24,30', '/role/findRolePage', 'own', 2, 1, 1, 0, 0, '2022-07-11 18:39:03.184', '2022-07-11 18:39:03.190');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (31, '角色新增', 'RoleAdd', 3, 30, 24, '24,30,31', '/role/saveOrUpdateRole', 'own', 1, 2, 1, 0, 0, '2022-07-11 18:39:03.192', '2022-07-11 18:39:03.194');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (32, '角色编辑', 'RoleEdit', 3, 30, 24, '24,30,32', '/role/saveOrUpdateRole', 'own', 2, 2, 1, 0, 0, '2022-07-11 18:39:03.196', '2022-07-11 18:39:03.197');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (33, '角色删除', 'RoleDelete', 3, 30, 24, '24,30,33', '/role/deleteSysRole', 'own', 3, 2, 1, 0, 0, '2022-07-11 18:39:03.198', '2022-07-11 18:39:03.199');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (34, '菜单管理', 'MenuManage', 2, 24, 24, '24,34', '/auth/getAuthTree', 'own', 3, 1, 1, 0, 0, '2022-07-11 18:39:03.200', '2022-07-11 18:39:03.202');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (35, '菜单新增', 'MenuAdd', 3, 34, 24, '24,34,35', '/auth/createAuthNode', 'own', 1, 2, 1, 0, 0, '2022-07-11 18:39:03.202', '2022-07-11 18:39:03.204');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (36, '菜单编辑', 'MenuEdit', 3, 34, 24, '24,34,36', '/auth/alterAuthNodeStatus', 'own', 2, 2, 1, 0, 0, '2022-07-11 18:39:03.204', '2022-07-11 18:39:03.206');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (37, '菜单编辑', 'MenuDelete', 3, 34, 24, '24,34,37', '/auth/deleteAuthNode', 'own', 3, 2, 1, 0, 0, '2022-07-11 18:39:03.207', '2022-07-11 18:39:03.208');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (38, '中心管理', 'CenterManage', 2, 24, 24, '24,38', '', 'own', 4, 1, 1, 0, 0, '2022-07-11 18:39:03.209', '2022-07-11 18:39:03.209');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (39, '编辑机构信息', 'OrganChange', 3, 38, 24, '24,38,39', '/organ/changeLocalOrganInfo', 'own', 1, 2, 1, 0, 0, '2022-07-11 18:39:03.210', '2022-07-11 18:39:03.211');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (40, '添加中心节点', 'FusionAdd', 3, 38, 24, '24,38,40', '/fusion/registerConnection', 'own', 2, 2, 1, 0, 0, '2022-07-11 18:39:03.212', '2022-07-11 18:39:03.214');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (41, '删除中心节点', 'FusionDelete', 3, 38, 24, '24,38,41', '/fusion/deleteConnection', 'own', 3, 2, 1, 0, 0, '2022-07-11 18:39:03.215', '2022-07-11 18:39:03.216');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (42, '创建群组', 'GroupCreate', 3, 38, 24, '24,38,42', '/fusion/createGroup', 'own', 4, 2, 1, 0, 0, '2022-07-11 18:39:03.217', '2022-07-11 18:39:03.218');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (43, '加入群组', 'GroupJoin', 3, 38, 24, '24,38,43', '/fusion/joinGroup', 'own', 5, 2, 1, 0, 0, '2022-07-11 18:39:03.220', '2022-07-11 18:39:03.222');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (44, '退出群组', 'GroupExit', 3, 38, 24, '24,38,44', '/fusion/exitGroup', 'own', 6, 2, 1, 0, 0, '2022-07-11 18:39:03.223', '2022-07-11 18:39:03.224');
+
 
 -- ----------------------------
 -- Table structure for sys_ra
@@ -495,66 +507,74 @@ CREATE TABLE `sys_ra`  (
 -- ----------------------------
 -- Records of sys_ra
 -- ----------------------------
-INSERT INTO `sys_ra` VALUES (1, 1, 1, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:02.170');
-INSERT INTO `sys_ra` VALUES (2, 1, 2, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:05.697');
-INSERT INTO `sys_ra` VALUES (3, 1, 3, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:08.204');
-INSERT INTO `sys_ra` VALUES (4, 1, 4, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:10.879');
-INSERT INTO `sys_ra` VALUES (5, 1, 5, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:13.112');
-INSERT INTO `sys_ra` VALUES (6, 1, 6, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:15.284');
-INSERT INTO `sys_ra` VALUES (7, 1, 7, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:17.772');
-INSERT INTO `sys_ra` VALUES (8, 1, 8, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:20.136');
-INSERT INTO `sys_ra` VALUES (9, 1, 9, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:22.282');
-INSERT INTO `sys_ra` VALUES (10, 1, 10, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:25.230');
-INSERT INTO `sys_ra` VALUES (11, 1, 11, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:26.705');
-INSERT INTO `sys_ra` VALUES (12, 1, 12, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:27.781');
-INSERT INTO `sys_ra` VALUES (13, 1, 13, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:30.548');
-INSERT INTO `sys_ra` VALUES (14, 1, 14, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:32.214');
-INSERT INTO `sys_ra` VALUES (15, 1, 15, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:34.343');
-INSERT INTO `sys_ra` VALUES (16, 1, 16, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:36.784');
-INSERT INTO `sys_ra` VALUES (17, 1, 17, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:38.966');
-INSERT INTO `sys_ra` VALUES (18, 1, 18, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:41.113');
-INSERT INTO `sys_ra` VALUES (19, 1, 19, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:43.212');
-INSERT INTO `sys_ra` VALUES (20, 1, 20, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:45.530');
-INSERT INTO `sys_ra` VALUES (21, 1, 21, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:48.887');
-INSERT INTO `sys_ra` VALUES (22, 1, 22, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:55.679');
-INSERT INTO `sys_ra` VALUES (23, 1, 23, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:35:58.959');
-INSERT INTO `sys_ra` VALUES (24, 1, 24, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:01.745');
-INSERT INTO `sys_ra` VALUES (25, 1, 25, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:04.763');
-INSERT INTO `sys_ra` VALUES (26, 1, 26, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:08.883');
-INSERT INTO `sys_ra` VALUES (27, 1, 27, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:11.293');
-INSERT INTO `sys_ra` VALUES (28, 1, 28, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:13.692');
-INSERT INTO `sys_ra` VALUES (29, 1, 29, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:15.825');
-INSERT INTO `sys_ra` VALUES (30, 1, 30, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:18.058');
-INSERT INTO `sys_ra` VALUES (31, 1, 31, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:21.553');
-INSERT INTO `sys_ra` VALUES (32, 1, 32, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (33, 1, 33, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (34, 1, 34, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (35, 1, 35, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (36, 1, 36, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (37, 1, 37, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (38, 1, 38, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (39, 1, 39, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (40, 1, 40, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (41, 1, 41, 0, '2022-03-25 17:34:45.902', '2022-03-25 17:36:24.124');
-INSERT INTO `sys_ra` VALUES (1048, 1000, 6, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1049, 1000, 7, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1050, 1000, 9, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1051, 1000, 10, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1052, 1000, 11, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1053, 1000, 8, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1054, 1000, 12, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1055, 1000, 13, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1056, 1000, 42, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1057, 1000, 14, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1058, 1000, 15, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1059, 1000, 17, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1060, 1000, 18, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1061, 1000, 19, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1062, 1000, 16, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1063, 1000, 20, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1064, 1000, 21, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1065, 1000, 22, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
-INSERT INTO `sys_ra` VALUES (1066, 1000, 23, 0, '2022-04-27 18:31:33.730', '2022-04-27 18:31:33.730');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1, 1, 1, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (2, 1, 2, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (3, 1, 3, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (4, 1, 4, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (5, 1, 5, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (6, 1, 6, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (7, 1, 7, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (8, 1, 8, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (9, 1, 9, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (10, 1, 10, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (11, 1, 11, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (12, 1, 12, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (13, 1, 13, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (14, 1, 14, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (15, 1, 15, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (16, 1, 16, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (17, 1, 17, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (18, 1, 18, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (19, 1, 19, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (20, 1, 20, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (21, 1, 21, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (22, 1, 22, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (23, 1, 23, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (24, 1, 24, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (25, 1, 25, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (26, 1, 26, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (27, 1, 27, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (28, 1, 28, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (29, 1, 29, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (30, 1, 30, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (31, 1, 31, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (32, 1, 32, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (33, 1, 33, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (34, 1, 34, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (35, 1, 35, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (36, 1, 36, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (37, 1, 37, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (38, 1, 38, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (39, 1, 39, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (40, 1, 40, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (41, 1, 41, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (42, 1, 42, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (43, 1, 43, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (44, 1, 44, 0, '2022-07-11 16:48:13.064', '2022-07-11 16:48:13.064');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (45, 1000, 1, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (46, 1000, 2, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (47, 1000, 3, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (48, 1000, 4, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (49, 1000, 5, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (50, 1000, 6, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (51, 1000, 7, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (52, 1000, 8, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (53, 1000, 9, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (54, 1000, 10, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (55, 1000, 11, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (56, 1000, 12, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (57, 1000, 13, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (58, 1000, 14, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (59, 1000, 15, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (60, 1000, 16, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (61, 1000, 17, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (62, 1000, 18, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (63, 1000, 19, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (64, 1000, 20, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (65, 1000, 21, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (66, 1000, 22, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (67, 1000, 23, 0, '2022-07-11 16:48:13.070', '2022-07-11 16:48:13.070');
+
 
 -- ----------------------------
 -- Table structure for sys_role
@@ -594,15 +614,6 @@ CREATE TABLE `sys_ur`  (
 -- Records of sys_ur
 -- ----------------------------
 INSERT INTO `sys_ur` VALUES (1, 1, 1, 0, '2022-03-25 17:55:53.090', '2022-03-25 18:03:28.371');
-INSERT INTO `sys_ur` VALUES (1000, 1000, 1000, 0, '2022-04-27 17:51:02.224', '2022-04-27 17:51:02.224');
-INSERT INTO `sys_ur` VALUES (1001, 1001, 1000, 0, '2022-04-27 17:51:23.007', '2022-04-27 17:51:23.007');
-INSERT INTO `sys_ur` VALUES (1002, 1002, 1000, 0, '2022-04-27 17:51:53.921', '2022-04-27 17:51:53.921');
-INSERT INTO `sys_ur` VALUES (1003, 1003, 1000, 0, '2022-04-27 17:52:23.438', '2022-04-27 17:52:23.438');
-INSERT INTO `sys_ur` VALUES (1004, 1004, 1000, 0, '2022-04-27 17:52:55.591', '2022-04-27 17:52:55.591');
-INSERT INTO `sys_ur` VALUES (1005, 1005, 1, 0, '2022-04-27 17:53:26.346', '2022-04-27 17:53:26.346');
-INSERT INTO `sys_ur` VALUES (1006, 1006, 1, 0, '2022-04-27 17:53:47.143', '2022-04-27 17:53:47.143');
-INSERT INTO `sys_ur` VALUES (1007, 1007, 1, 0, '2022-04-27 17:54:14.284', '2022-04-27 17:54:14.284');
-INSERT INTO `sys_ur` VALUES (1008, 1008, 1000, 0, '2022-04-27 17:54:37.559', '2022-04-27 17:54:37.559');
 
 -- ----------------------------
 -- Table structure for sys_user

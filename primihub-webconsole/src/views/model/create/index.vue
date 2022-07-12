@@ -26,7 +26,8 @@ import DagNodeComponent from './components/DagNode.vue'
 // import data from './graph/data'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectAuthedeList, getProjectResourceData, runTaskModel, getTaskModelComponent } from '@/api/model'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, getProjectAuthedeList, runTaskModel, getTaskModelComponent } from '@/api/model'
+// import { getProjectDetail } from '@/api/project'
 
 const lineAttr = { // 线样式
   'line': {
@@ -378,6 +379,7 @@ export default {
           //   this.getProjectResourceData()
           // }
           this.projectId = Number(this.$route.query.projectId) || 0
+          console.log('projectId', this.$route.query.projectId)
           this.getProjectResourceData()
         }
         // if (result && result.componentValues[0]) {
@@ -476,6 +478,7 @@ export default {
       })
     },
     getProjectResourceData() {
+      console.log('projectId', this.projectId)
       getProjectResourceData({ projectId: this.projectId }).then(res => {
         this.projectName = res.result.projectName
         this.resourceList = res.result.resource
@@ -493,10 +496,9 @@ export default {
         })
         // 设置资源选项
         this.nodeData.componentTypes[dataIndex].inputValues = options
-
         const yOptions = []
         const yIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'yField')
-        const curResource = this.resourceList.find(item => Number(item.resourceId) === Number(this.resourceId))
+        const curResource = this.resourceList.find(item => item.resourceId === this.resourceId)
         // 设置y值字段选项
         curResource && curResource.yfile.forEach(item => {
           yOptions.push({
@@ -520,7 +522,8 @@ export default {
       const yIndex = componentTypes.findIndex(item => item.typeCode === 'yField')
       if (typeCode === 'projectName') {
         this.projectId = data.inputValue
-        this.getProjectResourceData()
+        console.log('111', this.projectId)
+        this.getProjectDetail()
         // 切换项目时初始化资源和y值字段
         this.nodeData.componentTypes[dataIndex].inputValue = ''
         this.nodeData.componentTypes[dataIndex].inputValues = []
@@ -530,9 +533,10 @@ export default {
         // 切换资源时初始化y值字段
         this.nodeData.componentTypes[yIndex].inputValue = ''
         this.nodeData.componentTypes[yIndex].inputValues = []
-        const curResource = this.resourceList.find(item => Number(item.resourceId) === Number(data.inputValue))
+        const curResource = this.resourceList.find(item => item.resourceId === data.inputValue)
         const yOptions = []
-        curResource.yfile.forEach(item => {
+        console.log('curResource', curResource)
+        curResource && curResource.yfile.forEach(item => {
           yOptions.push({
             key: item.yid.toString(),
             val: item.yname
@@ -615,13 +619,21 @@ export default {
         return
       }
       runTaskModel({ modelId: this.modelId }).then(res => {
-        this.modelStartRun = true
-        clearInterval(this.timmer)
-        this.$notify({
-          message: '开始运行',
-          type: 'info',
-          duration: 5000
-        })
+        if (res.code !== 0) {
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+          return
+        } else {
+          this.modelStartRun = true
+          clearInterval(this.timmer)
+          this.$notify({
+            message: '开始运行',
+            type: 'info',
+            duration: 5000
+          })
+        }
       })
     },
     getTaskModelComponent() {
@@ -639,6 +651,7 @@ export default {
           })
           if (complete) {
             taskResult.push(componentCode)
+            console.log('taskResult', taskResult)
             node.setData({
               ...data,
               componentState: componentState,
@@ -913,12 +926,20 @@ export default {
       this.saveParams.param.modelPointComponents = modelPointComponents
       console.log(this.saveParams)
       saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
-        this.modelId = res.result.modelId
-        this.$notify({
-          message: '保存成功',
-          type: 'success',
-          duration: '1000'
-        })
+        if (res.code === 0) {
+          this.modelId = res.result.modelId
+          this.$notify({
+            message: '保存成功',
+            type: 'success',
+            duration: '1000'
+          })
+        } else {
+          debugger
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+        }
       })
     }
   }

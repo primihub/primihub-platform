@@ -11,7 +11,13 @@ public class DataModelResource {
 
     public DataModelResource(Long modelId, Long resourceId) {
         this.modelId = modelId;
-        this.resourceId = resourceId;
+        this.resourceId = resourceId.toString();
+        this.alignmentNum = 0;
+        this.primitiveParamNum = 0;
+        this.modelParamNum = 0;
+    }
+    public DataModelResource(Long modelId) {
+        this.modelId = modelId;
         this.alignmentNum = 0;
         this.primitiveParamNum = 0;
         this.modelParamNum = 0;
@@ -25,7 +31,7 @@ public class DataModelResource {
     /**
      * 资源id
      */
-    private Long resourceId;
+    private String resourceId;
     /**
      * 对齐后记录数量
      */

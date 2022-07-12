@@ -34,3 +34,14 @@ then we can get started from those project.
 
 ## License
 [Apache License 2.0](./LICENSE)
+
+## Contact Us
+
+It's pleasure to offer a primihub assistant to a contract list by scanning the QR code. You can get support on technique,business and the chance to community with us util the assistant invite you to the open source community group.
+
+![assitant](./assitant.JPEG)
+
+And also welcome to follow our official account and slack home page([primihub slack](https://primihub.slack.com/join/shared_invite/zt-1af0l22ar-jmTI2C_DPUd3QSuPuOsYdA#/shared-invite/email)).
+
+![offical](./offical.JPEG)
+

@@ -4,7 +4,7 @@ spring:
   application:
     name: platform
   rabbitmq:
-    host: rabbitmq.primihub.svc.cluster.local
+    host: rabbitmq3
     port: 5672
     username: guest
     password: guest
@@ -19,12 +19,12 @@ spring:
           group: single
     nacos:
       discovery:
-        server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace:
+        server-addr: nacos-server:8848
+        namespace: 1812fdf8-9fce-4bd5-bc5e-08736f343fae
 nacos:
   config:
-    server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace:
+    server-addr: nacos-server:8848
+    namespace: 1812fdf8-9fce-4bd5-bc5e-08736f343fae
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000

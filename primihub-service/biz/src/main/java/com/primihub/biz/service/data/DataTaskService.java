@@ -3,12 +3,15 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataProjectReq;
+import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
@@ -20,7 +23,9 @@ import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.data.DataResourceSecondaryRepository;
 import com.primihub.biz.repository.secondarydb.data.DataMpcRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.service.sys.SysFusionService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import java_data_service.NewDatasetRequest;
@@ -66,11 +71,17 @@ public class DataTaskService {
     @Autowired
     private DataCopyService dataCopyService;
     @Autowired
+    private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataProjectService dataProjectService;
+    @Autowired
     private DataServiceGrpcClient dataServiceGrpcClient;
     @Autowired
     private DataService1GrpcClient dataService1GrpcClient;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
+    @Autowired
+    private SysFusionService fusionService;
 
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
@@ -183,6 +194,8 @@ public class DataTaskService {
 //        log.info(paramStr);
         SysOrganFusion sysOrganFusion = JSONObject.parseObject(paramStr, SysOrganFusion.class);
         Long maxId=dataResourceRepository.findMaxDataResource();
+        if (maxId==null)
+            return;
         DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress());
         dataCopyPrimarydbRepository.saveCopyInfo(task);
         dataCopyService.handleFusionCopyTask(task);
@@ -264,6 +277,52 @@ public class DataTaskService {
                     }
                 }
             }
+        }
+    }
+
+    public void spreadProjectData(String paramStr){
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        log.info(paramStr);
+        ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
+        shareProjectVo.setTimestamp(System.currentTimeMillis());
+        shareProjectVo.setNonce((int)Math.random()*100);
+        if (shareProjectVo.getProjectOrgans().size()==0)
+            shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
+        if (shareProjectVo.getProjectResources().size()==0)
+            shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
+        if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
+            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId());
+            log.info("select ProjectOrgans size:{}",dataProjectOrgans.size());
+            if (dataProjectOrgans.size()==0)
+                return;
+            List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
+            organIds.remove(sysLocalOrganId);
+            Map<String, Map> organListMap = dataProjectService.getOrganListMap(organIds, shareProjectVo.getServerAddress());
+            for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
+                if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
+                    if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
+                        Map map = organListMap.get(dataProjectOrgan.getOrganId());
+                        Object gatewayAddress = map==null?null:map.get("gatewayAddress");
+                        if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
+                            log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
+                            return;
+                        }
+                        log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
+                        HttpHeaders headers = new HttpHeaders();
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareProjectVo, headers);
+                        log.info(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+                        try {
+                            BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                        }catch (Exception e){
+                            log.info("projectId:{} - OrganId:{} gatewayAddress api Exception:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),e.getMessage());
+                        }
+                        log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
+                    }
+                }
+            }
+
         }
     }
 

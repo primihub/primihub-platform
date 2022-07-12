@@ -1,4 +1,4 @@
-# primihub management platform
+# primihub management platform service
 primihub management platform is based on spring cloud,use maven to compile and package.
 ## Getting Started
 First of all ,when we run the project, we need some service dependencies like this:
@@ -55,7 +55,7 @@ Also modify the configuration which is just created in nacos.
             url: 
             password: 
 
-At last, you should execute the "ddl.sql" and "init.sql" in your mysql.
+At last, you should execute the "ddl.sql" in your mysql.
 
 ## Compile and Package
 if your environment in linux,you should run this command:
@@ -74,4 +74,4 @@ Before run, make sure that your service dependencies are available and the confi
 
 execute that two commands in different terminal,when get started,you can check the url:
     
-    http://localhost:8080/sys/user/login
+    http://localhost:8088/sys/user/login

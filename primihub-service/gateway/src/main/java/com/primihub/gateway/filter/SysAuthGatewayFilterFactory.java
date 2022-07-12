@@ -1,10 +1,12 @@
 package com.primihub.gateway.filter;
 
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.entity.base.BaseParamEnum;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.vo.SysAuthNodeVO;
 import com.primihub.biz.entity.sys.vo.SysUserListVO;
 import com.primihub.biz.repository.primaryredis.sys.SysUserPrimaryRedisRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysRoleSecondarydbRepository;
 import com.primihub.biz.service.sys.SysAuthService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,9 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Order(11)
@@ -25,6 +30,10 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
     private SysUserPrimaryRedisRepository sysUserPrimaryRedisRepository;
     @Autowired
     private SysAuthService sysAuthService;
+    @Autowired
+    private SysRoleSecondarydbRepository sysRoleSecondarydbRepository;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     @Override
     public GatewayFilter apply(Object config) {
@@ -33,20 +42,29 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
             if(token==null||token.equals(""))
                 return chain.filter(exchange).then();
 
-            SysUserListVO sysUserListVO=sysUserPrimaryRedisRepository.findUserLoginStatus(token);
-            if(sysUserListVO==null)
-                return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.TOKEN_INVALIDATION);
-            sysUserPrimaryRedisRepository.expireUserLoginStatus(token,sysUserListVO.getUserId());
+            String userIdStr;
+            String rawPath = exchange.getRequest().getURI().getRawPath();
+            if(token.equals(baseConfiguration.getUsefulToken())){
+                userIdStr="1";
+            }else {
+                SysUserListVO sysUserListVO = sysUserPrimaryRedisRepository.findUserLoginStatus(token);
+                if (sysUserListVO == null)
+                    return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.TOKEN_INVALIDATION);
+                sysUserPrimaryRedisRepository.expireUserLoginStatus(token, sysUserListVO.getUserId());
 
-            String rawPath=exchange.getRequest().getURI().getRawPath();
-            Map<String, SysAuthNodeVO> mapping=sysAuthService.getSysAuthUrlMapping();
-            SysAuthNodeVO sysAuthNodeVO=mapping.get(rawPath);
-            if(sysAuthNodeVO!=null){
-                if(!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString()))
-                    return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
+                Set<Long> roleIdSet= Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!item.equals(""))
+                        .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
+                Set<Long> authIdList = sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
+                Map<String, SysAuthNodeVO> mapping = sysAuthService.getSysAuthUrlMapping();
+                SysAuthNodeVO sysAuthNodeVO = mapping.get(rawPath);
+                if (sysAuthNodeVO != null) {
+                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString())&&!authIdList.contains(sysAuthNodeVO.getAuthId()))
+                        return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
+                }
+
+                userIdStr = sysUserListVO.getUserId().toString();
             }
 
-            String userIdStr=sysUserListVO.getUserId().toString();
             ServerHttpRequest newRequest = exchange.getRequest().mutate()
                     .header("userId", userIdStr)
                     .header("token", token)

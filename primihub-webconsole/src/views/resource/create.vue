@@ -1,140 +1,141 @@
 <template>
   <div class="app-container">
     <h2><span v-if="isEditPage">编辑</span><span v-else>新建</span>资源</h2>
-    <div v-loading="loading">
-      <el-form
-        ref="dataForm"
-        :model="dataForm"
-        :rules="dataRules"
-        label-width="100px"
-        class="demo-dataForm"
-      >
-        <el-form-item label="资源名称" prop="resourceName">
-          <div class="item-wrap-normal">
-            <el-input
-              v-model="dataForm.resourceName"
-              maxlength="20"
-              minlength="3"
-              show-word-limit
-            />
-          </div>
-        </el-form-item>
-        <el-form-item label="资源描述" prop="resourceDesc">
-          <div class="item-wrap-normal">
-            <el-input
-              v-model="dataForm.resourceDesc"
-              type="textarea"
-              maxlength="200"
-              minlength="3"
-              show-word-limit
-            />
-          </div>
-        </el-form-item>
-        <el-form-item label="关键词" prop="tags">
-          <div class="item-wrap-normal">
-            <el-tag
-              v-for="(tag,index) in dataForm.tags"
-              :key="index"
-              closable
-              @close="handleClose(tag)"
-            >
-              {{ tag }}
-            </el-tag>
-            <el-input
-              v-if="tagInputVisible"
-              ref="saveTagInput"
-              v-model="tagInputValue"
-              class="input-new-tag"
-              size="small"
-              maxlength="10"
-              minlength="1"
-              show-word-limit
-              @keyup.enter.native="handleInputConfirm"
-              @blur="handleInputConfirm"
-            />
-            <el-button class="button-new-tag" size="small" icon="el-icon-plus" type="primary" plain @click="showInput">添加关键词</el-button>
-            <p class="tips">关键词个数不能超过5个</p>
-          </div>
-        </el-form-item>
-        <el-form-item label="授权方式" prop="resourceAuthType">
-          <div class="item-wrap-normal">
-            <el-radio-group v-model="dataForm.resourceAuthType" @change="handleAuthTypeChange">
-              <el-radio :label="1">公开</el-radio>
-              <el-radio :label="2">私有</el-radio>
-              <el-radio :label="3">指定机构可见</el-radio>
-            </el-radio-group>
-            <template v-if="dataForm.resourceAuthType === 3 && (fusionList || authOrganList) && showCascader">
-              <el-cascader-panel ref="connectRef" :key="modelKey" v-model="cascaderValue" :show-all-levels="false" :options="cascaderOptions" :props="props" @change="handleOrganCascaderChange">
-                <template slot-scope="{ node, data }">
-                  <span>{{ data.label }}</span>
-                </template>
-              </el-cascader-panel>
-            </template>
-          </div>
-        </el-form-item>
-        <el-form-item label="资源来源" prop="resourceSource">
-          <template v-if="!isEditPage">
-            <div class="item-wrap-normal">
-              <el-radio-group v-model="dataForm.resourceSource">
-                <el-radio :label="1">文件上传</el-radio>
-              </el-radio-group>
-            </div>
-            <template v-if="dataForm.resourceSource === 1">
-              <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
-            </template>
-          </template>
-          <template v-else>
-            <span>{{ dataForm.resourceSource | sourceFilter }}</span>
-          </template>
-        </el-form-item>
-        <el-row
-          v-loading="tableLoading"
-          :gutter="20"
-          class="data-container"
-          element-loading-text="加载中"
-          element-loading-spinner="el-icon-loading"
-        >
-          <el-col v-if="fieldList.length > 0" :span="12">
-            <h3>字段信息</h3>
-            <ResourceTable
-              border
-              height="500"
-              :data="fieldList"
-              :is-edit-page="isEditPage"
-              @change="handleResourceChange"
-            />
-          </el-col>
-          <el-col v-if="dataList.length >0" :span="12">
-            <h3>数据资源预览</h3>
-            <ResourcePreviewTable :data="dataList" height="500" />
-          </el-col>
-        </el-row>
-        <el-form-item>
-          <el-button
-            type="primary"
-            @click="submitForm"
+    <el-form
+      ref="dataForm"
+      :model="dataForm"
+      :rules="dataRules"
+      label-width="100px"
+      class="demo-dataForm"
+    >
+      <el-form-item label="资源名称" prop="resourceName">
+        <div class="item-wrap-normal">
+          <el-input
+            v-model="dataForm.resourceName"
+            maxlength="20"
+            minlength="3"
+            show-word-limit
+          />
+        </div>
+      </el-form-item>
+      <el-form-item label="资源描述" prop="resourceDesc">
+        <div class="item-wrap-normal">
+          <el-input
+            v-model="dataForm.resourceDesc"
+            type="textarea"
+            maxlength="200"
+            minlength="3"
+            show-word-limit
+          />
+        </div>
+      </el-form-item>
+      <el-form-item label="关键词" prop="tags">
+        <div class="item-wrap-normal">
+          <el-tag
+            v-for="(tag,index) in dataForm.tags"
+            :key="index"
+            closable
+            @close="handleClose(tag)"
           >
-            保存
-          </el-button>
-          <el-button @click="goBack">取消</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+            {{ tag }}
+          </el-tag>
+          <el-input
+            v-if="tagInputVisible"
+            ref="saveTagInput"
+            v-model="tagInputValue"
+            class="input-new-tag"
+            size="small"
+            maxlength="10"
+            minlength="1"
+            show-word-limit
+            @keyup.enter.native="handleInputConfirm"
+            @blur="handleInputConfirm"
+          />
+          <el-button class="button-new-tag" size="small" icon="el-icon-plus" type="primary" plain @click="showInput">添加关键词</el-button>
+          <p class="tips">关键词个数不能超过5个</p>
+        </div>
+      </el-form-item>
+      <el-form-item label="授权方式" prop="resourceAuthType">
+        <div class="item-wrap-normal auth-container">
+          <el-radio-group v-model="dataForm.resourceAuthType" @change="handleAuthTypeChange">
+            <el-radio :label="1">公开</el-radio>
+            <el-radio :label="2">私有</el-radio>
+            <el-radio :label="3">指定机构可见</el-radio>
+          </el-radio-group>
+          <template v-if="dataForm.resourceAuthType === 3">
+            <Cascader
+              v-if="showCascader"
+              ref="connectRef"
+              :show-all-levels="false"
+              clearable
+              :value="cascaderValue"
+              @change="handleOrganChange"
+            />
+          </template>
+        </div>
+      </el-form-item>
+      <el-form-item label="资源来源" prop="resourceSource">
+        <template v-if="!isEditPage">
+          <div class="item-wrap-normal">
+            <el-radio-group v-model="dataForm.resourceSource">
+              <el-radio :label="1">文件上传</el-radio>
+            </el-radio-group>
+          </div>
+          <template v-if="dataForm.resourceSource === 1">
+            <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
+          </template>
+        </template>
+        <template v-else>
+          <span>{{ dataForm.resourceSource | sourceFilter }}</span>
+        </template>
+      </el-form-item>
+      <el-row
+        :gutter="20"
+        class="data-container"
+        element-loading-text="加载中"
+        element-loading-spinner="el-icon-loading"
+      >
+        <el-col v-if="fieldList.length > 0" :span="12">
+          <h3>字段信息</h3>
+          <EditResourceTable
+            border
+            height="500"
+            :data="fieldList"
+            :is-edit-page="isEditPage"
+            @change="handleResourceChange"
+          />
+        </el-col>
+        <el-col v-if="dataList.length >0" :span="12">
+          <h3>数据资源预览</h3>
+          <ResourcePreviewTable :data="dataList" height="500" />
+        </el-col>
+      </el-row>
+      <el-form-item>
+        <el-button
+          type="primary"
+          @click="submitForm"
+        >
+          保存
+        </el-button>
+        <el-button @click="goBack">取消</el-button>
+      </el-form-item>
+    </el-form>
   </div>
 </template>
 
 <script>
 import Upload from '@/components/Upload'
-import ResourceTable from '@/components/ResourceTable'
+import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
+import Cascader from '@/components/Cascader'
 import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
-import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 
 export default {
   components: {
     Upload,
-    ResourceTable,
-    ResourcePreviewTable
+    EditResourceTable,
+    ResourcePreviewTable,
+    Cascader
   },
   filters: {
     sourceFilter(source) {
@@ -149,7 +150,6 @@ export default {
     return {
       isEditPage: false,
       fileUrl: '',
-      tableLoading: false,
       dataForm: {
         resourceName: '',
         resourceDesc: '',
@@ -203,22 +203,16 @@ export default {
       dataList: [], // resource preview
       fieldList: [], // resource field info
       cascaderValue: [],
-      showCascader: true,
-      modelKey: 0,
-      cascaderOptions: [],
-      sysLocalOrganInfo: null,
-      fusionList: null,
-      serverAddress: '',
-      groupList: [],
-      serverAddressList: [],
-      serverAddressValue: 0,
+      showCascader: false,
       props: {
-        lazy: true,
         multiple: true,
+        checkStrictly: false,
+        emitPath: true,
+        lazyLoad: this.lazyLoad,
         leaf: 'leaf',
-        lazyLoad: this.lazyLoad
+        lazy: true
       },
-      authOrganList: null
+      authOrganList: []
     }
   },
   async created() {
@@ -226,8 +220,6 @@ export default {
     this.resourceId = this.$route.params.id
     if (this.isEditPage) {
       await this.getResourceDetail()
-      this.showCascader = false
-      // await this.getLocalOrganInfo()
     }
   },
   methods: {
@@ -267,7 +259,6 @@ export default {
     handleClose(tag) {
       this.dataForm.tags.splice(this.dataForm.tags.indexOf(tag), 1)
     },
-
     showInput() {
       if (this.dataForm.tags.length > 4) {
         this.$message({
@@ -333,7 +324,7 @@ export default {
     },
     async getResourceDetail() {
       this.loading = true
-      const { result } = await getResourceDetail(this.resourceId)
+      const { result = {}} = await getResourceDetail(this.resourceId)
       const { resource, dataList, fieldList, authOrganList } = result
       const { resourceName, resourceDesc, resourceAuthType, resourceSource, tags, fileId, url } = resource
       this.resource = resource
@@ -344,91 +335,44 @@ export default {
       this.dataForm.fileId = fileId
       this.dataList = dataList || []
       this.fieldList = fieldList || []
-      this.authOrganList = authOrganList
+      this.authOrganList = authOrganList || []
       this.dataForm.fieldList = this.formatParams()
       tags.forEach(item => {
         this.dataForm.tags.push(item.tagName)
       })
       this.fileUrl = url
       this.loading = false
+      if (this.authOrganList.length) {
+        this.getCascaderValue()
+      }
     },
     goBack() {
       this.$router.replace({
         name: 'ResourceList'
       })
     },
-    async getLocalOrganInfo() {
-      const { result } = await getLocalOrganInfo()
-      this.sysLocalOrganInfo = result.sysLocalOrganInfo
-      if (!result.sysLocalOrganInfo) return
-      this.fusionList = result.sysLocalOrganInfo?.fusionList
-      this.fusionList && this.fusionList.map((item, index) => {
-        this.cascaderOptions.push({
-          label: item.serverAddress,
-          value: index,
-          registered: item.registered,
-          show: item.show
-        })
-      })
-    },
     async handleAuthTypeChange(value) {
       if (value === 3) {
+        this.showCascader = true
         this.resourceAuthType = value
-        if (this.isEditPage) {
-          this.showCascader = false
-        } else {
-          this.showCascader = true
-          await this.getLocalOrganInfo()
-        }
       }
-    },
-    async handleOrganCascaderChange(value) {
-      console.log(value)
-      this.cascaderValue = value
-      const nodes = this.$refs.connectRef.getCheckedNodes(true)
-      const fusionOrganList = this.cascaderValue.map(item => {
-        return {
-          organServerAddress: this.cascaderOptions[item[0]].label,
-          organGlobalId: item[1],
-          organName: nodes.filter(n => n.value === item[1])[0].label
-        }
-      })
-      this.dataForm.fusionOrganList = fusionOrganList
-      console.log(JSON.stringify(fusionOrganList))
     },
     getCascaderValue() {
-      this.cascaderValue = []
-      console.log('authOrganList', this.authOrganList)
       for (let index = 0; index < this.authOrganList.length; index++) {
         const item = this.authOrganList[index]
-        // const serverAddressValue = this.cascaderOptions.filter(n => n.label === item.organServerAddress)[0].value
-        const id = 9
         const organGlobalId = item.organGlobalId
-        const current = [index, id, organGlobalId]
+        const current = [item.organServerAddress, organGlobalId]
         this.cascaderValue.push(current)
       }
-      this.showCascader = true
-      console.log(this.cascaderValue)
+      this.showCascader = false
+      setTimeout(() => {
+        this.showCascader = true
+      }, 30)
+      this.listLoading = false
     },
-    async lazyLoad(node, resolve) {
-      const { level } = node
-      if (level === 1) {
-        const params = {
-          serverAddress: node.label
-        }
-        findMyGroupOrgan(params).then(({ result }) => {
-          const data = result.dataList.organList.map((item) => {
-            return {
-              label: item.globalName,
-              value: item.globalId,
-              leaf: true
-            }
-          })
-          resolve(data)
-        })
-      } else {
-        resolve([])
-      }
+    handleOrganChange(data) {
+      this.cascaderValue = data.valueList
+      this.dataForm.fusionOrganList = data.fusionOrganList
     }
   }
 }
@@ -446,7 +390,7 @@ export default {
   // padding: 20px;
 }
 .item-wrap-normal {
-  width: 400px;
+  width: 660px;
 }
 .resource-box {
   display: flex;
@@ -486,7 +430,17 @@ export default {
   color: #999;
   line-height: 1;
 }
-::v-deep .el-cascader-panel{
-  width: 600px;
+.auth-container{
+  position: relative;
+}
+::v-deep .el-cascader{
+  width: 300px;
+  position: absolute;
+  top: 00px;
+  left: 290px;
+  z-index: 12;
+}
+::v-deep .el-table,::v-deep .el-divider__text, .el-link{
+  font-size: 12px;
 }
 </style>

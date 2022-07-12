@@ -65,7 +65,12 @@
           min-width="210"
         >
           <template slot-scope="{row}">
-            <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+            <template v-if="hasViewPermission">
+              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+            </template>
+            <template v-else>
+              {{ row.resourceName }}<br>
+            </template>
             {{ row.resourceId }}
           </template>
         </el-table-column>
@@ -168,6 +173,11 @@ export default {
       organId: 0
     }
   },
+  computed: {
+    hasViewPermission() {
+      return this.$store.getters.buttonPermissionList.includes('UnionResourceDetail')
+    }
+  },
   async created() {
     await this.initData()
     if (this.sysLocalOrganInfo) {
@@ -212,7 +222,6 @@ export default {
       }
     },
     handleChange(value) {
-      console.log(this.$refs['connectRef'].currentLabels)
       console.log(value, this.$refs.connectRef.getCheckedNodes())
     },
     async fetchData() {
@@ -228,7 +237,6 @@ export default {
         resourceAuthType,
         organId
       }
-      console.log(params)
       const { code, result } = await getResourceList(params)
       if (code === -1) {
         this.$message({
@@ -280,7 +288,7 @@ export default {
     async findMyGroupOrgan() {
       const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
       this.organList = result.dataList.organList
-      this.cascaderOptions = this.organList.map((item) => {
+      this.cascaderOptions = this.organList && this.organList.map((item) => {
         return {
           label: item.globalName,
           value: item.globalId,
@@ -290,7 +298,6 @@ export default {
     },
 
     async handleOrganCascaderChange(value) {
-      console.log(value)
       this.query.organId = value
     },
     async initData() {

@@ -31,9 +31,8 @@
             data_model dm,
             data_project dp
         WHERE
-            dm.project_id = dp.project_id
+            dm.project_id = dp.id
             and dm.is_draft = 1
-            and (dp.user_id = #{userId} or dp.organ_id = #{organId})
             <include refid="listwhere"></include>
         GROUP BY
             dm.model_id,
@@ -52,9 +51,8 @@
             data_model dm,
             data_project dp
         WHERE
-            dm.project_id = dp.project_id
+            dm.project_id = dp.id
             and dm.is_draft = 1
-            and (dp.user_id = #{userId} or dp.organ_id = #{organId})
             <include refid="listwhere"></include>
     </select>
 
@@ -62,6 +60,7 @@
         <if test="projectName!=null">and dp.project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
         <if test="taskStatus!=null">and dm.latest_task_status = #{taskStatus}</if>
+        <if test="projectId!=null">and dp.id = #{projectId}</if>
     </sql>
 
     <select id="queryModelById" resultType="com.primihub.biz.entity.data.vo.ModelVo">
@@ -100,22 +99,21 @@
 
     <select id="queryModelResource" resultType="com.primihub.biz.entity.data.vo.ModelResourceVo">
         SELECT
-            damr.resource_id as resourceId,
-            dr.resource_name as resourceName,
+            damr.resource_id as resourceId
+            /*dr.resource_name as resourceName,
             dr.organ_id as organId,
             dr.file_rows as fileNum,
             dr.url,
             dr.file_rows as alignmentNum,
             dr.file_columns as primitiveParamNum,
             dr.file_columns as modelParamNum
-            /*damr.alignment_num as alignmentNum,
+            damr.alignment_num as alignmentNum,
             damr.primitive_param_num as primitiveParamNum,
             damr.modelParam_num as modelParamNum*/
         FROM
-            data_mr damr,data_resource dr
+            data_mr damr
         WHERE
-            damr.resource_id = dr.resource_id
-            and damr.model_id = #{modelId}
+            damr.model_id = #{modelId}
     </select>
 
     <select id="queryModelQuotaVoList" resultType="com.primihub.biz.entity.data.vo.ModelQuotaVo">
@@ -225,6 +223,18 @@
             data_model
         WHERE
             model_id = #{modelId}
+    </select>
+    <select id="queryModelNumByProjectIds" resultType="java.util.Map">
+        select
+                project_id projectId,latest_task_status latestTaskStatus,count(model_id) statusCount
+        from
+                data_model
+        where project_id in
+        <foreach collection="projectIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY project_id,latest_task_status ORDER BY project_id
     </select>
 
 </mapper>

@@ -86,4 +86,11 @@ public class UserController {
         return sysUserService.updatePassword(userId,password,validateKeyName);
     }
 
+    @RequestMapping("findUserByAccount")
+    public BaseResultEntity findUserByAccount(String userAccount){
+        if(userAccount==null||userAccount.trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
+        return sysUserService.findUserByAccount(userAccount);
+    }
+
 }

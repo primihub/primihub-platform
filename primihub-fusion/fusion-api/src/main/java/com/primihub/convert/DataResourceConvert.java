@@ -5,6 +5,7 @@ import com.primihub.entity.resource.po.FusionResource;
 import com.primihub.entity.resource.vo.FusionResourceVo;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 /**
  * 资源实体转换类
@@ -46,7 +47,7 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceContainsY(fusionResource.getResourceContainsY());
         fusionResourceVo.setResourceYRowsCount(fusionResource.getResourceYRowsCount());
         fusionResourceVo.setResourceYRatio(fusionResource.getResourceYRatio());
-        fusionResourceVo.setResourceTag(fusionResource.getResourceTag().split(","));
+        fusionResourceVo.setResourceTag(Arrays.asList(fusionResource.getResourceTag().split(",")));
         fusionResourceVo.setOrganId(fusionResource.getOrganId());
         fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setCreateDate(fusionResource.getCTime());

@@ -1,25 +1,33 @@
 package com.primihub.biz.repository.secondarydb.data;
 
+import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectResource;
+import com.primihub.biz.entity.data.req.DataProjectQueryReq;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Repository
 public interface DataProjectRepository {
-    /**
-     * 查询
-     * @param paramMap
-     * @return
-     */
-    List<DataProject> queryDataProject(Map<String,Object> paramMap);
 
-    Integer queryDataProjectCount(Map<String,Object> paramMap);
+    DataProject selectDataProjectByProjectId(@Param("id") Long id, @Param("projectId") String projectId);
+    List<DataProject> selectDataProjectPage(DataProjectQueryReq req);
+    Integer selectDataProjectCount(DataProjectQueryReq req);
 
-    DataProject queryDataProjectById(Long projectId);
+    DataProjectOrgan selectDataProjcetOrganById(@Param("id") Long id);
+    DataProjectOrgan selectDataProjcetOrganByProjectIdAndOrganId(@Param("projectId") String projectId,@Param("organId") String organId);
+    List<DataProjectOrgan> selectDataProjcetOrganByProjectId(@Param("projectId") String projectId);
+    List<DataProjectOrgan> selectDataProjcetOrganByProjectIds(@Param("projectIds") Set<String> projectIds);
 
-    List<DataProjectResource> queryProjectResourceByProjectId(Long projectId);
 
+    DataProjectResource selectProjectResourceById(@Param("id") Long id);
+    List<DataProjectResource> selectProjectResourceByProjectId(@Param("projectId") String projectId);
+    List<DataProjectResource> selectProjectResourceByProjectIds(@Param("projectIds") Set<String> projectIds);
+
+
+    List<Map<String,Object>> selectProjectStatics(@Param("organId")String organId);
 }

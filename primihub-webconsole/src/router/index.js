@@ -27,13 +27,7 @@ export const constantRoutes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/welcome',
-    children: [{
-      path: 'welcome',
-      name: 'Welcome',
-      component: () => import('@/views/welcome/index'),
-      meta: { title: '首页', icon: 'el-icon-s-home' }
-    }]
+    redirect: '/project/list'
   }
 ]
 
@@ -70,6 +64,24 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/project/detail')
+      },
+      {
+        path: '/model/create',
+        name: 'ModelCreate',
+        meta: {
+          title: '添加模型'
+        },
+        hidden: true,
+        component: () => import('@/views/model/create/index')
+      },
+      {
+        path: '/model/detail/:id',
+        name: 'ModelDetail',
+        meta: {
+          title: '模型详情'
+        },
+        hidden: true,
+        component: () => import('@/views/model/detail')
       }
     ]
   },
@@ -84,41 +96,42 @@ export const asyncRoutes = [
       component: () => import('@/views/dag')
     }]
   },
-  {
-    path: '/model',
-    component: Layout,
-    name: 'ModelMenu',
-    meta: { icon: 'el-icon-s-opportunity', title: '模型管理' },
-    redirect: '/model/list',
-    children: [
-      {
-        path: 'list',
-        name: 'ModelList',
-        meta: {
-          title: '模型管理'
-        },
-        component: () => import('@/views/model/list')
-      },
-      {
-        path: 'create',
-        name: 'ModelCreate',
-        meta: {
-          title: '添加模型'
-        },
-        hidden: true,
-        component: () => import('@/views/model/create/index')
-      },
-      {
-        path: 'detail/:id',
-        name: 'ModelDetail',
-        meta: {
-          title: '模型详情'
-        },
-        hidden: true,
-        component: () => import('@/views/model/detail')
-      }
-    ]
-  },
+  // {
+  //   path: '/model',
+  //   component: Layout,
+  //   name: 'ModelMenu',
+  //   meta: { icon: 'el-icon-s-opportunity', title: '模型管理' },
+  //   redirect: '/model/list',
+  //   hidden: true,
+  //   children: [
+  //     {
+  //       path: 'list',
+  //       name: 'ModelList',
+  //       meta: {
+  //         title: '模型管理'
+  //       },
+  //       component: () => import('@/views/model/list')
+  //     },
+  //     {
+  //       path: 'create',
+  //       name: 'ModelCreate',
+  //       meta: {
+  //         title: '添加模型'
+  //       },
+  //       hidden: true,
+  //       component: () => import('@/views/model/create/index')
+  //     },
+  //     {
+  //       path: 'detail/:id',
+  //       name: 'ModelDetail',
+  //       meta: {
+  //         title: '模型详情'
+  //       },
+  //       hidden: true,
+  //       component: () => import('@/views/model/detail')
+  //     }
+  //   ]
+  // },
   {
     path: '/privateSearch',
     component: Layout,
@@ -135,15 +148,9 @@ export const asyncRoutes = [
     path: '/PSI',
     component: Layout,
     name: 'PSI',
-    redirect: '/PSI/list',
+    redirect: '/PSI/task',
     meta: { title: '隐私求交', icon: 'el-icon-lock' },
     children: [
-      // {
-      //   path: 'list',
-      //   name: 'PSIDirectory',
-      //   component: () => import('@/views/PSI/list'),
-      //   meta: { title: '资源目录' }
-      // },
       {
         path: 'task',
         name: 'PSITask',

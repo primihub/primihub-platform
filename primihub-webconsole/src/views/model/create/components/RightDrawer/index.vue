@@ -2,6 +2,11 @@
   <div class="right-drawer">
     <template v-if="nodeData && showDataConfig">
       <el-form ref="form" v-loading="listLoading" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
+        <!-- <template v-if="nodeData.componentCode">
+          {{ nodeData }}
+          <p>发起方：</p>
+          <p>{{}}</p>
+        </template> -->
         <div v-for="item in nodeData.componentTypes" :key="item.typeCode">
           <el-form-item :label="item.typeName " :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">
@@ -13,8 +18,8 @@
             <template v-if="item.inputType === 'select'">
               <el-select v-model="item.inputValue" placeholder="请选择" :value-key="item.typeCode" @change="handleChange(item)">
                 <el-option
-                  v-for="v in item.inputValues"
-                  :key="v.key"
+                  v-for="(v,index) in item.inputValues"
+                  :key="index"
                   :label="v.val"
                   :value="v.key"
                 />
@@ -93,7 +98,7 @@ export default {
   },
   methods: {
     handleChange(item) {
-      // console.log('modelData', this.modelData)
+      console.log('item', item)
       this.$emit('change', item.typeCode, item)
     }
   }

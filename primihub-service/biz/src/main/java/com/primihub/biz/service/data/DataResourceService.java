@@ -68,10 +68,9 @@ public class DataResourceService {
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
 
-    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, Long organId, boolean isPsi){
+    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, boolean isPsi){
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("userId",userId);
-        paramMap.put("organId",organId);
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceId",req.getResourceId());
@@ -111,12 +110,12 @@ public class DataResourceService {
         return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),voList));
     }
 
-    public BaseResultEntity saveDataResource(DataResourceReq req,Long userId,Long organId){
+    public BaseResultEntity saveDataResource(DataResourceReq req,Long userId){
         SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(req.getFileId());
         if (sysFile==null){
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"file");
         }
-        DataResource dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,organId,sysFile);
+        DataResource dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null,sysFile);
         try {
             List<DataResourceFieldReq> fieldList = req.getFieldList();
             if (fieldList==null||fieldList.size()==0)
@@ -124,9 +123,9 @@ public class DataResourceService {
             handleDataResourceFile(dataResource,sysFile);
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
-                dataResource.setResourceFusionId(organConfiguration.generateResourceFusionId());
+                dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
-            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl())){
+            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl())){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
             }
             dataResourcePrRepository.saveResource(dataResource);
@@ -161,7 +160,7 @@ public class DataResourceService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity editDataResource(DataResourceReq req, Long userId, Long organId) {
+    public BaseResultEntity editDataResource(DataResourceReq req, Long userId) {
         DataResource dataResource = dataResourceRepository.queryDataResourceById(req.getResourceId());
         if (dataResource==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"找不到资源信息");
@@ -189,7 +188,7 @@ public class DataResourceService {
         if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
-        resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getResourceId().toString(),dataResource.getUrl());
+        resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
@@ -260,36 +259,6 @@ public class DataResourceService {
         return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResourceAuthRecordVos));
     }
 
-    public BaseResultEntity approvalauthorization(Long recordId,Long userId,Integer status) {
-        // 查询授权信息
-        DataResourceAuthRecord dataResourceAuthRecord = dataResourceRepository.queryDataResourceAuthRecordById(recordId);
-        if (dataResourceAuthRecord==null){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
-        }
-        if (dataResourceAuthRecord.getRecordStatus()==1){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"已授权");
-        }
-        if (dataResourceAuthRecord.getRecordStatus()==2){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"已拒绝");
-        }
-        // TODO 补充审批用户名称 liweihua -- 完成
-        SysUser sysUser = this.sysUserService.getSysUserById(userId);
-        if (sysUser==null){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"未查询到审批人信息");
-        }
-        // 审核状态
-        dataResourcePrRepository.updateAuthRecordStatus(status,recordId,userId,sysUser.getUserName());
-        // 项目资源关系表更改
-        dataProjectPrRepository.updateProjectResourceStatus(status,dataResourceAuthRecord.getProjectId(),dataResourceAuthRecord.getResourceId());
-        if (status==1){
-            // 更新项目表已授权资源数 +1
-            dataProjectPrRepository.updateProjectAuthNum(dataResourceAuthRecord.getProjectId());
-        }
-        Map<String,Object> map = new HashMap<>();
-        map.put("recordId",recordId);
-        map.put("status",status);
-        return BaseResultEntity.success(map);
-    }
 
     public BaseResultEntity getDataResourceFieldPage(Long resourceId,PageReq req,Long userId) {
         Map<String,Object> map = new HashMap<>();
@@ -323,7 +292,13 @@ public class DataResourceService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity resourceFilePreview(Long fileId) {
+    public BaseResultEntity resourceFilePreview(Long fileId,String resourceId) {
+        if(StringUtils.isNotBlank(resourceId)){
+            DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+            if (dataResource==null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+            fileId = dataResource.getFileId();
+        }
         SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(fileId);
         if (sysFile==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -347,7 +322,7 @@ public class DataResourceService {
             csvVo.setFieldDataList(dataFileFieldList);
             csvVo.setFileId(sysFile.getFileId());
         }catch (Exception e){
-            log.info("fileUrl:【{}】Exception Message : {}",sysFile.getFileUrl(),e.getMessage());
+            log.info("fileUrl:【{}】Exception Message : {}",sysFile.getFileUrl(),e);
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL,"请检查文件编码格式");
         }
         return BaseResultEntity.success(csvVo);
@@ -419,11 +394,11 @@ public class DataResourceService {
         List<DataResourceCopyVo> copyVolist = new ArrayList();
         for (DataResource dataResource : resourceList) {
             if (dataResource.getResourceFusionId()==null||dataResource.getResourceFusionId().trim().equals("")){
-                dataResource.setResourceFusionId(organConfiguration.generateResourceFusionId());
+                dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }else {
                 String organShortCode = dataResource.getResourceFusionId().substring(0, 12);
                 if (!localOrganShortCode.equals(organShortCode)){
-                    dataResource.setResourceFusionId(organConfiguration.generateResourceFusionId());
+                    dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
                 }
             }
             dataResourcePrRepository.editResource(dataResource);

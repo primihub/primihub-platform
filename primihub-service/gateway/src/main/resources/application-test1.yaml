@@ -3,7 +3,7 @@ server:
 nacos:
   config:
     server-addr: nacos.primihub.svc.cluster.local:8848
-    namespace: 9be74df3-dd0d-46d7-a223-cbeaf4520769
+    namespace: f1015a60-0dbd-4151-85a6-0b6ca7cc28f0
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -18,7 +18,7 @@ spring:
     nacos:
       discovery:
         server-addr: nacos.primihub.svc.cluster.local:8848
-        namespace: 9be74df3-dd0d-46d7-a223-cbeaf4520769
+        namespace: f1015a60-0dbd-4151-85a6-0b6ca7cc28f0
 logging:
   level:
     root: info

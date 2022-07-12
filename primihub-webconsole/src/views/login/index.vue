@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="poster-wrap">
       <div class="poster-inner">
-        <img src="/images/logo.png" alt="">
+        <img src="/images/logo-text.png" alt="">
         <p class="slogan">致力于以隐私计算技术构建数据信任与安全</p>
       </div>
     </div>
@@ -19,7 +19,7 @@
           <el-input
             ref="username"
             v-model="loginForm.username"
-            placeholder="请输入用户名"
+            placeholder="请输入用户名或邮箱"
             name="username"
             type="text"
             tabindex="1"
@@ -49,8 +49,7 @@
         <!-- <div class="forgot">
           <el-link type="primary" href="javascript:void(0);">忘记密码？</el-link>
         </div> -->
-
-        <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
+        <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="handleLogin">登录</el-button>
 
         <!-- <div class="tips">
           <span style="margin-right:20px;">username: admin</span>
@@ -87,8 +86,8 @@ export default {
     return {
       publicKeyData: {},
       loginForm: {
-        username: 'admin',
-        password: '123456'
+        username: '',
+        password: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
@@ -107,14 +106,15 @@ export default {
       immediate: true
     }
   },
-  mounted() {
-    getValidatePublicKey()
-      .then(({ result }) => {
-        const { publicKey, publicKeyName } = result
-        this.publicKeyData = { publicKey, publicKeyName }
-      })
+  async mounted() {
+    await this.getValidatePublicKey()
   },
   methods: {
+    async getValidatePublicKey() {
+      const { result = {}} = await getValidatePublicKey()
+      const { publicKey, publicKeyName } = result
+      this.publicKeyData = { publicKey, publicKeyName }
+    },
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -175,7 +175,9 @@ $cursor: #000;
     color: $cursor;
   }
 }
-
+h1{
+  text-align: center;
+}
 /* reset element-ui css */
 .login-container {
   .el-input {

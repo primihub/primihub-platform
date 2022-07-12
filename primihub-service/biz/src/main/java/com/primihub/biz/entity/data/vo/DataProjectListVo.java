@@ -4,13 +4,19 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class DataProjectListVo {
+
+    /**
+     * 本地真实ID
+     */
+    private Long id;
     /**
      * 项目id
      */
-    private Long projectId;
+    private String projectId;
     /**
      * 项目名称
      */
@@ -19,41 +25,41 @@ public class DataProjectListVo {
      * 项目描述
      */
     private String projectDesc;
+
     /**
-     * 机构id
+     * 创建者名称
      */
-    private Long organId;
+    private String userName;
+
     /**
-     * 机构数
+     * 机构名称
      */
-    private Integer organNum;
+    private String createdOrganName;
+
     /**
      * 资源数
      */
     private Integer resourceNum;
+
+    private Integer modelNum = 0;
+    private Integer modelAssembleNum = 0;
+    private Integer modelRunNum = 0;
+    private Integer modelSuccessNum = 0;
+
     /**
-     * 机构数
+     * 协作方机构名称 保存三个
      */
-    private Integer resourceOrganNum;
+    private String providerOrganNames;
+
     /**
-     * 已授权资源数
+     * 项目状态 0审核中 1可用 2关闭
      */
-    private Integer authResourceNum;
-    /**
-     * 模型数量
-     */
-    private Integer modelNum;
-    /**
-     * 用户id
-     */
-    private Long userId;
-    /**
-     * 用户名称
-     */
-    private String userName = "";
+    private Integer status;
     /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date createDate;
+
+
 }
