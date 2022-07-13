@@ -132,7 +132,7 @@ public class ModelInitService {
                                     dataModelResource.setModelParamNum(getrandom(1,100));
                                     dmrList.add(dataModelResource);
                                 }
-                                map.put(DataConstant.PYTHON_TEST_DATASET,"xgb_predict_test_data");
+                                map.put(DataConstant.PYTHON_TEST_DATASET,DataConstant.PYTHON_TEST_DATASET);
                                 dataModelPrRepository.saveDataModelResource(dmrList);
                                 String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT,freeMarkerConfigurer, map);
                                 if (freemarkerContent!=null){
