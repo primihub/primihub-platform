@@ -369,27 +369,27 @@ export default {
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      const diffrents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
-      console.log('handleProviderOrganSubmit diffrents', diffrents)
-      if (diffrents.length > 0) {
-        this.saveParams.projectOrgans = diffrents.map(item => {
+      const differents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
+      console.log('handleProviderOrganSubmit differents', differents)
+      if (differents.length > 0) {
+        this.saveParams.projectOrgans = differents.map(item => {
           return {
             organId: item.globalId,
             participationIdentity: 2
           }
         })
-      }
-      const success = this.saveProject()
-      if (success) {
-        data.map(item => {
-          this.organs.push({
-            organId: item.globalId,
-            organName: item.globalName,
-            participationIdentity: 2
+        const success = this.saveProject()
+        if (success) {
+          data.map(item => {
+            this.organs.push({
+              organId: item.globalId,
+              organName: item.globalName,
+              participationIdentity: 2
+            })
           })
-        })
+        }
+        this.providerOrganIds = data
       }
-      this.providerOrganIds = data
       this.providerOrganDialogVisible = false
     },
     saveProject() {

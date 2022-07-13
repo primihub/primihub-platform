@@ -3,13 +3,10 @@
     <div class="form-wrap">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="模型名称">
-          <el-input v-model="query.modelName" placeholder="请输入模型名称" />
-        </el-form-item>
-        <el-form-item label="所属项目">
-          <el-input v-model="query.projectName" placeholder="请输入项目名称" />
+          <el-input v-model="query.modelName" placeholder="请输入模型名称" size="small" />
         </el-form-item>
         <el-form-item label="模型状态">
-          <el-select v-model="query.taskStatus" placeholder="请选择">
+          <el-select v-model="query.taskStatus" placeholder="请选择" size="small">
             <el-option
               v-for="item in statusList"
               :key="item.value"
@@ -19,7 +16,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="">
-          <el-button type="primary" icon="el-icon-search" @click="search">搜索</el-button>
+          <el-button type="primary" icon="el-icon-search" size="small" @click="search">搜索</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -58,7 +55,7 @@
         >
           <template slot-scope="{row}">
             <div>
-              <el-button type="text" icon="el-icon-view" @click="toModelDetail(row.modelId)">查看</el-button>
+              <el-button v-if="hasModelViewPermission && row.latestTaskStatus === 2" type="text" icon="el-icon-view" @click="toModelDetail(row.modelId)">查看</el-button>
               <!-- <el-button type="text" icon="el-icon-edit" @click="toModelDetail(row.modelId)">编辑</el-button> -->
             </div>
           </template>
@@ -158,7 +155,7 @@ export default {
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-default' : status === 1 ? 'status-processing' : status === 2 ? 'status-end' : 'status-error'
+      return status === 0 ? 'status-default' : status === 1 ? 'status-processing' : status === 2 ? 'status-end' : status === 3 ? 'status-error' : 'status-default'
     },
     handlePagination(data) {
       this.params.pageNo = data.page
@@ -184,13 +181,13 @@ export default {
   margin-right: 3px;
 }
 .status-default{
-  background-color: #409EFF;
-}
-.status-end{
   background-color: #909399;
 }
-.status-processing{
+.status-end{
   background-color: #67C23A;
+}
+.status-processing{
+  background-color: #409EFF;
 }
 .status-error{
   background-color: #F56C6C;

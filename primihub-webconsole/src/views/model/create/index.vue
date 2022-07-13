@@ -22,12 +22,9 @@
 import { Graph, Addon, FunctionExt, Shape } from '@antv/x6'
 import '@antv/x6-vue-shape'
 import DagNodeComponent from './components/DagNode.vue'
-// import './graph/shape'
-// import data from './graph/data'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, getProjectAuthedeList, runTaskModel, getTaskModelComponent } from '@/api/model'
-// import { getProjectDetail } from '@/api/project'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, runTaskModel, getTaskModelComponent } from '@/api/model'
 
 const lineAttr = { // 线样式
   'line': {
@@ -130,6 +127,11 @@ export default {
         setTimeout(this.getTaskModelComponent(), 0)
       }
     }, 1500)
+  },
+  destroyed() {
+    clearTimeout(this.taskTimer)
+    this.selectComponentList = []
+    console.log('destroyed model')
   },
   methods: {
     async init() {
@@ -298,7 +300,7 @@ export default {
         stencilGraphHeight: 600,
         x: 50,
         collapsable: true,
-        getDragNode: (node) => {
+        getDropNode: (node) => {
           const current = node.store.data.data.componentCode
           this.selectComponentList.push(current)
           console.log('getDropNode', this.selectComponentList)
@@ -317,6 +319,7 @@ export default {
             return true
           }
         },
+        animation: true,
         layoutOptions: {
           columns: 1,
           columnWidth: 180,
@@ -352,39 +355,34 @@ export default {
         ports[i].style.visibility = show ? 'visible' : 'hidden'
       }
     },
+    setDefaultValue(node) {
+      this.selectCellData = node.store.data.data
+      this.nodeData = this.selectCellData
+
+      const componentCode = this.nodeData.componentCode || ''
+      const result = this.modelComponents.find(item => item.componentCode === componentCode)
+
+      console.log('node:click1111', result)
+      // 设置已保存值value
+      result && result.componentValues.map(item => {
+        this.nodeData.componentTypes.find(i => {
+          if (i.typeCode === item.key && item.val !== '') {
+            i.inputValue = item.val
+          }
+        })
+      })
+      if (componentCode === 'dataAlignment') { // 数据对齐，请求数据
+        this.projectId = Number(this.$route.query.projectId) || 0
+        this.getProjectResourceData()
+      }
+    },
     // 画布事件初始化
     initEvent() {
       const { graph } = this
       const container = document.getElementById('flowContainer')
       graph.on('node:click', ({ node }) => {
         this.showDataConfig = true
-        this.selectCellData = node.store.data.data
-        this.nodeData = this.selectCellData
-
-        const componentCode = this.nodeData.componentCode || ''
-        const result = this.modelComponents.find(item => item.componentCode === componentCode)
-
-        console.log('node:click1111', result)
-        // 设置已保存值value
-        result && result.componentValues.map(item => {
-          this.nodeData.componentTypes.find(i => {
-            if (i.typeCode === item.key && item.val !== '') {
-              i.inputValue = item.val
-            }
-          })
-        })
-        if (componentCode === 'dataAlignment') { // 数据对齐，请求数据
-          // this.getProjectAuthedeList()
-          // if (this.projectId) {
-          //   this.getProjectResourceData()
-          // }
-          this.projectId = Number(this.$route.query.projectId) || 0
-          console.log('projectId', this.$route.query.projectId)
-          this.getProjectResourceData()
-        }
-        // if (result && result.componentValues[0]) {
-        //   this.nodeData.componentTypes[0].inputValue = result.componentValues[0].val
-        // }
+        this.setDefaultValue(node)
       })
 
       graph.on('blank:click', () => {
@@ -425,23 +423,23 @@ export default {
         console.log('selectComponentList 11', this.selectComponentList)
         if (cells.length) {
           const currentCode = cells[0].store.data.data.componentCode
+          // remove duplicates
+          this.selectComponentList = [...new Set(this.selectComponentList)]
           const index = this.selectComponentList.indexOf(currentCode)
           if (index !== -1) {
             this.selectComponentList.splice(index, 1)
           }
-
-          console.log('selectComponentList 22', this.selectComponentList)
           graph.removeCells(cells)
         }
       })
 
-      // graph.on('edge:connected', ({ edge }) => {
-      //   edge.attr({
-      //     line: {
-      //       strokeDasharray: ''
-      //     }
-      //   })
-      // })
+      graph.on('edge:connected', ({ edge }) => {
+        edge.attr({
+          line: {
+            strokeDasharray: ''
+          }
+        })
+      })
 
       graph.on('node:change:data', ({ node }) => {
         const edges = graph.getIncomingEdges(node)
@@ -457,28 +455,7 @@ export default {
         })
       })
     },
-    getProjectAuthedeList() {
-      this.rightInfoLoading = true
-      const index = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'projectId')
-      this.projectId = Number(this.$route.query.projectId)
-      getProjectAuthedeList({ projectId: this.projectId, pageSize: 20 }).then(res => {
-        const projectList = res.result.data
-
-        const options = []
-        projectList.forEach(item => {
-          options.push({
-            key: item.projectId,
-            val: item.projectName
-          })
-        })
-        console.log('nodeData', this.nodeData)
-        this.nodeData.componentTypes[index].inputValue = this.projectId
-        this.nodeData.componentTypes[index].inputValues = options
-        this.rightInfoLoading = false
-      })
-    },
     getProjectResourceData() {
-      console.log('projectId', this.projectId)
       getProjectResourceData({ projectId: this.projectId }).then(res => {
         this.projectName = res.result.projectName
         this.resourceList = res.result.resource
@@ -486,7 +463,6 @@ export default {
         const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
         this.nodeData.componentTypes[index].inputValue = this.projectName
         this.resourceId = this.nodeData.componentTypes[dataIndex].inputValue
-        console.log('resourceId', this.resourceId)
         const options = []
         this.resourceList.forEach(item => {
           options.push({
@@ -507,10 +483,6 @@ export default {
           })
         })
         this.nodeData.componentTypes[yIndex].inputValues = yOptions
-        // const resourceId = this.nodeData.componentTypes[dataIndex].inputValues[0].key
-        // this.nodeData.componentTypes[dataIndex].inputValue = resourceId
-        // const yField = this.nodeData.componentTypes[yIndex].inputValues[0].key
-        // this.nodeData.componentTypes[yIndex].inputValue = yField
       })
     },
     handelChange(typeCode, data) {
@@ -522,7 +494,6 @@ export default {
       const yIndex = componentTypes.findIndex(item => item.typeCode === 'yField')
       if (typeCode === 'projectName') {
         this.projectId = data.inputValue
-        console.log('111', this.projectId)
         this.getProjectDetail()
         // 切换项目时初始化资源和y值字段
         this.nodeData.componentTypes[dataIndex].inputValue = ''
@@ -699,14 +670,14 @@ export default {
           console.log('getModelComponentDetail', res.result)
           this.modelComponents = modelComponents
           this.modelPointComponents = modelPointComponents
-          console.log('trainType', trainType)
-          console.log('getModelComponentDetail modelComponents', this.modelComponents)
+          this.selectComponentList = this.modelComponents.length > 0 && this.modelComponents.map(item => item.componentCode)
           this.modelData = {
             modelId,
             taskName,
             modelDesc,
             trainType
           }
+
           this.initGraphShape()
         }).catch(() => {
           this.modelId = res.result.modelId
