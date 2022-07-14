@@ -6,10 +6,12 @@
   >
     <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
     <ResourceTable v-loading="listLoading" :server-address="serverAddress" :show-buttons="false" :show-status="false" :multiple="true" :organ-id="organId" :selected-data="selectedData" row-key="resourceId" :data="resourceList" @change="handleChange" />
-    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
     <span slot="footer" class="dialog-footer">
-      <el-button @click="closeDialog">取 消</el-button>
-      <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
+      <div class="buttons">
+        <el-button size="medium" @click="closeDialog">取 消</el-button>
+        <el-button size="medium" type="primary" @click="handleSubmit">确 定</el-button>
+      </div>
     </span>
   </el-dialog>
 </template>
@@ -133,12 +135,21 @@ export default {
 ::v-deep .el-table td.el-table__cell div{
   line-height: 1.5;
 }
+::v-deep .table.el-table .el-table__cell{
+  padding: 5px 0;
+}
 .pagination-container {
   padding: 10px 0 0 0;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 }
-::v-deep .el-dialog--center .el-dialog__body{
+.dialog-footer{
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 30px;
+  align-items: center;
+}
+::v-deep .el-dialog__body{
   padding: 10px 20px 0 20px;
 }
 .input-with-search{

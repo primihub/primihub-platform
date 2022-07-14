@@ -905,7 +905,6 @@ export default {
             duration: '1000'
           })
         } else {
-          debugger
           this.$message({
             message: res.msg,
             type: 'error'

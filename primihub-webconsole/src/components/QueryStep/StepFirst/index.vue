@@ -105,16 +105,29 @@ export default {
 
       this.$refs.form.validate(valid => {
         if (valid) {
+          const loading = this.$loading({
+            lock: true,
+            text: '查询中...'
+          })
           pirSubmitTask({
             resourceId: this.selectResources[0].resourceId,
             pirParam: this.form.pirParam
           }).then(res => {
-            const { taskId, taskDate } = res.result
-            this.$emit('next', {
-              taskId,
-              taskDate,
-              pirParam: this.form.pirParam
-            })
+            if (res.code === 0) {
+              const { taskId, taskDate } = res.result
+              this.$emit('next', {
+                taskId,
+                taskDate,
+                pirParam: this.form.pirParam
+              })
+            } else {
+              this.$message({
+                message: res.msg,
+                type: 'error'
+              })
+              this.$emit('next', {})
+            }
+            loading.close()
           })
         } else {
           console.log('error submit!!')
