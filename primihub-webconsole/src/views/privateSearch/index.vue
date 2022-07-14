@@ -40,6 +40,9 @@ export default {
   },
   methods: {
     next(data) {
+      if (!data.taskId) {
+        return
+      }
       this.pirParam = data.pirParam
       this.taskId = data.taskId
       this.taskDate = data.taskDate

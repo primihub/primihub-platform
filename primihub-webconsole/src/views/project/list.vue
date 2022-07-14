@@ -345,6 +345,7 @@ export default {
           this.pageCount = totalPage
           if (data.length > 0) {
             this.projectList = data
+            this.noData = false
           } else {
             this.noData = true
           }
