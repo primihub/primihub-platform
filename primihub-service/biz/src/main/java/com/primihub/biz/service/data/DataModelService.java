@@ -225,29 +225,23 @@ public class DataModelService {
     }
 
     private BaseResultEntity extracteModelData(DataModel dataModel,DataModelAndComponentReq params, Map<String, Object> map){
-        if(StringUtils.isBlank(params.getModelDesc()))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"模型描述不可以为空");
         List<DataComponentReq> modelComponents = params.getModelComponents();
         if (modelComponents==null||modelComponents.size()==0)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件为空");
-        // 获取项目、资源、y值字段相关信息
-        Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
-        if (StringUtils.isBlank(paramValuesMap.get("modelName")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型名称");
-        dataModel.setModelName(paramValuesMap.get("modelName"));
-        if (StringUtils.isBlank(paramValuesMap.get("projectId")))
+        if(StringUtils.isBlank(params.getModelName()))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"模型名称不可以为空");
+        if (params.getProjectId()==null||params.getProjectId()==0L)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少项目");
-        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(Long.valueOf(paramValuesMap.get("projectId")), null);
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null);
         if (dataProject==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到项目");
+        // 获取项目、资源、y值字段相关信息
+        Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
+        dataModel.setModelName(paramValuesMap.get("modelName"));
         dataModel.setProjectId(dataProject.getId());
         //资源
         if (StringUtils.isBlank(paramValuesMap.get("selectData")))
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少资源");
-        // y 值
-        if (StringUtils.isBlank(paramValuesMap.get("yField")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少Y值字段");
-        dataModel.setYValueColumn(paramValuesMap.get("yField"));
         // 模型类型
         if (StringUtils.isBlank(paramValuesMap.get("modelType")))
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型类型");
@@ -257,6 +251,10 @@ public class DataModelService {
     }
 
     public BaseResultEntity getModelComponentDetail(Long modelId, Long userId) {
+        return BaseResultEntity.success(getModelComponentReq(modelId,userId));
+    }
+
+    public DataModelAndComponentReq getModelComponentReq(Long modelId, Long userId){
         DataModelAndComponentReq req = null;
         if (modelId==null||modelId==0L){
             req = saveOrGetModelComponentCache(false,userId, null,null);
@@ -269,7 +267,7 @@ public class DataModelService {
                 }
             }
         }
-        return BaseResultEntity.success(req);
+        return req;
     }
 
     private DataModelAndComponentReq saveOrGetModelComponentCache(boolean isSave,Long userId,DataModelAndComponentReq params,DataModel dataModel){
