@@ -5,9 +5,12 @@ import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.resource.po.FusionResource;
 import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.vo.FusionResourceVo;
+import org.springframework.util.StringUtils;
 
 import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 资源实体转换类
@@ -35,7 +38,7 @@ public class DataResourceConvert {
     }
 
 
-    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource,String organName){
+    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, String organName, List<FusionResourceField> fieldList){
         FusionResourceVo fusionResourceVo = new FusionResourceVo();
         fusionResourceVo.setResourceId(fusionResource.getResourceId());
         fusionResourceVo.setResourceName(fusionResource.getResourceName());
@@ -53,6 +56,9 @@ public class DataResourceConvert {
         fusionResourceVo.setOrganId(fusionResource.getOrganId());
         fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setCreateDate(fusionResource.getCTime());
+        if (fieldList!=null&&fieldList.size()!=0){
+            fusionResourceVo.setOpenColumnNameList(fieldList.stream().map(field-> StringUtils.isEmpty(field.getFieldAs())?field.getFieldName():field.getFieldAs()).collect(Collectors.joining(",")));
+        }
         return fusionResourceVo;
     }
 
