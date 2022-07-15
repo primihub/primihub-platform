@@ -589,13 +589,13 @@ export default {
       }
       runTaskModel({ modelId: this.modelId }).then(res => {
         if (res.code !== 0) {
-          this.taskId = res.result.taskId
           this.$message({
             message: res.msg,
             type: 'error'
           })
           return
         } else {
+          this.taskId = res.result.taskId
           this.modelStartRun = true
           clearInterval(this.timmer)
           this.$notify({
@@ -637,7 +637,7 @@ export default {
           })
           // 跳转详情页？
           setTimeout(() => {
-            this.toModelDetail(this.modelId)
+            this.toModelDetail(this.taskId)
           }, 3000)
         }
       })

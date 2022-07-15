@@ -139,7 +139,7 @@ export default {
     fetchData() {
       this.listLoading = true
       this.modelId = this.$route.params.id || this.modelId
-      getModelDetail({ modelId: this.modelId }).then((response) => {
+      getModelDetail({ taskId: this.modelId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
         const { model, modelQuotas, modelResources, modelComponent, anotherQuotas } = response.result
