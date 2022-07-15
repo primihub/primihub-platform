@@ -300,8 +300,18 @@ public class DataTaskService {
         return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataTaskList.stream().map(DataTaskConvert::dataTaskPoConvertDataModelTaskList).collect(Collectors.toList())));
     }
 
-    public DataTask getDataTaskById(Long taskId){
-        return dataTaskRepository.selectDataTaskByTaskId(taskId);
+    public DataTask getDataTaskById(Long taskId,Long modelId){
+        if (modelId!=null&&modelId!=0L){
+            Map<String, Object> map = new HashMap<>();
+            map.put("modelId",modelId);
+            map.put("offset",0);
+            map.put("pageSize",100);
+            List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
+            taskId = dataModelTasks.stream().mapToLong(DataModelTask::getTaskId).max().orElse(0);
+        }
+        if (taskId!=null&&taskId!=0L)
+            return dataTaskRepository.selectDataTaskByTaskId(taskId);
+        return null;
     }
 }
 

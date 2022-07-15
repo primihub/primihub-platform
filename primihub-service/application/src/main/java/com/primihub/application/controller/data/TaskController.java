@@ -2,24 +2,17 @@ package com.primihub.application.controller.data;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
-import com.primihub.biz.entity.data.po.DataPsi;
-import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataTaskService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URLEncoder;
 import java.util.UUID;
 
 @RequestMapping("task")
@@ -38,10 +31,8 @@ public class TaskController {
     }
 
     @GetMapping("downloadTaskFile")
-    public void downloadPirTask(HttpServletResponse response, Long taskId) {
-        if (taskId==null||taskId==0L)
-            return;
-        DataTask dataTask = dataTaskService.getDataTaskById(taskId);
+    public void downloadPirTask(HttpServletResponse response, Long taskId,Long modelId) {
+        DataTask dataTask = dataTaskService.getDataTaskById(taskId,modelId);
         String content = "no data";
         String fileName = null;
         if (dataTask!=null){
