@@ -1,19 +1,25 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
+import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.service.sys.SysOrganService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -40,15 +46,21 @@ public class DataModelService {
     private DataProjectService dataProjectService;
     @Autowired
     private BaseConfiguration baseConfiguration;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataTaskRepository dataTaskRepository;
 
-    public BaseResultEntity getDataModel(Long modelId) {
-        // 模型信息
-        ModelVo modelVo = dataModelRepository.queryModelById(modelId);
+    public BaseResultEntity getDataModel(Long taskId) {
+        DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
+        if (modelTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+        ModelVo modelVo = dataModelRepository.queryModelById(modelTask.getModelId());
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
         // 查询资源模型
-        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelId);
+        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId);
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
             List<String> resourceId = modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toList());
@@ -68,19 +80,15 @@ public class DataModelService {
                 }
             }
         }
-        // 模型评估
-        List<ModelQuotaVo> modelQuotaVos = dataModelRepository.queryModelQuotaVoList(modelId);
         Map<String,Object> map = new HashMap();
-        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(modelId, null);
-        map.put("model",modelVo);
+        List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(),DataComponent.class);
         if (dataComponents.size()!=0){
             Integer sumTime = dataComponents.stream().collect(Collectors.summingLong(DataComponent::getTimeConsuming)).intValue();
             List<DataModelComponentVo> dataModelComponents = dataComponents.stream().map(dataComponent -> DataModelConvert.dataComponentPoConvertDataModelComponentVo(dataComponent, sumTime)).collect(Collectors.toList());
             map.put("modelComponent",dataModelComponents);
         }
+        map.put("model",modelVo);
         map.put("modelResources",modelResourceVos);
-        map.put("modelQuotas",modelQuotaVos);
-
         map.put("anotherQuotas",new HashMap(){
             {
                 put("meanSquaredError",4.725711343212531);
@@ -237,8 +245,9 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到项目");
         // 获取项目、资源、y值字段相关信息
         Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
-        dataModel.setModelName(paramValuesMap.get("modelName"));
-        dataModel.setProjectId(dataProject.getId());
+        dataModel.setModelName(params.getModelName());
+        dataModel.setModelDesc(params.getModelDesc());
+        dataModel.setProjectId(params.getProjectId());
         //资源
         if (StringUtils.isBlank(paramValuesMap.get("selectData")))
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少资源");
@@ -318,30 +327,42 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity runTaskModel(Long modelId) {
+    public BaseResultEntity runTaskModel(Long modelId,Long userId) {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
         }
         if (dataModel.getIsDraft()!=1)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型未保存");
-        if (dataModel.getLatestTaskStatus()!=null && (dataModel.getLatestTaskStatus()==1||dataModel.getLatestTaskStatus()==2))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型已运行或运行完成");
-        dataModel.setLatestTaskStatus(1);
-        dataModelPrRepository.updateDataModel(dataModel);
-        modelInitService.runModelTaskFeign(dataModel);
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
+        dataTask.setTaskUserId(userId);
+        dataTaskPrRepository.saveDataTask(dataTask);
+        modelInitService.runModelTaskFeign(dataModel,dataTask);
         Map<String,Object> map = new HashMap<>();
         map.put("modelId",modelId);
+        map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getTaskModelComponent(Long modelId) {
-        DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
-        if (dataModel==null)
+    public BaseResultEntity getTaskModelComponent(Long taskId) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
-        if (dataModel.getLatestTaskStatus()==null||dataModel.getLatestTaskStatus()==0)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"请检查模型运行状态");
-        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(modelId, null);
+        }
+        if (dataTask.getTaskState()==0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"请检查任务运行状态");
+        DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
+        if (modelTask==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+        }
+        if (StringUtils.isBlank(modelTask.getComponentJson())){
+            return BaseResultEntity.success();
+        }
+        List<DataComponent> dataComponents = JSONObject.parseArray(modelTask.getComponentJson(),DataComponent.class);
         if (dataComponents.size()==0)
             return BaseResultEntity.success();
         return BaseResultEntity.success(dataComponents.stream().map(DataModelConvert::dataComponentPoConvertDataComponentVo).collect(Collectors.toList()));
@@ -352,4 +373,6 @@ public class DataModelService {
         result.put("prediction",TestConfiguration.temp);
         return BaseResultEntity.success(result);
     }
+
+
 }

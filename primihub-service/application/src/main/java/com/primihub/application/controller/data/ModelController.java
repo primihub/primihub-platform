@@ -37,11 +37,11 @@ public class ModelController {
      * @return
      */
     @GetMapping("getdatamodel")
-    public BaseResultEntity getDataProject(Long modelId){
-        if (modelId==null||modelId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+    public BaseResultEntity getDataProject(Long taskId){
+        if (taskId==null||taskId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
-        return dataModelService.getDataModel(modelId);
+        return dataModelService.getDataModel(taskId);
     }
 
     //---------------------------------v0.2----------------------------------
@@ -103,24 +103,24 @@ public class ModelController {
      * @return
      */
     @GetMapping("runTaskModel")
-    public BaseResultEntity runTaskModel(Long modelId){
+    public BaseResultEntity runTaskModel(@RequestHeader("userId") Long userId,Long modelId){
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
-        return dataModelService.runTaskModel(modelId);
+        return dataModelService.runTaskModel(modelId,userId);
     }
 
     /**
      * 获取运行模型信息
-     * @param modelId
+     * @param taskId
      * @return
      */
     @GetMapping("getTaskModelComponent")
-    public BaseResultEntity getTaskModelComponent(Long modelId){
-        if (modelId==null||modelId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+    public BaseResultEntity getTaskModelComponent(Long taskId){
+        if (taskId==null||taskId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
-        return dataModelService.getTaskModelComponent(modelId);
+        return dataModelService.getTaskModelComponent(taskId);
     }
 
     @RequestMapping("getModelPrediction")
@@ -129,6 +129,8 @@ public class ModelController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         return dataModelService.getModelPrediction(modelId);
     }
+
+
 
 
 }

@@ -40,11 +40,8 @@ public class DataCopyService implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context=applicationContext;
     }
-
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
-//    @Autowired
-//    private SysFusionService sysFusionService;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired

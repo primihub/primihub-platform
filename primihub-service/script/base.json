@@ -13,7 +13,6 @@
     "grpcClientPort": 50050,
     "grpcDataSetClientAddress": "192.168.99.20",
     "grpcDataSetClientPort": 50051,
-    "grpcDataSet1ClientPort": 50052,
     "grpcServerPort": 9090,
     "uploadUrlDirPrefix": "/data/upload/",
     "resultUrlDirPrefix": "/data/result/",

@@ -50,23 +50,15 @@ public class DataResourceService {
     @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
-    private DataProjectPrRepository dataProjectPrRepository;
-    @Autowired
     private SysFileSecondarydbRepository sysFileSecondarydbRepository;
     @Autowired
     private SysUserService sysUserService;
-    @Autowired
-    private SysOrganService sysOrganService;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private DataServiceGrpcClient dataServiceGrpcClient;
-    @Autowired
-    private ThreadPoolTaskExecutor taskExecutor;
-    @Resource(name="soaRestTemplate")
-    private RestTemplate restTemplate;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, boolean isPsi){
         Map<String,Object> paramMap = new HashMap<>();

@@ -5,31 +5,25 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataProjectReq;
+import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
-import com.primihub.biz.grpc.client.DataService1GrpcClient;
-import com.primihub.biz.grpc.client.DataServiceGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataMpcPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.data.DataResourceSecondaryRepository;
-import com.primihub.biz.repository.secondarydb.data.DataMpcRepository;
-import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.service.sys.SysFusionService;
+import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
-import java_data_service.NewDatasetRequest;
-import java_data_service.NewDatasetResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,11 +43,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class DataTaskService {
     @Autowired
+    private DataTaskRepository dataTaskRepository;
+    @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
     private DataResourceRepository dataResourceRepository;
-//    @Autowired
-//    private SysFileSecondarydbRepository sysFileSecondarydbRepository;
     @Autowired
     private DataResourcePrimaryRepository dataResourcePrimaryRepository;
     @Autowired
@@ -74,14 +68,10 @@ public class DataTaskService {
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataProjectService dataProjectService;
-    @Autowired
-    private DataServiceGrpcClient dataServiceGrpcClient;
-    @Autowired
-    private DataService1GrpcClient dataService1GrpcClient;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
     @Autowired
-    private SysFusionService fusionService;
+    private DataModelRepository dataModelRepository;
 
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
@@ -214,36 +204,6 @@ public class DataTaskService {
             }
         }
     }
-    public void resourceSynGRPCDataSet(SysFile sysFile){
-        resourceSynGRPCDataSet(sysFile,false);
-    }
-
-    public void resourceSynGRPCDataSet(SysFile sysFile,boolean isOther){
-        log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",sysFile.getFileSuffix(),sysFile.getFileId(),sysFile.getFileUrl(),System.currentTimeMillis());
-        NewDatasetRequest request = NewDatasetRequest.newBuilder()
-                .setDriver(sysFile.getFileSuffix())
-                .setFid(sysFile.getFileId().toString())
-                .setPath(sysFile.getFileUrl())
-                .build();
-        log.info("NewDatasetRequest:{}",request.toString());
-        try {
-            NewDatasetResponse response = null;
-            if (isOther){
-                log.info("52端口");
-                response = dataService1GrpcClient.run(o -> o.newDataset(request));
-            }else {
-                log.info("51端口");
-                response = dataServiceGrpcClient.run(o -> o.newDataset(request));
-            }
-            log.info("dataServiceGrpc Response:{}",response.toString());
-            int retCode = response.getRetCode();
-            if (retCode==0)
-                log.info("dataServiceGrpc success");
-        }catch (Exception e){
-            log.info("dataServiceGrpcException:{}",e.getMessage());
-        }
-        log.info("end dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{}  - time:{}",sysFile.getFileSuffix(),sysFile.getFileId(),sysFile.getFileUrl(),System.currentTimeMillis());
-    }
 
     public void compareAndFixLocalOrganName(String paramStr){
         List<DataResourceVisibilityAuth> list=JSONObject.parseArray(paramStr, DataResourceVisibilityAuth.class);
@@ -326,5 +286,22 @@ public class DataTaskService {
         }
     }
 
+    public BaseResultEntity getModelTaskList(Long modelId,PageReq req) {
+        Map<String,Object> map = new HashMap<>();
+        map.put("modelId",modelId);
+        map.put("offset",req.getOffset());
+        map.put("pageSize",req.getPageSize());
+        List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
+        if (dataModelTasks.size()==0)
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(),new ArrayList()));
+        Integer count = dataModelRepository.queryModelTaskByModelIdCount(modelId);
+        Set<Long> taskId = dataModelTasks.stream().map(DataModelTask::getTaskId).collect(Collectors.toSet());
+        List<DataTask> dataTaskList = dataTaskRepository.selectDataTaskByTaskIds(taskId);
+        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataTaskList.stream().map(DataTaskConvert::dataTaskPoConvertDataModelTaskList).collect(Collectors.toList())));
+    }
+
+    public DataTask getDataTaskById(Long taskId){
+        return dataTaskRepository.selectDataTaskByTaskId(taskId);
+    }
 }
 

@@ -30,8 +30,6 @@ public class PirService {
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
-    @Autowired
     private WorkGrpcClient workGrpcClient;
 
     public String getResultFilePath(String taskId,String taskDate){
@@ -81,20 +79,5 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL);
         }
         return BaseResultEntity.success(map);
-    }
-
-    public static void main(String[] args) {
-//        String id = UUID.randomUUID().toString();
-//        System.out.println(id);
-//        System.out.println(id.length());
-        try {
-            String[] strings = CryptUtil.genRsaKeyPair();
-            System.out.println(strings[0]);
-            System.out.println(strings[0].length());
-            System.out.println(strings[1]);
-            System.out.println(strings[1].length());
-        }catch (Exception e){
-
-        }
     }
 }

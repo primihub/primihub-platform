@@ -99,21 +99,12 @@
 
     <select id="queryModelResource" resultType="com.primihub.biz.entity.data.vo.ModelResourceVo">
         SELECT
-            damr.resource_id as resourceId
-            /*dr.resource_name as resourceName,
-            dr.organ_id as organId,
-            dr.file_rows as fileNum,
-            dr.url,
-            dr.file_rows as alignmentNum,
-            dr.file_columns as primitiveParamNum,
-            dr.file_columns as modelParamNum
-            damr.alignment_num as alignmentNum,
-            damr.primitive_param_num as primitiveParamNum,
-            damr.modelParam_num as modelParamNum*/
+            resource_id as resourceId
         FROM
-            data_mr damr
+            data_mr
         WHERE
-            damr.model_id = #{modelId}
+            model_id = #{modelId}
+            and task_id = #{taskId}
     </select>
 
     <select id="queryModelQuotaVoList" resultType="com.primihub.biz.entity.data.vo.ModelQuotaVo">
@@ -235,6 +226,37 @@
             #{item}
         </foreach>
         GROUP BY project_id,latest_task_status ORDER BY project_id
+    </select>
+    <select id="queryModelTaskById" resultType="com.primihub.biz.entity.data.po.DataModelTask">
+        select
+                id,
+               model_id as modelId,
+               task_id as taskId,
+               predict_file as predictFile,
+               predict_content as predictContent,
+               component_json as componentJson
+        from data_model_task
+        where task_id = #{taskId}
+    </select>
+    <select id="queryModelTaskByModelId" resultType="com.primihub.biz.entity.data.po.DataModelTask">
+        select
+            id,
+            model_id as modelId,
+            task_id as taskId,
+            predict_file as predictFile,
+            predict_content as predictContent,
+            component_json as componentJson
+        from data_model_task
+        where model_id = #{modelId}
+        ORDER BY id
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="queryModelTaskByModelIdCount" resultType="java.lang.Integer">
+        select
+            count(id)
+        from data_model_task
+        where model_id = #{modelId}
+        ORDER BY id
     </select>
 
 </mapper>

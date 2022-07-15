@@ -69,7 +69,7 @@ CREATE TABLE `data_component` (
                                   `height` int(11) DEFAULT '0' COMMENT '高度',
                                   `coordinate_y` int(11) DEFAULT '0' COMMENT '坐标y',
                                   `coordinate_x` int(11) DEFAULT '0' COMMENT '坐标x',
-                                  `data_json` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件参数json',
+                                  `data_json` blob COMMENT '组件参数json',
                                   `start_time` bigint(20) DEFAULT '0' COMMENT '开始时间戳',
                                   `end_time` bigint(20) DEFAULT '0' COMMENT '结束时间戳',
                                   `component_state` tinyint(4) DEFAULT '0' COMMENT '组件运行状态 0初始 1成功 2运行中 3失败',
@@ -109,28 +109,16 @@ CREATE TABLE `data_model_quota` (
 -- ----------------------------
 DROP TABLE IF EXISTS `data_model_task`;
 CREATE TABLE `data_model_task` (
-                                   `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
-                                   `task_status` int(2) DEFAULT NULL COMMENT '任务状态',
-                                   `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                                   `cost_time` datetime DEFAULT NULL COMMENT '运行时间',
-                                   `alignment_ratio` decimal(12,6) DEFAULT NULL COMMENT '数据对齐比例',
-                                   `alignment_cost` int(10) DEFAULT NULL COMMENT '数据对齐耗时',
-                                   `analyze_ratio` decimal(12,6) DEFAULT NULL COMMENT '统计分析比例',
-                                   `analyze_cost` int(10) DEFAULT NULL COMMENT '统计分析耗时',
-                                   `feature_ratio` decimal(12,6) DEFAULT NULL COMMENT '特征筛选比例',
-                                   `feature_cost` int(10) DEFAULT NULL COMMENT '统计分析耗时',
-                                   `sample_ratio` decimal(12,6) DEFAULT NULL COMMENT '样本抽样设计比例',
-                                   `sample_cost` int(10) DEFAULT NULL COMMENT '样本抽样设计耗时',
-                                   `train_ratio` decimal(12,6) DEFAULT NULL COMMENT '训练测试设计比例',
-                                   `train_cost` int(10) DEFAULT NULL COMMENT '训练测试设计耗时',
-                                   `lack_ratio` decimal(12,6) DEFAULT NULL COMMENT '缺失值处理比例',
-                                   `lack_cost` int(10) DEFAULT NULL COMMENT '缺失值处理耗时',
-                                   `exception_ratio` decimal(12,6) DEFAULT NULL COMMENT '异常值处理比例',
-                                   `exception_cost` int(10) DEFAULT NULL COMMENT '异常值处理耗时',
-                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                                   `model_id` bigint DEFAULT NULL COMMENT '模型id',
+                                   `task_id` bigint DEFAULT NULL COMMENT '任务id',
+                                   `predict_file` varchar(255) DEFAULT NULL COMMENT '预测文件路径',
+                                   `predict_content` blob COMMENT '预测文件内容',
+                                   `component_json` blob COMMENT '模型运行组件列表json',
+                                   `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                   PRIMARY KEY (`task_id`) USING BTREE
+                                   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='模型任务表';
 -- ----------------------------
 -- Table structure for data_mr
@@ -140,6 +128,7 @@ CREATE TABLE `data_mr`  (
                             `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
                             `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
                             `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
+                            `task_id` bigint DEFAULT NULL COMMENT '任务ID',
                             `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
                             `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
                             `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',
@@ -412,6 +401,7 @@ CREATE TABLE `data_task` (
                              `task_start_time` bigint(20) DEFAULT NULL COMMENT '任务开始时间',
                              `task_end_time` bigint(20) DEFAULT NULL COMMENT '任务结束时间',
                              `task_user_id` bigint(20) DEFAULT NULL COMMENT '任务创建人',
+                             `task_error_msg` blob COMMENT '任务异常信息',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
