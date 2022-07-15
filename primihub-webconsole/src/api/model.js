@@ -71,6 +71,14 @@ export function getProjectResourceData(params) {
     params
   })
 }
+export function getProjectResourceOrgan(params) {
+  return request({
+    url: '/data/project/getProjectResourceOrgan',
+    method: 'get',
+    showLoading: false,
+    params
+  })
+}
 // 审核通过的项目列表接口
 export function getProjectAuthedeList(params) {
   return request({

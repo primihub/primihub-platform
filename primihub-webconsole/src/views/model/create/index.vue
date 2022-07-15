@@ -24,7 +24,7 @@ import '@antv/x6-vue-shape'
 import DagNodeComponent from './components/DagNode.vue'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, runTaskModel, getTaskModelComponent } from '@/api/model'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
 
 const lineAttr = { // 线样式
   'line': {
@@ -104,17 +104,23 @@ export default {
       modelId: 0,
       graphData: {},
       projectId: 0,
+      projectName: '',
       isComplete: false,
       modelStartRun: false,
       timmer: null,
       canUndo: false,
       resourceList: [],
+      yOptions: [],
       taskTimer: null,
       saveComponents: [], // 记录保存时有几个组件，用来判断任务是否轮询完成
       hasReady: false,
       resourceId: 0,
       rightInfoLoading: false,
-      selectComponentList: []
+      selectComponentList: [],
+      componentCode: '',
+      organs: [],
+      providerOrgans: null,
+      initiateOrgan: null
     }
   },
   async mounted() {
@@ -291,6 +297,7 @@ export default {
       this.initEvent()
       // 居中显示画布
       this.graph.centerContent()
+      this.projectId = Number(this.$route.query.projectId) || 0
     },
     initStencil() {
       this.stencil = new Addon.Stencil({
@@ -303,7 +310,6 @@ export default {
         getDropNode: (node) => {
           const current = node.store.data.data.componentCode
           this.selectComponentList.push(current)
-          console.log('getDropNode', this.selectComponentList)
           return node.clone({ keepId: true })
         },
         validateNode: (node) => {
@@ -355,34 +361,28 @@ export default {
         ports[i].style.visibility = show ? 'visible' : 'hidden'
       }
     },
-    setDefaultValue(node) {
-      this.selectCellData = node.store.data.data
-      this.nodeData = this.selectCellData
-
-      const componentCode = this.nodeData.componentCode || ''
-      const result = this.modelComponents.find(item => item.componentCode === componentCode)
-
-      console.log('node:click1111', result)
-      // 设置已保存值value
-      result && result.componentValues.map(item => {
-        this.nodeData.componentTypes.find(i => {
-          if (i.typeCode === item.key && item.val !== '') {
-            i.inputValue = item.val
-          }
-        })
-      })
-      if (componentCode === 'dataAlignment') { // 数据对齐，请求数据
-        this.projectId = Number(this.$route.query.projectId) || 0
-        this.getProjectResourceData()
+    async getProjectResourceOrgan() {
+      const res = await getProjectResourceOrgan({ projectId: this.projectId })
+      if (res.code === 0) {
+        this.organs = res.result
+        this.providerOrgans = res.result.filter(item => item.participationIdentity === 2)
+        this.initiateOrgan = res.result.filter(item => item.participationIdentity === 1)[0]
       }
     },
     // 画布事件初始化
     initEvent() {
       const { graph } = this
       const container = document.getElementById('flowContainer')
-      graph.on('node:click', ({ node }) => {
+      graph.on('node:click', async({ node }) => {
         this.showDataConfig = true
-        this.setDefaultValue(node)
+        this.selectCellData = node.store.data.data
+        this.nodeData = this.selectCellData
+        this.componentCode = this.nodeData.componentCode
+        if (this.componentCode === 'dataAlignment') { // 数据对齐，请求数据
+          await this.getProjectResourceOrgan()
+          this.$set(this.nodeData, 'providerOrgans', this.providerOrgans)
+          this.$set(this.nodeData, 'initiateOrgan', this.initiateOrgan)
+        }
       })
 
       graph.on('blank:click', () => {
@@ -420,7 +420,6 @@ export default {
       })
       graph.bindKey('backspace', () => {
         const cells = graph.getSelectedCells()
-        console.log('selectComponentList 11', this.selectComponentList)
         if (cells.length) {
           const currentCode = cells[0].store.data.data.componentCode
           // remove duplicates
@@ -459,62 +458,61 @@ export default {
       getProjectResourceData({ projectId: this.projectId }).then(res => {
         this.projectName = res.result.projectName
         this.resourceList = res.result.resource
-        const index = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'projectName')
-        const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
-        this.nodeData.componentTypes[index].inputValue = this.projectName
-        this.resourceId = this.nodeData.componentTypes[dataIndex].inputValue
-        const options = []
-        this.resourceList.forEach(item => {
-          options.push({
-            key: item.resourceId.toString(),
-            val: item.resourceName
-          })
-        })
-        // 设置资源选项
-        this.nodeData.componentTypes[dataIndex].inputValues = options
-        const yOptions = []
-        const yIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'yField')
-        const curResource = this.resourceList.find(item => item.resourceId === this.resourceId)
-        // 设置y值字段选项
-        curResource && curResource.yfile.forEach(item => {
-          yOptions.push({
-            key: item.yid.toString(),
-            val: item.yname
-          })
-        })
-        this.nodeData.componentTypes[yIndex].inputValues = yOptions
+        // const index = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'projectName')
+        // const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
+        // this.nodeData.componentTypes[index].inputValue = this.projectName
+
+        // const options = []
+        // this.resourceList.forEach(item => {
+        //   options.push({
+        //     key: item.resourceId.toString(),
+        //     val: item.resourceName
+        //   })
+        // })
+        // // 设置资源选项
+        // this.nodeData.componentTypes[dataIndex].inputValues = options
       })
     },
     handelChange(typeCode, data) {
-      this.setProjectData(typeCode, data)
+      // this.setProjectData(typeCode, data)
     },
     setProjectData(typeCode, data) {
-      const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
-      const componentTypes = this.nodeData.componentTypes
-      const yIndex = componentTypes.findIndex(item => item.typeCode === 'yField')
-      if (typeCode === 'projectName') {
-        this.projectId = data.inputValue
-        this.getProjectDetail()
-        // 切换项目时初始化资源和y值字段
-        this.nodeData.componentTypes[dataIndex].inputValue = ''
-        this.nodeData.componentTypes[dataIndex].inputValues = []
-        this.nodeData.componentTypes[yIndex].inputValue = ''
-        this.nodeData.componentTypes[yIndex].inputValues = []
-      } else if (typeCode === 'selectData') {
-        // 切换资源时初始化y值字段
-        this.nodeData.componentTypes[yIndex].inputValue = ''
-        this.nodeData.componentTypes[yIndex].inputValues = []
-        const curResource = this.resourceList.find(item => item.resourceId === data.inputValue)
-        const yOptions = []
-        console.log('curResource', curResource)
-        curResource && curResource.yfile.forEach(item => {
-          yOptions.push({
-            key: item.yid.toString(),
-            val: item.yname
-          })
-        })
-        this.nodeData.componentTypes[yIndex].inputValues = yOptions
+      // const dataIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'selectData')
+      // const componentTypes = this.nodeData.componentTypes
+      // const yIndex = componentTypes.findIndex(item => item.typeCode === 'yField')
+      if (typeCode === 'selectData') {
+        this.resourceId = data.inputValue
+        this.setYOptions()
+        // // 切换资源时初始化y值字段
+        // this.nodeData.componentTypes[yIndex].inputValue = ''
+        // this.nodeData.componentTypes[yIndex].inputValues = []
+        // const curResource = this.resourceList.find(item => item.resourceId === data.inputValue)
+        // const yOptions = []
+        // curResource && curResource.yfile.forEach(item => {
+        //   yOptions.push({
+        //     key: item.yid.toString(),
+        //     val: item.yname
+        //   })
+        // })
+        // this.nodeData.componentTypes[yIndex].inputValues = yOptions
       }
+    },
+    setYOptions() {
+      // 切换资源时初始化y值字段
+      const yIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'yField')
+      console.log(this.nodeData.componentTypes)
+      this.nodeData.componentTypes[yIndex].inputValue = ''
+      this.nodeData.componentTypes[yIndex].inputValues = []
+      console.log('resourceList', this.resourceId)
+      const curResource = this.resourceList.find(item => item.resourceId === this.resourceId)
+      curResource && curResource['yfile'].forEach(item => {
+        this.yOptions.push({
+          key: item.yid.toString(),
+          val: item.yname
+        })
+      })
+      console.log(this.yOptions)
+      this.nodeData.componentTypes[yIndex].inputValues = this.yOptions
     },
     destroy() {
       this.graph.dispose()
@@ -538,7 +536,6 @@ export default {
     },
     // 清除画布
     clearFn() {
-      console.log('clearFn', this.modelId)
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',
@@ -622,7 +619,6 @@ export default {
           })
           if (complete) {
             taskResult.push(componentCode)
-            console.log('taskResult', taskResult)
             node.setData({
               ...data,
               componentState: componentState,
@@ -653,7 +649,6 @@ export default {
     async getModelComponentsInfo() {
       const res = await getModelComponent()
       this.components = res.result
-      console.log('获取左侧组件 components', res.result)
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
@@ -665,19 +660,30 @@ export default {
           closeOnClickModal: false,
           type: 'warning'
         }).then(() => {
-          const { modelId, modelDesc, taskName = '', trainType, modelComponents, modelPointComponents } = res.result
+          const { modelId, modelDesc, modelName = '', trainType, modelComponents, modelPointComponents } = res.result
           this.modelId = modelId
-          console.log('getModelComponentDetail', res.result)
-          this.modelComponents = modelComponents
           this.modelPointComponents = modelPointComponents
-          this.selectComponentList = this.modelComponents.length > 0 && this.modelComponents.map(item => item.componentCode)
           this.modelData = {
             modelId,
-            taskName,
+            modelName,
             modelDesc,
             trainType
           }
-
+          this.modelComponents = modelComponents
+          for (let index = 0; index < this.modelComponents.length; index++) {
+            const item = this.modelComponents[index]
+            // save the selected components
+            this.selectComponentList.push(item.componentCode)
+            const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
+            item.componentValues.map(item => {
+              this.components[posIndex].componentTypes.map(c => {
+                if (c.typeCode === item.key && item.val !== '') {
+                  c.inputValue = item.val
+                }
+              })
+            })
+          }
+          console.log('11', this.components)
           this.initGraphShape()
         }).catch(() => {
           this.modelId = res.result.modelId
@@ -693,6 +699,7 @@ export default {
           const { componentTypes, isMandatory } = this.components.find(item => {
             return item.componentCode === componentCode
           })
+          console.log('componentTypes>>>', componentTypes)
           graphData.push({
             id: item.frontComponentId,
             'position': {
@@ -807,7 +814,7 @@ export default {
       return obj
     },
     // 保存模板文件
-    saveFn(isDraft) {
+    saveFn(isDraft = 0) { // 0 草稿
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',
@@ -824,16 +831,16 @@ export default {
       }
       this.saveParams.param = {
         modelId: this.modelId,
-        taskName: this.modelData.taskName,
         modelName: this.modelData.modelName,
         modelDesc: this.modelData.modelDesc,
         trainType: this.modelData.trainType,
-        isDraft: isDraft || 0, // 0 草稿
+        isDraft,
         modelComponents: this.modelComponents || []
       }
       const data = this.graph.toJSON()
       const { cells } = data
 
+      console.log('666', data)
       const modelComponents = [] // 块数据
       const modelPointComponents = [] // 线数据
 
@@ -847,9 +854,9 @@ export default {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
-          console.log('componentTypes', componentTypes)
           for (let i = 0; i < componentTypes.length; i++) {
             const item = componentTypes[i]
+            console.log(item)
             // 判断所选组件值是否为空
             if (!item.inputValue && isDraft) {
               this.$message({
@@ -866,6 +873,19 @@ export default {
               componentValues.push({
                 key: 'projectId',
                 val: this.projectId
+              })
+            }
+            if (item.typeCode === 'selectData') {
+              const selectData = []
+              selectData.push(data.initiateOrganData)
+              selectData.push(data.providerOrganData)
+              console.log('1111', data.initiateOrganData)
+              console.log('2222', data.providerOrganData)
+              console.log('3333', selectData)
+              console.log('4444', componentValues)
+              componentValues.push({
+                key: 'selectData',
+                val: JSON.stringify(selectData)
               })
             }
           }
