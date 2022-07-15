@@ -8,7 +8,8 @@ import java.util.List;
 public class DataModelAndComponentReq {
     private String modelId;
     private String modelDesc;
-    private String taskName;
+    private String modelName;
+    private Long projectId;
     /**
      * 训练类型 0纵向 1横向 默认纵向
      */

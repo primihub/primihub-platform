@@ -1,5 +1,6 @@
 package com.primihub.application.controller.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.DataProjectApprovalReq;
@@ -113,12 +114,22 @@ public class ProjectController {
      * @return
      */
     @GetMapping("getProjectResourceData")
-    public BaseResultEntity getProjectResourceData(Long projectId){
+    public BaseResultEntity getProjectResourceData(Long projectId,String organId){
         if (projectId==null||projectId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
         }
-        return dataProjectService.getProjectResourceData(projectId);
+        if (StringUtils.isBlank(organId)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
+        return dataProjectService.getProjectResourceData(projectId,organId);
     }
 
+    @GetMapping("getProjectResourceOrgan")
+    public BaseResultEntity getProjectResourceOrgan(Long projectId,Long modelId){
+        if (projectId==null||projectId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
+        }
+        return dataProjectService.getProjectResourceOrgan(projectId,modelId);
+    }
 
 }

@@ -96,6 +96,7 @@
             data_project_organ
         where
             project_id = #{projectId}
+        ORDER BY id desc
     </select>
     <select id="selectDataProjcetOrganByProjectIds" resultMap="DataProjcetOrganBaseResultMap">
         select
@@ -162,7 +163,13 @@
         GROUP BY t.staticsType
 
     </select>
-
+    <select id="selectProjectResourceByProjectIdAndOrganId" resultMap="DataProjectResourceBaseResultMap">
+        select
+        <include refid="DataProjectResourceBaseColumnList"/>
+        from data_project_resource
+        where project_id = #{projectId}
+        and organ_id = #{organId}
+    </select>
 
     <sql id="selectDataProjectCondition">
         <if test="queryType==1">

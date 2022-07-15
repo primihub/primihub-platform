@@ -27,28 +27,9 @@
             "is_mandatory": 0,
             "component_types": [
                 {
-                    "is_show": 1,
-                    "type_code": "projectName",
-                    "type_name": "项目名称",
-                    "input_type": "label",
-                    "input_value": ""
-                },{
-                    "is_show": 0,
-                    "type_code": "modelName",
-                    "type_name": "模型名称",
-                    "input_type": "text",
-                    "input_value": ""
-                },{
                     "is_show": 0,
                     "type_code": "selectData",
                     "type_name": "选择数据",
-                    "input_type": "select",
-                    "input_value": "",
-                    "input_values": []
-                },{
-                    "is_show": 0,
-                    "type_code": "yField",
-                    "type_name": "Y值字段",
                     "input_type": "select",
                     "input_value": "",
                     "input_values": []
