@@ -111,6 +111,7 @@ export default {
       initiateOrganDes: null,
       providerOrganDes: null,
       participationIdentity: 0,
+      inputValues: [],
       rules: {
         taskName: [
           { required: true, message: '请输入任务名称', trigger: 'blur' },
@@ -148,36 +149,32 @@ export default {
       this.$emit('change', item.typeCode, item)
     },
     handleProviderOrganChange(value) {
-      this.nodeData.providerOrganData = []
-      console.log('providerOrgans', this.nodeData.providerOrgans)
       this.providerOrganName = this.nodeData.providerOrgans.filter(item => item.organId === value)[0].organName
     },
     handleDialogCancel() {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
-      if (!this.nodeData.selectedData) {
-        this.nodeData.selectedData = []
+      const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
+      const currentData = {
+        organId: data.organId,
+        organName: data.organName,
+        resourceId: data.resourceId,
+        participationIdentity: this.participationIdentity
       }
-      console.log(this.nodeData)
+      if (posIndex !== -1) {
+        this.inputValues[posIndex] = currentData
+      } else {
+        this.inputValues.push(currentData)
+      }
+      this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
+
       if (this.participationIdentity === 1) {
         this.initiateOrganDes = data
         this.selectedData = [this.initiateOrganDes]
-        this.nodeData.initiateOrganData = {
-          organId: this.nodeData.initiateOrgan.organId,
-          organName: this.nodeData.initiateOrgan.organName,
-          resourceId: this.initiateOrganDes.resourceId,
-          participationIdentity: 1
-        }
       } else {
         this.providerOrganDes = data
         this.selectedData = [this.providerOrganDes]
-        this.nodeData.providerOrganData = {
-          organId: this.providerOrganId,
-          organName: this.providerOrganName,
-          resourceId: data.resourceId,
-          participationIdentity: 2
-        }
       }
       this.dialogVisible = false
     },

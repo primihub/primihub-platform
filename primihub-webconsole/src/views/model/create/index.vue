@@ -102,6 +102,7 @@ export default {
         trainType: 1
       },
       modelId: 0,
+      taskId: 0,
       graphData: {},
       projectId: 0,
       projectName: '',
@@ -588,6 +589,7 @@ export default {
       }
       runTaskModel({ modelId: this.modelId }).then(res => {
         if (res.code !== 0) {
+          this.taskId = res.result.taskId
           this.$message({
             message: res.msg,
             type: 'error'
@@ -605,7 +607,7 @@ export default {
       })
     },
     getTaskModelComponent() {
-      getTaskModelComponent({ modelId: this.modelId }).then(res => {
+      getTaskModelComponent({ taskId: this.taskId }).then(res => {
         const result = res.result
         const taskResult = []
         result && result.forEach((item) => {
@@ -866,28 +868,21 @@ export default {
               })
               return
             }
+            // if (item.typeCode === 'selectData') {
+            //   console.log(item)
+            //   const selectData = []
+            //   selectData.push(data.initiateOrganData)
+            //   selectData.push(data.providerOrganData)
+            //   item.inputValue = JSON.stringify(selectData)
+            //   // componentValues.push({
+            //   //   key: 'selectData',
+            //   //   val: JSON.stringify(selectData)
+            //   // })
+            // }
             componentValues.push({
               key: item.typeCode,
               val: item.inputValue
             })
-            if (item.typeCode === 'selectData') {
-              console.log(item)
-              const selectData = []
-              selectData.push(data.initiateOrganData)
-              selectData.push(data.providerOrganData)
-              console.log('1111', data.initiateOrganData)
-              console.log('2222', data.providerOrganData)
-              console.log('3333', selectData)
-              console.log('4444', componentValues)
-              item.selectData = {
-                key: 'selectData',
-                val: JSON.stringify(selectData)
-              }
-              // componentValues.push({
-              //   key: 'selectData',
-              //   val: JSON.stringify(selectData)
-              // })
-            }
           }
           // format 参数
           modelComponents.push({
