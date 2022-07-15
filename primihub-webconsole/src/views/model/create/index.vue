@@ -830,6 +830,7 @@ export default {
         return
       }
       this.saveParams.param = {
+        projectId: this.projectId,
         modelId: this.modelId,
         modelName: this.modelData.modelName,
         modelDesc: this.modelData.modelDesc,
@@ -869,13 +870,8 @@ export default {
               key: item.typeCode,
               val: item.inputValue
             })
-            if (item.typeCode === 'projectName') {
-              componentValues.push({
-                key: 'projectId',
-                val: this.projectId
-              })
-            }
             if (item.typeCode === 'selectData') {
+              console.log(item)
               const selectData = []
               selectData.push(data.initiateOrganData)
               selectData.push(data.providerOrganData)
@@ -883,10 +879,14 @@ export default {
               console.log('2222', data.providerOrganData)
               console.log('3333', selectData)
               console.log('4444', componentValues)
-              componentValues.push({
+              item.selectData = {
                 key: 'selectData',
                 val: JSON.stringify(selectData)
-              })
+              }
+              // componentValues.push({
+              //   key: 'selectData',
+              //   val: JSON.stringify(selectData)
+              // })
             }
           }
           // format 参数
