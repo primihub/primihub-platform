@@ -145,7 +145,7 @@
 
     <select id="selectFusionResourceCount" parameterType="com.primihub.entity.resource.param.ResourceParam" resultType="java.lang.Integer">
         select
-            count(1)
+            count(distinct r.id)
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
         where
