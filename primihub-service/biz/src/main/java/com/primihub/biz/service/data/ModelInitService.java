@@ -116,16 +116,17 @@ public class ModelInitService {
                                     dmrList.add(dataModelResource);
                                 }
                                 map.put(DataConstant.PYTHON_TEST_DATASET, DataConstant.PYTHON_TEST_DATASET);
+                                log.info("map:{}",map);
                                 dataModelPrRepository.saveDataModelResource(dmrList);
                                 String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, map);
                                 if (freemarkerContent != null) {
                                     try {
                                         Date date = new Date();
                                         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
-                                        StringBuilder predictFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".json");
-                                        modelTask.setPredictFile(predictFileName.toString());
-                                        StringBuilder indicatorFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
-                                        dataTask.setTaskResultPath(indicatorFileName.toString());
+                                        StringBuilder predictFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
+                                        dataTask.setTaskResultPath(predictFileName.toString());
+                                        StringBuilder indicatorFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".json");
+                                        modelTask.setPredictFile(indicatorFileName.toString());
                                         Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(predictFileName.toString()).build();
                                         Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(indicatorFileName.toString()).build();
                                         Common.Params params = Common.Params.newBuilder()
