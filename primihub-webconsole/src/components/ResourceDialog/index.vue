@@ -4,7 +4,7 @@
     v-bind="$attrs"
   >
     <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
-    <ResourceTableSingleSelect :selected-data="selectedData" row-key="resourceId" :data="tableData" @change="handleChange" />
+    <ResourceTableSingleSelect :data="tableData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
@@ -27,10 +27,6 @@ export default {
     SearchInput
   },
   props: {
-    selectedData: {
-      type: Array,
-      default: () => []
-    },
     tableData: {
       type: Array,
       default: () => []

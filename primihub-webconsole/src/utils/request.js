@@ -126,6 +126,7 @@ service.interceptors.response.use(
           message: '暂无权限',
           type: 'warning'
         })
+        return response.data
       } else if (code === 107) { // token失效
         message({
           message: '登录失效，请重新登录',

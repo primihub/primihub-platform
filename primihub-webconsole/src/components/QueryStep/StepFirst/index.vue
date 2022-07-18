@@ -127,6 +127,8 @@ export default {
               })
               this.$emit('next', {})
             }
+          }).catch(err => {
+            console.log(err)
             loading.close()
           })
         } else {

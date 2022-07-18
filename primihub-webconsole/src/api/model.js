@@ -35,7 +35,6 @@ export function getModelComponent(params) {
 
 // 模型实时草稿和保存接口接口
 export function saveModelAndComponent(data) {
-  console.log('saveModelAndComponent', data)
   return request({
     url: '/data/model/saveModelAndComponent',
     method: 'post',
@@ -79,14 +78,6 @@ export function getProjectResourceOrgan(params) {
     params
   })
 }
-// 审核通过的项目列表接口
-export function getProjectAuthedeList(params) {
-  return request({
-    url: '/data/project/getProjectAuthedeList',
-    method: 'get',
-    params
-  })
-}
 // 模型运行
 export function runTaskModel(params) {
   return request({
@@ -100,6 +91,7 @@ export function getTaskModelComponent(params) {
   return request({
     url: '/data/model/getTaskModelComponent',
     method: 'get',
+    showLoading: false,
     params
   })
 }
@@ -107,6 +99,14 @@ export function getTaskModelComponent(params) {
 export function getModelPrediction(params) {
   return request({
     url: '/data/model/getModelPrediction',
+    method: 'get',
+    params
+  })
+}
+// 模型任务列表
+export function getModelTaskList(params) {
+  return request({
+    url: '/data/task/getModelTaskList',
     method: 'get',
     params
   })

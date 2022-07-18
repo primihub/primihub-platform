@@ -1,26 +1,29 @@
 <template>
-  <div class="right-drawer">
+  <div v-loading="listLoading" class="right-drawer">
     <template v-if="nodeData && showDataConfig">
-      <el-form ref="form" v-loading="listLoading" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
+      <el-form ref="form" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
         <template v-if="isDataSelect">
           <el-form-item>
-            <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ nodeData.initiateOrgan.organName }}</p>
-            <el-button type="primary" size="small" @click="openDialog(nodeData.initiateOrgan.organId, 1)">选择资源</el-button>
-            <ResourceDec v-if="initiateOrganDes" :data="initiateOrganDes" />
+            <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
+            <el-button type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
+            <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" />
           </el-form-item>
           <el-form-item>
-            <template v-if="nodeData.providerOrgans.length>0">
+            <template v-if="providerOrgans.length>0">
               <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
-              <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
-                <el-option
-                  v-for="(v) in nodeData.providerOrgans"
-                  :key="v.organId"
-                  :label="v.organName"
-                  :value="v.organId"
-                />
-              </el-select>
-              <el-button type="primary" size="small" @click="openDialog(providerOrganId,2)">选择资源</el-button>
-              <ResourceDec v-if="providerOrganDes" :data="providerOrganDes" />
+              <div class="organ-select">
+                <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
+                  <el-option
+                    v-for="(v,index) in providerOrgans"
+                    :key="index"
+                    :label="v.organName"
+                    :value="v.organId"
+                  />
+                </el-select>
+                <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
+              </div>
+
+              <ResourceDec v-if="providerOrgans[0].resourceId" :data="providerOrgans[0]" />
             </template>
             <template v-else>
               <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
@@ -65,14 +68,14 @@
         </el-form-item>
       </el-form>
     </template>
-
+    <el-button type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
     <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedData" title="添加资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
   </div>
 </template>
 
 <script>
-import { getProjectResourceData } from '@/api/model'
+import { getProjectResourceData, getProjectResourceOrgan } from '@/api/model'
 import ResourceDialog from '@/components/ResourceDialog'
 import ResourceDec from '@/components/ResourceDec'
 
@@ -102,16 +105,17 @@ export default {
   data() {
     return {
       listLoading: false,
+      initiateOrgan: {},
+      providerOrgans: [],
       providerOrganId: '',
       providerOrganName: '',
       dialogVisible: false,
       selectedOrganId: '',
       resourceList: [],
       selectedData: [],
-      initiateOrganDes: null,
-      providerOrganDes: null,
       participationIdentity: 0,
       inputValues: [],
+      inputValue: this.nodeData && this.nodeData.componentTypes[0].inputValue,
       rules: {
         taskName: [
           { required: true, message: '请输入任务名称', trigger: 'blur' },
@@ -132,34 +136,73 @@ export default {
   },
   computed: {
     isDataSelect() {
-      return this.nodeData && this.nodeData.componentCode === 'dataAlignment' && this.nodeData.initiateOrgan
+      return this.nodeData && this.nodeData.componentCode === 'dataAlignment'
+    }
+  },
+  watch: {
+    async nodeData(newVal) {
+      if (newVal) {
+        if (this.nodeData.componentCode === 'dataAlignment') {
+          await this.getProjectResourceOrgan()
+          this.inputValue = this.nodeData.componentTypes[0].inputValue
+          console.log('watch', this.inputValue)
+          this.providerOrgans = this.organs.filter(item => item.participationIdentity === 2)
+          this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
+          this.providerOrganId = ''
+          if (this.inputValue !== '') {
+            this.inputValue = JSON.parse(this.inputValue)
+            const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
+            const initiateOrgan = this.inputValue.filter(item => item.participationIdentity === 1)
+            this.providerOrgans = providerOrgans.length > 0 ? providerOrgans : this.providerOrgans
+            this.initiateOrgan = initiateOrgan.length > 0 ? initiateOrgan[0] : this.initiateOrgan
+            this.providerOrganId = this.providerOrgans.length > 0 ? this.providerOrgans[0].organId : ''
+            this.providerOrganName = this.providerOrgans.filter(item => item.organId === this.providerOrganId)[0].organName
+          }
+        }
+      }
     }
   },
   created() {
     this.projectId = Number(this.$route.query.projectId) || 0
   },
   methods: {
-    openDialog(organId, participationIdentity) {
+    async openDialog(organId, participationIdentity) {
       this.participationIdentity = participationIdentity
       this.selectedOrganId = organId
+      if (this.selectedOrganId === '') {
+        this.$message({
+          message: '请先选择机构',
+          type: 'warning'
+        })
+        return
+      }
+      await this.getProjectResourceData()
       this.dialogVisible = true
-      this.getResourceList()
     },
     handleChange(item) {
       this.$emit('change', item.typeCode, item)
     },
     handleProviderOrganChange(value) {
-      this.providerOrganName = this.nodeData.providerOrgans.filter(item => item.organId === value)[0].organName
+      this.providerOrganName = this.providerOrgans.filter(item => item.organId === value)[0].organName
     },
     handleDialogCancel() {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
+      if (this.participationIdentity === 1) {
+        data.organName = this.initiateOrgan.organName
+        this.initiateOrgan = data
+      } else {
+        data.organName = this.providerOrgans[0].organName
+        this.providerOrgans = [data]
+      }
+      // set input value
+      if (this.inputValue) {
+        this.inputValues = this.inputValue
+      }
       const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
       const currentData = {
-        organId: data.organId,
-        organName: data.organName,
-        resourceId: data.resourceId,
+        ...data,
         participationIdentity: this.participationIdentity
       }
       if (posIndex !== -1) {
@@ -168,18 +211,9 @@ export default {
         this.inputValues.push(currentData)
       }
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
-
-      if (this.participationIdentity === 1) {
-        this.initiateOrganDes = data
-        this.selectedData = [this.initiateOrganDes]
-      } else {
-        this.providerOrganDes = data
-        this.selectedData = [this.providerOrganDes]
-      }
       this.dialogVisible = false
     },
-    async getResourceList() {
-      this.listLoading = true
+    async getProjectResourceData() {
       this.resourceList = []
       const params = {
         projectId: this.projectId,
@@ -189,7 +223,17 @@ export default {
       if (code === 0) {
         this.resourceList[this.selectedOrganId] = result
       }
+    },
+    async getProjectResourceOrgan() {
+      this.listLoading = true
+      const res = await getProjectResourceOrgan({ projectId: this.projectId })
+      if (res.code === 0) {
+        this.organs = res.result
+      }
       this.listLoading = false
+    },
+    save() {
+      this.$emit('save')
     }
   }
 }
@@ -231,5 +275,10 @@ p {
 .resource-data{
   font-size: 12px;
   margin-top: 10px;
+}
+.organ-select{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
