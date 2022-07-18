@@ -43,6 +43,10 @@ public class SysUser {
      */
     private Integer isEditable;
     /**
+     * 注册类型1：管理员创建 2：邮箱 3：手机
+     */
+    private Integer registerType;
+    /**
      * 创建时间
      */
     private Date cTime;
