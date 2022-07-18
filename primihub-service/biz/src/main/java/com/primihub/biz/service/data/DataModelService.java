@@ -89,7 +89,7 @@ public class DataModelService {
             map.put("modelComponent",dataModelComponents);
         }
         map.put("model",modelVo);
-        map.put("task",task);
+        map.put("taskState",task.getTaskState());
         map.put("modelResources",modelResourceVos);
         map.put("anotherQuotas",new HashMap(){
             {
