@@ -92,6 +92,7 @@ public class ModelInitService {
             dataComponent.setComponentState(2);
             modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
             dataModelPrRepository.updateDataModelTask(modelTask);
+            dataComponent.setComponentState(1);
             if ("model".equals(dataComponent.getComponentCode())){
                 List<DataComponentValue> modelType = reqMap.get(dataComponent.getComponentCode()).getComponentValues().stream().filter(cv -> cv.getKey().equals("modelType")).collect(Collectors.toList());
                 log.info("检索model组件->modelType 数量:{}",modelType.size());
@@ -155,7 +156,6 @@ public class ModelInitService {
                                         dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
                                         modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
                                         dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                                        dataComponent.setComponentState(1);
                                     } catch (Exception e) {
                                         dataComponent.setComponentState(3);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -164,11 +164,13 @@ public class ModelInitService {
                                     }
                                 }
                             }else {
+                                dataComponent.setComponentState(3);
                                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                                 dataTask.setTaskErrorMsg("数据集错误:获取数据集数量未达标");
                                 log.info("数据集错误:获取数据集数量未达标");
                             }
                         }else {
+                            dataComponent.setComponentState(3);
                             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                             dataTask.setTaskErrorMsg("选择数据集为空");
                             log.info("选择数据集为空");
