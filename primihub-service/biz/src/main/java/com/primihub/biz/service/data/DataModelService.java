@@ -59,6 +59,7 @@ public class DataModelService {
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
+        DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
         // 查询资源模型
         List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId);
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
@@ -88,6 +89,7 @@ public class DataModelService {
             map.put("modelComponent",dataModelComponents);
         }
         map.put("model",modelVo);
+        map.put("taskState",task.getTaskState());
         map.put("modelResources",modelResourceVos);
         map.put("anotherQuotas",new HashMap(){
             {
