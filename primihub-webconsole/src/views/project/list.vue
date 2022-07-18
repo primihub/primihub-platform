@@ -350,6 +350,9 @@ export default {
             this.noData = true
           }
         }
+      }).catch(err => {
+        console.log(err)
+        this.listLoading = false
       })
     },
     handleSelect(key) {

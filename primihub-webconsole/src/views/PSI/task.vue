@@ -411,10 +411,14 @@ export default {
       })
     },
     async getPsiResourceAllocationList(params) {
-      const res = await getPsiResourceAllocationList(params)
-      if (res.code === 0) {
-        const { resourceField } = res.result
-        return resourceField
+      try {
+        const res = await getPsiResourceAllocationList(params)
+        if (res.code === 0) {
+          const { resourceField } = res.result
+          return resourceField
+        }
+      } catch (error) {
+        console.log(error)
       }
     },
     handleOrganSelect(data) {
