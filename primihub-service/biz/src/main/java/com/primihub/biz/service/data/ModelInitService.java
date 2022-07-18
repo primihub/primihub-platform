@@ -152,9 +152,11 @@ public class ModelInitService {
                                         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                                         log.info("grpc结果:{}", reply.toString());
                                         dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-                                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                         modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
+                                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                        dataComponent.setComponentState(1);
                                     } catch (Exception e) {
+                                        dataComponent.setComponentState(3);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                                         dataTask.setTaskErrorMsg(e.getMessage());
                                         log.info("grpc Exception:{}", e.getMessage());
@@ -174,7 +176,7 @@ public class ModelInitService {
                 }
             }
             dataComponent.setEndTime(System.currentTimeMillis());
-            dataComponent.setComponentState(1);
+
             modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
             dataModelPrRepository.updateDataModelTask(modelTask);
         }
