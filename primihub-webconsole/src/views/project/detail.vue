@@ -456,7 +456,7 @@ export default {
           this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
           this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
           this.projectAuditStatus = this.currentOrgan.auditStatus === 1
-          this.isShowAuditForm = !this.projectAuditStatus
+          this.isShowAuditForm = this.currentOrgan.auditStatus === 0
           this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
           this.providerOrganIds = this.providerOrganIds.map(item => {
             return {

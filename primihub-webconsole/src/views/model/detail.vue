@@ -7,13 +7,12 @@
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
-        <el-descriptions-item label="资源个数">{{ model.resourceNum }}个</el-descriptions-item>
+        <el-descriptions-item label="是否包含Y值"><el-tag type="mini" size="mini">{{ model.yValueColumn }}</el-tag></el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
         <el-descriptions-item v-if="hasModelDownloadPermission" label="下载结果">
           <el-button class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>
         </el-descriptions-item>
       </el-descriptions>
-
     </div>
 
     <div class="section">
@@ -210,9 +209,6 @@ export default {
 }
 ::v-deep .el-table th{
   background: #fafafa;
-}
-::v-deep .el-descriptions-item__label:not(.is-bordered-label){
-  margin-right: 0;
 }
 ::v-deep .el-descriptions-item__container{
   align-items: center;

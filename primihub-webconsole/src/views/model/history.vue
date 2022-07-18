@@ -141,7 +141,7 @@ export default {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)
       const token = getToken()
-      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?modelId=${this.modelId}&taskId=${taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     },
     toModelDetail(taskId) {
       this.$router.push({
