@@ -90,7 +90,8 @@ public class ModelInitService {
         for (DataComponent dataComponent : dataComponents) {
             dataComponent.setStartTime(System.currentTimeMillis());
             dataComponent.setComponentState(2);
-            dataModelPrRepository.updateDataComponent(dataComponent);
+            modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
+            dataModelPrRepository.updateDataModelTask(modelTask);
             if ("model".equals(dataComponent.getComponentCode())){
                 List<DataComponentValue> modelType = reqMap.get(dataComponent.getComponentCode()).getComponentValues().stream().filter(cv -> cv.getKey().equals("modelType")).collect(Collectors.toList());
                 log.info("检索model组件->modelType 数量:{}",modelType.size());
@@ -176,7 +177,6 @@ public class ModelInitService {
                 }
             }
             dataComponent.setEndTime(System.currentTimeMillis());
-
             modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
             dataModelPrRepository.updateDataModelTask(modelTask);
         }
