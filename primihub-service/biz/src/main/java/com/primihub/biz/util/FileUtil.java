@@ -43,7 +43,7 @@ public class FileUtil {
             StringBuilder sb = new StringBuilder();
             String str;
             while((str = bufferedReader.readLine())!=null) {
-                sb.append(str);
+                sb.append(str+"\t\n");
             }
             bufferedReader.close();
             return sb.toString();
