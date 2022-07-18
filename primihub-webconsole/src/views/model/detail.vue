@@ -122,7 +122,8 @@ export default {
       modelId: 24,
       modelComponent: [],
       lineChartData: [],
-      anotherQuotas: []
+      anotherQuotas: [],
+      taskState: null
     }
   },
   computed: {
@@ -150,13 +151,13 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, task } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState } = response.result
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
-        this.taskState = task.taskState
+        this.taskState = taskState
       })
     },
     getChartsData() {
