@@ -3,16 +3,15 @@
     <el-table
       ref="table"
       class="table"
-      :row-key="rowKey"
       border
       :data="data"
       v-bind="$attrs"
       highlight-current-row
-      @selection-change="handleSelectionChange"
+      @selection-change="handleCurrentChange"
     >
       <el-table-column label="选择" width="55">
-        <template slot-scope="scope">
-          <el-radio v-model="radioSelect" :label="scope.row" :disabled="scope.row.auditStatus !== 1" @change="handleRadioChange"><i /></el-radio>
+        <template slot-scope="{row}">
+          <el-radio v-model="radioSelect" :label="row" :disabled="row.auditStatus !== 1" @change="handleRadioChange"><i /></el-radio>
         </template>
       </el-table-column>
       <el-table-column
@@ -36,7 +35,6 @@
         </template>
       </el-table-column>
       <el-table-column
-        v-if="showStatus"
         prop="auditStatus"
         label="审核状态"
         align="center"
@@ -54,29 +52,12 @@
           {{ row.resourceContainsY? '是' : '否' }}
         </template>
       </el-table-column>
-      <!-- <el-table-column
-        v-if="showButtons"
-        label="操作"
-        align="center"
-        min-width="120"
-      >
-        <template slot-scope="{row}">
-          <template v-if="thisInstitution && row.participationIdentity === 2 && projectAuditStatus && row.auditStatus === 0">
-            <el-button size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
-            <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
-          </template>
-          <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-          <el-button v-if="creator" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
-        </template>
-      </el-table-column> -->
     </el-table>
   </div>
 
 </template>
 
 <script>
-import { mapActions } from 'vuex'
-
 export default {
   name: 'ResourceTable',
   props: {
@@ -84,96 +65,35 @@ export default {
       type: Array,
       default: () => []
     },
-    rowKey: {
-      type: String,
-      default: 'resourceId',
-      require: true
-    },
     selectedData: {
       type: Array,
       default: () => []
-    },
-    showStatus: {
-      type: Boolean,
-      default: true
     }
 
   },
   data() {
     return {
+      currentRow: null,
       radioSelect: null
     }
   },
-  watch: {
-    selectedData(val) {
-      if (val) {
-        this.toggleSelection(this.selectedData)
-      }
-    }
-  },
   mounted() {
-    this.toggleSelection(this.selectedData)
+    this.setCurrent(this.selectedData)
   },
   methods: {
-    handleRadioChange(item) {
-      this.multipleSelection = item
-      console.log(this.multipleSelection)
-      this.$emit('change', this.multipleSelection)
+    handleRadioChange(val) {
+      this.currentRow = val
+      console.log(this.currentRow)
+      this.$emit('change', this.currentRow)
     },
-    toggleSelection(rows) {
-      console.log(this.selectedData)
-      this.$refs.table.clearSelection()
-      this.$nextTick(() => {
-        if (rows) {
-          rows.forEach(row => {
-            this.$refs.table.toggleRowSelection(row)
-          })
-        } else {
-          this.$refs.table.clearSelection()
-        }
-      })
+    setCurrent(row) {
+      this.$refs.table.setCurrentRow(row)
     },
-    handleSelectionChange(value) {
-      this.multipleSelection = value
-      this.$emit('change', this.multipleSelection)
-    },
-    handlePreview(row) {
-      this.$emit('preview', row)
-    },
-    handleAgree(row) {
-      this.$emit('handleAgree', row)
-    },
-    handleRefused(row) {
-      this.$emit('handleRefused', row)
-    },
-    handleRemove(row) {
-      this.$confirm('删除后将不能使用此数据集, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$emit('remove', row)
-      }).catch(() => {})
-    },
-    checkSelectable(row) {
-      const res = !(this.selectedData.length > 0 && this.selectedData.filter(item => item[this.rowKey] === row[this.rowKey]).length > 0)
-      return res
-    },
-    searchResource() {
-      this.pageNo = 1
-      this.$emit('search', this.resourceName)
-      this.fetchData()
-    },
-    handleSearchNameChange(searchName) {
-      this.resourceName = searchName
-    },
-    showButton(row) {
-      if (row.auditStatus === 0) {
-        return row.auditStatus === 0
-      }
-      return true
-    },
-    ...mapActions('user', ['getInfo'])
+    handleCurrentChange(val) {
+      console.log('handleCurrentChange', val)
+      this.currentRow = val
+      this.$emit('change', this.currentRow)
+    }
   }
 
 }
