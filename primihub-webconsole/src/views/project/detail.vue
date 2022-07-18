@@ -268,7 +268,13 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
-        if (value.length > 200) {
+        if (!value) {
+          this.$message({
+            type: 'error',
+            message: '请输入拒绝原因'
+          })
+          return
+        } else if (value.length > 200) {
           this.$message({
             type: 'error',
             message: '拒绝理由最多200字'

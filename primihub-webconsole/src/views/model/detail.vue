@@ -9,7 +9,7 @@
         <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
         <el-descriptions-item label="是否包含Y值"><el-tag type="mini" size="mini">{{ model.yValueColumn }}</el-tag></el-descriptions-item>
         <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
-        <el-descriptions-item v-if="hasModelDownloadPermission" label="下载结果">
+        <el-descriptions-item v-if="hasModelDownloadPermission && taskState === 1" label="下载结果">
           <el-button class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>
         </el-descriptions-item>
       </el-descriptions>
@@ -150,12 +150,13 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, task } = response.result
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
+        this.taskState = task.taskState
       })
     },
     getChartsData() {
