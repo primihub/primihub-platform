@@ -44,7 +44,7 @@
     </sql>
 
     <sql id="Fusion_Resource_Field_Base_Column_List">
-        field_id,resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_date,u_date
+        field_id,resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time
     </sql>
 
     <insert id="saveFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource" keyProperty="id" useGeneratedKeys="true">

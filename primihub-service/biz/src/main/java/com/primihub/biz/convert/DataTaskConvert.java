@@ -16,8 +16,10 @@ public class DataTaskConvert {
         dataModelTaskListVo.setTaskType(dataTask.getTaskType());
         dataModelTaskListVo.setTaskStartTime(dataTask.getTaskStartTime());
         dataModelTaskListVo.setTaskEndTime(dataTask.getTaskEndTime());
-        dataModelTaskListVo.setTaskStartDate(new Date(dataTask.getTaskStartTime()));
-        dataModelTaskListVo.setTaskEndDate(new Date(dataTask.getTaskEndTime()));
+        if (dataTask.getTaskStartTime()!=null)
+            dataModelTaskListVo.setTaskStartDate(new Date(dataTask.getTaskStartTime()));
+        if (dataTask.getTaskEndTime()!=null)
+            dataModelTaskListVo.setTaskEndDate(new Date(dataTask.getTaskEndTime()));
         dataModelTaskListVo.setTaskErrorMsg(dataTask.getTaskErrorMsg());
         return dataModelTaskListVo;
 

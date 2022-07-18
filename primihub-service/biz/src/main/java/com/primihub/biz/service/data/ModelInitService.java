@@ -90,7 +90,9 @@ public class ModelInitService {
         for (DataComponent dataComponent : dataComponents) {
             dataComponent.setStartTime(System.currentTimeMillis());
             dataComponent.setComponentState(2);
-            dataModelPrRepository.updateDataComponent(dataComponent);
+            modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
+            dataModelPrRepository.updateDataModelTask(modelTask);
+            dataComponent.setComponentState(1);
             if ("model".equals(dataComponent.getComponentCode())){
                 List<DataComponentValue> modelType = reqMap.get(dataComponent.getComponentCode()).getComponentValues().stream().filter(cv -> cv.getKey().equals("modelType")).collect(Collectors.toList());
                 log.info("检索model组件->modelType 数量:{}",modelType.size());
@@ -116,16 +118,17 @@ public class ModelInitService {
                                     dmrList.add(dataModelResource);
                                 }
                                 map.put(DataConstant.PYTHON_TEST_DATASET, DataConstant.PYTHON_TEST_DATASET);
+                                log.info("map:{}",map);
                                 dataModelPrRepository.saveDataModelResource(dmrList);
                                 String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, map);
                                 if (freemarkerContent != null) {
                                     try {
                                         Date date = new Date();
                                         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
-                                        StringBuilder predictFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".json");
-                                        modelTask.setPredictFile(predictFileName.toString());
-                                        StringBuilder indicatorFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
-                                        dataTask.setTaskResultPath(indicatorFileName.toString());
+                                        StringBuilder predictFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
+                                        dataTask.setTaskResultPath(predictFileName.toString());
+                                        StringBuilder indicatorFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".json");
+                                        modelTask.setPredictFile(indicatorFileName.toString());
                                         Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(predictFileName.toString()).build();
                                         Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(indicatorFileName.toString()).build();
                                         Common.Params params = Common.Params.newBuilder()
@@ -151,20 +154,23 @@ public class ModelInitService {
                                         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                                         log.info("grpc结果:{}", reply.toString());
                                         dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-                                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                         modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
+                                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                     } catch (Exception e) {
+                                        dataComponent.setComponentState(3);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                                         dataTask.setTaskErrorMsg(e.getMessage());
                                         log.info("grpc Exception:{}", e.getMessage());
                                     }
                                 }
                             }else {
+                                dataComponent.setComponentState(3);
                                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                                 dataTask.setTaskErrorMsg("数据集错误:获取数据集数量未达标");
                                 log.info("数据集错误:获取数据集数量未达标");
                             }
                         }else {
+                            dataComponent.setComponentState(3);
                             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                             dataTask.setTaskErrorMsg("选择数据集为空");
                             log.info("选择数据集为空");
@@ -173,7 +179,6 @@ public class ModelInitService {
                 }
             }
             dataComponent.setEndTime(System.currentTimeMillis());
-            dataComponent.setComponentState(1);
             modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
             dataModelPrRepository.updateDataModelTask(modelTask);
         }

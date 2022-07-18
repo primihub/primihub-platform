@@ -118,7 +118,7 @@ CREATE TABLE `fusion_resource_field` (
                                          `grouping` int(11) DEFAULT '0' COMMENT '分组 0否 1是',
                                          `protection_status` int(11) DEFAULT '0' COMMENT '保护开关 0关闭 1开启',
                                          `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                         `c_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                         `u_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                         `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                         `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                                          PRIMARY KEY (`field_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
