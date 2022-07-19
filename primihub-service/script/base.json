@@ -21,7 +21,7 @@
     "model_components":[
         {
             "component_code": "dataAlignment",
-            "component_name": "数据对齐",
+            "component_name": "选择数据集",
             "is_show": 0,
             "is_mandatory": 0,
             "component_types": [
