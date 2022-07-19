@@ -2,15 +2,17 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.PropertyNamingStrategy;
+import com.alibaba.fastjson.parser.ParserConfig;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
-import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.dto.ModelEvaluationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
@@ -18,9 +20,7 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
-import com.primihub.biz.service.sys.SysOrganService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,16 +91,17 @@ public class DataModelService {
         map.put("model",modelVo);
         map.put("taskState",task.getTaskState());
         map.put("modelResources",modelResourceVos);
-        map.put("anotherQuotas",new HashMap(){
-            {
-                put("meanSquaredError",4.725711343212531);
-                put("explainedVariance",0.15919721839861312);
-                put("meanAbsoluteError",1.9888892110900143);
-                put("meanSquaredLogError",0.5848543124612581);
-                put("medianAbsoluteError",1.3484169265390695);
-                put("r2Score",-4.1600402950393045);
-                put("rootMeanSquaredError",22.33234769936758);
-            }});
+        ModelEvaluationDto modelEvaluationDto = null;
+        if (StringUtils.isNotBlank(modelTask.getPredictContent())){
+            ParserConfig parserConfig = new ParserConfig();
+            parserConfig.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
+            modelEvaluationDto = JSONObject.parseObject(modelTask.getPredictContent(), ModelEvaluationDto.class,parserConfig);
+        }
+        if (modelEvaluationDto==null||modelEvaluationDto.getTrain()==null){
+            map.put("anotherQuotas",new HashMap());
+        }else {
+            map.put("anotherQuotas",modelEvaluationDto.getTrain());
+        }
         return BaseResultEntity.success(map);
     }
 
