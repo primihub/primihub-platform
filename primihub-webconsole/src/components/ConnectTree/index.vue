@@ -149,19 +149,21 @@ export default {
       this.$refs['groupForm'].validate(async valid => {
         if (valid) {
           const currentNode = this.$refs.connectTree.getCurrentNode()
-          console.log('currentNode', currentNode)
           const { code, result } = await createGroup(params)
           if (code === 0) {
-            this.$message({
-              type: 'success',
-              message: '创建成功'
-            })
+            if (!currentNode.children) {
+              currentNode.children = []
+            }
             currentNode.children.push({
               id: result.groupData.group.id,
               label: result.groupData.group.groupName || this.groupForm.groupName,
               in: true,
               type: 'group',
               icon: groupIcon
+            })
+            this.$message({
+              type: 'success',
+              message: '创建成功'
             })
             this.closeGroupDialog()
           }

@@ -169,7 +169,7 @@ export default {
       ownOrganResourceField: [],
       otherOrganResourceField: [],
       taskLoading: false,
-      pageSize: 10,
+      pageSize: 100,
       totalPage: 0,
       total: 0,
       pageNo: 1,
@@ -409,17 +409,6 @@ export default {
           name: item
         })
       })
-    },
-    async getPsiResourceAllocationList(params) {
-      try {
-        const res = await getPsiResourceAllocationList(params)
-        if (res.code === 0) {
-          const { resourceField } = res.result
-          return resourceField
-        }
-      } catch (error) {
-        console.log(error)
-      }
     },
     handleOrganSelect(data) {
       this.formData.otherOrganId = data.organId
