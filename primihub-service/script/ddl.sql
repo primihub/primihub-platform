@@ -1,3 +1,4 @@
+use privacy;
 -- ----------------------------
 -- Table structure for data_model
 -- ----------------------------
