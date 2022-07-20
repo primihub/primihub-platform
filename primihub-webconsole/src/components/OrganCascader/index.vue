@@ -55,7 +55,7 @@ export default {
             resolve(data)
           } else {
             this.$message({
-              message: '节点下暂无其他机构'
+              message: '当前机构未加入群组，请前往系统设置-中心节点加入群组'
             })
             const index = this.cascaderOptions.findIndex(item => item.label === node.label)
             this.cascaderOptions[index].disabled = true

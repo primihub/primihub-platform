@@ -44,7 +44,7 @@
     </sql>
 
     <sql id="Fusion_Resource_Field_Base_Column_List">
-        field_id,resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_date,u_date
+        field_id,resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time
     </sql>
 
     <insert id="saveFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource" keyProperty="id" useGeneratedKeys="true">
@@ -61,7 +61,7 @@
     </insert>
 
     <insert id="saveBatchResourceField" parameterType="com.primihub.entity.resource.po.FusionResourceField">
-        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_date,u_date)
+        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time)
         values
         <foreach collection="fields" index="index" item="item" separator=",">
             (#{item.resourceId},#{item.fieldName},#{item.fieldAs},#{item.fieldType},#{item.fieldDesc},#{item.relevance},#{item.grouping},#{item.protectionStatus},0,now(),now())
@@ -69,7 +69,7 @@
     </insert>
 
     <insert id="saveResourceField" parameterType="com.primihub.entity.resource.po.FusionResourceField">
-        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_date,u_date)
+        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time)
         values (#{resourceId},#{fieldName},#{fieldAs},#{fieldType},#{fieldDesc},#{relevance},#{grouping},#{protectionStatus},0,now(),now())
     </insert>
 
@@ -145,7 +145,7 @@
 
     <select id="selectFusionResourceCount" parameterType="com.primihub.entity.resource.param.ResourceParam" resultType="java.lang.Integer">
         select
-            count(1)
+            count(distinct r.id)
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
         where

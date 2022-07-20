@@ -39,9 +39,9 @@ def get_logger(name):
 
 logger = get_logger("xgb_host")
 
-ph.dataset.dataset.define("${guest_dataset}")
-ph.dataset.dataset.define("${label_dataset}")
-ph.dataset.dataset.define("${test_dataset}")
+ph.dataset.dataset.define("guest_dataset")
+ph.dataset.dataset.define("label_dataset")
+ph.dataset.dataset.define("test_dataset")
 
 ph.context.Context.func_params_map = {
     "xgb_host_logic": ("paillier", ),
@@ -53,7 +53,7 @@ num_tree = 1
 # Max depth of each tree.
 max_depth = 1
 
-@ph.context.function(role='host', protocol='xgboost', datasets=["${label_dataset}", "${test_dataset}"], next_peer="*:12120")
+@ph.context.function(role='host', protocol='xgboost', datasets=["label_dataset", "test_dataset"], next_peer="*:12120")
 def xgb_host_logic(cry_pri="paillier"):
     print("start xgb host logic...")
     next_peer = ph.context.Context.nodes_context["host"].next_peer
@@ -64,9 +64,9 @@ def xgb_host_logic(cry_pri="paillier"):
     server = Session(ios, ip, port, "server")
 
     channel = server.addChannel()
-    data = ph.dataset.read(dataset_key="${label_dataset}").df_data
+    data = ph.dataset.read(dataset_key="label_dataset").df_data
     label_true = ['Class']
-    data_test = ph.dataset.read(dataset_key="${test_dataset}").df_data
+    data_test = ph.dataset.read(dataset_key="test_dataset").df_data
     y_true = data_test['Class'].values
     data_test = data_test[
         [x for x in data_test.columns if x not in label_true]
@@ -151,7 +151,7 @@ def xgb_host_logic(cry_pri="paillier"):
         return xgb_host.predict_raw(data_test).to_csv(predict_file_path)
 
 
-@ph.context.function(role='guest', protocol='xgboost', datasets=["${guest_dataset}"], next_peer="localhost:12120")
+@ph.context.function(role='guest', protocol='xgboost', datasets=["guest_dataset"], next_peer="localhost:12120")
 def xgb_guest_logic(cry_pri="paillier"):
     print("start xgb guest logic...")
     ios = IOService()
@@ -164,7 +164,7 @@ def xgb_guest_logic(cry_pri="paillier"):
     client = Session(ios, ip, port, "client")
     channel = client.addChannel()
 
-    X_guest = ph.dataset.read(dataset_key="${guest_dataset}").df_data
+    X_guest = ph.dataset.read(dataset_key="guest_dataset").df_data
 
     if cry_pri == "paillier":
         xgb_guest = XGB_GUEST_EN(n_estimators=num_tree, max_depth=max_depth, reg_lambda=1, min_child_weight=1, objective='linear',

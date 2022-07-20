@@ -23,3 +23,5 @@ include::../asciidoc/dataPsi.adoc[]
 include::../asciidoc/dataMpc.adoc[]
 == 2.6 中心节点资源相关接口
 include::../asciidoc/fusionResource.adoc[]
+== 2.7 任务相关接口
+include::../asciidoc/dataTask.adoc[]

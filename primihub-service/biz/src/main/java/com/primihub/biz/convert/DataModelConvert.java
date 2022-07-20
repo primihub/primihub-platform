@@ -123,6 +123,7 @@ public class DataModelConvert {
         ModelProjectOrganVo modelProjectOrganVo = new ModelProjectOrganVo();
         modelProjectOrganVo.setParticipationIdentity(organ.getParticipationIdentity());
         modelProjectOrganVo.setOrganId(organ.getOrganId());
+
         modelProjectOrganVo.setAuditStatus(organ.getAuditStatus());
         modelProjectOrganVo.setCreator(sysLocalOrganId.equals(organ.getOrganId()));
         modelProjectOrganVo.setOrganName(organMap==null?"":organMap.get("globalName")==null?"":organMap.get("globalName").toString());
@@ -141,8 +142,8 @@ public class DataModelConvert {
         modelProjectResourceVo.setResourceColumnCount(resourceMap==null?null:resourceMap.get("resourceColumnCount")==null?0:Integer.valueOf(resourceMap.get("resourceColumnCount").toString()));
         modelProjectResourceVo.setResourceContainsY(resourceMap==null?null:resourceMap.get("resourceContainsY")==null?0:Integer.valueOf(resourceMap.get("resourceContainsY").toString()));
         modelProjectResourceVo.setAuditStatus(resource.getAuditStatus());
+        modelProjectResourceVo.setParticipationIdentity(resource.getParticipationIdentity());
         return modelProjectResourceVo;
-
     }
 
 }

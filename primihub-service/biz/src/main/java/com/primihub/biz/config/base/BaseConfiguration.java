@@ -23,7 +23,6 @@ public class BaseConfiguration {
     private Integer grpcClientPort;
     private String grpcDataSetClientAddress;
     private Integer grpcDataSetClientPort;
-    private Integer grpcDataSet1ClientPort;
     private Integer grpcServerPort;
     private String uploadUrlDirPrefix;
     private String resultUrlDirPrefix;
