@@ -7,9 +7,10 @@
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
-        <el-descriptions-item label="资源个数">{{ model.resourceNum }}个</el-descriptions-item>
-        <el-descriptions-item label="Y值字段">
-          <el-tag size="small">{{ model.yValueColumn }}</el-tag>
+        <el-descriptions-item label="是否包含Y值"><el-tag type="mini" size="mini">{{ model.yValueColumn }}</el-tag></el-descriptions-item>
+        <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
+        <el-descriptions-item v-if="hasModelDownloadPermission && taskState === 1" label="下载结果">
+          <el-button class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>
         </el-descriptions-item>
       </el-descriptions>
     </div>
@@ -69,7 +70,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div v-if="model.latestTaskStatus === 2" class="section">
+    <div class="section">
       <h3>模型评估指标</h3>
       <el-descriptions class="quotas" :column="1" border :label-style="{'width':'300px'}">
         <el-descriptions-item label="① ROOT MEAN SQUARED ERROR">{{ anotherQuotas.rootMeanSquaredError }}</el-descriptions-item>
@@ -90,6 +91,7 @@
 
 <script>
 import { getModelDetail, getModelPrediction } from '@/api/model'
+import { getToken } from '@/utils/auth'
 // import LineChart from '@/components/Charts/LineChart.vue'
 
 export default {
@@ -120,7 +122,13 @@ export default {
       modelId: 24,
       modelComponent: [],
       lineChartData: [],
-      anotherQuotas: []
+      anotherQuotas: [],
+      taskState: null
+    }
+  },
+  computed: {
+    hasModelDownloadPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
     }
   },
   created() {
@@ -138,16 +146,18 @@ export default {
     },
     fetchData() {
       this.listLoading = true
-      this.modelId = this.$route.params.id || this.modelId
-      getModelDetail({ modelId: this.modelId }).then((response) => {
+      this.taskId = this.$route.params.id
+      this.modelId = this.$route.query.modelId
+      getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState } = response.result
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
+        this.taskState = taskState
       })
     },
     getChartsData() {
@@ -155,6 +165,12 @@ export default {
         this.lineChartData = res.result.prediction
         console.log(this.lineChartData)
       })
+    },
+    async download() {
+      const timestamp = new Date().getTime()
+      const nonce = Math.floor(Math.random() * 1000 + 1)
+      const token = getToken()
+      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?modelId=${this.modelId}&taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     }
   }
 }
@@ -196,8 +212,11 @@ export default {
 ::v-deep .el-table th{
   background: #fafafa;
 }
-::v-deep .el-descriptions-item__label:not(.is-bordered-label){
-  margin-right: 0;
+::v-deep .el-descriptions-item__container{
+  align-items: center;
+}
+.download-button{
+  margin-left: 5px;
 }
 .quotas{
   max-width: 800px;

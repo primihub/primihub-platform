@@ -76,4 +76,9 @@ public class CopyResourceDto {
      * 可见机构id
      */
     private List<String> authOrganList;
+
+    /**
+     * 资源字段列表
+     */
+    private List<CopyResourceFieldDto> fieldList;
 }

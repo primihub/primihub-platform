@@ -188,13 +188,4 @@ public class TestService {
         log.info("grpc结果:"+reply);
     }
 
-    public void runDataFileGrpc(Long fileId) {
-        SysFile sysFile = fileSecondarydbRepository.selectSysFileByFileId(fileId);
-        if (sysFile==null){
-            log.info("fileId:{}---null",fileId);
-        }else {
-            dataTaskService.resourceSynGRPCDataSet(sysFile);
-        }
-
-    }
 }

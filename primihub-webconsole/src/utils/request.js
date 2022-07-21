@@ -29,7 +29,7 @@ function endLoading() {
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 20 * 1000 // request timeout
+  timeout: 2 * 60000 // request timeout
 })
 
 const timestamp = new Date().getTime()
@@ -126,6 +126,7 @@ service.interceptors.response.use(
           message: '暂无权限',
           type: 'warning'
         })
+        return response.data
       } else if (code === 107) { // token失效
         message({
           message: '登录失效，请重新登录',

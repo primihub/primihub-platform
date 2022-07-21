@@ -33,6 +33,10 @@ public class DataModelResource {
      */
     private String resourceId;
     /**
+     * 任务ID
+     */
+    private Long taskId;
+    /**
      * 对齐后记录数量
      */
     private Integer alignmentNum;

@@ -82,6 +82,15 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/model/detail')
+      },
+      {
+        path: '/model/history/:id',
+        name: 'ModelTaskHistory',
+        meta: {
+          title: '执行记录'
+        },
+        hidden: true,
+        component: () => import('@/views/model/history')
       }
     ]
   },
@@ -96,42 +105,6 @@ export const asyncRoutes = [
       component: () => import('@/views/dag')
     }]
   },
-  // {
-  //   path: '/model',
-  //   component: Layout,
-  //   name: 'ModelMenu',
-  //   meta: { icon: 'el-icon-s-opportunity', title: '模型管理' },
-  //   redirect: '/model/list',
-  //   hidden: true,
-  //   children: [
-  //     {
-  //       path: 'list',
-  //       name: 'ModelList',
-  //       meta: {
-  //         title: '模型管理'
-  //       },
-  //       component: () => import('@/views/model/list')
-  //     },
-  //     {
-  //       path: 'create',
-  //       name: 'ModelCreate',
-  //       meta: {
-  //         title: '添加模型'
-  //       },
-  //       hidden: true,
-  //       component: () => import('@/views/model/create/index')
-  //     },
-  //     {
-  //       path: 'detail/:id',
-  //       name: 'ModelDetail',
-  //       meta: {
-  //         title: '模型详情'
-  //       },
-  //       hidden: true,
-  //       component: () => import('@/views/model/detail')
-  //     }
-  //   ]
-  // },
   {
     path: '/privateSearch',
     component: Layout,

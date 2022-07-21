@@ -2,6 +2,8 @@ package com.primihub.biz.repository.secondarydb.data;
 
 import com.primihub.biz.entity.data.po.DataComponent;
 import com.primihub.biz.entity.data.po.DataModel;
+import com.primihub.biz.entity.data.po.DataModelTask;
+import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.data.vo.*;
 import org.apache.ibatis.annotations.MapKey;
@@ -22,7 +24,7 @@ public interface DataModelRepository {
 
     DataModel  queryDataModelById(Long modelId);
 
-    List<ModelResourceVo> queryModelResource(Long modelId);
+    List<ModelResourceVo> queryModelResource(@Param("modelId") Long modelId,@Param("taskId") Long taskId);
 
     List<ModelQuotaVo> queryModelQuotaVoList(Long modelId);
 
@@ -34,6 +36,12 @@ public interface DataModelRepository {
     List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode);
 
     ModelComponentJson queryModelComponenJsonByUserId(@Param("userId")Long userId, @Param("isDraft") Integer isDraft, @Param("modelId")Long modelId);
+
+    DataModelTask queryModelTaskById(@Param("taskId") Long taskId);
+
+    List<DataModelTask> queryModelTaskByModelId(Map<String,Object> map);
+
+    Integer queryModelTaskByModelIdCount(@Param("modelId") Long modelId);
 
     List<Map<String, Object>> queryModelNumByProjectIds(@Param("projectIds")Set<Long> projectIds);
 

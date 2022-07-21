@@ -20,11 +20,11 @@
             )
     </insert>
 
-    <insert id="saveDataModelResource" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModel">
-        insert into data_mr (model_id,resource_id,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
+    <insert id="saveDataModelResource" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelResource">
+        insert into data_mr (model_id,resource_id,task_id,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
         values
         <foreach collection="list" index="index" item="item" separator=",">
-            (#{item.modelId},#{item.resourceId},#{item.alignmentNum},#{item.primitiveParamNum},#{item.modelParamNum},0,now(),now())
+            (#{item.modelId},#{item.resourceId},#{item.taskId},#{item.alignmentNum},#{item.primitiveParamNum},#{item.modelParamNum},0,now(),now())
         </foreach>
     </insert>
 
@@ -40,9 +40,9 @@
         insert into data_model_component (model_id,input_component_id,output_component_id,point_type,point_json,is_del,create_date,update_date)
         values (#{modelId},#{inputComponentId},#{outputComponentId},#{pointType},#{pointJson},0,now(),now())
     </insert>
-    <insert id="saveDataModelTask" parameterType="com.primihub.biz.entity.data.po.DataModelTask" useGeneratedKeys="true" keyProperty="taskId">
-        insert into data_model_task (task_status,model_id,cost_time,alignment_ratio,alignment_cost,analyze_ratio,analyze_cost,feature_ratio,feature_cost,sample_ratio,sample_cost,train_ratio,train_cost,lack_ratio,lack_cost,exception_ratio,exception_cost,is_del,create_date,update_date)
-        values (#{taskStatus},#{modelId},#{costTime},#{alignmentRatio},#{alignmentCost},#{analyzeRatio},#{analyzeCost},#{featureRatio},#{featureCost},#{sampleRatio},#{sampleCost},#{trainRatio},#{trainCost},#{lackRatio},#{lackCost},#{exceptionRatio},#{exceptionCost},0,now(),now())
+    <insert id="saveDataModelTask" parameterType="com.primihub.biz.entity.data.po.DataModelTask" useGeneratedKeys="true" keyProperty="id">
+        insert into data_model_task (model_id,task_id,predict_file,predict_content,component_json,is_del,create_date,update_date)
+        values (#{modelId},#{taskId},#{predictFile},#{predictContent},#{componentJson},0,now(),now())
     </insert>
     <update id="updateDataModel" parameterType="com.primihub.biz.entity.data.po.DataModel">
         update data_model
@@ -101,24 +101,9 @@
     <update id="updateDataModelTask" parameterType="com.primihub.biz.entity.data.po.DataModelTask">
         update data_model_task
         <set>
-            <if test="taskStatus!=null">task_status = #{taskStatus},</if>
-            <if test="modelId!=null">model_id = #{modelId},</if>
-            <if test="costTime!=null">cost_time = #{costTime},</if>
-            <if test="alignmentRatio!=null">alignment_ratio = #{alignmentRatio},</if>
-            <if test="alignmentCost!=null">alignment_cost = #{alignmentCost},</if>
-            <if test="analyzeRatio!=null">analyze_ratio = #{analyzeRatio},</if>
-            <if test="analyzeCost!=null">analyze_cost = #{analyzeCost},</if>
-            <if test="featureRatio!=null">feature_ratio = #{featureRatio},</if>
-            <if test="featureCost!=null">feature_cost = #{featureCost},</if>
-            <if test="sampleRatio!=null">sample_ratio = #{sampleRatio},</if>
-            <if test="sampleCost!=null">sample_cost = #{sampleCost},</if>
-            <if test="trainRatio!=null">train_ratio = #{trainRatio},</if>
-            <if test="trainCost!=null">train_cost = #{trainCost},</if>
-            <if test="lackRatio!=null">lack_ratio = #{lackRatio},</if>
-            <if test="lackCost!=null">lack_cost = #{lackCost},</if>
-            <if test="exceptionRatio!=null">exception_ratio = #{exceptionRatio},</if>
-            <if test="exceptionCost!=null">exception_cost = #{exceptionCost},</if>
-            <if test="isDel!=null">is_del = #{isDel},</if>
+            <if test="predictFile!=null">predict_file = #{predictFile},</if>
+            <if test="predictContent!=null">predict_content = #{predictContent},</if>
+            <if test="componentJson!=null">component_json = #{componentJson},</if>
             update_date = now()
         </set>
         where task_id = #{taskId}

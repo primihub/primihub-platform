@@ -18,6 +18,8 @@ import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -113,9 +115,35 @@ public class DataModelConvert {
         if (dataComponentVo.getTimeConsuming()>0){
             dataComponentVo.setTimeRatio(dataComponentVo.getTimeRatio().add(new BigDecimal(dataComponentVo.getTimeConsuming())));
             dataComponentVo.setTimeRatio(dataComponentVo.getTimeRatio().divide(new BigDecimal(sumTime),6, RoundingMode.HALF_DOWN));
-//            log.info("{} / {} = {}",dataComponentVo.getTimeConsuming(),sumTime,dataComponentVo.getTimeRatio());
         }
         return dataComponentVo;
+    }
+
+    public static ModelProjectOrganVo projectOrganPoCovertProjectOrganVo(DataProjectOrgan organ,Map<String,Object> organMap,ModelProjectResourceVo resourceVo,String sysLocalOrganId){
+        ModelProjectOrganVo modelProjectOrganVo = new ModelProjectOrganVo();
+        modelProjectOrganVo.setParticipationIdentity(organ.getParticipationIdentity());
+        modelProjectOrganVo.setOrganId(organ.getOrganId());
+
+        modelProjectOrganVo.setAuditStatus(organ.getAuditStatus());
+        modelProjectOrganVo.setCreator(sysLocalOrganId.equals(organ.getOrganId()));
+        modelProjectOrganVo.setOrganName(organMap==null?"":organMap.get("globalName")==null?"":organMap.get("globalName").toString());
+        if (resourceVo!=null)
+            modelProjectOrganVo.getResources().add(resourceVo);
+        return modelProjectOrganVo;
+    }
+
+
+    public static ModelProjectResourceVo projectResourcePoCovertModelResourceVo(DataProjectResource resource,Map<String,Object> resourceMap){
+        ModelProjectResourceVo modelProjectResourceVo = new ModelProjectResourceVo();
+        modelProjectResourceVo.setOrganId(resource.getOrganId());
+        modelProjectResourceVo.setResourceId(resource.getResourceId());
+        modelProjectResourceVo.setResourceName(resourceMap==null?"":resourceMap.get("resourceName")==null?"":resourceMap.get("resourceName").toString());
+        modelProjectResourceVo.setResourceRowsCount(resourceMap==null?null:resourceMap.get("resourceRowsCount")==null?0:Integer.valueOf(resourceMap.get("resourceRowsCount").toString()));
+        modelProjectResourceVo.setResourceColumnCount(resourceMap==null?null:resourceMap.get("resourceColumnCount")==null?0:Integer.valueOf(resourceMap.get("resourceColumnCount").toString()));
+        modelProjectResourceVo.setResourceContainsY(resourceMap==null?null:resourceMap.get("resourceContainsY")==null?0:Integer.valueOf(resourceMap.get("resourceContainsY").toString()));
+        modelProjectResourceVo.setAuditStatus(resource.getAuditStatus());
+        modelProjectResourceVo.setParticipationIdentity(resource.getParticipationIdentity());
+        return modelProjectResourceVo;
     }
 
 }

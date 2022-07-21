@@ -26,12 +26,4 @@ public class GrpcConfiguration {
                 .usePlaintext()
                 .build();
     }
-    @Bean(name="grpcDataSet1ClientChannel")
-    public Channel initGrpcDataSet1ClientChannel(BaseConfiguration baseConfiguration){
-        return ManagedChannelBuilder
-                .forAddress(baseConfiguration.getGrpcDataSetClientAddress(),baseConfiguration.getGrpcDataSet1ClientPort())
-                .usePlaintext()
-                .build();
-    }
-
 }

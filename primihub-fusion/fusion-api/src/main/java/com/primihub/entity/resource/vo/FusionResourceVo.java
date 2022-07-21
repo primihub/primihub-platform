@@ -52,6 +52,11 @@ public class FusionResourceVo {
     private String resourceColumnNameList;
 
     /**
+     * 开启保护字段列表
+     */
+    private String openColumnNameList;
+
+    /**
      * 资源字段中是否包含y字段 0否 1是
      */
     private Integer resourceContainsY;

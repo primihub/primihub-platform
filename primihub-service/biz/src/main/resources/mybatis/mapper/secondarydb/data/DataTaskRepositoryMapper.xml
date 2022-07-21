@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataTaskRepository">
+
+    <select id="selectDataTaskByTaskId" resultType="com.primihub.biz.entity.data.po.DataTask">
+        select
+            task_id as taskId,
+            task_id_name as taskIdName,
+            task_name as taskName,
+            task_state as taskState,
+            task_type as taskType,
+            task_result_path as taskResultPath,
+            task_result_content as taskResultContent,
+            task_start_time as taskStartTime,
+            task_end_time as taskEndTime,
+            task_user_id as taskUserId,
+            task_error_msg as taskErrorMsg,
+            is_del as isDel,
+            create_date as createDate,
+            update_date as updateDate
+        from data_task where task_id = #{taskId}
+    </select>
+    <select id="selectDataTaskByTaskIds" resultType="com.primihub.biz.entity.data.po.DataTask">
+        select
+            task_id as taskId,
+            task_id_name as taskIdName,
+            task_name as taskName,
+            task_state as taskState,
+            task_type as taskType,
+            task_result_path as taskResultPath,
+            task_result_content as taskResultContent,
+            task_start_time as taskStartTime,
+            task_end_time as taskEndTime,
+            task_user_id as taskUserId,
+            task_error_msg as taskErrorMsg,
+            is_del as isDel,
+            create_date as createDate,
+            update_date as updateDate
+        from data_task where task_id in
+        <foreach collection="taskIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+</mapper>
