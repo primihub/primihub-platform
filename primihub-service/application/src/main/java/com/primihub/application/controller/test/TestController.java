@@ -74,13 +74,6 @@ public class TestController {
         return BaseResultEntity.success();
     }
 
-    @RequestMapping("/runDataFileGrpc")
-    public BaseResultEntity runDataFileGrpc(Long fileId){
-        if (fileId!=null)
-            testService.runDataFileGrpc(fileId);
-        return BaseResultEntity.success();
-    }
-
     @RequestMapping("/runFeign")
     public BaseResultEntity runFeign(){
         return BaseResultEntity.success(testService.runFeign());

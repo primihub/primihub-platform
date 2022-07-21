@@ -5,9 +5,11 @@ import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.base.PageDataEntity;
 import com.primihub.entity.copy.dto.CopyResourceDto;
+import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.fusion.po.FusionOrgan;
 import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.entity.resource.po.FusionResource;
+import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.po.FusionResourceVisibilityAuth;
 import com.primihub.repository.FusionRepository;
 import com.primihub.repository.FusionResourceRepository;
@@ -43,7 +45,9 @@ public class ResourceService {
         Integer count = resourceRepository.selectFusionResourceCount(param);
         Set<String> organIds = fusionResources.stream().map(FusionResource::getOrganId).collect(Collectors.toSet());
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
-        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()))).collect(Collectors.toList())));
+        Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
+        Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getResourceId()))).collect(Collectors.toList())));
     }
 
     public BaseResultEntity getDataResource(String resourceId) {
@@ -51,7 +55,8 @@ public class ResourceService {
         if (fusionResource==null)
             return BaseResultEntity.success();
         FusionOrgan fusionOrgan = fusionRepository.getFusionOrganByGlobalId(fusionResource.getOrganId());
-        return BaseResultEntity.success(DataResourceConvert.fusionResourcePoConvertVo(fusionResource,fusionOrgan==null?"":fusionOrgan.getGlobalName()));
+        List<FusionResourceField> fusionResourceFields = resourceRepository.selectFusionResourceFieldById(fusionResource.getId());
+        return BaseResultEntity.success(DataResourceConvert.fusionResourcePoConvertVo(fusionResource,fusionOrgan==null?"":fusionOrgan.getGlobalName(),fusionResourceFields));
     }
 
 
@@ -89,8 +94,24 @@ public class ResourceService {
                 fusionResource.setId(fr.getId());
                 resourceRepository.updateFusionResource(fusionResource);
                 existenceTags.addAll(Arrays.asList(fr.getResourceTag().split(",")));
+                Map<String, FusionResourceField> resourceFieldMap = resourceRepository.selectFusionResourceFieldById(fr.getId()).stream().collect(Collectors.toMap(FusionResourceField::getFieldName, Function.identity()));
+                if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
+                    for (CopyResourceFieldDto dto : copyResourceDto.getFieldList()) {
+                        if (resourceFieldMap.get(dto.getFieldName())==null){
+                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), null);
+                            resourceRepository.saveResourceField(fusionResourceField);
+                        }else {
+                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), resourceFieldMap.get(dto.getFieldName()).getFieldId());
+                            resourceRepository.updateResourceField(fusionResourceField);
+                        }
+                    }
+                }
             }else {
                 resourceRepository.saveFusionResource(fusionResource);
+                if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
+                    List<FusionResourceField> resourceFields = copyResourceDto.getFieldList().stream().map(field -> DataResourceConvert.copyResourceFieldDtoConvertPo(field, fusionResource.getId(), null)).collect(Collectors.toList());
+                    resourceRepository.saveBatchResourceField(resourceFields);
+                }
             }
             if (fusionResource.getResourceAuthType()==3){
                 List<String> authStringList=copyResourceDto.getAuthOrganList();
@@ -123,6 +144,8 @@ public class ResourceService {
             return BaseResultEntity.success();
         Set<String> organIds = fusionResources.stream().map(FusionResource::getOrganId).collect(Collectors.toSet());
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
-        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()))).collect(Collectors.toList()));
+        Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
+        Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
+        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()))).collect(Collectors.toList()));
     }
 }

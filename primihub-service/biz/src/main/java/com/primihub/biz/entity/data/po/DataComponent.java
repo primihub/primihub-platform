@@ -77,7 +77,7 @@ public class DataComponent {
 
     public Long getTimeConsuming(){
         if ((startTime!=null&&startTime!=0L)&&(endTime!=null&&endTime!=0L)){
-            return (endTime-startTime)/1000;// j815
+            return (endTime-startTime)/1000;
         }
         return 0L;
     }

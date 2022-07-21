@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.DataTaskPrRepository">
+
+    <insert id="saveDataTask" parameterType="com.primihub.biz.entity.data.po.DataTask" keyProperty="taskId" useGeneratedKeys="true">
+        insert into data_task (task_id_name,task_name,task_state,task_type,task_result_path,task_result_content,task_start_time,task_end_time,task_user_id,task_error_msg,is_del,create_date,update_date)
+        values (#{taskIdName},#{taskName},#{taskState},#{taskType},#{taskResultPath},#{taskResultContent},#{taskStartTime},#{taskEndTime},#{taskUserId},#{taskErrorMsg},0,now(),now())
+    </insert>
+    <update id="updateDataTask" parameterType="com.primihub.biz.entity.data.po.DataTask">
+        update data_task
+        <set>
+            <if test="taskIdName!=null">task_id_name = #{taskIdName},</if>
+            <if test="taskName!=null">task_name = #{taskName},</if>
+            <if test="taskState!=null">task_state = #{taskState},</if>
+            <if test="taskType!=null">task_type = #{taskType},</if>
+            <if test="taskResultPath!=null">task_result_path = #{taskResultPath},</if>
+            <if test="taskResultContent!=null">task_result_content = #{taskResultContent},</if>
+            <if test="taskStartTime!=null">task_start_time = #{taskStartTime},</if>
+            <if test="taskEndTime!=null">task_end_time = #{taskEndTime},</if>
+            <if test="taskUserId!=null">task_user_id = #{taskUserId},</if>
+            <if test="taskErrorMsg!=null">task_error_msg = #{taskErrorMsg},</if>
+            update_date = now()
+        </set>
+        where task_id = #{taskId}
+    </update>
+</mapper>

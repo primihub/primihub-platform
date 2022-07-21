@@ -12,14 +12,8 @@ import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.po.DataProjectResource;
 import com.primihub.biz.entity.data.po.DataResource;
-import com.primihub.biz.entity.data.req.DataProjectApprovalReq;
-import com.primihub.biz.entity.data.req.DataProjectOrganReq;
-import com.primihub.biz.entity.data.req.DataProjectQueryReq;
-import com.primihub.biz.entity.data.req.DataProjectReq;
-import com.primihub.biz.entity.data.vo.ComponentResourceVo;
-import com.primihub.biz.entity.data.vo.DataProjectDetailsVo;
-import com.primihub.biz.entity.data.vo.DataProjectOrganVo;
-import com.primihub.biz.entity.data.vo.ShareProjectVo;
+import com.primihub.biz.entity.data.req.*;
+import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
@@ -60,6 +54,8 @@ public class DataProjectService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private DataModelRepository dataModelRepository;
+    @Autowired
+    private DataModelService dataModelService;
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -349,15 +345,16 @@ public class DataProjectService {
     }
 
     public BaseResultEntity getListStatistics() {
-        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
-        if (StringUtils.isBlank(sysLocalOrganId))
-            return BaseResultEntity.success();
-        List<Map<String, Object>> projectStatics = dataProjectRepository.selectProjectStatics(sysLocalOrganId);
-        if (projectStatics.size()==0)
-            return BaseResultEntity.success();
         Map<String,Integer> map = new HashMap<>();
         map.put("own",0);
         map.put("other",0);
+        map.put("total",0);
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        if (StringUtils.isBlank(sysLocalOrganId))
+            return BaseResultEntity.success(map);
+        List<Map<String, Object>> projectStatics = dataProjectRepository.selectProjectStatics(sysLocalOrganId);
+        if (projectStatics.size()==0)
+            return BaseResultEntity.success(map);
         Integer total = 0;
         for (Map<String, Object> projectStatic : projectStatics) {
             Object amount = projectStatic.get("amount");
@@ -405,29 +402,55 @@ public class DataProjectService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity getProjectResourceData(Long projectId) {
+    public BaseResultEntity getProjectResourceData(Long projectId,String organId) {
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId,null);
         if (dataProject==null){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到项目详情");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到项目信息");
         }
-        Map<String,Object> map = new HashMap<>();
-        map.put("projectId",dataProject.getProjectId());
-        map.put("projectName",dataProject.getProjectName());
-        List<DataProjectResource> projectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
-        List<String> resourceIds = projectResources.stream().filter(pr->pr.getAuditStatus()==1).map(DataProjectResource::getResourceId).collect(Collectors.toList());
-        Map<String, Map> resourceListMap = getResourceListMap(resourceIds, dataProject.getServerAddress());
-        if (resourceListMap.isEmpty()){
-            map.put("resource",new ArrayList<>());
-        }else {
-            Iterator<Map.Entry<String, Map>> iterator = resourceListMap.entrySet().iterator();
-            List<ComponentResourceVo> componentResources = new ArrayList<>();
-            while (iterator.hasNext()){
-                Map.Entry<String, Map> next = iterator.next();
-                ComponentResourceVo componentResourceVo = DataModelConvert.resourceRecordMapConvertComponentResourceVo(next.getValue());
-                componentResources.add(componentResourceVo);
+        DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganByProjectIdAndOrganId(dataProject.getProjectId(), organId);
+        if (dataProjectOrgan==null){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到项目机构信息");
+        }
+        if (dataProjectOrgan.getAuditStatus()!=1){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"机构使用状态可不用");
+        }
+        List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectIdAndOrganId(dataProject.getProjectId(), organId);
+        if (dataProjectResources.size()==0)
+            return BaseResultEntity.success(new ArrayList());
+        List<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toList());
+        Map<String, Map> resourceMap = getResourceListMap(resourceIds, dataProject.getServerAddress());
+        return BaseResultEntity.success(dataProjectResources.stream().map(resource->DataModelConvert.projectResourcePoCovertModelResourceVo(resource,resourceMap.get(resource.getResourceId()))).collect(Collectors.toList()));
+    }
+
+    public BaseResultEntity getProjectResourceOrgan(Long projectId,Long modelId) {
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId,null);
+        if (dataProject==null){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到项目信息");
+        }
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+        dataProjectOrgans = dataProjectOrgans.stream().filter(organ -> organ.getAuditStatus() == 1).collect(Collectors.toList());
+        if (dataProjectOrgans.size()==0){
+            BaseResultEntity.success(dataProjectOrgans);
+        }
+        List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
+        Map<String, Map> organListMap = getOrganListMap(organIds, dataProject.getServerAddress());
+        Map<String, ModelProjectResourceVo> resourceVoMap = new HashMap<>();
+        if (modelId!=null&&modelId!=0L){
+            DataModelAndComponentReq modelComponentReq = dataModelService.getModelComponentReq(modelId, null);
+            if (modelComponentReq!=null&&modelComponentReq.getModelComponents()!=null&&modelComponentReq.getModelComponents().size()!=0){
+                Map<String, String> componentValMap = dataModelService.getDataAlignmentComponentVals(modelComponentReq.getModelComponents());
+                String selectData = componentValMap.get("selectData");
+                if(StringUtils.isNotBlank(selectData)){
+                    List<ModelProjectResourceVo> modelProjectResourceVos = JSONObject.parseArray(selectData, ModelProjectResourceVo.class);
+                    if (modelProjectResourceVos!=null&&modelProjectResourceVos.size()!=0){
+                        for (ModelProjectResourceVo vo : modelProjectResourceVos) {
+                            resourceVoMap.put(vo.getOrganId(),vo);
+                        }
+                    }
+                }
             }
-            map.put("resource",componentResources);
         }
-        return BaseResultEntity.success(map);
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        return BaseResultEntity.success(dataProjectOrgans.stream().map(organ -> DataModelConvert.projectOrganPoCovertProjectOrganVo(organ,organListMap.get(organ.getOrganId()),resourceVoMap.get(organ.getOrganId()),sysLocalOrganId)));
     }
 }

@@ -20,39 +20,6 @@ public class ModelController {
     private DataModelService dataModelService;
 
     /**
-     * 创建模型
-     * @return
-     */
-    @PostMapping("savemodel")
-    public BaseResultEntity saveDataProject(@RequestHeader("userId") Long userId,
-                                            @RequestHeader("organId")Long organId,
-                                            DataModelReq req){
-        if (organId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        if (req.getProjectId()==null || req.getProjectId()==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        if (req.getModelName()==null || req.getModelName().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelName");
-        }
-        if (req.getModelDesc()==null || req.getModelDesc().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelDesc");
-        }
-        if (req.getModelType()==null || req.getModelType()==0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelType");
-        }
-        if (req.getYValueColumn()==null || req.getYValueColumn().trim().equals("")){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"yValueColumn");
-        }
-        if (req.getResourceId()==null||req.getResourceId()==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        }
-        return dataModelService.saveDataModel(userId,organId,req);
-    }
-
-
-    /**
      * 获取模型列表
      * @return
      */
@@ -70,11 +37,11 @@ public class ModelController {
      * @return
      */
     @GetMapping("getdatamodel")
-    public BaseResultEntity getDataProject(Long modelId){
-        if (modelId==null||modelId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+    public BaseResultEntity getDataProject(Long taskId){
+        if (taskId==null||taskId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
-        return dataModelService.getDataModel(modelId);
+        return dataModelService.getDataModel(taskId);
     }
 
     //---------------------------------v0.2----------------------------------
@@ -136,24 +103,24 @@ public class ModelController {
      * @return
      */
     @GetMapping("runTaskModel")
-    public BaseResultEntity runTaskModel(Long modelId){
+    public BaseResultEntity runTaskModel(@RequestHeader("userId") Long userId,Long modelId){
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
-        return dataModelService.runTaskModel(modelId);
+        return dataModelService.runTaskModel(modelId,userId);
     }
 
     /**
      * 获取运行模型信息
-     * @param modelId
+     * @param taskId
      * @return
      */
     @GetMapping("getTaskModelComponent")
-    public BaseResultEntity getTaskModelComponent(Long modelId){
-        if (modelId==null||modelId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+    public BaseResultEntity getTaskModelComponent(Long taskId){
+        if (taskId==null||taskId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
-        return dataModelService.getTaskModelComponent(modelId);
+        return dataModelService.getTaskModelComponent(taskId);
     }
 
     @RequestMapping("getModelPrediction")
@@ -162,6 +129,8 @@ public class ModelController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         return dataModelService.getModelPrediction(modelId);
     }
+
+
 
 
 }

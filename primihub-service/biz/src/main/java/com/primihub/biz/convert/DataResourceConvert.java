@@ -10,6 +10,7 @@ import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +146,7 @@ public class DataResourceConvert {
         return vo;
     }
 
-    public static DataResourceCopyVo dataResourcePoConvertCopyVo(DataResource dataResource, String organId, String tags, List<String> authOrganList){
+    public static DataResourceCopyVo dataResourcePoConvertCopyVo(DataResource dataResource, String organId, String tags, List<String> authOrganList,List<DataFileField> fieldList){
         DataResourceCopyVo dataResourceCopyVo = new DataResourceCopyVo();
         dataResourceCopyVo.setResourceId(dataResource.getResourceFusionId());
         dataResourceCopyVo.setResourceName(dataResource.getResourceName());
@@ -161,7 +162,25 @@ public class DataResourceConvert {
         dataResourceCopyVo.setOrganId(organId);
         dataResourceCopyVo.setResourceTag(tags);
         dataResourceCopyVo.setAuthOrganList(authOrganList);
+        dataResourceCopyVo.setFieldList(new ArrayList<>());
+        if (fieldList!=null&&fieldList.size()!=0){
+            for (DataFileField dataFileField : fieldList) {
+                dataResourceCopyVo.getFieldList().add(dataResourceFieldPoConvertCopyVo(dataFileField));
+            }
+        }
         return dataResourceCopyVo;
+    }
+
+    public static DataResourceFieldCopyVo dataResourceFieldPoConvertCopyVo(DataFileField dataFileField){
+        DataResourceFieldCopyVo dataResourceFieldCopyVo = new DataResourceFieldCopyVo();
+        dataResourceFieldCopyVo.setFieldName(dataFileField.getFieldName());
+        dataResourceFieldCopyVo.setFieldAs(dataFileField.getFieldAs());
+        dataResourceFieldCopyVo.setFieldType(dataFileField.getFieldType());
+        dataResourceFieldCopyVo.setFieldDesc(dataFileField.getFieldDesc());
+        dataResourceFieldCopyVo.setRelevance(dataFileField.getRelevance());
+        dataResourceFieldCopyVo.setGrouping(dataFileField.getGrouping());
+        dataResourceFieldCopyVo.setProtectionStatus(dataFileField.getProtectionStatus());
+        return dataResourceFieldCopyVo;
     }
 
     public static DataPsiResourceAllocationVo fusionResourceConvertAllocationVo(Map<String,Object> fr, String organId) {
@@ -171,7 +190,6 @@ public class DataResourceConvert {
         vo.setResourceId(fr.getOrDefault("resourceId","").toString());
         vo.setResourceName(fr.getOrDefault("resourceName","").toString());
         vo.setOrganId(fr.getOrDefault("organId","").toString());
-//        System.out.println(vo.toString());
         Object resourceColumnNameList = fr.get("resourceColumnNameList");
         if (resourceColumnNameList!=null&&StringUtils.isNotBlank(resourceColumnNameList.toString())){
             vo.getKeywordList().addAll(Arrays.asList(resourceColumnNameList.toString().split(",")));
