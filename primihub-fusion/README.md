@@ -48,8 +48,8 @@ As long as the finished infos show up, the project have been compiled and packag
 ## How to run
 Before run, make sure that your service dependencies are available and the configuration is correct.
 
-    java -jar -Dfile.encoding=UTF-8 ./fusion-api/target/*-SNAPSHOT.jar --server.port=8090
+    java -jar -Dfile.encoding=UTF-8 ./fusion-api/target/*-SNAPSHOT.jar --server.port=8099
 
 execute that the command,you can check the url:
     
-    http://localhost:8090/fusion/healthConnection
+    http://localhost:8099/fusion/healthConnection
