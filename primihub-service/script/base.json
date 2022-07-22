@@ -3,6 +3,7 @@
         "/user/login",
         "/user/register",
         "/user/sendVerificationCode",
+        "/user/forgetPassword",
         "/common/getValidatePublicKey",
         "/shareData/syncProject"
     ],

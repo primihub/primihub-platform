@@ -1,3 +1,4 @@
+use fusion;
 -- ----------------------------
 -- Table structure for fusion_go
 -- ----------------------------

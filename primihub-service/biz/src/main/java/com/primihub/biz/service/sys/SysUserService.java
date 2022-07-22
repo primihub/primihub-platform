@@ -377,6 +377,8 @@ public class SysUserService {
 
     public BaseResultEntity forgetPassword(ForgetPasswordParam forgetPasswordParam){
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(forgetPasswordParam.getUserAccount());
+        if(sysUser==null||sysUser.getUserId()==null)
+            return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         updatePassword(sysUser.getUserId(),forgetPasswordParam.getPassword());
         return BaseResultEntity.success();
     }
