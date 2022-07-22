@@ -268,7 +268,13 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消'
       }).then(({ value }) => {
-        if (value.length > 200) {
+        if (!value) {
+          this.$message({
+            type: 'error',
+            message: '请输入拒绝原因'
+          })
+          return
+        } else if (value.length > 200) {
           this.$message({
             type: 'error',
             message: '拒绝理由最多200字'
@@ -369,27 +375,27 @@ export default {
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      const diffrents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
-      console.log('handleProviderOrganSubmit diffrents', diffrents)
-      if (diffrents.length > 0) {
-        this.saveParams.projectOrgans = diffrents.map(item => {
+      const differents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
+      console.log('handleProviderOrganSubmit differents', differents)
+      if (differents.length > 0) {
+        this.saveParams.projectOrgans = differents.map(item => {
           return {
             organId: item.globalId,
             participationIdentity: 2
           }
         })
-      }
-      const success = this.saveProject()
-      if (success) {
-        data.map(item => {
-          this.organs.push({
-            organId: item.globalId,
-            organName: item.globalName,
-            participationIdentity: 2
+        const success = this.saveProject()
+        if (success) {
+          data.map(item => {
+            this.organs.push({
+              organId: item.globalId,
+              organName: item.globalName,
+              participationIdentity: 2
+            })
           })
-        })
+        }
+        this.providerOrganIds = data
       }
-      this.providerOrganIds = data
       this.providerOrganDialogVisible = false
     },
     saveProject() {
@@ -456,7 +462,7 @@ export default {
           this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
           this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
           this.projectAuditStatus = this.currentOrgan.auditStatus === 1
-          this.isShowAuditForm = !this.projectAuditStatus
+          this.isShowAuditForm = this.currentOrgan.auditStatus === 0
           this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
           this.providerOrganIds = this.providerOrganIds.map(item => {
             return {

@@ -14,11 +14,11 @@
       :reserve-selection="true"
       :selectable="checkSelectable"
       type="selection"
-      width="55"
+      width="40"
     />
     <el-table-column
       label="资源 / Id"
-      min-width="150"
+      min-width="120"
     >
       <template slot-scope="{row}">
         <!-- <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br> -->
@@ -239,5 +239,6 @@ export default {
 ::v-deep .el-button{
   margin: 2px 5px;
 }
+
 </style>
 

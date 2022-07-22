@@ -17,7 +17,6 @@
     "grpcClientPort": 50050,
     "grpcDataSetClientAddress": "192.168.99.20",
     "grpcDataSetClientPort": 50051,
-    "grpcDataSet1ClientPort": 50052,
     "grpcServerPort": 9090,
     "uploadUrlDirPrefix": "/data/upload/",
     "resultUrlDirPrefix": "/data/result/",
@@ -26,7 +25,7 @@
     "model_components":[
         {
             "component_code": "dataAlignment",
-            "component_name": "数据对齐",
+            "component_name": "选择数据集",
             "is_show": 0,
             "is_mandatory": 0,
             "component_types": [

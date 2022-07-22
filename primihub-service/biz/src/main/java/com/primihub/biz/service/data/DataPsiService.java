@@ -41,11 +41,7 @@ public class DataPsiService {
     @Autowired
     private FusionResourceService fusionResourceService;
     @Autowired
-    private SysOrganService sysOrganService;
-
-    @Autowired
     private PsiAsyncService psiAsyncService;
-
     @Autowired
     private OrganConfiguration organConfiguration;
 

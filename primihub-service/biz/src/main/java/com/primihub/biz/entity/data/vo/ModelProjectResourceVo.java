@@ -34,4 +34,9 @@ public class ModelProjectResourceVo {
      * 审核状态 0审核中 1同意 2拒绝
      */
     private Integer auditStatus;
+
+    /**
+     * 机构项目中参与身份 1发起者 2协作者
+     */
+    private Integer participationIdentity;
 }
