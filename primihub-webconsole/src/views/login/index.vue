@@ -44,11 +44,12 @@
               <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
             </span>
           </el-form-item>
-          <div class="forgot">
-            <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
-          </div>
           <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="handleLogin">登录</el-button>
         </el-form>
+        <div class="forgot">
+          <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
+          <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
+        </div>
       </div>
     </div>
 
@@ -103,6 +104,12 @@ export default {
     forgotPwd() {
       this.$router.push({
         path: '/forgotPwd',
+        replace: true
+      })
+    },
+    toRegister() {
+      this.$router.push({
+        path: '/register',
         replace: true
       })
     },

@@ -105,6 +105,7 @@ service.interceptors.response.use(
           message: '缺少参数',
           type: 'warning'
         })
+        return data
       } else if (code === 101) {
         message({
           message: '无效参数',

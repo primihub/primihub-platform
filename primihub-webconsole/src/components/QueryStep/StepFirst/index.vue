@@ -16,7 +16,7 @@
           </el-form-item>
         </div>
         <el-form-item label="检索ID" prop="pirParam">
-          <el-input v-model="form.pirParam" placeholder="请输入检索id" />
+          <el-input v-model="form.pirParam" placeholder="请输入检索id" maxlength="50" show-word-limit />
         </el-form-item>
         <el-button v-if="hasPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
       </div>
@@ -74,7 +74,7 @@ export default {
         ],
         pirParam: [
           { required: true, message: '请输入检索ID', trigger: 'blur' },
-          { max: 10, message: '长度在10个字符以内', trigger: 'blur' }
+          { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
       dialogVisible: false,
