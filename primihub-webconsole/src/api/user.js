@@ -15,6 +15,35 @@ export function login(data) {
     data
   })
 }
+export function register(data) {
+  return request({
+    url: '/sys/user/register',
+    method: 'POST',
+    data
+  })
+}
+export function forgetPassword(data) {
+  return request({
+    url: '/sys/user/forgetPassword',
+    method: 'POST',
+    data
+  })
+}
+export function updatePassword(data) {
+  return request({
+    url: '/sys/user/updatePassword',
+    method: 'POST',
+    data
+  })
+}
+export function sendVerificationCode(data) {
+  return request({
+    url: '/sys/user/sendVerificationCode',
+    method: 'POST',
+    showLoading: false,
+    data
+  })
+}
 
 export function logout() {
   return Promise.resolve({})
