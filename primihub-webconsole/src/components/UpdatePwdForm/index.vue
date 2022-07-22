@@ -54,21 +54,6 @@
         <el-button :loading="loading" type="primary" class="register-button" @click.native.prevent="handleSubmit">提交</el-button>
       </el-form>
     </div>
-    <el-dialog
-      :visible.sync="dialogVisible"
-      width="30%"
-      :before-close="handleClose"
-      append-to-body
-      :modal="false"
-    >
-      <div class="text-container">
-        <p class="text-container-icon"><i class="el-icon-success" /></p>
-        <p class="text-container-text">
-          <span>密码修改成功</span>
-        </p>
-        <el-button type="primary" @click="toLogin">重新登录</el-button>
-      </div>
-    </el-dialog>
   </div>
 
 </template>
@@ -115,7 +100,6 @@ export default {
       passwordType: 'password',
       passwordAgainType: 'password',
       publicKeyData: {},
-      dialogVisible: false,
       timer: null
     }
   },
@@ -123,11 +107,13 @@ export default {
     await this.getValidatePublicKey()
   },
   methods: {
-    toLogin() {
+    async toLogin() {
       this.$notify.closeAll()
-      this.$router.push({
-        path: '/login',
-        replace: true
+      this.$store.dispatch('user/logout').then(() => {
+        this.$router.push({
+          path: '/login',
+          replace: true
+        })
       })
     },
     async getValidatePublicKey() {
@@ -216,9 +202,6 @@ export default {
           return false
         }
       })
-    },
-    handleClose() {
-      this.dialogVisible = false
     }
   }
 }

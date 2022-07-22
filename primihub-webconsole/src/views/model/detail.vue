@@ -147,7 +147,7 @@ export default {
     fetchData() {
       this.listLoading = true
       this.taskId = this.$route.params.id
-      this.modelId = this.$route.query.modelId
+      this.modelId = this.$route.query.modelId || 0
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
