@@ -2,6 +2,7 @@ package com.primihub.application.controller.data;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataTaskService;
@@ -31,8 +32,19 @@ public class TaskController {
     }
 
     @GetMapping("downloadTaskFile")
-    public void downloadPirTask(HttpServletResponse response, Long taskId,Long modelId) {
+    public void downloadTaskFile(HttpServletResponse response, Long taskId,Long modelId) {
         DataTask dataTask = dataTaskService.getDataTaskById(taskId,modelId);
+        if (dataTask!=null&&dataTask.getTaskType().equals(TaskTypeEnum.MODEL.getTaskType())){
+
+        }else {
+            downloadDefaultTask(response,dataTask);
+        }
+    }
+    public void downloadModelTask(HttpServletResponse response,DataTask dataTask){
+
+    }
+
+    public void downloadDefaultTask(HttpServletResponse response,DataTask dataTask){
         String content = "no data";
         String fileName = null;
         if (dataTask!=null){
