@@ -22,6 +22,6 @@ public class ModelOutputPathDto {
         this.modelFileName = path + "modelFileName";
         this.predictFileName = path + "predictFileName.csv";
         this.indicatorFileName = path + "indicatorFileName.json";
-        this.modelRunZipFilePath = path + "modelRunZip.zip";
+        this.modelRunZipFilePath = path + ".zip";
     }
 }

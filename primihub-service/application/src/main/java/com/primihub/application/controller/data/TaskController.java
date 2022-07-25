@@ -54,7 +54,7 @@ public class TaskController {
                 FileInputStream inputStream = new FileInputStream(file);
                 // 设置响应头、以附件形式打开文件
                 response.setContentType("application/zip");
-                response.setHeader("content-disposition", "attachment; fileName=" + new String((dataTask.getTaskIdName()+".zip").getBytes("UTF-8"),"iso-8859-1"));
+                response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
                 ServletOutputStream outputStream = response.getOutputStream();
                 int len = 0;
                 byte[] data = new byte[1024];
