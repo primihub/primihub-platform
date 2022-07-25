@@ -1,84 +1,75 @@
 <template>
   <div class="login-container">
-    <div class="poster-wrap">
-      <div class="poster-inner">
-        <img src="/images/logo-text.png" alt="">
-        <p class="slogan">致力于以隐私计算技术构建数据信任与安全</p>
+    <div class="body">
+      <div class="poster-wrap">
+        <Poster />
+      </div>
+      <div class="login-wrap">
+        <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
+          <div class="title-container">
+            <h3 class="title">登录</h3>
+          </div>
+
+          <el-form-item prop="username">
+            <span class="svg-container">
+              <svg-icon icon-class="user" />
+            </span>
+            <el-input
+              ref="username"
+              v-model="loginForm.username"
+              placeholder="请输入手机号/邮箱/用户名"
+              name="username"
+              type="text"
+              tabindex="1"
+              auto-complete="on"
+            />
+          </el-form-item>
+
+          <el-form-item prop="password">
+            <span class="svg-container">
+              <svg-icon icon-class="password" />
+            </span>
+            <el-input
+              :key="passwordType"
+              ref="password"
+              v-model="loginForm.password"
+              :type="passwordType"
+              placeholder="请输入密码"
+              name="password"
+              tabindex="2"
+              auto-complete="on"
+              @keyup.enter.native="handleLogin"
+            />
+            <span class="show-pwd" @click="showPwd">
+              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+            </span>
+          </el-form-item>
+          <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="handleLogin">登录</el-button>
+        </el-form>
+        <div class="forgot">
+          <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
+          <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
+        </div>
       </div>
     </div>
-    <div class="login-wrap">
-      <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-        <div class="title-container">
-          <h3 class="title">账号登录</h3>
-        </div>
 
-        <el-form-item prop="username">
-          <span class="svg-container">
-            <svg-icon icon-class="user" />
-          </span>
-          <el-input
-            ref="username"
-            v-model="loginForm.username"
-            placeholder="请输入用户名或邮箱"
-            name="username"
-            type="text"
-            tabindex="1"
-            auto-complete="on"
-          />
-        </el-form-item>
-
-        <el-form-item prop="password">
-          <span class="svg-container">
-            <svg-icon icon-class="password" />
-          </span>
-          <el-input
-            :key="passwordType"
-            ref="password"
-            v-model="loginForm.password"
-            :type="passwordType"
-            placeholder="请输入密码"
-            name="password"
-            tabindex="2"
-            auto-complete="on"
-            @keyup.enter.native="handleLogin"
-          />
-          <span class="show-pwd" @click="showPwd">
-            <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-          </span>
-        </el-form-item>
-        <!-- <div class="forgot">
-          <el-link type="primary" href="javascript:void(0);">忘记密码？</el-link>
-        </div> -->
-        <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="handleLogin">登录</el-button>
-
-        <!-- <div class="tips">
-          <span style="margin-right:20px;">username: admin</span>
-          <span> password: any</span>
-        </div> -->
-
-      </el-form>
-    </div>
   </div>
 </template>
 
 <script>
 import { getValidatePublicKey } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
+import Poster from '@/components/Poster'
 
 export default {
   name: 'Login',
+  components: {
+    Poster
+  },
   data() {
-    // const validateUsername = (rule, value, callback) => {
-    //   console.log(value)
-    //   if (!validUsername(value)) {
-    //     callback(new Error('Please enter the correct user name'))
-    //   } else {
-    //     callback()
-    //   }
-    // }
     const validatePassword = (rule, value, callback) => {
       if (value.length < 6) {
-        callback(new Error('密码不能少于6位！'))
+        callback(new Error('密码不能少于8位！'))
       } else {
         callback()
       }
@@ -110,6 +101,18 @@ export default {
     await this.getValidatePublicKey()
   },
   methods: {
+    forgotPwd() {
+      this.$router.push({
+        path: '/forgotPwd',
+        replace: true
+      })
+    },
+    toRegister() {
+      this.$router.push({
+        path: '/register',
+        replace: true
+      })
+    },
     async getValidatePublicKey() {
       const { result = {}} = await getValidatePublicKey()
       const { publicKey, publicKeyName } = result
@@ -212,17 +215,21 @@ h1{
 </style>
 
 <style lang="scss" scoped>
+
+</style>
+
+<style lang="scss" scoped>
 $bg:#2d3a4b;
 $dark_gray:#889aa4;
 $light_gray:#000;
-
 .login-container {
-  min-height: 100%;
-  width: 100%;
-  background-color: $bg;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("/images/login-bg.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  text-align: center;
   .login-form {
     position: relative;
     width: 400px;
@@ -231,7 +238,12 @@ $light_gray:#000;
     margin: 0 auto;
     overflow: hidden;
   }
-
+  .body{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate3d(-50%,-50%,0);
+  }
   .tips {
     font-size: 14px;
     color: #fff;
@@ -245,7 +257,7 @@ $light_gray:#000;
   }
 
   .svg-container {
-    padding: 6px 5px 6px 15px;
+    // padding: 6px 5px 6px 15px;
     color: $dark_gray;
     vertical-align: middle;
     width: 30px;
@@ -273,32 +285,7 @@ $light_gray:#000;
     cursor: pointer;
     user-select: none;
   }
-}
-</style>
-
-<style lang="scss" scoped>
-.login-container {
-  width: 100vw;
-  height: 100vh;
-  background-image: url("/images/login-bg.png");
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  display: flex;
   .poster-wrap {
-    flex-grow: 1;
-    flex-shrink: 0;
-    width: 50vw;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    img {
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-      width: 220px;
-    }
     .slogan {
       font-size: 22px;
       color: rgba(0, 0, 0, 0.45);
@@ -307,7 +294,12 @@ $light_gray:#000;
   .login-wrap {
     flex-grow: 1;
     flex-shrink: 0;
-    width: 50vw;
+    position: relative;
+    background-color: #fff;
+    border-radius: 30px;
+    padding: 64px;
+    box-shadow: 0 16px 32px 0 rgb(0 0 0 / 8%);
+    margin-top: 30px;
   }
   .forgot {
     color: #1989FA;
