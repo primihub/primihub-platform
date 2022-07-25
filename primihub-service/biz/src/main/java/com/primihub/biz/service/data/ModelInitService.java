@@ -127,7 +127,7 @@ public class ModelInitService {
                                     try {
                                         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/");
                                         outputPathDto = new ModelOutputPathDto(baseSb.toString());
-                                        dataTask.setTaskResultPath(JSONObject.toJSONString(outputPathDto));
+                                        dataTask.setTaskResultContent(JSONObject.toJSONString(outputPathDto));
                                         modelTask.setPredictFile(outputPathDto.getIndicatorFileName());
                                         Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getPredictFileName()).build();
                                         Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getIndicatorFileName()).build();

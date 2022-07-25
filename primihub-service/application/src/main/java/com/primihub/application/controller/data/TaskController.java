@@ -1,19 +1,23 @@
 package com.primihub.application.controller.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataTaskService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.UUID;
 
 @RequestMapping("task")
@@ -32,19 +36,43 @@ public class TaskController {
     }
 
     @GetMapping("downloadTaskFile")
-    public void downloadTaskFile(HttpServletResponse response, Long taskId,Long modelId) {
+    public void downloadTaskFile(HttpServletResponse response, Long taskId,Long modelId) throws Exception {
         DataTask dataTask = dataTaskService.getDataTaskById(taskId,modelId);
         if (dataTask!=null&&dataTask.getTaskType().equals(TaskTypeEnum.MODEL.getTaskType())){
-
+            downloadModelTask(response,dataTask);
         }else {
             downloadDefaultTask(response,dataTask);
         }
     }
-    public void downloadModelTask(HttpServletResponse response,DataTask dataTask){
+    public void downloadModelTask(HttpServletResponse response,DataTask dataTask) throws Exception {
+        String taskResultContent = dataTask.getTaskResultContent();
+        if (StringUtils.isNotBlank(taskResultContent)){
+            ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
+            File file = new File(modelOutputPathDto.getModelRunZipFilePath());
+            if (file.exists()){
+                // 获得文件输入流
+                FileInputStream inputStream = new FileInputStream(file);
+                // 设置响应头、以附件形式打开文件
+                response.setContentType("application/zip");
+                response.setHeader("content-disposition", "attachment; fileName=" + new String((dataTask.getTaskIdName()+".zip").getBytes("UTF-8"),"iso-8859-1"));
+                ServletOutputStream outputStream = response.getOutputStream();
+                int len = 0;
+                byte[] data = new byte[1024];
+                while ((len = inputStream.read(data)) != -1) {
+                    outputStream.write(data, 0, len);
+                }
+                outputStream.close();
+                inputStream.close();
+            }else {
+                downloadTaskError(response,"无文件");
+            }
+        }else {
+            downloadTaskError(response,"无文件");
+        }
 
     }
 
-    public void downloadDefaultTask(HttpServletResponse response,DataTask dataTask){
+    public void downloadDefaultTask(HttpServletResponse response,DataTask dataTask) throws Exception{
         String content = "no data";
         String fileName = null;
         if (dataTask!=null){
@@ -70,6 +98,15 @@ public class TaskController {
             outputStream.flush();
         }catch (Exception e) {
             log.info("downloadPsiTask -- fileName:{} -- fileContent -- e:{}",fileName,content,e.getMessage());
+            downloadTaskError(response,"文件读取失败");
         }
+    }
+
+
+    public void downloadTaskError(HttpServletResponse response,String message) throws IOException {
+        response.reset();
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+        response.getWriter().println(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message));
     }
 }
