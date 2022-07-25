@@ -53,9 +53,19 @@ Also modify the configuration which is just created in nacos.
           ...:
             username: 
             url: 
-            password: 
+            password:
 
-At last, you should execute the "ddl.sql" in your mysql.
+then we should locate this path:
+
+    ./script
+        init.sh
+
+to this path,you can execute next command:
+
+    cd ./script
+    sh init.sh [your mysql username] [your mysql password]
+
+or you can execute "ddl.sql" in your mysql management manually.
 
 ## Compile and Package
 if your environment in linux,you should run this command:

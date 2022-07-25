@@ -33,10 +33,16 @@ especially those items should be paid attention literally.
 then we should locate this path:
 
     ./script
-        init.sql
+        init.sh
+
+to this path,you can execute next command:
+    
+    cd ./script
+    sh init.sh [your mysql username] [your mysql password]
+
+or you can execute "init.sql" in your mysql management manually.
 
 
-At last, you should execute "init.sql" in your mysql.
 
 ## Compile and Package
 run this command:
