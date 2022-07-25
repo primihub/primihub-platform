@@ -17,11 +17,11 @@ public class ModelOutputPathDto {
 
     public ModelOutputPathDto(String path) {
         this.taskPath = path;
-        this.hostLookupTable = path + "hostLookupTable";
-        this.guestLookupTable = path + "guestLookupTable";
-        this.modelFileName = path + "modelFileName";
-        this.predictFileName = path + "predictFileName.csv";
-        this.indicatorFileName = path + "indicatorFileName.json";
+        this.hostLookupTable = path + "/hostLookupTable";
+        this.guestLookupTable = path + "/guestLookupTable";
+        this.modelFileName = path + "/modelFileName";
+        this.predictFileName = path + "/predictFileName.csv";
+        this.indicatorFileName = path + "/indicatorFileName.json";
         this.modelRunZipFilePath = path + ".zip";
     }
 }

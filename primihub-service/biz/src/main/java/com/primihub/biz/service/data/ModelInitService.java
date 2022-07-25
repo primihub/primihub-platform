@@ -125,7 +125,7 @@ public class ModelInitService {
                                 String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, map);
                                 if (freemarkerContent != null) {
                                     try {
-                                        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/");
+                                        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName());
                                         outputPathDto = new ModelOutputPathDto(baseSb.toString());
                                         dataTask.setTaskResultContent(JSONObject.toJSONString(outputPathDto));
                                         modelTask.setPredictFile(outputPathDto.getIndicatorFileName());
