@@ -193,7 +193,7 @@ public class ModelInitService {
         if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
             if (outputPathDto!=null){
                 log.info("zip -- modelId:{} -- taskId:{} -- start",dataModel.getModelId(),dataTask.getTaskIdName());
-                ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable.csv");add("indicatorFileName.json");}});
+                ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
                 log.info("zip -- modelId:{} -- taskId:{} -- end",dataModel.getModelId(),dataTask.getTaskIdName());
             }
         }
