@@ -51,6 +51,9 @@
             <svg-icon :icon-class="passwordAgainType === 'password' ? 'eye' : 'eye-open'" />
           </span>
         </el-form-item>
+        <!-- <div v-if="codeType===1" class="tips">
+          <span>已有账号？<el-button type="text" @click="toLogin">去登录</el-button></span>
+        </div> -->
         <el-button :loading="loading" type="primary" class="register-button" @click.native.prevent="handleSubmit">提交</el-button>
       </el-form>
     </div>
@@ -100,7 +103,9 @@ export default {
       passwordType: 'password',
       passwordAgainType: 'password',
       publicKeyData: {},
-      timer: null
+      timer: null,
+      count: 3,
+      countTimer: null
     }
   },
   async mounted() {
@@ -182,14 +187,9 @@ export default {
           updatePassword(params).then(res => {
             if (res.code === 0) {
               this.loading = false
-              this.$notify({
-                title: '密码修改成功',
-                dangerouslyUseHTMLString: true,
-                message: this.$createElement('el-button', { class: 'login-button', on: { click: this.toLogin }, type: 'primary' }, '重新登录'),
-                type: 'success',
-                duration: 3000
-              })
+              this.showNotice()
             } else {
+              this.$emit('submit', false)
               this.loading = false
               return
             }
@@ -202,11 +202,51 @@ export default {
           return false
         }
       })
+    },
+    showNotice() {
+      const message = `<div><p>即将自动跳转至登录页（<span id="countDownNumber" style="font-weight:700;padding: 0 0.01rem">${this.count}</span>s）<p><div style="width:120px;line-height:30px;font-weight:700;background:#1989FA;color:#fff;border-radius:3px;text-align:center;cursor: pointer;margin-top:3px" id="login">立即登录</div></div>`
+      const TIME_COUNT = 3
+      if (!this.countTimer) {
+        this.count = TIME_COUNT
+        this.countTimer = setInterval(() => {
+          if (this.count > 1 && this.count <= TIME_COUNT) {
+            this.count--
+            const dom = document.querySelector('#countDownNumber')
+            dom.innerText = this.count
+          } else {
+            clearInterval(this.countTimer)
+            this.countTimer = null
+          }
+        }, 1000)
+        const notify = this.$notify({
+          title: '修改成功',
+          dangerouslyUseHTMLString: true,
+          message,
+          customClass: 'notice',
+          type: 'success',
+          duration: 3000
+        })
+        setTimeout(() => {
+          this.toLogin()
+          notify.close()
+          this.$emit('submit', true)
+          clearInterval(this.countTimer)
+        }, 3000)
+        document.querySelector('#login').onclick = () => {
+          notify.close()
+          this.toLogin()
+          clearInterval(this.countTimer)
+        }
+      }
     }
   }
 }
 </script>
-
+<style lang="scss">
+.notice{
+  z-index: 2999!important;
+}
+</style>
 <style lang="scss" scoped>
 ::v-deep .user-account .el-form-item__error{
   left: 25%;
@@ -250,6 +290,7 @@ export default {
   /* padding: 160px 35px 0; */
   margin: 0 auto;
   overflow: hidden;
+  padding-bottom: 30px;
 }
 
 .tips {
@@ -331,4 +372,5 @@ export default {
   padding: 5px 10px;
   margin-top: 3px;
 }
+
 </style>

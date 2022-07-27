@@ -143,6 +143,7 @@ service.interceptors.response.use(
           type: 'error'
         })
       }
+      return data
     } else {
       return data
     }
