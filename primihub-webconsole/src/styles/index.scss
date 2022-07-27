@@ -21,6 +21,11 @@ html {
   box-sizing: border-box;
 }
 
+p {
+  margin-block-start: 0;
+  margin-block-end: 0;
+}
+
 #app {
   height: 100%;
 }

@@ -28,4 +28,16 @@ public class SaveOrUpdateUserParam {
      * 密码
      */
     private String password;
+    /**
+     * 密码验证
+     */
+    private String passwordAgain;
+    /**
+     * 注册类型1：管理员创建 2：邮箱 3：手机
+     */
+    private Integer registerType;
+    /**
+     * 验证码
+     */
+    private String verificationCode;
 }

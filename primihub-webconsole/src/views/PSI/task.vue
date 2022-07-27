@@ -183,7 +183,7 @@ export default {
       tableDataB: [],
       taskData: {}, // task detail
       formData: {
-        ownOrganId: '',
+        ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
         ownKeyword: '', // 本机构关联键
         otherOrganId: 0,
@@ -206,16 +206,16 @@ export default {
           { required: true, message: '请选择资源' }
         ],
         ownKeyword: [
-          { required: true, message: '请选择关联键' }
+          { required: true, message: '请选择关联键', trigger: 'change' }
         ],
         otherResourceId: [
-          { required: true, message: '请选择资源' }
+          { required: true, message: '请选择资源', trigger: 'change' }
         ],
         otherKeyword: [
-          { required: true, message: '请选择关联键' }
+          { required: true, message: '请选择关联键', trigger: 'change' }
         ],
         outputFilePathType: [
-          { required: true, message: '请选择输出资源路径' }
+          { required: true, message: '请选择输出资源路径', trigger: 'blur' }
         ],
         outputNoRepeat: [
           { required: true, message: '请选择是否去重' }
@@ -233,7 +233,8 @@ export default {
         resultOrgan: [
           { required: true, message: '请选择结果获取方' }
         ]
-      }
+      },
+      timer: null
     }
   },
   computed: {
@@ -299,13 +300,9 @@ export default {
       })
     },
     handleSubmit() {
-      if (!this.formData.otherOrganId) {
-        this.$message({
-          message: '请选择求交机构',
-          type: 'error'
-        })
-        return
-      }
+      const enable = this.checkParams()
+      if (!enable) return
+      console.log('enable', enable)
       // max size is 200
       this.formData.resultName = this.formData.resultName.length > 200 ? this.formData.resultName.substring(0, 200) : this.formData.resultName
       console.log('this.formData.resultName', this.formData.resultName)
@@ -319,19 +316,52 @@ export default {
           })
           this.isRun = true
           const res = await saveDataPsi(this.formData)
-          const { dataPsiTask } = res.result
-          this.dataPsiTask = [dataPsiTask]
-          console.log(this.dataPsiTask)
-          this.taskId = this.dataPsiTask[0].taskId
-          this.taskLoading = true
-          this.timmer = window.setInterval(() => {
-            setTimeout(this.getPsiTaskDetails(), 0)
-          }, 1500)
+          if (res.code === 0) {
+            const { dataPsiTask } = res.result
+            this.dataPsiTask = [dataPsiTask]
+            console.log(this.dataPsiTask)
+            this.taskId = this.dataPsiTask[0].taskId
+            this.taskLoading = true
+            this.timer = window.setInterval(() => {
+              setTimeout(this.getPsiTaskDetails(), 0)
+            }, 1500)
+          } else {
+            this.isRun = false
+          }
         } else {
           console.log('error submit!!')
           return false
         }
       })
+    },
+    checkParams() {
+      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword } = this.formData
+      let message = ''
+      let enable = true
+      if (!otherOrganId) {
+        message = '请选择求交机构'
+        enable = false
+      } else if (ownResourceId === '') {
+        message = '请选择使用方资源'
+        enable = false
+      } else if (otherResourceId === '') {
+        message = '请选择加持方资源'
+        enable = false
+      } else if (otherKeyword === '') {
+        message = '请选择使用方关联键'
+        enable = false
+      } else if (ownKeyword === '') {
+        message = '请选择加持方关联键'
+        enable = false
+      }
+      if (!enable) {
+        this.$message({
+          message,
+          type: 'error'
+        })
+      }
+
+      return enable
     },
     getPsiTaskDetails() {
       getPsiTaskDetails({ taskId: this.taskId }).then(res => {
@@ -344,7 +374,7 @@ export default {
               type: 'success',
               duration: 1000
             })
-            clearInterval(this.timmer)
+            clearInterval(this.timer)
             this.dialogVisible = true
             this.taskLoading = false
             this.isRun = false
@@ -355,7 +385,7 @@ export default {
               type: 'warning',
               duration: 1000
             })
-            clearInterval(this.timmer)
+            clearInterval(this.timer)
             this.taskLoading = false
             this.isRun = false
             break

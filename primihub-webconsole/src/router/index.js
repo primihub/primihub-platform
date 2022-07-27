@@ -17,6 +17,21 @@ export const constantRoutes = [
     component: () => import('@/views/login/index'),
     hidden: true
   },
+  {
+    path: '/register',
+    component: () => import('@/views/register/index'),
+    hidden: true
+  },
+  {
+    path: '/forgotPwd',
+    component: () => import('@/views/forgotPwd'),
+    hidden: true
+  },
+  {
+    path: '/updatePwd',
+    component: () => import('@/views/updatePwd'),
+    hidden: true
+  },
 
   {
     path: '/404',

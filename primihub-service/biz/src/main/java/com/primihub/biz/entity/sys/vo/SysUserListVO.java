@@ -52,4 +52,8 @@ public class SysUserListVO {
      * 权限id集合
      */
     private String authIdList;
+    /**
+     * 注册类型1：管理员创建 2：邮箱 3：手机
+     */
+    private Integer registerType;
 }
