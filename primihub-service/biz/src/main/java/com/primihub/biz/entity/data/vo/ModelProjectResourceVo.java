@@ -2,6 +2,8 @@ package com.primihub.biz.entity.data.vo;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ModelProjectResourceVo {
 
@@ -39,4 +41,8 @@ public class ModelProjectResourceVo {
      * 机构项目中参与身份 1发起者 2协作者
      */
     private Integer participationIdentity;
+
+    private List<String> fileHandleField;
+
+    private String calculationField;
 }

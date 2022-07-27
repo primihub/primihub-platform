@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -19,10 +20,7 @@ import org.springframework.stereotype.Service;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -31,6 +29,10 @@ public class PirService {
     private BaseConfiguration baseConfiguration;
     @Autowired
     private WorkGrpcClient workGrpcClient;
+    @Autowired
+    private FusionResourceService fusionResourceService;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -40,6 +42,15 @@ public class PirService {
         Date date = new Date();
         Map<String, Object> map = new HashMap<>();
         try {
+            String serverAddress = organConfiguration.getSysLocalOrganInfo().getFusionList().get(0).getServerAddress();
+            BaseResultEntity dataResource = fusionResourceService.getDataResource(serverAddress, resourceId);
+            if (dataResource.getCode()!=0)
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"资源查询失败");
+            Map<String, Object> pirDataResource = (LinkedHashMap)dataResource.getResult();
+            Object resourceRowsCountObj = pirDataResource.get("resourceRowsCount");
+            if (resourceRowsCountObj==null)
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"资源行数获取错误");
+            Integer resourceRowsCount = (Integer) resourceRowsCountObj - 1;
             String uuId = UUID.randomUUID().toString();
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             map.put("taskId",uuId);
@@ -49,10 +60,12 @@ public class PirService {
             log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis());
             Common.ParamValue queryIndeiesParamValue = Common.ParamValue.newBuilder().setValueString(pirParam).build();
             Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(resourceId).build();
+            Common.ParamValue databaseSizeParamValue = Common.ParamValue.newBuilder().setValueString(resourceRowsCount.toString()).build();
             Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("queryIndeies", queryIndeiesParamValue)
                     .putParamMap("serverData", serverDataParamValue)
+                    .putParamMap("databaseSize", databaseSizeParamValue)
                     .putParamMap("outputFullFilename", outputFullFilenameParamValue)
                     .build();
             Common.Task task = Common.Task.newBuilder()
