@@ -64,7 +64,7 @@
 <script>
 import { getValidatePublicKey, updatePassword } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
-const pwdPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/
+const pwdPattern = /(?=.*[a-z_])(?=.*\d)(?=.*[^a-z0-9_])[\S]{8,}/i
 
 export default {
   name: 'FormData',
@@ -72,8 +72,10 @@ export default {
     const validatePassword = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
+      } else if (value.length < 6 || value.length > 20) {
+        callback(new Error('密码长度在8-20个字符以内'))
       } else if (!pwdPattern.test(value)) {
-        callback(new Error('密码至必须8位并且同时包含至少一个字母、一个数字和一个特殊字符'))
+        callback(new Error('密码至少8位且同时包含至少一个字母、一个数字和一个特殊字符'))
       } else {
         callback()
       }
