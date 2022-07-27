@@ -42,14 +42,20 @@ public class PirService {
         Date date = new Date();
         Map<String, Object> map = new HashMap<>();
         try {
-            String serverAddress = organConfiguration.getSysLocalOrganInfo().getFusionList().get(0).getServerAddress();
+            Set<String> serverAddressMap = organConfiguration.getSysLocalOrganInfo().getFusionMap().keySet();
+            String serverAddress = "";
+            for (String address : serverAddressMap) {
+                serverAddress = address;
+            }
+            if (StringUtils.isBlank(serverAddress))
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
             BaseResultEntity dataResource = fusionResourceService.getDataResource(serverAddress, resourceId);
             if (dataResource.getCode()!=0)
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"资源查询失败");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
             Map<String, Object> pirDataResource = (LinkedHashMap)dataResource.getResult();
             Object resourceRowsCountObj = pirDataResource.get("resourceRowsCount");
             if (resourceRowsCountObj==null)
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"资源行数获取错误");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源行数获取错误");
             Integer resourceRowsCount = (Integer) resourceRowsCountObj - 1;
             String uuId = UUID.randomUUID().toString();
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
