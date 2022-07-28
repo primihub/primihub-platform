@@ -43,8 +43,8 @@ public class PirService {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
 
-    public BaseResultEntity pirSubmitTask(String serverAddres,String resourceId, String pirParam) {
-        BaseResultEntity dataResource = fusionResourceService.getDataResource(serverAddres, resourceId);
+    public BaseResultEntity pirSubmitTask(String serverAddress,String resourceId, String pirParam) {
+        BaseResultEntity dataResource = fusionResourceService.getDataResource(serverAddress, resourceId);
         if (dataResource.getCode()!=0)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
         Map<String, Object> pirDataResource = (LinkedHashMap)dataResource.getResult();
