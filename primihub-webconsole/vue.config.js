@@ -39,7 +39,7 @@ module.exports = {
     },
     proxy: {
       '/dev-api': {
-        target: '',
+        target: 'http://test1.primihub.com/prod-api/',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
