@@ -218,7 +218,6 @@ export default {
         this.inputValues.push(currentData)
       }
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
-      console.log('666', this.nodeData)
     },
     async getProjectResourceData() {
       this.resourceList = []

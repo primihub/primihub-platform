@@ -5,8 +5,8 @@
       <el-col :span="4">{{ pirParam }}</el-col>
     </el-row>
     <div class="buttons">
-      <el-button v-if="hasPermission" type="primary" size="medium" @click="reset">重新查询<i class="el-icon-search el-icon--right" /></el-button>
-      <el-button plain size="medium" @click="report">导出数据<i class="el-icon-download el-icon--right" /></el-button>
+      <el-button v-if="hasSearchPermission" type="primary" size="medium" @click="reset">重新查询<i class="el-icon-search el-icon--right" /></el-button>
+      <el-button plain size="medium" @click="download">导出数据<i class="el-icon-download el-icon--right" /></el-button>
     </div>
   </div>
 </template>
@@ -21,33 +21,29 @@ export default {
       default: ''
     },
     taskId: {
-      type: String,
+      type: Number,
       require: true,
-      default: ''
-    },
-    taskDate: {
-      type: String,
-      require: true,
-      default: ''
-    },
-    hasPermission: {
-      type: Boolean,
-      default: false
+      default: -1
     }
   },
   data() {
     return {
     }
   },
+  computed: {
+    hasSearchPermission() {
+      return this.$store.getters.buttonPermissionList.includes('PrivateSearchButton')
+    }
+  },
   methods: {
     reset() {
       this.$emit('reset')
     },
-    async report() {
+    async download() {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)
       const token = getToken()
-      window.open(`${process.env.VUE_APP_BASE_API}/data/pir/downloadPirTask?taskId=${this.taskId}&taskDate=${this.taskDate}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     }
   }
 }

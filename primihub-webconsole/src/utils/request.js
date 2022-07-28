@@ -29,7 +29,7 @@ function endLoading() {
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 2 * 60000 // request timeout
+  timeout: 20 * 1000 // request timeout
 })
 
 const timestamp = new Date().getTime()
