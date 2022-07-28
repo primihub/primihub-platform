@@ -313,5 +313,12 @@ public class DataTaskService {
             return dataTaskRepository.selectDataTaskByTaskId(taskId);
         return null;
     }
+
+    public BaseResultEntity getTaskData(Long taskId) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"为查询到任务信息");
+        return BaseResultEntity.success(DataTaskConvert.dataTaskPoConvertDataModelTaskList(dataTask));
+    }
 }
 

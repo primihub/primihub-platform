@@ -72,18 +72,18 @@ def xgb_host_logic(cry_pri="paillier"):
     dim_train = dim / 10 * 8
     data_train = data.loc[:dim_train, :].reset_index(drop=True)
     data_test = data.loc[dim_train:dim, :].reset_index(drop=True)
-    label_true = ['Class']
-    y_true = data_test['Class'].values
+    label_true = ['${label_field}']
+    y_true = data_test['${label_field}'].values
     data_test = data_test[
         [x for x in data_test.columns if x not in label_true]
     ]
     logger.info(data_test.head())
 
-    labels = ['Class']  # noqa
+    labels = ['${label_field}']  # noqa
     X_host = data_train[
         [x for x in data.columns if x not in labels]
     ]
-    Y = data_train['Class'].values
+    Y = data_train['${label_field}'].values
 
     if cry_pri == "paillier":
         xgb_host = XGB_HOST_EN(n_estimators=num_tree, max_depth=max_depth, reg_lambda=1,

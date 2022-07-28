@@ -28,6 +28,13 @@ public class TaskController {
     @Autowired
     private DataTaskService dataTaskService;
 
+    @RequestMapping("getTaskData")
+    public BaseResultEntity getTaskData(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return dataTaskService.getTaskData(taskId);
+    }
+
     @RequestMapping("getModelTaskList")
     public BaseResultEntity getModelTaskList(Long modelId, PageReq req){
         if (modelId==null||modelId==0L)

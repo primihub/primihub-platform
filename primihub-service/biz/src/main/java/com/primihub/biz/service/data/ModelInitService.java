@@ -111,7 +111,12 @@ public class ModelInitService {
                                 Map<String, String> map = new HashMap<>();
                                 List<DataModelResource> dmrList = new ArrayList<>();
                                 for (ModelProjectResourceVo modelProjectResourceVo : resourceList) {
-                                    map.put(modelProjectResourceVo.getParticipationIdentity()==1?DataConstant.PYTHON_LABEL_DATASET:DataConstant.PYTHON_GUEST_DATASET, modelProjectResourceVo.getResourceId());
+                                    if (modelProjectResourceVo.getParticipationIdentity()==1){
+                                        map.put(DataConstant.PYTHON_LABEL_DATASET,modelProjectResourceVo.getResourceId());
+                                        map.put(DataConstant.PYTHON_CALCULATION_FIELD,StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"Class":modelProjectResourceVo.getCalculationField());
+                                    }else {
+                                        map.put(DataConstant.PYTHON_GUEST_DATASET , modelProjectResourceVo.getResourceId());
+                                    }
                                     DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId());
                                     dataModelResource.setTaskId(dataTask.getTaskId());
                                     dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
@@ -159,8 +164,21 @@ public class ModelInitService {
                                                 .build();
                                         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                                         log.info("grpc结果:{}", reply.toString());
-                                        modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
-                                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                        if (reply.getRetCode()==0){
+                                            modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
+                                            if (StringUtils.isNotBlank(modelTask.getPredictContent())){
+                                                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                                log.info("zip -- modelId:{} -- taskId:{} -- start",dataModel.getModelId(),dataTask.getTaskIdName());
+                                                ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
+                                                log.info("zip -- modelId:{} -- taskId:{} -- end",dataModel.getModelId(),dataTask.getTaskIdName());
+                                            }else {
+                                                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                                                dataTask.setTaskErrorMsg("运行失败:无文件信息");
+                                            }
+                                        }else {
+                                            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                                            dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                                        }
                                     } catch (Exception e) {
                                         dataComponent.setComponentState(3);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -190,13 +208,6 @@ public class ModelInitService {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
-        if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
-            if (outputPathDto!=null){
-                log.info("zip -- modelId:{} -- taskId:{} -- start",dataModel.getModelId(),dataTask.getTaskIdName());
-                ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
-                log.info("zip -- modelId:{} -- taskId:{} -- end",dataModel.getModelId(),dataTask.getTaskIdName());
-            }
-        }
     }
 
     public static int getrandom(int start,int end) {
