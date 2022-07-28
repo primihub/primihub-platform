@@ -54,7 +54,6 @@ export default {
   },
   methods: {
     handleChange(data) {
-      console.log('111', data)
       this.selectedResources = data
     },
     searchResource() {
