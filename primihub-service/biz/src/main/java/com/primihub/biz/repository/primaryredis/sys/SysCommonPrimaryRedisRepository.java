@@ -39,4 +39,12 @@ public class SysCommonPrimaryRedisRepository {
         primaryStringRedisTemplate.delete(key);
     }
 
+    public void setKeyWithExpire(String key,String value,Long timeout,TimeUnit timeUnit){
+        primaryStringRedisTemplate.opsForValue().set(key,value,timeout,timeUnit);
+    }
+
+    public String getKey(String key){
+        return primaryStringRedisTemplate.opsForValue().get(key);
+    }
+
 }

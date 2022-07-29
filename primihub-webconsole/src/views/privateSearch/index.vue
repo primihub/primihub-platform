@@ -6,7 +6,7 @@
         <el-step title="查询结果" />
       </el-steps>
       <step-first v-if="active === 0" :has-permission="hasSearchPermission" @next="next" />
-      <step-second v-if="active === 1" :has-permission="hasSearchPermission" :task-id="taskId" :task-date="taskDate" :pir-param="pirParam" @reset="reset" />
+      <step-second v-if="active === 1" :task-id="taskId" :task-date="taskDate" :pir-param="pirParam" @reset="reset" />
     </div>
 
   </div>
@@ -40,12 +40,8 @@ export default {
   },
   methods: {
     next(data) {
-      if (!data.taskId) {
-        return
-      }
       this.pirParam = data.pirParam
       this.taskId = data.taskId
-      this.taskDate = data.taskDate
       if (this.active++ > 2) this.active = 0
     },
     reset() {

@@ -2,12 +2,12 @@
 primihub management platform is based on spring cloud,use maven to compile and package.
 ## Getting Started
 First of all ,when we run the project, we need some service dependencies like this:
-- jdk 1.8
-- maven
-- nacos 2.0.3 or 2.0.4
-- mysql 5.0+
-- redis 5.0+
-- RabbitMQ
+- [jdk 1.8](https://www.oracle.com/java/technologies/javase/javase8u211-later-archive-downloads.html)
+- [maven](https://maven.apache.org/download.cgi)
+- [nacos 2.0.3](https://github.com/alibaba/nacos/releases/tag/2.0.3) or [2.0.4](https://github.com/alibaba/nacos/releases/tag/2.0.4)
+- [mysql 5.0+](https://dev.mysql.com/downloads/mysql)
+- [redis 5.0+](https://redis.io/download/)
+- [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server/releases/tag/v3.10.6)
 
 ##Modify Configuration
 Now we should locate the next two pathes:
@@ -53,9 +53,19 @@ Also modify the configuration which is just created in nacos.
           ...:
             username: 
             url: 
-            password: 
+            password:
 
-At last, you should execute the "ddl.sql" in your mysql.
+then we should locate this path:
+
+    ./script
+        init.sh
+
+to this path,you can execute next command:
+
+    cd ./script
+    sh init.sh [your mysql username] [your mysql password]
+
+or you can execute "ddl.sql" in your mysql management manually.
 
 ## Compile and Package
 if your environment in linux,you should run this command:

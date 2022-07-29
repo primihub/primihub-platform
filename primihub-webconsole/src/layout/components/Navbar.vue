@@ -16,10 +16,10 @@
           <i class="el-icon-arrow-down el-icon--right" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <!-- <router-link to="/setting/role">
-            <el-dropdown-item>角色管理</el-dropdown-item>
+          <router-link to="/updatePwd">
+            <el-dropdown-item>修改密码</el-dropdown-item>
           </router-link>
-          <router-link to="/setting/user">
+          <!-- <router-link to="/setting/user">
             <el-dropdown-item>用户管理</el-dropdown-item>
           </router-link> -->
           <el-dropdown-item divided @click.native="logout">

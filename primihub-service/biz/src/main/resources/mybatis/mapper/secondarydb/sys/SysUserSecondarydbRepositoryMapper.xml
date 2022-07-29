@@ -4,7 +4,7 @@
 
     <select id="selectSysUserListByParam" resultType="com.primihub.biz.entity.sys.vo.SysUserListVO">
         select
-            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,c_time cTime
+            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,register_type registerType,c_time cTime,u_time uTime
         from sys_user
         <trim prefix="where" prefixOverrides="and">
             is_del=0
@@ -19,7 +19,7 @@
 
     <select id="selectSysUserByUserId" resultType="com.primihub.biz.entity.sys.po.SysUser">
         select
-            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,is_del isDel,c_time cTime,u_time uTime
+            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,register_type registerType,is_del isDel,c_time cTime,u_time uTime
         from sys_user where user_id=#{userId} limit 1
     </select>
 
@@ -40,7 +40,7 @@
 
     <select id="selectSysUserByUserIdSet" resultType="com.primihub.biz.entity.sys.po.SysUser">
         select
-            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,is_del isDel,c_time cTime,u_time uTime
+            user_id userId,user_account userAccount,user_name userName,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,register_type registerType,is_del isDel,c_time cTime,u_time uTime
         from sys_user where user_id in
         <foreach collection="userIdSet" item="id" open="(" separator="," close=")">
             #{id}
@@ -49,12 +49,13 @@
 
     <select id="selectUserByUserAccount" resultType="com.primihub.biz.entity.sys.po.SysUser">
         select
-            user_id userId,user_account userAccount,user_name userName,user_password userPassword,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,is_del isDel,c_time cTime,u_time uTime
+            user_id userId,user_account userAccount,user_name userName,user_password userPassword,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,register_type registerType,is_del isDel,c_time cTime,u_time uTime
         from sys_user where is_del=0 and user_account=#{userAccount} limit 1
     </select>
+
     <select id="selectSysUserContainPassByUserId" resultType="com.primihub.biz.entity.sys.po.SysUser">
          select
-            user_id userId,user_account userAccount,user_name userName,user_password userPassword,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,is_del isDel,c_time cTime,u_time uTime
+            user_id userId,user_account userAccount,user_name userName,user_password userPassword,role_id_list roleIdList,is_forbid isForbid,is_editable isEditable,register_type registerType,is_del isDel,c_time cTime,u_time uTime
         from sys_user where is_del=0 and user_id=#{userId} limit 1
     </select>
 

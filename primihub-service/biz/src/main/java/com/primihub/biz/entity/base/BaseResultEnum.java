@@ -19,6 +19,12 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     OLD_PASSWORD_NOT_CORRECT(110,"旧密码不正确"),
     NO_ORGAN_DATA(111,"没有机构信息请重新生成"),
     HANDLE_RIGHT_NOW(112,"正在被操作"),
+    NOT_IN_THE_WHITE_LIST(113,"不在短信服务白名单中"),
+    FIVE_MINUTES_LATER(114,"请在五分钟后重试"),
+    ONE_MINUTES_LATER(115,"请在一分钟后重试"),
+    OUTNUMBER(116,"超出当天发送条数"),
+    SMS_FAILURE(117,"SMS发送失败"),
+    VERIFICATION_CODE(118,"验证码失败"),
     DATA_SAVE_FAIL(1001,"添加失败"),
     DATA_EDIT_FAIL(1002,"编辑失败"),
     DATA_QUERY_NULL(1003,"数据为空"),
@@ -27,7 +33,8 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     DATA_DEL_FAIL(1006,"删除失败"),
     DATA_RUN_TASK_FAIL(1007,"运行失败"),
     DATA_RUN_SQL_CHECK_FAIL(1008,"SQL校验失败"),
-    DATA_RUN_FILE_CHECK_FAIL(1009,"文件解析失败")
+    DATA_RUN_FILE_CHECK_FAIL(1009,"文件解析失败"),
+    DATA_DOWNLOAD_TASK_ERROR_FAIL(1010,"文件下载失败")
     ;
     private Integer returnCode;
     private String message;

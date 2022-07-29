@@ -6,7 +6,7 @@
           <el-form-item>
             <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
             <el-button type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
-            <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" />
+            <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
           </el-form-item>
           <el-form-item>
             <template v-if="providerOrgans.length>0">
@@ -23,7 +23,7 @@
                 <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
               </div>
 
-              <ResourceDec v-if="providerOrgans[0].resourceId" :data="providerOrgans[0]" />
+              <ResourceDec v-if="providerOrgans[0].resourceId" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
             </template>
             <template v-else>
               <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
@@ -166,6 +166,9 @@ export default {
     this.projectId = Number(this.$route.query.projectId) || 0
   },
   methods: {
+    handleResourceHeaderChange(data) {
+      this.setInputValue(data)
+    },
     async openDialog(organId, participationIdentity) {
       this.participationIdentity = participationIdentity
       this.selectedOrganId = organId
@@ -197,6 +200,10 @@ export default {
         this.providerOrgans = [data]
       }
       // set input value
+      this.setInputValue(data)
+      this.dialogVisible = false
+    },
+    setInputValue(data) {
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
@@ -211,7 +218,6 @@ export default {
         this.inputValues.push(currentData)
       }
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
-      this.dialogVisible = false
     },
     async getProjectResourceData() {
       this.resourceList = []
@@ -270,7 +276,10 @@ p {
   width: 100px;
 }
 ::v-deep .el-descriptions .is-bordered .el-descriptions-item__cell{
-  padding: 5px!important;
+  padding:2px 5px!important;
+}
+::v-deep .el-checkbox__label{
+  font-size: 12px!important;
 }
 .resource-data{
   font-size: 12px;

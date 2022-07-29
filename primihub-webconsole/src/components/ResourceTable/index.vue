@@ -57,8 +57,8 @@
       min-width="120"
     >
       <template slot-scope="{row}">
-        特征量：{{ row.resourceRowsCount }}<br>
-        样本量：{{ row.resourceColumnCount }} <br>
+        特征量：{{ row.resourceColumnCount }}<br>
+        样本量：{{ row.resourceRowsCount }} <br>
         正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
         正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
       </template>

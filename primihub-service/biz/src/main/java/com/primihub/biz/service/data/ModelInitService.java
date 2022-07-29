@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelEvaluationDto;
+import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
@@ -25,6 +26,7 @@ import com.primihub.biz.entity.feign.FedlearnerJobApi;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
+import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.crypt.DateUtil;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
@@ -87,6 +89,7 @@ public class ModelInitService {
         modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
         dataModelPrRepository.saveDataModelTask(modelTask);
         log.info("检索model组件 数量:{}",modelComponents.size());
+        ModelOutputPathDto outputPathDto = null;
         for (DataComponent dataComponent : dataComponents) {
             dataComponent.setStartTime(System.currentTimeMillis());
             dataComponent.setComponentState(2);
@@ -108,7 +111,12 @@ public class ModelInitService {
                                 Map<String, String> map = new HashMap<>();
                                 List<DataModelResource> dmrList = new ArrayList<>();
                                 for (ModelProjectResourceVo modelProjectResourceVo : resourceList) {
-                                    map.put(modelProjectResourceVo.getParticipationIdentity()==1?DataConstant.PYTHON_LABEL_DATASET:DataConstant.PYTHON_GUEST_DATASET, modelProjectResourceVo.getResourceId());
+                                    if (modelProjectResourceVo.getParticipationIdentity()==1){
+                                        map.put(DataConstant.PYTHON_LABEL_DATASET,modelProjectResourceVo.getResourceId());
+                                        map.put(DataConstant.PYTHON_CALCULATION_FIELD,StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"Class":modelProjectResourceVo.getCalculationField());
+                                    }else {
+                                        map.put(DataConstant.PYTHON_GUEST_DATASET , modelProjectResourceVo.getResourceId());
+                                    }
                                     DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId());
                                     dataModelResource.setTaskId(dataTask.getTaskId());
                                     dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
@@ -117,23 +125,26 @@ public class ModelInitService {
                                     dataModelResource.setModelParamNum(getrandom(1, 100));
                                     dmrList.add(dataModelResource);
                                 }
-                                map.put(DataConstant.PYTHON_TEST_DATASET, DataConstant.PYTHON_TEST_DATASET);
                                 log.info("map:{}",map);
                                 dataModelPrRepository.saveDataModelResource(dmrList);
                                 String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, map);
                                 if (freemarkerContent != null) {
                                     try {
-                                        Date date = new Date();
-                                        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
-                                        StringBuilder predictFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".csv");
-                                        dataTask.setTaskResultPath(predictFileName.toString());
-                                        StringBuilder indicatorFileName = new StringBuilder(baseSb.toString()).append(UUID.randomUUID()).append(".json");
-                                        modelTask.setPredictFile(indicatorFileName.toString());
-                                        Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(predictFileName.toString()).build();
-                                        Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(indicatorFileName.toString()).build();
+                                        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName());
+                                        outputPathDto = new ModelOutputPathDto(baseSb.toString());
+                                        dataTask.setTaskResultContent(JSONObject.toJSONString(outputPathDto));
+                                        modelTask.setPredictFile(outputPathDto.getIndicatorFileName());
+                                        Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getPredictFileName()).build();
+                                        Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getIndicatorFileName()).build();
+                                        Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getHostLookupTable()).build();
+                                        Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getGuestLookupTable()).build();
+                                        Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
                                         Common.Params params = Common.Params.newBuilder()
                                                 .putParamMap("predictFileName", predictFileNameParamValue)
                                                 .putParamMap("indicatorFileName", indicatorFileNameParamValue)
+                                                .putParamMap("hostLookupTable", hostLookupTableParamValue)
+                                                .putParamMap("guestLookupTable", guestLookupTableParamValue)
+                                                .putParamMap("modelFileName", modelFileNameParamValue)
                                                 .build();
                                         Common.Task task = Common.Task.newBuilder()
                                                 .setType(Common.TaskType.ACTOR_TASK)
@@ -141,8 +152,8 @@ public class ModelInitService {
                                                 .setName("modelTask")
                                                 .setLanguage(Common.Language.PYTHON)
                                                 .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                                                .setJobId(ByteString.copyFrom(dataTask.getTaskId().toString().getBytes(StandardCharsets.UTF_8)))
-                                                .setTaskId(ByteString.copyFrom(dataTask.getTaskId().toString().getBytes(StandardCharsets.UTF_8)))
+                                                .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                                                .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                                                 .build();
                                         log.info("grpc Common.Task :\n{}", task.toString());
                                         PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -153,9 +164,21 @@ public class ModelInitService {
                                                 .build();
                                         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                                         log.info("grpc结果:{}", reply.toString());
-                                        dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-                                        modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
-                                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                        if (reply.getRetCode()==0){
+                                            modelTask.setPredictContent(FileUtil.getFileContent(modelTask.getPredictFile()));
+                                            if (StringUtils.isNotBlank(modelTask.getPredictContent())){
+                                                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                                log.info("zip -- modelId:{} -- taskId:{} -- start",dataModel.getModelId(),dataTask.getTaskIdName());
+                                                ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
+                                                log.info("zip -- modelId:{} -- taskId:{} -- end",dataModel.getModelId(),dataTask.getTaskIdName());
+                                            }else {
+                                                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                                                dataTask.setTaskErrorMsg("运行失败:无文件信息");
+                                            }
+                                        }else {
+                                            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                                            dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                                        }
                                     } catch (Exception e) {
                                         dataComponent.setComponentState(3);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
