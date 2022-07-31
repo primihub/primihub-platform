@@ -1,6 +1,9 @@
 {
     "tokenValidateUriBlackList":[
         "/user/login",
+        "/user/register",
+        "/user/sendVerificationCode",
+        "/user/forgetPassword",
         "/common/getValidatePublicKey",
         "/shareData/syncProject"
     ],
@@ -9,6 +12,7 @@
     ],
     "defaultPassword":"123456",
     "defaultPasswordVector":"excalibur",
+    "primihubOfficalService": "http://127.0.0.1:8000",
     "grpcClientAddress": "192.168.99.20",
     "grpcClientPort": 50050,
     "grpcDataSetClientAddress": "192.168.99.20",

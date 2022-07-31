@@ -2,9 +2,9 @@
 primihub fusion is based on spring boot,use maven to compile and package.
 ## Getting Started
 First of all ,when we run the project, we need some service dependencies like this:
-- jdk 1.8
-- maven
-- mysql 5.0+
+- [jdk 1.8](https://www.oracle.com/java/technologies/javase/javase8u211-later-archive-downloads.html)
+- [maven](https://maven.apache.org/download.cgi)
+- [mysql 5.0+](https://dev.mysql.com/downloads/mysql)
 
 
 ##Modify Configuration
@@ -33,10 +33,16 @@ especially those items should be paid attention literally.
 then we should locate this path:
 
     ./script
-        init.sql
+        init.sh
+
+to this path,you can execute next command:
+    
+    cd ./script
+    sh init.sh [your mysql username] [your mysql password]
+
+or you can execute "init.sql" in your mysql management manually.
 
 
-At last, you should execute "init.sql" in your mysql.
 
 ## Compile and Package
 run this command:
@@ -48,7 +54,7 @@ As long as the finished infos show up, the project have been compiled and packag
 ## How to run
 Before run, make sure that your service dependencies are available and the configuration is correct.
 
-    java -jar -Dfile.encoding=UTF-8 ./fusion-api/target/*-SNAPSHOT.jar --server.port=8090
+    java -jar -Dfile.encoding=UTF-8 ./fusion-api/target/*-SNAPSHOT.jar --server.port=8099
 
 execute that the command,you can check the url:
     

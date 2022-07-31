@@ -29,7 +29,7 @@ function endLoading() {
 const service = axios.create({
   baseURL: process.env.VUE_APP_BASE_API,
   // withCredentials: true, // send cookies when cross-domain requests
-  timeout: 2 * 60000 // request timeout
+  timeout: 20 * 1000 // request timeout
 })
 
 const timestamp = new Date().getTime()
@@ -105,6 +105,7 @@ service.interceptors.response.use(
           message: '缺少参数',
           type: 'warning'
         })
+        return data
       } else if (code === 101) {
         message({
           message: '无效参数',

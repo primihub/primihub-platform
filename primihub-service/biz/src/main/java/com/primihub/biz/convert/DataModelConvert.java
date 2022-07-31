@@ -15,10 +15,12 @@ import com.primihub.biz.entity.data.req.DataModelReq;
 import com.primihub.biz.entity.data.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -143,6 +145,10 @@ public class DataModelConvert {
         modelProjectResourceVo.setResourceContainsY(resourceMap==null?null:resourceMap.get("resourceContainsY")==null?0:Integer.valueOf(resourceMap.get("resourceContainsY").toString()));
         modelProjectResourceVo.setAuditStatus(resource.getAuditStatus());
         modelProjectResourceVo.setParticipationIdentity(resource.getParticipationIdentity());
+        String resourceColumnNameList = resourceMap==null?null: ObjectUtils.isEmpty(resourceMap.get("resourceColumnNameList"))?null:resourceMap.get("resourceColumnNameList").toString();
+        if (StringUtils.isNotBlank(resourceColumnNameList)){
+            modelProjectResourceVo.setFileHandleField(Arrays.asList(resourceColumnNameList.split(",")));
+        }
         return modelProjectResourceVo;
     }
 

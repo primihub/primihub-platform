@@ -16,6 +16,7 @@ import java.util.Set;
 public class BaseConfiguration {
     private Set<String> tokenValidateUriBlackList;
     private Set<String> needSignUriList;
+    private String primihubOfficalService;
     private String defaultPassword;
     private String defaultPasswordVector;
     private String grpcClientAddress;

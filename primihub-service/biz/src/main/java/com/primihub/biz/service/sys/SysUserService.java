@@ -2,13 +2,12 @@ package com.primihub.biz.service.sys;
 
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageParam;
-import com.primihub.biz.entity.sys.param.FindUserPageParam;
-import com.primihub.biz.entity.sys.param.LoginParam;
-import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
+import com.primihub.biz.entity.sys.param.*;
 import com.primihub.biz.entity.sys.po.SysRole;
 import com.primihub.biz.entity.sys.po.SysUr;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -22,11 +21,21 @@ import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.tool.PlatformHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.SignUtil;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,9 +57,10 @@ public class SysUserService {
     private SysAuthService sysAuthService;
     @Autowired
     private BaseConfiguration baseConfiguration;
-
     @Autowired
     private OrganConfiguration organConfiguration;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
 
     public BaseResultEntity login(LoginParam loginParam){
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
@@ -317,5 +327,59 @@ public class SysUserService {
         Map map=new HashMap<>();
         map.put("sysUser",sysUser);
         return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity sendVerificationCode(SendVerificationCodeParam sendVerificationCodeParam){
+        String verificationCode=sendVerificationCodeParam.getCellphone()!=null&&!sendVerificationCodeParam.getCellphone().equals("")?String.valueOf(RandomUtils.nextInt(100000,999999)): RandomStringUtils.randomAlphanumeric(8);
+        String userAccount=sendVerificationCodeParam.getCellphone()!=null&&!sendVerificationCodeParam.getCellphone().equals("")?sendVerificationCodeParam.getCellphone():sendVerificationCodeParam.getEmail();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        MultiValueMap map = new LinkedMultiValueMap<>();
+        if(sendVerificationCodeParam.getCellphone()!=null&&!sendVerificationCodeParam.getCellphone().equals(""))
+            map.put("cellphone", new ArrayList(){{add(sendVerificationCodeParam.getCellphone());}});
+        if(sendVerificationCodeParam.getEmail()!=null&&!sendVerificationCodeParam.getEmail().equals(""))
+            map.put("email", new ArrayList(){{add(sendVerificationCodeParam.getEmail());}});
+        map.put("verify_code", new ArrayList(){{add(verificationCode);}});
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+        BaseResultEntity baseResultEntity=restTemplate.postForObject(baseConfiguration.getPrimihubOfficalService()+"/expericence/send_verify_code",request, BaseResultEntity.class);
+        if(baseResultEntity.getCode().equals(-7))
+            return BaseResultEntity.failure(BaseResultEnum.NOT_IN_THE_WHITE_LIST);
+        else if(baseResultEntity.getCode().equals(-6))
+            return BaseResultEntity.failure(BaseResultEnum.FIVE_MINUTES_LATER);
+        else if(baseResultEntity.getCode().equals(-5))
+            return BaseResultEntity.failure(BaseResultEnum.OUTNUMBER);
+        else if(baseResultEntity.getCode().equals(-4))
+            return BaseResultEntity.failure(BaseResultEnum.SMS_FAILURE);
+        else if(baseResultEntity.getCode().equals(-8))
+            return BaseResultEntity.failure(BaseResultEnum.ONE_MINUTES_LATER);
+        else if(baseResultEntity.getCode().equals(-1))
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,baseResultEntity.getMsg());
+
+        String key=RedisKeyConstant.VERIFICATION_CODE_TYPE_KEY
+                .replace("<code_type>",sendVerificationCodeParam.getCodeType().toString())
+                .replace("<code_key>",userAccount);
+        sysCommonPrimaryRedisRepository.setKeyWithExpire(key,verificationCode,5L, TimeUnit.MINUTES);
+
+        return BaseResultEntity.success();
+    }
+
+    public boolean validateVerificationCode(Integer codeType,String codeKey,String verificationCode){
+        String key=RedisKeyConstant.VERIFICATION_CODE_TYPE_KEY
+                .replace("<code_type>",codeType.toString())
+                .replace("<code_key>",codeKey);
+        String result=sysCommonPrimaryRedisRepository.getKey(key);
+        if(result==null||result.equals(""))
+            return false;
+        if(!result.equals(verificationCode))
+            return false;
+        return true;
+    }
+
+    public BaseResultEntity forgetPassword(ForgetPasswordParam forgetPasswordParam){
+        SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(forgetPasswordParam.getUserAccount());
+        if(sysUser==null||sysUser.getUserId()==null)
+            return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
+        updatePassword(sysUser.getUserId(),forgetPasswordParam.getPassword());
+        return BaseResultEntity.success();
     }
 }

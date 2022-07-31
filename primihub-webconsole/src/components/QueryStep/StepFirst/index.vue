@@ -1,5 +1,5 @@
 <template>
-  <div class="search-area">
+  <div v-loading.fullscreen.lock="listLoading" element-loading-text="查询中..." class="search-area">
     <el-form ref="form" :model="form" :rules="rules" label-width="110px" class="demo-form">
       <div class="select-resource">
         <div v-if="isSelected" class="select-row">
@@ -16,7 +16,7 @@
           </el-form-item>
         </div>
         <el-form-item label="检索ID" prop="pirParam">
-          <el-input v-model="form.pirParam" placeholder="请输入检索id" />
+          <el-input v-model="form.pirParam" placeholder="请输入检索id" maxlength="50" show-word-limit />
         </el-form-item>
         <el-button v-if="hasPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
       </div>
@@ -39,7 +39,7 @@
 </template>
 
 <script>
-import { pirSubmitTask } from '@/api/PIR'
+import { pirSubmitTask, getTaskData } from '@/api/PIR'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceItemCreate from '@/components/ResourceItemCreate'
 // import ResourceDialog from '@/components/ResourceDialog'
@@ -74,7 +74,7 @@ export default {
         ],
         pirParam: [
           { required: true, message: '请输入检索ID', trigger: 'blur' },
-          { max: 10, message: '长度在10个字符以内', trigger: 'blur' }
+          { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
       dialogVisible: false,
@@ -84,7 +84,9 @@ export default {
       organId: '',
       isReset: false,
       cascaderValue: [],
-      type: 'add'
+      type: 'add',
+      timer: null,
+      taskId: -1
     }
   },
   computed: {
@@ -92,7 +94,39 @@ export default {
       return this.selectResources && this.selectResources.length > 0
     }
   },
+  destroyed() {
+    clearInterval(this.timer)
+  },
   methods: {
+    setInterval() {
+      // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
+      this.timer = window.setInterval(() => {
+        getTaskData({ taskId: this.taskId }).then(res => {
+          const taskState = res.result.taskState
+          switch (taskState) {
+            case 3:
+              this.$message({
+                message: '查询失败',
+                type: 'error'
+              })
+              clearInterval(this.timer)
+              this.listLoading = false
+              break
+            case 1:
+              clearInterval(this.timer)
+              this.$emit('next', {
+                taskId: this.taskId,
+                taskDate: taskState,
+                pirParam: this.form.pirParam
+              })
+              this.listLoading = false
+              break
+            default:
+              break
+          }
+        })
+      }, 1500)
+    },
     next() {
       if (this.selectResources.length === 0) {
         this.$message({
@@ -105,32 +139,25 @@ export default {
 
       this.$refs.form.validate(valid => {
         if (valid) {
-          const loading = this.$loading({
-            lock: true,
-            text: '查询中...'
-          })
+          this.listLoading = true
           pirSubmitTask({
+            serverAddress: this.serverAddress,
             resourceId: this.selectResources[0].resourceId,
             pirParam: this.form.pirParam
           }).then(res => {
             if (res.code === 0) {
-              const { taskId, taskDate } = res.result
-              this.$emit('next', {
-                taskId,
-                taskDate,
-                pirParam: this.form.pirParam
-              })
+              this.taskId = res.result.taskId
+              this.setInterval()
             } else {
               this.$message({
                 message: res.msg,
                 type: 'error'
               })
-              this.$emit('next', {})
+              this.listLoading = false
             }
-            loading.close()
           }).catch(err => {
             console.log(err)
-            loading.close()
+            this.listLoading = false
           })
         } else {
           console.log('error submit!!')

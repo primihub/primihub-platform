@@ -83,8 +83,8 @@
           min-width="180"
         >
           <template slot-scope="{row}">
-            特征量：{{ row.fileRows }}<br>
-            样本量：{{ row.fileColumns }} <br>
+            特征量：{{ row.fileColumns }}<br>
+            样本量：{{ row.fileRows }} <br>
             正例样本数量：{{ row.fileYRows }}<br>
             正例样本比例：{{ row.fileYRatio }}% <br>
           </template>
