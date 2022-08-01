@@ -130,7 +130,7 @@
                 <version>0.5.0</version>
                 <configuration>
                     <protocArtifact>com.google.protobuf:protoc:3.10.0:exe:${os.detected.classifier}</protocArtifact>
-                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.44.0:exe:${os.detected.classifier}</pluginArtifact>
+                    <pluginArtifact>io.grpc:protoc-gen-grpc-java:1.30.0:exe:${os.detected.classifier}</pluginArtifact>
                     <pluginId>grpc</pluginId>
                     <protoSourceRoot>src/main/resources/proto</protoSourceRoot>
                 </configuration>
