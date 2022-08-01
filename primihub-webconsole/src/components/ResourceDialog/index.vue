@@ -4,7 +4,7 @@
     v-bind="$attrs"
   >
     <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
-    <ResourceTableSingleSelect :data="tableData" @change="handleChange" />
+    <ResourceTableSingleSelect :data="tableData" :selected-data="selectedData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
@@ -30,6 +30,10 @@ export default {
     tableData: {
       type: Array,
       default: () => []
+    },
+    selectedData: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -39,10 +43,11 @@ export default {
       currentPage: 1,
       pageNo: 1,
       pageSize: 5,
-      selectedResources: [],
+      selectedResource: {},
       pageCount: 0,
       resourceName: '',
-      listLoading: false
+      listLoading: false,
+      selectedResourceId: ''
     }
   },
   watch: {
@@ -54,7 +59,7 @@ export default {
   },
   methods: {
     handleChange(data) {
-      this.selectedResources = data
+      this.selectedResource = data
     },
     searchResource() {
       this.pageNo = 1
@@ -62,6 +67,7 @@ export default {
     },
     handleSearchNameChange(searchName) {
       this.resourceName = searchName
+      this.pageNo = 1
     },
     handlePagination(data) {
       this.pageNo = data.page
@@ -73,10 +79,7 @@ export default {
     },
     handleSubmit() {
       this.resourceName = ''
-      this.$emit('submit', this.selectedResources)
-    },
-    handleSearch() {
-
+      this.$emit('submit', this.selectedResource)
     }
   }
 }

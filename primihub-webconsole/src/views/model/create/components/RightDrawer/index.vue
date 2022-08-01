@@ -70,7 +70,7 @@
     </template>
     <el-button type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
-    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedData" title="添加资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="添加资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
   </div>
 </template>
 
@@ -112,8 +112,8 @@ export default {
       dialogVisible: false,
       selectedOrganId: '',
       resourceList: [],
-      selectedData: [],
-      participationIdentity: 0,
+      selectedResourceId: '',
+      participationIdentity: 2,
       inputValues: [],
       inputValue: this.nodeData && this.nodeData.componentTypes[0].inputValue,
       rules: {
@@ -179,6 +179,12 @@ export default {
         })
         return
       }
+      if (this.inputValue) {
+        const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
+        console.log('currentOrgan', currentOrgan)
+        this.selectedResourceId = currentOrgan.resourceId
+        console.log('666', this.selectedResourceId)
+      }
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
@@ -199,6 +205,7 @@ export default {
         data.organName = this.providerOrgans[0].organName
         this.providerOrgans = [data]
       }
+      this.selectedResourceId = data.resourceId
       // set input value
       this.setInputValue(data)
       this.dialogVisible = false
@@ -217,7 +224,9 @@ export default {
       } else {
         this.inputValues.push(currentData)
       }
+      console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
+      this.save()
     },
     async getProjectResourceData() {
       this.resourceList = []
