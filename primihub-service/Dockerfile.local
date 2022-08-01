@@ -4,7 +4,9 @@ WORKDIR /opt
 
 ADD . /opt/
 
-RUN mvn clean install -Dmaven.test.skip=true -Dasciidoctor.skip=true -Dos.detected.classifier=linux-x86_64
+ARG ARCH=`arch | sed s/arm64/aarch_64/ | sed s/aarch64/aarch_64/`
+
+RUN mvn clean install -Dmaven.test.skip=true -Dasciidoctor.skip=true -Dos.detected.classifier=linux-${ARCH}
 
 FROM java:8-jre
 
