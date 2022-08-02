@@ -15,10 +15,8 @@
           </div>
           <i class="el-icon-arrow-down el-icon--right" />
         </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <router-link to="/updatePwd">
-            <el-dropdown-item>修改密码</el-dropdown-item>
-          </router-link>
+        <el-dropdown-menu slot="dropdown" class="user-dropdown" @click.native="showUpdatePwd">
+          <el-dropdown-item>修改密码</el-dropdown-item>
           <!-- <router-link to="/setting/user">
             <el-dropdown-item>用户管理</el-dropdown-item>
           </router-link> -->
@@ -28,6 +26,16 @@
         </el-dropdown-menu>
       </el-dropdown>
     </div>
+    <el-dialog
+      class="dialog"
+      :visible.sync="dialogVisible"
+      :append-to-body="true"
+      :close-on-click-modal="false"
+      width="500px"
+      :before-close="handleClose"
+    >
+      <UpdatePwdForm @submit="handleSubmit" />
+    </el-dialog>
   </div>
 </template>
 
@@ -35,15 +43,18 @@
 import { mapGetters, mapState, mapActions } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
+import UpdatePwdForm from '@/components/UpdatePwdForm'
 export default {
   components: {
     Breadcrumb,
-    Hamburger
+    Hamburger,
+    UpdatePwdForm
   },
   data() {
     return {
       userInfo: {},
-      organName: ''
+      organName: '',
+      dialogVisible: false
     }
   },
   computed: {
@@ -67,6 +78,18 @@ export default {
     this.getInfo()
   },
   methods: {
+    showUpdatePwd() {
+      console.log(this.dialogVisible)
+      this.dialogVisible = true
+    },
+    handleSubmit(res) {
+      if (res) {
+        this.dialogVisible = false
+      }
+    },
+    handleClose() {
+      this.dialogVisible = false
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },
@@ -143,6 +166,7 @@ p{
 
     .avatar-container {
       margin-right: 30px;
+      cursor: pointer;
 
       .avatar-wrapper {
         position: relative;
@@ -170,5 +194,8 @@ p{
       }
     }
   }
+}
+.dialog{
+  padding-bottom: 30px!important;
 }
 </style>

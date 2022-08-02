@@ -348,10 +348,10 @@ export default {
         message = '请选择加持方资源'
         enable = false
       } else if (otherKeyword === '') {
-        message = '请选择使用方关联键'
+        message = '请选择加持方关联键'
         enable = false
       } else if (ownKeyword === '') {
-        message = '请选择加持方关联键'
+        message = '请选择使用方关联键'
         enable = false
       }
       if (!enable) {
