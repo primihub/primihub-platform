@@ -33,12 +33,12 @@
         values (#{quotaType},#{quotaImage},#{modelId},#{auc},#{ks},#{gini},#{precision},#{recall},#{f1Score},now(),now())
     </insert>
     <insert id="saveDataComponent" keyProperty="componentId" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataComponent">
-        insert into data_component (front_component_id,model_id,component_code,component_name,shape,width,height,coordinate_y,coordinate_x,data_json,start_time,end_time,is_del,create_date,update_date)
-        values (#{frontComponentId},#{modelId},#{componentCode},#{componentName},#{shape},#{width},#{height},#{coordinateY},#{coordinateX},#{dataJson},0,0,0,now(),now())
+        insert into data_component (front_component_id,model_id,task_id,component_code,component_name,shape,width,height,coordinate_y,coordinate_x,data_json,start_time,end_time,is_del,create_date,update_date)
+        values (#{frontComponentId},#{modelId},#{taskId},#{componentCode},#{componentName},#{shape},#{width},#{height},#{coordinateY},#{coordinateX},#{dataJson},0,0,0,now(),now())
     </insert>
     <insert id="saveDataModelComponent" keyProperty="mcId" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelComponent">
-        insert into data_model_component (model_id,input_component_id,output_component_id,point_type,point_json,is_del,create_date,update_date)
-        values (#{modelId},#{inputComponentId},#{outputComponentId},#{pointType},#{pointJson},0,now(),now())
+        insert into data_model_component (model_id,task_id,input_component_id,output_component_id,point_type,point_json,is_del,create_date,update_date)
+        values (#{modelId},#{taskId},#{inputComponentId},#{outputComponentId},#{pointType},#{pointJson},0,now(),now())
     </insert>
     <insert id="saveDataModelTask" parameterType="com.primihub.biz.entity.data.po.DataModelTask" useGeneratedKeys="true" keyProperty="id">
         insert into data_model_task (model_id,task_id,predict_file,predict_content,component_json,is_del,create_date,update_date)

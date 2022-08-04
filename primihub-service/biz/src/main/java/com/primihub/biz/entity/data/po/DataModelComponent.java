@@ -34,6 +34,10 @@ public class DataModelComponent {
      */
     private Long modelId;
     /**
+     * 任务id
+     */
+    private Long taskId;
+    /**
      * 输入组件id
      */
     private Long inputComponentId;

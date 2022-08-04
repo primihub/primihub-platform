@@ -156,6 +156,9 @@
                 <if test="componentCode!=null and componentCode!=0">
                     and component_code = #{componentCode}
                 </if>
+                <if test="taskId!=null and taskId!=0">
+                    and task_id = #{taskId}
+                </if>
             </where>
     </select>
     <select id="queryModelComponenJsonByUserId" resultType="com.primihub.biz.entity.data.vo.ModelComponentJson">
@@ -248,7 +251,7 @@
             component_json as componentJson
         from data_model_task
         where model_id = #{modelId}
-        ORDER BY id
+        ORDER BY id desc
         LIMIT #{offset},#{pageSize}
     </select>
     <select id="queryModelTaskByModelIdCount" resultType="java.lang.Integer">
