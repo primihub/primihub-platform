@@ -123,7 +123,10 @@ export default {
       organs: [],
       destroyed: false,
       startNode: {},
-      componentsList: []
+      componentsList: [],
+      requiredComponents: [],
+      container: null,
+      modelRunValidated: true
     }
   },
   async mounted() {
@@ -167,13 +170,13 @@ export default {
       // 获取左侧组件列表
       await this.getModelComponentsInfo()
       // 初始化画布
-      const container = this.$refs.containerRef
+      this.container = this.$refs.containerRef
       const minimapContainer = this.$refs.mapContainerRef
-      const width = container.scrollWidth
-      const height = container.scrollHeight
+      const width = this.container.scrollWidth
+      const height = this.container.scrollHeight
       this.$refs.toolBarRef.width = width
       this.graph = new Graph({
-        container: container,
+        container: this.container,
         width: width,
         height: height,
         autoResize: true,
@@ -187,7 +190,7 @@ export default {
           container: minimapContainer,
           scalable: false
         },
-        panning: true,
+        // panning: true,
         background: {
           color: '#F5F7FA'
         },
@@ -264,6 +267,14 @@ export default {
             })
           }
         },
+        selecting: {
+          enabled: true,
+          multiple: true,
+          rubberEdge: true,
+          rubberNode: true,
+          modifiers: 'shift',
+          rubberband: true
+        },
         history: true,
         clipboard: true,
         keyboard: true
@@ -301,8 +312,11 @@ export default {
       )
     },
     addStartNode() {
+      const width = this.container.scrollWidth
+      // 60 = start node width
+      const x = width * 0.5 - 60
       this.graph.addNode({
-        x: 200,
+        x: x,
         y: 150,
         shape: 'start-node',
         componentCode: this.startNode.componentCode,
@@ -421,7 +435,7 @@ export default {
       graph.bindKey('backspace', () => {
         const cells = graph.getSelectedCells()
         if (cells.length) {
-          const currentCode = cells[0].store.data.data.componentCode
+          const currentCode = this.nodeData.componentCode
           // remove duplicates
           this.selectComponentList = [...new Set(this.selectComponentList)]
           const index = this.selectComponentList.indexOf(currentCode)
@@ -496,7 +510,7 @@ export default {
       }
       deleteModel({ modelId: this.modelId }).then(res => {
         // this.graph.clearCells()
-        // location.reload()
+        location.reload()
       })
     },
     initToolBarEvent() {
@@ -509,30 +523,96 @@ export default {
           this.saveFn(0)
         }
       })
-      this.graph.bindKey('ctrl+z', () => {
+      this.graph.bindKey(['ctrl+z', 'command+z'], () => {
         if (history.canUndo()) {
           history.undo()
         }
         return false
       })
     },
-    run() {
+    checkRunValidated() {
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
           message: '模型运行中',
           type: 'warning'
         })
+        this.modelRunValidated = false
         return
-      }
-      // model is empty, can't run
-      if (!this.modelId) {
+      } else if (!this.modelId) { // model is empty, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
         })
+        this.modelRunValidated = false
         return
       }
+      const data = this.graph.toJSON()
+      const { cells } = data
+
+      // checkRequired
+      const required = []
+
+      for (let index = 0; index < cells.length; index++) {
+        const item = cells[index]
+        if (item.shape !== 'edge') {
+          const { componentCode, componentName, componentTypes, isMandatory } = item.data
+
+          if (isMandatory === 0) { // 必选组件
+            required.push(componentCode)
+          }
+          console.log('required', required)
+          for (let index = 0; index < this.requiredComponents.length; index++) {
+            if (isMandatory === 0 && !required.includes(componentCode)) {
+              this.modelRunValidated = false
+              this.$message({
+                message: `${componentName}为必选组建`,
+                type: 'error'
+              })
+
+              return
+            }
+          }
+          for (let i = 0; i < componentTypes.length; i++) {
+            const item = componentTypes[i]
+            console.log('122222', item)
+            // 判断所选组件值是否为空
+            if (item.inputValue === '') {
+              this.$message({
+                message: `${componentName}不能为空`,
+                type: 'error'
+              })
+              this.modelRunValidated = false
+              return
+            }
+          }
+          // 判断数据集是否为空
+          if (componentCode === 'dataSet') {
+            const value = componentTypes[0].inputValue !== '' ? JSON.parse(componentTypes[0].inputValue) : ''
+            const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
+            const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
+            if (!value) {
+              this.$message({
+                message: `请选择资源`,
+                type: 'error'
+              })
+              this.modelRunValidated = false
+              return
+            } else if (!(initiateResource && providerResource)) {
+              const msg = !initiateResource ? '请选择发起方资源' : !providerResource ? '请选择协作方资源' : '请选择资源'
+              this.$message({
+                message: msg,
+                type: 'error'
+              })
+              this.modelRunValidated = false
+              return
+            }
+          }
+        }
+      }
+    },
+    run() {
+      this.checkRunValidated()
       runTaskModel({ modelId: this.modelId }).then(res => {
         if (res.code !== 0) {
           this.$message({
@@ -597,9 +677,8 @@ export default {
       const { result } = await getModelComponent()
       this.components = result
       this.componentsList = result.slice(1)
-      // this.componentsList.slice(0)
-      console.log('this.components', this.components)
-      console.log('componentsList11', this.componentsList)
+      this.requiredComponents = result.filter(item => item.isMandatory === 0)
+      console.log('requiredComponents', this.requiredComponents)
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
@@ -702,7 +781,7 @@ export default {
         input: [],
         output: []
       }
-      if (shape === 'dag-node') {
+      if (shape !== 'edge') {
         const frontComponentId = item.frontComponentId
         const inputRes = edgeList.find(item => {
           return item.source.cell === frontComponentId
@@ -803,36 +882,8 @@ export default {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
-          // 判断数据集是否为空
-          if (isDraft && componentCode === 'dataAlignment') {
-            const value = data.componentTypes[0].inputValue !== '' ? JSON.parse(data.componentTypes[0].inputValue) : ''
-            const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
-            const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
-            if (!value) {
-              this.$message({
-                message: `请选择资源`,
-                type: 'error'
-              })
-              return
-            } else if (!(initiateResource && providerResource)) {
-              const msg = !initiateResource ? '请选择发起方资源' : !providerResource ? '请选择协作方资源' : '请选择资源'
-              this.$message({
-                message: msg,
-                type: 'error'
-              })
-              return
-            }
-          }
           for (let i = 0; i < componentTypes.length; i++) {
             const item = componentTypes[i]
-            // 判断所选组件值是否为空
-            if (!item.inputValue && isDraft) {
-              this.$message({
-                message: `${componentName}不能为空`,
-                type: 'error'
-              })
-              return
-            }
             componentValues.push({
               key: item.typeCode,
               val: item.inputValue
@@ -891,11 +942,11 @@ export default {
   flex: 1;
   overflow: hidden;
   display: flex;
-  height: calc(100vh - 80px);
-  // flex-direction: column;
+  height: 100vh;
   position: relative;
   .container{
     width: 100%;
+    height: 100%;
   }
 }
 .flowContainer{

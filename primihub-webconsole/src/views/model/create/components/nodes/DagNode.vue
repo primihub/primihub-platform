@@ -53,8 +53,8 @@ export default {
     // 监听数据改变事件
     node.on('change:data', ({ current }) => {
       console.log('current', current)
-      const { label, componentName, complete = false, isMandatory, componentState = 0 } = current
-      console.log(label)
+      const { componentName, complete = false, isMandatory, componentState = 0 } = current
+      console.log(componentName)
       this.label = componentName
       this.complete = complete
       this.isMandatory = isMandatory
