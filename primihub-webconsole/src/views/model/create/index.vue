@@ -9,11 +9,16 @@
         <div id="stencil" />
       </div>
 
-      <div id="flowContainer" ref="containerRef" class="container" />
+      <div class="center-container">
+        <!--流程图工具栏-->
+        <tool-bar ref="toolBarRef" @save="saveFn(1)" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+        <div id="flowContainer" ref="containerRef" class="container" />
+        <div ref="mapContainerRef" class="minimap-container" />
+      </div>
+
       <!--右侧工具栏-->
-      <right-drawer :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :model-data="modelData" :select-cell="selectCell" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" />
-      <!--流程图工具栏-->
-      <tool-bar @save="saveFn(1)" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+      <right-drawer :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" />
+
     </div>
   </div>
 </template>
@@ -21,7 +26,8 @@
 <script>
 import { Graph, Addon, FunctionExt, Shape } from '@antv/x6'
 import '@antv/x6-vue-shape'
-import DagNodeComponent from './components/DagNode.vue'
+import DagNodeComponent from './components/nodes/DagNode.vue'
+import StartNodeComponent from './components/nodes/StartNode.vue'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
 import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
@@ -92,15 +98,11 @@ export default {
       stencil: null,
       dnd: null,
       showRight: false,
-      selectCell: {},
       nodeData: null,
-      showDataConfig: false,
-      components: {}, // 左侧组件列表
+      showDataConfig: true,
+      components: null, // 左侧组件列表
       saveParams: {}, // 保存接口需要参数
       modelComponents: [], // 草稿详情
-      modelData: { // 右侧面板模型信息
-        trainType: 1
-      },
       modelId: 0,
       taskId: 0,
       graphData: [],
@@ -119,7 +121,9 @@ export default {
       selectComponentList: [],
       componentCode: '',
       organs: [],
-      destroyed: false
+      destroyed: false,
+      startNode: {},
+      componentsList: []
     }
   },
   async mounted() {
@@ -155,32 +159,7 @@ export default {
             }
           },
           ports: {
-            groups: {
-              in: {
-                position: 'top',
-                attrs: {
-                  circle: {
-                    r: 4,
-                    magnet: true,
-                    stroke: '#C2C8D5',
-                    strokeWidth: 1,
-                    fill: '#fff'
-                  }
-                }
-              },
-              out: {
-                position: 'bottom',
-                attrs: {
-                  circle: {
-                    r: 4,
-                    magnet: true,
-                    stroke: '#C2C8D5',
-                    strokeWidth: 1,
-                    fill: '#fff'
-                  }
-                }
-              }
-            }
+            ...ports
           }
         },
         true
@@ -189,38 +168,50 @@ export default {
       await this.getModelComponentsInfo()
       // 初始化画布
       const container = this.$refs.containerRef
-      const width = container.offsetWidth
-      const height = container.offsetHeight
+      const minimapContainer = this.$refs.mapContainerRef
+      const width = container.scrollWidth
+      const height = container.scrollHeight
+      this.$refs.toolBarRef.width = width
       this.graph = new Graph({
         container: container,
-        width: width || 800,
-        height: height || 600,
-        panning: { // 拖拽平移
+        width: width,
+        height: height,
+        autoResize: true,
+        scroller: {
           enabled: true,
-          eventTypes: ['leftMouseDown', 'mouseWheel']
+          pageBreak: false,
+          pannable: true
+        },
+        minimap: {
+          enabled: true,
+          container: minimapContainer,
+          scalable: false
+        },
+        panning: true,
+        background: {
+          color: '#F5F7FA'
         },
         grid: {
+          type: 'doubleMesh',
           size: 10,
           visible: true,
-          type: 'mesh',
           args: [
             {
-              color: '#cccccc',
+              color: '#E7E8EA',
               thickness: 1
             },
             {
-              color: '#cccccc',
+              color: '#CBCED3',
               thickness: 1,
-              factor: 4
+              factor: 5
             }
           ]
         },
         mousewheel: {
           enabled: true,
-          modifiers: 'ctrl',
-          factor: 1.1,
-          maxScale: 1.5,
-          minScale: 0.5
+          modifiers: ['ctrl', 'meta'],
+          minScale: 0.5,
+          maxScale: 2
         },
         highlighting: {
           magnetAdsorbed: {
@@ -273,23 +264,12 @@ export default {
             })
           }
         },
-        selecting: {
-          enabled: true,
-          multiple: true,
-          rubberEdge: true,
-          rubberNode: true,
-          modifiers: 'shift',
-          rubberband: true
-        },
         history: true,
-        clipboard: {
-          enabled: true
-        },
-        keyboard: {
-          enabled: true
-        }
+        clipboard: true,
+        keyboard: true
       })
-
+      this.registerStartNode()
+      this.addStartNode()
       // 初始化左侧组件列表
       this.initStencil()
       this.initShape()
@@ -297,15 +277,47 @@ export default {
       // 画布事件初始化
       this.initEvent()
       // 居中显示画布
-      this.graph.centerContent()
+      // this.graph.centerContent()
       this.projectId = Number(this.$route.query.projectId) || 0
     },
+    registerStartNode() {
+      this.startNode = this.components.filter(item => item.componentCode === 'start')[0]
+      this.nodeData = this.startNode
+      Graph.registerNode(
+        'start-node',
+        {
+          inherit: 'vue-shape',
+          width: 120,
+          height: 40,
+          component: {
+            template: `<start-node-component />`,
+            components: {
+              StartNodeComponent
+            }
+          },
+          ports: { ...ports }
+        },
+        true
+      )
+    },
+    addStartNode() {
+      this.graph.addNode({
+        x: 200,
+        y: 150,
+        shape: 'start-node',
+        componentCode: this.startNode.componentCode,
+        label: this.startNode.componentName,
+        data: this.startNode,
+        ports
+      })
+    },
     initStencil() {
+      const height = document.querySelector('#stencil').offsetHeight
       this.stencil = new Addon.Stencil({
         title: '',
         target: this.graph,
-        stencilGraphWidth: 260,
-        stencilGraphHeight: 600,
+        // stencilGraphWidth: 330,
+        stencilGraphHeight: height,
         x: 50,
         collapsable: true,
         getDropNode: (node) => {
@@ -340,18 +352,13 @@ export default {
     },
     initShape() {
       const { graph } = this
-      const imageNodes = this.components.map((item) =>
+      const imageNodes = this.componentsList.map((item) =>
         graph.createNode({
-          id: item.componentCode,
+          id: item.frontComponentId,
           componentCode: item.componentCode,
           shape: 'dag-node',
           label: item.componentName,
           data: item,
-          attrs: {
-            label: {
-              text: item.componentName
-            }
-          },
           ports
         })
 
@@ -375,12 +382,12 @@ export default {
       const container = document.getElementById('flowContainer')
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
-        this.showDataConfig = true
+        console.log('nodeData 1111', this.nodeData)
       })
 
-      graph.on('blank:click', () => {
-        this.showDataConfig = false
-      })
+      // graph.on('blank:click', () => {
+      //   this.showDataConfig = false
+      // })
       graph.on(
         'node:mouseenter',
         FunctionExt.debounce(() => {
@@ -488,8 +495,8 @@ export default {
         return
       }
       deleteModel({ modelId: this.modelId }).then(res => {
-        this.graph.clearCells()
-        location.reload()
+        // this.graph.clearCells()
+        // location.reload()
       })
     },
     initToolBarEvent() {
@@ -587,8 +594,12 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const res = await getModelComponent()
-      this.components = res.result
+      const { result } = await getModelComponent()
+      this.components = result
+      this.componentsList = result.slice(1)
+      // this.componentsList.slice(0)
+      console.log('this.components', this.components)
+      console.log('componentsList11', this.componentsList)
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
@@ -623,6 +634,7 @@ export default {
               })
             })
           }
+          console.log('this.modelComponents', this.modelComponents)
           this.initGraphShape()
         }).catch(() => {
           this.modelId = res.result.modelId
@@ -632,38 +644,33 @@ export default {
     },
     initGraphShape() {
       const graphData = []
+      console.log('this.modelComponents', this.modelComponents)
       this.modelComponents.forEach(item => {
-        if (item.shape === 'dag-node') {
-          const { componentCode, coordinateX, coordinateY, width, height, componentName } = item
-          const { componentTypes, isMandatory } = this.components.find(item => {
-            return item.componentCode === componentCode
-          })
-          graphData.push({
-            id: item.frontComponentId,
-            'position': {
-              x: coordinateX,
-              y: coordinateY
-            },
-            'size': {
-              width,
-              height
-            },
-            'attrs': {
-              'text': {
-                'text': componentName
-              }
-            },
-            'shape': 'dag-node',
-            'ports': ports,
-            'data': {
-              componentCode: item.componentCode,
-              componentName: item.componentName,
-              componentTypes: componentTypes,
-              isMandatory: isMandatory
-            },
-            'zIndex': 1
-          })
-        }
+        const { componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
+        const { componentTypes, isMandatory } = this.components.find(item => {
+          return item.componentCode === componentCode
+        })
+        graphData.push({
+          id: item.frontComponentId,
+          label: item.componentName,
+          position: {
+            x: coordinateX,
+            y: coordinateY
+          },
+          size: {
+            width,
+            height
+          },
+          shape,
+          ports,
+          data: {
+            componentCode,
+            componentName,
+            componentTypes,
+            isMandatory
+          },
+          zIndex: 1
+        })
       })
 
       this.modelPointComponents.forEach(item => {
@@ -678,6 +685,7 @@ export default {
           })
         }
       })
+      console.log('111', graphData)
       this.graph.fromJSON(graphData)
     },
     filterFn(item, edgeList, cells) {
@@ -769,9 +777,6 @@ export default {
       this.saveParams.param = {
         projectId: this.projectId,
         modelId: this.modelId,
-        modelName: this.modelData.modelName,
-        modelDesc: this.modelData.modelDesc,
-        trainType: this.modelData.trainType,
         isDraft,
         modelComponents: this.modelComponents || []
       }
@@ -787,7 +792,14 @@ export default {
         const { position, data, size, shape } = item
         const componentValues = []
         item.frontComponentId = item.id
-        if (shape === 'dag-node') {
+        if (shape === 'edge') {
+          modelPointComponents.push({
+            frontComponentId: item.frontComponentId,
+            shape,
+            input: item.source,
+            output: item.target
+          })
+        } else {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
@@ -828,7 +840,7 @@ export default {
           }
           // format 参数
           modelComponents.push({
-            frontComponentId: item.id,
+            frontComponentId: item.frontComponentId,
             coordinateX: position.x,
             coordinateY: position.y,
             width: size.width,
@@ -839,14 +851,6 @@ export default {
             componentValues,
             input: input,
             output: output
-          })
-        }
-        if (shape === 'edge') {
-          modelPointComponents.push({
-            frontComponentId: item.id,
-            shape,
-            input: item.source,
-            output: item.target
           })
         }
       }
@@ -879,26 +883,41 @@ export default {
 ::v-deep .x6-widget-stencil{
   background: transparent;
 }
+
+::v-deep .x6-widget-minimap-viewport{
+  border-color: #409EFF;
+}
+.center-container{
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  height: calc(100vh - 80px);
+  // flex-direction: column;
+  position: relative;
+  .container{
+    width: 100%;
+  }
+}
+.flowContainer{
+  position: relative;
+}
+.minimap-container{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
 .x6-widget-stencil-title{
-    background: transparent;
-    display: none;
-  }
+  background: transparent;
+  display: none;
+}
 .app-container {
-  .mask{
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    z-index: 100;
-  }
   position: relative;
   height: calc(100vh - 50px);
   padding: 0;
   overflow: hidden;
   .graph-container{
     display: flex;
+    // position: relative;
   }
   .shapes{
     position: relative;
@@ -931,10 +950,6 @@ export default {
   width: 180px;
   height: 40px;
   border: 1px solid #000;
-}
-.container{
-  flex: 1;
-  height: 800px;
 }
 @keyframes running-line {
   to {
