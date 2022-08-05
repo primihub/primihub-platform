@@ -130,6 +130,10 @@ export default {
     }
   },
   async mounted() {
+    window.addEventListener('resize', () => {
+      console.log(this.container.style.width)
+      // this.container.style.width =
+    })
     await this.init()
     this.initToolBarEvent()
     this.getModelComponentDetail()
@@ -177,9 +181,10 @@ export default {
       this.$refs.toolBarRef.width = width
       this.graph = new Graph({
         container: this.container,
-        width: width,
+        width: 800,
         height: height,
         autoResize: true,
+        snapline: true,
         scroller: {
           enabled: true,
           pageBreak: false,
@@ -188,7 +193,10 @@ export default {
         minimap: {
           enabled: true,
           container: minimapContainer,
-          scalable: false
+          scalable: false,
+          width: 200,
+          height: 200,
+          padding: 0
         },
         // panning: true,
         background: {
@@ -538,8 +546,9 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
-        return
+        return false
       } else if (!this.modelId) { // model is empty, can't run
+        debugger
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
@@ -564,13 +573,12 @@ export default {
           console.log('required', required)
           for (let index = 0; index < this.requiredComponents.length; index++) {
             if (isMandatory === 0 && !required.includes(componentCode)) {
-              this.modelRunValidated = false
               this.$message({
                 message: `${componentName}为必选组建`,
                 type: 'error'
               })
-
-              return
+              this.modelRunValidated = false
+              break
             }
           }
           for (let i = 0; i < componentTypes.length; i++) {
@@ -579,11 +587,11 @@ export default {
             // 判断所选组件值是否为空
             if (item.inputValue === '') {
               this.$message({
-                message: `${componentName}不能为空`,
+                message: `${item.typeName}不能为空`,
                 type: 'error'
               })
               this.modelRunValidated = false
-              return
+              break
             }
           }
           // 判断数据集是否为空
@@ -613,6 +621,9 @@ export default {
     },
     run() {
       this.checkRunValidated()
+      if (!this.modelRunValidated) {
+        return
+      }
       runTaskModel({ modelId: this.modelId }).then(res => {
         if (res.code !== 0) {
           this.$message({
@@ -942,16 +953,15 @@ export default {
   flex: 1;
   overflow: hidden;
   display: flex;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   position: relative;
-  .container{
-    width: 100%;
+  .flowContainer{
+    position: relative;
     height: 100%;
   }
 }
-.flowContainer{
-  position: relative;
-}
+
 .minimap-container{
   position: absolute;
   bottom: 0;
@@ -968,6 +978,7 @@ export default {
   overflow: hidden;
   .graph-container{
     display: flex;
+    height: 100%;
     // position: relative;
   }
   .shapes{
