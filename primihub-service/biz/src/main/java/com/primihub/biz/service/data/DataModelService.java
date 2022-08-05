@@ -141,14 +141,8 @@ public class DataModelService {
         if (modelIsRunTask(params.getModelId()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL, "模型运行任务中");
         DataModel dataModel = DataModelConvert.dataModelReqConvertPo(params, userId);
-
         try {
-            if (params.getIsDraft() == 0) {
-                // 草稿
-                saveOrGetModelComponentCache(true, userId, params, dataModel);
-            } else {
-
-            }
+            saveOrGetModelComponentCache(true, userId, params, dataModel);
         } catch (Exception e) {
             log.info(e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
@@ -346,6 +340,7 @@ public class DataModelService {
         }
         // 重新组装json
         dataModel.setComponentJson(formatModelComponentJson(params, dataComponentMap));
+        dataModel.setIsDraft(1);
         dataModelPrRepository.updateDataModel(dataModel);
         modelInitService.runModelTaskFeign(dataModel,dataTask);
         Map<String,Object> returnMap = new HashMap<>();
