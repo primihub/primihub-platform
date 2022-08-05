@@ -10,7 +10,7 @@
 
       <div class="center-container">
         <!--流程图工具栏-->
-        <tool-bar ref="toolBarRef" @save="saveFn(1)" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+        <tool-bar ref="toolBarRef" @save="saveFn()" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
         <div id="flowContainer" ref="containerRef" class="container" />
         <div ref="mapContainerRef" class="minimap-container" />
       </div>
@@ -29,7 +29,7 @@ import DagNodeComponent from './components/nodes/DagNode.vue'
 import StartNodeComponent from './components/nodes/StartNode.vue'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
 
 const lineAttr = { // 线样式
   'line': {
@@ -126,6 +126,11 @@ export default {
       requiredComponents: [],
       container: null,
       modelRunValidated: true
+    }
+  },
+  computed: {
+    isEdit() {
+      return !!this.$route.query.modelId
     }
   },
   async mounted() {
@@ -508,10 +513,8 @@ export default {
         })
         return
       }
-      deleteModel({ modelId: this.modelId }).then(res => {
-        // this.graph.clearCells()
-        // location.reload()
-      })
+      this.saveFn(2)
+      // this.graph.clearCells()
     },
     initToolBarEvent() {
       const { history } = this.graph
@@ -646,9 +649,8 @@ export default {
       }
       const res = await getModelComponentDetail(params)
       if (res.result) {
-        if (this.modelId) { // It's is edit page
+        if (this.isEdit) { // It's is edit page
           this.setComponentsDetail(res.result)
-          this.initGraphShape()
         } else {
           this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
             confirmButtonText: '是',
@@ -657,7 +659,6 @@ export default {
             type: 'warning'
           }).then(() => {
             this.setComponentsDetail(res.result)
-            this.initGraphShape()
           }).catch(() => {
             this.modelId = res.result.modelId
             this.clearFn()
@@ -683,19 +684,21 @@ export default {
           })
         })
       }
+      this.initGraphShape()
     },
     initGraphShape() {
       const graphData = []
       console.log('this.modelComponents', this.modelComponents)
-      this.modelComponents.forEach(item => {
-        const { componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
+      this.modelComponents && this.modelComponents.forEach(item => {
+        const { frontComponentId, componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
         const { componentTypes, isMandatory } = this.components.find(item => {
           return item.componentCode === componentCode
         })
         graphData.push({
-          id: item.frontComponentId,
+          id: frontComponentId,
+          frontComponentId,
           label: componentName,
-          componentCode: componentCode,
+          componentCode,
           position: {
             x: coordinateX,
             y: coordinateY
@@ -716,7 +719,7 @@ export default {
         })
       })
 
-      this.modelPointComponents.forEach(item => {
+      this.modelPointComponents?.forEach(item => {
         if (item.shape === 'edge') {
           graphData.push({
             id: item.frontComponentId,
@@ -728,7 +731,6 @@ export default {
           })
         }
       })
-      console.log('111', graphData)
       this.graph.fromJSON(graphData)
     },
     filterFn(item, edgeList, cells) {
@@ -817,14 +819,14 @@ export default {
         })
         return
       }
+      const data = this.graph.toJSON()
+      const { cells } = data
       this.saveParams.param = {
         projectId: this.projectId,
         modelId: this.modelId,
-        isDraft,
-        modelComponents: this.modelComponents || []
+        isDraft
       }
-      const data = this.graph.toJSON()
-      const { cells } = data
+      this.saveParams.param.modelComponents = this.modelComponents
 
       const modelComponents = [] // 块数据
       const modelPointComponents = [] // 线数据
@@ -870,7 +872,19 @@ export default {
         }
       }
       this.saveParams.param.modelComponents = modelComponents
+
       this.saveParams.param.modelPointComponents = modelPointComponents
+      if (isDraft === 2) {
+        const startData = cells.filter(item => item.componentCode === 'start')[0]
+        const graphData = { cells: [] }
+        graphData.cells.push(startData)
+        this.graph.fromJSON(graphData)
+        const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
+        this.saveParams.param.modelComponents = []
+        this.saveParams.param.modelComponents.push(startParams)
+        this.selectComponentList = []
+      }
+
       saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
         if (res.code === 0) {
           this.modelId = res.result.modelId

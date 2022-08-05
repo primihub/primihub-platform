@@ -15,7 +15,7 @@
     <el-tooltip class="item" effect="light" content="缩小" placement="bottom">
       <i class="el-icon-zoom-out" :class="{opacity: !canZoomOut}" @click="zoomOutFn" />
     </el-tooltip>
-    <el-tooltip class="item" effect="light" content="清除" placement="bottom">
+    <el-tooltip class="item" effect="light" content="清空" placement="bottom">
       <!-- <i class="el-icon-delete" /> -->
       <svg-icon icon-class="clear" @click="clearFn" />
     </el-tooltip>
