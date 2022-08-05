@@ -19,6 +19,10 @@ public class DataComponent {
      */
     private Long modelId;
     /**
+     * 任务id
+     */
+    private Long taskId;
+    /**
      * 组件code
      */
     private String componentCode;

@@ -46,6 +46,7 @@ DROP TABLE IF EXISTS `data_model_component`;
 CREATE TABLE `data_model_component` (
                                         `mc_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '关系id',
                                         `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                                        `task_id` bigint(20) DEFAULT NULL COMMENT '任务id',
                                         `input_component_id` bigint(20) DEFAULT NULL COMMENT '输入组件id',
                                         `output_component_id` bigint(20) DEFAULT NULL COMMENT '输出组件id',
                                         `point_type` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '指向类型(直线、曲线图等等)',
@@ -63,6 +64,7 @@ CREATE TABLE `data_component` (
                                   `component_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '组件id',
                                   `front_component_id` varchar(255) DEFAULT NULL COMMENT '前端组件id',
                                   `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                                  `task_id` bigint DEFAULT NULL COMMENT '任务id',
                                   `component_code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件code',
                                   `component_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件名称',
                                   `shape` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '形状',

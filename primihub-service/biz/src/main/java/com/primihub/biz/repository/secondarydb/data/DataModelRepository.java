@@ -33,7 +33,7 @@ public interface DataModelRepository {
 
     Integer queryModelListCount(Map<String,Object> paramMap);
 
-    List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode);
+    List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode,@Param("taskId") Long taskId);
 
     ModelComponentJson queryModelComponenJsonByUserId(@Param("userId")Long userId, @Param("isDraft") Integer isDraft, @Param("modelId")Long modelId);
 
