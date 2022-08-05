@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
     <div class="graph-container">
-
       <!-- 左侧列表组件区域 -->
       <div class="shapes" :class="{'not-clickable': modelStartRun}">
         <h2>新建模型</h2>
@@ -181,7 +180,7 @@ export default {
       this.$refs.toolBarRef.width = width
       this.graph = new Graph({
         container: this.container,
-        width: 800,
+        width: width,
         height: height,
         autoResize: true,
         snapline: true,
@@ -404,12 +403,8 @@ export default {
       const container = document.getElementById('flowContainer')
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
-        console.log('nodeData 1111', this.nodeData)
       })
 
-      // graph.on('blank:click', () => {
-      //   this.showDataConfig = false
-      // })
       graph.on(
         'node:mouseenter',
         FunctionExt.debounce(() => {
@@ -546,84 +541,41 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
-        return false
       } else if (!this.modelId) { // model is empty, can't run
-        debugger
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
         })
         this.modelRunValidated = false
-        return
-      }
-      const data = this.graph.toJSON()
-      const { cells } = data
-
-      // checkRequired
-      const required = []
-
-      for (let index = 0; index < cells.length; index++) {
-        const item = cells[index]
-        if (item.shape !== 'edge') {
-          const { componentCode, componentName, componentTypes, isMandatory } = item.data
-
-          if (isMandatory === 0) { // 必选组件
-            required.push(componentCode)
-          }
-          console.log('required', required)
-          for (let index = 0; index < this.requiredComponents.length; index++) {
-            if (isMandatory === 0 && !required.includes(componentCode)) {
-              this.$message({
-                message: `${componentName}为必选组建`,
-                type: 'error'
-              })
-              this.modelRunValidated = false
-              break
-            }
-          }
-          for (let i = 0; i < componentTypes.length; i++) {
-            const item = componentTypes[i]
-            console.log('122222', item)
-            // 判断所选组件值是否为空
-            if (item.inputValue === '') {
-              this.$message({
-                message: `${item.typeName}不能为空`,
-                type: 'error'
-              })
-              this.modelRunValidated = false
-              break
-            }
-          }
-          // 判断数据集是否为空
-          if (componentCode === 'dataSet') {
-            const value = componentTypes[0].inputValue !== '' ? JSON.parse(componentTypes[0].inputValue) : ''
-            const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
-            const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
-            if (!value) {
-              this.$message({
-                message: `请选择资源`,
-                type: 'error'
-              })
-              this.modelRunValidated = false
-              return
-            } else if (!(initiateResource && providerResource)) {
-              const msg = !initiateResource ? '请选择发起方资源' : !providerResource ? '请选择协作方资源' : '请选择资源'
-              this.$message({
-                message: msg,
-                type: 'error'
-              })
-              this.modelRunValidated = false
-              return
-            }
-          }
+      } else {
+        const data = this.graph.toJSON()
+        const { cells } = data
+        const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')[0]
+        const value = dataSetCom.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom.data.componentTypes[0].inputValue) : ''
+        const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
+        const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
+        if (!value) {
+          this.$message({
+            message: `请选择数据集`,
+            type: 'error'
+          })
+          this.modelRunValidated = false
+          return false
+        } else if (!(initiateResource && providerResource)) {
+          const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
+          this.$message({
+            message: msg,
+            type: 'error'
+          })
+          this.modelRunValidated = false
+        } else {
+          this.modelRunValidated = true
         }
       }
     },
     run() {
       this.checkRunValidated()
-      if (!this.modelRunValidated) {
-        return
-      }
+      if (!this.modelRunValidated) return
       runTaskModel({ modelId: this.modelId }).then(res => {
         if (res.code !== 0) {
           this.$message({
@@ -689,7 +641,6 @@ export default {
       this.components = result
       this.componentsList = result.slice(1)
       this.requiredComponents = result.filter(item => item.isMandatory === 0)
-      console.log('requiredComponents', this.requiredComponents)
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
@@ -742,7 +693,8 @@ export default {
         })
         graphData.push({
           id: item.frontComponentId,
-          label: item.componentName,
+          label: componentName,
+          componentCode: componentCode,
           position: {
             x: coordinateX,
             y: coordinateY
@@ -953,15 +905,16 @@ export default {
   flex: 1;
   overflow: hidden;
   display: flex;
-  width: 100%;
   height: 100%;
   position: relative;
-  .flowContainer{
-    position: relative;
+  .container{
+    width: 100%;
     height: 100%;
   }
 }
-
+.flowContainer{
+  position: relative;
+}
 .minimap-container{
   position: absolute;
   bottom: 0;

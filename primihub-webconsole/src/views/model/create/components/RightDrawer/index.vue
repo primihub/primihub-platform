@@ -172,7 +172,6 @@ export default {
         })
         return
       }
-      console.log('inputValue', this.inputValue)
       if (this.inputValue) {
         const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
         if (currentOrgan) {
@@ -181,7 +180,6 @@ export default {
           this.selectedResourceId = ''
         }
       }
-      console.log('请求数据')
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
