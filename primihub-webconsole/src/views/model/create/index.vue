@@ -129,10 +129,7 @@ export default {
     }
   },
   async mounted() {
-    window.addEventListener('resize', () => {
-      console.log(this.container.style.width)
-      // this.container.style.width =
-    })
+    this.modelId = this.$route.query.modelId
     await this.init()
     this.initToolBarEvent()
     this.getModelComponentDetail()
@@ -513,7 +510,7 @@ export default {
       }
       deleteModel({ modelId: this.modelId }).then(res => {
         // this.graph.clearCells()
-        location.reload()
+        // location.reload()
       })
     },
     initToolBarEvent() {
@@ -644,42 +641,46 @@ export default {
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
-      const res = await getModelComponentDetail()
+      const params = {
+        modelId: this.modelId
+      }
+      const res = await getModelComponentDetail(params)
       if (res.result) {
-        this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
-          confirmButtonText: '是',
-          cancelButtonText: '否',
-          closeOnClickModal: false,
-          type: 'warning'
-        }).then(() => {
-          const { modelId, modelDesc, modelName = '', trainType, modelComponents, modelPointComponents } = res.result
-          this.modelId = modelId
-          this.modelPointComponents = modelPointComponents
-          this.modelData = {
-            modelId,
-            modelName,
-            modelDesc,
-            trainType
-          }
-          this.modelComponents = modelComponents
-          for (let index = 0; index < this.modelComponents.length; index++) {
-            const item = this.modelComponents[index]
-            // save the selected components
-            this.selectComponentList.push(item.componentCode)
-            const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-            item.componentValues.map(item => {
-              this.components[posIndex].componentTypes.map(c => {
-                if (c.typeCode === item.key && item.val !== '') {
-                  c.inputValue = item.val
-                }
-              })
-            })
-          }
-          console.log('this.modelComponents', this.modelComponents)
+        if (this.modelId) { // It's is edit page
+          this.setComponentsDetail(res.result)
           this.initGraphShape()
-        }).catch(() => {
-          this.modelId = res.result.modelId
-          this.clearFn()
+        } else {
+          this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
+            confirmButtonText: '是',
+            cancelButtonText: '否',
+            closeOnClickModal: false,
+            type: 'warning'
+          }).then(() => {
+            this.setComponentsDetail(res.result)
+            this.initGraphShape()
+          }).catch(() => {
+            this.modelId = res.result.modelId
+            this.clearFn()
+          })
+        }
+      }
+    },
+    setComponentsDetail(data) {
+      const { modelId, modelComponents, modelPointComponents } = data
+      this.modelId = modelId
+      this.modelPointComponents = modelPointComponents
+      this.modelComponents = modelComponents
+      for (let index = 0; index < this.modelComponents.length; index++) {
+        const item = this.modelComponents[index]
+        // save the selected components
+        this.selectComponentList.push(item.componentCode)
+        const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
+        item.componentValues.map(item => {
+          this.components[posIndex].componentTypes.map(c => {
+            if (c.typeCode === item.key && item.val !== '') {
+              c.inputValue = item.val
+            }
+          })
         })
       }
     },
