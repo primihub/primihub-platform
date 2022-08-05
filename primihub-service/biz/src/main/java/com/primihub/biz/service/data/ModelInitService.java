@@ -71,13 +71,10 @@ public class ModelInitService {
     @Async
     public void runModelTaskFeign(DataModel dataModel,DataTask dataTask){
         log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
-        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,dataModel.getModelId());
         FedlearnerJobApi fedlearnerJobApi = null;
-        if (modelComponent!=null) {
-            if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {
-                fedlearnerJobApi  = JSONObject.parseObject(modelComponent.getComponentJson(), FedlearnerJobApi.class);
+            if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
+                fedlearnerJobApi  = JSONObject.parseObject(dataModel.getComponentJson(), FedlearnerJobApi.class);
             }
-        }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.updateDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();

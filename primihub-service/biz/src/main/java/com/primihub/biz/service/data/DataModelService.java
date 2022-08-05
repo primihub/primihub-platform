@@ -173,7 +173,7 @@ public class DataModelService {
             List<DataComponentRelationReq> input = modelComponent.getInput();
             List<DataComponentRelationReq> output = modelComponent.getOutput();
             if (input.size()==0&&output.size()==0){
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"流程不合规");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"流程不合规");
             }
             if (input.size()>0&&output.size()>0){
                 for (DataComponentRelationReq inputReq : input) {
@@ -200,28 +200,39 @@ public class DataModelService {
     private BaseResultEntity extracteModelData(DataModel dataModel,DataModelAndComponentReq params, Map<String, Object> map){
         List<DataComponentReq> modelComponents = params.getModelComponents();
         if (modelComponents==null||modelComponents.size()==0)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件为空");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件为空");
         if (params.getProjectId()==null||params.getProjectId()==0L)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少项目");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少项目");
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null);
         if (dataProject==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"找不到项目");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"找不到项目");
         dataModel.setProjectId(params.getProjectId());
         Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
         // 模型名称
         if (StringUtils.isBlank(paramValuesMap.get("modelName")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型名称");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少模型名称");
         if (StringUtils.isBlank(paramValuesMap.get("trainType")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少训练类型");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少训练类型");
         dataModel.setModelName(paramValuesMap.get("modelName"));
         dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
         dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
         //资源
         if (StringUtils.isBlank(paramValuesMap.get("selectData")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少资源");
+        List<ModelProjectResourceVo> resourceList = null;
+        try {
+            resourceList = JSONObject.parseArray(paramValuesMap.get("selectData"), ModelProjectResourceVo.class);
+            if (resourceList==null||resourceList.size()==0)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源信息为空或资源数量为0");
+        }catch (Exception e){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源内容无法使用");
+        }
+        Set<String> resourceIds = resourceList.stream().map(ModelProjectResourceVo::getResourceId).collect(Collectors.toSet());
+        if (resourceIds.contains(null)||resourceIds.contains(""))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源ID存在为空的数据");
         // 模型类型
         if (StringUtils.isBlank(paramValuesMap.get("modelType")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"缺少模型类型");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少模型类型");
         dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
         map.put("dataModel",dataModel);
         return BaseResultEntity.success();
