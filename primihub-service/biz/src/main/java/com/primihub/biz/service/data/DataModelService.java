@@ -346,6 +346,7 @@ public class DataModelService {
         }
         // 重新组装json
         dataModel.setComponentJson(formatModelComponentJson(params, dataComponentMap));
+        dataModel.setIsDraft(1);
         dataModelPrRepository.updateDataModel(dataModel);
         modelInitService.runModelTaskFeign(dataModel,dataTask);
         Map<String,Object> returnMap = new HashMap<>();
