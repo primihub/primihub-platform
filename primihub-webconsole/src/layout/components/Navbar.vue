@@ -118,7 +118,6 @@ p{
   top: 0;
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
-  z-index: 999;
 
   .hamburger-container {
     line-height: 46px;

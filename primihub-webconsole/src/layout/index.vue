@@ -78,7 +78,7 @@ export default {
     position: fixed;
     top: 0;
     right: 0;
-    z-index: 999;
+    z-index: 1999;
     width: calc(100% - #{$sideBarWidth});
     transition: width 0.28s;
   }

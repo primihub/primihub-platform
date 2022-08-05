@@ -128,14 +128,14 @@ export default {
   },
   computed: {
     isDataSelect() {
-      return this.nodeData && this.nodeData.componentCode === 'dataAlignment'
+      return this.nodeData && this.nodeData.componentCode === 'dataSet'
     }
   },
   watch: {
     async nodeData(newVal) {
       console.log('watch 111', this.nodeData)
       if (newVal) {
-        if (this.nodeData.componentCode === 'dataAlignment') {
+        if (this.nodeData.componentCode === 'dataSet') {
           await this.getProjectResourceOrgan()
           this.inputValue = this.nodeData.componentTypes[0].inputValue
           console.log('watch', this.inputValue)
@@ -172,15 +172,16 @@ export default {
         })
         return
       }
+      console.log('inputValue', this.inputValue)
       if (this.inputValue) {
         const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
         if (currentOrgan) {
-          debugger
           this.selectedResourceId = currentOrgan.resourceId
         } else {
           this.selectedResourceId = ''
         }
       }
+      console.log('请求数据')
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
