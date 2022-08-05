@@ -161,6 +161,7 @@ export default {
   methods: {
     handleResourceHeaderChange(data) {
       this.setInputValue(data)
+      this.save()
     },
     async openDialog(organId, participationIdentity) {
       this.participationIdentity = participationIdentity
@@ -203,16 +204,20 @@ export default {
       this.selectedResourceId = data.resourceId
       // set input value
       this.setInputValue(data)
+      this.save()
       this.dialogVisible = false
     },
     setInputValue(data) {
+      if (!data.calculationField) {
+        data.calculationField = data.fileHandleField[0]
+      }
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
+      data.participationIdentity = this.participationIdentity
       const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
       const currentData = {
-        ...data,
-        participationIdentity: this.participationIdentity
+        ...data
       }
       if (posIndex !== -1) {
         this.inputValues[posIndex] = currentData
@@ -221,7 +226,6 @@ export default {
       }
       console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
-      this.save()
     },
     async getProjectResourceData() {
       this.resourceList = []

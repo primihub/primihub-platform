@@ -34,15 +34,15 @@ export default {
       isIndeterminate: false
     }
   },
-  watch: {
-    data(val) {
-      if (!val.calculationField) {
-        this.data.calculationField = this.data.fileHandleField[0]
-      }
-    }
-  },
+  // watch: {
+  //   data(val) {
+  //     if (!val.calculationField) {
+  //       this.data.calculationField = this.data.fileHandleField[0]
+  //     }
+  //   }
+  // },
   created() {
-    this.init()
+    // this.init()
   },
   methods: {
     init() {
