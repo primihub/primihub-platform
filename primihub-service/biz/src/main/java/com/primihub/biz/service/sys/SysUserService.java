@@ -209,6 +209,7 @@ public class SysUserService {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"该记录是不可编辑状态");
         sysUserPrimarydbRepository.updateSysUserDelStatus(userId);
         sysUserPrimaryRedisRepository.deleteUserLoginStatus(userId);
+        sysUserPrimarydbRepository.deleteSysUrBatch(userId);
         return BaseResultEntity.success();
     }
 

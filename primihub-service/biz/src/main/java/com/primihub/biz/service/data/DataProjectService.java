@@ -182,6 +182,7 @@ public class DataProjectService {
             dataProjectDetailsVo.setCreator(true);
         List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
         List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
+//        List<String> organIds = dataProjectOrgans.stream().filter(organ -> !dataProjectDetailsVo.getCreator()&&(organ.getOrganId().equals(organ.getInitiateOrganId())||organ.equals(sysLocalOrganInfo.getOrganId()))).map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
         Map<String, List<DataProjectResource>> organResourceMap = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getOrganId));
         List<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toList());
