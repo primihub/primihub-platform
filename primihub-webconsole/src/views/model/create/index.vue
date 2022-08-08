@@ -1,7 +1,6 @@
 <template>
   <div class="app-container">
     <div class="graph-container">
-
       <!-- 左侧列表组件区域 -->
       <div class="shapes" :class="{'not-clickable': modelStartRun}">
         <h2>新建模型</h2>
@@ -9,11 +8,16 @@
         <div id="stencil" />
       </div>
 
-      <div id="flowContainer" ref="containerRef" class="container" />
+      <div class="center-container">
+        <!--流程图工具栏-->
+        <tool-bar ref="toolBarRef" @save="saveFn()" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+        <div id="flowContainer" ref="containerRef" class="container" />
+        <div ref="mapContainerRef" class="minimap-container" />
+      </div>
+
       <!--右侧工具栏-->
-      <right-drawer :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :model-data="modelData" :select-cell="selectCell" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" />
-      <!--流程图工具栏-->
-      <tool-bar @save="saveFn(1)" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+      <right-drawer :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" />
+
     </div>
   </div>
 </template>
@@ -21,10 +25,11 @@
 <script>
 import { Graph, Addon, FunctionExt, Shape } from '@antv/x6'
 import '@antv/x6-vue-shape'
-import DagNodeComponent from './components/DagNode.vue'
+import DagNodeComponent from './components/nodes/DagNode.vue'
+import StartNodeComponent from './components/nodes/StartNode.vue'
 import ToolBar from './components/ToolBar/index.vue'
 import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, deleteModel, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
+import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
 
 const lineAttr = { // 线样式
   'line': {
@@ -92,15 +97,11 @@ export default {
       stencil: null,
       dnd: null,
       showRight: false,
-      selectCell: {},
       nodeData: null,
-      showDataConfig: false,
-      components: {}, // 左侧组件列表
+      showDataConfig: true,
+      components: null, // 左侧组件列表
       saveParams: {}, // 保存接口需要参数
       modelComponents: [], // 草稿详情
-      modelData: { // 右侧面板模型信息
-        trainType: 1
-      },
       modelId: 0,
       taskId: 0,
       graphData: [],
@@ -119,10 +120,21 @@ export default {
       selectComponentList: [],
       componentCode: '',
       organs: [],
-      destroyed: false
+      destroyed: false,
+      startNode: {},
+      componentsList: [],
+      requiredComponents: [],
+      container: null,
+      modelRunValidated: true
+    }
+  },
+  computed: {
+    isEdit() {
+      return !!this.$route.query.modelId
     }
   },
   async mounted() {
+    this.modelId = this.$route.query.modelId
     await this.init()
     this.initToolBarEvent()
     this.getModelComponentDetail()
@@ -155,32 +167,7 @@ export default {
             }
           },
           ports: {
-            groups: {
-              in: {
-                position: 'top',
-                attrs: {
-                  circle: {
-                    r: 4,
-                    magnet: true,
-                    stroke: '#C2C8D5',
-                    strokeWidth: 1,
-                    fill: '#fff'
-                  }
-                }
-              },
-              out: {
-                position: 'bottom',
-                attrs: {
-                  circle: {
-                    r: 4,
-                    magnet: true,
-                    stroke: '#C2C8D5',
-                    strokeWidth: 1,
-                    fill: '#fff'
-                  }
-                }
-              }
-            }
+            ...ports
           }
         },
         true
@@ -188,39 +175,55 @@ export default {
       // 获取左侧组件列表
       await this.getModelComponentsInfo()
       // 初始化画布
-      const container = this.$refs.containerRef
-      const width = container.offsetWidth
-      const height = container.offsetHeight
+      this.container = this.$refs.containerRef
+      const minimapContainer = this.$refs.mapContainerRef
+      const width = this.container.scrollWidth
+      const height = this.container.scrollHeight
+      this.$refs.toolBarRef.width = width
       this.graph = new Graph({
-        container: container,
-        width: width || 800,
-        height: height || 600,
-        panning: { // 拖拽平移
+        container: this.container,
+        width: width,
+        height: height,
+        autoResize: true,
+        snapline: true,
+        scroller: {
           enabled: true,
-          eventTypes: ['leftMouseDown', 'mouseWheel']
+          pageBreak: false,
+          pannable: true
+        },
+        minimap: {
+          enabled: true,
+          container: minimapContainer,
+          scalable: false,
+          width: 200,
+          height: 200,
+          padding: 0
+        },
+        // panning: true,
+        background: {
+          color: '#F5F7FA'
         },
         grid: {
+          type: 'doubleMesh',
           size: 10,
           visible: true,
-          type: 'mesh',
           args: [
             {
-              color: '#cccccc',
+              color: '#E7E8EA',
               thickness: 1
             },
             {
-              color: '#cccccc',
+              color: '#CBCED3',
               thickness: 1,
-              factor: 4
+              factor: 5
             }
           ]
         },
         mousewheel: {
           enabled: true,
-          modifiers: 'ctrl',
-          factor: 1.1,
-          maxScale: 1.5,
-          minScale: 0.5
+          modifiers: ['ctrl', 'meta'],
+          minScale: 0.5,
+          maxScale: 2
         },
         highlighting: {
           magnetAdsorbed: {
@@ -282,14 +285,11 @@ export default {
           rubberband: true
         },
         history: true,
-        clipboard: {
-          enabled: true
-        },
-        keyboard: {
-          enabled: true
-        }
+        clipboard: true,
+        keyboard: true
       })
-
+      this.registerStartNode()
+      this.addStartNode()
       // 初始化左侧组件列表
       this.initStencil()
       this.initShape()
@@ -297,15 +297,50 @@ export default {
       // 画布事件初始化
       this.initEvent()
       // 居中显示画布
-      this.graph.centerContent()
+      // this.graph.centerContent()
       this.projectId = Number(this.$route.query.projectId) || 0
     },
+    registerStartNode() {
+      this.startNode = this.components.filter(item => item.componentCode === 'start')[0]
+      this.nodeData = this.startNode
+      Graph.registerNode(
+        'start-node',
+        {
+          inherit: 'vue-shape',
+          width: 120,
+          height: 40,
+          component: {
+            template: `<start-node-component />`,
+            components: {
+              StartNodeComponent
+            }
+          },
+          ports: { ...ports }
+        },
+        true
+      )
+    },
+    addStartNode() {
+      const width = this.container.scrollWidth
+      // 60 = start node width
+      const x = width * 0.5 - 60
+      this.graph.addNode({
+        x: x,
+        y: 150,
+        shape: 'start-node',
+        componentCode: this.startNode.componentCode,
+        label: this.startNode.componentName,
+        data: this.startNode,
+        ports
+      })
+    },
     initStencil() {
+      const height = document.querySelector('#stencil').offsetHeight
       this.stencil = new Addon.Stencil({
         title: '',
         target: this.graph,
-        stencilGraphWidth: 260,
-        stencilGraphHeight: 600,
+        // stencilGraphWidth: 330,
+        stencilGraphHeight: height,
         x: 50,
         collapsable: true,
         getDropNode: (node) => {
@@ -340,18 +375,13 @@ export default {
     },
     initShape() {
       const { graph } = this
-      const imageNodes = this.components.map((item) =>
+      const imageNodes = this.componentsList.map((item) =>
         graph.createNode({
-          id: item.componentCode,
+          id: item.frontComponentId,
           componentCode: item.componentCode,
           shape: 'dag-node',
           label: item.componentName,
           data: item,
-          attrs: {
-            label: {
-              text: item.componentName
-            }
-          },
           ports
         })
 
@@ -375,12 +405,8 @@ export default {
       const container = document.getElementById('flowContainer')
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
-        this.showDataConfig = true
       })
 
-      graph.on('blank:click', () => {
-        this.showDataConfig = false
-      })
       graph.on(
         'node:mouseenter',
         FunctionExt.debounce(() => {
@@ -414,7 +440,7 @@ export default {
       graph.bindKey('backspace', () => {
         const cells = graph.getSelectedCells()
         if (cells.length) {
-          const currentCode = cells[0].store.data.data.componentCode
+          const currentCode = this.nodeData.componentCode
           // remove duplicates
           this.selectComponentList = [...new Set(this.selectComponentList)]
           const index = this.selectComponentList.indexOf(currentCode)
@@ -487,10 +513,8 @@ export default {
         })
         return
       }
-      deleteModel({ modelId: this.modelId }).then(res => {
-        this.graph.clearCells()
-        location.reload()
-      })
+      this.saveFn(2)
+      // this.graph.clearCells()
     },
     initToolBarEvent() {
       const { history } = this.graph
@@ -502,30 +526,56 @@ export default {
           this.saveFn(0)
         }
       })
-      this.graph.bindKey('ctrl+z', () => {
+      this.graph.bindKey(['ctrl+z', 'command+z'], () => {
         if (history.canUndo()) {
           history.undo()
         }
         return false
       })
     },
-    run() {
+    checkRunValidated() {
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
           message: '模型运行中',
           type: 'warning'
         })
-        return
-      }
-      // model is empty, can't run
-      if (!this.modelId) {
+        this.modelRunValidated = false
+      } else if (!this.modelId) { // model is empty, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
         })
-        return
+        this.modelRunValidated = false
+      } else {
+        const data = this.graph.toJSON()
+        const { cells } = data
+        const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')[0]
+        const value = dataSetCom.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom.data.componentTypes[0].inputValue) : ''
+        const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
+        const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
+        if (!value) {
+          this.$message({
+            message: `请选择数据集`,
+            type: 'error'
+          })
+          this.modelRunValidated = false
+          return false
+        } else if (!(initiateResource && providerResource)) {
+          const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
+          this.$message({
+            message: msg,
+            type: 'error'
+          })
+          this.modelRunValidated = false
+        } else {
+          this.modelRunValidated = true
+        }
       }
+    },
+    run() {
+      this.checkRunValidated()
+      if (!this.modelRunValidated) return
       runTaskModel({ modelId: this.modelId }).then(res => {
         if (res.code !== 0) {
           this.$message({
@@ -587,86 +637,89 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const res = await getModelComponent()
-      this.components = res.result
+      const { result } = await getModelComponent()
+      this.components = result
+      this.componentsList = result.slice(1)
+      this.requiredComponents = result.filter(item => item.isMandatory === 0)
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
-      const res = await getModelComponentDetail()
+      const params = {
+        modelId: this.modelId
+      }
+      const res = await getModelComponentDetail(params)
       if (res.result) {
-        this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
-          confirmButtonText: '是',
-          cancelButtonText: '否',
-          closeOnClickModal: false,
-          type: 'warning'
-        }).then(() => {
-          const { modelId, modelDesc, modelName = '', trainType, modelComponents, modelPointComponents } = res.result
-          this.modelId = modelId
-          this.modelPointComponents = modelPointComponents
-          this.modelData = {
-            modelId,
-            modelName,
-            modelDesc,
-            trainType
-          }
-          this.modelComponents = modelComponents
-          for (let index = 0; index < this.modelComponents.length; index++) {
-            const item = this.modelComponents[index]
-            // save the selected components
-            this.selectComponentList.push(item.componentCode)
-            const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-            item.componentValues.map(item => {
-              this.components[posIndex].componentTypes.map(c => {
-                if (c.typeCode === item.key && item.val !== '') {
-                  c.inputValue = item.val
-                }
-              })
-            })
-          }
-          this.initGraphShape()
-        }).catch(() => {
-          this.modelId = res.result.modelId
-          this.clearFn()
+        if (this.isEdit) { // It's is edit page
+          this.setComponentsDetail(res.result)
+        } else {
+          this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
+            confirmButtonText: '是',
+            cancelButtonText: '否',
+            closeOnClickModal: false,
+            type: 'warning'
+          }).then(() => {
+            this.setComponentsDetail(res.result)
+          }).catch(() => {
+            this.modelId = res.result.modelId
+            this.clearFn()
+          })
+        }
+      }
+    },
+    setComponentsDetail(data) {
+      const { modelId, modelComponents, modelPointComponents } = data
+      this.modelId = modelId
+      this.modelPointComponents = modelPointComponents
+      this.modelComponents = modelComponents
+      for (let index = 0; index < this.modelComponents.length; index++) {
+        const item = this.modelComponents[index]
+        // save the selected components
+        this.selectComponentList.push(item.componentCode)
+        const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
+        item.componentValues.map(item => {
+          this.components[posIndex].componentTypes.map(c => {
+            if (c.typeCode === item.key && item.val !== '') {
+              c.inputValue = item.val
+            }
+          })
         })
       }
+      this.initGraphShape()
     },
     initGraphShape() {
       const graphData = []
-      this.modelComponents.forEach(item => {
-        if (item.shape === 'dag-node') {
-          const { componentCode, coordinateX, coordinateY, width, height, componentName } = item
-          const { componentTypes, isMandatory } = this.components.find(item => {
-            return item.componentCode === componentCode
-          })
-          graphData.push({
-            id: item.frontComponentId,
-            'position': {
-              x: coordinateX,
-              y: coordinateY
-            },
-            'size': {
-              width,
-              height
-            },
-            'attrs': {
-              'text': {
-                'text': componentName
-              }
-            },
-            'shape': 'dag-node',
-            'ports': ports,
-            'data': {
-              componentCode: item.componentCode,
-              componentName: item.componentName,
-              componentTypes: componentTypes,
-              isMandatory: isMandatory
-            },
-            'zIndex': 1
-          })
-        }
+      console.log('this.modelComponents', this.modelComponents)
+      this.modelComponents && this.modelComponents.forEach(item => {
+        const { frontComponentId, componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
+        const { componentTypes, isMandatory } = this.components.find(item => {
+          return item.componentCode === componentCode
+        })
+        graphData.push({
+          id: frontComponentId,
+          frontComponentId,
+          label: componentName,
+          componentCode,
+          position: {
+            x: coordinateX,
+            y: coordinateY
+          },
+          size: {
+            width,
+            height
+          },
+          shape,
+          ports,
+          data: {
+            componentCode,
+            componentName,
+            componentTypes,
+            isMandatory
+          },
+          zIndex: 1
+        })
       })
 
-      this.modelPointComponents.forEach(item => {
+      this.modelPointComponents?.forEach(item => {
         if (item.shape === 'edge') {
           graphData.push({
             id: item.frontComponentId,
@@ -694,7 +747,7 @@ export default {
         input: [],
         output: []
       }
-      if (shape === 'dag-node') {
+      if (shape !== 'edge') {
         const frontComponentId = item.frontComponentId
         const inputRes = edgeList.find(item => {
           return item.source.cell === frontComponentId
@@ -766,17 +819,14 @@ export default {
         })
         return
       }
+      const data = this.graph.toJSON()
+      const { cells } = data
       this.saveParams.param = {
         projectId: this.projectId,
         modelId: this.modelId,
-        modelName: this.modelData.modelName,
-        modelDesc: this.modelData.modelDesc,
-        trainType: this.modelData.trainType,
-        isDraft,
-        modelComponents: this.modelComponents || []
+        isDraft
       }
-      const data = this.graph.toJSON()
-      const { cells } = data
+      this.saveParams.param.modelComponents = this.modelComponents
 
       const modelComponents = [] // 块数据
       const modelPointComponents = [] // 线数据
@@ -787,40 +837,19 @@ export default {
         const { position, data, size, shape } = item
         const componentValues = []
         item.frontComponentId = item.id
-        if (shape === 'dag-node') {
+        if (shape === 'edge') {
+          modelPointComponents.push({
+            frontComponentId: item.frontComponentId,
+            shape,
+            input: item.source,
+            output: item.target
+          })
+        } else {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
-          // 判断数据集是否为空
-          if (isDraft && componentCode === 'dataAlignment') {
-            const value = data.componentTypes[0].inputValue !== '' ? JSON.parse(data.componentTypes[0].inputValue) : ''
-            const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
-            const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
-            if (!value) {
-              this.$message({
-                message: `请选择资源`,
-                type: 'error'
-              })
-              return
-            } else if (!(initiateResource && providerResource)) {
-              const msg = !initiateResource ? '请选择发起方资源' : !providerResource ? '请选择协作方资源' : '请选择资源'
-              this.$message({
-                message: msg,
-                type: 'error'
-              })
-              return
-            }
-          }
           for (let i = 0; i < componentTypes.length; i++) {
             const item = componentTypes[i]
-            // 判断所选组件值是否为空
-            if (!item.inputValue && isDraft) {
-              this.$message({
-                message: `${componentName}不能为空`,
-                type: 'error'
-              })
-              return
-            }
             componentValues.push({
               key: item.typeCode,
               val: item.inputValue
@@ -828,7 +857,7 @@ export default {
           }
           // format 参数
           modelComponents.push({
-            frontComponentId: item.id,
+            frontComponentId: item.frontComponentId,
             coordinateX: position.x,
             coordinateY: position.y,
             width: size.width,
@@ -841,17 +870,21 @@ export default {
             output: output
           })
         }
-        if (shape === 'edge') {
-          modelPointComponents.push({
-            frontComponentId: item.id,
-            shape,
-            input: item.source,
-            output: item.target
-          })
-        }
       }
       this.saveParams.param.modelComponents = modelComponents
+
       this.saveParams.param.modelPointComponents = modelPointComponents
+      if (isDraft === 2) {
+        const startData = cells.filter(item => item.componentCode === 'start')[0]
+        const graphData = { cells: [] }
+        graphData.cells.push(startData)
+        this.graph.fromJSON(graphData)
+        const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
+        this.saveParams.param.modelComponents = []
+        this.saveParams.param.modelComponents.push(startParams)
+        this.selectComponentList = []
+      }
+
       saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
         if (res.code === 0) {
           this.modelId = res.result.modelId
@@ -879,26 +912,42 @@ export default {
 ::v-deep .x6-widget-stencil{
   background: transparent;
 }
+
+::v-deep .x6-widget-minimap-viewport{
+  border-color: #409EFF;
+}
+.center-container{
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  height: 100%;
+  position: relative;
+  .container{
+    width: 100%;
+    height: 100%;
+  }
+}
+.flowContainer{
+  position: relative;
+}
+.minimap-container{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
 .x6-widget-stencil-title{
-    background: transparent;
-    display: none;
-  }
+  background: transparent;
+  display: none;
+}
 .app-container {
-  .mask{
-    position: absolute;
-    left: 0;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    background: transparent;
-    z-index: 100;
-  }
   position: relative;
   height: calc(100vh - 50px);
   padding: 0;
   overflow: hidden;
   .graph-container{
     display: flex;
+    height: 100%;
+    // position: relative;
   }
   .shapes{
     position: relative;
@@ -931,10 +980,6 @@ export default {
   width: 180px;
   height: 40px;
   border: 1px solid #000;
-}
-.container{
-  flex: 1;
-  height: 800px;
 }
 @keyframes running-line {
   to {

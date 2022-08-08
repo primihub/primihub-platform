@@ -29,16 +29,27 @@ export default {
   },
   data() {
     return {
-      calculationField: [],
+      calculationField: this.data.calculationField,
       checkAll: false,
       isIndeterminate: false
     }
   },
+  // watch: {
+  //   data(val) {
+  //     if (!val.calculationField) {
+  //       this.data.calculationField = this.data.fileHandleField[0]
+  //     }
+  //   }
+  // },
   created() {
-    console.log('calculationField', this.data.calculationField)
-    this.data.calculationField = this.data.calculationField ? this.data.calculationField : this.data.fileHandleField[0]
+    // this.init()
   },
   methods: {
+    init() {
+      if (!this.data.calculationField) {
+        this.data.calculationField = this.data.fileHandleField[0]
+      }
+    },
     // handleCheckAllChange(val) {
     //   this.data.calculationField = val ? this.data.fileHandleField : []
     //   this.isIndeterminate = false
@@ -53,7 +64,6 @@ export default {
     // },
     handleCheckedChange(value) {
       this.data.calculationField = value
-      console.log('handleCheckedChange', this.data)
       this.$emit('change', this.data)
     }
   }

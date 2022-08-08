@@ -1,42 +1,50 @@
 <template>
   <div v-loading="listLoading" class="right-drawer">
-    <template v-if="nodeData && showDataConfig">
-      <el-form ref="form" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
-        <template v-if="isDataSelect">
-          <el-form-item>
-            <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
-            <el-button type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
-            <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
-          </el-form-item>
-          <el-form-item>
-            <template v-if="providerOrgans.length>0">
-              <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
-              <div class="organ-select">
-                <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
-                  <el-option
-                    v-for="(v,index) in providerOrgans"
-                    :key="index"
-                    :label="v.organName"
-                    :value="v.organId"
-                  />
-                </el-select>
-                <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
-              </div>
+    <el-form v-if="nodeData" ref="form" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
+      <template v-if="isDataSelect">
+        <el-form-item>
+          <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
+          <el-button type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
+          <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
+        </el-form-item>
+        <el-form-item>
+          <template v-if="providerOrgans.length>0">
+            <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
+            <div class="organ-select">
+              <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
+                <el-option
+                  v-for="(v,index) in providerOrgans"
+                  :key="index"
+                  :label="v.organName"
+                  :value="v.organId"
+                />
+              </el-select>
+              <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
+            </div>
 
-              <ResourceDec v-if="providerOrgans[0].resourceId" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
-            </template>
-            <template v-else>
-              <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
-            </template>
-          </el-form-item>
-        </template>
-        <div v-for="item in nodeData.componentTypes" v-else :key="item.typeCode">
+            <ResourceDec v-if="providerOrgans[0].resourceId" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
+          </template>
+          <template v-else>
+            <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
+          </template>
+        </el-form-item>
+      </template>
+      <template v-else>
+        <div v-for="item in nodeData.componentTypes" :key="item.typeCode">
           <el-form-item :label="item.typeName " :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
               <el-input v-model="item.inputValue" size="mini" />
+            </template>
+            <template v-if="item.inputType === 'textarea'">
+              <el-input v-model="item.inputValue" type="textarea" size="mini" />
+            </template>
+            <template v-if="item.inputType === 'radio'">
+              <el-radio-group v-model="item.inputValue">
+                <el-radio v-for="(r,index) in item.inputValues" :key="index" :label="r.key">{{ r.val }}</el-radio>
+              </el-radio-group>
             </template>
             <template v-if="item.inputType === 'select'">
               <el-select v-model="item.inputValue" placeholder="请选择" :value-key="item.typeCode" @change="handleChange(item)">
@@ -50,27 +58,11 @@
             </template>
           </el-form-item>
         </div>
-      </el-form>
-    </template>
-    <template v-else>
-      <el-form ref="form" :rules="rules" :model="modelData" label-width="80px">
-        <el-form-item label="模型名称" prop="modelName">
-          <el-input v-model="modelData.modelName" size="mini" />
-        </el-form-item>
-        <el-form-item label="模型描述" prop="modelDesc">
-          <el-input v-model="modelData.modelDesc" size="mini" type="textarea" />
-        </el-form-item>
-        <el-form-item label="训练类型" prop="trainType">
-          <el-radio-group v-model="modelData.trainType" size="small">
-            <el-radio :label="1">纵向</el-radio>
-            <el-radio :label="2">横向</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-    </template>
+      </template>
+    </el-form>
     <el-button type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
-    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedData" title="添加资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="添加资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
   </div>
 </template>
 
@@ -112,8 +104,8 @@ export default {
       dialogVisible: false,
       selectedOrganId: '',
       resourceList: [],
-      selectedData: [],
-      participationIdentity: 0,
+      selectedResourceId: '',
+      participationIdentity: 2,
       inputValues: [],
       inputValue: this.nodeData && this.nodeData.componentTypes[0].inputValue,
       rules: {
@@ -136,13 +128,14 @@ export default {
   },
   computed: {
     isDataSelect() {
-      return this.nodeData && this.nodeData.componentCode === 'dataAlignment'
+      return this.nodeData && this.nodeData.componentCode === 'dataSet'
     }
   },
   watch: {
     async nodeData(newVal) {
+      console.log('watch 111', this.nodeData)
       if (newVal) {
-        if (this.nodeData.componentCode === 'dataAlignment') {
+        if (this.nodeData.componentCode === 'dataSet') {
           await this.getProjectResourceOrgan()
           this.inputValue = this.nodeData.componentTypes[0].inputValue
           console.log('watch', this.inputValue)
@@ -168,6 +161,7 @@ export default {
   methods: {
     handleResourceHeaderChange(data) {
       this.setInputValue(data)
+      this.save()
     },
     async openDialog(organId, participationIdentity) {
       this.participationIdentity = participationIdentity
@@ -178,6 +172,14 @@ export default {
           type: 'warning'
         })
         return
+      }
+      if (this.inputValue) {
+        const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
+        if (currentOrgan) {
+          this.selectedResourceId = currentOrgan.resourceId
+        } else {
+          this.selectedResourceId = ''
+        }
       }
       await this.getProjectResourceData()
       this.dialogVisible = true
@@ -199,24 +201,30 @@ export default {
         data.organName = this.providerOrgans[0].organName
         this.providerOrgans = [data]
       }
+      this.selectedResourceId = data.resourceId
       // set input value
       this.setInputValue(data)
+      this.save()
       this.dialogVisible = false
     },
     setInputValue(data) {
+      if (!data.calculationField) {
+        data.calculationField = data.fileHandleField[0]
+      }
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
+      data.participationIdentity = this.participationIdentity
       const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
       const currentData = {
-        ...data,
-        participationIdentity: this.participationIdentity
+        ...data
       }
       if (posIndex !== -1) {
         this.inputValues[posIndex] = currentData
       } else {
         this.inputValues.push(currentData)
       }
+      console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
     },
     async getProjectResourceData() {
@@ -263,11 +271,9 @@ p {
   width: 100%;
 }
 .right-drawer {
-  width:300px;
-  height: 100%;
+  width: 300px;
   background: #fff;
   padding: 10px 15px;
-  border-top: 1px solid #cccfcc;
 }
 .label-text{
   color: #666;

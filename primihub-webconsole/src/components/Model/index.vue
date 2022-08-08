@@ -48,13 +48,14 @@
         />
         <!-- if not have permissions, hide the column -->
         <el-table-column
-          v-if="!(!hasModelTaskHistoryPermission && !hasModelRunPermission)"
+          v-if="!(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission)"
           label="操作"
           width="180"
         >
           <template slot-scope="{row}">
             <div>
-              <el-button v-if="hasModelRunPermission" type="text" icon="el-icon-video-play" size="mini" @click.stop="runTaskModel(row)">运行</el-button>
+              <el-button v-if="hasModelEditPermission" type="text" icon="el-icon-edit" size="mini" @click.stop="toEditPage(row)">编辑</el-button>
+              <!-- <el-button v-if="hasModelRunPermission" type="text" icon="el-icon-video-play" size="mini" @click.stop="runTaskModel(row)">运行</el-button> -->
               <!-- <el-button v-if="hasModelViewPermission && row.latestTaskStatus === 2" type="text" icon="el-icon-view" @click="toModelDetail(row.modelId)">查看</el-button> -->
               <el-button v-if="hasModelTaskHistoryPermission" type="text" icon="el-icon-view" size="mini" @click="toModelHistory(row.modelId)">执行记录</el-button>
               <!-- <el-button type="text" icon="el-icon-edit" @click="toModelDetail(row.modelId)">编辑</el-button> -->
@@ -105,12 +106,13 @@ export default {
         taskStatus: '',
         pageNo: 1,
         pageSize: 5,
-        projectId: this.$route.params.id
+        projectId: ''
       },
       total: 0,
       pageCount: 0,
       hidePagination: true,
-      emptyText: ''
+      emptyText: '',
+      projectId: this.$route.params.id
     }
   },
   computed: {
@@ -119,6 +121,9 @@ export default {
     },
     hasModelRunPermission() {
       return this.$store.getters.buttonPermissionList.includes('ModelRun')
+    },
+    hasModelEditPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelEdit')
     }
   },
   created() {
@@ -153,6 +158,7 @@ export default {
       this.listLoading = true
       this.modelList = []
       console.log('fetchData', this.params)
+      this.params.projectId = this.projectId
       getModelList(this.params).then((response) => {
         console.log('response.data', response.result)
         const { result } = response
@@ -174,6 +180,16 @@ export default {
     handlePagination(data) {
       this.params.pageNo = data.page
       this.fetchData()
+    },
+    toEditPage(row) {
+      const modelId = row.modelId
+      this.$router.push({
+        name: 'ModelCreate',
+        query: {
+          modelId,
+          projectId: this.projectId
+        }
+      })
     },
     runTaskModel(row, loading) {
       const modelId = row.modelId

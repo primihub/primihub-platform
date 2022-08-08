@@ -64,6 +64,7 @@ export default {
   watch: {
     visible: async function(val) {
       if (val) {
+        this.pageNo = 1
         await this.fetchData()
       }
     }

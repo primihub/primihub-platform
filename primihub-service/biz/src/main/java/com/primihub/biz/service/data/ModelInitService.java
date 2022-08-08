@@ -71,13 +71,10 @@ public class ModelInitService {
     @Async
     public void runModelTaskFeign(DataModel dataModel,DataTask dataTask){
         log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
-        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,dataModel.getModelId());
         FedlearnerJobApi fedlearnerJobApi = null;
-        if (modelComponent!=null) {
-            if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {
-                fedlearnerJobApi  = JSONObject.parseObject(modelComponent.getComponentJson(), FedlearnerJobApi.class);
+            if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
+                fedlearnerJobApi  = JSONObject.parseObject(dataModel.getComponentJson(), FedlearnerJobApi.class);
             }
-        }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.updateDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();
@@ -85,7 +82,7 @@ public class ModelInitService {
         modelTask.setModelId(dataModel.getModelId());
         List<DataComponentReq> modelComponents = fedlearnerJobApi.getModelComponents();
         Map<String, DataComponentReq> reqMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
-        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null);
+        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null,dataTask.getTaskId());
         modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
         dataModelPrRepository.saveDataModelTask(modelTask);
         log.info("检索model组件 数量:{}",modelComponents.size());
@@ -103,7 +100,7 @@ public class ModelInitService {
                     DataComponentValue dataComponentValue = modelType.get(0);
                     log.info("检索model组件->modelType value:{}",dataComponentValue.toString());
                     if (dataComponentValue.getVal().equals("2")){
-                        List<DataComponentValue> dataAlignment = reqMap.get("dataAlignment").getComponentValues();
+                        List<DataComponentValue> dataAlignment = reqMap.get("dataSet").getComponentValues();
                         if (dataAlignment!=null&&dataAlignment.size()!=0&&dataAlignment.get(0)!=null&&StringUtils.isNotBlank(dataAlignment.get(0).getVal())){
                             List<ModelProjectResourceVo> resourceList = JSONObject.parseArray(dataAlignment.get(0).getVal(), ModelProjectResourceVo.class);
                             log.info("查询数据数量:{}",resourceList.size());
