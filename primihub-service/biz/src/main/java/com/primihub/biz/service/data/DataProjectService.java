@@ -436,7 +436,7 @@ public class DataProjectService {
         Map<String, Map> organListMap = getOrganListMap(organIds, dataProject.getServerAddress());
         Map<String, ModelProjectResourceVo> resourceVoMap = new HashMap<>();
         if (modelId!=null&&modelId!=0L){
-            DataModelAndComponentReq modelComponentReq = dataModelService.getModelComponentReq(modelId, null);
+            DataModelAndComponentReq modelComponentReq = dataModelService.getModelComponentReq(modelId, null,null);
             if (modelComponentReq!=null&&modelComponentReq.getModelComponents()!=null&&modelComponentReq.getModelComponents().size()!=0){
                 Map<String, String> componentValMap = dataModelService.getDataAlignmentComponentVals(modelComponentReq.getModelComponents());
                 String selectData = componentValMap.get("selectData");
@@ -452,15 +452,5 @@ public class DataProjectService {
         }
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         return BaseResultEntity.success(dataProjectOrgans.stream().map(organ -> DataModelConvert.projectOrganPoCovertProjectOrganVo(organ,organListMap.get(organ.getOrganId()),resourceVoMap.get(organ.getOrganId()),sysLocalOrganId)));
-    }
-
-
-    public static void main(String[] args) {
-        List<Integer> list = new ArrayList();
-        list.add(1);
-        list.add(3);
-        list.add(5);
-        List<Integer> collect = list.stream().filter(l -> false || l.equals(1) || l.equals(3)).collect(Collectors.toList());
-        System.out.println(collect.toString());
     }
 }

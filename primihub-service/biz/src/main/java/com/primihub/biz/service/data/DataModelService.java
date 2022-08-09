@@ -73,9 +73,9 @@ public class DataModelService {
                         modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
                         modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
                         modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
-                        modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.valueOf(map.get("resourceRowsCount").toString()));
+                        modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
                         modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
-                        modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.valueOf(map.get("resourceColumnCount").toString()));
+                        modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
                         modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
                     }
                 }
@@ -118,6 +118,18 @@ public class DataModelService {
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
         Integer tolal = dataModelRepository.queryModelListCount(paramMap);
+        // 状态信息
+        Set<Long> modelIds = modelListVos.stream().map(ModelListVo::getModelId).collect(Collectors.toSet());
+        Map<Long, Map<String, Object>> modelLatestTaskMap = dataModelRepository.queryModelLatestTask(modelIds);
+        for (ModelListVo modelListVo : modelListVos) {
+            if (modelLatestTaskMap.containsKey(modelListVo.getModelId())){
+                Map<String, Object> dataMap = modelLatestTaskMap.get(modelListVo.getModelId());
+                Long taskId = dataMap.get("taskId")!=null?Long.valueOf(dataMap.get("taskId").toString()):null;
+                Integer taskState = dataMap.get("taskState")!=null?Integer.valueOf(dataMap.get("taskState").toString()):null;
+                modelListVo.setLatestTaskId(taskId);
+                modelListVo.setLatestTaskStatus(taskState);
+            }
+        }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelListVos));
     }
 
@@ -142,7 +154,26 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL, "模型运行任务中");
         DataModel dataModel = DataModelConvert.dataModelReqConvertPo(params, userId);
         try {
-            saveOrGetModelComponentCache(true, userId, params, dataModel);
+            if (dataModel.getModelId()==null){
+                if (params.getProjectId()==null||params.getProjectId()==0L)
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少项目");
+                DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null);
+                if (dataProject==null)
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"找不到项目");
+                dataModel.setProjectId(params.getProjectId());
+            }
+            if (params.getIsDraft()!=null&&params.getIsDraft()==1){
+                Map<String, String> paramValuesMap = getDataAlignmentComponentVals(params.getModelComponents());
+                // 模型名称
+                if (StringUtils.isBlank(paramValuesMap.get("modelName")))
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少模型名称");
+                if (StringUtils.isBlank(paramValuesMap.get("trainType")))
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少训练类型");
+                dataModel.setModelName(paramValuesMap.get("modelName"));
+                dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
+                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
+            }
+            saveOrGetModelComponentCache(true, userId,params.getProjectId(), params, dataModel);
         } catch (Exception e) {
             log.info(e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
@@ -201,21 +232,7 @@ public class DataModelService {
         List<DataComponentReq> modelComponents = params.getModelComponents();
         if (modelComponents==null||modelComponents.size()==0)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件为空");
-        if (params.getProjectId()==null||params.getProjectId()==0L)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少项目");
-        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null);
-        if (dataProject==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"找不到项目");
-        dataModel.setProjectId(params.getProjectId());
         Map<String, String> paramValuesMap = getDataAlignmentComponentVals(modelComponents);
-        // 模型名称
-        if (StringUtils.isBlank(paramValuesMap.get("modelName")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少模型名称");
-        if (StringUtils.isBlank(paramValuesMap.get("trainType")))
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少训练类型");
-        dataModel.setModelName(paramValuesMap.get("modelName"));
-        dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
-        dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
         //资源
         if (StringUtils.isBlank(paramValuesMap.get("selectData")))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少资源");
@@ -238,16 +255,16 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity getModelComponentDetail(Long modelId, Long userId) {
-        return BaseResultEntity.success(getModelComponentReq(modelId,userId));
+    public BaseResultEntity getModelComponentDetail(Long modelId, Long userId,Long projectId) {
+        return BaseResultEntity.success(getModelComponentReq(modelId,userId,projectId));
     }
 
-    public DataModelAndComponentReq getModelComponentReq(Long modelId, Long userId){
+    public DataModelAndComponentReq getModelComponentReq(Long modelId, Long userId,Long projectId){
         DataModelAndComponentReq req = null;
         if (modelId==null||modelId==0L){
-            req = saveOrGetModelComponentCache(false,userId, null,null);
+            req = saveOrGetModelComponentCache(false,userId,projectId, null,null);
         }else{
-            ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(userId,0,modelId);
+            ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,modelId,null);
             if (modelComponent!=null) {
                 if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {
                     req = JSONObject.parseObject(modelComponent.getComponentJson(), DataModelAndComponentReq.class);
@@ -258,8 +275,8 @@ public class DataModelService {
         return req;
     }
 
-    private DataModelAndComponentReq saveOrGetModelComponentCache(boolean isSave,Long userId,DataModelAndComponentReq params,DataModel dataModel){
-        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(userId,0,null);
+    private DataModelAndComponentReq saveOrGetModelComponentCache(boolean isSave,Long userId,Long projectId,DataModelAndComponentReq params,DataModel dataModel){
+        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(userId,0,null,projectId);
         if (isSave){
             dataModel.setComponentJson(JSONObject.toJSONString(params));
             if (modelComponent==null&&(dataModel.getModelId()==null||dataModel.getModelId()==0L)){
@@ -299,10 +316,16 @@ public class DataModelService {
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到模型信息");
         }
+
         if (modelVo.getIsDraft()==1){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型已生成");
+            Map map = dataModelRepository.queryModelLatestTask(new HashSet() {{
+                add(modelId);
+            }});
+            if (map!=null&&!map.isEmpty()){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该模型有任务");
+            }
         }
-        dataModelPrRepository.deleteModelByModelId(modelId);
+        dataModelPrRepository.deleteModelByModelId(modelId,modelVo.getIsDraft());
         return BaseResultEntity.success();
     }
 
@@ -312,6 +335,14 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
         if (StringUtils.isBlank(dataModel.getComponentJson()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
+        Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
+            add(modelId);
+        }});
+        if (taskMap!=null&&!taskMap.isEmpty()){
+            Map<String, Object> dataMap = taskMap.get(modelId);
+            if (dataMap.get("taskState")!=null&&Integer.parseInt(dataMap.get("taskState").toString())==2)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务正在运行中");
+        }
         DataModelAndComponentReq params = JSONObject.parseObject(dataModel.getComponentJson(),DataModelAndComponentReq.class);
         Map<String, Object> map = new HashMap<>();
         BaseResultEntity extracteModelResultEntity = extracteModelData(dataModel, params, map);
