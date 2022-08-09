@@ -180,9 +180,8 @@ public class DataProjectService {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         if (sysLocalOrganInfo.getOrganId().equals(dataProject.getCreatedOrganId()))
             dataProjectDetailsVo.setCreator(true);
-        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
-//        List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-        List<String> organIds = dataProjectOrgans.stream().filter(organ -> !dataProjectDetailsVo.getCreator()&&(organ.getOrganId().equals(organ.getInitiateOrganId())||organ.equals(sysLocalOrganInfo.getOrganId()))).map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(organ -> dataProjectDetailsVo.getCreator() || organ.getOrganId().equals(organ.getInitiateOrganId()) || organ.getOrganId().equals(sysLocalOrganInfo.getOrganId())).collect(Collectors.toList());
+        List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
         Map<String, List<DataProjectResource>> organResourceMap = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getOrganId));
         List<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toList());
@@ -453,5 +452,15 @@ public class DataProjectService {
         }
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         return BaseResultEntity.success(dataProjectOrgans.stream().map(organ -> DataModelConvert.projectOrganPoCovertProjectOrganVo(organ,organListMap.get(organ.getOrganId()),resourceVoMap.get(organ.getOrganId()),sysLocalOrganId)));
+    }
+
+
+    public static void main(String[] args) {
+        List<Integer> list = new ArrayList();
+        list.add(1);
+        list.add(3);
+        list.add(5);
+        List<Integer> collect = list.stream().filter(l -> false || l.equals(1) || l.equals(3)).collect(Collectors.toList());
+        System.out.println(collect.toString());
     }
 }
