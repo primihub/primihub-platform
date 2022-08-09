@@ -335,6 +335,10 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
         if (StringUtils.isBlank(dataModel.getComponentJson()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
+        if (StringUtils.isBlank(dataModel.getModelName()))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
+        if (dataModel.getTrainType()==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
         Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
             add(modelId);
         }});

@@ -110,7 +110,7 @@
     </update>
     <delete id="deleteModelByModelId">
         <choose>
-            <when test="isDraft==null || isDraft==0">
+            <when test="isDraft==null or isDraft==0">
                 delete from data_model where model_id = #{modelId}
             </when>
             <otherwise>
