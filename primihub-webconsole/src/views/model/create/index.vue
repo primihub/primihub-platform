@@ -10,7 +10,7 @@
 
       <div class="center-container">
         <!--流程图工具栏-->
-        <tool-bar ref="toolBarRef" @save="saveFn()" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+        <tool-bar ref="toolBarRef" @save="saveFn(1)" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
         <div id="flowContainer" ref="containerRef" class="container" />
         <div ref="mapContainerRef" class="minimap-container" />
       </div>
