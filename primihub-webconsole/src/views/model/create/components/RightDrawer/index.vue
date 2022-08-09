@@ -1,6 +1,6 @@
 <template>
   <div v-loading="listLoading" class="right-drawer">
-    <el-form v-if="nodeData" ref="form" :model="nodeData" label-width="80px" element-loading-spinner="el-icon-loading">
+    <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
           <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
@@ -95,7 +95,20 @@ export default {
     }
   },
   data() {
+    const modelNameValidate = (rule, value, callback) => {
+      console.log(value)
+      if (value === '') {
+        callback(new Error('请输入模型名称'))
+      } else {
+        callback()
+      }
+    }
     return {
+      form: {
+        dynamicError: {
+          name: ''
+        }
+      },
       listLoading: false,
       initiateOrgan: {},
       providerOrgans: [],
@@ -109,19 +122,8 @@ export default {
       inputValues: [],
       inputValue: this.nodeData && this.nodeData.componentTypes[0].inputValue,
       rules: {
-        taskName: [
-          { required: true, message: '请输入任务名称', trigger: 'blur' },
-          { max: 20, message: '长度在20个字符以内', trigger: 'blur' }
-        ],
         modelName: [
-          { required: true, message: '请输入模型名称', trigger: 'blur' },
-          { max: 20, message: '长度在20个字符以内', trigger: 'blur' }
-        ],
-        trainType: [
-          { required: true, message: '请选择训练类型', trigger: 'change' }
-        ],
-        yValueColumn: [
-          { required: true, message: '请选择Y值字段', trigger: 'change' }
+          { required: true, trigger: 'blur', validator: modelNameValidate }
         ]
       }
     }
@@ -133,12 +135,10 @@ export default {
   },
   watch: {
     async nodeData(newVal) {
-      console.log('watch 111', this.nodeData)
       if (newVal) {
         if (this.nodeData.componentCode === 'dataSet') {
           await this.getProjectResourceOrgan()
           this.inputValue = this.nodeData.componentTypes[0].inputValue
-          console.log('watch', this.inputValue)
           this.providerOrgans = this.organs.filter(item => item.participationIdentity === 2)
           this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
           this.providerOrganId = ''
@@ -214,7 +214,6 @@ export default {
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
-      data.participationIdentity = this.participationIdentity
       const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
       const currentData = {
         ...data
@@ -295,5 +294,11 @@ p {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.required{
+  color: red;
+  margin-right: 10px;
+  font-size: 20px;
+  line-height: 1;
 }
 </style>

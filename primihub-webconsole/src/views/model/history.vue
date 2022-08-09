@@ -29,7 +29,7 @@
         </el-table-column>
         <el-table-column
           prop="taskState"
-          label="状态"
+          label="任务状态"
         >
           <template slot-scope="{row}">
             <i :class="statusStyle(row.taskState)" />
