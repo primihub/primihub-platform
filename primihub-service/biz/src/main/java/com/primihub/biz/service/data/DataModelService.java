@@ -156,19 +156,19 @@ public class DataModelService {
         try {
             if (dataModel.getModelId()==null){
                 if (params.getProjectId()==null||params.getProjectId()==0L)
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少项目");
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少项目");
                 DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null);
                 if (dataProject==null)
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"找不到项目");
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"找不到项目");
                 dataModel.setProjectId(params.getProjectId());
             }
             if (params.getIsDraft()!=null&&params.getIsDraft()==1){
                 Map<String, String> paramValuesMap = getDataAlignmentComponentVals(params.getModelComponents());
                 // 模型名称
                 if (StringUtils.isBlank(paramValuesMap.get("modelName")))
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少模型名称");
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少模型名称");
                 if (StringUtils.isBlank(paramValuesMap.get("trainType")))
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少训练类型");
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少训练类型");
                 dataModel.setModelName(paramValuesMap.get("modelName"));
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
                 dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
