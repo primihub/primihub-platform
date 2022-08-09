@@ -48,26 +48,24 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button class="search-button" type="primary" @click="searchProject">查询</el-button>
+        <div class="buttons">
+          <el-button class="button" type="primary" icon="el-icon-search" @click="searchProject">查询</el-button>
+          <el-button class="button" type="primary" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
+          <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
+        </div>
       </el-form-item>
     </el-form>
     <div class="tab-container">
       <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
-        <!-- <el-menu-item index="0"><el-badge :value="totalNum" class="select-item">全部项目</el-badge></el-menu-item> -->
-        <!-- <el-menu-item index="1"><el-badge :value="own" class="select-item">我发起的</el-badge></el-menu-item>
-        <el-menu-item index="2"><el-badge :value="other" class="select-item">我协作的</el-badge></el-menu-item> -->
         <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
         <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
         <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
       </el-menu>
-      <div class="buttons">
-        <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
-        <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
-      </div>
+      <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
 
     </div>
 
-    <div v-loading="listLoading" class="project-list">
+    <div class="project-list">
       <!-- <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
         <div class="icon-wrap"><i class="el-icon-document-add" /></div>
         <div class="text">添加项目</div>
@@ -164,7 +162,7 @@
         </el-table>
       </template>
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="params.pageSize" :page.sync="params.pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
+    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
   </div>
 </template>
 
@@ -197,26 +195,31 @@ export default {
       organList: [],
       activeIndex: '0',
       listLoading: true,
-      params: {
-        pageNo: 1,
-        pageSize: 10,
-        projectName: '',
-        serverAddress: '',
-        queryType: 0,
-        organId: '',
-        participationIdentity: '',
-        startDate: '',
-        endDate: '',
-        status: ''
-      },
+      // params: {
+      //   pageNo: 1,
+      //   pageSize: 10,
+      //   projectName: '',
+      //   serverAddress: '',
+      //   queryType: 0,
+      //   organId: '',
+      //   participationIdentity: '',
+      //   startDate: '',
+      //   endDate: '',
+      //   status: ''
+      // },
       searchForm: {
         projectName: '',
         serverAddress: '',
         organId: '',
         participationIdentity: '',
         status: '',
-        createDate: []
+        createDate: [],
+        queryType: 0,
+        startDate: '',
+        endDate: ''
       },
+      pageNo: 1,
+      pageSize: 10,
       total: 0,
       totalNum: 0,
       other: 0,
@@ -240,7 +243,7 @@ export default {
   },
   async created() {
     this.projectType = localStorage.getItem('projectType') || this.projectType
-    this.params.pageSize = this.projectType === 'table' ? 10 : 12
+    this.pageSize = this.projectType === 'table' ? 10 : 12
     await this.getLocalOrganInfo()
     this.fetchData()
     this.getListStatistics()
@@ -249,9 +252,9 @@ export default {
     toggleType() {
       if (this.projectType === 'table') {
         this.projectType = 'card'
-        this.params.pageSize = 12
+        this.pageSize = 12
       } else {
-        this.params.pageSize = 10
+        this.pageSize = 10
         this.projectType = 'table'
       }
       this.fetchData()
@@ -324,20 +327,39 @@ export default {
       })
     },
     searchProject() {
-      this.params.projectName = this.searchForm.projectName
-      this.params.serverAddress = this.searchForm.serverAddress
-      this.params.organId = this.searchForm.organId
-      this.params.participationIdentity = this.searchForm.participationIdentity
-      this.params.status = this.searchForm.status
-      this.params.startDate = this.searchForm.createDate && this.searchForm.createDate[0]
-      this.params.endDate = this.searchForm.createDate && this.searchForm.createDate[1]
+      this.pageNo = 1
       this.fetchData()
-      this.params.pageNo = 1
+    },
+    reset() {
+      this.searchForm.projectName = ''
+      this.searchForm.serverAddress = ''
+      this.searchForm.organId = ''
+      this.searchForm.participationIdentity = ''
+      this.searchForm.status = ''
+      this.searchForm.createDate = []
+      this.searchForm.startDate = ''
+      this.searchForm.endDate = ''
+      this.pageNo = 1
+      this.fetchData()
     },
     fetchData() {
       this.listLoading = true
       this.projectList = []
-      getProjectList(this.params).then((res) => {
+      const { projectName, serverAddress, organId, participationIdentity, status, createDate, queryType } = this.searchForm
+      const params = {
+        projectName,
+        serverAddress,
+        organId,
+        participationIdentity,
+        status,
+        startDate: createDate && createDate[0],
+        endDate: createDate && createDate[1],
+        queryType,
+        pageNo: this.pageNo,
+        pageSize: this.pageSize
+      }
+      console.log('params', params)
+      getProjectList(params).then((res) => {
         if (res.code === 0) {
           this.listLoading = false
           const { data, totalPage } = res.result
@@ -356,18 +378,18 @@ export default {
       })
     },
     handleSelect(key) {
-      this.params.queryType = parseInt(key)
-      this.params.projectName = ''
-      this.params.organId = ''
-      this.params.participationIdentity = ''
-      this.params.status = ''
-      this.params.startDate = ''
-      this.params.endDate = ''
-      this.params.pageNo = 1
+      this.searchForm.queryType = parseInt(key)
+      this.searchForm.projectName = ''
+      this.searchForm.organId = ''
+      this.searchForm.participationIdentity = ''
+      this.searchForm.status = ''
+      this.searchForm.startDate = ''
+      this.searchForm.endDate = ''
+      this.pageNo = 1
       this.fetchData()
     },
     handlePagination(data) {
-      this.params.pageNo = data.page
+      this.pageNo = data.page
       this.fetchData()
     }
   }
@@ -385,17 +407,30 @@ h2 {
     margin-inline-start: 0px;
     margin-inline-end: 0px;
 }
+::v-deep .el-form--inline .el-form-item{
+  margin: 10px 35px 10px 0;
+}
+.el-select{
+  width: 183px!important;
+}
 .search-area {
-  padding: 30px 30px 20px 20px;
+  padding: 30px 20px 20px 20px;
   background-color: #fff;
   display: flex;
   flex-wrap: wrap;
+  .add-button {
+    margin-right: auto;
+    height: 38px;
+    margin-left: 20px;
+    // display: inline-block;
+  }
 }
-.search-button {
-  margin-left: auto;
+.button {
+  margin: 0 3px;
   height: 38px;
-  width: 100px;
+  // width: 100px;
   border-radius: 4.5px;
+  justify-content: space-between;
 }
 .el-menu-item *{
   vertical-align: top;
@@ -417,21 +452,20 @@ h2 {
 .tab-container{
   display: flex;
   align-items: center;
+  justify-content: space-between;
   background-color: #fff;
   padding: 0 30px;
 }
 .buttons{
-  margin-left: auto;
+  // margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   .type{
     font-size: 24px;
     line-height: 1;
     vertical-align: middle;
   }
-}
-.add-button {
-  height: 38px;
-  align-self: center;
-
 }
 .project-list {
   margin-top: 20px;
