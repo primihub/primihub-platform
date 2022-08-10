@@ -17,13 +17,14 @@
       </el-table-column>
       <el-table-column label="任务ID">
         <template slot-scope="{row}">
-          <span>{{ row.taskIdName }}</span>
+          <p class="result-id">{{ row.taskIdName }}</p>
         </template>
       </el-table-column>
-      <el-table-column label="状态" prop="taskState">
+      <el-table-column label="任务状态" prop="taskState">
         <template slot-scope="{row}">
           <i :class="statusStyle(row.taskState)" />
           <span>{{ row.taskState | taskStateFilter }}</span>
+          <span v-if="row.taskState === 2"> <i class="el-icon-loading" /></span>
         </template>
       </el-table-column>
       <el-table-column label="求交结果归属" prop="ascription" />
@@ -31,7 +32,7 @@
       <el-table-column label="操作" min-width="120px" align="center">
         <template slot-scope="{row}">
           <el-button type="primary" size="mini" icon="el-icon-view" @click="openDialog(row.taskId)">查看</el-button>
-          <el-button type="danger" size="mini" icon="el-icon-delete" @click="delPsiTask(row.taskId)">删除</el-button>
+          <el-button type="danger" size="mini" icon="el-icon-delete" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -106,19 +107,26 @@ export default {
     statusStyle(state) {
       return state === 0 ? 'state-default' : state === 1 ? 'state-end' : state === 2 ? 'state-running' : state === 4 ? 'state-default' : 'state-error'
     },
-    delPsiTask(taskId) {
-      delPsiTask({ taskId }).then(res => {
-        if (res.code === 0) {
-          this.$message({
-            message: '删除成功',
-            type: 'success',
-            duration: 1000
-          })
-          this.$emit('delete', {
-            taskId
-          })
-        }
-      })
+    delPsiTask(row) {
+      if (row.taskState === 2) return
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delPsiTask({ taskId: row.taskId }).then(res => {
+          if (res.code === 0) {
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            this.$emit('delete', {
+              taskId: row.taskId
+            })
+          }
+        })
+      }).catch(() => {})
     },
     retry(taskId) {
       this.taskId = taskId
@@ -190,6 +198,9 @@ export default {
 }
 ::v-deep .el-dialog__body{
   padding: 20px 20px 10px 20px;
+}
+.result-id{
+  line-height: 17px!important;
 }
 .result-name{
   cursor: pointer;
