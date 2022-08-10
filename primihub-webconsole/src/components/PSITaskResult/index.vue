@@ -1,7 +1,7 @@
 <template>
   <div class="task-result">
     <el-table
-      :data="data"
+      :data="tableData"
       border
       class="table-list"
     >
@@ -84,13 +84,22 @@ export default {
   },
   data() {
     return {
+      // tableData: [],
       dialogVisible: false,
       result: {
         resultName: ''
       },
       taskData: {},
       taskId: -1,
-      timmer: null
+      timer: null
+    }
+  },
+  computed: {
+    tableData: {
+      get() {
+        return this.data
+      },
+      set() {}
     }
   },
   methods: {
@@ -116,14 +125,16 @@ export default {
       }).then(() => {
         delPsiTask({ taskId: row.taskId }).then(res => {
           if (res.code === 0) {
+            const posIndex = this.data.findIndex(item => item.taskId === row.taskId)
+            if (posIndex !== -1) {
+              this.tableData.splice(posIndex, 1)
+            }
             this.$message({
               message: '删除成功',
               type: 'success',
               duration: 1000
             })
-            this.$emit('delete', {
-              taskId: row.taskId
-            })
+            this.$emit('delete', this.tableData)
           }
         })
       }).catch(() => {})
@@ -137,7 +148,7 @@ export default {
           duration: 1000
         })
       })
-      this.timmer = window.setInterval(() => {
+      this.timer = window.setInterval(() => {
         setTimeout(this.getPsiTaskDetails(), 0)
       }, 1500)
       this.$emit('retry', this.data)
@@ -148,7 +159,7 @@ export default {
         const { taskState, taskId } = res.result
         this.taskData = res.result
         this.taskId = taskId
-        clearInterval(this.timmer)
+        clearInterval(this.timer)
 
         switch (taskState) {
           case 1:

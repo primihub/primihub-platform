@@ -52,10 +52,6 @@ export default {
       totalPage: 0,
       total: 0,
       pageNo: 1,
-      pageSize2: 10,
-      totalPage2: 0,
-      total2: 0,
-      pageNo2: 1,
       dialogVisible: false,
       taskData: [],
       taskId: 0,
@@ -71,12 +67,16 @@ export default {
       setTimeout(this.getPsiTaskList(), 0)
     }, 3000)
   },
+  destroyed() {
+    clearInterval(this.timer)
+  },
   methods: {
     handleDelete(data) {
+      // last page && all deleted, to the first page
+      if (data.length === 0 && (this.pageNo === this.totalPage)) {
+        this.pageNo = 1
+      }
       this.getPsiTaskList()
-    },
-    handleSingleResultDelete() {
-      this.dataPsiTask = []
     },
     getPsiTaskList() {
       getPsiTaskList({

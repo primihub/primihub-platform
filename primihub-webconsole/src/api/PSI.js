@@ -34,7 +34,6 @@ export function getPsiTaskList(params) {
   return request({
     url: '/data/psi/getPsiTaskList',
     method: 'get',
-    showLoading: false,
     params
   })
 }
