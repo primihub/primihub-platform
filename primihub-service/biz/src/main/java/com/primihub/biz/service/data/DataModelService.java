@@ -333,6 +333,8 @@ public class DataModelService {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
         if (dataModel==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
+        if (dataModel.getIsDraft()==0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型未保存,请保存后再次尝试");
         if (StringUtils.isBlank(dataModel.getComponentJson()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
         if (StringUtils.isBlank(dataModel.getModelName()))
