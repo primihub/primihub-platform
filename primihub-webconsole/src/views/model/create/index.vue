@@ -16,7 +16,7 @@
       </div>
 
       <!--右侧工具栏-->
-      <right-drawer :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" />
+      <right-drawer ref="drawerRef" :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" @change="handleChange" />
 
     </div>
   </div>
@@ -122,10 +122,12 @@ export default {
       organs: [],
       destroyed: false,
       startNode: {},
+      startData: [],
       componentsList: [],
       requiredComponents: [],
       container: null,
-      modelRunValidated: true
+      modelRunValidated: true,
+      isClear: false
     }
   },
   computed: {
@@ -288,8 +290,12 @@ export default {
         clipboard: true,
         keyboard: true
       })
-      this.registerStartNode()
-      this.addStartNode()
+
+      if (this.components) {
+        this.registerStartNode()
+        this.addStartNode()
+      }
+
       // 初始化左侧组件列表
       this.initStencil()
       this.initShape()
@@ -404,6 +410,7 @@ export default {
       const { graph } = this
       const container = document.getElementById('flowContainer')
       graph.on('node:click', async({ node }) => {
+        console.log('click', node)
         this.nodeData = node.store.data.data
       })
 
@@ -449,6 +456,7 @@ export default {
           }
           graph.removeCells(cells)
         }
+        this.nodeData = this.startNode
       })
 
       graph.on('edge:connected', ({ edge }) => {
@@ -484,17 +492,13 @@ export default {
     // 放大
     zoomInFn() {
       this.graph.zoom(0.1)
-      this.canZoomOut = true
     },
     // 缩小
     zoomOutFn() {
-      if (!this.canZoomOut) return
       const Num = Number(this.graph.zoom().toFixed(1))
 
       if (Num > 0.1) {
         this.graph.zoom(-0.1)
-      } else {
-        this.canZoomOut = false
       }
     },
     // 清除画布
@@ -513,8 +517,9 @@ export default {
         })
         return
       }
-      this.saveFn(2)
-      // this.graph.clearCells()
+      this.isClear = true
+      this.saveFn(0)
+      this.nodeData = this.startNode
     },
     initToolBarEvent() {
       const { history } = this.graph
@@ -534,6 +539,14 @@ export default {
       })
     },
     checkRunValidated() {
+      const data = this.graph.toJSON()
+      const { cells } = data
+      const startCom = cells.filter(item => item.componentCode === 'start')[0]
+      const modelName = startCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
+      const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
+      const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
+      const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
+      const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
@@ -541,36 +554,33 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
-      } else if (!this.modelId) { // model is empty, can't run
+      } else if (cells.length === 1) { // model is empty or cleared, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
         })
         this.modelRunValidated = false
+      } else if (modelName === '') {
+        this.$message({
+          message: `运行失败：请输入模型名称`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+      } else if (!dataSetCom) {
+        this.$message({
+          message: `请选择数据集`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+      } else if (!(initiateResource && providerResource)) {
+        const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
+        this.$message({
+          message: msg,
+          type: 'error'
+        })
+        this.modelRunValidated = false
       } else {
-        const data = this.graph.toJSON()
-        const { cells } = data
-        const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')[0]
-        const value = dataSetCom.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom.data.componentTypes[0].inputValue) : ''
-        const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
-        const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
-        if (!value) {
-          this.$message({
-            message: `请选择数据集`,
-            type: 'error'
-          })
-          this.modelRunValidated = false
-          return false
-        } else if (!(initiateResource && providerResource)) {
-          const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
-          this.$message({
-            message: msg,
-            type: 'error'
-          })
-          this.modelRunValidated = false
-        } else {
-          this.modelRunValidated = true
-        }
+        this.modelRunValidated = true
       }
     },
     run() {
@@ -637,18 +647,21 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const { result } = await getModelComponent()
-      this.components = result
-      this.componentsList = result.slice(1)
-      this.requiredComponents = result.filter(item => item.isMandatory === 0)
+      const { result, code } = await getModelComponent()
+      if (code === 0) {
+        this.components = result
+        this.componentsList = result.slice(1)
+        this.requiredComponents = result.filter(item => item.isMandatory === 0)
+      }
     },
     // 获取模型组件详情
     async getModelComponentDetail() {
       const params = {
-        modelId: this.modelId
+        modelId: this.modelId,
+        projectId: this.projectId
       }
       const res = await getModelComponentDetail(params)
-      if (res.result) {
+      if (res.result?.modelComponents.length > 1) {
         if (this.isEdit) { // It's is edit page
           this.setComponentsDetail(res.result)
         } else {
@@ -874,10 +887,10 @@ export default {
       this.saveParams.param.modelComponents = modelComponents
 
       this.saveParams.param.modelPointComponents = modelPointComponents
-      if (isDraft === 2) {
-        const startData = cells.filter(item => item.componentCode === 'start')[0]
+      if (this.isClear) {
+        this.startData = cells.filter(item => item.componentCode === 'start')[0]
         const graphData = { cells: [] }
-        graphData.cells.push(startData)
+        graphData.cells.push(this.startData)
         this.graph.fromJSON(graphData)
         const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
         this.saveParams.param.modelComponents = []
@@ -888,6 +901,7 @@ export default {
       saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
         if (res.code === 0) {
           this.modelId = res.result.modelId
+          this.$notify.closeAll()
           this.$notify({
             message: '保存成功',
             type: 'success',
@@ -899,7 +913,15 @@ export default {
             type: 'error'
           })
         }
+        this.isClear = false
       })
+    },
+    handleChange(data) {
+      const { cells } = this.graph.toJSON()
+      const posIndex = cells.findIndex(item => item.componentCode === data.componentCode)
+      cells[posIndex].data = data
+      this.graph.fromJSON(cells)
+      this.saveFn()
     }
   }
 }

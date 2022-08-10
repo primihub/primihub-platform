@@ -22,14 +22,18 @@
     </div>
     <div class="model-list">
       <el-table
-        v-loading.lock.fullscreen="fullscreenLoading"
-        element-loading-text="运行中"
         :data="modelList"
       >
         <!-- 解决加载数据时先显示no data -->
         <template slot="empty">
           <p>{{ emptyText }}</p>
         </template>
+        <el-table-column
+          type="index"
+          align="center"
+          label="序号"
+          width="100"
+        />
         <el-table-column
           prop="modelName"
           label="名称"
@@ -41,24 +45,23 @@
         <el-table-column
           prop="projectName"
           label="所属项目"
+          min-width="120"
         />
-        <el-table-column
+        <!-- <el-table-column
           prop="resourceNum"
           label="资源数量"
-        />
+        /> -->
         <!-- if not have permissions, hide the column -->
         <el-table-column
           v-if="!(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission)"
           label="操作"
-          width="180"
+          width="220"
         >
           <template slot-scope="{row}">
             <div>
-              <el-button v-if="hasModelEditPermission" type="text" icon="el-icon-edit" size="mini" @click.stop="toEditPage(row)">编辑</el-button>
+              <el-button v-if="hasModelEditPermission && row.latestTaskStatus !== 2 && isCreator" type="text" icon="el-icon-edit" size="mini" @click.stop="toEditPage(row)">编辑</el-button>
               <!-- <el-button v-if="hasModelRunPermission" type="text" icon="el-icon-video-play" size="mini" @click.stop="runTaskModel(row)">运行</el-button> -->
-              <!-- <el-button v-if="hasModelViewPermission && row.latestTaskStatus === 2" type="text" icon="el-icon-view" @click="toModelDetail(row.modelId)">查看</el-button> -->
               <el-button v-if="hasModelTaskHistoryPermission" type="text" icon="el-icon-view" size="mini" @click="toModelHistory(row.modelId)">执行记录</el-button>
-              <!-- <el-button type="text" icon="el-icon-edit" @click="toModelDetail(row.modelId)">编辑</el-button> -->
             </div>
           </template>
         </el-table-column>
@@ -86,6 +89,12 @@ export default {
         3: '异常'
       }
       return statusMap[status]
+    }
+  },
+  props: {
+    isCreator: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -168,10 +177,7 @@ export default {
         }
         this.total = result.total
         this.pageCount = result.totalPage
-        // TODO 模型状态待确定
-        setTimeout(() => {
-          this.listLoading = false
-        }, 200)
+        this.listLoading = false
       })
     },
     statusStyle(status) {

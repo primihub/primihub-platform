@@ -334,6 +334,7 @@ export default {
         }
       })
     },
+    toResultPage() {},
     checkParams() {
       const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword } = this.formData
       let message = ''
