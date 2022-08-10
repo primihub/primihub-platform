@@ -10,6 +10,7 @@ public class ModelListVo {
     private String modelName;
     private String projectName;
     private Integer resourceNum;
+    private Long latestTaskId;
     //最近一次任务状态
     private Integer latestTaskStatus;
     private Integer totalTime;

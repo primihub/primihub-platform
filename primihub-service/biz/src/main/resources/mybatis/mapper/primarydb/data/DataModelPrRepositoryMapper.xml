@@ -109,7 +109,15 @@
         where task_id = #{taskId}
     </update>
     <delete id="deleteModelByModelId">
-        delete from data_model where model_id = #{modelId}
+        <choose>
+            <when test="isDraft==null or isDraft==0">
+                delete from data_model where model_id = #{modelId}
+            </when>
+            <otherwise>
+                update data_model set is_del = 1 where model_id = #{modelId}
+            </otherwise>
+        </choose>
+
     </delete>
     <delete id="deleteDataComponent">
         delete from data_component where model_id = #{modelId}

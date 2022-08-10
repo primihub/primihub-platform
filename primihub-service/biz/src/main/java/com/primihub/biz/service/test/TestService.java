@@ -105,7 +105,7 @@ public class TestService {
 
     public Map runFeign(){
 
-        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,1L);
+        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,1L,null);
         FedlearnerJobApi fedlearnerJobApi = null;
         if (modelComponent!=null) {
             if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {

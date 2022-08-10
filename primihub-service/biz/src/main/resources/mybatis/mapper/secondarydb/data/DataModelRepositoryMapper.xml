@@ -57,6 +57,7 @@
     </select>
 
     <sql id="listwhere">
+        and dm.is_del = 0
         <if test="projectName!=null">and dp.project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
         <if test="taskStatus!=null">and dm.latest_task_status = #{taskStatus}</if>
@@ -174,6 +175,9 @@
                     <if test="isDraft!=null">
                         and is_draft = #{isDraft}
                     </if>
+                    <if test="projectId!=null">
+                        and project_id = #{projectId}
+                    </if>
                 </otherwise>
             </choose>
         LIMIT 1
@@ -260,6 +264,22 @@
         from data_model_task
         where model_id = #{modelId}
         ORDER BY id
+    </select>
+    <select id="queryModelLatestTask" resultType="java.util.Map">
+        select
+               mt.model_id modelId,mt.task_id taskId,dt.task_state taskState
+        from (
+                select
+                        DISTINCT model_id,max(task_id) task_id
+                from data_model_task
+                where model_id in
+                <foreach collection="modelIds" index="index" item="item" open="("
+                         separator="," close=")">
+                    #{item}
+                </foreach>
+                GROUP BY model_id
+            ) mt,data_task dt
+        where mt.task_id = dt.task_id
     </select>
 
 </mapper>

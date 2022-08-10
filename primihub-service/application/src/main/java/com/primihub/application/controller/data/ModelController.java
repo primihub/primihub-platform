@@ -60,11 +60,12 @@ public class ModelController {
      */
     @GetMapping("getModelComponentDetail")
     public BaseResultEntity getModelComponentDetail(@RequestHeader("userId") Long userId,
-                                                    Long modelId){
+                                                    Long modelId,
+                                                    Long projectId){
         if (userId==null||userId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
         }
-        return dataModelService.getModelComponentDetail(modelId,userId);
+        return dataModelService.getModelComponentDetail(modelId,userId,projectId);
     }
     /**
      * 创建模型
@@ -81,16 +82,11 @@ public class ModelController {
 
     /***
      *  删除模型
-     * @param userId
      * @param modelId
      * @return
      */
     @GetMapping("deleteModel")
-    public BaseResultEntity deleteModel(@RequestHeader("userId") Long userId,
-                                         Long modelId){
-        if (userId<0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        }
+    public BaseResultEntity deleteModel(Long modelId){
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
