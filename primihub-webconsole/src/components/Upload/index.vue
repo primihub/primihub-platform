@@ -35,7 +35,7 @@ import uploader from 'vue-simple-uploader'
 Vue.use(uploader)
 
 // 切片大小
-const CHUNK_SIZE = 1 * 1024 * 256
+const CHUNK_SIZE = 1 * 1024 * 1024
 // 可传文件类型集合
 const FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
 const FILE_SUFFIXS = ['csv']
@@ -138,7 +138,14 @@ export default {
     // 上传成功事件
     onFileSuccess(rootFile, file, response, chunk) {
       const res = JSON.parse(response)
-      if (res.code === 102) {
+      if (res.code === 0) {
+        const fileId = res.result.sysFile.fileId
+        this.$emit('success', fileId)
+        this.$message({
+          message: '上传成功',
+          type: 'success'
+        })
+      } else if (res.code === 102) {
         this.$message({
           message: '登录失效，请重新登录',
           type: 'error',
@@ -152,13 +159,14 @@ export default {
         }, 2000)
         file.cancel()
         return
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error'
+        })
+        file.cancel()
+        return
       }
-      const fileId = res.result.sysFile.fileId
-      this.$emit('success', fileId)
-      this.$message({
-        message: '上传成功',
-        type: 'success'
-      })
     },
     // 上传过程出错处理
     onFileError(rootFile, file, message, chunk) {

@@ -3,7 +3,7 @@
     :before-close="closeDialog"
     v-bind="$attrs"
   >
-    <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
+    <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
     <ResourceTableSingleSelect :data="tableData" :selected-data="selectedData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
@@ -18,13 +18,13 @@
 <script>
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
-import SearchInput from '@/components/SearchInput'
+// import SearchInput from '@/components/SearchInput'
 export default {
   name: 'ResourceDialog',
   components: {
     ResourceTableSingleSelect,
-    Pagination,
-    SearchInput
+    Pagination
+    // SearchInput
   },
   props: {
     tableData: {
@@ -50,20 +50,14 @@ export default {
       selectedResourceId: ''
     }
   },
-  watch: {
-    visible: async function(val) {
-      if (val) {
-        await this.fetchData()
-      }
-    }
-  },
   methods: {
     handleChange(data) {
       this.selectedResource = data
     },
     searchResource() {
       this.pageNo = 1
-      this.fetchData()
+      this.$emit('request')
+      // this.fetchData()
     },
     handleSearchNameChange(searchName) {
       this.resourceName = searchName
@@ -71,7 +65,8 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.fetchData()
+      // this.fetchData()
+      this.$emit('request')
     },
     closeDialog() {
       this.resourceName = ''

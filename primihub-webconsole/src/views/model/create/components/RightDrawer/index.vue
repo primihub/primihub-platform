@@ -62,7 +62,7 @@
     </el-form>
     <el-button type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
-    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="添加资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
   </div>
 </template>
 

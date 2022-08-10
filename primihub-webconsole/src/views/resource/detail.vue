@@ -5,7 +5,7 @@
       <el-descriptions title="资源信息" :column="2" label-class-name="detail-title">
         <el-descriptions-item label="资源名称">{{ resource.resourceName }}</el-descriptions-item>
         <el-descriptions-item label="资源描述">{{ resource.resourceDesc }}</el-descriptions-item>
-        <el-descriptions-item label="标签">
+        <el-descriptions-item label="关键词">
           <el-tag v-for="tag in resource.tags" :key="tag.tagId" type="primary" size="mini">{{ tag.tagName }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="授权方式">
