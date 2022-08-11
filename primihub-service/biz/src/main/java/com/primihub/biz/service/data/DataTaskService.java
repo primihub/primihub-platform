@@ -303,11 +303,10 @@ public class DataTaskService {
                 return;
             }
             shareModelVo.init(dataProject);
-            shareModelVo.getShareOrganId().remove(organConfiguration.getSysLocalOrganId());
             shareModelVo.getDataModel().setProjectId(null);
             Map<String, Map> organListMap = dataProjectService.getOrganListMap(shareModelVo.getShareOrganId(), shareModelVo.getServerAddress());
             for (String organId : shareModelVo.getShareOrganId()) {
-                if (organListMap.containsKey(organId)){
+                if (!organId.equals(organConfiguration.getSysLocalOrganId())&&organListMap.containsKey(organId)){
                     Map map = organListMap.get(organId);
                     Object gatewayAddress = map==null?null:map.get("gatewayAddress");
                     if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
@@ -321,7 +320,7 @@ public class DataTaskService {
                     HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareModelVo, headers);
                     log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
                     try {
-                        BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                        BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
                         log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
                     }catch (Exception e){
                         log.info("modelUUID:{} - OrganId:{} gatewayAddress api Exception:{}",shareModelVo.getDataModel().getModelUUID(),organId,e.getMessage());
