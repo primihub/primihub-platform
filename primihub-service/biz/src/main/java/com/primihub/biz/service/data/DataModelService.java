@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -46,6 +47,8 @@ public class DataModelService {
     private DataProjectService dataProjectService;
     @Autowired
     private BaseConfiguration baseConfiguration;
+    @Autowired
+    private OrganConfiguration organConfiguration;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
@@ -144,8 +147,14 @@ public class DataModelService {
         DataModel dataModel = dataModelRepository.queryDataModelById(Long.parseLong(modelId));
         if (dataModel==null)
             return false;
-        if (dataModel.getLatestTaskStatus()!=null&&dataModel.getLatestTaskStatus()==1)
-            return true;
+        Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
+            add(modelId);
+        }});
+        if (taskMap!=null&&!taskMap.isEmpty()){
+            Map<String, Object> dataMap = taskMap.get(modelId);
+            if (dataMap.get("taskState")!=null&&Integer.parseInt(dataMap.get("taskState").toString())==2)
+                return true;
+        }
         return false;
     }
 
@@ -172,6 +181,7 @@ public class DataModelService {
                 dataModel.setModelName(paramValuesMap.get("modelName"));
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
                 dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
+                dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
             }
             saveOrGetModelComponentCache(true, userId,params.getProjectId(), params, dataModel);
         } catch (Exception e) {
@@ -280,6 +290,7 @@ public class DataModelService {
         if (isSave){
             dataModel.setComponentJson(JSONObject.toJSONString(params));
             if (modelComponent==null&&(dataModel.getModelId()==null||dataModel.getModelId()==0L)){
+                dataModel.setModelUUID(UUID.randomUUID().toString());
                 dataModelPrRepository.saveDataModel(dataModel);
             }else {
                 if (dataModel.getModelId()==null||dataModel.getModelId()==0L){
@@ -424,4 +435,31 @@ public class DataModelService {
     }
 
 
+    public BaseResultEntity syncModel(ShareModelVo vo) {
+        log.info(JSONObject.toJSONString(vo));
+        if (vo.getDataModel()==null)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModel");
+        if (vo.getDataModelTask()==null)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModelTask");
+        if (vo.getDataTask()==null)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataTask");
+        if (StringUtils.isBlank(vo.getDataModel().getModelUUID()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelUUID");
+        DataModel dataModel = this.dataModelRepository.queryDataModelByUUID(vo.getDataModel().getModelUUID());
+        if (dataModel==null){
+            DataProject dataProject = this.dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
+            if (dataProject==null)
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"no project data");
+            vo.getDataModel().setProjectId(dataProject.getId());
+            dataModelPrRepository.saveDataModel(dataModel);
+        }else {
+            vo.getDataModel().setModelId(dataModel.getModelId());
+            dataModelPrRepository.updateDataModel(vo.getDataModel());
+        }
+        dataTaskPrRepository.saveDataTask(vo.getDataTask());
+        vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
+        vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
+        dataModelPrRepository.saveDataModelTask(vo.getDataModelTask());
+        return BaseResultEntity.success();
+    }
 }

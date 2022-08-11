@@ -28,6 +28,13 @@ public class TaskController {
     @Autowired
     private DataTaskService dataTaskService;
 
+    @RequestMapping("deleteTask")
+    public BaseResultEntity deleteTask(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return dataTaskService.deleteTaskData(taskId);
+    }
+
     @RequestMapping("getTaskData")
     public BaseResultEntity getTaskData(Long taskId){
         if (taskId==null||taskId==0L)
@@ -104,7 +111,7 @@ public class TaskController {
             outputStream.close();
             outputStream.flush();
         }catch (Exception e) {
-            log.info("downloadPsiTask -- fileName:{} -- fileContent -- e:{}",fileName,content,e.getMessage());
+            log.info("downloadPsiTask -- fileName:{} -- fileContent:{} -- e:{}",fileName,content,e.getMessage());
             downloadTaskError(response,"文件读取失败");
         }
     }

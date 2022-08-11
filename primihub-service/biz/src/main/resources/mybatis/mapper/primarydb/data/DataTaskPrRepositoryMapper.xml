@@ -23,4 +23,7 @@
         </set>
         where task_id = #{taskId}
     </update>
+    <delete id="deleteDataTask">
+        delete from data_task where task_id = #{taskId}
+    </delete>
 </mapper>

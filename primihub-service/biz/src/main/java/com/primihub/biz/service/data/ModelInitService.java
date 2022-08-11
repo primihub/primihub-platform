@@ -1,46 +1,43 @@
 package com.primihub.biz.service.data;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelEvaluationDto;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataComponentReq;
+import com.primihub.biz.entity.data.req.DataComponentValue;
+import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
+import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
-import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataComponentReq;
-import com.primihub.biz.entity.data.req.DataComponentValue;
-import com.primihub.biz.entity.data.vo.ModelComponentJson;
-import com.primihub.biz.entity.data.vo.ModelResourceVo;
-import com.primihub.biz.entity.feign.FedlearnerJobApi;
-import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.ZipUtils;
-import com.primihub.biz.util.crypt.DateUtil;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
@@ -59,34 +56,37 @@ public class ModelInitService {
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
+    private OrganConfiguration organConfiguration;
+    @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
     FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
-    private DataProjectRepository dataProjectRepository;
-    @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private SingleTaskChannel singleTaskChannel;
 
 
     @Async
     public void runModelTaskFeign(DataModel dataModel,DataTask dataTask){
         log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
-        FedlearnerJobApi fedlearnerJobApi = null;
-            if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
-                fedlearnerJobApi  = JSONObject.parseObject(dataModel.getComponentJson(), FedlearnerJobApi.class);
-            }
+        DataModelAndComponentReq dataModelAndComponentReq = null;
+        if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
+            dataModelAndComponentReq  = JSONObject.parseObject(dataModel.getComponentJson(), DataModelAndComponentReq.class);
+        }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.updateDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();
         modelTask.setTaskId(dataTask.getTaskId());
         modelTask.setModelId(dataModel.getModelId());
-        List<DataComponentReq> modelComponents = fedlearnerJobApi.getModelComponents();
+        List<DataComponentReq> modelComponents = dataModelAndComponentReq.getModelComponents();
         Map<String, DataComponentReq> reqMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
         List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null,dataTask.getTaskId());
         modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
         dataModelPrRepository.saveDataModelTask(modelTask);
         log.info("检索model组件 数量:{}",modelComponents.size());
         ModelOutputPathDto outputPathDto = null;
+        List<ModelProjectResourceVo> resourceList = null;
         for (DataComponent dataComponent : dataComponents) {
             dataComponent.setStartTime(System.currentTimeMillis());
             dataComponent.setComponentState(2);
@@ -102,7 +102,7 @@ public class ModelInitService {
                     if (dataComponentValue.getVal().equals("2")){
                         List<DataComponentValue> dataAlignment = reqMap.get("dataSet").getComponentValues();
                         if (dataAlignment!=null&&dataAlignment.size()!=0&&dataAlignment.get(0)!=null&&StringUtils.isNotBlank(dataAlignment.get(0).getVal())){
-                            List<ModelProjectResourceVo> resourceList = JSONObject.parseArray(dataAlignment.get(0).getVal(), ModelProjectResourceVo.class);
+                            resourceList = JSONObject.parseArray(dataAlignment.get(0).getVal(), ModelProjectResourceVo.class);
                             log.info("查询数据数量:{}",resourceList.size());
                             if (resourceList.size()==2) {
                                 Map<String, String> map = new HashMap<>();
@@ -110,7 +110,10 @@ public class ModelInitService {
                                 for (ModelProjectResourceVo modelProjectResourceVo : resourceList) {
                                     if (modelProjectResourceVo.getParticipationIdentity()==1){
                                         map.put(DataConstant.PYTHON_LABEL_DATASET,modelProjectResourceVo.getResourceId());
-                                        map.put(DataConstant.PYTHON_CALCULATION_FIELD,StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"Class":modelProjectResourceVo.getCalculationField());
+                                        String fileNaame = StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"Class":modelProjectResourceVo.getCalculationField();
+                                        map.put(DataConstant.PYTHON_CALCULATION_FIELD,fileNaame);
+                                        dataModel.setYValueColumn(fileNaame);
+                                        dataModelPrRepository.updateDataModel(dataModel);
                                     }else {
                                         map.put(DataConstant.PYTHON_GUEST_DATASET , modelProjectResourceVo.getResourceId());
                                     }
@@ -205,11 +208,26 @@ public class ModelInitService {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
+//        if (dataTask.getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+            log.info("Share model task modelId:{} modelName:{}",dataModel.getModelId(),dataModel.getModelName());
+            ShareModelVo vo = new ShareModelVo();
+            vo.setDataModel(dataModel);
+            vo.setDataTask(dataTask);
+            vo.setDataModelTask(modelTask);
+            vo.setShareOrganId(resourceList.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+            sendShareModelTask(vo);
+//        }
+
+
     }
 
     public static int getrandom(int start,int end) {
         int num=(int) (Math.random()*(end-start+1)+start);
         return num;
+    }
+
+    public void sendShareModelTask(ShareModelVo shareModelVo){
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(),shareModelVo))).build());
     }
 
     public static void main(String[] args) {
