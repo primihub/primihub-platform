@@ -36,13 +36,13 @@
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
-              <el-input v-model="item.inputValue" size="mini" />
+              <el-input v-model="item.inputValue" size="mini" @change="handleChange(item)" />
             </template>
             <template v-if="item.inputType === 'textarea'">
               <el-input v-model="item.inputValue" type="textarea" size="mini" />
             </template>
             <template v-if="item.inputType === 'radio'">
-              <el-radio-group v-model="item.inputValue">
+              <el-radio-group v-model="item.inputValue" @change="handleChange(item)">
                 <el-radio v-for="(r,index) in item.inputValues" :key="index" :label="r.key">{{ r.val }}</el-radio>
               </el-radio-group>
             </template>
@@ -77,17 +77,7 @@ export default {
     ResourceDec
   },
   props: {
-    showDataConfig: {
-      type: Boolean,
-      default: false
-    },
     nodeData: {
-      type: Object,
-      default: () => {
-        return {}
-      }
-    },
-    modelData: {
       type: Object,
       default: () => {
         return {}
@@ -96,7 +86,6 @@ export default {
   },
   data() {
     const modelNameValidate = (rule, value, callback) => {
-      console.log(value)
       if (value === '') {
         callback(new Error('请输入模型名称'))
       } else {
@@ -185,7 +174,8 @@ export default {
       this.dialogVisible = true
     },
     handleChange(item) {
-      this.$emit('change', item.typeCode, item)
+      console.log('handleChange', this.nodeData)
+      this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
       this.providerOrganName = this.providerOrgans.filter(item => item.organId === value)[0].organName
