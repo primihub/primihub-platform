@@ -152,7 +152,7 @@ public class DataModelService {
         }});
         if (taskMap!=null&&!taskMap.isEmpty()){
             Map<String, Object> dataMap = taskMap.get(modelId);
-            if (dataMap.get("taskState")!=null&&"2".equals(dataMap.get("taskState").toString()))
+            if (dataMap!=null&&dataMap.get("taskState")!=null&&"2".equals(dataMap.get("taskState").toString()))
                 return true;
         }
         return false;
