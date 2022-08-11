@@ -209,7 +209,7 @@ public class ModelInitService {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
-//        if (dataTask.getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+        if (dataTask.getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
             log.info("Share model task modelId:{} modelName:{}",dataModel.getModelId(),dataModel.getModelName());
             ShareModelVo vo = new ShareModelVo();
             vo.setDataModel(dataModel);
@@ -218,7 +218,7 @@ public class ModelInitService {
             vo.setDmrList(dmrList);
             vo.setShareOrganId(resourceList.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
             sendShareModelTask(vo);
-//        }
+        }
 
 
     }
