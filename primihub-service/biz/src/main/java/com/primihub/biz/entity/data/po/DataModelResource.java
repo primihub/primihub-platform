@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.data.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
@@ -27,6 +28,7 @@ public class DataModelResource {
     /**
      * 模型id
      */
+    @JsonIgnore
     private Long modelId;
     /**
      * 资源id
@@ -35,6 +37,7 @@ public class DataModelResource {
     /**
      * 任务ID
      */
+    @JsonIgnore
     private Long taskId;
     /**
      * 对齐后记录数量

@@ -87,6 +87,7 @@ public class ModelInitService {
         log.info("检索model组件 数量:{}",modelComponents.size());
         ModelOutputPathDto outputPathDto = null;
         List<ModelProjectResourceVo> resourceList = null;
+        List<DataModelResource> dmrList = null;
         for (DataComponent dataComponent : dataComponents) {
             dataComponent.setStartTime(System.currentTimeMillis());
             dataComponent.setComponentState(2);
@@ -106,7 +107,7 @@ public class ModelInitService {
                             log.info("查询数据数量:{}",resourceList.size());
                             if (resourceList.size()==2) {
                                 Map<String, String> map = new HashMap<>();
-                                List<DataModelResource> dmrList = new ArrayList<>();
+                                dmrList  = new ArrayList<>();
                                 for (ModelProjectResourceVo modelProjectResourceVo : resourceList) {
                                     if (modelProjectResourceVo.getParticipationIdentity()==1){
                                         map.put(DataConstant.PYTHON_LABEL_DATASET,modelProjectResourceVo.getResourceId());
@@ -120,9 +121,9 @@ public class ModelInitService {
                                     DataModelResource dataModelResource = new DataModelResource(dataModel.getModelId());
                                     dataModelResource.setTaskId(dataTask.getTaskId());
                                     dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
-                                    dataModelResource.setAlignmentNum(getrandom(1, 10000));
-                                    dataModelResource.setPrimitiveParamNum(getrandom(1, 100));
-                                    dataModelResource.setModelParamNum(getrandom(1, 100));
+//                                    dataModelResource.setAlignmentNum(getrandom(1, 10000));
+//                                    dataModelResource.setPrimitiveParamNum(getrandom(1, 100));
+//                                    dataModelResource.setModelParamNum(getrandom(1, 100));
                                     dmrList.add(dataModelResource);
                                 }
                                 log.info("map:{}",map);
@@ -214,6 +215,7 @@ public class ModelInitService {
             vo.setDataModel(dataModel);
             vo.setDataTask(dataTask);
             vo.setDataModelTask(modelTask);
+            vo.setDmrList(dmrList);
             vo.setShareOrganId(resourceList.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
             sendShareModelTask(vo);
 //        }
