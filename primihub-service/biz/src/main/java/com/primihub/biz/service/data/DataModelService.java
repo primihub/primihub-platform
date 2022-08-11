@@ -451,7 +451,7 @@ public class DataModelService {
             if (dataProject==null)
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"no project data");
             vo.getDataModel().setProjectId(dataProject.getId());
-            dataModelPrRepository.saveDataModel(dataModel);
+            dataModelPrRepository.saveDataModel(vo.getDataModel());
         }else {
             vo.getDataModel().setModelId(dataModel.getModelId());
             dataModelPrRepository.updateDataModel(vo.getDataModel());
