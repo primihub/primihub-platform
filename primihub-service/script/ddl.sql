@@ -200,7 +200,7 @@ CREATE TABLE `data_psi`  (
                              `other_keyword` varchar(255) DEFAULT NULL COMMENT '其他机构资源关键字',
                              `output_file_path_type` tinyint(4) DEFAULT '0' COMMENT '文件路径输出类型 0默认 自动生成',
                              `output_no_repeat` tinyint(4) DEFAULT '0' COMMENT '输出内容是否不去重 默认0 不去重 1去重',
-                             `column_complete_statistics` tinyint(4) DEFAULT '0' COMMENT '是否对"可统计"的附加列做全表统计 默认0 是 1不是',
+                             `tag` tinyint(4) DEFAULT '0' COMMENT '0表示openmined psi，1表示libPsi的KKRT psi',
                              `result_name` varchar(255) DEFAULT NULL COMMENT '结果名称',
                              `output_content` int(11) DEFAULT '0' COMMENT '输出内容 默认0 0交集 1差集',
                              `output_format` varchar(255) DEFAULT NULL COMMENT '输出格式',

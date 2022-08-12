@@ -76,6 +76,7 @@ public class PsiAsyncService {
             Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(ownDataResource.getResourceFusionId()).build();
             Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(resourceId).build();
             Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(dataPsi.getOutputContent()).build();
+            Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(dataPsi.getTag()).build();
             int clientIndex = Arrays.asList(ownDataResource.getFileHandleField().split(",")).indexOf(dataPsi.getOwnKeyword());
             Common.ParamValue clientIndexParamValue=Common.ParamValue.newBuilder().setValueInt32(clientIndex).build();
             int serverIndex = Arrays.asList(resourceColumnNameList.split(",")).indexOf(dataPsi.getOtherKeyword());
@@ -85,6 +86,7 @@ public class PsiAsyncService {
                     .putParamMap("clientData",clientDataParamValue)
                     .putParamMap("serverData",serverDataParamValue)
                     .putParamMap("psiType",psiTypeParamValue)
+                    .putParamMap("psiTag",psiTagParamValue)
                     .putParamMap("clientIndex",clientIndexParamValue)
                     .putParamMap("serverIndex",serverIndexParamValue)
                     .putParamMap("outputFullFilename",outputFullFilenameParamValue)
