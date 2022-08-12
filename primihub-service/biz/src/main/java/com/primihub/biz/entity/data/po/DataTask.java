@@ -86,6 +86,10 @@ public class DataTask {
      * 任务异常信息
      */
     private String taskErrorMsg;
+    /**
+     * 是否协作任务 默认0
+     */
+    private Integer isCooperation = 0;
 
     /**
      * 是否删除

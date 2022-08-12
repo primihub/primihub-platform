@@ -389,6 +389,7 @@ CREATE TABLE `data_task` (
                              `task_end_time` bigint(20) DEFAULT NULL COMMENT '任务结束时间',
                              `task_user_id` bigint(20) DEFAULT NULL COMMENT '任务创建人',
                              `task_error_msg` blob COMMENT '任务异常信息',
+                             `is_cooperation` tinyint(4) DEFAULT '0' COMMENT '是否协作任务0否 1是',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',

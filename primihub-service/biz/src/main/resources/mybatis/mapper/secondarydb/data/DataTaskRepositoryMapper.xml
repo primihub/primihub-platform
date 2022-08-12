@@ -15,6 +15,7 @@
             task_end_time as taskEndTime,
             task_user_id as taskUserId,
             task_error_msg as taskErrorMsg,
+            is_cooperation as isCooperation,
             is_del as isDel,
             create_date as createDate,
             update_date as updateDate
@@ -33,6 +34,7 @@
             task_end_time as taskEndTime,
             task_user_id as taskUserId,
             task_error_msg as taskErrorMsg,
+            is_cooperation as isCooperation,
             is_del as isDel,
             create_date as createDate,
             update_date as updateDate

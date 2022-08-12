@@ -458,6 +458,7 @@ public class DataModelService {
             vo.getDataModel().setModelId(dataModel.getModelId());
             dataModelPrRepository.updateDataModel(vo.getDataModel());
         }
+        vo.getDataTask().setIsCooperation(1);
         dataTaskPrRepository.saveDataTask(vo.getDataTask());
         vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
         vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
