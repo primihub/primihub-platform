@@ -666,9 +666,9 @@ export default {
       }
       const res = await getModelComponentDetail(params)
       const modelComponents = res.result?.modelComponents
-      if (this.isEdit && modelComponents.length > 0) { // It's is edit page
+      if (this.isEdit && modelComponents && modelComponents.length > 0) { // It's is edit page
         this.setComponentsDetail(res.result)
-      } else if (modelComponents.length > 1) {
+      } else if (modelComponents && modelComponents.length > 1) {
         this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
           confirmButtonText: '是',
           cancelButtonText: '否',
