@@ -7,10 +7,9 @@
         <p class="tips">拖拽组件到右侧画布区</p>
         <div id="stencil" />
       </div>
-
       <div class="center-container">
         <!--流程图工具栏-->
-        <tool-bar ref="toolBarRef" @save="saveFn(1)" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
+        <tool-bar ref="toolBarRef" @save="toolBarSave()" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
         <div id="flowContainer" ref="containerRef" class="container" />
         <div ref="mapContainerRef" class="minimap-container" />
       </div>
@@ -104,7 +103,7 @@ export default {
       modelComponents: [], // 草稿详情
       modelId: 0,
       taskId: 0,
-      graphData: [],
+      graphData: { cells: [] },
       projectId: 0,
       projectName: '',
       isComplete: false,
@@ -127,7 +126,9 @@ export default {
       requiredComponents: [],
       container: null,
       modelRunValidated: true,
-      isClear: false
+      isClear: false,
+      isDraft: 0,
+      isLoadHistory: true
     }
   },
   computed: {
@@ -136,6 +137,7 @@ export default {
     }
   },
   async mounted() {
+    this.isDraft = this.isEdit ? 1 : 0
     this.modelId = this.$route.query.modelId
     await this.init()
     this.initToolBarEvent()
@@ -330,13 +332,14 @@ export default {
       const width = this.container.scrollWidth
       // 60 = start node width
       const x = width * 0.5 - 60
+      this.startData = this.components.filter(item => item.componentCode === 'start')[0]
       this.graph.addNode({
         x: x,
         y: 150,
         shape: 'start-node',
-        componentCode: this.startNode.componentCode,
-        label: this.startNode.componentName,
-        data: this.startNode,
+        componentCode: this.startData.componentCode,
+        label: this.startData.componentName,
+        data: this.startData,
         ports
       })
     },
@@ -410,7 +413,6 @@ export default {
       const { graph } = this
       const container = document.getElementById('flowContainer')
       graph.on('node:click', async({ node }) => {
-        console.log('click', node)
         this.nodeData = node.store.data.data
       })
 
@@ -503,6 +505,7 @@ export default {
     },
     // 清除画布
     clearFn() {
+      const { cells } = this.graph.toJSON()
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',
@@ -510,7 +513,7 @@ export default {
         })
         return
       }
-      if (!this.modelId) {
+      if (cells.length <= 1 && this.isLoadHistory) {
         this.$message({
           message: '当前画布为空，无可清除组件',
           type: 'warning'
@@ -518,8 +521,9 @@ export default {
         return
       }
       this.isClear = true
-      this.saveFn(0)
+      this.isDraft = this.isEdit ? 1 : 0
       this.nodeData = this.startNode
+      this.saveFn()
     },
     initToolBarEvent() {
       const { history } = this.graph
@@ -528,7 +532,7 @@ export default {
         this.canRedo = history.canRedo()
         // model is running or destroyed, don't save the model history
         if (!this.modelStartRun && !this.destroyed) {
-          this.saveFn(0)
+          this.saveFn()
         }
       })
       this.graph.bindKey(['ctrl+z', 'command+z'], () => {
@@ -661,22 +665,22 @@ export default {
         projectId: this.projectId
       }
       const res = await getModelComponentDetail(params)
-      if (res.result?.modelComponents.length > 1) {
-        if (this.isEdit) { // It's is edit page
+      const modelComponents = res.result?.modelComponents
+      if (this.isEdit && modelComponents.length > 0) { // It's is edit page
+        this.setComponentsDetail(res.result)
+      } else if (modelComponents.length > 1) {
+        this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
+          confirmButtonText: '是',
+          cancelButtonText: '否',
+          closeOnClickModal: false,
+          type: 'warning'
+        }).then(() => {
           this.setComponentsDetail(res.result)
-        } else {
-          this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
-            confirmButtonText: '是',
-            cancelButtonText: '否',
-            closeOnClickModal: false,
-            type: 'warning'
-          }).then(() => {
-            this.setComponentsDetail(res.result)
-          }).catch(() => {
-            this.modelId = res.result.modelId
-            this.clearFn()
-          })
-        }
+        }).catch(() => {
+          this.modelId = res.result.modelId
+          this.isLoadHistory = false
+          this.clearFn()
+        })
       }
     },
     setComponentsDetail(data) {
@@ -700,14 +704,13 @@ export default {
       this.initGraphShape()
     },
     initGraphShape() {
-      const graphData = []
       console.log('this.modelComponents', this.modelComponents)
       this.modelComponents && this.modelComponents.forEach(item => {
         const { frontComponentId, componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
         const { componentTypes, isMandatory } = this.components.find(item => {
           return item.componentCode === componentCode
         })
-        graphData.push({
+        this.graphData.cells.push({
           id: frontComponentId,
           frontComponentId,
           label: componentName,
@@ -734,7 +737,7 @@ export default {
 
       this.modelPointComponents?.forEach(item => {
         if (item.shape === 'edge') {
-          graphData.push({
+          this.graphData.cells.push({
             id: item.frontComponentId,
             'shape': 'edge',
             'attrs': lineAttr,
@@ -744,7 +747,7 @@ export default {
           })
         }
       })
-      this.graph.fromJSON(graphData)
+      this.graph.fromJSON(this.graphData)
     },
     filterFn(item, edgeList, cells) {
       // 1. 在target中找，
@@ -816,8 +819,14 @@ export default {
       }
       return obj
     },
+    toolBarSave() {
+      this.isDraft = 1
+      this.saveFn()
+    },
     // 保存模板文件
-    saveFn(isDraft = 0) { // 0 草稿
+    saveFn() { // 0 草稿
+      const data = this.graph.toJSON()
+      const { cells } = data
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',
@@ -825,19 +834,18 @@ export default {
         })
         return
       }
-      if (isDraft && !this.modelId) {
+      if ((this.isDraft && !this.isEdit) && cells.length <= 1) {
         this.$message({
           message: '当前画布为空，无法保存，请绘制',
           type: 'warning'
         })
         return
       }
-      const data = this.graph.toJSON()
-      const { cells } = data
+
       this.saveParams.param = {
         projectId: this.projectId,
         modelId: this.modelId,
-        isDraft
+        isDraft: this.isDraft
       }
       this.saveParams.param.modelComponents = this.modelComponents
 
@@ -889,9 +897,9 @@ export default {
       this.saveParams.param.modelPointComponents = modelPointComponents
       if (this.isClear) {
         this.startData = cells.filter(item => item.componentCode === 'start')[0]
-        const graphData = { cells: [] }
-        graphData.cells.push(this.startData)
-        this.graph.fromJSON(graphData)
+        this.graphData.cells = []
+        this.graphData.cells.push(this.startData)
+        this.graph.fromJSON(this.graphData)
         const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
         this.saveParams.param.modelComponents = []
         this.saveParams.param.modelComponents.push(startParams)
@@ -914,6 +922,7 @@ export default {
           })
         }
         this.isClear = false
+        this.isDraft = this.isEdit ? 1 : 0
       })
     },
     handleChange(data) {

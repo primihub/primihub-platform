@@ -74,14 +74,12 @@
 import { getPsiResourceList } from '@/api/PSI'
 import OrganSelect from '@/components/OrganSelect'
 import Pagination from '@/components/Pagination'
-import SearchInput from '@/components/SearchInput'
 
 export default {
   name: 'PSIDirectory',
   components: {
     OrganSelect,
-    Pagination,
-    SearchInput
+    Pagination
   },
   data() {
     return {

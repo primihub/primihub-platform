@@ -8,12 +8,12 @@
           <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
         </el-form-item>
         <el-form-item>
-          <template v-if="providerOrgans.length>0">
+          <template v-if="providerOrganOptions.length>0">
             <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
             <div class="organ-select">
               <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
                 <el-option
-                  v-for="(v,index) in providerOrgans"
+                  v-for="(v,index) in providerOrganOptions"
                   :key="index"
                   :label="v.organName"
                   :value="v.organId"
@@ -21,8 +21,7 @@
               </el-select>
               <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
             </div>
-
-            <ResourceDec v-if="providerOrgans[0].resourceId" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
+            <ResourceDec v-if="providerOrgans.length > 0" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
           </template>
           <template v-else>
             <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
@@ -101,6 +100,7 @@ export default {
       listLoading: false,
       initiateOrgan: {},
       providerOrgans: [],
+      providerOrganOptions: [],
       providerOrganId: '',
       providerOrganName: '',
       dialogVisible: false,
@@ -128,9 +128,6 @@ export default {
         if (this.nodeData.componentCode === 'dataSet') {
           await this.getProjectResourceOrgan()
           this.inputValue = this.nodeData.componentTypes[0].inputValue
-          this.providerOrgans = this.organs.filter(item => item.participationIdentity === 2)
-          this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
-          this.providerOrganId = ''
           if (this.inputValue !== '') {
             this.inputValue = JSON.parse(this.inputValue)
             const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
@@ -178,17 +175,23 @@ export default {
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
-      this.providerOrganName = this.providerOrgans.filter(item => item.organId === value)[0].organName
+      this.providerOrganId = value
+      this.providerOrganName = this.providerOrganOptions.filter(item => item.organId === value)[0].organName
     },
     handleDialogCancel() {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
+      // not selecting resource
+      if (!data.resourceId) {
+        this.dialogVisible = false
+        return
+      }
       if (this.participationIdentity === 1) {
         data.organName = this.initiateOrgan.organName
         this.initiateOrgan = data
       } else {
-        data.organName = this.providerOrgans[0].organName
+        data.organName = this.providerOrganOptions.filter(item => item.organId === this.providerOrganId)[0].organName
         this.providerOrgans = [data]
       }
       this.selectedResourceId = data.resourceId
@@ -232,6 +235,10 @@ export default {
       const res = await getProjectResourceOrgan({ projectId: this.projectId })
       if (res.code === 0) {
         this.organs = res.result
+        this.providerOrganOptions = this.organs.filter(item => item.participationIdentity === 2)
+        this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
+        this.providerOrgans = []
+        this.providerOrganId = ''
       }
       this.listLoading = false
     },

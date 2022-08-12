@@ -30,11 +30,13 @@
         <el-table-column
           prop="taskState"
           label="任务状态"
+          width="100"
         >
           <template slot-scope="{row}">
             <i :class="statusStyle(row.taskState)" />
             {{ row.taskState | taskStatusFilter }}
             <span v-if="row.taskState === 3" class="error-tips">{{ row.taskErrorMsg }}</span>
+            <span v-if="row.taskState === 2"> <i class="el-icon-loading" /></span>
           </template>
         </el-table-column>
         <el-table-column
@@ -60,9 +62,10 @@
           label="操作"
         >
           <template slot-scope="{row}">
-            <div>
+            <div class="buttons">
               <el-button v-if="hasModelViewPermission" type="text" size="mini" icon="el-icon-view" @click="toModelDetail(row.taskId)">查看详情</el-button>
               <el-button v-if="hasModelDownloadPermission && row.taskState === 1" type="text" size="mini" icon="el-icon-download" @click="download(row.taskId)">下载结果</el-button>
+              <el-button type="text" size="mini" icon="el-icon-delete" :disabled="row.taskState === 2" @click="deleteTask(row.taskId)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -74,6 +77,7 @@
 
 <script>
 import { getModelTaskList } from '@/api/model'
+import { deleteTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import { getToken } from '@/utils/auth'
 
@@ -122,7 +126,8 @@ export default {
       total: 0,
       pageCount: 0,
       hidePagination: true,
-      emptyText: ''
+      emptyText: '',
+      timer: null
     }
   },
   computed: {
@@ -133,10 +138,37 @@ export default {
       return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
     }
   },
+  destroyed() {
+    clearInterval(this.timer)
+  },
   created() {
     this.fetchData()
+    this.timer = window.setInterval(() => {
+      setTimeout(this.fetchData(), 0)
+    }, 5000)
   },
   methods: {
+    deleteTask(taskId) {
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteTask(taskId).then(res => {
+          if (res.code === 0) {
+            const posIndex = this.taskList.findIndex(item => item.taskId === taskId)
+            if (posIndex !== -1) {
+              this.taskList.splice(posIndex, 1)
+            }
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+          }
+        })
+      }).catch(() => {})
+    },
     async download(taskId) {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)
@@ -153,7 +185,7 @@ export default {
       console.log('searchModel', this.searchName)
     },
     fetchData() {
-      this.listLoading = true
+      // this.listLoading = true
       this.taskList = []
       const params = {
         modelId: this.modelId,
@@ -165,6 +197,13 @@ export default {
         this.taskList = result.data
         this.total = result.total
         this.pageCount = result.totalPage
+        // this.listLoading = false
+        // filter the running task
+        const res = this.taskList.filter(item => item.taskState === 2)
+        // No tasks are running
+        if (res.length === 0) {
+          clearInterval(this.timer)
+        }
       })
     },
     statusStyle(status) {

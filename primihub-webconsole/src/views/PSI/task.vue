@@ -104,12 +104,24 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="关联键有重复值时" prop="outputNoRepeat">
-              <el-radio-group v-model="formData.outputNoRepeat">
-                <el-radio :label="0">输出内容不去重</el-radio>
-                <!-- <el-radio :label="1">输出内容去重</el-radio> -->
-              </el-radio-group>
-            </el-form-item>
+            <el-row>
+              <el-col :span="9">
+                <el-form-item label="实现协议" prop="psiTag">
+                  <el-select v-model="formData.psiTag" placeholder="请选择实现协议">
+                    <el-option v-for="item in psiTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="关联键有重复值时" prop="outputNoRepeat">
+                  <el-radio-group v-model="formData.outputNoRepeat">
+                    <el-radio :label="0">输出内容不去重</el-radio>
+                    <!-- <el-radio :label="1">输出内容去重</el-radio> -->
+                  </el-radio-group>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
             <!-- <el-form-item label="结果获取方" prop="resultOrgan">
               <el-checkbox-group v-model="formData.resultOrgan">
                 <el-checkbox v-for="(item,index) in resultOrgan" :key="index" :label="item.organId">{{ item.organName }}</el-checkbox>
@@ -176,7 +188,8 @@ export default {
         outputNoRepeat: 0, // 输出内容是否去重
         resultName: '',
         remarks: null,
-        serverAddress: ''
+        serverAddress: '',
+        psiTag: ''
       },
       ownResourceName: '',
       otherResourceName: '',
@@ -211,9 +224,22 @@ export default {
         ],
         resultOrgan: [
           { required: true, message: '请选择结果获取方' }
+        ],
+        psiTag: [
+          { required: true, message: '请选择实现协议' }
         ]
       },
-      timer: null
+      timer: null,
+      psiTagOptions: [
+        {
+          value: 0,
+          label: 'ECDH'
+        },
+        {
+          value: 1,
+          label: 'KKRT'
+        }
+      ]
     }
   },
   computed: {
@@ -282,6 +308,7 @@ export default {
           }
         } else {
           console.log('error submit!!')
+          this.isRun = false
           return false
         }
       })

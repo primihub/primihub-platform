@@ -89,7 +89,7 @@
     </el-row>
 
     <!-- add resource dialog -->
-    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
     <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
     <!-- preview dialog -->
