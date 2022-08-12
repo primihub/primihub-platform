@@ -24,6 +24,8 @@ public interface DataModelRepository {
 
     DataModel  queryDataModelById(Long modelId);
 
+    DataModel  queryDataModelByUUID(String modelUUID);
+
     List<ModelResourceVo> queryModelResource(@Param("modelId") Long modelId,@Param("taskId") Long taskId);
 
     List<ModelQuotaVo> queryModelQuotaVoList(Long modelId);

@@ -14,8 +14,8 @@ import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.test.TestSecondaryRepository;
 import com.primihub.biz.service.data.DataTaskService;
 import com.primihub.biz.entity.data.vo.ModelComponentJson;
-import com.primihub.biz.entity.feign.FedlearnerJobApi;
-import com.primihub.biz.entity.feign.FedlearnerJobApiResource;
+//import com.primihub.biz.entity.feign.FedlearnerJobApi;
+//import com.primihub.biz.entity.feign.FedlearnerJobApiResource;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.repository.resourceprimarydb.test.TestResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.test.TestResourceSecondaryRepository;
@@ -105,25 +105,25 @@ public class TestService {
 
     public Map runFeign(){
 
-        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,1L,null);
-        FedlearnerJobApi fedlearnerJobApi = null;
-        if (modelComponent!=null) {
-            if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {
-                fedlearnerJobApi  = JSONObject.parseObject(modelComponent.getComponentJson(), FedlearnerJobApi.class);
-            }
-        }
-        if (fedlearnerJobApi!=null){
-            List<FedlearnerJobApiResource> resources = new ArrayList();
-            resources.add(new FedlearnerJobApiResource(1L,"/data/upload/1/2022042910/a72bffc9-d36e-461f-8612-e2d54e69c96a.csv"));
-            resources.add(new FedlearnerJobApiResource(2L,"/data/upload/1/2022042910/d4e792cc-46d1-4167-8e60-bb7450dbab53.csv"));
-            fedlearnerJobApi.setResources(resources);
-            HttpHeaders headers = new HttpHeaders();
-            // 以表单的方式提交
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            //将请求头部和参数合成一个请求
-            String apiJson = JSONObject.toJSONString(fedlearnerJobApi);
-            log.info(apiJson);
-            HttpEntity<String> requestEntity = new HttpEntity<>(apiJson, headers);
+//        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,1L,null);
+//        FedlearnerJobApi fedlearnerJobApi = null;
+//        if (modelComponent!=null) {
+//            if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {
+//                fedlearnerJobApi  = JSONObject.parseObject(modelComponent.getComponentJson(), FedlearnerJobApi.class);
+//            }
+//        }
+//        if (fedlearnerJobApi!=null){
+//            List<FedlearnerJobApiResource> resources = new ArrayList();
+//            resources.add(new FedlearnerJobApiResource(1L,"/data/upload/1/2022042910/a72bffc9-d36e-461f-8612-e2d54e69c96a.csv"));
+//            resources.add(new FedlearnerJobApiResource(2L,"/data/upload/1/2022042910/d4e792cc-46d1-4167-8e60-bb7450dbab53.csv"));
+//            fedlearnerJobApi.setResources(resources);
+//            HttpHeaders headers = new HttpHeaders();
+//            // 以表单的方式提交
+//            headers.setContentType(MediaType.APPLICATION_JSON);
+//            //将请求头部和参数合成一个请求
+//            String apiJson = JSONObject.toJSONString(fedlearnerJobApi);
+//            log.info(apiJson);
+//            HttpEntity<String> requestEntity = new HttpEntity<>(apiJson, headers);
 //            try{
 //                BaseResultEntity result=restTemplate.getForObject("http://fedlearner/job_api/run",BaseResultEntity.class);
 //                log.info(result.getMsg());
@@ -131,14 +131,14 @@ public class TestService {
 //            }catch (Exception e){
 //                log.info(e.getMessage());
 //            }
-            try{
-                ResponseEntity<String> a = restTemplate.postForEntity("http://fedlearner/job_api/run", requestEntity, String.class);
-                log.info(a.getBody());
-            }catch (Exception e){
-                log.info(e.getMessage());
-            }
-            return new HashMap(){{put("feignResult", "");}};
-        }
+//            try{
+//                ResponseEntity<String> a = restTemplate.postForEntity("http://fedlearner/job_api/run", requestEntity, String.class);
+//                log.info(a.getBody());
+//            }catch (Exception e){
+//                log.info(e.getMessage());
+//            }
+//            return new HashMap(){{put("feignResult", "");}};
+//        }
         return new HashMap();
     }
 

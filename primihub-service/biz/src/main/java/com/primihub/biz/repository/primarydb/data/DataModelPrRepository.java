@@ -34,5 +34,7 @@ public interface DataModelPrRepository {
 
     void deleteDataModelResource(Long modelId);
 
+    void deleteDataModelTask(Long taskId);
+
     void updateDataComponent(DataComponent dataComponent);
 }

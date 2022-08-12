@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.data.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -33,6 +34,7 @@ public class DataTask {
     /**
      * 任务id
      */
+    @JsonIgnore
     private Long taskId;
 
     /**
@@ -84,6 +86,10 @@ public class DataTask {
      * 任务异常信息
      */
     private String taskErrorMsg;
+    /**
+     * 是否协作任务 默认0
+     */
+    private Integer isCooperation = 0;
 
     /**
      * 是否删除

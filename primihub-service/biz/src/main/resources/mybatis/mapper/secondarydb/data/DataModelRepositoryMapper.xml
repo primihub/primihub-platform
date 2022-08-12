@@ -19,14 +19,7 @@
             dm.model_id AS modelId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
-            dm.resource_num AS resourceNum,
-            sum(
-                dm.latest_alignment_cost + dm.latest_analyze_cost +
-                dm.latest_feature_cost + dm.latest_sample_cost +
-                dm.latest_train_cost + dm.latest_lack_cost +
-                dm.latest_exception_cost
-            ) AS totalTime,
-            dm.latest_task_status AS latestTaskStatus
+            dm.resource_num AS resourceNum
         FROM
             data_model dm,
             data_project dp
@@ -38,7 +31,6 @@
             dm.model_id,
             dm.model_name,
             dm.resource_num,
-            dm.latest_task_status,
             dp.project_name
         ORDER BY dm.model_id desc
         LIMIT #{offset},#{pageSize}
@@ -60,7 +52,6 @@
         and dm.is_del = 0
         <if test="projectName!=null">and dp.project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
-        <if test="taskStatus!=null">and dm.latest_task_status = #{taskStatus}</if>
         <if test="projectId!=null">and dp.id = #{projectId}</if>
     </sql>
 
@@ -74,23 +65,6 @@
             resource_num as resourceNum,
             y_value_column as yValueColumn,
             is_draft as isDraft,
-            latest_task_id as latestTaskId,
-            latest_cost_time as latestCostTime,
-            latest_task_status as latestTaskStatus,
-            latest_alignment_ratio as latestAlignmentRatio,
-            latest_alignment_cost as latestAlignmentCost,
-            latest_analyze_ratio as latestAnalyzeRatio,
-            latest_analyze_cost as latestAnalyzeCost,
-            latest_feature_ratio as latestFeatureRatio,
-            latest_feature_cost as latestFeatureCost,
-            latest_sample_ratio as latestSampleRatio,
-            latest_sample_cost as latestSampleCost,
-            latest_train_ratio as latestTrainRatio,
-            latest_train_cost as latestTrainCost,
-            latest_lack_ratio as latestLackRatio,
-            latest_lack_cost as latestLlackCost,
-            latest_exception_ratio as latestExceptionRatio,
-            latest_exception_cost as latestExceptionCost,
             create_date as createDate
         FROM
             data_model
@@ -185,6 +159,7 @@
     <select id="queryDataModelById" resultType="com.primihub.biz.entity.data.po.DataModel">
         SELECT
             model_id as modelId,
+            model_uuid as modelUUID,
             model_name as modelName,
             model_desc as modelDesc,
             model_type as modelType,
@@ -197,23 +172,6 @@
             user_id as userId,
             organ_id as organId,
             component_json as componentJson,
-            latest_task_id as latestTaskId,
-            latest_cost_time as latestCostTime,
-            latest_task_status as latestTaskStatus,
-            latest_alignment_ratio as latestAlignmentRatio,
-            latest_alignment_cost as latestAlignmentCost,
-            latest_analyze_ratio as aslatestAnalyzeRatio ,
-            latest_analyze_cost as latestAnalyzeCost,
-            latest_feature_ratio as latestFeatureRatio,
-            latest_feature_cost as latestFeatureCost,
-            latest_sample_ratio as latestSampleRatio,
-            latest_sample_cost as latestSampleCost,
-            latest_train_ratio as latestTrainRatio,
-            latest_train_cost as latestTrainCost,
-            latest_lack_ratio as latestLackRatio,
-            latest_lack_cost as latestLackCost,
-            latest_exception_ratio as latestExceptionRatio,
-            latest_exception_cost as latestExceptionCost,
             is_del as isDel,
             create_date as createDate,
             update_date as updateDate
@@ -224,7 +182,7 @@
     </select>
     <select id="queryModelNumByProjectIds" resultType="java.util.Map">
         select
-                project_id projectId,latest_task_status latestTaskStatus,count(model_id) statusCount
+                project_id projectId,count(model_id) statusCount
         from
                 data_model
         where project_id in
@@ -232,7 +190,7 @@
                  separator="," close=")">
             #{item}
         </foreach>
-        GROUP BY project_id,latest_task_status ORDER BY project_id
+        GROUP BY project_id ORDER BY project_id
     </select>
     <select id="queryModelTaskById" resultType="com.primihub.biz.entity.data.po.DataModelTask">
         select
@@ -280,6 +238,30 @@
                 GROUP BY model_id
             ) mt,data_task dt
         where mt.task_id = dt.task_id
+    </select>
+    <select id="queryDataModelByUUID" resultType="com.primihub.biz.entity.data.po.DataModel">
+        SELECT
+            model_id as modelId,
+            model_uuid as modelUUID,
+            model_name as modelName,
+            model_desc as modelDesc,
+            model_type as modelType,
+            project_id projectId,
+            resource_num as resourceNum,
+            y_value_column as yValueColumn,
+            component_speed as componentSpeed,
+            train_type as trainType,
+            is_draft as isDraft,
+            user_id as userId,
+            organ_id as organId,
+            component_json as componentJson,
+            is_del as isDel,
+            create_date as createDate,
+            update_date as updateDate
+        FROM
+            data_model
+        WHERE
+            model_uuid = #{modelUUID}
     </select>
 
 </mapper>

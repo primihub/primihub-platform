@@ -10,15 +10,15 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
-import com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository;
-import com.primihub.biz.repository.primarydb.data.DataMpcPrRepository;
-import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
+import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.data.DataResourceSecondaryRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
@@ -44,6 +44,8 @@ import java.util.stream.Collectors;
 public class DataTaskService {
     @Autowired
     private DataTaskRepository dataTaskRepository;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
@@ -72,6 +74,8 @@ public class DataTaskService {
     private RestTemplate restTemplate;
     @Autowired
     private DataModelRepository dataModelRepository;
+    @Autowired
+    private DataModelPrRepository dataModelPrRepository;
 
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
@@ -244,8 +248,7 @@ public class DataTaskService {
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         log.info(paramStr);
         ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
-        shareProjectVo.setTimestamp(System.currentTimeMillis());
-        shareProjectVo.setNonce((int)Math.random()*100);
+        shareProjectVo.supplement();
         if (shareProjectVo.getProjectOrgans().size()==0)
             shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
         if (shareProjectVo.getProjectResources().size()==0)
@@ -286,6 +289,48 @@ public class DataTaskService {
         }
     }
 
+    public void spreadModelData(String paramStr){
+        log.info(paramStr);
+        ShareModelVo shareModelVo = JSONObject.parseObject(paramStr, ShareModelVo.class);
+        if (shareModelVo.getShareOrganId() == null && shareModelVo.getShareOrganId().isEmpty()) {
+            log.info("no shareOrganId");
+            return;
+        }
+        if (shareModelVo.getDataModel()!=null&&shareModelVo.getDataModel().getProjectId()!=null&&shareModelVo.getDataModel().getProjectId()!=0L){
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(shareModelVo.getDataModel().getProjectId(), null);
+            if (dataProject==null){
+                log.info("spread modelUUID:{},no project data",shareModelVo.getDataModel().getModelUUID());
+                return;
+            }
+            shareModelVo.init(dataProject);
+            shareModelVo.getDataModel().setProjectId(null);
+            Map<String, Map> organListMap = dataProjectService.getOrganListMap(shareModelVo.getShareOrganId(), shareModelVo.getServerAddress());
+            for (String organId : shareModelVo.getShareOrganId()) {
+                if (!organId.equals(organConfiguration.getSysLocalOrganId())&&organListMap.containsKey(organId)){
+                    Map map = organListMap.get(organId);
+                    Object gatewayAddress = map==null?null:map.get("gatewayAddress");
+                    if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
+                        log.info("OrganId:{} gatewayAddress null",organId);
+                        return;
+                    }
+                    log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
+                    shareModelVo.supplement();
+                    HttpHeaders headers = new HttpHeaders();
+                    headers.setContentType(MediaType.APPLICATION_JSON);
+                    HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareModelVo, headers);
+                    log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+                    try {
+                        BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                        log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                    }catch (Exception e){
+                        log.info("modelUUID:{} - OrganId:{} gatewayAddress api Exception:{}",shareModelVo.getDataModel().getModelUUID(),organId,e.getMessage());
+                    }
+                    log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
+                }
+            }
+        }
+    }
+
     public BaseResultEntity getModelTaskList(Long modelId,PageReq req) {
         Map<String,Object> map = new HashMap<>();
         map.put("modelId",modelId);
@@ -319,6 +364,22 @@ public class DataTaskService {
         if (dataTask==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"为查询到任务信息");
         return BaseResultEntity.success(DataTaskConvert.dataTaskPoConvertDataModelTaskList(dataTask));
+    }
+
+    public BaseResultEntity deleteTaskData(Long taskId) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无任务信息");
+        if (dataTask.getTaskState()==2)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"任务运行中无法删除");
+        if (dataTask.getTaskType()== TaskTypeEnum.MODEL.getTaskType())
+            deleteModel(taskId);
+        dataTaskPrRepository.deleteDataTask(taskId);
+        return BaseResultEntity.success();
+    }
+
+    public void deleteModel(Long taskId){
+        dataModelPrRepository.deleteDataModelTask(taskId);
     }
 }
 
