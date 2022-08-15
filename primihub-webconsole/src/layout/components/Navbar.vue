@@ -15,8 +15,8 @@
           </div>
           <i class="el-icon-arrow-down el-icon--right" />
         </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown" @click.native="showUpdatePwd">
-          <el-dropdown-item>修改密码</el-dropdown-item>
+        <el-dropdown-menu slot="dropdown" class="user-dropdown">
+          <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
           <!-- <router-link to="/setting/user">
             <el-dropdown-item>用户管理</el-dropdown-item>
           </router-link> -->
