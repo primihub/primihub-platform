@@ -189,7 +189,7 @@ export default {
         resultName: '',
         remarks: null,
         serverAddress: '',
-        psiTag: ''
+        psiTag: 0
       },
       ownResourceName: '',
       otherResourceName: '',
@@ -234,11 +234,11 @@ export default {
         {
           value: 0,
           label: 'ECDH'
-        },
-        {
-          value: 1,
-          label: 'KKRT'
         }
+        // {
+        //   value: 1,
+        //   label: 'KKRT'
+        // }
       ]
     }
   },
