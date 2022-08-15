@@ -14,7 +14,7 @@ public class WorkGrpcService extends VMNodeGrpc.VMNodeImplBase {
 
     public void submitTask(PushTaskRequest request, StreamObserver<PushTaskReply> responseObserver) {
         try {
-            Thread.sleep(10000L);
+//            Thread.sleep(10000L);
         }catch (Exception e){
 
         }

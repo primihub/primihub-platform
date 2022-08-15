@@ -16,7 +16,6 @@ export default {
   mounted() {
     const node = this.getNode()
     const { data } = node
-    console.log(data)
     this.labelText = data.componentName
   }
 

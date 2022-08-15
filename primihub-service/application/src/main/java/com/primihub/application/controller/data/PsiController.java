@@ -78,6 +78,8 @@ public class PsiController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultName");
         if (StringUtils.isBlank(req.getResultOrganIds()))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultOrganIds");
+        if (req.getPsiTag()==null)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"psiTag");
         return dataPsiService.saveDataPsi(req,userId);
     }
 

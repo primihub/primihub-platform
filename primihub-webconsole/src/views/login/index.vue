@@ -83,7 +83,7 @@ export default {
         password: ''
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
+        username: [{ required: true, trigger: 'blur', message: '请输入手机号/邮箱/用户名' }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
       loading: false,

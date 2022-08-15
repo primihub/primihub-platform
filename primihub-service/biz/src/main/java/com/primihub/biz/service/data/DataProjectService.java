@@ -180,9 +180,8 @@ public class DataProjectService {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         if (sysLocalOrganInfo.getOrganId().equals(dataProject.getCreatedOrganId()))
             dataProjectDetailsVo.setCreator(true);
-        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(organ -> dataProjectDetailsVo.getCreator() || organ.getOrganId().equals(organ.getInitiateOrganId()) || organ.getOrganId().equals(sysLocalOrganInfo.getOrganId())).collect(Collectors.toList());
         List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-//        List<String> organIds = dataProjectOrgans.stream().filter(organ -> !dataProjectDetailsVo.getCreator()&&(organ.getOrganId().equals(organ.getInitiateOrganId())||organ.equals(sysLocalOrganInfo.getOrganId()))).map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
         Map<String, List<DataProjectResource>> organResourceMap = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getOrganId));
         List<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toList());
@@ -437,7 +436,7 @@ public class DataProjectService {
         Map<String, Map> organListMap = getOrganListMap(organIds, dataProject.getServerAddress());
         Map<String, ModelProjectResourceVo> resourceVoMap = new HashMap<>();
         if (modelId!=null&&modelId!=0L){
-            DataModelAndComponentReq modelComponentReq = dataModelService.getModelComponentReq(modelId, null);
+            DataModelAndComponentReq modelComponentReq = dataModelService.getModelComponentReq(modelId, null,null);
             if (modelComponentReq!=null&&modelComponentReq.getModelComponents()!=null&&modelComponentReq.getModelComponents().size()!=0){
                 Map<String, String> componentValMap = dataModelService.getDataAlignmentComponentVals(modelComponentReq.getModelComponents());
                 String selectData = componentValMap.get("selectData");

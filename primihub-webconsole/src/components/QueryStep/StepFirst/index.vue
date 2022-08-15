@@ -27,7 +27,7 @@
         top="10px"
         width="800px"
         :selected-data="selectResources"
-        title="添加资源"
+        title="选择资源"
         :server-address="serverAddress"
         :organ-id="organId"
         :visible="dialogVisible"

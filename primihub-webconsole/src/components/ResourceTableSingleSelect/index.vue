@@ -86,6 +86,7 @@ export default {
   methods: {
     handleRadioChange(row) {
       this.currentRow = row
+      this.setCurrent(row.resourceId)
       this.$emit('change', this.currentRow)
     },
     setCurrent(resourceId) {

@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.data.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -11,6 +12,7 @@ public class DataModelTask {
     /**
      * 自增id
      */
+    @JsonIgnore
     private Long id;
     /**
      * 任务id
@@ -23,6 +25,7 @@ public class DataModelTask {
     /**
      * 预测文件路径
      */
+    @JsonIgnore
     private String predictFile;
     /**
      * 预测文件内容

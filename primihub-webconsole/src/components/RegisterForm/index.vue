@@ -56,8 +56,8 @@
           <el-input
             ref="userName"
             v-model="formData.userName"
-            placeholder="请输入用户名"
-            name="userName"
+            placeholder="请输入昵称"
+            name="nickName"
             type="text"
             tabindex="1"
           />
@@ -189,7 +189,7 @@ export default {
       formRules: {
         userAccount: [{ required: true, trigger: 'blur', validator: validateUserAccount }],
         verificationCode: [{ required: true, message: '请输入验证码' }],
-        userName: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
+        userName: [{ required: true, trigger: 'blur', message: '请输入昵称' }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         passwordAgain: [{ required: true, trigger: 'blur', validator: validatePasswordAgain }]
       },

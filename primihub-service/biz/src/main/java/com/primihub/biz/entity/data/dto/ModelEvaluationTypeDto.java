@@ -6,11 +6,11 @@ import java.math.BigDecimal;
 
 @Data
 public class ModelEvaluationTypeDto {
-    private BigDecimal meanSquaredError;
-    private BigDecimal explainedVariance;
-    private BigDecimal meanAbsoluteError;
-    private BigDecimal meanSquaredLogError;
-    private BigDecimal medianAbsoluteError;
-    private BigDecimal r2Score;
-    private BigDecimal rootMeanSquaredError;
+    private String meanSquaredError;
+    private String explainedVariance;
+    private String meanAbsoluteError;
+    private String meanSquaredLogError;
+    private String medianAbsoluteError;
+    private String r2Score;
+    private String rootMeanSquaredError;
 }

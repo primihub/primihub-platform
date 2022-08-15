@@ -65,9 +65,10 @@ public class DataPsi {
     private Integer outputNoRepeat;
 
     /**
-     * 是否对"可统计"的附加列做全表统计 默认0 是 1不是
+     * 0、ECDH
+     * 1、KKRT
      */
-    private Integer columnCompleteStatistics;
+    private Integer tag;
 
     /**
      * 结果名称

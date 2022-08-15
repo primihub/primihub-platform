@@ -32,4 +32,9 @@ public class ShareProjectVo {
     private List<DataProjectResource> projectResources = new ArrayList<>();
     private Long timestamp;
     private Integer nonce;
+
+    public void supplement(){
+        this.timestamp = System.currentTimeMillis();
+        this.nonce = (int)Math.random()*100;
+    }
 }

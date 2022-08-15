@@ -77,6 +77,7 @@ export function findMyGroupOrgan(params) {
   return request({
     url: '/sys/fusion/findMyGroupOrgan',
     method: 'get',
+    showLoading: false,
     params
   })
 }

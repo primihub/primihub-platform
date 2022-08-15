@@ -1,10 +1,6 @@
 <template>
   <div class="container">
-    <div
-      v-loading="taskLoading"
-      class="steps"
-      element-loading-text="任务创建中"
-    >
+    <div class="steps">
       <div class="step">
         <div class="step-icon">
           <div class="step-circle">1</div>
@@ -108,12 +104,24 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <el-form-item label="关联键有重复值时" prop="outputNoRepeat">
-              <el-radio-group v-model="formData.outputNoRepeat">
-                <el-radio :label="0">输出内容不去重</el-radio>
-                <!-- <el-radio :label="1">输出内容去重</el-radio> -->
-              </el-radio-group>
-            </el-form-item>
+            <el-row>
+              <el-col :span="9">
+                <el-form-item label="实现协议" prop="psiTag">
+                  <el-select v-model="formData.psiTag" placeholder="请选择实现协议">
+                    <el-option v-for="item in psiTagOptions" :key="item.value" :label="item.label" :value="item.value" />
+                  </el-select>
+                </el-form-item>
+              </el-col>
+              <el-col :span="8">
+                <el-form-item label="关联键有重复值时" prop="outputNoRepeat">
+                  <el-radio-group v-model="formData.outputNoRepeat">
+                    <el-radio :label="0">输出内容不去重</el-radio>
+                    <!-- <el-radio :label="1">输出内容去重</el-radio> -->
+                  </el-radio-group>
+                </el-form-item>
+              </el-col>
+            </el-row>
+
             <!-- <el-form-item label="结果获取方" prop="resultOrgan">
               <el-checkbox-group v-model="formData.resultOrgan">
                 <el-checkbox v-for="(item,index) in resultOrgan" :key="index" :label="item.organId">{{ item.organName }}</el-checkbox>
@@ -137,21 +145,12 @@
         <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
       </div>
     </div>
-    <el-dialog
-      :visible.sync="dialogVisible"
-      :append-to-body="true"
-      top="5vh"
-      width="50%"
-    >
-      <PSI-task-detail :data="taskData" />
-    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getPsiResourceAllocationList, getPsiTaskList, saveDataPsi, getPsiTaskDetails } from '@/api/PSI'
+import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
 import OrganCascader from '@/components/OrganCascader'
-import PSITaskDetail from '@/components/PSITaskDetail'
 
 const intersection = require('@/assets/intersection.svg')
 const diffsection = require('@/assets/diffsection.svg')
@@ -159,29 +158,21 @@ const diffsection = require('@/assets/diffsection.svg')
 export default {
   name: 'PSITask',
   components: {
-    OrganCascader,
-    PSITaskDetail
+    OrganCascader
   },
   data() {
     return {
-      dialogVisible: false,
       selectLoading: false,
       ownOrganResourceField: [],
       otherOrganResourceField: [],
-      taskLoading: false,
       pageSize: 100,
-      totalPage: 0,
       total: 0,
       pageNo: 1,
       isRun: false, // task running state
-      dataPsiTask: [], // task running result
-      allDataPsiTask: [], // all task running result
       isReset: false,
-      resultLoading: false,
       taskId: 0,
       tableDataA: [],
       tableDataB: [],
-      taskData: {}, // task detail
       formData: {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
@@ -197,7 +188,8 @@ export default {
         outputNoRepeat: 0, // 输出内容是否去重
         resultName: '',
         remarks: null,
-        serverAddress: ''
+        serverAddress: '',
+        psiTag: 0
       },
       ownResourceName: '',
       otherResourceName: '',
@@ -232,9 +224,22 @@ export default {
         ],
         resultOrgan: [
           { required: true, message: '请选择结果获取方' }
+        ],
+        psiTag: [
+          { required: true, message: '请选择实现协议' }
         ]
       },
-      timer: null
+      timer: null,
+      psiTagOptions: [
+        {
+          value: 0,
+          label: 'ECDH'
+        }
+        // {
+        //   value: 1,
+        //   label: 'KKRT'
+        // }
+      ]
     }
   },
   computed: {
@@ -282,56 +287,35 @@ export default {
     })
   },
   methods: {
-    handlePagination(data) {
-      this.pageNo = data.page
-      this.getPsiTaskList()
-    },
-    getPsiTaskList() {
-      this.taskLoading = true
-      getPsiTaskList({
-        pageNo: this.pageNo,
-        pageSize: this.pageSize
-      }).then(res => {
-        const { data, totalPage, total } = res.result
-        this.allDataPsiTask = data
-        this.totalPage = totalPage
-        this.total = total
-        this.taskLoading = false
-      })
-    },
     handleSubmit() {
       const enable = this.checkParams()
       if (!enable) return
-      console.log('enable', enable)
       // max size is 200
       this.formData.resultName = this.formData.resultName.length > 200 ? this.formData.resultName.substring(0, 200) : this.formData.resultName
-      console.log('this.formData.resultName', this.formData.resultName)
       this.$refs.form.validate(async valid => {
         if (valid) {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
-          this.$notify({
-            message: '任务开始',
-            type: 'info',
-            duration: '1000'
-          })
           this.isRun = true
           const res = await saveDataPsi(this.formData)
           if (res.code === 0) {
-            const { dataPsiTask } = res.result
-            this.dataPsiTask = [dataPsiTask]
-            console.log(this.dataPsiTask)
-            this.taskId = this.dataPsiTask[0].taskId
-            this.taskLoading = true
-            this.timer = window.setInterval(() => {
-              setTimeout(this.getPsiTaskDetails(), 0)
-            }, 1500)
+            this.$message({
+              message: '创建完成',
+              type: 'success'
+            })
+            this.toResultPage()
           } else {
             this.isRun = false
           }
         } else {
           console.log('error submit!!')
+          this.isRun = false
           return false
         }
+      })
+    },
+    toResultPage() {
+      this.$router.push({
+        name: 'PSIResult'
       })
     },
     checkParams() {
@@ -363,43 +347,6 @@ export default {
 
       return enable
     },
-    getPsiTaskDetails() {
-      getPsiTaskDetails({ taskId: this.taskId }).then(res => {
-        const { taskState } = res.result
-        this.taskData = res.result
-        switch (taskState) {
-          case 1:
-            this.$notify({
-              message: '创建成功',
-              type: 'success',
-              duration: 1000
-            })
-            clearInterval(this.timer)
-            this.dialogVisible = true
-            this.taskLoading = false
-            this.isRun = false
-            break
-          case 3:
-            this.$notify({
-              message: '创建失败',
-              type: 'warning',
-              duration: 1000
-            })
-            clearInterval(this.timer)
-            this.taskLoading = false
-            this.isRun = false
-            break
-          default:
-            break
-        }
-        console.log(this.dataPsiTask)
-        this.dataPsiTask[0].taskState = taskState
-      })
-    },
-    handleSingleResultDelete() {
-      this.dataPsiTask = []
-      this.dialogVisible = false
-    },
     handleOwnKeywordChange(index) {
       this.formData.ownKeyword = this.ownOrganResourceField[index].name
     },
@@ -407,14 +354,12 @@ export default {
       this.formData.otherKeyword = this.otherOrganResourceField[index].name
     },
     handleOwnResourceChange(resourceId) {
-      console.log(resourceId)
       this.ownOrganResourceField = []
       this.formData.ownResourceId = resourceId
       this.formData.ownKeyword = ''
       const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
       this.ownResourceName = currentResource.resourceName
       // this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${resourceName}` : resourceName
-      console.log('resultName', this.formData.resultName)
       currentResource.keywordList.forEach((item, index) => {
         this.ownOrganResourceField.push({
           value: index,
@@ -428,11 +373,6 @@ export default {
       this.formData.otherKeyword = ''
       const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
       this.otherResourceName = currentResource.resourceName
-      // const resourceName = currentResource.resourceName
-      // if (this.formData.resourceId !== resourceId) {
-      //   resourceName = ''
-      // }
-      // this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${resourceName}` : resourceName
       currentResource.keywordList.forEach((item, index) => {
         this.otherOrganResourceField.push({
           value: index,
@@ -467,8 +407,6 @@ export default {
   margin-bottom: 15px;
 }
 .container{
-//  min-width: 1200px;
-//  max-width: 1500px;
 width: 1200px;
  overflow: hidden;
  &::before{
@@ -553,11 +491,6 @@ width: 1200px;
   width: 781px;
   margin: 0 auto;
   .item{
-    // display: flex;
-    // justify-content: flex-end;
-    // float: right;
-    // width: 255px;
-    // margin-right: 50px;
     &:last-child{
       margin-right: 12px;
     }

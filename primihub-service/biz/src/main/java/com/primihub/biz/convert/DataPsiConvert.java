@@ -41,7 +41,7 @@ public class DataPsiConvert {
         dataPsi.setOtherKeyword(req.getOtherKeyword());
         dataPsi.setOutputFilePathType(req.getOutputFilePathType()==null?0:req.getOutputFilePathType());
         dataPsi.setOutputNoRepeat(req.getOutputNoRepeat()==null?0:req.getOutputNoRepeat());
-        dataPsi.setColumnCompleteStatistics(req.getColumnCompleteStatistics()==null?0:req.getColumnCompleteStatistics());
+        dataPsi.setTag(req.getPsiTag());
         dataPsi.setResultName(req.getResultName());
         dataPsi.setOutputContent(req.getOutputContent()==null?0:req.getOutputContent());
         dataPsi.setOutputFormat(StringUtils.isBlank(req.getOutputFormat())?"csv":req.getOutputFormat());
@@ -92,7 +92,7 @@ public class DataPsiConvert {
         dataPsiVo.setOtherKeyword(dataPsi.getOtherKeyword());
         dataPsiVo.setOutputFilePathType(dataPsi.getOutputFilePathType());
         dataPsiVo.setOutputNoRepeat(dataPsi.getOutputNoRepeat());
-        dataPsiVo.setColumnCompleteStatistics(dataPsi.getColumnCompleteStatistics());
+        dataPsiVo.setTag(dataPsi.getTag());
         dataPsiVo.setResultName(dataPsi.getResultName());
         dataPsiVo.setOutputContent(dataPsi.getOutputContent());
         dataPsiVo.setOutputFormat(dataPsi.getOutputFormat());

@@ -65,7 +65,6 @@
               <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
               <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
               <ResourceTable
-                v-if="item.auditStatus === 1 && (item.resources && item.resources.length >0 || resourceList[selectedOrganId].length>0)"
                 :project-audit-status="projectAuditStatus"
                 :this-institution="thisInstitution"
                 :creator="creator"
@@ -84,13 +83,13 @@
         <section class="organs">
           <h3>模型列表</h3>
           <el-button v-if="creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
-          <Model />
+          <Model :is-creator="creator" />
         </section>
       </el-col>
     </el-row>
 
     <!-- add resource dialog -->
-    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
     <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
     <!-- preview dialog -->
@@ -191,15 +190,6 @@ export default {
     },
     showAuditForm() {
       return this.organs.filter(item => item.organId === this.selectedOrganId)[0].auditStatus === 0
-    },
-    getTableButtons(item) {
-      if (item.participationIdentity === 1) { // The initiator
-        return ['preview', 'remove']
-      } else if (item.auditStatus === 1) {
-        return ['preview', 'remove']
-      } else {
-        return ['remove']
-      }
     },
     handleSubmit() {
       this.$confirm('同意加入发起方的此次项目合作', '提示', {
