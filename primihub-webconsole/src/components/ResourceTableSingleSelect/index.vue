@@ -7,11 +7,10 @@
       :data="data"
       v-bind="$attrs"
       highlight-current-row
-      @selection-change="handleCurrentChange"
     >
       <el-table-column label="选择" width="55">
         <template slot-scope="{row}">
-          <el-radio v-model="radioSelect" :label="row" :disabled="row.auditStatus !== 1" @change="handleRadioChange"><i /></el-radio>
+          <el-radio v-model="radioSelect" :label="row.resourceId" :disabled="row.auditStatus !== 1" @change="handleRadioChange(row)"><i /></el-radio>
         </template>
       </el-table-column>
       <el-table-column
@@ -66,10 +65,9 @@ export default {
       default: () => []
     },
     selectedData: {
-      type: Array,
-      default: () => []
+      type: String,
+      default: ''
     }
-
   },
   data() {
     return {
@@ -77,22 +75,22 @@ export default {
       radioSelect: null
     }
   },
+  watch: {
+    selectedData(newVal) {
+      this.setCurrent(newVal)
+    }
+  },
   mounted() {
     this.setCurrent(this.selectedData)
   },
   methods: {
-    handleRadioChange(val) {
-      this.currentRow = val
-      console.log(this.currentRow)
+    handleRadioChange(row) {
+      this.currentRow = row
+      this.setCurrent(row.resourceId)
       this.$emit('change', this.currentRow)
     },
-    setCurrent(row) {
-      this.$refs.table.setCurrentRow(row)
-    },
-    handleCurrentChange(val) {
-      console.log('handleCurrentChange', val)
-      this.currentRow = val
-      this.$emit('change', this.currentRow)
+    setCurrent(resourceId) {
+      this.radioSelect = resourceId || ''
     }
   }
 

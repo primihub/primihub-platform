@@ -9,6 +9,9 @@
     highlight-current-row
     @selection-change="handleSelectionChange"
   >
+    <template slot="empty">
+      <p>{{ emptyText }}</p>
+    </template>
     <el-table-column
       v-if="multiple"
       :reserve-selection="true"
@@ -26,32 +29,6 @@
         {{ row.resourceId }}
       </template>
     </el-table-column>
-    <!-- <el-table-column
-        prop="resourceTag"
-        label="关键词"
-      >
-        <template slot-scope="{row}">
-          <el-tag v-for="(tag,index) in row.resourceTag" :key="index" type="success" size="mini" class="tag">{{ tag }}</el-tag>
-        </template>
-      </el-table-column> -->
-    <!-- <el-table-column
-      prop="resourceAuthType"
-      label="可见性"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.resourceAuthType | authTypeFilter }}
-      </template>
-    </el-table-column> -->
-    <!-- <el-table-column
-      prop="resourceType"
-      label="资源类型"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.resourceType | sourceFilter }}
-      </template>
-    </el-table-column> -->
     <el-table-column
       label="资源信息"
       min-width="120"
@@ -94,7 +71,7 @@
           <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
         </template>
         <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-        <el-button v-if="creator" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+        <el-button v-if="thisInstitution || creator" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -151,6 +128,7 @@ export default {
   },
   data() {
     return {
+      emptyText: '暂无资源'
     }
   },
   watch: {

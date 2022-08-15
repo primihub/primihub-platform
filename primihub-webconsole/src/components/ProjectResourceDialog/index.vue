@@ -4,7 +4,7 @@
     :before-close="closeDialog"
     v-bind="$attrs"
   >
-    <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
+    <search-input class="input-with-search" :search-name="resourceName" @click="searchResource" @change="handleSearchNameChange" />
     <ResourceTable v-loading="listLoading" :server-address="serverAddress" :show-buttons="false" :show-status="false" :multiple="true" :organ-id="organId" :selected-data="selectedData" row-key="resourceId" :data="resourceList" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
@@ -64,6 +64,7 @@ export default {
   watch: {
     visible: async function(val) {
       if (val) {
+        this.pageNo = 1
         await this.fetchData()
       }
     }
@@ -102,11 +103,13 @@ export default {
     handleChange(data) {
       this.selectedResources = data
     },
-    searchResource() {
+    searchResource(name) {
+      this.resourceName = name
       this.pageNo = 1
       this.fetchData()
     },
     handleSearchNameChange(searchName) {
+      console.log(searchName)
       this.resourceName = searchName
     },
     handlePagination(data) {

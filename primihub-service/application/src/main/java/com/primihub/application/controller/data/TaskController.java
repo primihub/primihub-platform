@@ -28,6 +28,13 @@ public class TaskController {
     @Autowired
     private DataTaskService dataTaskService;
 
+    @RequestMapping("deleteTask")
+    public BaseResultEntity deleteTask(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return dataTaskService.deleteTaskData(taskId);
+    }
+
     @RequestMapping("getTaskData")
     public BaseResultEntity getTaskData(Long taskId){
         if (taskId==null||taskId==0L)
@@ -55,12 +62,14 @@ public class TaskController {
         String taskResultContent = dataTask.getTaskResultContent();
         if (StringUtils.isNotBlank(taskResultContent)){
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
-            File file = new File(modelOutputPathDto.getModelRunZipFilePath());
+            boolean isCooperation = dataTask.getIsCooperation() == 1;
+            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelRunZipFilePath());
             if (file.exists()){
                 // 获得文件输入流
                 FileInputStream inputStream = new FileInputStream(file);
                 // 设置响应头、以附件形式打开文件
-                response.setContentType("application/zip");
+                if (!isCooperation)
+                    response.setContentType("application/zip");
                 response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
                 ServletOutputStream outputStream = response.getOutputStream();
                 int len = 0;
@@ -104,7 +113,7 @@ public class TaskController {
             outputStream.close();
             outputStream.flush();
         }catch (Exception e) {
-            log.info("downloadPsiTask -- fileName:{} -- fileContent -- e:{}",fileName,content,e.getMessage());
+            log.info("downloadPsiTask -- fileName:{} -- fileContent:{} -- e:{}",fileName,content,e.getMessage());
             downloadTaskError(response,"文件读取失败");
         }
     }

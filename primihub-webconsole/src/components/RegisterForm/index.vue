@@ -56,8 +56,8 @@
           <el-input
             ref="userName"
             v-model="formData.userName"
-            placeholder="请输入用户名"
-            name="userName"
+            placeholder="请输入昵称"
+            name="nickName"
             type="text"
             tabindex="1"
           />
@@ -114,7 +114,7 @@ import { sendVerificationCode, register, forgetPassword } from '@/api/user'
 
 const emailPattern = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
 const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
-const pwdPattern = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,}$/
+const pwdPattern = /(?=.*[a-z_])(?=.*\d)(?=.*[^a-z0-9_])[\S]{8,}/i
 
 export default {
   name: 'FormData',
@@ -149,8 +149,10 @@ export default {
     const validatePassword = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
-      } else if (!pwdPattern.test(value)) {
-        callback(new Error('密码至必须8位并且同时包含至少一个字母、一个数字和一个特殊字符'))
+      } else if (value.length < 6 || value.length > 20) {
+        callback(new Error('密码长度在8-20个字符以内'))
+      } else if (!pwdPattern.test(value)) { // 特殊字符:非字母数字且非下划线的字符
+        callback(new Error('密码至少8位且同时包含至少一个字母、一个数字和一个特殊字符'))
       } else {
         callback()
       }
@@ -186,8 +188,8 @@ export default {
       },
       formRules: {
         userAccount: [{ required: true, trigger: 'blur', validator: validateUserAccount }],
-        verificationCode: [{ required: true, trigger: 'blur', message: '请输入验证码' }],
-        userName: [{ required: true, trigger: 'blur', message: '请输入用户名' }],
+        verificationCode: [{ required: true, message: '请输入验证码' }],
+        userName: [{ required: true, trigger: 'blur', message: '请输入昵称' }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }],
         passwordAgain: [{ required: true, trigger: 'blur', validator: validatePasswordAgain }]
       },
@@ -198,7 +200,9 @@ export default {
       time: 60,
       timer: null,
       sendCode: false,
-      dialogVisible: false
+      dialogVisible: false,
+      count: 10,
+      countTimer: null
     }
   },
   computed: {
@@ -218,7 +222,46 @@ export default {
       return text
     }
   },
+  destroyed() {
+    clearInterval(this.timer)
+    clearInterval(this.countTimer)
+  },
   methods: {
+    showNotice() {
+      const title = this.codeType === 1 ? '注册成功' : '修改成功'
+      const message = `<div><p>即将自动跳转至登录页（<span id="countDownNumber" style="font-weight:700;padding: 0 0.01rem">${this.count}</span>s）<p><div style="width:120px;line-height:30px;font-weight:700;background:#1989FA;color:#fff;border-radius:3px;text-align:center;cursor: pointer;margin-top:3px" id="login">立即登录</div></div>`
+      const TIME_COUNT = 10
+      if (!this.countTimer) {
+        this.count = TIME_COUNT
+        this.countTimer = setInterval(() => {
+          if (this.count > 1 && this.count <= TIME_COUNT) {
+            this.count--
+            const dom = document.querySelector('#countDownNumber')
+            dom.innerText = this.count
+          } else {
+            clearInterval(this.countTimer)
+            this.countTimer = null
+          }
+        }, 1000)
+        const notify = this.$notify({
+          title,
+          dangerouslyUseHTMLString: true,
+          message,
+          type: 'success',
+          duration: 10000
+        })
+        setTimeout(() => {
+          this.toLogin()
+          notify.close()
+          clearInterval(this.countTimer)
+        }, 10000)
+        document.querySelector('#login').onclick = () => {
+          notify.close()
+          this.toLogin()
+          clearInterval(this.countTimer)
+        }
+      }
+    },
     handleUserAccountChange(value) {
       this.formData.registerType = value
       this.formData.userAccount = ''
@@ -269,13 +312,7 @@ export default {
             forgetPassword(params).then(res => {
               if (res.code === 0) {
                 this.loading = false
-                this.$notify({
-                  title: '密码修改成功',
-                  dangerouslyUseHTMLString: true,
-                  message: this.$createElement('el-button', { class: 'login-button', on: { click: this.toLogin }, type: 'primary' }, '登录'),
-                  type: 'success',
-                  duration: 0
-                })
+                this.showNotice()
               } else {
                 this.loading = false
                 return
@@ -292,13 +329,15 @@ export default {
               console.log(res)
               if (res.code === 0) {
                 this.loading = false
-                this.$notify({
-                  title: '注册成功',
-                  dangerouslyUseHTMLString: true,
-                  message: this.$createElement('el-button', { class: 'login-button', on: { click: this.toLogin }, type: 'primary' }, '立即体验'),
-                  type: 'success',
-                  duration: 0
+                this.showNotice()
+              } else if (res.code === 106) {
+                const message = this.formData.registerType === 2 ? '邮箱已存在，请勿重复注册' : '手机号已存在，请勿重复注册'
+                this.$message({
+                  message,
+                  type: 'error'
                 })
+                this.loading = false
+                return
               } else {
                 this.loading = false
                 return
@@ -370,7 +409,17 @@ export default {
   }
 }
 </script>
+<style lang="scss">
+::v-deep .el-notification__content p.login-button{
+  background-color: #1989FA;
+  color: #fff;
+  height: 30px;
+  line-height: 1;
+  padding: 5px 10px;
+  margin-top: 3px;
 
+}
+</style>
 <style lang="scss" scoped>
 ::v-deep .user-account .el-form-item__error{
   left: 25%;
@@ -476,13 +525,5 @@ export default {
   color: #889aa4;
   cursor: pointer;
   user-select: none;
-}
-.login-button{
-  background-color: #1989FA;
-  color: #fff;
-  height: 30px;
-  line-height: 1;
-  padding: 5px 10px;
-  margin-top: 3px;
 }
 </style>

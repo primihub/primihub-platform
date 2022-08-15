@@ -3,8 +3,8 @@
     :before-close="closeDialog"
     v-bind="$attrs"
   >
-    <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" />
-    <ResourceTableSingleSelect :data="tableData" @change="handleChange" />
+    <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
+    <ResourceTableSingleSelect :data="tableData" :selected-data="selectedData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
@@ -18,18 +18,22 @@
 <script>
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
-import SearchInput from '@/components/SearchInput'
+// import SearchInput from '@/components/SearchInput'
 export default {
   name: 'ResourceDialog',
   components: {
     ResourceTableSingleSelect,
-    Pagination,
-    SearchInput
+    Pagination
+    // SearchInput
   },
   props: {
     tableData: {
       type: Array,
       default: () => []
+    },
+    selectedData: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -39,33 +43,30 @@ export default {
       currentPage: 1,
       pageNo: 1,
       pageSize: 5,
-      selectedResources: [],
+      selectedResource: {},
       pageCount: 0,
       resourceName: '',
-      listLoading: false
-    }
-  },
-  watch: {
-    visible: async function(val) {
-      if (val) {
-        await this.fetchData()
-      }
+      listLoading: false,
+      selectedResourceId: ''
     }
   },
   methods: {
     handleChange(data) {
-      this.selectedResources = data
+      this.selectedResource = data
     },
     searchResource() {
       this.pageNo = 1
-      this.fetchData()
+      this.$emit('request')
+      // this.fetchData()
     },
     handleSearchNameChange(searchName) {
       this.resourceName = searchName
+      this.pageNo = 1
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.fetchData()
+      // this.fetchData()
+      this.$emit('request')
     },
     closeDialog() {
       this.resourceName = ''
@@ -73,10 +74,7 @@ export default {
     },
     handleSubmit() {
       this.resourceName = ''
-      this.$emit('submit', this.selectedResources)
-    },
-    handleSearch() {
-
+      this.$emit('submit', this.selectedResource)
     }
   }
 }

@@ -2,6 +2,7 @@ package com.primihub.biz.repository.primarydb.data;
 
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.po.*;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -25,13 +26,15 @@ public interface DataModelPrRepository {
 
     void saveDataModelComponent(DataModelComponent dataModelComponent);
 
-    void deleteModelByModelId(Long modelId);
+    void deleteModelByModelId(@Param("modelId") Long modelId,@Param("isDraft") Integer isDraft);
 
     void deleteDataComponent(Long modelId);
 
     void deleteDataModelComponent(Long modelId);
 
     void deleteDataModelResource(Long modelId);
+
+    void deleteDataModelTask(Long taskId);
 
     void updateDataComponent(DataComponent dataComponent);
 }

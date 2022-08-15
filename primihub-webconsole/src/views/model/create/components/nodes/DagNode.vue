@@ -2,7 +2,9 @@
   <div class="dag-container">
     <div :class="['node', status]">
       <img :src="image.logo">
-      <span v-if="isMandatory === 0" class="require"> * </span>
+      <span class="require">
+        <i v-if="isMandatory === 0"> * </i>
+      </span>
       <span class="label">{{ label }}</span>
       <span class="status">
         <img v-show="status === 'success'" :src="image.success">
@@ -42,17 +44,16 @@ export default {
   mounted() {
     const node = this.getNode()
     const { data } = node
-    const { label = '', complete = '', isMandatory, componentState = 0 } = data
-    this.label = label
+    const { componentName = '', complete = '', isMandatory, componentState = 0 } = data
+    this.label = componentName
     this.complete = complete
     this.isMandatory = isMandatory
     this.componentState = componentState
     // console.log('node', node)
     // 监听数据改变事件
     node.on('change:data', ({ current }) => {
-      console.log('current', current)
-      const { label, complete = false, isMandatory, componentState = 0 } = current
-      this.label = label
+      const { componentName, complete = false, isMandatory, componentState = 0 } = current
+      this.label = componentName
       this.complete = complete
       this.isMandatory = isMandatory
       this.componentState = componentState
@@ -76,6 +77,14 @@ export default {
   border-left: 4px solid #5F95FF;
   border-radius: 4px;
   box-shadow: 0 2px 5px 1px rgba(0, 0, 0, 0.06);
+  justify-content: flex-start;
+}
+.node-text{
+  width: 95px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .node img {
   width: 20px;
@@ -84,9 +93,9 @@ export default {
   margin-left: 8px;
 }
 .node .label {
-  width: 95px;
-  color: #666;
-  font-size: 12px;
+  width: 90px;
+  font-size: 14px;
+  text-align: center;
 }
 .node .status {
   flex-shrink: 0;
@@ -128,6 +137,7 @@ export default {
   color: red;
   margin-left: 10px;
   font-size: 20px;
+  line-height: 1;
 }
 @keyframes spin {
   from {

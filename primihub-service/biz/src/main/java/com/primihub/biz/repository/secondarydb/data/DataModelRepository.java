@@ -24,6 +24,8 @@ public interface DataModelRepository {
 
     DataModel  queryDataModelById(Long modelId);
 
+    DataModel  queryDataModelByUUID(String modelUUID);
+
     List<ModelResourceVo> queryModelResource(@Param("modelId") Long modelId,@Param("taskId") Long taskId);
 
     List<ModelQuotaVo> queryModelQuotaVoList(Long modelId);
@@ -33,9 +35,9 @@ public interface DataModelRepository {
 
     Integer queryModelListCount(Map<String,Object> paramMap);
 
-    List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode);
+    List<DataComponent> queryModelComponentByParams(@Param("modelId")Long modelId,@Param("componentCode") String componentCode,@Param("taskId") Long taskId);
 
-    ModelComponentJson queryModelComponenJsonByUserId(@Param("userId")Long userId, @Param("isDraft") Integer isDraft, @Param("modelId")Long modelId);
+    ModelComponentJson queryModelComponenJsonByUserId(@Param("userId")Long userId, @Param("isDraft") Integer isDraft, @Param("modelId")Long modelId, @Param("projectId")Long projectId);
 
     DataModelTask queryModelTaskById(@Param("taskId") Long taskId);
 
@@ -44,5 +46,8 @@ public interface DataModelRepository {
     Integer queryModelTaskByModelIdCount(@Param("modelId") Long modelId);
 
     List<Map<String, Object>> queryModelNumByProjectIds(@Param("projectIds")Set<Long> projectIds);
+
+    @MapKey("modelId")
+    Map<Long, Map<String,Object>> queryModelLatestTask(@Param("modelIds")Set<Long> modelIds);
 
 }

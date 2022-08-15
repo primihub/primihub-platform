@@ -7,7 +7,10 @@
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
-        <el-descriptions-item label="是否包含Y值"><el-tag type="mini" size="mini">{{ model.yValueColumn }}</el-tag></el-descriptions-item>
+        <el-descriptions-item label="是否包含Y值">{{ model.yValueColumn? '是':"否" }}</el-descriptions-item>
+        <template v-if="model.yValueColumn">
+          <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yValueColumn }}</el-tag></el-descriptions-item>
+        </template>
         <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
         <el-descriptions-item v-if="hasModelDownloadPermission && taskState === 1" label="下载结果">
           <el-button class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>

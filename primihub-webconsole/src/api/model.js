@@ -108,6 +108,7 @@ export function getModelTaskList(params) {
   return request({
     url: '/data/task/getModelTaskList',
     method: 'get',
+    showLoading: false,
     params
   })
 }

@@ -5,7 +5,7 @@
       <el-descriptions title="资源信息" :column="2" label-class-name="detail-title">
         <el-descriptions-item label="资源名称">{{ resource.resourceName }}</el-descriptions-item>
         <el-descriptions-item label="资源描述">{{ resource.resourceDesc }}</el-descriptions-item>
-        <el-descriptions-item label="标签">
+        <el-descriptions-item label="关键词">
           <el-tag v-for="tag in resource.tags" :key="tag.tagId" type="primary" size="mini">{{ tag.tagName }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="授权方式">
@@ -17,10 +17,10 @@
       <el-descriptions title="数据信息" :column="2" label-class-name="detail-title">
         <el-descriptions-item label="数据来源">{{ resource.resourceSource | sourceFilter }}</el-descriptions-item>
         <el-descriptions-item label="数据大小">{{ resource.fileSize | fileSizeFilter }}</el-descriptions-item>
-        <el-descriptions-item label="特征量">{{ resource.fileRows }}</el-descriptions-item>
-        <el-descriptions-item label="样本量">{{ resource.fileColumns }}</el-descriptions-item>
-        <el-descriptions-item label="正例样本数量">{{ resource.fileYRows }}</el-descriptions-item>
-        <el-descriptions-item label="正例样本比例">{{ resource.fileYRatio }}%</el-descriptions-item>
+        <el-descriptions-item label="特征量">{{ resource.fileColumns }}</el-descriptions-item>
+        <el-descriptions-item label="样本量">{{ resource.fileRows }}</el-descriptions-item>
+        <el-descriptions-item label="正例样本数量">{{ resource.fileYRows ? resource.fileYRows : '0' }}</el-descriptions-item>
+        <el-descriptions-item label="正例样本比例">{{ resource.fileYRatio ? resource.fileYRatio : '0' }}%</el-descriptions-item>
       </el-descriptions>
     </div>
     <div class="detail">
@@ -129,7 +129,9 @@ export default {
 ::v-deep .el-descriptions__body{
   color: rgba(0,0,0,.85);
 }
-
+::v-deep .el-table,::v-deep .el-divider__text, .el-link{
+  font-size: 12px;
+}
 .justify-content-center{
   justify-content: center;
 }

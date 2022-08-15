@@ -22,8 +22,8 @@
     </div>
     <div class="main">
       <div><span>是否包含Y值：</span><span>{{ resource.resourceContainsY ? '是' : '否' }}</span></div>
-      <div><span>特征量：</span><span>{{ resource.resourceColumnCount || 0 }}</span></div>
-      <div><span>样本量：</span><span>{{ resource.resourceRowsCount || 0 }}</span></div>
+      <div><span>特征量：</span><span>{{ resource.resourceRowsCount || 0 }}</span></div>
+      <div><span>样本量：</span><span>{{ resource.resourceColumnCount || 0 }}</span></div>
       <div><span>正例样本数量：</span><span>{{ resource.resourceYRowsCount || 0 }}</span></div>
       <div><span>正例样本比例：</span><span>{{ resource.resourceYRatio || 0 }}%</span></div>
       <div><span>创建时间：</span><span>{{ resource.createDate }}</span></div>

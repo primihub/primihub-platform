@@ -10,4 +10,6 @@ public interface DataTaskPrRepository {
 
     void updateDataTask(DataTask dataTask);
 
+    void deleteDataTask(Long taskId);
+
 }

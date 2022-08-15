@@ -47,11 +47,6 @@ public class DataPsiReq {
     private Integer outputNoRepeat;
 
     /**
-     * 是否对"可统计"的附加列做全表统计 默认0 是 1不是
-     */
-    private Integer columnCompleteStatistics;
-
-    /**
      * 结果名称
      */
     private String resultName;
@@ -77,6 +72,12 @@ public class DataPsiReq {
     private String remarks;
 
     private String serverAddress;
+
+    /**
+     * 0、ECDH
+     * 1、KKRT
+     */
+    private Integer psiTag;
 
 
 }

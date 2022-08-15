@@ -4,18 +4,11 @@
     <insert id="saveDataModel" keyProperty="modelId" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModel">
         insert into data_model
             (
-                model_name,model_desc,model_type,project_id,resource_num,y_value_column,latest_task_id,
-                latest_cost_time,latest_task_status,latest_alignment_ratio,latest_alignment_cost,latest_analyze_ratio,
-                latest_analyze_cost,latest_feature_ratio,latest_feature_cost,latest_sample_ratio,latest_sample_cost,
-                latest_train_ratio,latest_train_cost,latest_lack_ratio,latest_lack_cost,latest_exception_ratio,
-                latest_exception_cost,create_date,update_date,component_speed,train_type,is_draft,user_id,organ_id,component_json
+                model_uuid,model_name,model_desc,model_type,project_id,resource_num,y_value_column,create_date,update_date,component_speed,train_type,is_draft,user_id,organ_id,component_json
             )
         values
             (
-                #{modelName},#{modelDesc},#{modelType},#{projectId},#{resourceNum},#{yValueColumn},#{latestTaskId},
-                #{latestCostTime},#{latestTaskStatus},#{latestAlignmentRatio},#{latestAlignmentCost},#{latestAnalyzeRatio},
-                #{latestAnalyzeCost},#{latestFeatureRatio},#{latestFeatureCost},#{latestSampleRatio},#{latestSampleCost},
-                #{latestTrainRatio},#{latestTrainCost},#{latestLackRatio},#{latestLackCost},#{latestExceptionRatio},#{latestExceptionCost},
+                #{modelUUID},#{modelName},#{modelDesc},#{modelType},#{projectId},#{resourceNum},#{yValueColumn},
                 now(),now(),#{componentSpeed},#{trainType},#{isDraft},#{userId},#{organId},#{componentJson}
             )
     </insert>
@@ -33,12 +26,12 @@
         values (#{quotaType},#{quotaImage},#{modelId},#{auc},#{ks},#{gini},#{precision},#{recall},#{f1Score},now(),now())
     </insert>
     <insert id="saveDataComponent" keyProperty="componentId" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataComponent">
-        insert into data_component (front_component_id,model_id,component_code,component_name,shape,width,height,coordinate_y,coordinate_x,data_json,start_time,end_time,is_del,create_date,update_date)
-        values (#{frontComponentId},#{modelId},#{componentCode},#{componentName},#{shape},#{width},#{height},#{coordinateY},#{coordinateX},#{dataJson},0,0,0,now(),now())
+        insert into data_component (front_component_id,model_id,task_id,component_code,component_name,shape,width,height,coordinate_y,coordinate_x,data_json,start_time,end_time,is_del,create_date,update_date)
+        values (#{frontComponentId},#{modelId},#{taskId},#{componentCode},#{componentName},#{shape},#{width},#{height},#{coordinateY},#{coordinateX},#{dataJson},0,0,0,now(),now())
     </insert>
     <insert id="saveDataModelComponent" keyProperty="mcId" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelComponent">
-        insert into data_model_component (model_id,input_component_id,output_component_id,point_type,point_json,is_del,create_date,update_date)
-        values (#{modelId},#{inputComponentId},#{outputComponentId},#{pointType},#{pointJson},0,now(),now())
+        insert into data_model_component (model_id,task_id,input_component_id,output_component_id,point_type,point_json,is_del,create_date,update_date)
+        values (#{modelId},#{taskId},#{inputComponentId},#{outputComponentId},#{pointType},#{pointJson},0,now(),now())
     </insert>
     <insert id="saveDataModelTask" parameterType="com.primihub.biz.entity.data.po.DataModelTask" useGeneratedKeys="true" keyProperty="id">
         insert into data_model_task (model_id,task_id,predict_file,predict_content,component_json,is_del,create_date,update_date)
@@ -53,22 +46,6 @@
             <if test="projectId!=null">project_id = #{projectId},</if>
             <if test="resourceNum!=null">resource_num = #{resourceNum},</if>
             <if test="yValueColumn!=null">y_value_column = #{yValueColumn},</if>
-            <if test="latestTaskId!=null">latest_task_id = #{latestTaskId},</if>
-            <if test="latestCostTime!=null">latest_cost_time = #{latestCostTime},</if>
-            <if test="latestTaskStatus!=null">latest_task_status = #{latestTaskStatus},</if>
-            <if test="latestAlignmentRatio!=null">latest_alignment_ratio = #{latestAlignmentRatio},</if>
-            <if test="latestAlignmentCost!=null">latest_alignment_cost = #{latestAlignmentCost},</if>
-            <if test="latestAnalyzeRatio!=null">latest_analyze_ratio = #{latestAnalyzeRatio},</if>
-            <if test="latestAnalyzeCost!=null">latest_analyze_cost = #{latestAnalyzeCost},</if>
-            <if test="latestFeatureRatio!=null">latest_feature_ratio = #{latestFeatureRatio},</if>
-            <if test="latestSampleRatio!=null">latest_sample_ratio = #{latestSampleRatio},</if>
-            <if test="latestSampleCost!=null">latest_sample_cost = #{latestSampleCost},</if>
-            <if test="latestTrainRatio!=null">latest_train_ratio = #{latestTrainRatio},</if>
-            <if test="latestTrainCost!=null">latest_train_cost = #{latestTrainCost},</if>
-            <if test="latestLackRatio!=null">latest_lack_ratio = #{latestLackRatio},</if>
-            <if test="latestLackCost!=null">latest_lack_cost = #{latestLackCost},</if>
-            <if test="latestExceptionRatio!=null">latest_exception_ratio = #{latestExceptionRatio},</if>
-            <if test="latestExceptionCost!=null">latest_exception_cost = #{latestExceptionCost},</if>
             <if test="trainType!=null">train_type = #{trainType},</if>
             <if test="isDraft!=null">is_draft = #{isDraft},</if>
             <if test="userId!=null">user_id = #{userId},</if>
@@ -109,7 +86,15 @@
         where task_id = #{taskId}
     </update>
     <delete id="deleteModelByModelId">
-        delete from data_model where model_id = #{modelId}
+        <choose>
+            <when test="isDraft==null or isDraft==0">
+                delete from data_model where model_id = #{modelId}
+            </when>
+            <otherwise>
+                update data_model set is_del = 1 where model_id = #{modelId}
+            </otherwise>
+        </choose>
+
     </delete>
     <delete id="deleteDataComponent">
         delete from data_component where model_id = #{modelId}
@@ -119,6 +104,9 @@
     </delete>
     <delete id="deleteDataModelResource">
         delete from data_mr where model_id = #{modelId}
+    </delete>
+    <delete id="deleteDataModelTask">
+        delete from data_model_task where task_id = #{taskId}
     </delete>
 
 </mapper>

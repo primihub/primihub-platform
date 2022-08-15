@@ -191,12 +191,14 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(async() => {
-        await deleteRole({ roleId: row.roleId })
-        this.$message({
-          type: 'success',
-          message: '删除成功!'
-        })
-        this.getRoles()
+        const res = await deleteRole({ roleId: row.roleId })
+        if (res.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          })
+          this.getRoles()
+        }
       }).catch((error) => {
         console.log(error)
       })
