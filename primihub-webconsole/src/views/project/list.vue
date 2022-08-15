@@ -5,7 +5,7 @@
         <el-input v-model="searchForm.projectName" />
       </el-form-item>
       <el-form-item label="中心节点">
-        <el-select v-model="searchForm.serverAddress" clearable placeholder="请选择" @change="handleServerAddressChange">
+        <el-select v-model="searchForm.serverAddress" clearable placeholder="请选择" @change="handleServerAddressChange" @clear="handleServerAddressClear">
           <el-option
             v-for="center in fusionList"
             :key="center.serverAddress"
@@ -65,7 +65,7 @@
 
     </div>
 
-    <div class="project-list">
+    <div v-loading="listLoading" class="project-list">
       <!-- <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
         <div class="icon-wrap"><i class="el-icon-document-add" /></div>
         <div class="text">添加项目</div>
@@ -194,7 +194,7 @@ export default {
       fusionList: [],
       organList: [],
       activeIndex: '0',
-      listLoading: true,
+      listLoading: false,
       // params: {
       //   pageNo: 1,
       //   pageSize: 10,
@@ -306,6 +306,10 @@ export default {
     handleServerAddressChange(value) {
       console.log(value)
     },
+    handleServerAddressClear(value) {
+      this.searchForm.organId = ''
+      console.log(value)
+    },
     handleOrganSelect() {
       this.findMyGroupOrgan()
     },
@@ -411,7 +415,7 @@ h2 {
   margin: 10px 35px 10px 0;
 }
 .el-select{
-  width: 183px!important;
+  width: 180px!important;
 }
 .search-area {
   padding: 30px 20px 20px 20px;
@@ -470,6 +474,7 @@ h2 {
 .project-list {
   margin-top: 20px;
   border-radius: $sectionBorderRadius;
+  min-height: 200px;
 }
 .add-card {
   width: 285px;
