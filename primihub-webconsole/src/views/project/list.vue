@@ -306,9 +306,10 @@ export default {
     handleServerAddressChange(value) {
       console.log(value)
     },
-    handleServerAddressClear(value) {
+    handleServerAddressClear() {
+      this.searchForm.serverAddress = ''
       this.searchForm.organId = ''
-      console.log(value)
+      this.organList = []
     },
     handleOrganSelect() {
       this.findMyGroupOrgan()
@@ -344,6 +345,7 @@ export default {
       this.searchForm.startDate = ''
       this.searchForm.endDate = ''
       this.pageNo = 1
+      this.organList = []
       this.fetchData()
     },
     fetchData() {
