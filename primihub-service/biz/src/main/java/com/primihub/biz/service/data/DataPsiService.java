@@ -93,7 +93,7 @@ public class DataPsiService {
         return dataResourceService.getDataResourceList(req,null,true);
     }
 
-    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress) {
+    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress,String resourceName) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         String localOrganId = organConfiguration.getSysLocalOrganId();
         if(StringUtils.isBlank(organId) || sysLocalOrganInfo==null || StringUtils.isBlank(sysLocalOrganInfo.getOrganId()) || sysLocalOrganInfo.getOrganId().equals(organId)){
@@ -101,6 +101,7 @@ public class DataPsiService {
             paramMap.put("organId",organId);
             paramMap.put("offset",req.getOffset());
             paramMap.put("pageSize",req.getPageSize());
+            paramMap.put("resourceName",resourceName);
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -121,6 +122,7 @@ public class DataPsiService {
             fResourceReq.setPageSize(req.getPageSize());
             fResourceReq.setServerAddress(serverAddress);
             fResourceReq.setOrganId(organId);
+            fResourceReq.setResourceName(resourceName);
             BaseResultEntity baseResult = fusionResourceService.getResourceList(fResourceReq);
             if (baseResult.getCode()!=0)
                 return baseResult;
