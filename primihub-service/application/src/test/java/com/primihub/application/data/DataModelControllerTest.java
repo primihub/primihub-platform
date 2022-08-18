@@ -28,45 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DataModelControllerTest {
     @Autowired
     private MockMvc mockMvc;
-    @Test
-    public  void testSaveModel() throws Exception {
-        // 项目添加
-        this.mockMvc.perform(post("/model/savemodel")
-                .param("projectId","1")
-                .param("modelName","模型名称")
-                .param("modelDesc","模型描述")
-                .param("modelType","1")
-                .param("yValueColumn","Y值")
-                .param("resourceId","1")
-                .header("userId","1")
-                .header("organId","1"))
-                .andExpect(status().isOk())
-                .andDo(document("savemodel",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        requestHeaders(
-                                headerWithName("userId").description("用户id (前端不用传参)"),
-                                headerWithName("organId").description("机构id (前端不用传参)")
-                        ),
-                        requestParameters(
-                                parameterWithName("projectId").description("项目id"),
-                                parameterWithName("modelName").description("模型名称"),
-                                parameterWithName("modelDesc").description("模型描述"),
-                                parameterWithName("modelType").description("模型模板：1.联邦学习ID对齐 2.V-XGBoost 3.V-逻辑回归 4.线性回归"),
-                                parameterWithName("yValueColumn").description("Y值"),
-                                parameterWithName("resourceId").description("资源id")
-                        ),
-                        responseFields(
-                                fieldWithPath("code").description("返回码"),
-                                fieldWithPath("msg").description("返回码描述"),
-                                fieldWithPath("result").description("返回码结果"),
-                                fieldWithPath("result.modelId").description("模型id"),
-                                fieldWithPath("result.modelName").description("模型名称"),
-                                fieldWithPath("result.modelDesc").description("模型描述"),
-                                fieldWithPath("extra").description("额外信息")
-                        )
-                ));
-    }
+
     @Test
     public  void testGetModelList() throws Exception {
         // 查询项目列表接口
@@ -107,7 +69,8 @@ public class DataModelControllerTest {
                                 fieldWithPath("result.data[].modelName").description("模型名称"),
                                 fieldWithPath("result.data[].projectName").description("项目名称"),
                                 fieldWithPath("result.data[].resourceNum").description("资源数"),
-                                fieldWithPath("result.data[].latestTaskStatus").description("最近一次运行状态"),
+                                fieldWithPath("result.data[].latestTaskId").optional().description("最近一次运行任务ID"),
+                                fieldWithPath("result.data[].latestTaskStatus").optional().description("最近一次运行状态"),
                                 fieldWithPath("result.data[].totalTime").description("最后一次耗时"),
                                 fieldWithPath("extra").description("额外信息")
                         )
@@ -118,19 +81,17 @@ public class DataModelControllerTest {
     public  void testGetDataModel() throws Exception {
         // 查询项目列表接口
         this.mockMvc.perform(get("/model/getdatamodel")
-                .param("modelId","1")
-                .header("userId","1")
-                .header("organId","1"))
+                .param("taskId","19")
+                .header("userId","1"))
                 .andExpect(status().isOk())
                 .andDo(document("getdatamodel",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestHeaders(
-                                headerWithName("userId").description("用户id (前端不用传参)"),
-                                headerWithName("organId").description("机构id (前端不用传参)")
+                                headerWithName("userId").description("用户id (前端不用传参)")
                         ),
                         requestParameters(
-                                parameterWithName("modelId").description("模型id")
+                                parameterWithName("taskId").description("任务ID")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
@@ -173,17 +134,7 @@ public class DataModelControllerTest {
                                 fieldWithPath("result.modelResources[].alignmentNum").description("对齐后记录数量"),
                                 fieldWithPath("result.modelResources[].primitiveParamNum").description("原始变量数量"),
                                 fieldWithPath("result.modelResources[].modelParamNum").description("入模变量数量"),
-                                fieldWithPath("result.modelQuotas").description("模型指标信息"),
-                                fieldWithPath("result.modelQuotas[].quotaId").description("指标id"),
-                                fieldWithPath("result.modelQuotas[].quotaType").description("样本类型 1.训练样本集 2.测试样本集"),
-                                fieldWithPath("result.modelQuotas[].quotaImage").description("样本集图片"),
-                                fieldWithPath("result.modelQuotas[].modelId").description("模型id"),
-                                fieldWithPath("result.modelQuotas[].auc").description("auc"),
-                                fieldWithPath("result.modelQuotas[].ks").description("ks"),
-                                fieldWithPath("result.modelQuotas[].gini").description("gini"),
-                                fieldWithPath("result.modelQuotas[].precision").description("precision"),
-                                fieldWithPath("result.modelQuotas[].recall").description("recall"),
-                                fieldWithPath("result.modelQuotas[].f1Score").description("f1Score"),
+                                fieldWithPath("result.anotherQuotas.*").optional().ignored().description("模型指标信息"),
                                 fieldWithPath("result.modelComponent").description("组件执行信息"),
                                 fieldWithPath("result.modelComponent[].componentId").description("组件id"),
                                 fieldWithPath("result.modelComponent[].modelId").description("模型id"),
@@ -192,6 +143,7 @@ public class DataModelControllerTest {
                                 fieldWithPath("result.modelComponent[].timeConsuming").description("组件耗时 单位秒"),
                                 fieldWithPath("result.modelComponent[].timeRatio").description("组件耗时占比"),
                                 fieldWithPath("result.modelComponent[].componentState").description("组件执行状态 0初始 1成功 2运行中 3失败"),
+                                fieldWithPath("result.taskState").description("任务状态 0未运行 1完成 2运行中 3失败 4取消 默认0 "),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));
@@ -227,6 +179,7 @@ public class DataModelControllerTest {
                                 fieldWithPath("result[].componentTypes").description("组件左侧参数列表"),
                                 fieldWithPath("result[].componentTypes[].typeCode").description("参数code"),
                                 fieldWithPath("result[].componentTypes[].typeName").description("参数名称"),
+                                fieldWithPath("result[].componentTypes[].isRequired").description("是否必填"),
                                 fieldWithPath("result[].componentTypes[].inputType").description("参数类型"),
                                 fieldWithPath("result[].componentTypes[].inputValue").description("参数值"),
                                 fieldWithPath("result[].componentTypes[].inputValues").description("参数数组"),
@@ -238,7 +191,7 @@ public class DataModelControllerTest {
     }
     @Test
     public void testSaveModelAndComponent() throws Exception {
-        String boby_json = "{\"timestamp\":1649922411717,\"nonce\":102,\"token\":\"SU20220413115241B420D205A118104993DB9064FD5E79E1\",\"param\":{\"modelId\":\"\",\"modelDesc\":\"模型描述地方大师傅\",\"trainType\":0,\"isDraft\":0,\"modelComponents\":[{\"componentId\":\"\",\"componentCode\":\"dataAlignment\",\"componentName\":\"数据对齐\",\"coordinateY\":2,\"coordinateX\":3,\"width\":100,\"height\":200,\"shape\":\"rectangle\",\"componentValues\":[{\"key\":\"projectId\",\"val\":\"1\"},{\"key\":\"modelName\",\"val\":\"模型名称132456\"},{\"key\":\"selectData\",\"val\":\"2\"},{\"key\":\"yField\",\"val\":\"age\"}],\"input\":[{\"componentId\":\"\",\"componentCode\":\"\",\"pointType\":\"\",\"pointJson\":\"\"}],\"output\":[{\"componentId\":\"\",\"componentCode\":\"features\",\"pointType\":\"straight\",\"pointJson\":\"\"}]},{\"componentId\":\"\",\"componentCode\":\"features\",\"componentName\":\"特征筛选\",\"coordinateY\":2,\"coordinateX\":3,\"width\":100,\"height\":200,\"shape\":\"rectangle\",\"componentValues\":[{\"key\":\"features\",\"val\":\"1\"}],\"input\":[{\"componentId\":\"\",\"componentCode\":\"dataAlignment\",\"pointType\":\"\",\"pointJson\":\"\"}],\"output\":[{\"componentId\":\"\",\"componentCode\":\"modelType\",\"pointType\":\"straight\",\"pointJson\":\"\"}]},{\"componentId\":\"\",\"componentCode\":\"modelType\",\"componentName\":\"模型选择\",\"coordinateY\":2,\"coordinateX\":3,\"width\":100,\"height\":200,\"shape\":\"rectangle\",\"componentValues\":[{\"key\":\"modelType\",\"val\":\"1\"}],\"input\":[{\"componentId\":\"\",\"componentCode\":\"features\",\"pointType\":\"\",\"pointJson\":\"\"}],\"output\":[{\"componentId\":\"\",\"componentCode\":\"assessment\",\"pointType\":\"straight\",\"pointJson\":\"\"}]},{\"componentId\":\"3\",\"componentCode\":\"assessment\",\"componentName\":\"模型评估\",\"coordinateY\":2,\"coordinateX\":3,\"width\":100,\"height\":200,\"shape\":\"rectangle\",\"componentValues\":[{\"key\":\"\",\"val\":\"\"}],\"input\":[{\"componentId\":\"\",\"componentCode\":\"modelType\",\"pointType\":\"\",\"pointJson\":\"\"}],\"output\":[{\"componentId\":\"\",\"componentCode\":\"\",\"pointType\":\"\",\"pointJson\":\"\"}]}]}}\n";
+        String boby_json = "{\"timestamp\":1649922411717,\"nonce\":102,\"token\":\"SU20220413115241B420D205A118104993DB9064FD5E79E1\",\"param\":{\"isDraft\":0,\"modelComponents\":[{\"componentCode\":\"start\",\"componentId\":\"13\",\"componentName\":\"开始\",\"componentValues\":[{\"key\":\"modelName\",\"val\":\"模型回归测试02\"},{\"key\":\"modelDesc\",\"val\":\"\"},{\"key\":\"trainType\",\"val\":\"1\"}],\"coordinateX\":495,\"coordinateY\":150,\"frontComponentId\":\"89322f23-6d8d-4350-b804-c3b3f3c5aae3\",\"height\":40,\"input\":[],\"output\":[{\"componentCode\":\"dataSet\",\"componentId\":\"14\",\"pointJson\":\"\",\"pointType\":\"edge\",\"portId\":\"port1\"}],\"shape\":\"start-node\",\"width\":120},{\"componentCode\":\"dataSet\",\"componentId\":\"14\",\"componentName\":\"选择数据集\",\"componentValues\":[{\"key\":\"selectData\",\"val\":\"[{\\\\\\\"organId\\\\\\\":\\\\\\\"8bf56ee6-b004-4ada-b078-591acb22b324\\\\\\\",\\\\\\\"resourceId\\\\\\\":\\\\\\\"591acb22b324-82586ab3-f94b-4219-a818-657da7b28d1b\\\\\\\",\\\\\\\"resourceName\\\\\\\":\\\\\\\"d-host\\\\\\\",\\\\\\\"resourceRowsCount\\\\\\\":50,\\\\\\\"resourceColumnCount\\\\\\\":8,\\\\\\\"resourceContainsY\\\\\\\":0,\\\\\\\"auditStatus\\\\\\\":1,\\\\\\\"participationIdentity\\\\\\\":1,\\\\\\\"fileHandleField\\\\\\\":[\\\\\\\"Class\\\\\\\",\\\\\\\"x0\\\\\\\",\\\\\\\"x1\\\\\\\",\\\\\\\"x2\\\\\\\",\\\\\\\"x3\\\\\\\",\\\\\\\"x4\\\\\\\",\\\\\\\"x5\\\\\\\",\\\\\\\"x6\\\\\\\"],\\\\\\\"calculationField\\\\\\\":\\\\\\\"Class\\\\\\\",\\\\\\\"organName\\\\\\\":\\\\\\\"test1\\\\\\\"},{\\\\\\\"organId\\\\\\\":\\\\\\\"2cad8338-2e8c-4768-904d-2b598a7e3298\\\\\\\",\\\\\\\"resourceId\\\\\\\":\\\\\\\"2b598a7e3298-cacd9b49-75a5-4f2b-94d9-c6a19c80d1c1\\\\\\\",\\\\\\\"resourceName\\\\\\\":\\\\\\\"d-guest1\\\\\\\",\\\\\\\"resourceRowsCount\\\\\\\":50,\\\\\\\"resourceColumnCount\\\\\\\":8,\\\\\\\"resourceContainsY\\\\\\\":0,\\\\\\\"auditStatus\\\\\\\":1,\\\\\\\"participationIdentity\\\\\\\":2,\\\\\\\"fileHandleField\\\\\\\":[\\\\\\\"x6\\\\\\\",\\\\\\\"x7\\\\\\\",\\\\\\\"x8\\\\\\\",\\\\\\\"x9\\\\\\\",\\\\\\\"x10\\\\\\\",\\\\\\\"x11\\\\\\\",\\\\\\\"x12\\\\\\\",\\\\\\\"x13\\\\\\\"],\\\\\\\"calculationField\\\\\\\":\\\\\\\"x6\\\\\\\",\\\\\\\"organName\\\\\\\":\\\\\\\"test2\\\\\\\"}]\"}],\"coordinateX\":650,\"coordinateY\":300,\"frontComponentId\":\"ef92c2bd-9f0a-46f0-8213-9a9dce839016\",\"height\":50,\"input\":[{\"componentCode\":\"start\",\"componentId\":\"13\",\"pointJson\":\"\",\"pointType\":\"edge\",\"portId\":\"port2\"}],\"output\":[{\"componentCode\":\"model\",\"componentId\":\"15\",\"pointJson\":\"\",\"pointType\":\"edge\",\"portId\":\"port1\"}],\"shape\":\"dag-node\",\"width\":180},{\"componentCode\":\"model\",\"componentId\":\"15\",\"componentName\":\"模型选择\",\"componentValues\":[{\"key\":\"modelType\",\"val\":\"2\"}],\"coordinateX\":450,\"coordinateY\":430,\"frontComponentId\":\"03e301d0-41e3-434c-815c-96f12e9a8384\",\"height\":50,\"input\":[{\"componentCode\":\"dataSet\",\"componentId\":\"14\",\"pointJson\":\"\",\"pointType\":\"edge\",\"portId\":\"port2\"}],\"output\":[],\"shape\":\"dag-node\",\"width\":180}],\"modelId\":\"\",\"modelPointComponents\":[{\"frontComponentId\":\"ceb17e16-ed6c-4026-9df8-0c936b9e75b0\",\"input\":{\"port\":\"port2\",\"cell\":\"89322f23-6d8d-4350-b804-c3b3f3c5aae3\"},\"output\":{\"port\":\"port1\",\"cell\":\"ef92c2bd-9f0a-46f0-8213-9a9dce839016\"},\"shape\":\"edge\"},{\"frontComponentId\":\"c90441f5-987f-4de9-a988-6c82cb716112\",\"input\":{\"port\":\"port2\",\"cell\":\"ef92c2bd-9f0a-46f0-8213-9a9dce839016\"},\"output\":{\"port\":\"port1\",\"cell\":\"03e301d0-41e3-434c-815c-96f12e9a8384\"},\"shape\":\"edge\"}],\"projectId\":20,\"trainType\":0}}";
         // 项目添加
         this.mockMvc.perform(post("/model/saveModelAndComponent")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -258,9 +211,10 @@ public class DataModelControllerTest {
                                 fieldWithPath("nonce").description("随机数"),
                                 fieldWithPath("token").description("token"),
                                 fieldWithPath("param.modelId").description("模型id isDraft=0不用传。保存必传"),
-                                fieldWithPath("param.modelDesc").description("项目描述"),
+                                fieldWithPath("param.projectId").description("项目ID"),
                                 fieldWithPath("param.trainType").description("训练类型 训练类型 0纵向 1横向 默认纵向"),
                                 fieldWithPath("param.isDraft").description("保存类型 0草稿 1保存"),
+                                fieldWithPath("param.modelComponents[].frontComponentId").description("前端组件id"),
                                 fieldWithPath("param.modelComponents[].componentId").description("组件id"),
                                 fieldWithPath("param.modelComponents[].componentCode").description("组件code"),
                                 fieldWithPath("param.modelComponents[].componentName").description("组件名称"),
@@ -271,14 +225,24 @@ public class DataModelControllerTest {
                                 fieldWithPath("param.modelComponents[].shape").description("形状"),
                                 fieldWithPath("param.modelComponents[].componentValues[0].key").description("组件入参key"),
                                 fieldWithPath("param.modelComponents[].componentValues[0].val").description("组件入参val"),
+                                fieldWithPath("param.modelComponents[].input[]").description("输入组件"),
                                 fieldWithPath("param.modelComponents[].input[].componentId").description("输入组件id"),
                                 fieldWithPath("param.modelComponents[].input[].componentCode").description("输入组件code"),
                                 fieldWithPath("param.modelComponents[].input[].pointType").description("指向类型"),
                                 fieldWithPath("param.modelComponents[].input[].pointJson").description("指向json"),
+                                fieldWithPath("param.modelComponents[].input[].port").optional().type(String.class).description("前端信息"),
+                                fieldWithPath("param.modelComponents[].input[].cell").optional().type(String.class).description("前端信息"),
+                                fieldWithPath("param.modelComponents[].input[].portId").optional().type(String.class).description("前端信息"),
+                                fieldWithPath("param.modelComponents[].output[]").description("输出组件"),
                                 fieldWithPath("param.modelComponents[].output[].componentId").description("输入组件id"),
                                 fieldWithPath("param.modelComponents[].output[].componentCode").description("输入组件code"),
                                 fieldWithPath("param.modelComponents[].output[].pointType").description("指向类型"),
-                                fieldWithPath("param.modelComponents[].output[].pointJson").description("指向json")
+                                fieldWithPath("param.modelComponents[].output[].pointJson").type(String.class).description("指向json"),
+                                fieldWithPath("param.modelComponents[].output[].port").optional().type(String.class).description("前端信息"),
+                                fieldWithPath("param.modelComponents[].output[].cell").optional().type(String.class).description("前端信息"),
+                                fieldWithPath("param.modelComponents[].output[].portId").optional().type(String.class).description("前端信息"),
+                                fieldWithPath("param.modelPointComponents[].*").description("前端信息"),
+                                fieldWithPath("param.modelPointComponents[].*.*").description("前端信息")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
@@ -298,15 +262,13 @@ public class DataModelControllerTest {
         // 删除资源接口
         this.mockMvc.perform(get("/model/deleteModel")
                 .param("modelId","3")
-                .header("userId","1")
-                .header("organId","1"))
+                .header("userId","1"))
                 .andExpect(status().isOk())
                 .andDo(document("deleteModel",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestHeaders(
-                                headerWithName("userId").description("用户id (前端不用传参)"),
-                                headerWithName("organId").description("机构id (前端不用传参)")
+                                headerWithName("userId").description("用户id (前端不用传参)")
                         ),
                         requestParameters(
                                 parameterWithName("modelId").description("模型id")
@@ -323,29 +285,30 @@ public class DataModelControllerTest {
     public  void testgetModelComponentDetail() throws Exception {
         // 查询模型左侧组件列表接口
         this.mockMvc.perform(get("/model/getModelComponentDetail")
-                .param("modelId","1")
-                .header("userId","1")
-                .header("organId","1"))
+                .param("modelId","3")
+                .param("projectId","")
+                .header("userId","1"))
                 .andExpect(status().isOk())
                 .andDo(document("getModelComponentDetail",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestHeaders(
-                                headerWithName("userId").description("用户id (前端不用传参)"),
-                                headerWithName("organId").description("机构id (前端不用传参)")
+                                headerWithName("userId").description("用户id (前端不用传参)")
                         ),
                         requestParameters(
-                                parameterWithName("modelId").description("模型id 非必填没有则根据用户id查询")
+                                parameterWithName("modelId").description("模型id 非必填没有则根据用户id查询"),
+                                parameterWithName("projectId").description("项目id 非必填没有择根据modelId或userId")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
                                 fieldWithPath("msg").description("返回码描述"),
                                 fieldWithPath("result").description("返回码结果"),
                                 fieldWithPath("result.modelId").description("模型id"),
-                                fieldWithPath("result.modelDesc").description("返回码结果"),
+                                fieldWithPath("result.modelDesc").description("模型描述"),
+                                fieldWithPath("result.modelName").description("模型名称"),
                                 fieldWithPath("result.trainType").description("训练类型 0纵向 1横向"),
                                 fieldWithPath("result.isDraft").description("是否草稿 0是 1不是"),
-                                fieldWithPath("result.taskName").description("任务名称"),
+                                fieldWithPath("result.projectId").description("项目ID"),
                                 fieldWithPath("result.modelComponents[].componentId").description("组件id"),
                                 fieldWithPath("result.modelComponents[].frontComponentId").description("前端组件id"),
                                 fieldWithPath("result.modelComponents[].componentCode").description("组件code"),
@@ -380,6 +343,64 @@ public class DataModelControllerTest {
                                 fieldWithPath("result.modelPointComponents[].output.cell").description("前端信息"),
                                 fieldWithPath("result.modelPointComponents[].").description(""),
                                 fieldWithPath("result.modelPointComponents[].").description(""),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testRunTaskModel() throws Exception{
+        // 删除资源接口
+        this.mockMvc.perform(get("/model/runTaskModel")
+                .param("modelId","3")
+                .header("userId","1"))
+                .andExpect(status().isOk())
+                .andDo(document("runTaskModel",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("userId").description("用户id (前端不用传参)")
+                        ),
+                        requestParameters(
+                                parameterWithName("modelId").description("模型id")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("result.modelId").description("模型ID"),
+                                fieldWithPath("result.taskId").description("任务ID"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testGetTaskModelComponent() throws Exception{
+        // 删除资源接口
+        this.mockMvc.perform(get("/model/getTaskModelComponent")
+                .param("taskId","3")
+                .header("userId","1"))
+                .andExpect(status().isOk())
+                .andDo(document("getTaskModelComponent",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("userId").description("用户id (前端不用传参)")
+                        ),
+                        requestParameters(
+                                parameterWithName("taskId").description("任务id")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("result[].componentId").description("组件id"),
+                                fieldWithPath("result[].componentCode").description("组件编码"),
+                                fieldWithPath("result[].componentName").description("组件名称"),
+                                fieldWithPath("result[].componentState").description("0初始 1成功 2运行中 3失败"),
+                                fieldWithPath("result[].complete").description("是否执行完毕"),
+                                fieldWithPath("result[].timeConsuming").description("耗时"),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));

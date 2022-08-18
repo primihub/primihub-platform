@@ -416,12 +416,36 @@ public class DataProjectControllerTest {
                 ));
     }
 
+
+
     @Test
     public void testRemoveResource() throws Exception{
         this.mockMvc.perform(post("/project/removeResource")
                 .param("id","1"))
                 .andExpect(status().isOk())
                 .andDo(document("removeResource",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("id").description("本地项目资源ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述 0成功"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testRemoveOrgan() throws Exception{
+        this.mockMvc.perform(post("/project/removeOrgan")
+                .param("id","1"))
+                .andExpect(status().isOk())
+                .andDo(document("removeOrgan",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         requestHeaders(
@@ -532,6 +556,28 @@ public class DataProjectControllerTest {
                                 fieldWithPath("result[].resourceColumnCount").description("资源列数"),
                                 fieldWithPath("result[].resourceContainsY").description("资源字段中是否包含y字段 0否 1是"),
                                 fieldWithPath("result[].auditStatus").description("审核状态 0审核中 1同意 2拒绝"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testOpenProject() throws Exception{
+        this.mockMvc.perform(post("/project/openProject")
+                .param("id","6"))
+                .andExpect(status().isOk())
+                .andDo(document("openProject",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("id").description("本地项目ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述 0成功"),
+                                fieldWithPath("result").description("返回码结果"),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));

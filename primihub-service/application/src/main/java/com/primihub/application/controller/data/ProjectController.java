@@ -98,6 +98,19 @@ public class ProjectController {
     }
 
     /**
+     * 删除项目机构协作者
+     * @return
+     */
+    @RequestMapping("removeOrgan")
+    public BaseResultEntity removeOrgan(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.removeOrgan(id);
+    }
+
+
+
+    /**
      * 关闭项目
      * @param id
      * @return
@@ -107,6 +120,18 @@ public class ProjectController {
         if (id==null || id == 0L)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
         return dataProjectService.closeProject(id);
+    }
+
+    /**
+     * 开启项目
+     * @param id
+     * @return
+     */
+    @RequestMapping("openProject")
+    public BaseResultEntity openProject(Long id){
+        if (id==null || id == 0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        return dataProjectService.openProject(id);
     }
 
     /**

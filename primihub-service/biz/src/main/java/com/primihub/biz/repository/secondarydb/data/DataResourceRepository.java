@@ -34,15 +34,11 @@ public interface DataResourceRepository {
 
     List<Long> queryResourceTagRelation(Long resourceId);
 
-    List<DataResourceAuthRecordVo> queryResourceAuthRecord(@Param("offset") Integer offset,@Param("pageSize") Integer pageSize, @Param("userId")Long userId,@Param("status")Integer status);
-
-    Long queryResourceAuthRecordCount(@Param("userId")Long userId,@Param("status")Integer status);
-
     List<DataResourceRecordVo> queryDataResourceByIds(@Param("resourceIds") Set<Long> resourceIds);
 
     List<ResourceTagListVo> queryDataResourceListTags(@Param("resourceIds") List<Long> resourceIds);
 
-    Integer queryResourceProjectRelationCount(Long resourceId);
+    Integer queryResourceProjectRelationCount(String resourceId);
 
     List<DataFileField> queryDataFileField(Map<String,Object> paramMap);
 

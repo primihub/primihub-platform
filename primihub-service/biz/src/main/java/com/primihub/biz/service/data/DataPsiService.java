@@ -46,54 +46,11 @@ public class DataPsiService {
     private OrganConfiguration organConfiguration;
 
 
-    public BaseResultEntity getPsiResourceDetails(Long resourceId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
-        if (dataResource==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到资源信息");
-        DataPsiResourceVo dataPsiResourceVo = DataPsiConvert.DataPsiResourceConvertVo(dataPsiRepository.selectPsiResourceByResourceId(resourceId));
-        Map<String,Object> map = new HashMap<>();
-        map.put("resourceId",dataResource.getResourceId());
-        map.put("resourceName",dataResource.getResourceName());
-        map.put("resourceState",0);
-        map.put("resourceOrganId",dataResource.getOrganId());
-        List<DataFileHandleFieldVo> voList = new ArrayList<>();
-        if (dataResource.getFileHandleField()!=null){
-            List<String> keywordList = new ArrayList<>();
-            if (dataPsiResourceVo!=null&&dataPsiResourceVo.getKeywordList()!=null){
-                keywordList.addAll(Arrays.asList(dataPsiResourceVo.getKeywordList()));
-            }
-            String[] fieldsplit = dataResource.getFileHandleField().split(",");
-            for (String field : fieldsplit) {
-                voList.add(new DataFileHandleFieldVo(field,keywordList.contains(field)));
-            }
-        }
-        map.put("resourceField",voList);
-        map.put("psiResource",dataPsiResourceVo);
-        return BaseResultEntity.success(map);
-    }
-
-    public BaseResultEntity saveOrUpdatePsiResource(DataPsiResourceReq req) {
-        DataPsiResource dataPsiResource = DataPsiConvert.DataPsiResourceReqConvertPo(req);
-        DataPsiResource existencePsiResource = dataPsiRepository.selectPsiResourceByResourceId(req.getResourceId());
-        if (existencePsiResource!=null){
-            dataPsiResource.setId(existencePsiResource.getId());
-        }
-        if (dataPsiResource.getId()==null){
-            dataPsiPrRepository.saveDataPsiResource(dataPsiResource);
-        }else {
-            dataPsiPrRepository.updateDataPsiResource(dataPsiResource);
-        }
-        Map<String,Object> map = new HashMap<>();
-        map.put("id",dataPsiResource.getId());
-        return BaseResultEntity.success(map);
-    }
-
-
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId) {
         return dataResourceService.getDataResourceList(req,null,true);
     }
 
-    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress) {
+    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress,String resourceName) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         String localOrganId = organConfiguration.getSysLocalOrganId();
         if(StringUtils.isBlank(organId) || sysLocalOrganInfo==null || StringUtils.isBlank(sysLocalOrganInfo.getOrganId()) || sysLocalOrganInfo.getOrganId().equals(organId)){
@@ -101,6 +58,7 @@ public class DataPsiService {
             paramMap.put("organId",organId);
             paramMap.put("offset",req.getOffset());
             paramMap.put("pageSize",req.getPageSize());
+            paramMap.put("resourceName",resourceName);
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -121,6 +79,7 @@ public class DataPsiService {
             fResourceReq.setPageSize(req.getPageSize());
             fResourceReq.setServerAddress(serverAddress);
             fResourceReq.setOrganId(organId);
+            fResourceReq.setResourceName(resourceName);
             BaseResultEntity baseResult = fusionResourceService.getResourceList(fResourceReq);
             if (baseResult.getCode()!=0)
                 return baseResult;
