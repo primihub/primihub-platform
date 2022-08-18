@@ -19,8 +19,8 @@ include::../asciidoc/dataProject.adoc[]
 include::../asciidoc/dataModel.adoc[]
 == 2.4 PSI相关接口
 include::../asciidoc/dataPsi.adoc[]
-== 2.5 MPC相关接口
-include::../asciidoc/dataMpc.adoc[]
+//== 2.5 MPC相关接口
+//include::../asciidoc/dataMpc.adoc[]
 == 2.6 中心节点资源相关接口
 include::../asciidoc/fusionResource.adoc[]
 == 2.7 任务相关接口

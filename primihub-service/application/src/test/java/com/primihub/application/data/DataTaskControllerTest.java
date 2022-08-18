@@ -29,13 +29,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DataTaskControllerTest {
     @Autowired
     private MockMvc mockMvc;
+
     @Test
     public void testGetModelTaskList() throws Exception{
-        // 查询资源列表接口
         this.mockMvc.perform(get("/task/getModelTaskList")
                 .param("pageNo","1")
                 .param("pageSize","5")
-                .param("modelId","265"))
+                .param("modelId","3"))
                 .andExpect(status().isOk())
                 .andDo(document("getModelTaskList",
                         preprocessRequest(prettyPrint()),
@@ -65,6 +65,60 @@ public class DataTaskControllerTest {
                                 fieldWithPath("result.data[].taskErrorMsg").optional().description("状态失败 错误信息"),
                                 fieldWithPath("result.data[].timeConsuming").optional().description("耗时 单位秒"),
                                 fieldWithPath("result.data[].taskName").optional().description("任务名称 模型目前无"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+
+    @Test
+    public void testGetTaskData() throws Exception{
+        this.mockMvc.perform(get("/task/getTaskData")
+                .param("taskId","1"))
+                .andExpect(status().isOk())
+                .andDo(document("getTaskData",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("taskId").description("任务ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("result.taskId").optional().description("任务ID"),
+                                fieldWithPath("result.taskIdName").optional().description("任务名称"),
+                                fieldWithPath("result.taskState").optional().description("任务状态(0未开始 1成功 2运行中 3失败 4取消)"),
+                                fieldWithPath("result.taskType").optional().description("任务类型 1、模型 2、PSI 3、PIR"),
+                                fieldWithPath("result.taskStartDate").optional().description("开始运行时间"),
+                                fieldWithPath("result.taskEndDate").optional().description("结束运行时间"),
+                                fieldWithPath("result.taskErrorMsg").optional().description("状态失败 错误信息"),
+                                fieldWithPath("result.timeConsuming").optional().description("耗时 单位秒"),
+                                fieldWithPath("result.taskName").optional().description("任务名称 模型目前无"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testDeleteTask() throws Exception{
+        this.mockMvc.perform(get("/task/deleteTask")
+                .param("taskId","1"))
+                .andExpect(status().isOk())
+                .andDo(document("deleteTask",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("taskId").description("任务ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));

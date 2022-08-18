@@ -27,36 +27,6 @@ public class PsiController {
     @Autowired
     private DataPsiService dataPsiService;
 
-
-    @GetMapping("getPsiResourceDetails")
-    public BaseResultEntity getPsiResourceDetails(Long resourceId){
-        if (resourceId==null||resourceId==0L){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        }
-        return dataPsiService.getPsiResourceDetails(resourceId);
-    }
-
-    @PostMapping("saveOrUpdatePsiResource")
-    public BaseResultEntity saveOrUpdatePsiResource(DataPsiResourceReq req){
-        if (req.getResourceId()==null||req.getResourceId()==0L)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        if (req.getId()!=null&&req.getId()!=0L){
-            if (StringUtils.isBlank(req.getKeywordList())&&req.getOrganType()==null&&req.getResultsAllowOpen()==null&&req.getTableStructureTemplate()==null){
-                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"至少修改一处");
-            }
-        }else {
-            if (StringUtils.isBlank(req.getKeywordList()))
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keywordList");
-            if (StringUtils.isBlank(req.getTableStructureTemplate()))
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"tableStructureTemplate");
-            if (req.getOrganType()==null)
-                req.setOrganType(0);
-            if (req.getResultsAllowOpen()==null)
-                req.setResultsAllowOpen(0);
-        }
-        return dataPsiService.saveOrUpdatePsiResource(req);
-    }
-
     @PostMapping("saveDataPsi")
     public BaseResultEntity saveDataPsi(@RequestHeader("userId") Long userId,
                                         DataPsiReq req){

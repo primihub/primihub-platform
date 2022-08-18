@@ -117,19 +117,6 @@ public class ResourceController {
         return dataResourceService.deleteDataResource(resourceId);
     }
 
-    /**
-     * 资源审核列表
-     * @param userId
-     * @param req
-     * @return
-     */
-    @GetMapping("getauthorizationlist")
-    public BaseResultEntity getAuthorizationList(@RequestHeader("userId") Long userId,
-                                                 Integer status,
-                                                 PageReq req){
-        return dataResourceService.getAuthorizationList(req,userId,status);
-    }
-
     @RequestMapping("resourceFilePreview")
     public BaseResultEntity resourceFilePreview(Long fileId,String resourceId){
         if (StringUtils.isBlank(resourceId)){

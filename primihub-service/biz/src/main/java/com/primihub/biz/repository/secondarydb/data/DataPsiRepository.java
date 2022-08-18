@@ -1,7 +1,6 @@
 package com.primihub.biz.repository.secondarydb.data;
 
 import com.primihub.biz.entity.data.po.DataPsi;
-import com.primihub.biz.entity.data.po.DataPsiResource;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
 import com.primihub.biz.entity.data.vo.DataPsiTaskVo;
@@ -12,13 +11,6 @@ import java.util.Map;
 
 @Repository
 public interface DataPsiRepository {
-
-    DataPsiResource selectPsiResourceByResourceId(Long resourceId);
-    DataPsiResource selectPsiResourceById(Long id);
-
-//    List<DataPsiResourceAllocationVo> selectPsiResourceAllocation(Map<String,Object> map);
-
-    Long selectPsiResourceAllocationCount(Map<String,Object> map);
 
     List<DataPsiTaskVo> selectPsiTaskPage(Map<String,Object> map);
 
