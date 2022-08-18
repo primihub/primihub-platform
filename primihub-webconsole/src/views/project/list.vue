@@ -87,6 +87,8 @@
         <el-table
           :data="projectList"
           border
+          highlight-current-row
+          :row-class-name="tableRowDisabled"
         >
           <el-table-column
             type="index"
@@ -98,7 +100,7 @@
             min-width="200"
           >
             <template slot-scope="{row}">
-              <template v-if="hasViewPermission">
+              <template v-if="hasViewPermission && row.status !== 2">
                 <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
               </template>
               <template v-else>
@@ -156,7 +158,9 @@
             min-width="160"
           >
             <template slot-scope="{row}">
-              <el-button v-if="hasViewPermission" type="text" icon="el-icon-view" @click="toProjectDetail(row.id)">查看</el-button>
+              <el-button v-if="hasViewPermission" :disabled="row.status === 2" type="text" @click="toProjectDetail(row.id)">查看</el-button>
+              <el-button v-if="row.status === 1" type="text" @click="closeProject(row.id)">禁用</el-button>
+              <el-button v-if="row.status === 2" type="text" @click="openProject(row.id)">启动</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -168,7 +172,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getProjectList, getListStatistics } from '@/api/project'
+import { getProjectList, getListStatistics, closeProject, openProject } from '@/api/project'
 import ProjectItem from '@/components/ProjectItem'
 import NoData from '@/components/NoData'
 import Pagination from '@/components/Pagination'
@@ -195,18 +199,6 @@ export default {
       organList: [],
       activeIndex: '0',
       listLoading: false,
-      // params: {
-      //   pageNo: 1,
-      //   pageSize: 10,
-      //   projectName: '',
-      //   serverAddress: '',
-      //   queryType: 0,
-      //   organId: '',
-      //   participationIdentity: '',
-      //   startDate: '',
-      //   endDate: '',
-      //   status: ''
-      // },
       searchForm: {
         projectName: '',
         serverAddress: '',
@@ -249,6 +241,35 @@ export default {
     this.getListStatistics()
   },
   methods: {
+    tableRowDisabled({ row }) {
+      if (row.status === 2) {
+        return 'table-row-disabled'
+      } else {
+        return ''
+      }
+    },
+    closeProject(id) {
+      closeProject({ id }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '禁用成功',
+            type: 'success'
+          })
+          this.fetchData()
+        }
+      })
+    },
+    openProject(id) {
+      openProject({ id }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '启动成功',
+            type: 'success'
+          })
+          this.fetchData()
+        }
+      })
+    },
     toggleType() {
       if (this.projectType === 'table') {
         this.projectType = 'card'
@@ -405,13 +426,13 @@ export default {
 @import "../../styles/variables.scss";
 @import "~@/styles/resource.scss";
 h2 {
-    display: block;
-    font-size: 16px;
-    font-weight: normal;
-    margin-block-start: 0.2em;
-    margin-block-end: 0;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
+  display: block;
+  font-size: 16px;
+  font-weight: normal;
+  margin-block-start: 0.2em;
+  margin-block-end: 0;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
 }
 ::v-deep .el-form--inline .el-form-item{
   margin: 10px 35px 10px 0;
@@ -521,5 +542,9 @@ h2 {
 }
 .status-2{
   color: #F56C6C;
+}
+::v-deep .el-table tr.table-row-disabled{
+  background-color: #f5f7fa;
+  color: #909399;
 }
 </style>

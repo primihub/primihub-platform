@@ -74,3 +74,14 @@ div:focus {
   background: #fafafa;
   color: rgba(0,0,0,.85);
 }
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 14px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #b6b6b6;
+  border-radius: 5px;
+  opacity: .8;
+}
