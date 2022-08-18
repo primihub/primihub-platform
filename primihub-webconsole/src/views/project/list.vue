@@ -51,10 +51,10 @@
         <div class="buttons">
           <el-button class="button" type="primary" icon="el-icon-search" @click="searchProject">查询</el-button>
           <el-button class="button" type="primary" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
-          <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
         </div>
       </el-form-item>
     </el-form>
+    <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
     <div class="tab-container">
       <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
         <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
@@ -424,12 +424,12 @@ h2 {
   background-color: #fff;
   display: flex;
   flex-wrap: wrap;
-  .add-button {
-    margin-right: auto;
-    height: 38px;
-    margin-left: 20px;
-    // display: inline-block;
-  }
+}
+.add-button {
+  margin-right: auto;
+  height: 38px;
+  margin-bottom: 20px;
+  // display: inline-block;
 }
 .button {
   margin: 0 3px;
