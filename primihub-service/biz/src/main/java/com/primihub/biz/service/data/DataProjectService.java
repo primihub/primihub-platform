@@ -388,11 +388,33 @@ public class DataProjectService {
         return BaseResultEntity.success();
     }
 
+    public BaseResultEntity removeOrgan(Long id) {
+        DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganById(id);
+        if (dataProjectOrgan==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无机构信息");
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        if (sysLocalOrganId.equals(dataProjectOrgan.getInitiateOrganId())||sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
+            ShareProjectVo vo = new ShareProjectVo(dataProjectOrgan.getProjectId(), dataProjectOrgan.getServerAddress());
+            dataProjectOrgan.setIsDel(1);
+            vo.getProjectOrgans().add(dataProjectOrgan);
+            List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectIdAndOrganId(dataProjectOrgan.getProjectId(), dataProjectOrgan.getOrganId());
+            for (DataProjectResource dpr : dataProjectResources) {
+                dataProjectPrRepository.deleteDataProjectResource(dpr.getId());
+                dpr.setIsDel(1);
+                vo.getProjectResources().add(dpr);
+            }
+            sendTask(vo);
+        }else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"非创建机构和操作机构不能操作");
+        }
+        return BaseResultEntity.success();
+    }
+
     public BaseResultEntity closeProject(Long id) {
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(id, null);
         if (dataProject==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无项目信息");
-        if (dataProject.getStatus()==0)
+        if (dataProject.getStatus()==2)
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"项目已关闭,不可重复操作");
         dataProject.setStatus(2);
         dataProjectPrRepository.updateDataProject(dataProject);
@@ -453,4 +475,20 @@ public class DataProjectService {
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         return BaseResultEntity.success(dataProjectOrgans.stream().map(organ -> DataModelConvert.projectOrganPoCovertProjectOrganVo(organ,organListMap.get(organ.getOrganId()),resourceVoMap.get(organ.getOrganId()),sysLocalOrganId)));
     }
+
+    public BaseResultEntity openProject(Long id) {
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(id, null);
+        if (dataProject==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无项目信息");
+        if (dataProject.getStatus()!=2)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"项目非关闭状态,不可操作");
+        dataProject.setStatus(1);
+        dataProjectPrRepository.updateDataProject(dataProject);
+        ShareProjectVo vo = new ShareProjectVo(dataProject.getProjectId(), dataProject.getServerAddress());
+        vo.setProject(dataProject);
+        sendTask(vo);
+        return BaseResultEntity.success();
+    }
+
+
 }
