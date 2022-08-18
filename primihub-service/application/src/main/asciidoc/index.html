@@ -14786,13 +14786,13 @@ Content-Length: 117
 <h3 id="_2_3_8_模型任务组件实时列表">2.3.8 模型任务组件实时列表</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/model/runTaskModel?modelId=3' -i -X GET \
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/model/getTaskModelComponent?taskId=3' -i -X GET \
     -H 'userId: 1'</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/model/runTaskModel?modelId=3' \
+<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/model/getTaskModelComponent?taskId=3' \
     'userId:1'</code></pre>
 </div>
 </div>
@@ -14805,7 +14805,7 @@ Content-Length: 117
 <div class="listingblock">
 <div class="title">http-request 请求样例</div>
 <div class="content">
-<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /model/runTaskModel?modelId=3 HTTP/1.1
+<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /model/getTaskModelComponent?taskId=3 HTTP/1.1
 userId: 1
 Host: localhost:8080</code></pre>
 </div>
@@ -14843,8 +14843,8 @@ Host: localhost:8080</code></pre>
 </thead>
 <tbody>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>modelId</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">模型id</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务id</p></td>
 </tr>
 </tbody>
 </table>
@@ -14879,14 +14879,39 @@ Host: localhost:8080</code></pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.modelId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.taskState</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">模型ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务状态</p></td>
 </tr>
 <tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.components[].componentId</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">任务ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">组件id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.components[].componentCode</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">组件编码</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.components[].componentName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">组件名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.components[].componentState</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0初始 1成功 2运行中 3失败</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.components[].complete</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Boolean</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">是否执行完毕</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.components[].timeConsuming</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">耗时</p></td>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
@@ -14900,14 +14925,35 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 117
+Content-Length: 684
 
 {
   &quot;code&quot; : 0,
   &quot;msg&quot; : &quot;请求成功&quot;,
   &quot;result&quot; : {
-    &quot;modelId&quot; : 3,
-    &quot;taskId&quot; : 23
+    &quot;components&quot; : [ {
+      &quot;componentId&quot; : 1,
+      &quot;componentCode&quot; : &quot;start&quot;,
+      &quot;componentName&quot; : &quot;开始&quot;,
+      &quot;componentState&quot; : 1,
+      &quot;complete&quot; : true,
+      &quot;timeConsuming&quot; : 2
+    }, {
+      &quot;componentId&quot; : 2,
+      &quot;componentCode&quot; : &quot;dataSet&quot;,
+      &quot;componentName&quot; : &quot;选择数据集&quot;,
+      &quot;componentState&quot; : 1,
+      &quot;complete&quot; : true,
+      &quot;timeConsuming&quot; : 2
+    }, {
+      &quot;componentId&quot; : 3,
+      &quot;componentCode&quot; : &quot;model&quot;,
+      &quot;componentName&quot; : &quot;模型选择&quot;,
+      &quot;componentState&quot; : 1,
+      &quot;complete&quot; : true,
+      &quot;timeConsuming&quot; : 76655
+    } ],
+    &quot;taskState&quot; : 1
   },
   &quot;extra&quot; : null
 }</code></pre>

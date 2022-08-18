@@ -395,12 +395,13 @@ public class DataModelControllerTest {
                                 fieldWithPath("code").description("返回码"),
                                 fieldWithPath("msg").description("返回码描述"),
                                 fieldWithPath("result").description("返回码结果"),
-                                fieldWithPath("result[].componentId").description("组件id"),
-                                fieldWithPath("result[].componentCode").description("组件编码"),
-                                fieldWithPath("result[].componentName").description("组件名称"),
-                                fieldWithPath("result[].componentState").description("0初始 1成功 2运行中 3失败"),
-                                fieldWithPath("result[].complete").description("是否执行完毕"),
-                                fieldWithPath("result[].timeConsuming").description("耗时"),
+                                fieldWithPath("result.taskState").description("任务状态"),
+                                fieldWithPath("result.components[].componentId").description("组件id"),
+                                fieldWithPath("result.components[].componentCode").description("组件编码"),
+                                fieldWithPath("result.components[].componentName").description("组件名称"),
+                                fieldWithPath("result.components[].componentState").description("0初始 1成功 2运行中 3失败"),
+                                fieldWithPath("result.components[].complete").description("是否执行完毕"),
+                                fieldWithPath("result.components[].timeConsuming").description("耗时"),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));
