@@ -425,7 +425,10 @@ public class DataModelService {
         List<DataComponent> dataComponents = JSONObject.parseArray(modelTask.getComponentJson(),DataComponent.class);
         if (dataComponents.size()==0)
             return BaseResultEntity.success();
-        return BaseResultEntity.success(dataComponents.stream().map(DataModelConvert::dataComponentPoConvertDataComponentVo).collect(Collectors.toList()));
+        Map<String,Object> map = new HashMap<>();
+        map.put("taskState",dataTask.getTaskState());
+        map.put("components",dataComponents.stream().map(DataModelConvert::dataComponentPoConvertDataComponentVo).collect(Collectors.toList()));
+        return BaseResultEntity.success(map);
     }
 
     public BaseResultEntity getModelPrediction(Long modelId){
