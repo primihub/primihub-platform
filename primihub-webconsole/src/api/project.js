@@ -57,3 +57,10 @@ export function removeResource(data) {
     data
   })
 }
+export function removeOrgan(data) {
+  return request({
+    url: '/data/project/removeOrgan',
+    method: 'post',
+    data
+  })
+}

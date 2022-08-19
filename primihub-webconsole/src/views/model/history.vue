@@ -68,7 +68,7 @@
         >
           <template slot-scope="{row}">
             <div class="buttons">
-              <el-button v-if="hasModelRunPermission && row.taskState === 3" type="text" size="mini" @click.stop="runTaskModel(row)">重启</el-button>
+              <el-button v-if="hasModelRunPermission && row.taskState === 3" type="text" size="mini" @click.stop="restartTaskModel(row.taskId)">重启</el-button>
               <el-button v-if="hasModelViewPermission" type="text" size="mini" @click="toModelDetail(row.taskId)">查看</el-button>
               <el-button v-if="hasModelDownloadPermission && row.taskState === 1" type="text" size="mini" @click="download(row.taskId)">下载结果</el-button>
               <el-button type="text" size="mini" :disabled="row.taskState === 2" @click="deleteTask(row.taskId)">删除</el-button>
@@ -82,7 +82,7 @@
 </template>
 
 <script>
-import { getModelTaskList, runTaskModel, getTaskModelComponent } from '@/api/model'
+import { getModelTaskList, restartTaskModel } from '@/api/model'
 import { deleteTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import { getToken } from '@/utils/auth'
@@ -158,13 +158,16 @@ export default {
     }, 5000)
   },
   methods: {
-    runTaskModel(row) {
+    restartTaskModel(taskId) {
       this.listLoading = true
-      runTaskModel({ modelId: this.modelId }).then(res => {
+      restartTaskModel({ taskId }).then(res => {
         if (res.code === 0) {
-          this.taskTimer = window.setInterval(() => {
-            setTimeout(this.getTaskModelComponent(row.taskId), 0)
-          }, 1500)
+          this.listLoading = false
+          this.$message({
+            message: '运行完成',
+            type: 'success'
+          })
+          this.fetchData()
         } else {
           this.listLoading = false
           this.$message({
@@ -175,39 +178,6 @@ export default {
       }).catch(err => {
         this.listLoading = false
         console.log(err)
-      })
-    },
-    getTaskModelComponent(taskId) {
-      getTaskModelComponent({ taskId }).then(res => {
-        const result = res.result
-        const taskState = res.result.taskState
-        if (taskState === 3) { // task failed
-          this.listLoading = false
-          clearInterval(this.taskTimer)
-          this.$notify.closeAll()
-          this.$notify({
-            message: '运行失败',
-            type: 'error',
-            duration: 3000
-          })
-        } else {
-          const taskResult = []
-          result && result.forEach((item) => {
-            const { componentCode, complete } = item
-            if (complete) {
-              taskResult.push(componentCode)
-            }
-          })
-          if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
-            this.listLoading = false
-            clearInterval(this.taskTimer)
-            this.$notify({
-              message: '运行完成',
-              type: 'success'
-            })
-          }
-        }
-        this.fetchData()
       })
     },
     deleteTask(taskId) {
@@ -298,7 +268,6 @@ export default {
   color: #909399;
 }
 .status-end{
-  background-color: #67C23A;
   color: #67C23A;
 }
 .status-processing{

@@ -160,8 +160,8 @@
             <template slot-scope="{row}">
               <div class="buttons">
                 <el-link v-if="hasViewPermission" :disabled="row.status === 2" type="primary" @click="toProjectDetail(row.id)">查看</el-link>
-                <el-link v-if="row.status === 1" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
-                <el-link v-if="row.status === 2" type="primary" @click="projectActionHandler(row.id, 'open')">启动</el-link>
+                <el-link v-if="hasDeletePermission && row.status === 1 && row.organId === userOrganId" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
+                <el-link v-if="row.status === 2 && row.organId === userOrganId" type="primary" @click="projectActionHandler(row.id, 'open')">启用</el-link>
               </div>
 
             </template>
@@ -230,11 +230,15 @@ export default {
     hasViewPermission() {
       return this.$store.getters.buttonPermissionList.includes('ProjectDetail')
     },
+    hasDeletePermission() {
+      return this.$store.getters.buttonPermissionList.includes('ProjectDelete')
+    },
     hasCreateAuth() {
       return this.buttonPermissionList.includes('ProjectCreate')
     },
     ...mapGetters([
-      'buttonPermissionList'
+      'buttonPermissionList',
+      'userOrganId'
     ])
   },
   async created() {
