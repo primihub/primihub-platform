@@ -37,6 +37,7 @@ public class DataProjectConvert {
     public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject, List<Map<String, Object>> list){
         DataProjectListVo dataProjectListVo = new DataProjectListVo();
         dataProjectListVo.setId(dataProject.getId());
+        dataProjectListVo.setOrganId(dataProject.getCreatedOrganId());
         dataProjectListVo.setProjectId(dataProject.getProjectId());
         dataProjectListVo.setProjectName(dataProject.getProjectName());
         dataProjectListVo.setProjectDesc(dataProject.getProjectDesc());

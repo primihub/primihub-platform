@@ -10680,6 +10680,11 @@ Host: localhost:8080</code></pre>
 <td class="tableblock halign-left valign-top"><p class="tableblock">本地项目ID</p></td>
 </tr>
 <tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].organId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">创建机构ID</p></td>
+</tr>
+<tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].projectId</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">项目id</p></td>
@@ -10756,7 +10761,7 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 2544
+Content-Length: 2834
 
 {
   &quot;code&quot; : 0,
@@ -10772,6 +10777,7 @@ Content-Length: 2544
       &quot;projectName&quot; : &quot;0815-01&quot;,
       &quot;projectDesc&quot; : &quot;8月15号测试项目-第一项&quot;,
       &quot;userName&quot; : &quot;测试账号&quot;,
+      &quot;organId&quot; : &quot;8bf56ee6-b004-4ada-b078-591acb22b324&quot;,
       &quot;createdOrganName&quot; : &quot;test1&quot;,
       &quot;resourceNum&quot; : 8,
       &quot;modelNum&quot; : 7,
@@ -10787,6 +10793,7 @@ Content-Length: 2544
       &quot;projectName&quot; : &quot;测试意见&quot;,
       &quot;projectDesc&quot; : &quot;1&quot;,
       &quot;userName&quot; : &quot;admin&quot;,
+      &quot;organId&quot; : &quot;2cad8338-2e8c-4768-904d-2b598a7e3298&quot;,
       &quot;createdOrganName&quot; : &quot;test2&quot;,
       &quot;resourceNum&quot; : 10,
       &quot;modelNum&quot; : 0,
@@ -10802,6 +10809,7 @@ Content-Length: 2544
       &quot;projectName&quot; : &quot;模型测试&quot;,
       &quot;projectDesc&quot; : &quot;1&quot;,
       &quot;userName&quot; : &quot;admin&quot;,
+      &quot;organId&quot; : &quot;2cad8338-2e8c-4768-904d-2b598a7e3298&quot;,
       &quot;createdOrganName&quot; : &quot;test2&quot;,
       &quot;resourceNum&quot; : 7,
       &quot;modelNum&quot; : 2,
@@ -10817,6 +10825,7 @@ Content-Length: 2544
       &quot;projectName&quot; : &quot;123456789&quot;,
       &quot;projectDesc&quot; : &quot;987654321&quot;,
       &quot;userName&quot; : &quot;admin&quot;,
+      &quot;organId&quot; : &quot;8bf56ee6-b004-4ada-b078-591acb22b324&quot;,
       &quot;createdOrganName&quot; : &quot;test1&quot;,
       &quot;resourceNum&quot; : 1,
       &quot;modelNum&quot; : 1,
@@ -10832,6 +10841,7 @@ Content-Length: 2544
       &quot;projectName&quot; : &quot;0811-02&quot;,
       &quot;projectDesc&quot; : &quot;0811-02&quot;,
       &quot;userName&quot; : &quot;测试账号&quot;,
+      &quot;organId&quot; : &quot;8bf56ee6-b004-4ada-b078-591acb22b324&quot;,
       &quot;createdOrganName&quot; : &quot;test1&quot;,
       &quot;resourceNum&quot; : 3,
       &quot;modelNum&quot; : 0,
