@@ -527,7 +527,8 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_2_3_5_模型组件详情">2.3.5 模型组件详情</a></li>
 <li><a href="#_2_3_6_模型删除">2.3.6 模型删除</a></li>
 <li><a href="#_2_3_7_运行模型">2.3.7 运行模型</a></li>
-<li><a href="#_2_3_8_模型任务组件实时列表">2.3.8 模型任务组件实时列表</a></li>
+<li><a href="#_2_3_8_重启运行模型">2.3.8 重启运行模型</a></li>
+<li><a href="#_2_3_9_模型任务组件实时列表">2.3.9 模型任务组件实时列表</a></li>
 </ul>
 </li>
 <li><a href="#_2_4_psi相关接口">2.4 PSI相关接口</a>
@@ -14783,7 +14784,130 @@ Content-Length: 117
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_3_8_模型任务组件实时列表">2.3.8 模型任务组件实时列表</h3>
+<h3 id="_2_3_8_重启运行模型">2.3.8 重启运行模型</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/model/restartTaskModel?taskId=3' -i -X GET</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/model/restartTaskModel?taskId=3'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">request-body 请求体</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">http-request 请求样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /model/restartTaskModel?taskId=3 HTTP/1.1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 161. request-headers 请求头说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 162. request-parameters 请求参数说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务id</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 163. response-fields 返回字段说明</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>msg</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.modelId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">模型ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">额外信息</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="title">http-response 返回结果样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 116
+
+{
+  &quot;code&quot; : 0,
+  &quot;msg&quot; : &quot;请求成功&quot;,
+  &quot;result&quot; : {
+    &quot;modelId&quot; : 3,
+    &quot;taskId&quot; : 3
+  },
+  &quot;extra&quot; : null
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_3_9_模型任务组件实时列表">2.3.9 模型任务组件实时列表</h3>
 <div class="listingblock">
 <div class="content">
 <pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/model/getTaskModelComponent?taskId=3' -i -X GET \
@@ -14811,7 +14935,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 161. request-headers 请求头说明</caption>
+<caption class="title">Table 164. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -14830,7 +14954,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 162. request-parameters 请求参数说明</caption>
+<caption class="title">Table 165. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -14849,7 +14973,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 163. response-fields 返回字段说明</caption>
+<caption class="title">Table 166. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -14991,7 +15115,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 164. request-parameters 请求参数说明</caption>
+<caption class="title">Table 167. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -15022,7 +15146,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 165. response-fields 返回字段说明</caption>
+<caption class="title">Table 168. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -15431,7 +15555,7 @@ ownOrganId=d881601a-0d51-4313-8813-382e758d7861&amp;ownResourceId=1&amp;ownKeywo
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 166. request-headers 请求头说明</caption>
+<caption class="title">Table 169. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -15450,7 +15574,7 @@ ownOrganId=d881601a-0d51-4313-8813-382e758d7861&amp;ownResourceId=1&amp;ownKeywo
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 167. request-parameters 请求参数说明</caption>
+<caption class="title">Table 170. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -15525,7 +15649,7 @@ ownOrganId=d881601a-0d51-4313-8813-382e758d7861&amp;ownResourceId=1&amp;ownKeywo
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 168. response-fields 返回字段说明</caption>
+<caption class="title">Table 171. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -15762,7 +15886,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 169. request-parameters 请求参数说明</caption>
+<caption class="title">Table 172. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -15797,7 +15921,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 170. response-fields 返回字段说明</caption>
+<caption class="title">Table 173. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -15954,7 +16078,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 171. request-headers 请求头说明</caption>
+<caption class="title">Table 174. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -15973,7 +16097,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 172. request-parameters 请求参数说明</caption>
+<caption class="title">Table 175. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -15996,7 +16120,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 173. response-fields 返回字段说明</caption>
+<caption class="title">Table 176. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -16186,7 +16310,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 174. request-headers 请求头说明</caption>
+<caption class="title">Table 177. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -16209,7 +16333,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 175. request-parameters 请求参数说明</caption>
+<caption class="title">Table 178. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -16236,7 +16360,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 176. response-fields 返回字段说明</caption>
+<caption class="title">Table 179. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -16433,7 +16557,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 177. request-headers 请求头说明</caption>
+<caption class="title">Table 180. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -16452,7 +16576,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 178. request-parameters 请求参数说明</caption>
+<caption class="title">Table 181. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -16471,7 +16595,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 179. response-fields 返回字段说明</caption>
+<caption class="title">Table 182. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -16696,125 +16820,6 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 180. request-headers 请求头说明</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Name</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userId</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">用户id 前端不用传</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 181. request-parameters 请求参数说明</caption>
-<colgroup>
-<col style="width: 50%;">
-<col style="width: 50%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Parameter</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>taskId</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">psi 任务id</p></td>
-</tr>
-</tbody>
-</table>
-<table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 182. response-fields 返回字段说明</caption>
-<colgroup>
-<col style="width: 33.3333%;">
-<col style="width: 33.3333%;">
-<col style="width: 33.3334%;">
-</colgroup>
-<thead>
-<tr>
-<th class="tableblock halign-left valign-top">Path</th>
-<th class="tableblock halign-left valign-top">Type</th>
-<th class="tableblock halign-left valign-top">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">返回码</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>msg</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">返回码描述</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
-</tr>
-<tr>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">额外信息</p></td>
-</tr>
-</tbody>
-</table>
-<div class="listingblock">
-<div class="title">http-response 返回结果样例</div>
-<div class="content">
-<pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
-Content-Type: application/json
-Content-Length: 82
-
-{
-  &quot;code&quot; : 1003,
-  &quot;msg&quot; : &quot;数据为空&quot;,
-  &quot;result&quot; : null,
-  &quot;extra&quot; : null
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_2_4_8_psi任务取消接口">2.4.8 psi任务取消接口</h3>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/psi/cancelPsiTask?taskId=2' -i -X GET \
-    -H 'userId: 1'</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/psi/cancelPsiTask?taskId=2' \
-    'userId:1'</code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">request-body 请求体</div>
-<div class="content">
-<pre class="CodeRay highlight nowrap"><code></code></pre>
-</div>
-</div>
-<div class="listingblock">
-<div class="title">http-request 请求样例</div>
-<div class="content">
-<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /psi/cancelPsiTask?taskId=2 HTTP/1.1
-userId: 1
-Host: localhost:8080</code></pre>
-</div>
-</div>
-<table class="tableblock frame-all grid-all stretch">
 <caption class="title">Table 183. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
@@ -16894,11 +16899,11 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 79
+Content-Length: 82
 
 {
-  &quot;code&quot; : 0,
-  &quot;msg&quot; : &quot;请求成功&quot;,
+  &quot;code&quot; : 1003,
+  &quot;msg&quot; : &quot;数据为空&quot;,
   &quot;result&quot; : null,
   &quot;extra&quot; : null
 }</code></pre>
@@ -16906,16 +16911,16 @@ Content-Length: 79
 </div>
 </div>
 <div class="sect2">
-<h3 id="_2_4_9_psi任务重试接口">2.4.9 psi任务重试接口</h3>
+<h3 id="_2_4_8_psi任务取消接口">2.4.8 psi任务取消接口</h3>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/psi/retryPsiTask?taskId=2' -i -X GET \
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/psi/cancelPsiTask?taskId=2' -i -X GET \
     -H 'userId: 1'</code></pre>
 </div>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/psi/retryPsiTask?taskId=2' \
+<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/psi/cancelPsiTask?taskId=2' \
     'userId:1'</code></pre>
 </div>
 </div>
@@ -16928,7 +16933,7 @@ Content-Length: 79
 <div class="listingblock">
 <div class="title">http-request 请求样例</div>
 <div class="content">
-<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /psi/retryPsiTask?taskId=2 HTTP/1.1
+<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /psi/cancelPsiTask?taskId=2 HTTP/1.1
 userId: 1
 Host: localhost:8080</code></pre>
 </div>
@@ -17024,6 +17029,125 @@ Content-Length: 79
 </div>
 </div>
 </div>
+<div class="sect2">
+<h3 id="_2_4_9_psi任务重试接口">2.4.9 psi任务重试接口</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/psi/retryPsiTask?taskId=2' -i -X GET \
+    -H 'userId: 1'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/psi/retryPsiTask?taskId=2' \
+    'userId:1'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">request-body 请求体</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">http-request 请求样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /psi/retryPsiTask?taskId=2 HTTP/1.1
+userId: 1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 189. request-headers 请求头说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Name</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>userId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">用户id 前端不用传</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 190. request-parameters 请求参数说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">psi 任务id</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 191. response-fields 返回字段说明</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>msg</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">额外信息</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="title">http-response 返回结果样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 79
+
+{
+  &quot;code&quot; : 0,
+  &quot;msg&quot; : &quot;请求成功&quot;,
+  &quot;result&quot; : null,
+  &quot;extra&quot; : null
+}</code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="sect1">
@@ -17055,7 +17179,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 189. request-headers 请求头说明</caption>
+<caption class="title">Table 192. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17068,7 +17192,7 @@ Host: localhost:8080</code></pre>
 </thead>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 190. request-parameters 请求参数说明</caption>
+<caption class="title">Table 193. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17115,7 +17239,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 191. response-fields 返回字段说明</caption>
+<caption class="title">Table 194. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -17389,7 +17513,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 192. request-headers 请求头说明</caption>
+<caption class="title">Table 195. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17402,7 +17526,7 @@ Host: localhost:8080</code></pre>
 </thead>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 193. request-parameters 请求参数说明</caption>
+<caption class="title">Table 196. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17421,7 +17545,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 194. response-fields 返回字段说明</caption>
+<caption class="title">Table 197. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -17504,7 +17628,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 195. request-headers 请求头说明</caption>
+<caption class="title">Table 198. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17517,7 +17641,7 @@ Host: localhost:8080</code></pre>
 </thead>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 196. request-parameters 请求参数说明</caption>
+<caption class="title">Table 199. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17540,7 +17664,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 197. response-fields 返回字段说明</caption>
+<caption class="title">Table 200. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -17720,7 +17844,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 198. request-headers 请求头说明</caption>
+<caption class="title">Table 201. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17733,7 +17857,7 @@ Host: localhost:8080</code></pre>
 </thead>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 199. request-parameters 请求参数说明</caption>
+<caption class="title">Table 202. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17760,7 +17884,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 200. response-fields 返回字段说明</caption>
+<caption class="title">Table 203. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -17954,7 +18078,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 201. request-headers 请求头说明</caption>
+<caption class="title">Table 204. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17967,7 +18091,7 @@ Host: localhost:8080</code></pre>
 </thead>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 202. request-parameters 请求参数说明</caption>
+<caption class="title">Table 205. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -17986,7 +18110,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 203. response-fields 返回字段说明</caption>
+<caption class="title">Table 206. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">
@@ -18119,7 +18243,7 @@ Host: localhost:8080</code></pre>
 </div>
 </div>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 204. request-headers 请求头说明</caption>
+<caption class="title">Table 207. request-headers 请求头说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -18132,7 +18256,7 @@ Host: localhost:8080</code></pre>
 </thead>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 205. request-parameters 请求参数说明</caption>
+<caption class="title">Table 208. request-parameters 请求参数说明</caption>
 <colgroup>
 <col style="width: 50%;">
 <col style="width: 50%;">
@@ -18151,7 +18275,7 @@ Host: localhost:8080</code></pre>
 </tbody>
 </table>
 <table class="tableblock frame-all grid-all stretch">
-<caption class="title">Table 206. response-fields 返回字段说明</caption>
+<caption class="title">Table 209. response-fields 返回字段说明</caption>
 <colgroup>
 <col style="width: 33.3333%;">
 <col style="width: 33.3333%;">

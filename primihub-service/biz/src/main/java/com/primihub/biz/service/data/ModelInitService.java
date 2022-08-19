@@ -68,7 +68,7 @@ public class ModelInitService {
 
 
     @Async
-    public void runModelTaskFeign(DataModel dataModel,DataTask dataTask){
+    public void runModelTaskFeign(DataModel dataModel,DataTask dataTask,DataModelTask modelTask){
         log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
         DataModelAndComponentReq dataModelAndComponentReq = null;
         if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
@@ -76,14 +76,11 @@ public class ModelInitService {
         }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.updateDataTask(dataTask);
-        DataModelTask modelTask = new DataModelTask();
-        modelTask.setTaskId(dataTask.getTaskId());
-        modelTask.setModelId(dataModel.getModelId());
         List<DataComponentReq> modelComponents = dataModelAndComponentReq.getModelComponents();
         Map<String, DataComponentReq> reqMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
         List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null,dataTask.getTaskId());
         modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
-        dataModelPrRepository.saveDataModelTask(modelTask);
+        dataModelPrRepository.updateDataModelTask(modelTask);
         log.info("检索model组件 数量:{}",modelComponents.size());
         ModelOutputPathDto outputPathDto = null;
         List<ModelProjectResourceVo> resourceList = null;

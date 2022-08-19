@@ -401,9 +401,35 @@ public class DataModelService {
         dataModel.setComponentJson(formatModelComponentJson(params, dataComponentMap));
         dataModel.setIsDraft(1);
         dataModelPrRepository.updateDataModel(dataModel);
-        modelInitService.runModelTaskFeign(dataModel,dataTask);
+        DataModelTask modelTask = new DataModelTask();
+        modelTask.setTaskId(dataTask.getTaskId());
+        modelTask.setModelId(dataModel.getModelId());
+        dataModelPrRepository.saveDataModelTask(modelTask);
+        modelInitService.runModelTaskFeign(dataModel,dataTask,modelTask);
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",modelId);
+        returnMap.put("taskId",dataTask.getTaskId());
+        return BaseResultEntity.success(returnMap);
+    }
+
+    public BaseResultEntity restartTaskModel(Long taskId) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
+        DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
+        if (modelTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型任务信息");
+        DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
+        if (dataModel==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型信息");
+        dataTask.setTaskErrorMsg("");
+        dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskEndTime(System.currentTimeMillis());
+        dataTaskPrRepository.updateDataTask(dataTask);
+        modelInitService.runModelTaskFeign(dataModel,dataTask,modelTask);
+        Map<String,Object> returnMap = new HashMap<>();
+        returnMap.put("modelId",dataModel.getModelId());
         returnMap.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(returnMap);
     }
@@ -473,4 +499,6 @@ public class DataModelService {
         dataModelPrRepository.saveDataModelResource(vo.getDmrList());
         return BaseResultEntity.success();
     }
+
+
 }

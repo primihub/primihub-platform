@@ -376,6 +376,32 @@ public class DataModelControllerTest {
     }
 
     @Test
+    public void testRestartTaskModel() throws Exception{
+        // 删除资源接口
+        this.mockMvc.perform(get("/model/restartTaskModel")
+                .param("taskId","3"))
+                .andExpect(status().isOk())
+                .andDo(document("restartTaskModel",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+//                                headerWithName("userId").description("用户id (前端不用传参)")
+                        ),
+                        requestParameters(
+                                parameterWithName("taskId").description("任务id")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("result.modelId").description("模型ID"),
+                                fieldWithPath("result.taskId").description("任务ID"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
     public void testGetTaskModelComponent() throws Exception{
         // 删除资源接口
         this.mockMvc.perform(get("/model/getTaskModelComponent")

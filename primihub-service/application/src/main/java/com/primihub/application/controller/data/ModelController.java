@@ -107,6 +107,19 @@ public class ModelController {
     }
 
     /**
+     * 重启模型
+     * @param taskId
+     * @return
+     */
+    @GetMapping("restartTaskModel")
+    public BaseResultEntity restartTaskModel(Long taskId){
+        if (taskId==null||taskId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
+        return dataModelService.restartTaskModel(taskId);
+    }
+
+    /**
      * 获取运行模型信息
      * @param taskId
      * @return
