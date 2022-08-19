@@ -158,9 +158,12 @@
             min-width="160"
           >
             <template slot-scope="{row}">
-              <el-button v-if="hasViewPermission" :disabled="row.status === 2" type="text" @click="toProjectDetail(row.id)">查看</el-button>
-              <el-button v-if="row.status === 1" type="text" @click="closeProject(row.id)">禁用</el-button>
-              <el-button v-if="row.status === 2" type="text" @click="openProject(row.id)">启动</el-button>
+              <div class="buttons">
+                <el-link v-if="hasViewPermission" :disabled="row.status === 2" type="primary" @click="toProjectDetail(row.id)">查看</el-link>
+                <el-link v-if="row.status === 1" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
+                <el-link v-if="row.status === 2" type="primary" @click="projectActionHandler(row.id, 'open')">启动</el-link>
+              </div>
+
             </template>
           </el-table-column>
         </el-table>
@@ -192,6 +195,7 @@ export default {
   },
   data() {
     return {
+      projectId: 0,
       projectType: 'table',
       projectList: null,
       sysLocalOrganInfo: [],
@@ -241,6 +245,18 @@ export default {
     this.getListStatistics()
   },
   methods: {
+    handleClose() {},
+    handleProjectCancel() {
+      this.dialogVisible = false
+    },
+    handleProjectAction() {
+      if (this.projectAction === 'close') {
+        this.closeProject()
+      } else if (this.projectAction === 'open') {
+        this.openProject()
+      }
+      this.dialogVisible = false
+    },
     tableRowDisabled({ row }) {
       if (row.status === 2) {
         return 'table-row-disabled'
@@ -248,8 +264,28 @@ export default {
         return ''
       }
     },
-    closeProject(id) {
-      closeProject({ id }).then(res => {
+    projectActionHandler(id, action) {
+      this.projectAction = action
+      this.dialogVisible = true
+      this.projectId = id
+      const text = action === 'close' ? '禁用后，数据、任务、模型将均不可用，进行中的任务立即停止，确认禁用么？' : '开启后，项目可正常发起任务，确认开启么？'
+      this.$confirm(text, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (action === 'close') {
+          this.closeProject()
+        } else {
+          this.openProject()
+        }
+        this.dialogVisible = false
+      }).catch(() => {
+        this.dialogVisible = false
+      })
+    },
+    closeProject() {
+      closeProject({ id: this.projectId }).then(res => {
         if (res.code === 0) {
           this.$message({
             message: '禁用成功',
@@ -259,8 +295,8 @@ export default {
         }
       })
     },
-    openProject(id) {
-      openProject({ id }).then(res => {
+    openProject() {
+      openProject({ id: this.projectId }).then(res => {
         if (res.code === 0) {
           this.$message({
             message: '启动成功',
@@ -487,7 +523,10 @@ h2 {
   // margin-left: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  .el-link{
+    margin: 0 5px;
+  }
+  // justify-content: space-between;
   .type{
     font-size: 24px;
     line-height: 1;
