@@ -10615,7 +10615,7 @@ Host: localhost:8080</code></pre>
 </tr>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>status</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">项目状态 0审核中 1可用 2关闭</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用</p></td>
 </tr>
 </tbody>
 </table>
@@ -10756,46 +10756,91 @@ Host: localhost:8080</code></pre>
 <div class="content">
 <pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
 Content-Type: application/json
-Content-Length: 1162
+Content-Length: 2544
 
 {
   &quot;code&quot; : 0,
   &quot;msg&quot; : &quot;请求成功&quot;,
   &quot;result&quot; : {
-    &quot;total&quot; : 2,
+    &quot;total&quot; : 20,
     &quot;pageSize&quot; : 5,
-    &quot;totalPage&quot; : 1,
+    &quot;totalPage&quot; : 4,
     &quot;index&quot; : 1,
     &quot;data&quot; : [ {
-      &quot;id&quot; : 16,
-      &quot;projectId&quot; : &quot;40bdea66c03b-788a0da1-c28a-428d-9489-e7f70bed6a28&quot;,
-      &quot;projectName&quot; : &quot;创建项目编辑&quot;,
-      &quot;projectDesc&quot; : &quot;创建项目描述编辑&quot;,
+      &quot;id&quot; : 20,
+      &quot;projectId&quot; : &quot;591acb22b324-7514d2b1-b850-4537-8bf4-3d75a836159c&quot;,
+      &quot;projectName&quot; : &quot;0815-01&quot;,
+      &quot;projectDesc&quot; : &quot;8月15号测试项目-第一项&quot;,
+      &quot;userName&quot; : &quot;测试账号&quot;,
+      &quot;createdOrganName&quot; : &quot;test1&quot;,
+      &quot;resourceNum&quot; : 8,
+      &quot;modelNum&quot; : 7,
+      &quot;modelAssembleNum&quot; : 7,
+      &quot;modelRunNum&quot; : 0,
+      &quot;modelSuccessNum&quot; : 0,
+      &quot;providerOrganNames&quot; : &quot;test2,test3,ceshi1&quot;,
+      &quot;status&quot; : 1,
+      &quot;createDate&quot; : &quot;2022-08-15 03:30:04&quot;
+    }, {
+      &quot;id&quot; : 19,
+      &quot;projectId&quot; : &quot;2b598a7e3298-bd040740-679d-4e61-8a92-91252410a7bd&quot;,
+      &quot;projectName&quot; : &quot;测试意见&quot;,
+      &quot;projectDesc&quot; : &quot;1&quot;,
       &quot;userName&quot; : &quot;admin&quot;,
-      &quot;createdOrganName&quot; : &quot;测试是上帝防守打法&quot;,
+      &quot;createdOrganName&quot; : &quot;test2&quot;,
+      &quot;resourceNum&quot; : 10,
+      &quot;modelNum&quot; : 0,
+      &quot;modelAssembleNum&quot; : 0,
+      &quot;modelRunNum&quot; : 0,
+      &quot;modelSuccessNum&quot; : 0,
+      &quot;providerOrganNames&quot; : &quot;test1&quot;,
+      &quot;status&quot; : 1,
+      &quot;createDate&quot; : &quot;2022-08-15 03:02:55&quot;
+    }, {
+      &quot;id&quot; : 18,
+      &quot;projectId&quot; : &quot;2b598a7e3298-7ded0651-9786-4300-b28e-1d4362db4d63&quot;,
+      &quot;projectName&quot; : &quot;模型测试&quot;,
+      &quot;projectDesc&quot; : &quot;1&quot;,
+      &quot;userName&quot; : &quot;admin&quot;,
+      &quot;createdOrganName&quot; : &quot;test2&quot;,
+      &quot;resourceNum&quot; : 7,
+      &quot;modelNum&quot; : 2,
+      &quot;modelAssembleNum&quot; : 2,
+      &quot;modelRunNum&quot; : 0,
+      &quot;modelSuccessNum&quot; : 0,
+      &quot;providerOrganNames&quot; : &quot;test1,test3&quot;,
+      &quot;status&quot; : 1,
+      &quot;createDate&quot; : &quot;2022-08-12 03:02:00&quot;
+    }, {
+      &quot;id&quot; : 17,
+      &quot;projectId&quot; : &quot;591acb22b324-80e8b93b-c5fb-465c-8292-50a379d73948&quot;,
+      &quot;projectName&quot; : &quot;123456789&quot;,
+      &quot;projectDesc&quot; : &quot;987654321&quot;,
+      &quot;userName&quot; : &quot;admin&quot;,
+      &quot;createdOrganName&quot; : &quot;test1&quot;,
+      &quot;resourceNum&quot; : 1,
+      &quot;modelNum&quot; : 1,
+      &quot;modelAssembleNum&quot; : 1,
+      &quot;modelRunNum&quot; : 0,
+      &quot;modelSuccessNum&quot; : 0,
+      &quot;providerOrganNames&quot; : &quot;ceshi1&quot;,
+      &quot;status&quot; : 1,
+      &quot;createDate&quot; : &quot;2022-08-11 10:02:10&quot;
+    }, {
+      &quot;id&quot; : 16,
+      &quot;projectId&quot; : &quot;591acb22b324-ea3e51e6-d39d-4ce3-8c47-36984a72b7a9&quot;,
+      &quot;projectName&quot; : &quot;0811-02&quot;,
+      &quot;projectDesc&quot; : &quot;0811-02&quot;,
+      &quot;userName&quot; : &quot;测试账号&quot;,
+      &quot;createdOrganName&quot; : &quot;test1&quot;,
       &quot;resourceNum&quot; : 3,
       &quot;modelNum&quot; : 0,
       &quot;modelAssembleNum&quot; : 0,
       &quot;modelRunNum&quot; : 0,
       &quot;modelSuccessNum&quot; : 0,
-      &quot;providerOrganNames&quot; : &quot;&quot;,
+      &quot;providerOrganNames&quot; : &quot;test3,test2&quot;,
       &quot;status&quot; : 1,
-      &quot;createDate&quot; : &quot;2022-07-13 09:35:03&quot;
-    }, {
-      &quot;id&quot; : 15,
-      &quot;projectId&quot; : &quot;40bdea66c03b-3a026693-0baa-4edb-bb2a-12814764d42f&quot;,
-      &quot;projectName&quot; : &quot;1212&quot;,
-      &quot;projectDesc&quot; : &quot;12121&quot;,
-      &quot;userName&quot; : &quot;admin&quot;,
-      &quot;createdOrganName&quot; : &quot;测试是上帝防守打法&quot;,
-      &quot;resourceNum&quot; : 2,
-      &quot;modelNum&quot; : 1,
-      &quot;modelAssembleNum&quot; : 1,
-      &quot;modelRunNum&quot; : 0,
-      &quot;modelSuccessNum&quot; : 0,
-      &quot;providerOrganNames&quot; : &quot;测试是111&quot;,
-      &quot;status&quot; : 1,
-      &quot;createDate&quot; : &quot;2022-07-13 08:52:17&quot;
+      &quot;createDate&quot; : &quot;2022-08-11 07:17:26&quot;
     } ]
   },
   &quot;extra&quot; : null
@@ -11839,7 +11884,7 @@ id=1</code></pre>
 <tbody>
 <tr>
 <td class="tableblock halign-left valign-top"><p class="tableblock"><code>id</code></p></td>
-<td class="tableblock halign-left valign-top"><p class="tableblock">本地项目资源ID</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">本地项目机构ID</p></td>
 </tr>
 </tbody>
 </table>

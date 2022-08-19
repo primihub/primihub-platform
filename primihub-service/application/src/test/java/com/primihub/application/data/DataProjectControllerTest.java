@@ -257,7 +257,7 @@ public class DataProjectControllerTest {
                                 parameterWithName("participationIdentity").description("机构项目中参与身份 1发起者 2协作者"),
                                 parameterWithName("startDate").description("开始日期"),
                                 parameterWithName("endDate").description("结束日期"),
-                                parameterWithName("status").description("项目状态 0审核中 1可用 2关闭")
+                                parameterWithName("status").description("项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
@@ -451,7 +451,7 @@ public class DataProjectControllerTest {
                         requestHeaders(
                         ),
                         requestParameters(
-                                parameterWithName("id").description("本地项目资源ID")
+                                parameterWithName("id").description("本地项目机构ID")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
