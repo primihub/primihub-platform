@@ -204,6 +204,7 @@ public class ModelInitService {
             }
             dataComponent.setEndTime(System.currentTimeMillis());
             modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
+            dataTaskPrRepository.updateDataTask(dataTask);
             dataModelPrRepository.updateDataModelTask(modelTask);
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
