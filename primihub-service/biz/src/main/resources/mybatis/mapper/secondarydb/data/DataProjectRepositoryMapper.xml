@@ -114,7 +114,7 @@
         select
             <include refid="DataProjectBaseColumnList"/>
         from
-            data_project
+            data_project dp
         where is_del = 0
             <include refid="selectDataProjectCondition"/>
         ORDER BY id desc
@@ -124,7 +124,7 @@
         select
             count(id)
         from
-            data_project
+            data_project dp
         where is_del = 0
         <include refid="selectDataProjectCondition"/>
     </select>
@@ -179,7 +179,21 @@
             and created_organ_id != #{ownOrganId}
         </if>
         <if test="projectName!=null and projectName!=''"> and project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
-        <if test="status!=null">and status = #{status}</if>
+        <if test="status!=null">
+            <choose>
+                <when test="status>10">
+                    and (
+                        select
+                        if(count(id) = count(audit_status= 1 or NULL), 11, 12)
+                        from data_project_organ dpo where dpo.project_id = dp.project_id
+                    )  = #{status}
+                </when>
+                <otherwise>
+                    and status = #{status}
+                </otherwise>
+            </choose>
+
+        </if>
         <if test="(organId!=null and organId!='') or (participationIdentity!=null and participationIdentity!=0)">
             and project_id in (
                 select project_id from data_project_organ where is_del = 0

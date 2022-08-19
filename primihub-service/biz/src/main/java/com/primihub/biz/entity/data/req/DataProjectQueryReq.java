@@ -34,7 +34,12 @@ public class DataProjectQueryReq extends PageReq {
     private Integer participationIdentity;
 
     /**
-     * 项目状态 0审核中 1可用 2关闭
+     * 项目状态
+     * 0审核中
+     * 1可用
+     *  可用扩展1、  11 全部可用
+     *  可用扩展2、  12 部分可用
+     * 2关闭
      */
     private Integer status;
     /**
