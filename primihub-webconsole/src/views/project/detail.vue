@@ -65,6 +65,7 @@
               <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
               <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
               <ResourceTable
+                max-height="480"
                 :project-audit-status="projectAuditStatus"
                 :this-institution="thisInstitution"
                 :creator="creator"

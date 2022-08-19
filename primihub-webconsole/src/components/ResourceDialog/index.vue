@@ -4,9 +4,8 @@
     v-bind="$attrs"
   >
     <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
-    <ResourceTableSingleSelect :data="tableData" :selected-data="selectedData" @change="handleChange" />
+    <ResourceTableSingleSelect max-height="530" :data="tableData" :selected-data="selectedData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
-      <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
         <el-button size="medium" @click="closeDialog">取 消</el-button>
         <el-button size="medium" type="primary" @click="handleSubmit">确 定</el-button>
@@ -17,13 +16,11 @@
 
 <script>
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
-import Pagination from '@/components/Pagination'
 // import SearchInput from '@/components/SearchInput'
 export default {
   name: 'ResourceDialog',
   components: {
-    ResourceTableSingleSelect,
-    Pagination
+    ResourceTableSingleSelect
     // SearchInput
   },
   props: {
@@ -39,12 +36,7 @@ export default {
   data() {
     return {
       resourceList: [],
-      total: 0,
-      currentPage: 1,
-      pageNo: 1,
-      pageSize: 5,
       selectedResource: {},
-      pageCount: 0,
       resourceName: '',
       listLoading: false,
       selectedResourceId: ''
@@ -55,18 +47,11 @@ export default {
       this.selectedResource = data
     },
     searchResource() {
-      this.pageNo = 1
       this.$emit('request')
       // this.fetchData()
     },
     handleSearchNameChange(searchName) {
       this.resourceName = searchName
-      this.pageNo = 1
-    },
-    handlePagination(data) {
-      this.pageNo = data.page
-      // this.fetchData()
-      this.$emit('request')
     },
     closeDialog() {
       this.resourceName = ''

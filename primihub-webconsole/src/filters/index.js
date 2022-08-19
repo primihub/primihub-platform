@@ -79,7 +79,7 @@ const projectAuditStatusFilter = (status) => {
   const sourceMap = {
     0: '审核中',
     1: '可用',
-    2: '关闭'
+    2: '不可用'
   }
   return sourceMap[status]
 }

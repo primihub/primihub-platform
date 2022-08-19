@@ -142,12 +142,6 @@ export default {
     await this.init()
     this.initToolBarEvent()
     this.getModelComponentDetail()
-
-    this.taskTimer = window.setInterval(() => {
-      if (this.modelStartRun) { // 模型开始运行
-        setTimeout(this.getTaskModelComponent(), 0)
-      }
-    }, 1500)
   },
   destroyed() {
     clearTimeout(this.taskTimer)
@@ -600,47 +594,75 @@ export default {
         } else {
           this.taskId = res.result.taskId
           this.modelStartRun = true
+          this.$notify.closeAll()
           this.$notify({
             message: '开始运行',
             type: 'info',
             duration: 5000
           })
+          this.taskTimer = window.setInterval(() => {
+            if (this.modelStartRun) { // 模型开始运行
+              setTimeout(this.getTaskModelComponent(), 0)
+            }
+          }, 1500)
         }
       })
     },
     getTaskModelComponent() {
       getTaskModelComponent({ taskId: this.taskId }).then(res => {
-        const result = res.result
-        const taskResult = []
-        result && result.forEach((item) => {
-          const { componentCode, complete, componentState } = item
-          const nodes = this.graph.getNodes()
-          const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
-          const data = node.getData()
-          node.setData({
-            ...data,
-            componentState: componentState
-          })
-          if (complete) {
-            taskResult.push(componentCode)
-            node.setData({
-              ...data,
-              componentState: componentState,
-              complete: true
-            })
-          }
-        })
-        if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
+        const result = res.result.components
+        const taskState = res.result.taskState
+        if (taskState === 3) { // task failed
           clearInterval(this.taskTimer)
+          this.$notify.closeAll()
           this.$notify({
-            message: '模型运行完成',
-            type: 'success',
+            message: '运行失败',
+            type: 'error',
             duration: 3000
           })
-          // to model task detail page
-          setTimeout(() => {
-            this.toModelDetail(this.taskId)
-          }, 3000)
+          this.modelStartRun = false
+          this.$confirm('任务运行失败, 是否重新运行?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.run()
+          }).catch(() => {
+          })
+          return
+        } else {
+          const taskResult = []
+          result && result.forEach((item) => {
+            const { componentCode, complete, componentState } = item
+            const nodes = this.graph.getNodes()
+            const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
+            const data = node.getData()
+            node.setData({
+              ...data,
+              componentState: componentState
+            })
+            if (complete) {
+              taskResult.push(componentCode)
+              node.setData({
+                ...data,
+                componentState: componentState,
+                complete: true
+              })
+            }
+          })
+          if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
+            clearInterval(this.taskTimer)
+            this.$notify.closeAll()
+            this.$notify({
+              message: '运行完成',
+              type: 'success',
+              duration: 3000
+            })
+            // to model task detail page
+            setTimeout(() => {
+              this.toModelDetail(this.taskId)
+            }, 3000)
+          }
         }
       })
     },

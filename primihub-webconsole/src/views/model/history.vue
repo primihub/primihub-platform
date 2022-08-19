@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="model-list">
+    <div v-loading="listLoading" element-loading-text="运行中" class="model-list">
       <el-table
         :data="taskList"
         border
@@ -30,7 +30,7 @@
         <el-table-column
           prop="taskState"
           label="任务状态"
-          width="100"
+          sortable
         >
           <template slot-scope="{row}">
             <i :class="statusStyle(row.taskState)" />
@@ -40,12 +40,17 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="时间"
-          min-width="100"
+          label="开始时间"
         >
           <template slot-scope="{row}">
-            <span>开始时间：{{ row.taskStartDate }}</span> <br>
-            <span v-if="row.taskState !== (0 || 2)">结束时间：{{ row.taskEndDate }}</span>
+            <span>{{ row.taskStartDate }}</span> <br>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="结束时间"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.taskEndDate }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column
@@ -63,9 +68,10 @@
         >
           <template slot-scope="{row}">
             <div class="buttons">
-              <el-button v-if="hasModelViewPermission" type="text" size="mini" icon="el-icon-view" @click="toModelDetail(row.taskId)">查看详情</el-button>
-              <el-button v-if="hasModelDownloadPermission && row.taskState === 1" type="text" size="mini" icon="el-icon-download" @click="download(row.taskId)">下载结果</el-button>
-              <el-button type="text" size="mini" icon="el-icon-delete" :disabled="row.taskState === 2" @click="deleteTask(row.taskId)">删除</el-button>
+              <el-button v-if="hasModelRunPermission && row.taskState === 3" type="text" size="mini" @click.stop="runTaskModel(row)">重启</el-button>
+              <el-button v-if="hasModelViewPermission" type="text" size="mini" @click="toModelDetail(row.taskId)">查看</el-button>
+              <el-button v-if="hasModelDownloadPermission && row.taskState === 1" type="text" size="mini" @click="download(row.taskId)">下载结果</el-button>
+              <el-button type="text" size="mini" :disabled="row.taskState === 2" @click="deleteTask(row.taskId)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -76,7 +82,7 @@
 </template>
 
 <script>
-import { getModelTaskList } from '@/api/model'
+import { getModelTaskList, runTaskModel, getTaskModelComponent } from '@/api/model'
 import { deleteTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import { getToken } from '@/utils/auth'
@@ -93,7 +99,7 @@ export default {
         0: '未开始',
         1: '成功',
         2: '运行中',
-        3: '失败',
+        3: '任务失败',
         4: '取消'
       }
       return statusMap[status]
@@ -127,7 +133,8 @@ export default {
       pageCount: 0,
       hidePagination: true,
       emptyText: '',
-      timer: null
+      timer: null,
+      taskTimer: null
     }
   },
   computed: {
@@ -136,6 +143,9 @@ export default {
     },
     hasModelDownloadPermission() {
       return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
+    },
+    hasModelRunPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelRun')
     }
   },
   destroyed() {
@@ -148,26 +158,79 @@ export default {
     }, 5000)
   },
   methods: {
+    runTaskModel(row) {
+      this.listLoading = true
+      runTaskModel({ modelId: this.modelId }).then(res => {
+        if (res.code === 0) {
+          this.taskTimer = window.setInterval(() => {
+            setTimeout(this.getTaskModelComponent(row.taskId), 0)
+          }, 1500)
+        } else {
+          this.listLoading = false
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+        }
+      }).catch(err => {
+        this.listLoading = false
+        console.log(err)
+      })
+    },
+    getTaskModelComponent(taskId) {
+      getTaskModelComponent({ taskId }).then(res => {
+        const result = res.result
+        const taskState = res.result.taskState
+        if (taskState === 3) { // task failed
+          this.listLoading = false
+          clearInterval(this.taskTimer)
+          this.$notify.closeAll()
+          this.$notify({
+            message: '运行失败',
+            type: 'error',
+            duration: 3000
+          })
+        } else {
+          const taskResult = []
+          result && result.forEach((item) => {
+            const { componentCode, complete } = item
+            if (complete) {
+              taskResult.push(componentCode)
+            }
+          })
+          if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
+            this.listLoading = false
+            clearInterval(this.taskTimer)
+            this.$notify({
+              message: '运行完成',
+              type: 'success'
+            })
+          }
+        }
+        this.fetchData()
+      })
+    },
     deleteTask(taskId) {
       this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
+        this.listLoading = true
         deleteTask(taskId).then(res => {
           if (res.code === 0) {
-            const posIndex = this.taskList.findIndex(item => item.taskId === taskId)
-            if (posIndex !== -1) {
-              this.taskList.splice(posIndex, 1)
-            }
+            this.fetchData()
             this.$message({
               message: '删除成功',
               type: 'success',
               duration: 1000
             })
+            this.listLoading = false
           }
         })
-      }).catch(() => {})
+      }).catch(() => {
+        this.listLoading = false
+      })
     },
     async download(taskId) {
       const timestamp = new Date().getTime()
@@ -185,8 +248,7 @@ export default {
       console.log('searchModel', this.searchName)
     },
     fetchData() {
-      // this.listLoading = true
-      this.taskList = []
+      // this.taskList = []
       const params = {
         modelId: this.modelId,
         pageNo: this.pageNo,
@@ -197,7 +259,6 @@ export default {
         this.taskList = result.data
         this.total = result.total
         this.pageCount = result.totalPage
-        // this.listLoading = false
         // filter the running task
         const res = this.taskList.filter(item => item.taskState === 2)
         // No tasks are running
@@ -207,7 +268,7 @@ export default {
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-default' : status === 1 ? 'status-end' : status === 2 ? 'status-processing' : status === 3 ? 'status-error' : 'status-default'
+      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
     },
     handlePagination(data) {
       this.pageNo = data.page
@@ -230,24 +291,21 @@ export default {
   padding: 20px 0;
 }
 .status-default,.status-processing,.status-error,.status-end{
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-  vertical-align: middle;
   margin-right: 3px;
+  font-size: 12px;
 }
 .status-default{
-  background-color: #909399;
+  color: #909399;
 }
 .status-end{
   background-color: #67C23A;
+  color: #67C23A;
 }
 .status-processing{
   background-color: #409EFF;
 }
 .status-error{
-  background-color: #F56C6C;
+  color: #F56C6C;
 }
 ::v-deep .el-table,::v-deep .el-divider__text, .el-link{
   font-size: 12px;
@@ -261,5 +319,8 @@ export default {
   color: #F56C6C;
   font-size: 12px;
   line-height: 1.2;
+}
+::v-deep .el-table th.el-table__cell{
+  background-color: #f5f7fa!important;
 }
 </style>
