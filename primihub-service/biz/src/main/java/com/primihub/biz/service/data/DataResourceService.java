@@ -117,9 +117,9 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
-//            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl())){
-//                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
-//            }
+            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl())){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
+            }
             dataResourcePrRepository.saveResource(dataResource);
             List<DataFileField> dataFileFieldList = fieldList.stream().map(field -> DataResourceConvert.DataFileFieldReqConvertPo(field, sysFile.getFileId(), dataResource.getResourceId())).collect(Collectors.toList());
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
