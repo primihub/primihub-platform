@@ -394,6 +394,7 @@ public class DataProjectService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无机构信息");
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         if (sysLocalOrganId.equals(dataProjectOrgan.getInitiateOrganId())||sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
+            dataProjectPrRepository.deleteDataProjectOrgan(id);
             ShareProjectVo vo = new ShareProjectVo(dataProjectOrgan.getProjectId(), dataProjectOrgan.getServerAddress());
             dataProjectOrgan.setIsDel(1);
             vo.getProjectOrgans().add(dataProjectOrgan);
