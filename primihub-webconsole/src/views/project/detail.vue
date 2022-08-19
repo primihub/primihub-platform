@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div v-loading="listLoading" class="container">
     <el-row :gutter="20">
       <el-col :span="6">
         <section class="infos">
@@ -54,7 +54,7 @@
       <el-col :span="18">
         <section class="organs">
           <h3>参与机构</h3>
-          <el-button v-if="creator" type="primary" class="add-provider-button" @click="openProviderOrganDialog">添加更多协作者</el-button>
+          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="openProviderOrganDialog">添加更多协作者</el-button>
           <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
             <el-tab-pane v-for="item in organs" :key="item.organId" :name="item.organId" :label="item.organId">
               <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
@@ -62,7 +62,7 @@
                 <span v-else :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
                 <!-- <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span> -->
               </p>
-              <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
+              <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain :disabled="projectStatus === 2" @click="openDialog(item.organId)">添加资源到此项目</el-button>
               <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
               <ResourceTable
                 max-height="480"
@@ -83,8 +83,8 @@
         </section>
         <section class="organs">
           <h3>模型列表</h3>
-          <el-button v-if="creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
-          <Model :is-creator="creator" />
+          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">添加模型</el-button>
+          <Model :is-creator="creator" :project-status="projectStatus" />
         </section>
       </el-col>
     </el-row>
@@ -92,7 +92,7 @@
     <!-- add resource dialog -->
     <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" @delete="handleProviderOrganDelete" />
     <!-- preview dialog -->
     <el-dialog
       :visible.sync="previewDialogVisible"
@@ -108,7 +108,7 @@
 
 <script>
 import { mapActions, mapGetters } from 'vuex'
-import { getProjectDetail, approval, saveProject, closeProject, removeResource } from '@/api/project'
+import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
 import { findMyGroupOrgan } from '@/api/center'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
@@ -127,6 +127,7 @@ export default {
   },
   data() {
     return {
+      listLoading: false,
       serverAddress: '',
       auditForm: {
         auditOpinion: ''
@@ -159,7 +160,8 @@ export default {
       },
       creator: false,
       tabPosition: 'left',
-      providerOrganIds: []
+      providerOrganIds: [],
+      projectStatus: -1 // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用
     }
   },
   computed: {
@@ -379,6 +381,7 @@ export default {
         if (success) {
           data.map(item => {
             this.organs.push({
+              id: item.id,
               organId: item.globalId,
               organName: item.globalName,
               participationIdentity: 2
@@ -388,6 +391,21 @@ export default {
         this.providerOrganIds = data
       }
       this.providerOrganDialogVisible = false
+    },
+    handleProviderOrganDelete(id) {
+      this.removeOrgan(id)
+    },
+    removeOrgan(id) {
+      removeOrgan({ id }).then(async res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '删除成功',
+            type: 'success'
+          })
+          await this.fetchData()
+          this.closeProviderOrganDialog()
+        }
+      })
     },
     saveProject() {
       // const { projectName, projectDesc, projectOrgans } = this
@@ -438,10 +456,11 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectId, projectDesc, userName, createDate, organs, serverAddress, creator } = this.list
+          const { projectName, projectId, projectDesc, userName, createDate, organs, serverAddress, creator, status } = this.list
           this.serverAddress = serverAddress
           this.creator = creator
           this.projectName = projectName
+          this.projectStatus = status
           this.projectId = projectId
           this.projectDesc = projectDesc
           this.userName = userName
@@ -455,8 +474,9 @@ export default {
           this.projectAuditStatus = this.currentOrgan.auditStatus === 1
           this.isShowAuditForm = this.currentOrgan.auditStatus === 0
           this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
-          this.providerOrganIds = this.providerOrganIds.map(item => {
+          this.providerOrganIds = this.providerOrganIds?.map(item => {
             return {
+              id: item.id,
               globalId: item.organId,
               globalName: item.organName
             }

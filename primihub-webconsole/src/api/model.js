@@ -112,4 +112,12 @@ export function getModelTaskList(params) {
     params
   })
 }
+// 重启运行模型
+export function restartTaskModel(params) {
+  return request({
+    url: '/data/model/restartTaskModel',
+    method: 'get',
+    params
+  })
+}
 

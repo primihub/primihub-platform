@@ -10,11 +10,12 @@
       border
       row-key="globalId"
       :data="organList"
+      @select="handleSelect"
       @selection-change="handleSelectionChange"
     >
+      <!-- :selectable="checkSelectable" 默认选中置灰 -->
       <el-table-column
         :reserve-selection="true"
-        :selectable="checkSelectable"
         type="selection"
         width="55"
       />
@@ -67,7 +68,6 @@ export default {
   },
   watch: {
     visible(newVal) {
-      console.log(newVal)
       if (newVal) {
         this.findMyGroupOrgan()
         this.toggleSelection(this.selectedData)
@@ -81,7 +81,6 @@ export default {
   // },
   methods: {
     closeDialog() {
-      console.log('close', this.selectedData)
       this.$emit('close', this.selectedData)
     },
     handleSubmit() {
@@ -89,6 +88,25 @@ export default {
     },
     handleSelectionChange(value) {
       this.multipleSelection = value
+    },
+    handleSelect(rows, row) {
+      const selected = rows.length && rows.indexOf(row) !== -1
+      const posIndex = this.selectedData.findIndex(item => item.globalId === row.globalId)
+      // true:选中，0或者false:取消选中
+      // 取消选中需判断是否在选择过的列表里
+      if (!selected && posIndex !== -1) {
+        this.$confirm('删除后，不可再使用此协作者数据创建任务，且进行中任务将会失败，是否删除？', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          const id = this.selectedData.filter(item => item.globalId === row.globalId)[0].id
+          this.$emit('delete', id)
+        }).catch(() => {
+          rows.push(row)
+          this.toggleSelection(rows)
+        })
+      }
     },
     checkSelectable(row, index) {
       const res = !(this.selectedData.length > 0 && this.selectedData.filter(item => item.globalId === row.globalId).length > 0)
@@ -101,13 +119,10 @@ export default {
       this.loading = false
     },
     toggleSelection(rows) {
-      console.log('toggleSelection', rows)
-      console.log('selectedData', this.selectedData)
       this.$nextTick(() => {
         if (rows) {
           this.$refs.table.clearSelection()
           rows.forEach(row => {
-            console.log(row.globalId)
             this.$refs.table.toggleRowSelection(row, true)
           })
         } else {

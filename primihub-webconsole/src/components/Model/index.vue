@@ -16,7 +16,7 @@
           </el-select>
         </el-form-item> -->
         <el-form-item label="">
-          <el-button type="primary" icon="el-icon-search" size="small" @click="search">搜索</el-button>
+          <el-button type="primary" icon="el-icon-search" size="small" :disabled="projectStatus === 2" @click="search">搜索</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -95,6 +95,10 @@ export default {
     isCreator: {
       type: Boolean,
       default: false
+    },
+    projectStatus: {
+      type: Number,
+      default: -1
     }
   },
   data() {
