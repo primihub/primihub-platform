@@ -269,6 +269,7 @@ public class DataProjectControllerTest {
                                 fieldWithPath("result.index").description("当前是第几页"),
                                 fieldWithPath("result.data[]").description("数据"),
                                 fieldWithPath("result.data[].id").description("本地项目ID"),
+                                fieldWithPath("result.data[].organId").description("创建机构ID"),
                                 fieldWithPath("result.data[].projectId").description("项目id"),
                                 fieldWithPath("result.data[].projectName").description("项目名称"),
                                 fieldWithPath("result.data[].projectDesc").description("项目描述"),

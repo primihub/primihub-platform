@@ -32,6 +32,11 @@ public class DataProjectListVo {
     private String userName;
 
     /**
+     * 创建机构id
+     */
+    private String organId;
+
+    /**
      * 机构名称
      */
     private String createdOrganName;
