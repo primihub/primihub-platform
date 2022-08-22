@@ -22,10 +22,25 @@
         where id = #{id}
     </update>
     <delete id="deleteDataProjectResource">
-        delete from data_project_resource where id = #{id}
+        delete from data_project_resource
+        <where>
+            <if test="id!=null">id = #{id}</if>
+            <if test="projectId!=null">project_id = #{projectId}</if>
+        </where>
     </delete>
     <delete id="deleteDataProjectOrgan">
-        delete from data_project_organ where id = #{id}
+        delete from data_project_organ
+        <where>
+            <if test="id!=null">id = #{id}</if>
+            <if test="projectId!=null">project_id = #{projectId}</if>
+        </where>
+    </delete>
+    <delete id="deleteDataProject">
+        delete from data_project
+        <where>
+            <if test="id!=null">id = #{id}</if>
+            <if test="projectId!=null">project_id = #{projectId}</if>
+        </where>
     </delete>
     <insert id="saveDataProjcetOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date)

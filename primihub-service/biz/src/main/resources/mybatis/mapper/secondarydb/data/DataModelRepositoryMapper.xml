@@ -117,7 +117,6 @@
                 width,
                 height,
                 coordinate_y as coordinateY,
-                coordinate_x as coordinateY ,
                 data_json as dataJson,
                 component_state as componentState,
                 start_time as startTime,

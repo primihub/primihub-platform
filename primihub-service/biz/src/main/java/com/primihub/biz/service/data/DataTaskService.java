@@ -249,20 +249,24 @@ public class DataTaskService {
         log.info(paramStr);
         ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
         shareProjectVo.supplement();
-        if (shareProjectVo.getProjectOrgans().size()==0)
-            shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
+        shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
         if (shareProjectVo.getProjectResources().size()==0)
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
-            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId());
+            List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
             log.info("select ProjectOrgans size:{}",dataProjectOrgans.size());
             if (dataProjectOrgans.size()==0)
                 return;
             List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-            organIds.remove(sysLocalOrganId);
+            log.info("1:{}",organIds.toArray());
+            log.info("2:{}",organIds.remove(sysLocalOrganId));
             Map<String, Map> organListMap = dataProjectService.getOrganListMap(organIds, shareProjectVo.getServerAddress());
+            log.info("3:{}",organListMap.size());
             for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
+                log.info("4:{}-{}",dataProjectOrgan.getInitiateOrganId(),dataProjectOrgan.getOrganId());
+                log.info("5:{}",sysLocalOrganId.equals(dataProjectOrgan.getOrganId()));
                 if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
+                    log.info("6:{}",organListMap.containsKey(dataProjectOrgan.getOrganId()));
                     if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
                         Map map = organListMap.get(dataProjectOrgan.getOrganId());
                         Object gatewayAddress = map==null?null:map.get("gatewayAddress");
