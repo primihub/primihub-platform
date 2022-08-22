@@ -31,7 +31,10 @@ import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ModelInitService {
+public class ModelInitService  {
 
 
 
@@ -65,6 +68,20 @@ public class ModelInitService {
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+
+
+    @Async
+    public void runModelTask(DataModel dataModel,DataTask dataTask){
+        log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTaskPrRepository.updateDataTask(dataTask);
+        DataModelTask modelTask = new DataModelTask();
+        modelTask.setTaskId(dataTask.getTaskId());
+        modelTask.setModelId(dataModel.getModelId());
+        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null,dataTask.getTaskId());
+        modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
+        dataModelPrRepository.saveDataModelTask(modelTask);
+    }
 
 
     @Async

@@ -53,6 +53,8 @@ public class DataModelService {
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
     private DataTaskRepository dataTaskRepository;
+    @Autowired
+    private DataAsyncService dataAsyncService;
 
     public BaseResultEntity getDataModel(Long taskId) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
@@ -406,6 +408,56 @@ public class DataModelService {
         modelTask.setModelId(dataModel.getModelId());
         dataModelPrRepository.saveDataModelTask(modelTask);
         modelInitService.runModelTaskFeign(dataModel,dataTask,modelTask);
+        Map<String,Object> returnMap = new HashMap<>();
+        returnMap.put("modelId",modelId);
+        returnMap.put("taskId",dataTask.getTaskId());
+        return BaseResultEntity.success(returnMap);
+    }
+
+    public BaseResultEntity runTaskModel1(Long modelId,Long userId) {
+        DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
+        if (dataModel==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
+        if (dataModel.getIsDraft()==0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型未保存,请保存后再次尝试");
+        if (StringUtils.isBlank(dataModel.getComponentJson()))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
+        if (StringUtils.isBlank(dataModel.getModelName()))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
+        if (dataModel.getTrainType()==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
+        Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
+            add(modelId);
+        }});
+        if (taskMap!=null&&!taskMap.isEmpty()){
+            Map<String, Object> dataMap = taskMap.get(modelId);
+            if (dataMap.get("taskState")!=null&&Integer.parseInt(dataMap.get("taskState").toString())==2)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务正在运行中");
+        }
+        ComponentTaskReq taskReq = new ComponentTaskReq(dataModel);
+        DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
+        if (modelComponentReq==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
+        for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
+            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
+            if (baseResultEntity.getCode()!=0){
+                return baseResultEntity;
+            }
+        }
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
+        dataTask.setTaskUserId(userId);
+        dataTaskPrRepository.saveDataTask(dataTask);
+        taskReq.setDataTask(dataTask);
+        DataModelTask modelTask = new DataModelTask();
+        modelTask.setTaskId(dataTask.getTaskId());
+        modelTask.setModelId(dataModel.getModelId());
+        dataModelPrRepository.saveDataModelTask(modelTask);
+        taskReq.setDataModelTask(modelTask);
+        dataAsyncService.runModelTask(taskReq);
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",modelId);
         returnMap.put("taskId",dataTask.getTaskId());

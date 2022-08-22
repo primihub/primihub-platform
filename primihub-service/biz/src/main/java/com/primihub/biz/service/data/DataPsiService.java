@@ -8,15 +8,12 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
-import com.primihub.biz.entity.data.vo.DataFileHandleFieldVo;
 import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
-import com.primihub.biz.entity.data.vo.DataPsiResourceVo;
 import com.primihub.biz.entity.data.vo.DataPsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -41,7 +38,7 @@ public class DataPsiService {
     @Autowired
     private FusionResourceService fusionResourceService;
     @Autowired
-    private PsiAsyncService psiAsyncService;
+    private DataAsyncService dataAsyncService;
     @Autowired
     private OrganConfiguration organConfiguration;
 
@@ -116,24 +113,11 @@ public class DataPsiService {
         }
         task.setCreateDate(new Date());
         dataPsiPrRepository.saveDataPsiTask(task);
-        psiAsyncService.psiGrpcRun(task,dataPsi);
+        dataAsyncService.psiGrpcRun(task,dataPsi);
         Map<String, Object> map = new HashMap<>();
         map.put("dataPsi",dataPsi);
         map.put("dataPsiTask",DataPsiConvert.DataPsiTaskConvertVo(task));
         return BaseResultEntity.success(map);
-    }
-
-    public void psiTaskOutputFileHandle(DataPsiTask task){
-        if (task.getTaskState()!=1)
-            return;
-        List<String> fileContent = FileUtil.getFileContent(task.getFilePath(), null);
-        StringBuilder sb = new StringBuilder();
-        for (String line : fileContent) {
-            sb.append(line).append("\r\n");
-        }
-        task.setFileContent(sb.toString());
-        task.setFileRows(fileContent.size());
-        dataPsiPrRepository.updateDataPsiTask(task);
     }
 
     public BaseResultEntity getPsiTaskList(PageReq req,String resultName) {

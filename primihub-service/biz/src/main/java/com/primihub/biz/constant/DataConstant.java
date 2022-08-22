@@ -25,7 +25,7 @@ public class DataConstant {
     public final static Integer COPY_PAGE_NUM = 20;
 
     // ModelComponentService impl bean name suffix
-    public final static String COMPONENT_BEAN_NAME_SUFFIX = "ComponentServiceImpl";
+    public final static String COMPONENT_BEAN_NAME_SUFFIX = "ComponentTaskServiceImpl";
 
 
 

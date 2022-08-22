@@ -103,7 +103,7 @@ public class ModelController {
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
-        return dataModelService.runTaskModel(modelId,userId);
+        return dataModelService.runTaskModel1(modelId,userId);
     }
 
     /**
