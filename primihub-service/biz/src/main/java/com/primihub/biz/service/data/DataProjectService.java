@@ -315,8 +315,12 @@ public class DataProjectService {
             for (DataProjectOrgan projectOrgan : vo.getProjectOrgans()) {
                 DataProjectOrgan dataProjectOrgan = projectOrganMap.get(projectOrgan.getOrganId());
                 if (dataProjectOrgan!=null){
-                    projectOrgan.setId(dataProjectOrgan.getId());
-                    dataProjectPrRepository.updateDataProjcetOrgan(projectOrgan);
+                    if (projectOrgan.getIsDel()!=null&&projectOrgan.getIsDel()==1){
+                        dataProjectPrRepository.deleteDataProjectOrgan(dataProjectOrgan.getId());
+                    }else {
+                        projectOrgan.setId(dataProjectOrgan.getId());
+                        dataProjectPrRepository.updateDataProjcetOrgan(projectOrgan);
+                    }
                 }else {
                     projectOrgan.setPoId(UUID.randomUUID().toString());
                     dataProjectPrRepository.saveDataProjcetOrgan(projectOrgan);
