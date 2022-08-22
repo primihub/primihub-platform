@@ -223,7 +223,7 @@ public class DataProjectService {
             dataProjectPrRepository.updateDataProject(dataProject);
             shareProjectVo.setProjectId(dataProjectOrgan.getProjectId());
             shareProjectVo.setServerAddress(dataProjectOrgan.getServerAddress());
-            shareProjectVo.getProjectOrgans().add(dataProjectOrgan);
+//            shareProjectVo.getProjectOrgans().add(dataProjectOrgan);
         }else {
             DataProjectResource dataProjectResource = dataProjectRepository.selectProjectResourceById(req.getId());
             if (dataProjectResource==null)
