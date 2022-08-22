@@ -93,7 +93,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
 import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
 import { findMyGroupOrgan } from '@/api/center'
@@ -217,7 +217,7 @@ export default {
       this.selectedOrganId = label
       this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
       this.resourceList[this.selectedOrganId] = this.currentOrgan.resources
-      this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0
+      this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0 && this.projectStatus !== 2
       this.projectAuditStatus = this.currentOrgan.auditStatus === 1
       this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
     },
@@ -402,7 +402,7 @@ export default {
           this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
           this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
           this.projectAuditStatus = this.currentOrgan.auditStatus === 1
-          this.isShowAuditForm = this.currentOrgan.auditStatus === 0
+          this.isShowAuditForm = this.projectStatus !== 2 && this.currentOrgan.auditStatus === 0
           this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
           this.providerOrganIds = this.providerOrganIds?.map(item => {
             return {
@@ -411,6 +411,7 @@ export default {
               globalName: item.organName
             }
           })
+          this.SET_STATUS(this.projectStatus)
         }
       })
     },
@@ -441,7 +442,8 @@ export default {
         query: { projectId: this.list.id }
       })
     },
-    ...mapActions('user', ['getInfo'])
+    ...mapActions('user', ['getInfo']),
+    ...mapMutations('project', ['SET_STATUS'])
   }
 }
 </script>
