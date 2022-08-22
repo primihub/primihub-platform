@@ -30,24 +30,7 @@
               {{ createDate }}
             </el-descriptions-item>
           </el-descriptions>
-          <div v-if="isShowAuditForm" class="audit">
-            <el-form ref="auditForm" :model="auditForm">
-              <el-form-item label="参与合作审核意见:">
-                <el-input
-                  ref="auditInput"
-                  v-model="auditForm.auditOpinion"
-                  type="textarea"
-                  maxlength="200"
-                  minlength="3"
-                  show-word-limit
-                />
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" size="small" @click="handleSubmit">同意</el-button>
-                <el-button type="danger" size="small" @click="handleRefused">拒绝</el-button>
-              </el-form-item>
-            </el-form>
-          </div>
+          <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
         </section>
 
       </el-col>
@@ -63,7 +46,7 @@
                 <!-- <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span> -->
               </p>
               <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain :disabled="projectStatus === 2" @click="openDialog(item.organId)">添加资源到此项目</el-button>
-              <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
+              <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ formatEmoji(item.auditOpinion) }}</p>
               <ResourceTable
                 max-height="480"
                 :project-audit-status="projectAuditStatus"
@@ -93,6 +76,8 @@
     <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
     <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" @delete="handleProviderOrganDelete" />
+    <!-- resource refused dialog-->
+    <ResourceApprovalDialog v-if="resourceApprovalDialogVisible" :visible="resourceApprovalDialogVisible" :resource-id="localResourceId" @close="handleResourceApprovalDialogClose" @submit="handleResourceApprovalDialogSubmit" />
     <!-- preview dialog -->
     <el-dialog
       :visible.sync="previewDialogVisible"
@@ -103,6 +88,7 @@
       <ResourcePreviewTable :data="previewList" height="500" />
     </el-dialog>
     <!-- preview dialog -->
+
   </div>
 </template>
 
@@ -111,11 +97,14 @@ import { mapActions, mapGetters } from 'vuex'
 import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
 import { findMyGroupOrgan } from '@/api/center'
+import { deCodeEmoji } from '@/utils/emoji-regex'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import ProviderOrganDialog from '@/components/ProviderOrganDialog'
+import ResourceApprovalDialog from '@/components/ResourceApprovalDialog'
 import ResourceTable from '@/components/ResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import Model from '@/components/Model'
+import ProjectAudit from '@/components/ProjectAudit'
 
 export default {
   components: {
@@ -123,7 +112,9 @@ export default {
     ProviderOrganDialog,
     ResourceTable,
     ResourcePreviewTable,
-    Model
+    Model,
+    ProjectAudit,
+    ResourceApprovalDialog
   },
   data() {
     return {
@@ -146,6 +137,7 @@ export default {
       providerOrganDialogVisible: false,
       previewDialogVisible: false,
       dialogVisible: false,
+      resourceApprovalDialogVisible: false,
       previewList: [],
       selectedOrganId: null,
       organList: [],
@@ -161,7 +153,9 @@ export default {
       creator: false,
       tabPosition: 'left',
       providerOrganIds: [],
-      projectStatus: -1 // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用
+      projectStatus: -1, // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用,
+      resourceId: 0,
+      localResourceId: 0
     }
   },
   computed: {
@@ -180,6 +174,16 @@ export default {
     await this.fetchData()
   },
   methods: {
+    handleResourceApprovalDialogClose() {
+      this.resourceApprovalDialogVisible = false
+    },
+    async handleResourceApprovalDialogSubmit() {
+      await this.fetchData()
+      this.resourceApprovalDialogVisible = false
+    },
+    formatEmoji(text) {
+      return deCodeEmoji(text)
+    },
     statusStyle(status) {
       return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : ''
     },
@@ -194,54 +198,6 @@ export default {
     showAuditForm() {
       return this.organs.filter(item => item.organId === this.selectedOrganId)[0].auditStatus === 0
     },
-    handleSubmit() {
-      this.$confirm('同意加入发起方的此次项目合作', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.isShowAuditForm = false
-        this.approval({
-          type: 1,
-          id: this.currentOrgan.id,
-          auditOpinion: this.auditForm.auditOpinion,
-          auditStatus: 1
-        })
-        this.$message({
-          type: 'success',
-          message: '加入成功'
-        })
-        location.reload()
-      }).catch(() => {})
-    },
-    handleRefused() {
-      if (this.auditForm.auditOpinion === '') {
-        this.$message({
-          type: 'warning',
-          message: '请填写审核意见'
-        })
-        this.$refs.auditInput.focus()
-      } else {
-        this.$confirm('拒绝与发起方的此次项目合作?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.approval({
-            type: 1,
-            id: this.currentOrgan.id,
-            auditOpinion: this.auditForm.auditOpinion,
-            auditStatus: 2
-          })
-          this.isShowAuditForm = false
-          this.$message({
-            type: 'success',
-            message: '拒绝与发起方的此次项目合作'
-          })
-          location.reload()
-        }).catch(() => {})
-      }
-    },
     handleAgree(row) {
       this.approval({
         type: 2,
@@ -249,44 +205,11 @@ export default {
         auditOpinion: '',
         auditStatus: 1
       })
-      this.$message({
-        type: 'success',
-        message: '授权成功'
-      })
-      this.isShowAuditForm = false
-      location.reload()
+      // location.reload()
     },
     handleResourceRefused(row) {
-      this.$prompt('请输入拒绝原因', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消'
-      }).then(({ value }) => {
-        if (!value) {
-          this.$message({
-            type: 'error',
-            message: '请输入拒绝原因'
-          })
-          return
-        } else if (value.length > 200) {
-          this.$message({
-            type: 'error',
-            message: '拒绝理由最多200字'
-          })
-          return
-        }
-        this.approval({
-          type: 2,
-          id: row.id,
-          auditOpinion: value,
-          auditStatus: 2
-        })
-        this.$message({
-          type: 'success',
-          message: '已拒绝'
-        })
-        this.isShowAuditForm = false
-        location.reload()
-      })
+      this.localResourceId = row.id
+      this.resourceApprovalDialogVisible = true
     },
     handleClick({ label = '' }) {
       this.differents = []
@@ -402,6 +325,7 @@ export default {
             message: '删除成功',
             type: 'success'
           })
+          this.selectedOrganId = this.userOrganId
           await this.fetchData()
           this.closeProviderOrganDialog()
         }
@@ -445,8 +369,14 @@ export default {
         auditStatus,
         auditOpinion
       }
-      approval(params).then(({ result }) => {
-
+      approval(params).then(({ code, result }) => {
+        if (code === 0) {
+          this.$message({
+            type: 'success',
+            message: auditStatus === 1 ? '授权成功' : ''
+          })
+          this.fetchData()
+        }
       })
     },
     fetchData() {
