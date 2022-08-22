@@ -321,15 +321,13 @@ public class DataProjectService {
             if (vo.getProjectOrgans()!=null&&vo.getProjectOrgans().size()!=0){
                 Map<String, DataProjectOrgan> projectOrganMap = dataProjectRepository.selectDataProjcetOrganByProjectId(vo.getProjectId()).stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
                 for (DataProjectOrgan projectOrgan : vo.getProjectOrgans()) {
-                    if(projectOrgan.getOrganId().equals(projectOrgan.getInitiateOrganId()) || projectOrgan.getOrganId().equals(sysLocalOrganId)){
-                        DataProjectOrgan dataProjectOrgan = projectOrganMap.get(projectOrgan.getOrganId());
-                        if (dataProjectOrgan!=null){
-                            projectOrgan.setId(dataProjectOrgan.getId());
-                            dataProjectPrRepository.updateDataProjcetOrgan(projectOrgan);
-                        }else {
-                            projectOrgan.setPoId(UUID.randomUUID().toString());
-                            dataProjectPrRepository.saveDataProjcetOrgan(projectOrgan);
-                        }
+                    DataProjectOrgan dataProjectOrgan = projectOrganMap.get(projectOrgan.getOrganId());
+                    if (dataProjectOrgan!=null){
+                        projectOrgan.setId(dataProjectOrgan.getId());
+                        dataProjectPrRepository.updateDataProjcetOrgan(projectOrgan);
+                    }else {
+                        projectOrgan.setPoId(UUID.randomUUID().toString());
+                        dataProjectPrRepository.saveDataProjcetOrgan(projectOrgan);
                     }
                 }
             }
