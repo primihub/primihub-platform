@@ -254,7 +254,7 @@ public class DataTaskService {
         if (shareProjectVo.getProjectResources().size()==0)
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
-            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId());
+            List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
             log.info("select ProjectOrgans size:{}",dataProjectOrgans.size());
             if (dataProjectOrgans.size()==0)
                 return;
