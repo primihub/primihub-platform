@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Data
 @Slf4j
-public class ComponentTaskReq {
+public class  ComponentTaskReq {
     private DataModel dataModel;
     private DataModelTask dataModelTask;
     private DataTask dataTask;

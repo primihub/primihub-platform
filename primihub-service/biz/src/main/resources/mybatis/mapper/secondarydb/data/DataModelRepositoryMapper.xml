@@ -224,7 +224,7 @@
     </select>
     <select id="queryModelLatestTask" resultType="java.util.Map">
         select
-               mt.model_id modelId,mt.task_id taskId,dt.task_state taskState
+            mt.model_id modelId,mt.task_id taskId,dt.task_state taskState,dt.task_id_name taskIdName,dt.task_start_time taskStaretTime,dt.task_end_time taskEndTime
         from (
                 select
                         DISTINCT model_id,max(task_id) task_id
