@@ -4,6 +4,7 @@ export function getModelList(params) {
   return request({
     url: '/data/model/getmodellist',
     method: 'get',
+    showLoading: false,
     params
   })
 }

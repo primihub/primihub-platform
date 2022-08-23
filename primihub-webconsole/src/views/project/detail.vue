@@ -1,49 +1,35 @@
 <template>
   <div v-loading="listLoading" class="container">
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <section class="infos">
-          <div class="infos-title">
-            <h2>{{ projectName }}</h2>
-            <p class="infos-des">{{ projectId }}</p>
-          </div>
-          <el-descriptions :column="1" label-class-name="detail-title">
-            <el-descriptions-item>
-              <template slot="label">
-                <i class="el-icon-user" />
-                <strong>创建人</strong>
-              </template>
-              {{ userName }}
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template slot="label">
-                <i class="el-icon-tickets" />
-                <strong>项目描述</strong>
-              </template>
-              {{ projectDesc }}
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template slot="label">
-                <i class="el-icon-time" />
-                <strong>创建时间</strong>
-              </template>
-              {{ createDate }}
-            </el-descriptions-item>
-          </el-descriptions>
-          <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
-        </section>
-
-      </el-col>
-      <el-col :span="18">
-        <section class="organs">
-          <h3>参与机构</h3>
-          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="openProviderOrganDialog">添加更多协作者</el-button>
+    <section class="infos">
+      <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
+        <el-descriptions-item label="项目ID">
+          {{ projectId }}
+        </el-descriptions-item>
+        <el-descriptions-item label="项目名称">
+          {{ projectName }}
+        </el-descriptions-item>
+        <el-descriptions-item>
+          <template slot="label">
+            <strong>创建时间</strong>
+          </template>
+          {{ createDate }}
+        </el-descriptions-item>
+        <el-descriptions-item label="项目描述">
+          {{ projectDesc }}
+        </el-descriptions-item>
+        <el-descriptions-item label="角色">
+          {{ creator? '项目创建方' : '项目协作方' }}
+        </el-descriptions-item>
+      </el-descriptions>
+      <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
+      <el-tabs v-model="tabName" class="tab-container" @tab-click="handleTabClick">
+        <el-tab-pane label="参与机构" name="organ">
+          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="openProviderOrganDialog">新增协作者</el-button>
           <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
             <el-tab-pane v-for="item in organs" :key="item.organId" :name="item.organId" :label="item.organId">
               <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
                 <span v-if="item.creator" class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
                 <span v-else :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
-                <!-- <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span> -->
               </p>
               <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain :disabled="projectStatus === 2" @click="openDialog(item.organId)">添加资源到此项目</el-button>
               <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ formatEmoji(item.auditOpinion) }}</p>
@@ -63,15 +49,13 @@
               />
             </el-tab-pane>
           </el-tabs>
-        </section>
-        <section class="organs">
-          <h3>模型列表</h3>
-          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">添加模型</el-button>
+        </el-tab-pane>
+        <el-tab-pane label="任务列表" name="modelTask">
+          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">新建任务</el-button>
           <Model :is-creator="creator" :project-status="projectStatus" />
-        </section>
-      </el-col>
-    </el-row>
-
+        </el-tab-pane>
+      </el-tabs>
+    </section>
     <!-- add resource dialog -->
     <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
@@ -118,11 +102,9 @@ export default {
   },
   data() {
     return {
+      tabName: 'organ',
       listLoading: false,
       serverAddress: '',
-      auditForm: {
-        auditOpinion: ''
-      },
       isShowAuditForm: false,
       projectName: '',
       projectId: '',
@@ -210,6 +192,9 @@ export default {
     handleResourceRefused(row) {
       this.localResourceId = row.id
       this.resourceApprovalDialogVisible = true
+    },
+    handleTabClick() {
+      // this.tabName = label
     },
     handleClick({ label = '' }) {
       this.differents = []
@@ -386,12 +371,11 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectId, projectDesc, userName, createDate, organs, serverAddress, creator, status } = this.list
+          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status } = this.list
           this.serverAddress = serverAddress
           this.creator = creator
           this.projectName = projectName
           this.projectStatus = status
-          this.projectId = projectId
           this.projectDesc = projectDesc
           this.userName = userName
           this.createDate = createDate
@@ -462,13 +446,12 @@ h2{
   margin-block-end: 0.5em;
 }
 section{
-  border-radius: $sectionBorderRadius;
   background-color: #ffffff;
   padding: 30px;
   margin-bottom: 30px;
 }
-.infos{
-  height: 100vh;
+::v-deep .el-table{
+  margin-top: 20px;
 }
 .infos-title{
   margin-bottom: 10px;
@@ -528,9 +511,12 @@ section{
   font-size: 14px;
   margin: 10px 0;
 }
-
+.tab-container{
+  margin-top: 20px;
+}
 .tabs{
   background-color: #F5F7FA;
+  margin-top: 20px;
 }
 .status-0{
   color: $mainColor;
