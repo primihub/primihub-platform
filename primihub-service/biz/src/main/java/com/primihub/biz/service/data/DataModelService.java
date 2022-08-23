@@ -181,7 +181,6 @@ public class DataModelService {
                 DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null);
                 if (dataProject==null)
                     return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"找不到项目");
-                dataModel.setProjectId(params.getProjectId());
             }
             if (params.getIsDraft()!=null&&params.getIsDraft()==1){
                 Map<String, String> paramValuesMap = getDataAlignmentComponentVals(params.getModelComponents());
@@ -195,6 +194,7 @@ public class DataModelService {
                 dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
             }
+            dataModel.setProjectId(params.getProjectId());
             saveOrGetModelComponentCache(true, userId,params.getProjectId(), params, dataModel);
         } catch (Exception e) {
             log.info(e.getMessage());
