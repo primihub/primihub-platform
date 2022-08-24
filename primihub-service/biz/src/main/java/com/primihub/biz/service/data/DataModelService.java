@@ -92,6 +92,8 @@ public class DataModelService {
                 }
             }
         }
+        if (task.getTaskStartTime()!=null&&task.getTaskEndTime()!=null)
+            modelVo.setTotalTime((task.getTaskEndTime()-task.getTaskStartTime())/1000);
         Map<String,Object> map = new HashMap();
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(),DataComponent.class);
         if (dataComponents.size()!=0){
