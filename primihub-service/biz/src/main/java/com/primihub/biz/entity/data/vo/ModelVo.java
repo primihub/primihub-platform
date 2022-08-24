@@ -25,7 +25,7 @@ public class ModelVo {
     // 是否草稿
     private Integer isDraft;
 
-    private Long totalTime = 0;
+    private Long totalTime = 0L;
     /**
      * 创建时间
      */
