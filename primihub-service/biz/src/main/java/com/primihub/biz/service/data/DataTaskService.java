@@ -69,6 +69,8 @@ public class DataTaskService {
     @Autowired
     private DataProjectRepository dataProjectRepository;
     @Autowired
+    private DataProjectPrRepository dataProjectPrRepository;
+    @Autowired
     private DataProjectService dataProjectService;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
@@ -254,21 +256,16 @@ public class DataTaskService {
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
             List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
-            log.info("select ProjectOrgans size:{}",dataProjectOrgans.size());
             if (dataProjectOrgans.size()==0)
                 return;
             List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-            log.info("1:{}",organIds.toArray());
-            log.info("2:{}",organIds.remove(sysLocalOrganId));
             Map<String, Map> organListMap = dataProjectService.getOrganListMap(organIds, shareProjectVo.getServerAddress());
-            log.info("3:{}",organListMap.size());
+            List<String> organNames = new ArrayList<>();
             for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
-                log.info("4:{}-{}",dataProjectOrgan.getInitiateOrganId(),dataProjectOrgan.getOrganId());
-                log.info("5:{}",sysLocalOrganId.equals(dataProjectOrgan.getOrganId()));
                 if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
-                    log.info("6:{}",organListMap.containsKey(dataProjectOrgan.getOrganId()));
                     if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
                         Map map = organListMap.get(dataProjectOrgan.getOrganId());
+                        organNames.add(map.get("globalName").toString());
                         Object gatewayAddress = map==null?null:map.get("gatewayAddress");
                         if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
                             log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
@@ -289,7 +286,9 @@ public class DataTaskService {
                     }
                 }
             }
-
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
+            dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
+            dataProjectPrRepository.updateDataProject(dataProject);
         }
     }
 
