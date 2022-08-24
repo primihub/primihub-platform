@@ -347,13 +347,18 @@ public class DataModelService {
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到模型信息");
         }
-
-        if (modelVo.getIsDraft()==1){
-            Map map = dataModelRepository.queryModelLatestTask(new HashSet() {{
-                add(modelId);
-            }});
-            if (map!=null&&!map.isEmpty()){
-                return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该模型有任务");
+        Map<String,Map<String,Object>> map = dataModelRepository.queryModelLatestTask(new HashSet() {{
+            add(modelId);
+        }});
+        if (map!=null&&!map.isEmpty()){
+            Iterator<Map.Entry<String, Map<String, Object>>> it = map.entrySet().iterator();
+            while (it.hasNext()){
+                Map<String, Object> value = it.next().getValue();
+                if (value.containsKey("taskId")){
+                    long taskId = Long.parseLong(value.get("taskId").toString());
+                    dataTaskPrRepository.deleteDataTask(taskId);
+                    dataModelPrRepository.deleteDataModelTask(taskId);
+                }
             }
         }
         dataModelPrRepository.deleteModelByModelId(modelId,modelVo.getIsDraft());
