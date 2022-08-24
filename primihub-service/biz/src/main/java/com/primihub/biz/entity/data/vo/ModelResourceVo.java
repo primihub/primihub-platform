@@ -49,6 +49,8 @@ public class ModelResourceVo {
      */
     private Integer modelParamNum;
 
+    private String serverAddress;
+
     @JsonIgnore
     private String url;
 }

@@ -84,6 +84,7 @@ public class DataModelService {
                         modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
                         modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
                         modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
+                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
                         if (map.get("organId")!=null){
                             modelResourceVo.setParticipationIdentity(organConfiguration.getSysLocalOrganId().equals(map.get("organId").toString())?1:2);
                         }
