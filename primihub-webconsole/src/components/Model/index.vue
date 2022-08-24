@@ -3,7 +3,6 @@
     <div class="model-list">
       <el-table
         v-loading="listLoading"
-        element-loading-text="运行中"
         :data="modelList"
         border
       >
@@ -34,18 +33,18 @@
         </el-table-column>
         <el-table-column
           label="开始时间"
-          min-width="100"
+          min-width="150"
         >
           <template slot-scope="{row}">
-            <span>{{ !row.latestTaskStartDate? '未开始': row.latestTaskStartDate }}</span> <br>
+            <span>{{ row.latestTaskStartDate?row.latestTaskStartDate:'未开始' }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column
           label="结束时间"
-          min-width="100"
+          min-width="150"
         >
           <template slot-scope="{row}">
-            <span>{{ !row.taskEndDate? '未结束' :row.taskEndDate }}</span> <br>
+            <span>{{ row.taskEndDate? row.taskEndDate:'未开始' }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column
@@ -74,15 +73,16 @@
           v-if="!(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission)"
           label="操作"
           width="220"
+          fixed="right"
         >
           <template slot-scope="{row}">
             <div>
               <!-- <el-button v-if="row.latestTaskStatus !== 2 && isCreator" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button> -->
-              <el-button v-if="row.latestTaskStatus !== 2 && isCreator" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button>
+              <el-button v-if="hasCopyModelTaskPermission && row.latestTaskStatus !== 2 && isCreator" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button>
               <el-button v-if="hasModelEditPermission && row.latestTaskStatus !== 2 && isCreator" type="text" size="mini" @click.stop="toEditPage(row)">编辑</el-button>
               <el-button v-if="hasModelRunPermission && row.latestTaskStatus === 3" type="text" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-button>
               <el-button v-if="hasModelDownloadPermission && row.latestTaskStatus === 1" type="text" size="mini" @click="download(row.latestTaskId)">下载结果</el-button>
-              <el-button type="text" size="mini" :disabled="row.latestTaskStatus === 2" @click="deleteTask(row.latestTaskId)">删除</el-button>
+              <el-button v-if="hasDeleteModelTaskPermission" type="text" size="mini" :disabled="row.latestTaskStatus === 2" @click="deleteModel(row.modelId)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -93,8 +93,7 @@
 </template>
 
 <script>
-import { getModelList, runTaskModel, getTaskModelComponent, restartTaskModel } from '@/api/model'
-import { deleteTask } from '@/api/task'
+import { getModelList, runTaskModel, getTaskModelComponent, restartTaskModel, deleteModel } from '@/api/model'
 import Pagination from '@/components/Pagination'
 import { getToken } from '@/utils/auth'
 
@@ -180,6 +179,12 @@ export default {
     },
     hasModelDownloadPermission() {
       return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
+    },
+    hasDeleteModelTaskPermission() {
+      return this.$store.getters.buttonPermissionList.includes('deleteModelTask')
+    },
+    hasCopyModelTaskPermission() {
+      return this.$store.getters.buttonPermissionList.includes('copyModelTask')
     }
   },
   created() {
@@ -209,10 +214,8 @@ export default {
       restartTaskModel({ taskId }).then(res => {
         if (res.code === 0) {
           this.listLoading = false
-          this.$message({
-            message: '运行完成',
-            type: 'success'
-          })
+          const posIndex = this.modelList.findIndex(item => item.latestTaskId === taskId)
+          this.modelList[posIndex].latestTaskStatus = 2
           this.fetchData()
         } else {
           this.listLoading = false
@@ -226,26 +229,31 @@ export default {
         console.log(err)
       })
     },
-    deleteTask(taskId) {
+    deleteModel(modelId) {
       this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.listLoading = true
-        deleteTask(taskId).then(res => {
+        deleteModel({ modelId }).then(res => {
           if (res.code === 0) {
+            // last page && all deleted, to the first page
+            this.modelList.splice(this.modelList.findIndex(item => item.modelId === modelId), 1)
+            if (this.modelList.length === 0 && (this.params.pageNo === this.pageCount)) {
+              this.params.pageNo = 1
+            }
             this.fetchData()
             this.$message({
               message: '删除成功',
               type: 'success',
               duration: 1000
             })
-            this.listLoading = false
           }
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
         })
-      }).catch(() => {
-        this.listLoading = false
       })
     },
     async download(taskId) {
@@ -278,11 +286,16 @@ export default {
     fetchData() {
       this.params.projectId = this.projectId
       getModelList(this.params).then((response) => {
-        console.log('response.data', response.result)
         const { result } = response
         this.modelList = result.data
         this.total = result.total
         this.pageCount = result.totalPage
+        // filter the running task
+        const res = this.modelList.filter(item => item.latestTaskStatus === 2)
+        // No tasks are running
+        if (res.length === 0) {
+          clearInterval(this.timer)
+        }
       })
     },
     statusStyle(status) {

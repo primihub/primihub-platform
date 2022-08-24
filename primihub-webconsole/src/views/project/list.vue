@@ -161,7 +161,7 @@
               <div class="buttons">
                 <el-link v-if="hasViewPermission" :disabled="row.status === 2" type="primary" @click="toProjectDetail(row.id)">查看</el-link>
                 <el-link v-if="hasDeletePermission && row.status === 1 && row.organId === userOrganId" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
-                <el-link v-if="row.status === 2 && row.organId === userOrganId" type="primary" @click="projectActionHandler(row.id, 'open')">启用</el-link>
+                <el-link v-if="hasOpenPermission && row.status === 2 && row.organId === userOrganId" type="primary" @click="projectActionHandler(row.id, 'open')">启用</el-link>
               </div>
 
             </template>
@@ -232,6 +232,9 @@ export default {
     },
     hasDeletePermission() {
       return this.$store.getters.buttonPermissionList.includes('ProjectDelete')
+    },
+    hasOpenPermission() {
+      return this.$store.getters.buttonPermissionList.includes('openProject')
     },
     hasCreateAuth() {
       return this.buttonPermissionList.includes('ProjectCreate')

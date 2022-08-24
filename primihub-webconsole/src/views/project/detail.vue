@@ -22,6 +22,8 @@
         </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
+    </section>
+    <section>
       <el-tabs v-model="tabName" class="tab-container" @tab-click="handleTabClick">
         <el-tab-pane label="参与机构" name="organ">
           <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="openProviderOrganDialog">新增协作者</el-button>
@@ -56,6 +58,7 @@
         </el-tab-pane>
       </el-tabs>
     </section>
+
     <!-- add resource dialog -->
     <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
@@ -80,7 +83,6 @@
 import { mapActions, mapGetters, mapMutations } from 'vuex'
 import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
-import { findMyGroupOrgan } from '@/api/center'
 import { deCodeEmoji } from '@/utils/emoji-regex'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import ProviderOrganDialog from '@/components/ProviderOrganDialog'
@@ -170,12 +172,7 @@ export default {
       return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : ''
     },
     async openProviderOrganDialog() {
-      await this.findMyGroupOrgan()
       this.providerOrganDialogVisible = true
-    },
-    async findMyGroupOrgan() {
-      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
-      this.organList = result.dataList.organList
     },
     showAuditForm() {
       return this.organs.filter(item => item.organId === this.selectedOrganId)[0].auditStatus === 0
@@ -300,8 +297,15 @@ export default {
       }
       this.providerOrganDialogVisible = false
     },
-    handleProviderOrganDelete(id) {
-      this.removeOrgan(id)
+    handleProviderOrganDelete(ids) {
+      // 全部取消
+      if (ids.length > 1) {
+        ids.map(id => {
+          this.removeOrgan(id)
+        })
+      } else {
+        this.removeOrgan(ids[0])
+      }
     },
     removeOrgan(id) {
       removeOrgan({ id }).then(async res => {
@@ -446,12 +450,16 @@ h2{
   margin-block-end: 0.5em;
 }
 section{
+  border-radius: $sectionBorderRadius;
   background-color: #ffffff;
   padding: 30px;
   margin-bottom: 30px;
 }
 ::v-deep .el-table{
   margin-top: 20px;
+}
+::v-deep .tab-container .el-tabs__item {
+  font-size: 16px;
 }
 .infos-title{
   margin-bottom: 10px;
@@ -507,12 +515,12 @@ section{
   margin: 0;
   border-top: none;
 }
+.audit{
+  max-width: 500px;
+}
 .auditOpinion{
   font-size: 14px;
   margin: 10px 0;
-}
-.tab-container{
-  margin-top: 20px;
 }
 .tabs{
   background-color: #F5F7FA;

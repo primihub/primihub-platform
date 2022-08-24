@@ -556,7 +556,13 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
-      } else if (!this.modelId || cells.length === 1) { // model is empty or cleared, can't run
+      } else if (!this.modelId && this.isCopy) { // copy model task, must save
+        this.$message({
+          message: '模型未保存，请保存后再次尝试',
+          type: 'warning'
+        })
+        this.modelRunValidated = false
+      } else if (cells.length === 1) { // model is empty or cleared, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'

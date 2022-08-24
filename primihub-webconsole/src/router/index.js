@@ -51,15 +51,12 @@ export const asyncRoutes = [
     path: '/project',
     name: 'Project',
     component: Layout,
-    meta: { icon: 'el-icon-menu', title: '我的项目' },
     redirect: '/project/list',
     children: [
       {
         path: 'list',
         name: 'ProjectList',
-        meta: {
-          title: '我的项目'
-        },
+        meta: { icon: 'el-icon-menu', title: '项目管理' },
         component: () => import('@/views/project/list')
       },
       {
@@ -93,10 +90,10 @@ export const asyncRoutes = [
         path: '/model/detail/:id',
         name: 'ModelDetail',
         meta: {
-          title: '模型详情'
+          title: '任务详情'
         },
         hidden: true,
-        component: () => import('@/views/model/detail')
+        component: () => import('@/views/project/taskDetail')
       },
       {
         path: '/model/history/:id',
