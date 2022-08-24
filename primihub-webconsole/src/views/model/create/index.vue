@@ -133,8 +133,12 @@ export default {
   },
   computed: {
     isEdit() {
-      return !!this.$route.query.modelId
+      return this.$route.query.modelId && !this.isCopy
+    },
+    isCopy() {
+      return this.$route.query.isCopy
     }
+
   },
   async mounted() {
     this.isDraft = this.isEdit ? 1 : 0
@@ -552,7 +556,7 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
-      } else if (cells.length === 1) { // model is empty or cleared, can't run
+      } else if (!this.modelId || cells.length === 1) { // model is empty or cleared, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
@@ -688,7 +692,7 @@ export default {
       }
       const res = await getModelComponentDetail(params)
       const modelComponents = res.result?.modelComponents
-      if (this.isEdit && modelComponents && modelComponents.length > 0) { // It's is edit page
+      if ((this.isEdit || this.isCopy) && modelComponents && modelComponents.length > 0) { // It's is edit page
         this.setComponentsDetail(res.result)
       } else if (modelComponents && modelComponents.length > 1) {
         this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
@@ -707,7 +711,12 @@ export default {
     },
     setComponentsDetail(data) {
       const { modelId, modelComponents, modelPointComponents } = data
-      this.modelId = modelId
+      // 复制任务，需重置重新生成modelId
+      if (this.isCopy) {
+        this.modelId = 0
+      } else {
+        this.modelId = modelId
+      }
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
       for (let index = 0; index < this.modelComponents.length; index++) {

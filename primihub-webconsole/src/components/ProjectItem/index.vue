@@ -1,5 +1,5 @@
 <template>
-  <div class="item" @click="toProjectDetail">
+  <div class="item" :class="{'disabled': project.status === 2}" @click="toProjectDetail">
     <div class="header">
       <p><el-tag :type="statusStyle(project.status)" size="medium">{{ project.status | projectAuditStatusFilter }}</el-tag></p>
       <p class="header-title">{{ project.projectName }}</p>
@@ -45,6 +45,13 @@ export default {
   },
   methods: {
     toProjectDetail() {
+      if (this.project.status === 2) {
+        this.$message({
+          message: '当前项目已关闭',
+          type: 'warning'
+        })
+        return
+      }
       this.$router.push({
         name: 'ProjectDetail',
         params: { id: this.project.id }
@@ -80,6 +87,10 @@ p {
   margin-bottom: 15px;
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);
+  }
+  &.disabled{
+    background-color: #f5f7fa;
+    color: #909399;
   }
 }
 .header {
