@@ -8,6 +8,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
+import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
@@ -82,10 +83,17 @@ public class DataModelService {
                         modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
                         modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
                         modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
+                        modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
+                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
+                        if (map.get("organId")!=null){
+                            modelResourceVo.setParticipationIdentity(organConfiguration.getSysLocalOrganId().equals(map.get("organId").toString())?1:2);
+                        }
                     }
                 }
             }
         }
+        if (task.getTaskStartTime()!=null&&task.getTaskEndTime()!=null)
+            modelVo.setTotalTime((task.getTaskEndTime()-task.getTaskStartTime())/1000);
         Map<String,Object> map = new HashMap();
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(),DataComponent.class);
         if (dataComponents.size()!=0){
@@ -94,7 +102,7 @@ public class DataModelService {
             map.put("modelComponent",dataModelComponents);
         }
         map.put("model",modelVo);
-        map.put("taskState",task.getTaskState());
+        map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
         map.put("modelResources",modelResourceVos);
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
@@ -339,13 +347,18 @@ public class DataModelService {
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到模型信息");
         }
-
-        if (modelVo.getIsDraft()==1){
-            Map map = dataModelRepository.queryModelLatestTask(new HashSet() {{
-                add(modelId);
-            }});
-            if (map!=null&&!map.isEmpty()){
-                return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该模型有任务");
+        Map<String,Map<String,Object>> map = dataModelRepository.queryModelLatestTask(new HashSet() {{
+            add(modelId);
+        }});
+        if (map!=null&&!map.isEmpty()){
+            Iterator<Map.Entry<String, Map<String, Object>>> it = map.entrySet().iterator();
+            while (it.hasNext()){
+                Map<String, Object> value = it.next().getValue();
+                if (value.containsKey("taskId")){
+                    long taskId = Long.parseLong(value.get("taskId").toString());
+                    dataTaskPrRepository.deleteDataTask(taskId);
+                    dataModelPrRepository.deleteDataModelTask(taskId);
+                }
             }
         }
         dataModelPrRepository.deleteModelByModelId(modelId,modelVo.getIsDraft());

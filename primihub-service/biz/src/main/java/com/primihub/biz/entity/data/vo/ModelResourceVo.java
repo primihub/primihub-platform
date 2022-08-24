@@ -14,6 +14,14 @@ public class ModelResourceVo {
      * 资源名称
      */
     private String resourceName;
+    /**
+     * 资源类型
+     */
+    private Integer resourceType;
+    /**
+     * 机构项目中参与身份 1发起者 2协作者
+     */
+    private Integer participationIdentity;
 
     /**
      * 机构id
@@ -40,6 +48,8 @@ public class ModelResourceVo {
      * 入模变量数量
      */
     private Integer modelParamNum;
+
+    private String serverAddress;
 
     @JsonIgnore
     private String url;

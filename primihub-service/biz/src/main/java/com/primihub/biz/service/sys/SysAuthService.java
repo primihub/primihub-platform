@@ -181,7 +181,8 @@ public class SysAuthService {
                 {"退出群组","GroupExit","3","CenterManage","/fusion/exitGroup","1","0"},
                 {"项目禁用","closeProject","3","ProjectDetail","/project/closeProject","1","0"},
                 {"项目启动","openProject","3","ProjectDetail","/project/openProject","1","0"},
-                {"模型任务删除","deleteModelTask","3","ModelTaskHistory","/task/deleteTask","1","0"},
+                {"模型任务删除","deleteModelTask","3","ProjectDetail","/task/deleteTask","1","0"},
+                {"模型复制","copyModelTask","3","ProjectDetail","","1","0"},
         };
 
         Map<String,SysAuth> map=new HashMap<>();
