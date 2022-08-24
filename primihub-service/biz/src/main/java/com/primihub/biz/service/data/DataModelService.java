@@ -8,6 +8,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
+import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
@@ -82,6 +83,10 @@ public class DataModelService {
                         modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
                         modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
                         modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
+                        modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
+                        if (map.get("organId")!=null){
+                            modelResourceVo.setParticipationIdentity(organConfiguration.getSysLocalOrganId().equals(map.get("organId").toString())?1:2);
+                        }
                     }
                 }
             }
@@ -94,7 +99,7 @@ public class DataModelService {
             map.put("modelComponent",dataModelComponents);
         }
         map.put("model",modelVo);
-        map.put("taskState",task.getTaskState());
+        map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
         map.put("modelResources",modelResourceVos);
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
