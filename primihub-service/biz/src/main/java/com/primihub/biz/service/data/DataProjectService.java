@@ -169,7 +169,7 @@ public class DataProjectService {
         Set<Long> projectIds = dataProjects.stream().map(DataProject::getId).collect(Collectors.toSet());
         List<Map<String, Object>> projectNumMapList = dataModelRepository.queryModelNumByProjectIds(projectIds);
         Map<Object, List<Map<String, Object>>> projectNumMap = projectNumMapList.stream().collect(Collectors.groupingBy(m -> m.get("projectId")));
-        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataProjects.stream().map(dp->DataProjectConvert.dataProjectConvertListVo(dp,projectNumMap.get(dp.getId()))).collect(Collectors.toList())));
+        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataProjects.stream().map(dp->DataProjectConvert.dataProjectConvertListVo(dp,projectNumMap.get(dp.getId()),req.getStatus())).collect(Collectors.toList())));
     }
 
     public BaseResultEntity getProjectDetails(Long id) {

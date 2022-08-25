@@ -1,9 +1,13 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -12,6 +16,8 @@ import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentRelationReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
+import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
+import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
@@ -31,6 +37,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import primihub.rpc.Common;
@@ -70,6 +77,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
+    @Autowired
+    private SingleTaskChannel singleTaskChannel;
 
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
@@ -89,6 +98,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
     @Async
     public void runModelTask(ComponentTaskReq req){
+        log.info("start model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
         for (DataComponent dataComponent : req.getDataComponents()) {
             dataComponent.setModelId(req.getDataModelTask().getModelId());
             dataComponent.setTaskId(req.getDataModelTask().getTaskId());
@@ -127,6 +137,17 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(req.getDataTask());
+        log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
+        if (req.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+            log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
+            ShareModelVo vo = new ShareModelVo();
+            vo.setDataModel(req.getDataModel());
+            vo.setDataTask(req.getDataTask());
+            vo.setDataModelTask(req.getDataModelTask());
+            vo.setDmrList(req.getDmrList());
+            vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+            sendShareModelTask(vo);
+        }
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap){
@@ -283,5 +304,8 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
         }
         dataTaskPrRepository.updateDataTask(dataTask);
+    }
+    public void sendShareModelTask(ShareModelVo shareModelVo){
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(),shareModelVo))).build());
     }
 }
