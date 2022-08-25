@@ -34,7 +34,7 @@ public class DataProjectConvert {
         return dataProject;
     }
 
-    public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject, List<Map<String, Object>> list){
+    public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject, List<Map<String, Object>> list,Integer status){
         DataProjectListVo dataProjectListVo = new DataProjectListVo();
         dataProjectListVo.setId(dataProject.getId());
         dataProjectListVo.setOrganId(dataProject.getCreatedOrganId());
@@ -45,7 +45,7 @@ public class DataProjectConvert {
         dataProjectListVo.setCreatedOrganName(dataProject.getCreatedOrganName());
         dataProjectListVo.setResourceNum(dataProject.getResourceNum());
         dataProjectListVo.setProviderOrganNames(dataProject.getProviderOrganNames());
-        dataProjectListVo.setStatus(dataProject.getStatus());
+        dataProjectListVo.setStatus(status==null||status==0?dataProject.getStatus():status);
         dataProjectListVo.setCreateDate(dataProject.getCreateDate());
         if (list!=null){
             for (Map<String, Object> objectMap : list) {
