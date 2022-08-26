@@ -12,7 +12,7 @@
         </template>
         <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
         <el-descriptions-item v-if="hasModelDownloadPermission && state === 1" label="下载结果">
-          <el-button class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>
+          <el-button :disabled="projectStatus === 2" class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>
         </el-descriptions-item>
       </el-descriptions>
     </div>
@@ -101,6 +101,10 @@ export default {
   },
   props: {
     state: {
+      type: Number,
+      default: 0
+    },
+    projectStatus: {
       type: Number,
       default: 0
     }

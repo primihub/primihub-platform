@@ -45,7 +45,7 @@
             >
               <template slot-scope="{row}">
                 <template v-if="hasViewPermission">
-                  <el-button size="mini" type="text" @click="toResourceDetailPage(row)">{{ row.resourceId }}</el-button>
+                  <el-button :disabled="project.status === 2" size="mini" type="text" @click="toResourceDetailPage(row)">{{ row.resourceId }}</el-button>
                 </template>
                 <template v-else>
                   <span>{{ row.resourceId }}</span>
@@ -79,7 +79,7 @@
           </el-table>
         </el-tab-pane>
         <el-tab-pane v-if="task.taskState === 1" label="任务模型" name="model">
-          <TaskModel :state="task.taskState" />
+          <TaskModel :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -134,7 +134,8 @@ export default {
       modelComponent: [],
       anotherQuotas: [],
       taskState: null,
-      task: {}
+      task: {},
+      project: {}
     }
   },
   computed: {
@@ -154,12 +155,13 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { task, model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState } = response.result
+        const { task, model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, project } = response.result
         this.task = task
+        this.project = project
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
-        this.modelResources = modelResources
+        this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
         this.modelComponent = modelComponent
         this.taskState = taskState
       })
