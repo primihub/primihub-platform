@@ -8,17 +8,14 @@
         <el-descriptions-item label="项目名称">
           {{ projectName }}
         </el-descriptions-item>
-        <el-descriptions-item>
-          <template slot="label">
-            <strong>创建时间</strong>
-          </template>
+        <el-descriptions-item label="创建时间">
           {{ createDate }}
-        </el-descriptions-item>
-        <el-descriptions-item label="项目描述">
-          {{ projectDesc }}
         </el-descriptions-item>
         <el-descriptions-item label="角色">
           {{ creator? '项目创建方' : '项目协作方' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="项目描述">
+          {{ projectDesc }}
         </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />

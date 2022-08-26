@@ -26,15 +26,18 @@
       </el-form-item>
       <el-form-item label="参与角色">
         <el-select v-model="searchForm.participationIdentity" placeholder="请选择" clearable>
-          <el-option label="发起者" value="1" />
-          <el-option label="协作者" value="2" />
+          <el-option label="发起方" value="1" />
+          <el-option label="协作方" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="项目状态">
         <el-select v-model="searchForm.status" placeholder="请选择" clearable>
-          <el-option label="审核中" value="0" />
-          <el-option label="可用" value="1" />
-          <el-option label="关闭" value="2" />
+          <el-option
+            v-for="status in projectStatusList"
+            :key="status.value"
+            :label="status.label"
+            :value="status.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="创建时间">
@@ -200,6 +203,22 @@ export default {
       projectList: null,
       sysLocalOrganInfo: [],
       fusionList: [],
+      projectStatusList: [{ // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用
+        value: '0',
+        label: '审核中'
+      }, {
+        value: '1',
+        label: '可用'
+      }, {
+        value: '2',
+        label: '关闭'
+      }, {
+        value: '11',
+        label: '全部可用'
+      }, {
+        value: '12',
+        label: '部分可用'
+      }],
       organList: [],
       activeIndex: '0',
       listLoading: false,
@@ -331,7 +350,7 @@ export default {
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : 'status-0 el-icon-refresh'
+      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 || status === 11 || status === 12 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : 'status-0 el-icon-refresh'
     },
     getListStatistics() {
       getListStatistics().then(({ result }) => {

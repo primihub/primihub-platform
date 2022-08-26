@@ -6,7 +6,7 @@
       <el-tag v-if="data.isAuthed !== undefined" size="mini" :type="data.isAuthed === 1? 'success':data.isAuthed === 2?'danger':'info'">{{ data.isAuthed | authStatusFilter }}</el-tag>
     </div>
     <div class="main">
-      <div class="info-item"><span class="label">是否包含Y值：</span><span class="context">{{ data.fileContainsY === 1? '是' : '否' }}</span></div>
+      <div class="info-item"><span class="label">是否包含Y值：</span><span class="context">{{ data.resourceContainsY === 1? '是' : '否' }}</span></div>
       <div class="info-item"><span class="label">特征量：</span><span class="context">{{ data.resourceColumnCount || 0 }}</span></div>
       <div class="info-item"><span class="label">样本量：</span><span class="context">{{ data.resourceRowsCount || 0 }}</span></div>
       <div class="info-item"><span class="label">正例样本数量：</span><span class="context">{{ data.resourceYRowsCount || 0 }}</span></div>
