@@ -556,16 +556,18 @@ public class DataModelService {
         log.info(JSONObject.toJSONString(vo));
         if (vo.getDataModel()==null)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModel");
-        if (vo.getDataModelTask()==null)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModelTask");
-        if (vo.getDataTask()==null)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataTask");
-        if (StringUtils.isBlank(vo.getDataModel().getModelUUID()))
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelUUID");
-        if (vo.getDmrList()==null||vo.getDmrList().isEmpty())
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dmrList");
-        DataModel dataModel = this.dataModelRepository.queryDataModelByUUID(vo.getDataModel().getModelUUID());
         boolean isDel = vo.getDataModel().getIsDel()==1;
+        if (!isDel){
+            if (vo.getDataModelTask()==null)
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModelTask");
+            if (vo.getDataTask()==null)
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataTask");
+            if (StringUtils.isBlank(vo.getDataModel().getModelUUID()))
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelUUID");
+            if (vo.getDmrList()==null||vo.getDmrList().isEmpty())
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dmrList");
+        }
+        DataModel dataModel = this.dataModelRepository.queryDataModelByUUID(vo.getDataModel().getModelUUID());
         if (dataModel==null){
             DataProject dataProject = this.dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
             if (dataProject==null)
