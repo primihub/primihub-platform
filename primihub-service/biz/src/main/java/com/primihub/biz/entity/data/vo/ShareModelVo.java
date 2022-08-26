@@ -29,7 +29,7 @@ public class ShareModelVo {
     private DataModel dataModel;
     private DataTask dataTask;
     private DataModelTask dataModelTask;
-    List<DataModelResource> dmrList;
+    private List<DataModelResource> dmrList;
     private Long timestamp;
     private Integer nonce;
     private List<String> shareOrganId;

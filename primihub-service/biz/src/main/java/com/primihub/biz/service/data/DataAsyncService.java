@@ -22,6 +22,7 @@ import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.config.base.BaseConfiguration;
@@ -75,6 +76,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private FusionResourceService fusionResourceService;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
@@ -307,5 +310,15 @@ public class DataAsyncService implements ApplicationContextAware {
     }
     public void sendShareModelTask(ShareModelVo shareModelVo){
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(),shareModelVo))).build());
+    }
+
+    public void deleteModel(ShareModelVo vo) {
+        Long projectId = vo.getDataModel().getProjectId();
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
+        vo.setProjectId(dataProject.getProjectId());
+        vo.setServerAddress(dataProject.getServerAddress());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+        vo.setShareOrganId(dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList()));
+        sendShareModelTask(vo);
     }
 }
