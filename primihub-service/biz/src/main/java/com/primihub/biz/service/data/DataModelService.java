@@ -8,6 +8,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
+import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -101,6 +102,7 @@ public class DataModelService {
             List<DataModelComponentVo> dataModelComponents = dataComponents.stream().map(dataComponent -> DataModelConvert.dataComponentPoConvertDataModelComponentVo(dataComponent, sumTime)).collect(Collectors.toList());
             map.put("modelComponent",dataModelComponents);
         }
+        map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
         map.put("modelResources",modelResourceVos);
