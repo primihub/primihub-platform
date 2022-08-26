@@ -343,17 +343,29 @@ public class DataModelService {
     }
 
     public BaseResultEntity deleteModel(Long modelId) {
-        ModelVo modelVo = dataModelRepository.queryModelById(modelId);
-        if (modelVo==null){
+        DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
+        if (dataModel==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到模型信息");
         }
+        dataModel.setIsDel(1);
+        ShareModelVo vo = new ShareModelVo(dataModel);
         Map<String,Map<String,Object>> map = dataModelRepository.queryModelLatestTask(new HashSet() {{
             add(modelId);
         }});
+        List<Map<String, Object>> taskList = new ArrayList<>();
         if (map!=null&&!map.isEmpty()){
             Iterator<Map.Entry<String, Map<String, Object>>> it = map.entrySet().iterator();
             while (it.hasNext()){
                 Map<String, Object> value = it.next().getValue();
+                if (!value.containsKey("taskState")){
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型任务状态异常");
+                }
+                if (value.get("taskState").equals("2")){
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型任务正在运行无法删除");
+                }
+                taskList.add(value);
+            }
+            for (Map<String, Object> value : taskList) {
                 if (value.containsKey("taskId")){
                     long taskId = Long.parseLong(value.get("taskId").toString());
                     dataTaskPrRepository.deleteDataTask(taskId);
@@ -361,7 +373,8 @@ public class DataModelService {
                 }
             }
         }
-        dataModelPrRepository.deleteModelByModelId(modelId,modelVo.getIsDraft());
+        dataModelPrRepository.deleteModelByModelId(modelId,dataModel.getIsDraft());
+        dataAsyncService.deleteModel(vo);
         return BaseResultEntity.success();
     }
 
@@ -552,6 +565,7 @@ public class DataModelService {
         if (vo.getDmrList()==null||vo.getDmrList().isEmpty())
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dmrList");
         DataModel dataModel = this.dataModelRepository.queryDataModelByUUID(vo.getDataModel().getModelUUID());
+        boolean isDel = vo.getDataModel().getIsDel()==1;
         if (dataModel==null){
             DataProject dataProject = this.dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
             if (dataProject==null)
@@ -559,19 +573,37 @@ public class DataModelService {
             vo.getDataModel().setProjectId(dataProject.getId());
             dataModelPrRepository.saveDataModel(vo.getDataModel());
         }else {
-            vo.getDataModel().setModelId(dataModel.getModelId());
-            dataModelPrRepository.updateDataModel(vo.getDataModel());
+            if (isDel){
+                dataModelPrRepository.deleteModelByModelId(dataModel.getModelId(),dataModel.getIsDraft());
+            }else {
+                vo.getDataModel().setModelId(dataModel.getModelId());
+                dataModelPrRepository.updateDataModel(vo.getDataModel());
+            }
         }
-        vo.getDataTask().setIsCooperation(1);
-        dataTaskPrRepository.saveDataTask(vo.getDataTask());
-        vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
-        vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
-        dataModelPrRepository.saveDataModelTask(vo.getDataModelTask());
-        for (DataModelResource dataModelResource : vo.getDmrList()) {
-            dataModelResource.setModelId(vo.getDataModel().getModelId());
-            dataModelResource.setTaskId(vo.getDataTask().getTaskId());
+        if (isDel){
+            List<DataModelTask> taskList = dataModelRepository.queryModelTaskByModelId(new HashMap(){
+                {
+                    put("modelId",dataModel.getModelId());
+                    put("offset",0);
+                    put("pageSize",20);
+                }
+            });
+            for (DataModelTask modelTask : taskList) {
+                dataModelPrRepository.deleteDataModelTask(modelTask.getTaskId());
+                dataTaskPrRepository.deleteDataTask(modelTask.getTaskId());
+            }
+        }else {
+            vo.getDataTask().setIsCooperation(1);
+            dataTaskPrRepository.saveDataTask(vo.getDataTask());
+            vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
+            vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
+            dataModelPrRepository.saveDataModelTask(vo.getDataModelTask());
+            for (DataModelResource dataModelResource : vo.getDmrList()) {
+                dataModelResource.setModelId(vo.getDataModel().getModelId());
+                dataModelResource.setTaskId(vo.getDataTask().getTaskId());
+            }
+            dataModelPrRepository.saveDataModelResource(vo.getDmrList());
         }
-        dataModelPrRepository.saveDataModelResource(vo.getDmrList());
         return BaseResultEntity.success();
     }
 
