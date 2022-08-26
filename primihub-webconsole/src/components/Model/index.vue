@@ -259,8 +259,8 @@ export default {
     },
     toModelDetail(taskId) {
       this.$router.push({
-        path: `/model/detail/${taskId}`,
-        query: { modelId: this.modelId }
+        name: `ModelDetail`,
+        params: { taskId }
       })
     },
     search() {
