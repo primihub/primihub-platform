@@ -671,14 +671,15 @@ export default {
             // to model task detail page
             setTimeout(() => {
               this.toModelDetail(this.taskId)
-            }, 3000)
+            }, 1000)
           }
         }
       })
     },
     toModelDetail(id) {
       this.$router.push({
-        path: `/model/detail/${id}`
+        name: `ModelDetail`,
+        params: { taskId: id }
       })
     },
     // 获取左侧组件
