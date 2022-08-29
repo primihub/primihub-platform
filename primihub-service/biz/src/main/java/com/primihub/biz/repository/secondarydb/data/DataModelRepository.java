@@ -45,8 +45,7 @@ public interface DataModelRepository {
 
     Integer queryModelTaskByModelIdCount(@Param("modelId") Long modelId);
 
-    @MapKey("projectId")
-    Map<Long, List<Map<String, Object>>> queryModelNumByProjectIds(@Param("projectIds")Set<Long> projectIds);
+    List<Map<String, Object>> queryModelNumByProjectIds(@Param("projectIds")Set<Long> projectIds);
 
     @MapKey("modelId")
     Map<Long, Map<String,Object>> queryModelLatestTask(@Param("modelIds")Set<Long> modelIds);
