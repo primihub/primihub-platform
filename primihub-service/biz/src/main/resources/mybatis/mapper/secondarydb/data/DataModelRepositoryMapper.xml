@@ -22,13 +22,10 @@
             dp.project_name AS projectName,
             dm.resource_num AS resourceNum
         from
-            data_model_task dmt,
-            data_model dm,
-            data_project dp
+            data_model dm left join
+            data_model_task dmt on dm.model_id = dmt.model_id left join
+            data_project dp on dm.project_id = dp.id
         WHERE
-            dmt.model_id = dm.model_id
-            and dm.project_id = dp.id
-            and dm.is_draft = 1
             <include refid="listwhere"></include>
         ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
@@ -38,13 +35,10 @@
         SELECT
             count(dm.model_id)
         FROM
-            data_model_task dmt,
-            data_model dm,
-            data_project dp
+            data_model dm left join
+            data_model_task dmt on dm.model_id = dmt.model_id left join
+            data_project dp on dm.project_id = dp.id
         WHERE
-            dmt.model_id = dm.model_id
-            and dm.project_id = dp.id
-            and dm.is_draft = 1
             <include refid="listwhere"></include>
     </select>
 
