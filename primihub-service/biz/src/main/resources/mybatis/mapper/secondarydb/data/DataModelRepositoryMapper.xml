@@ -29,12 +29,7 @@
             and dm.project_id = dp.id
             and dm.is_draft = 1
             <include refid="listwhere"></include>
-        GROUP BY
-            dm.model_id,
-            dm.model_name,
-            dm.resource_num,
-            dp.project_name
-        ORDER BY dm.model_id desc
+        ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
     </select>
 
