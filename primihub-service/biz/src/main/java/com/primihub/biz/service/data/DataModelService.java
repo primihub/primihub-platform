@@ -512,12 +512,27 @@ public class DataModelService {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
         if (dataModel==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型信息");
+        ComponentTaskReq taskReq = new ComponentTaskReq(dataModel);
+        DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
+        if (modelComponentReq==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
+        for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
+            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
+            if (baseResultEntity.getCode()!=0){
+                return baseResultEntity;
+            }
+        }
         dataTask.setTaskErrorMsg("");
         dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTask.setTaskEndTime(System.currentTimeMillis());
+        dataTask.setTaskEndTime(null);
         dataTaskPrRepository.updateDataTask(dataTask);
-        modelInitService.runModelTaskFeign(dataModel,dataTask,modelTask);
+        taskReq.setDataTask(dataTask);
+        taskReq.setDataModelTask(modelTask);
+        dataModelPrRepository.deleteDataModelResource(dataModel.getModelId());
+        dataModelPrRepository.deleteDataComponent(dataModel.getModelId());
+        dataModelPrRepository.deleteDataModelComponent(dataModel.getModelId());
+        dataAsyncService.runModelTask(taskReq);
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",dataModel.getModelId());
         returnMap.put("taskId",dataTask.getTaskId());
