@@ -223,11 +223,11 @@ export default {
         {
           value: 0,
           label: 'ECDH'
+        },
+        {
+          value: 1,
+          label: 'KKRT'
         }
-        // {
-        //   value: 1,
-        //   label: 'KKRT'
-        // }
       ]
     }
   },

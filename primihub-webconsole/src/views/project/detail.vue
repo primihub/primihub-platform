@@ -423,7 +423,7 @@ export default {
     },
     toModelCreate() {
       this.$router.push({
-        path: '/model/create',
+        name: 'ModelCreate',
         query: { projectId: this.list.id }
       })
     },

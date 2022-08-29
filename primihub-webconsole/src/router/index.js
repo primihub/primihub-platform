@@ -52,11 +52,12 @@ export const asyncRoutes = [
     name: 'Project',
     component: Layout,
     redirect: '/project/list',
+    meta: { icon: 'el-icon-menu', title: '项目管理' },
     children: [
       {
         path: 'list',
         name: 'ProjectList',
-        meta: { icon: 'el-icon-menu', title: '项目管理' },
+        meta: { icon: 'el-icon-menu', title: '项目管理', breadcrumb: false },
         component: () => import('@/views/project/list')
       },
       {
@@ -72,25 +73,29 @@ export const asyncRoutes = [
         path: 'detail/:id',
         name: 'ProjectDetail',
         meta: {
-          title: '项目详情'
+          title: '项目详情',
+          activeMenu: '/project/list'
         },
         hidden: true,
         component: () => import('@/views/project/detail')
       },
       {
-        path: '/model/create',
+        path: 'createTask',
         name: 'ModelCreate',
         meta: {
-          title: '添加模型'
+          title: '新建任务',
+          parent: { name: 'ProjectDetail' }
         },
         hidden: true,
         component: () => import('@/views/model/create/index')
       },
       {
-        path: '/model/detail/:id',
+        path: 'detail/:id/task/:taskId',
         name: 'ModelDetail',
         meta: {
-          title: '任务详情'
+          title: '任务详情',
+          activeMenu: '/project/list',
+          parent: { name: 'ProjectDetail' }
         },
         hidden: true,
         component: () => import('@/views/project/taskDetail')
@@ -185,7 +190,8 @@ export const asyncRoutes = [
         path: 'detail/:id',
         name: 'ResourceDetail',
         meta: {
-          title: '资源详情'
+          title: '资源详情',
+          activeMenu: '/resource/list'
         },
         hidden: true,
         component: () => import('@/views/resource/detail')
@@ -194,7 +200,8 @@ export const asyncRoutes = [
         path: 'unionResourceDetail/:id',
         name: 'UnionResourceDetail',
         meta: {
-          title: '联邦资源详情'
+          title: '联邦资源详情',
+          activeMenu: '/resource/unionList'
         },
         hidden: true,
         component: () => import('@/views/resource/unionResourceDetail')
