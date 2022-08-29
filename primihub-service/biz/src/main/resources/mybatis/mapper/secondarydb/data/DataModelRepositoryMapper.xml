@@ -26,6 +26,7 @@
             data_model_task dmt on dm.model_id = dmt.model_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
+             dm.is_del = 0
             <include refid="listwhere"></include>
         ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
@@ -39,11 +40,11 @@
             data_model_task dmt on dm.model_id = dmt.model_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
+             dm.is_del = 0
             <include refid="listwhere"></include>
     </select>
 
     <sql id="listwhere">
-        and dm.is_del = 0
         <if test="projectName!=null">and dp.project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
         <if test="projectId!=null">and dm.project_id = #{projectId}</if>
