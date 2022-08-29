@@ -16,7 +16,7 @@
 
     <select id="queryModelList" resultType="com.primihub.biz.entity.data.vo.ModelListVo">
         select
-            dmt.model_id AS modelId,
+            dm.model_id AS modelId,
             dmt.task_id as latestTaskId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
