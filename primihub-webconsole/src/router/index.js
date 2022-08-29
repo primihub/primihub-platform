@@ -99,28 +99,8 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/project/taskDetail')
-      },
-      {
-        path: '/model/history/:id',
-        name: 'ModelTaskHistory',
-        meta: {
-          title: '执行记录'
-        },
-        hidden: true,
-        component: () => import('@/views/model/history')
       }
     ]
-  },
-  {
-    path: '/dag',
-    component: Layout,
-    meta: {},
-    hidden: true,
-    children: [{
-      path: '',
-      name: 'dagGraph',
-      component: () => import('@/views/dag')
-    }]
   },
   {
     path: '/privateSearch',
@@ -205,18 +185,6 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/resource/unionResourceDetail')
-      },
-      {
-        path: 'authRecord',
-        name: 'ResourceRecord',
-        meta: { title: '授权申请记录' },
-        component: () => import('@/views/resource/authRecord')
-      },
-      {
-        path: 'authAudit',
-        name: 'ResourceApprovalList',
-        meta: { title: '授权审批' },
-        component: () => import('@/views/resource/authAudit')
       }
     ]
   },
@@ -239,12 +207,6 @@ export const asyncRoutes = [
         component: () => import('@/views/setting/role'),
         meta: { title: '角色管理' }
       },
-      // {
-      //   path: 'organ',
-      //   name: 'OrganManage',
-      //   component: () => import('@/views/setting/organ'),
-      //   meta: { title: '机构管理', icon: 'el-icon-office-building' }
-      // },
       {
         path: 'center',
         name: 'CenterManage',

@@ -78,8 +78,8 @@
           <no-data />
         </template>
         <template v-else>
-          <el-row :gutter="15">
-            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="5">
+          <el-row :gutter="18">
+            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="4">
               <project-item :project="item" />
             </el-col>
           </el-row>
@@ -115,7 +115,6 @@
 
           <el-table-column
             label="参与机构"
-            min-width="150"
           >
             <template slot-scope="{row}">
               <span>发起方: {{ row.createdOrganName }}</span><br>
@@ -132,12 +131,12 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="模型状态"
+            label="任务状态"
           >
             <template slot-scope="{row}">
-              配置中：{{ row.modelAssembleNum }}<br>
-              运行中：{{ row.modelRunNum }} <br>
-              成功：{{ row.modelSuccessNum || 0 }}<br>
+              运行中：{{ row.taskRunNum }} <br>
+              成功：{{ row.taskSuccessNum || 0 }}<br>
+              失败：{{ row.taskFailNum }}<br>
             </template>
           </el-table-column>
           <el-table-column
@@ -146,8 +145,8 @@
             align="center"
           />
           <el-table-column
-            prop="modelNum"
-            label="模型数量"
+            prop="taskNum"
+            label="任务数量"
             align="center"
           />
           <el-table-column

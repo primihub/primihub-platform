@@ -13,16 +13,16 @@
     </div>
     <div class="footer">
       <div class="model-status text">
-        <span>{{ project.modelAssembleNum }}</span>
-        <span>配置中 <i class="el-icon-setting icon-1" /></span>
-      </div>
-      <div class="model-status text">
-        <span>{{ project.modelRunNum }}</span>
+        <span>{{ project.taskRunNum }}</span>
         <span>运行中 <i class="el-icon-refresh icon-2" /></span>
       </div>
       <div class="model-status text">
-        <span>{{ project.modelSuccessNum }}</span>
+        <span>{{ project.taskSuccessNum }}</span>
         <span>成功 <i class="el-icon-circle-check icon-3" /></span>
+      </div>
+      <div class="model-status text">
+        <span>{{ project.taskFailNum }}</span>
+        <span>失败 <i class="el-icon-circle-close icon-1" /></span>
       </div>
     </div>
   </div>
@@ -140,7 +140,7 @@ p {
   }
 }
 .icon-1 {
-  color: rgb(144, 147, 153);
+  color: #F56C6C;
 }
 .icon-2 {
   color: rgb(64, 158, 255);
