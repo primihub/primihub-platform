@@ -15,16 +15,18 @@
     </select>
 
     <select id="queryModelList" resultType="com.primihub.biz.entity.data.vo.ModelListVo">
-        SELECT
-            dm.model_id AS modelId,
+        select
+            dmt.model_id AS modelId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
             dm.resource_num AS resourceNum
-        FROM
+        from
+            data_model_task dmt,
             data_model dm,
             data_project dp
         WHERE
-            dm.project_id = dp.id
+            dmt.model_id = dm.model_id
+            and dm.project_id = dp.id
             and dm.is_draft = 1
             <include refid="listwhere"></include>
         GROUP BY
@@ -40,10 +42,12 @@
         SELECT
             count(dm.model_id)
         FROM
+            data_model_task dmt,
             data_model dm,
             data_project dp
         WHERE
-            dm.project_id = dp.id
+            dmt.model_id = dm.model_id
+            and dm.project_id = dp.id
             and dm.is_draft = 1
             <include refid="listwhere"></include>
     </select>
@@ -52,7 +56,7 @@
         and dm.is_del = 0
         <if test="projectName!=null">and dp.project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
-        <if test="projectId!=null">and dp.id = #{projectId}</if>
+        <if test="projectId!=null">and dm.project_id = #{projectId}</if>
     </sql>
 
     <select id="queryModelById" resultType="com.primihub.biz.entity.data.vo.ModelVo">
