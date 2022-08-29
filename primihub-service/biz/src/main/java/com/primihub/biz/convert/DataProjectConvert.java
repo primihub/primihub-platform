@@ -52,16 +52,14 @@ public class DataProjectConvert {
                 Object latestTaskStatus = objectMap.get("latestTaskStatus");
                 if (latestTaskStatus!=null && StringUtils.isNotBlank(latestTaskStatus.toString())){
                     if ("1".equals(latestTaskStatus.toString())){
-                        dataProjectListVo.setModelRunNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
-                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelRunNum());
+                        dataProjectListVo.setTaskSuccessNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
                     }
                     if ("2".equals(latestTaskStatus.toString())){
-                        dataProjectListVo.setModelSuccessNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
-                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelSuccessNum());
+                        dataProjectListVo.setTaskRunNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
                     }
-                }else {
-                    dataProjectListVo.setModelAssembleNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
-                    dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelAssembleNum());
+                    if ("3".equals(latestTaskStatus.toString())){
+                        dataProjectListVo.setTaskFailNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                    }
                 }
             }
 
