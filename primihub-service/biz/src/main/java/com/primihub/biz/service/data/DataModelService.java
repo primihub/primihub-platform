@@ -138,8 +138,8 @@ public class DataModelService {
         List<Map<String, Object>> modelTaskList = dataModelRepository.queryModelTask(modelIds);
         Map<Long, Map<String, Object>> modelTaskMap = modelTaskList.stream().collect(Collectors.toMap(task -> Long.parseLong(task.get("taskId").toString()), Function.identity()));
         for (ModelListVo modelListVo : modelListVos) {
-            if (modelTaskMap.containsKey(modelListVo.getModelId())){
-                Map<String, Object> dataMap = modelTaskMap.get(modelListVo.getModelId());
+            if (modelTaskMap.containsKey(modelListVo.getLatestTaskId())){
+                Map<String, Object> dataMap = modelTaskMap.get(modelListVo.getLatestTaskId());
 //                Long taskId = dataMap.get("taskId")!=null?Long.valueOf(dataMap.get("taskId").toString()):null;
                 Integer taskState = dataMap.get("taskState")!=null?Integer.valueOf(dataMap.get("taskState").toString()):null;
                 String taskIdName = dataMap.get("taskIdName")!=null?dataMap.get("taskIdName").toString():null;
