@@ -183,7 +183,7 @@
         select
         DISTINCT dm.project_id projectId,dt.task_state latestTaskStatus,count(dt.task_id) statusCount
         from data_model_task dmt,data_task dt,data_model dm
-        where dmt.task_id = dt.task_id and dm.model_id = dmt.model_id
+        where dmt.task_id = dt.task_id and dm.model_id = dmt.model_id and dm.is_del = 0
         and dm.project_id in
         <foreach collection="projectIds" index="index" item="item" open="("
                  separator="," close=")">
