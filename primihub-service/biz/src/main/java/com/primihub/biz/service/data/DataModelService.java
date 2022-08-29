@@ -526,7 +526,7 @@ public class DataModelService {
         dataTask.setTaskErrorMsg("");
         dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTask.setTaskEndTime(null);
+        dataTask.setTaskEndTime(dataTask.getTaskStartTime());
         dataTaskPrRepository.updateDataTask(dataTask);
         taskReq.setDataTask(dataTask);
         taskReq.setDataModelTask(modelTask);
