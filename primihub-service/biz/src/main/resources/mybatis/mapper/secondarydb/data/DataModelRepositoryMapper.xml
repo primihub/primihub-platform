@@ -181,15 +181,15 @@
     </select>
     <select id="queryModelNumByProjectIds" resultType="java.util.Map">
         select
-                project_id projectId,count(model_id) statusCount
-        from
-                data_model
-        where project_id in
+        DISTINCT dm.project_id projectId,dt.task_state latestTaskStatus,count(dt.task_id) statusCount
+        from data_model_task dmt,data_task dt,data_model dm
+        where dmt.task_id = dt.task_id and dm.model_id = dmt.model_id
+        and dm.project_id in
         <foreach collection="projectIds" index="index" item="item" open="("
                  separator="," close=")">
             #{item}
         </foreach>
-        GROUP BY project_id ORDER BY project_id
+        GROUP BY dm.project_id,dt.task_state
     </select>
     <select id="queryModelTaskById" resultType="com.primihub.biz.entity.data.po.DataModelTask">
         select
