@@ -6,7 +6,6 @@
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">V-XGBoost</el-descriptions-item>
-        <el-descriptions-item label="是否包含Y值">{{ model.yvalueColumn? '是':"否" }}</el-descriptions-item>
         <template v-if="model.yvalueColumn">
           <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>
         </template>

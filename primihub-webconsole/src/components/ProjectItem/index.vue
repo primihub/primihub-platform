@@ -8,7 +8,7 @@
       <div class="text"><span>发起方：</span><span>{{ project.createdOrganName }}</span></div>
       <div class="text"><span>协作方：</span><span>{{ project.providerOrganNames }}</span></div>
       <div class="text"><span>资源数量：</span><span>{{ project.resourceNum }}个</span></div>
-      <div class="text"><span>模型数量：</span><span>{{ project.modelNum }}个</span></div>
+      <div class="text"><span>任务数量：</span><span>{{ project.taskNum }}个</span></div>
       <div class="text"><span>创建时间：</span><span>{{ project.createDate }}</span></div>
     </div>
     <div class="footer">
