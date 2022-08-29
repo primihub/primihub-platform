@@ -80,10 +80,11 @@ export const asyncRoutes = [
         component: () => import('@/views/project/detail')
       },
       {
-        path: 'createTask',
+        path: 'detail/:id/createTask',
         name: 'ModelCreate',
         meta: {
           title: '新建任务',
+          activeMenu: '/project/list',
           parent: { name: 'ProjectDetail' }
         },
         hidden: true,

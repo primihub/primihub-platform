@@ -196,7 +196,7 @@ export default {
     copyTask(row) {
       const modelId = row.modelId
       this.$router.push({
-        path: '/model/create',
+        name: 'ModelCreate',
         query: {
           modelId,
           projectId: this.projectId,
