@@ -15,24 +15,22 @@
     </select>
 
     <select id="queryModelList" resultType="com.primihub.biz.entity.data.vo.ModelListVo">
-        SELECT
-            dm.model_id AS modelId,
+        select
+            dmt.model_id AS modelId,
+            dmt.task_id as latestTaskId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
             dm.resource_num AS resourceNum
-        FROM
+        from
+            data_model_task dmt,
             data_model dm,
             data_project dp
         WHERE
-            dm.project_id = dp.id
+            dmt.model_id = dm.model_id
+            and dm.project_id = dp.id
             and dm.is_draft = 1
             <include refid="listwhere"></include>
-        GROUP BY
-            dm.model_id,
-            dm.model_name,
-            dm.resource_num,
-            dp.project_name
-        ORDER BY dm.model_id desc
+        ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
     </select>
 
@@ -40,10 +38,12 @@
         SELECT
             count(dm.model_id)
         FROM
+            data_model_task dmt,
             data_model dm,
             data_project dp
         WHERE
-            dm.project_id = dp.id
+            dmt.model_id = dm.model_id
+            and dm.project_id = dp.id
             and dm.is_draft = 1
             <include refid="listwhere"></include>
     </select>
@@ -52,7 +52,7 @@
         and dm.is_del = 0
         <if test="projectName!=null">and dp.project_name like CONCAT('%',#{projectName,jdbcType=VARCHAR},'%')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
-        <if test="projectId!=null">and dp.id = #{projectId}</if>
+        <if test="projectId!=null">and dm.project_id = #{projectId}</if>
     </sql>
 
     <select id="queryModelById" resultType="com.primihub.biz.entity.data.vo.ModelVo">
@@ -261,6 +261,22 @@
             data_model
         WHERE
             model_uuid = #{modelUUID}
+    </select>
+    <select id="queryModelTask" resultType="java.util.Map">
+        select
+        mt.model_id modelId,mt.task_id taskId,dt.task_state taskState,dt.task_id_name taskIdName,dt.task_start_time taskStartTime,dt.task_end_time taskEndTime
+        from (
+        select
+        DISTINCT model_id,max(task_id) task_id
+        from data_model_task
+        where model_id in
+        <foreach collection="modelIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+        GROUP BY model_id
+        ) mt,data_task dt
+        where mt.task_id = dt.task_id
     </select>
 
 </mapper>

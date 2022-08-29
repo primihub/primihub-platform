@@ -135,16 +135,17 @@ public class DataModelService {
         Integer tolal = dataModelRepository.queryModelListCount(paramMap);
         // 状态信息
         Set<Long> modelIds = modelListVos.stream().map(ModelListVo::getModelId).collect(Collectors.toSet());
-        Map<Long, Map<String, Object>> modelLatestTaskMap = dataModelRepository.queryModelLatestTask(modelIds);
+        List<Map<String, Object>> modelTaskList = dataModelRepository.queryModelTask(modelIds);
+        Map<Long, Map<String, Object>> modelTaskMap = modelTaskList.stream().collect(Collectors.toMap(task -> Long.parseLong(task.get("taskId").toString()), Function.identity()));
         for (ModelListVo modelListVo : modelListVos) {
-            if (modelLatestTaskMap.containsKey(modelListVo.getModelId())){
-                Map<String, Object> dataMap = modelLatestTaskMap.get(modelListVo.getModelId());
-                Long taskId = dataMap.get("taskId")!=null?Long.valueOf(dataMap.get("taskId").toString()):null;
+            if (modelTaskMap.containsKey(modelListVo.getLatestTaskId())){
+                Map<String, Object> dataMap = modelTaskMap.get(modelListVo.getLatestTaskId());
+//                Long taskId = dataMap.get("taskId")!=null?Long.valueOf(dataMap.get("taskId").toString()):null;
                 Integer taskState = dataMap.get("taskState")!=null?Integer.valueOf(dataMap.get("taskState").toString()):null;
                 String taskIdName = dataMap.get("taskIdName")!=null?dataMap.get("taskIdName").toString():null;
                 Long taskStartTime = dataMap.get("taskStartTime")!=null?Long.valueOf(dataMap.get("taskStartTime").toString()):null;
                 Long taskEndTime = dataMap.get("taskEndTime")!=null?Long.valueOf(dataMap.get("taskEndTime").toString()):null;
-                modelListVo.setLatestTaskId(taskId);
+//                modelListVo.setLatestTaskId(taskId);
                 modelListVo.setLatestTaskIdName(taskIdName);
                 modelListVo.setLatestTaskStatus(taskState);
                 modelListVo.setLatestTaskStartTime(taskStartTime);
