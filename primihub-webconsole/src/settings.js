@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Primihub Platform',
+  title: 'PrimiHub Platform',
 
   /**
    * @type {boolean} true | false
