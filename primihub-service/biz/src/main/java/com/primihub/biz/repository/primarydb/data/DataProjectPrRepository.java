@@ -21,6 +21,10 @@ public interface DataProjectPrRepository {
 
     void updateDataProjectResource(DataProjectResource dataProjectResource);
 
-    void deleteDataProjectResource(@Param("id") Long id);
+    void deleteDataProjectOrgan(@Param("id") Long id,@Param("projectId") String projectId);
+
+    void deleteDataProject(@Param("id") Long id,@Param("projectId") String projectId);
+
+    void deleteDataProjectResource(@Param("id") Long id,@Param("projectId") String projectId);
 
 }

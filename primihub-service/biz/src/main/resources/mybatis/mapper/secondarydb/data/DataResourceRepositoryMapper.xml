@@ -132,53 +132,16 @@
         from data_rt rt,data_resource_tag drt
         where rt.tag_id = drt.tag_id
         and resource_id in
-        <foreach collection="resourceIds" index="index" item="item" open="("
-                                    separator="," close=")">
-        #{item}
-    </foreach>
+            <foreach collection="resourceIds" index="index" item="item" open="("
+                                        separator="," close=")">
+            #{item}
+            </foreach>
     </select>
 
-    <select id="queryResourceAuthRecord" resultType="com.primihub.biz.entity.data.vo.DataResourceAuthRecordVo">
-        SELECT
-            drar.record_id as recordId,
-            drar.record_status as recordStatus,
-            drar.user_id as userId,
-            drar.user_name as userName,
-            drar.project_id as projectId,
-            dp.project_name as projectName,
-            drar.resource_id as resourceId,
-            dr.resource_name as resourceName,
-            dp.organ_id as organId,
-            drar.create_date as createDate
-        FROM
-            data_resource_auth_record drar,
-            data_project dp,
-            data_resource dr
-        WHERE
-            drar.project_id = dp.project_id
-            and drar.resource_id = dr.resource_id
-            and dr.user_id = #{userId}
-            <if test="status!=null">and drar.record_status = #{status}</if>
-        ORDER BY drar.record_status asc,drar.create_date desc
-        LIMIT #{offset},#{pageSize}
-    </select>
-
-    <select id="queryResourceAuthRecordCount" resultType="java.lang.Long">
-        SELECT
-            count(drar.record_id)
-        FROM
-            data_resource_auth_record drar,
-            data_project dp,
-            data_resource dr
-        WHERE
-            drar.project_id = dp.project_id
-            and drar.resource_id = dr.resource_id
-            and dr.user_id = #{userId}
-        <if test="status!=null">and drar.record_status = #{status}</if>
-    </select>
     <select id="queryResourceProjectRelationCount" resultType="java.lang.Integer">
-        select count(id) from data_pr where resource_id = #{resourceId}
+        select count(id) from data_project_resource where resource_id = #{resourceId}
     </select>
+
     <select id="queryDataResourceByResourceIds" resultType="com.primihub.biz.entity.data.po.DataResource">
         SELECT
         <include refid="resourceColumns"></include>

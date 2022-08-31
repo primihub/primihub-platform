@@ -103,7 +103,20 @@ public class ModelController {
         if (modelId==null||modelId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         }
-        return dataModelService.runTaskModel(modelId,userId);
+        return dataModelService.runTaskModel1(modelId,userId);
+    }
+
+    /**
+     * 重启模型
+     * @param taskId
+     * @return
+     */
+    @GetMapping("restartTaskModel")
+    public BaseResultEntity restartTaskModel(Long taskId){
+        if (taskId==null||taskId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
+        return dataModelService.restartTaskModel(taskId);
     }
 
     /**

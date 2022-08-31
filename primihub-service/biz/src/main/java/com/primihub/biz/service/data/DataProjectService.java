@@ -169,7 +169,7 @@ public class DataProjectService {
         Set<Long> projectIds = dataProjects.stream().map(DataProject::getId).collect(Collectors.toSet());
         List<Map<String, Object>> projectNumMapList = dataModelRepository.queryModelNumByProjectIds(projectIds);
         Map<Object, List<Map<String, Object>>> projectNumMap = projectNumMapList.stream().collect(Collectors.groupingBy(m -> m.get("projectId")));
-        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataProjects.stream().map(dp->DataProjectConvert.dataProjectConvertListVo(dp,projectNumMap.get(dp.getId()))).collect(Collectors.toList())));
+        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataProjects.stream().map(dp->DataProjectConvert.dataProjectConvertListVo(dp,projectNumMap.get(dp.getId()),req.getStatus())).collect(Collectors.toList())));
     }
 
     public BaseResultEntity getProjectDetails(Long id) {
@@ -223,7 +223,7 @@ public class DataProjectService {
             dataProjectPrRepository.updateDataProject(dataProject);
             shareProjectVo.setProjectId(dataProjectOrgan.getProjectId());
             shareProjectVo.setServerAddress(dataProjectOrgan.getServerAddress());
-            shareProjectVo.getProjectOrgans().add(dataProjectOrgan);
+//            shareProjectVo.getProjectOrgans().add(dataProjectOrgan);
         }else {
             DataProjectResource dataProjectResource = dataProjectRepository.selectProjectResourceById(req.getId());
             if (dataProjectResource==null)
@@ -297,49 +297,61 @@ public class DataProjectService {
         log.info(JSONObject.toJSONString(vo));
         if (StringUtils.isBlank(vo.getProjectId()))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        DataProject project = vo.getProject();
-        if (project!=null){
-            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, project.getProjectId());
-            if (dataProject==null){
-                vo.getProject().setStatus(0);
-                dataProjectPrRepository.saveDataProject(vo.getProject());
-            }else {
-                project.setId(dataProject.getId());
-                if(dataProject.getStatus()!=null&&dataProject.getStatus()!=2)
-                    dataProject.setStatus(null);
-                dataProjectPrRepository.updateDataProject(vo.getProject());
-            }
-        }
-        if (vo.getProjectOrgans()!=null&&vo.getProjectOrgans().size()!=0){
-            Map<String, DataProjectOrgan> projectOrganMap = dataProjectRepository.selectDataProjcetOrganByProjectId(vo.getProjectId()).stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
-            for (DataProjectOrgan projectOrgan : vo.getProjectOrgans()) {
-                DataProjectOrgan dataProjectOrgan = projectOrganMap.get(projectOrgan.getOrganId());
-                if (dataProjectOrgan!=null){
-                    projectOrgan.setId(dataProjectOrgan.getId());
-                    dataProjectPrRepository.updateDataProjcetOrgan(projectOrgan);
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        boolean isDelProject = vo.getProjectOrgans().stream().anyMatch(po -> po.getOrganId().equals(sysLocalOrganId) && po.getIsDel() != null && po.getIsDel() == 1);
+        if (isDelProject){
+            dataProjectPrRepository.deleteDataProjectResource(null,vo.getProjectId());
+            dataProjectPrRepository.deleteDataProjectOrgan(null,vo.getProjectId());
+            dataProjectPrRepository.deleteDataProject(null,vo.getProjectId());
+        }else {
+            DataProject project = vo.getProject();
+            if (project!=null){
+                DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, project.getProjectId());
+                if (dataProject==null){
+                    vo.getProject().setStatus(0);
+                    dataProjectPrRepository.saveDataProject(vo.getProject());
                 }else {
-                    projectOrgan.setPoId(UUID.randomUUID().toString());
-                    dataProjectPrRepository.saveDataProjcetOrgan(projectOrgan);
-                }
-            }
-        }
-
-        if (vo.getProjectResources()!=null&&vo.getProjectResources().size()!=0){
-            Map<String, DataProjectResource> projectResourceMap = dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).stream().collect(Collectors.toMap(DataProjectResource::getResourceId, Function.identity()));
-            for (DataProjectResource projectResource : vo.getProjectResources()) {
-                DataProjectResource dataProjectResource = projectResourceMap.get(projectResource.getResourceId());
-                if (dataProjectResource!=null){
-                    projectResource.setId(dataProjectResource.getId());
-                    if (projectResource.getIsDel()!=null&&projectResource.getIsDel()==1){
-                        dataProjectPrRepository.deleteDataProjectResource(dataProjectResource.getId());
-                    }else {
-                        dataProjectPrRepository.updateDataProjectResource(projectResource);
+                    project.setId(dataProject.getId());
+                    if(dataProject.getStatus()!=null&&dataProject.getStatus()!=2) {
+                        dataProject.setStatus(null);
                     }
-                }else {
-                    projectResource.setPrId(UUID.randomUUID().toString());
-                    dataProjectPrRepository.saveDataProjectResource(projectResource);
+                    dataProjectPrRepository.updateDataProject(vo.getProject());
                 }
             }
+            if (vo.getProjectOrgans()!=null&&vo.getProjectOrgans().size()!=0){
+                Map<String, DataProjectOrgan> projectOrganMap = dataProjectRepository.selectDataProjcetOrganByProjectId(vo.getProjectId()).stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
+                for (DataProjectOrgan projectOrgan : vo.getProjectOrgans()) {
+                    DataProjectOrgan dataProjectOrgan = projectOrganMap.get(projectOrgan.getOrganId());
+                    if (dataProjectOrgan!=null){
+                        projectOrgan.setId(dataProjectOrgan.getId());
+                        dataProjectPrRepository.updateDataProjcetOrgan(projectOrgan);
+                    }else {
+                        projectOrgan.setPoId(UUID.randomUUID().toString());
+                        dataProjectPrRepository.saveDataProjcetOrgan(projectOrgan);
+                    }
+                }
+            }
+
+            if (vo.getProjectResources()!=null&&vo.getProjectResources().size()!=0){
+                Map<String, DataProjectResource> projectResourceMap = dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).stream().collect(Collectors.toMap(DataProjectResource::getResourceId, Function.identity()));
+                for (DataProjectResource projectResource : vo.getProjectResources()) {
+                    DataProjectResource dataProjectResource = projectResourceMap.get(projectResource.getResourceId());
+                    if (dataProjectResource!=null){
+                        projectResource.setId(dataProjectResource.getId());
+                        if (projectResource.getIsDel()!=null&&projectResource.getIsDel()==1){
+                            dataProjectPrRepository.deleteDataProjectResource(dataProjectResource.getId(),null);
+                        }else {
+                            dataProjectPrRepository.updateDataProjectResource(projectResource);
+                        }
+                    }else {
+                        projectResource.setPrId(UUID.randomUUID().toString());
+                        dataProjectPrRepository.saveDataProjectResource(projectResource);
+                    }
+                }
+            }
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, project.getProjectId());
+            dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).size());
+            dataProjectPrRepository.updateDataProject(dataProject);
         }
         return BaseResultEntity.success();
     }
@@ -377,10 +389,33 @@ public class DataProjectService {
         }
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         if (sysLocalOrganId.equals(dataProjectResource.getInitiateOrganId())||sysLocalOrganId.equals(dataProjectResource.getOrganId())){
-            dataProjectPrRepository.deleteDataProjectResource(id);
+            dataProjectPrRepository.deleteDataProjectResource(id,null);
             ShareProjectVo vo = new ShareProjectVo(dataProjectResource.getProjectId(), dataProjectResource.getServerAddress());
             dataProjectResource.setIsDel(1);
             vo.getProjectResources().add(dataProjectResource);
+            sendTask(vo);
+        }else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"非创建机构和操作机构不能操作");
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity removeOrgan(Long id) {
+        DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganById(id);
+        if (dataProjectOrgan==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无机构信息");
+        String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
+        if (sysLocalOrganId.equals(dataProjectOrgan.getInitiateOrganId())||sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
+            dataProjectPrRepository.deleteDataProjectOrgan(id,null);
+            ShareProjectVo vo = new ShareProjectVo(dataProjectOrgan.getProjectId(), dataProjectOrgan.getServerAddress());
+            dataProjectOrgan.setIsDel(1);
+            vo.getProjectOrgans().add(dataProjectOrgan);
+            List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectIdAndOrganId(dataProjectOrgan.getProjectId(), dataProjectOrgan.getOrganId());
+            for (DataProjectResource dpr : dataProjectResources) {
+                dataProjectPrRepository.deleteDataProjectResource(dpr.getId(),null);
+                dpr.setIsDel(1);
+                vo.getProjectResources().add(dpr);
+            }
             sendTask(vo);
         }else {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"非创建机构和操作机构不能操作");
@@ -392,7 +427,7 @@ public class DataProjectService {
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(id, null);
         if (dataProject==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无项目信息");
-        if (dataProject.getStatus()==0)
+        if (dataProject.getStatus()==2)
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"项目已关闭,不可重复操作");
         dataProject.setStatus(2);
         dataProjectPrRepository.updateDataProject(dataProject);
@@ -453,4 +488,20 @@ public class DataProjectService {
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
         return BaseResultEntity.success(dataProjectOrgans.stream().map(organ -> DataModelConvert.projectOrganPoCovertProjectOrganVo(organ,organListMap.get(organ.getOrganId()),resourceVoMap.get(organ.getOrganId()),sysLocalOrganId)));
     }
+
+    public BaseResultEntity openProject(Long id) {
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(id, null);
+        if (dataProject==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无项目信息");
+        if (dataProject.getStatus()!=2)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"项目非关闭状态,不可操作");
+        dataProject.setStatus(1);
+        dataProjectPrRepository.updateDataProject(dataProject);
+        ShareProjectVo vo = new ShareProjectVo(dataProject.getProjectId(), dataProject.getServerAddress());
+        vo.setProject(dataProject);
+        sendTask(vo);
+        return BaseResultEntity.success();
+    }
+
+
 }

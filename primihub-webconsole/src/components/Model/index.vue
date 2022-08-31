@@ -1,67 +1,82 @@
 <template>
   <div>
-    <div class="form-wrap">
-      <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="模型名称">
-          <el-input v-model="query.modelName" placeholder="请输入模型名称" size="small" />
-        </el-form-item>
-        <!-- <el-form-item label="模型状态">
-          <el-select v-model="query.taskStatus" placeholder="请选择" size="small">
-            <el-option
-              v-for="item in statusList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item> -->
-        <el-form-item label="">
-          <el-button type="primary" icon="el-icon-search" size="small" @click="search">搜索</el-button>
-        </el-form-item>
-      </el-form>
-    </div>
     <div class="model-list">
       <el-table
+        v-loading="listLoading"
         :data="modelList"
+        border
       >
         <!-- 解决加载数据时先显示no data -->
-        <template slot="empty">
-          <p>{{ emptyText }}</p>
-        </template>
         <el-table-column
-          type="index"
+          label="任务ID"
+        >
+          <template slot-scope="{row}">
+            <template v-if="hasModelViewPermission">
+              <el-button :disabled="projectStatus === 2" type="text" @click="toModelDetail(row.latestTaskId)">{{ row.latestTaskId }}</el-button>
+            </template>
+            <template v-else>
+              <span>{{ row.latestTaskId }}</span>
+            </template>
+          </template>
+        </el-table-column>
+        <el-table-column
           align="center"
-          label="序号"
+          label="任务类型"
+        >
+          <template>
+            <span><el-tag type="primary" size="mini">模型</el-tag></span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="开始时间"
+          min-width="150"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.latestTaskStartDate?row.latestTaskStartDate:'未开始' }}</span> <br>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="结束时间"
+          min-width="150"
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.taskEndDate? row.taskEndDate:'未开始' }}</span> <br>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="timeConsuming"
+          label="耗时"
           width="100"
-        />
+        >
+          <template slot-scope="{row}">
+            <span>{{ row.timeConsuming | timeFilter }}</span> <br>
+          </template>
+        </el-table-column>
         <el-table-column
-          prop="modelName"
-          label="名称"
-        />
-        <el-table-column
-          prop="modelId"
-          label="ID"
-        />
-        <el-table-column
-          prop="projectName"
-          label="所属项目"
-          min-width="120"
-        />
-        <!-- <el-table-column
-          prop="resourceNum"
-          label="资源数量"
-        /> -->
+          prop="latestTaskStatus"
+          label="状态"
+          sortable
+        >
+          <template slot-scope="{row}">
+            <i :class="statusStyle(row.latestTaskStatus)" />
+            {{ row.latestTaskStatus | taskStatusFilter }}
+            <span v-if="row.latestTaskStatus === 3" class="error-tips">{{ row.taskErrorMsg }}</span>
+            <span v-if="row.latestTaskStatus === 2"> <i class="el-icon-loading" /></span>
+          </template>
+        </el-table-column>
         <!-- if not have permissions, hide the column -->
         <el-table-column
-          v-if="!(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission)"
+          v-if="isCreator && !(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission && !hasCopyModelTaskPermission && !hasModelDownloadPermission && !hasDeleteModelTaskPermission)"
           label="操作"
           width="220"
+          fixed="right"
         >
           <template slot-scope="{row}">
             <div>
-              <el-button v-if="hasModelEditPermission && row.latestTaskStatus !== 2 && isCreator" type="text" icon="el-icon-edit" size="mini" @click.stop="toEditPage(row)">编辑</el-button>
-              <!-- <el-button v-if="hasModelRunPermission" type="text" icon="el-icon-video-play" size="mini" @click.stop="runTaskModel(row)">运行</el-button> -->
-              <el-button v-if="hasModelTaskHistoryPermission" type="text" icon="el-icon-view" size="mini" @click="toModelHistory(row.modelId)">执行记录</el-button>
+              <el-button v-if="hasCopyModelTaskPermission && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button>
+              <el-button v-if="hasModelRunPermission && row.latestTaskStatus === 3 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-button>
+              <el-button v-if="hasModelDownloadPermission && row.latestTaskStatus === 1 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click="download(row.latestTaskId)">下载结果</el-button>
+              <el-button v-if="hasDeleteModelTaskPermission && isCreator" type="text" size="mini" :disabled="row.latestTaskStatus === 2 || projectStatus === 2" @click="deleteModel(row.modelId)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -72,29 +87,52 @@
 </template>
 
 <script>
-import { getModelList, runTaskModel, getTaskModelComponent } from '@/api/model'
+import { getModelList, runTaskModel, getTaskModelComponent, restartTaskModel, deleteModel } from '@/api/model'
 import Pagination from '@/components/Pagination'
+import { getToken } from '@/utils/auth'
 
 export default {
   components: {
     Pagination
   },
   filters: {
-    modelStatusFilter(status) {
+    taskStatusFilter(status) {
+      // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
       status = status || 0
       const statusMap = {
         0: '未开始',
-        1: '运行中',
-        2: '已完成',
-        3: '异常'
+        1: '已完成',
+        2: '执行中',
+        3: '任务失败',
+        4: '取消'
       }
       return statusMap[status]
+    },
+    taskTypeFilter(status) {
+      // 任务类型 1、模型 2、PSI 3、PIR
+      status = status || 0
+      const statusMap = {
+        1: '模型',
+        2: 'PSI',
+        3: 'PIR'
+      }
+      return statusMap[status]
+    },
+    timeFilter(time) {
+      const hour = parseInt(time / 3600) < 10 ? '0' + parseInt(time / 3600) : parseInt(time / 3600)
+      const min = parseInt(time % 3600 / 60) < 10 ? '0' + parseInt(time % 3600 / 60) : parseInt(time % 3600 / 60)
+      const sec = parseInt(time % 3600 % 60) < 10 ? '0' + parseInt(time % 3600 % 60) : parseInt(time % 3600 % 60)
+      return hour + ':' + min + ':' + sec
     }
   },
   props: {
     isCreator: {
       type: Boolean,
       default: false
+    },
+    projectStatus: {
+      type: Number,
+      default: -1
     }
   },
   data() {
@@ -107,12 +145,8 @@ export default {
         taskStatus: ''
       },
       projectNamesList: [],
-      statusList: [{ label: '未开始', value: 0 }, { label: '运行中', value: 1 }, { label: '已完成', value: 2 }, { label: '异常', value: -1 }],
       modelList: null,
       params: {
-        modelName: '',
-        projectName: '',
-        taskStatus: '',
         pageNo: 1,
         pageSize: 5,
         projectId: ''
@@ -120,8 +154,8 @@ export default {
       total: 0,
       pageCount: 0,
       hidePagination: true,
-      emptyText: '',
-      projectId: this.$route.params.id
+      projectId: this.$route.params.id,
+      timer: null
     }
   },
   computed: {
@@ -133,27 +167,107 @@ export default {
     },
     hasModelEditPermission() {
       return this.$store.getters.buttonPermissionList.includes('ModelEdit')
+    },
+    hasModelViewPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelView')
+    },
+    hasModelDownloadPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
+    },
+    hasDeleteModelTaskPermission() {
+      return this.$store.getters.buttonPermissionList.includes('deleteModelTask')
+    },
+    hasCopyModelTaskPermission() {
+      return this.$store.getters.buttonPermissionList.includes('copyModelTask')
     }
   },
   created() {
     this.fetchData()
+    this.timer = window.setInterval(() => {
+      setTimeout(this.fetchData(), 0)
+    }, 5000)
   },
   destroyed() {
-    clearTimeout(this.taskTimer)
+    clearTimeout(this.timer)
     console.log('destroyed model')
   },
   methods: {
+    copyTask(row) {
+      const modelId = row.modelId
+      this.$router.push({
+        name: 'ModelCreate',
+        query: {
+          modelId,
+          projectId: this.projectId,
+          isCopy: 1
+        }
+      })
+    },
+    restartTaskModel(taskId) {
+      this.listLoading = true
+      restartTaskModel({ taskId }).then(res => {
+        if (res.code === 0) {
+          this.listLoading = false
+          const posIndex = this.modelList.findIndex(item => item.latestTaskId === taskId)
+          this.modelList[posIndex].latestTaskStatus = 2
+          this.fetchData()
+        } else {
+          this.listLoading = false
+          this.$message({
+            message: res.msg,
+            type: 'error'
+          })
+        }
+      }).catch(err => {
+        this.listLoading = false
+        console.log(err)
+      })
+    },
+    deleteModel(modelId) {
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        deleteModel({ modelId }).then(res => {
+          if (res.code === 0) {
+            // last page && all deleted, to the first page
+            this.modelList.splice(this.modelList.findIndex(item => item.modelId === modelId), 1)
+            if (this.modelList.length === 0 && (this.params.pageNo === this.pageCount)) {
+              this.params.pageNo = 1
+            }
+            this.fetchData()
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+          }
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
+    },
+    async download(taskId) {
+      const timestamp = new Date().getTime()
+      const nonce = Math.floor(Math.random() * 1000 + 1)
+      const token = getToken()
+      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+    },
+    toModelDetail(taskId) {
+      this.$router.push({
+        name: `ModelDetail`,
+        params: { taskId }
+      })
+    },
     search() {
       this.params.pageNo = 1
       this.params.modelName = this.query.modelName
       this.params.projectName = this.query.projectName
       this.params.taskStatus = this.query.taskStatus
       this.fetchData()
-    },
-    toModelDetail(id) {
-      this.$router.push({
-        path: `/model/detail/${id}`
-      })
     },
     toModelHistory(id) {
       this.$router.push({
@@ -164,24 +278,22 @@ export default {
       console.log('searchModel', this.searchName)
     },
     fetchData() {
-      this.listLoading = true
-      this.modelList = []
-      console.log('fetchData', this.params)
       this.params.projectId = this.projectId
       getModelList(this.params).then((response) => {
-        console.log('response.data', response.result)
         const { result } = response
         this.modelList = result.data
-        if (this.modelList.length === 0) {
-          this.emptyText = '暂无数据'
-        }
         this.total = result.total
         this.pageCount = result.totalPage
-        this.listLoading = false
+        // filter the running task
+        const res = this.modelList.filter(item => item.latestTaskStatus === 2)
+        // No tasks are running
+        if (res.length === 0) {
+          clearInterval(this.timer)
+        }
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-default' : status === 1 ? 'status-processing' : status === 2 ? 'status-end' : status === 3 ? 'status-error' : 'status-default'
+      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
     },
     handlePagination(data) {
       this.params.pageNo = data.page
@@ -251,23 +363,26 @@ export default {
   padding: 20px 0;
 }
 .status-default,.status-processing,.status-error,.status-end{
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-  vertical-align: middle;
   margin-right: 3px;
+  font-size: 12px;
 }
 .status-default{
-  background-color: #909399;
+  color: #909399;
 }
 .status-end{
-  background-color: #67C23A;
+  color: #67C23A;
 }
 .status-processing{
   background-color: #409EFF;
 }
 .status-error{
-  background-color: #F56C6C;
+  color: #F56C6C;
+}
+.error-tips{
+  display: block;
+  white-space:normal;
+  color: #F56C6C;
+  font-size: 12px;
+  line-height: 1.2;
 }
 </style>

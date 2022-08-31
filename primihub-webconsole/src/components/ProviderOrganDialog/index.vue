@@ -10,11 +10,13 @@
       border
       row-key="globalId"
       :data="organList"
+      @select="handleSelect"
+      @select-all="handleSelectAll"
       @selection-change="handleSelectionChange"
     >
+      <!-- :selectable="checkSelectable" 默认选中置灰 -->
       <el-table-column
         :reserve-selection="true"
-        :selectable="checkSelectable"
         type="selection"
         width="55"
       />
@@ -39,10 +41,10 @@ import { findMyGroupOrgan } from '@/api/center'
 
 export default {
   props: {
-    data: {
-      type: Array,
-      default: () => []
-    },
+    // data: {
+    //   type: Array,
+    //   default: () => []
+    // },
     selectedData: {
       type: Array,
       default: () => []
@@ -62,26 +64,22 @@ export default {
     return {
       loading: false,
       organList: [],
-      multipleSelection: []
+      multipleSelection: [],
+      currentRow: null,
+      selectedRows: []
     }
   },
   watch: {
     visible(newVal) {
-      console.log(newVal)
       if (newVal) {
         this.findMyGroupOrgan()
-        this.toggleSelection(this.selectedData)
       } else {
         this.organList = []
       }
     }
   },
-  // mounted() {
-  //   this.toggleSelection(this.selectedData)
-  // },
   methods: {
     closeDialog() {
-      console.log('close', this.selectedData)
       this.$emit('close', this.selectedData)
     },
     handleSubmit() {
@@ -89,6 +87,35 @@ export default {
     },
     handleSelectionChange(value) {
       this.multipleSelection = value
+    },
+    handleSelect(rows, row) {
+      const selected = rows.length && rows.indexOf(row) !== -1
+      const posIndex = this.selectedData.findIndex(item => item.globalId === row.globalId)
+      const id = this.selectedData.filter(item => item.globalId === row.globalId)[0]?.id
+      // true:选中，0或者false:取消选中
+      // 取消选中需判断是否在选择过的列表里
+      if (!selected && posIndex !== -1) {
+        this.confirm([id])
+      }
+    },
+    handleSelectAll(selection) {
+      if (selection.length === 0 && this.selectedData.length > 0) {
+        const ids = this.selectedData.map(item => item.id)
+        this.confirm(ids)
+      }
+    },
+    confirm(data) {
+      this.$confirm('删除后，不可再使用此协作者数据创建任务，且进行中任务将会失败，是否删除？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$emit('delete', data)
+      }).catch(() => {
+        this.$nextTick(() => {
+          this.toggleSelection(this.selectedRows)
+        })
+      })
     },
     checkSelectable(row, index) {
       const res = !(this.selectedData.length > 0 && this.selectedData.filter(item => item.globalId === row.globalId).length > 0)
@@ -98,22 +125,26 @@ export default {
       this.loading = true
       const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
       this.organList = result.dataList.organList
+      console.log('selectedData', this.selectedData)
+      this.selectedRows = this.selectedData.map(item => {
+        return this.organList.filter(o => o.globalId === item.globalId)[0]
+      })
+      console.log('selectedRows', this.selectedRows)
+      this.$nextTick(() => {
+        this.toggleSelection(this.selectedRows)
+      })
       this.loading = false
     },
     toggleSelection(rows) {
-      console.log('toggleSelection', rows)
-      console.log('selectedData', this.selectedData)
-      this.$nextTick(() => {
-        if (rows) {
-          this.$refs.table.clearSelection()
-          rows.forEach(row => {
-            console.log(row.globalId)
-            this.$refs.table.toggleRowSelection(row, true)
-          })
-        } else {
-          this.$refs.table.clearSelection()
-        }
-      })
+      if (rows) {
+        this.$refs.table.clearSelection()
+        rows.forEach(row => {
+          console.log(row)
+          this.$refs.table.toggleRowSelection(row, true)
+        })
+      } else {
+        this.$refs.table.clearSelection()
+      }
     }
   }
 

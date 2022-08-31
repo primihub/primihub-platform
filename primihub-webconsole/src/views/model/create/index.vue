@@ -133,8 +133,12 @@ export default {
   },
   computed: {
     isEdit() {
-      return !!this.$route.query.modelId
+      return this.$route.query.modelId && !this.isCopy
+    },
+    isCopy() {
+      return this.$route.query.isCopy
     }
+
   },
   async mounted() {
     this.isDraft = this.isEdit ? 1 : 0
@@ -142,12 +146,6 @@ export default {
     await this.init()
     this.initToolBarEvent()
     this.getModelComponentDetail()
-
-    this.taskTimer = window.setInterval(() => {
-      if (this.modelStartRun) { // 模型开始运行
-        setTimeout(this.getTaskModelComponent(), 0)
-      }
-    }, 1500)
   },
   destroyed() {
     clearTimeout(this.taskTimer)
@@ -558,6 +556,12 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
+      } else if (!this.modelId && this.isCopy) { // copy model task, must save
+        this.$message({
+          message: '模型未保存，请保存后再次尝试',
+          type: 'warning'
+        })
+        this.modelRunValidated = false
       } else if (cells.length === 1) { // model is empty or cleared, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
@@ -587,7 +591,10 @@ export default {
         this.modelRunValidated = true
       }
     },
-    run() {
+    async run() {
+      // 运行前触发保存
+      this.isDraft = 1
+      await this.saveFn()
       this.checkRunValidated()
       if (!this.modelRunValidated) return
       runTaskModel({ modelId: this.modelId }).then(res => {
@@ -600,53 +607,82 @@ export default {
         } else {
           this.taskId = res.result.taskId
           this.modelStartRun = true
+          this.$notify.closeAll()
           this.$notify({
             message: '开始运行',
             type: 'info',
             duration: 5000
           })
+          this.taskTimer = window.setInterval(() => {
+            if (this.modelStartRun) { // 模型开始运行
+              setTimeout(this.getTaskModelComponent(), 0)
+            }
+          }, 1500)
         }
       })
     },
     getTaskModelComponent() {
       getTaskModelComponent({ taskId: this.taskId }).then(res => {
-        const result = res.result
-        const taskResult = []
-        result && result.forEach((item) => {
-          const { componentCode, complete, componentState } = item
-          const nodes = this.graph.getNodes()
-          const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
-          const data = node.getData()
-          node.setData({
-            ...data,
-            componentState: componentState
-          })
-          if (complete) {
-            taskResult.push(componentCode)
-            node.setData({
-              ...data,
-              componentState: componentState,
-              complete: true
-            })
-          }
-        })
-        if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
+        const result = res.result.components
+        const taskState = res.result.taskState
+        if (taskState === 3) { // task failed
           clearInterval(this.taskTimer)
+          this.$notify.closeAll()
           this.$notify({
-            message: '模型运行完成',
-            type: 'success',
+            message: '运行失败',
+            type: 'error',
             duration: 3000
           })
-          // to model task detail page
-          setTimeout(() => {
-            this.toModelDetail(this.taskId)
-          }, 3000)
+          this.modelStartRun = false
+          this.$confirm('任务运行失败, 是否重新运行?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.run()
+          }).catch(() => {
+          })
+          return
+        } else {
+          const taskResult = []
+          result && result.forEach((item) => {
+            const { componentCode, complete, componentState } = item
+            const nodes = this.graph.getNodes()
+            const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
+            const data = node.getData()
+            node.setData({
+              ...data,
+              componentState: componentState
+            })
+            if (complete) {
+              taskResult.push(componentCode)
+              node.setData({
+                ...data,
+                componentState: componentState,
+                complete: true
+              })
+            }
+          })
+          if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
+            clearInterval(this.taskTimer)
+            this.$notify.closeAll()
+            this.$notify({
+              message: '运行完成',
+              type: 'success',
+              duration: 3000
+            })
+            // to model task detail page
+            setTimeout(() => {
+              this.toModelDetail(this.taskId)
+            }, 1000)
+          }
         }
       })
     },
     toModelDetail(id) {
       this.$router.push({
-        path: `/model/detail/${id}`
+        name: `ModelDetail`,
+        params: { taskId: id }
       })
     },
     // 获取左侧组件
@@ -666,7 +702,7 @@ export default {
       }
       const res = await getModelComponentDetail(params)
       const modelComponents = res.result?.modelComponents
-      if (this.isEdit && modelComponents && modelComponents.length > 0) { // It's is edit page
+      if ((this.isEdit || this.isCopy) && modelComponents && modelComponents.length > 0) { // It's is edit page
         this.setComponentsDetail(res.result)
       } else if (modelComponents && modelComponents.length > 1) {
         this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
@@ -685,7 +721,13 @@ export default {
     },
     setComponentsDetail(data) {
       const { modelId, modelComponents, modelPointComponents } = data
-      this.modelId = modelId
+      // 复制任务，需重置重新生成modelId
+      if (this.isCopy) {
+        this.modelId = 0
+        this.isDraft = 0
+      } else {
+        this.modelId = modelId
+      }
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
       for (let index = 0; index < this.modelComponents.length; index++) {
@@ -820,11 +862,10 @@ export default {
       return obj
     },
     toolBarSave() {
-      this.isDraft = 1
       this.saveFn()
     },
     // 保存模板文件
-    saveFn() { // 0 草稿
+    async saveFn() { // 0 草稿
       const data = this.graph.toJSON()
       const { cells } = data
       if (this.modelStartRun) { // 模型运行中不可操作
@@ -906,24 +947,23 @@ export default {
         this.selectComponentList = []
       }
 
-      saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
-        if (res.code === 0) {
-          this.modelId = res.result.modelId
-          this.$notify.closeAll()
-          this.$notify({
-            message: '保存成功',
-            type: 'success',
-            duration: '1000'
-          })
-        } else {
-          this.$message({
-            message: res.msg,
-            type: 'error'
-          })
-        }
-        this.isClear = false
-        this.isDraft = this.isEdit ? 1 : 0
-      })
+      const res = await saveModelAndComponent(JSON.stringify(this.saveParams))
+      if (res.code === 0) {
+        this.modelId = res.result.modelId
+        this.$notify.closeAll()
+        this.$notify({
+          message: '保存成功',
+          type: 'success',
+          duration: '1000'
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error'
+        })
+      }
+      this.isClear = false
+      this.isDraft = this.isEdit ? 1 : 0
     },
     handleChange(data) {
       const { cells } = this.graph.toJSON()

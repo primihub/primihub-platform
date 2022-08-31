@@ -114,7 +114,13 @@ public class SysFusionControllerTest {
                                 fieldWithPath("code").description("返回码"),
                                 fieldWithPath("msg").description("返回码描述"),
                                 fieldWithPath("result").description("返回码结果"),
-                                fieldWithPath("result.fusionMsg").description("返回消息"),
+                                fieldWithPath("result.fusionMsg").description("结果"),
+                                fieldWithPath("result.groupData.group.id").description("群组id"),
+                                fieldWithPath("result.groupData.group.groupName").description("群组名称"),
+                                fieldWithPath("result.groupData.group.groupOrganId").description("创建机构"),
+                                fieldWithPath("result.groupData.group.isDel").description("是否删除"),
+                                fieldWithPath("result.groupData.group.ctime").optional().description("创建时间"),
+                                fieldWithPath("result.groupData.group.utime").optional().description("修改时间"),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));
@@ -203,7 +209,7 @@ public class SysFusionControllerTest {
     public void testFindOrganInGroup() throws Exception {
         this.mockMvc.perform(get("/fusion/findOrganInGroup")
                 .param("serverAddress","http://localhost:8099")
-                .param("groupId","1"))
+                .param("groupId","32"))
                 .andExpect(status().isOk())
                 .andDo(document("findOrganInGroup",
                         preprocessRequest(prettyPrint()),
@@ -223,6 +229,7 @@ public class SysFusionControllerTest {
                                 fieldWithPath("result.dataList.organList[].globalId").optional().description("机构id"),
                                 fieldWithPath("result.dataList.organList[].globalName").optional().description("机构名称"),
                                 fieldWithPath("result.dataList.organList[].pinCodeMd").optional().description("code"),
+                                fieldWithPath("result.dataList.organList[].gatewayAddress").optional().description("网关地址"),
                                 fieldWithPath("result.dataList.organList[].registerTime").optional().description("注册时间"),
                                 fieldWithPath("result.dataList.organList[].isDel").optional().description("是否删除"),
                                 fieldWithPath("result.dataList.organList[].ctime").optional().description("创建时间"),

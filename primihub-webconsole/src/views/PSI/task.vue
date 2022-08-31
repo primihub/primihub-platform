@@ -20,17 +20,10 @@
             <div class="item-row">
               <div class="item">
                 <el-form-item label="资源表" prop="ownResourceId">
-                  <el-select v-model="formData.ownResourceId" placeholder="请选择" @change="handleOwnResourceChange">
-                    <el-option
-                      v-for="item in tableDataA"
-                      :key="item.resourceId"
-                      :label="item.resourceName"
-                      :value="item.resourceId"
-                    />
-                  </el-select>
+                  <ResourceSelect :value="formData.ownResourceId" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="ownKeyword">
-                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" placeholder="请选择" @change="handleOwnKeywordChange">
+                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" clearable placeholder="请选择" @change="handleOwnKeywordChange">
                     <el-option
                       v-for="(item,index) in ownOrganResourceField"
                       :key="index"
@@ -46,17 +39,10 @@
               </div>
               <div class="item">
                 <el-form-item label="资源表" prop="otherResourceId">
-                  <el-select v-model="formData.otherResourceId" placeholder="请选择" @change="handleTargetResourceChange">
-                    <el-option
-                      v-for="item in tableDataB"
-                      :key="item.resourceId"
-                      :label="item.resourceName"
-                      :value="item.resourceId"
-                    />
-                  </el-select>
+                  <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="otherKeyword">
-                  <el-select v-model="formData.otherKeyword" placeholder="请选择" @change="handleOtherKeywordChange">
+                  <el-select v-model="formData.otherKeyword" placeholder="请选择" clearable @change="handleOtherKeywordChange">
                     <el-option
                       v-for="(item,index) in otherOrganResourceField"
                       :key="index"
@@ -151,6 +137,7 @@
 <script>
 import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
 import OrganCascader from '@/components/OrganCascader'
+import ResourceSelect from '@/components/ResourceSelect'
 
 const intersection = require('@/assets/intersection.svg')
 const diffsection = require('@/assets/diffsection.svg')
@@ -158,10 +145,12 @@ const diffsection = require('@/assets/diffsection.svg')
 export default {
   name: 'PSITask',
   components: {
-    OrganCascader
+    OrganCascader,
+    ResourceSelect
   },
   data() {
     return {
+      resourceName: '',
       selectLoading: false,
       ownOrganResourceField: [],
       otherOrganResourceField: [],
@@ -234,11 +223,11 @@ export default {
         {
           value: 0,
           label: 'ECDH'
+        },
+        {
+          value: 1,
+          label: 'KKRT'
         }
-        // {
-        //   value: 1,
-        //   label: 'KKRT'
-        // }
       ]
     }
   },
@@ -276,17 +265,24 @@ export default {
       }
     }
   },
-  created() {
+  async created() {
     this.formData.ownOrganId = this.$store.getters.userOrganId
     this.formData.ownOrganName = this.$store.getters.userOrganName
     this.formData.resultOrgan.push(this.formData.ownOrganId)
-    getPsiResourceAllocationList({
-      pageSize: this.pageSize
-    }).then(res => {
-      this.tableDataA = res.result.data
-    })
   },
   methods: {
+    async getPsiResourceAllocationList(params) {
+      const { resourceName, organId } = params
+      const res = await getPsiResourceAllocationList({
+        resourceName,
+        organId,
+        pageSize: this.pageSize,
+        serverAddress: this.formData.serverAddress
+      })
+      if (res.code === 0) {
+        return res.result.data
+      }
+    },
     handleSubmit() {
       const enable = this.checkParams()
       if (!enable) return
@@ -347,20 +343,65 @@ export default {
 
       return enable
     },
+    async handleResourceFocus(role) {
+      this.$refs.form.resetFields()
+      if (role === 'own') {
+        this.tableDataA = await this.getPsiResourceAllocationList({
+          organId: this.formData.ownOrganId
+        })
+      } else {
+        if (this.formData.serverAddress === '') {
+          this.$message({
+            message: '请选择加持方',
+            type: 'warning'
+          })
+          this.tableDataB = []
+          return
+        }
+        this.tableDataB = []
+        this.tableDataB = await this.getPsiResourceAllocationList({
+          organId: this.formData.otherOrganId,
+          resourceName: this.resourceName
+        })
+      }
+    },
     handleOwnKeywordChange(index) {
-      this.formData.ownKeyword = this.ownOrganResourceField[index].name
+      this.formData.ownKeyword = this.ownOrganResourceField[index]?.name
     },
     handleOtherKeywordChange(index) {
-      this.formData.otherKeyword = this.otherOrganResourceField[index].name
+      this.formData.otherKeyword = this.otherOrganResourceField[index]?.name
+    },
+    async handleOwnResourceSearch(resourceName) {
+      this.resourceName = resourceName
+      this.tableDataA = await this.getPsiResourceAllocationList({
+        organId: this.formData.organId,
+        resourceName: this.resourceName
+      })
+    },
+    async handleOtherResourceSearch(resourceName) {
+      if (resourceName !== '') {
+        this.resourceName = resourceName
+        this.tableDataB = await this.getPsiResourceAllocationList({
+          organId: this.formData.otherOrganId,
+          resourceName: this.resourceName
+        })
+      }
+    },
+    handleResourceClear(role) {
+      this.resourceName = ''
+      if (role === 'own') {
+        this.tableDataA = []
+      } else if (role === 'other') {
+        this.tableDataB = []
+      }
     },
     handleOwnResourceChange(resourceId) {
-      this.ownOrganResourceField = []
       this.formData.ownResourceId = resourceId
+      this.ownOrganResourceField = []
       this.formData.ownKeyword = ''
       const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
-      this.ownResourceName = currentResource.resourceName
-      // this.formData.resultName = this.formData.resultName !== '' ? `${this.formData.resultName}-${resourceName}` : resourceName
-      currentResource.keywordList.forEach((item, index) => {
+      this.ownResourceName = currentResource ? currentResource.resourceName : ''
+      currentResource?.keywordList.forEach((item, index) => {
         this.ownOrganResourceField.push({
           value: index,
           name: item
@@ -372,27 +413,25 @@ export default {
       this.formData.otherResourceId = resourceId
       this.formData.otherKeyword = ''
       const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
-      this.otherResourceName = currentResource.resourceName
-      currentResource.keywordList.forEach((item, index) => {
+      this.otherResourceName = currentResource ? currentResource.resourceName : ''
+      currentResource?.keywordList.forEach((item, index) => {
         this.otherOrganResourceField.push({
           value: index,
           name: item
         })
       })
     },
-    handleOrganSelect(data) {
+    async handleOrganSelect(data) {
+      this.resourceName = ''
       this.formData.otherOrganId = data.organId
       this.formData.otherOrganName = data.organName
       this.otherOrganResourceField = []
       this.formData.otherResourceId = ''
       this.formData.otherKeyword = ''
       this.formData.serverAddress = data.serverAddress
-      getPsiResourceAllocationList({
-        serverAddress: this.formData.serverAddress,
-        organId: this.formData.otherOrganId,
-        pageSize: this.pageSize
-      }).then(res => {
-        this.tableDataB = res.result.data
+      this.tableDataB = []
+      this.tableDataB = await this.getPsiResourceAllocationList({
+        organId: this.formData.otherOrganId
       })
     },
     handleClose() {

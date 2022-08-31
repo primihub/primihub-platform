@@ -67,18 +67,18 @@
     >
       <template slot-scope="{row}">
         <template v-if="thisInstitution && row.participationIdentity === 2 && projectAuditStatus && row.auditStatus === 0">
-          <el-button size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
-          <el-button size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
+          <el-button :disabled="status === 2" size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
+          <el-button :disabled="status === 2" size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
         </template>
-        <el-button v-if="thisInstitution" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-        <el-button v-if="thisInstitution || creator" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+        <el-button v-if="thisInstitution" :disabled="status === 2" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
+        <el-button v-if="thisInstitution || creator" :disabled="status === 2" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
       </template>
     </el-table-column>
   </el-table>
 </template>
 
 <script>
-import { mapActions } from 'vuex'
+import { mapActions, mapState } from 'vuex'
 
 export default {
   name: 'ResourceTable',
@@ -130,6 +130,9 @@ export default {
     return {
       emptyText: '暂无资源'
     }
+  },
+  computed: {
+    ...mapState('project', ['status'])
   },
   watch: {
     selectedData(val) {
@@ -205,7 +208,9 @@ export default {
       }
       return true
     },
-    ...mapActions('user', ['getInfo'])
+    ...mapActions(
+      'user', ['getInfo']
+    )
   }
 
 }

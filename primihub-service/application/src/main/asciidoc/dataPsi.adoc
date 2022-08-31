@@ -1,32 +1,4 @@
-=== 2.4.1 保存或修改psi资源信息
-include::{snippets}/saveOrUpdatePsiResource/curl-request.adoc[]
-include::{snippets}/saveOrUpdatePsiResource/httpie-request.adoc[]
-.request-body 请求体
-include::{snippets}/saveOrUpdatePsiResource/request-body.adoc[]
-.http-request 请求样例
-include::{snippets}/saveOrUpdatePsiResource/http-request.adoc[]
-.request-parameters 请求参数说明
-include::{snippets}/saveOrUpdatePsiResource/request-parameters.adoc[]
-.response-fields 返回字段说明
-include::{snippets}/saveOrUpdatePsiResource/response-fields.adoc[]
-.http-response 返回结果样例
-include::{snippets}/saveOrUpdatePsiResource/http-response.adoc[]
-
-=== 2.4.2 查询psi资源详情接口
-include::{snippets}/getPsiResourceDetails/curl-request.adoc[]
-include::{snippets}/getPsiResourceDetails/httpie-request.adoc[]
-.request-body 请求体
-include::{snippets}/getPsiResourceDetails/request-body.adoc[]
-.http-request 请求样例
-include::{snippets}/getPsiResourceDetails/http-request.adoc[]
-.request-parameters 请求参数说明
-include::{snippets}/getPsiResourceDetails/request-parameters.adoc[]
-.response-fields 返回字段说明
-include::{snippets}/getPsiResourceDetails/response-fields.adoc[]
-.http-response 返回结果样例
-include::{snippets}/getPsiResourceDetails/http-response.adoc[]
-
-=== 2.4.3 查询机构下资源列表接口
+=== 2.4.1 查询机构下资源列表接口
 include::{snippets}/getPsiResourceList/curl-request.adoc[]
 include::{snippets}/getPsiResourceList/httpie-request.adoc[]
 .request-body 请求体
@@ -40,7 +12,7 @@ include::{snippets}/getPsiResourceList/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getPsiResourceList/http-response.adoc[]
 
-=== 2.4.4 psi保存运行任务接口
+=== 2.4.2 psi保存运行任务接口
 include::{snippets}/saveDataPsi/curl-request.adoc[]
 include::{snippets}/saveDataPsi/httpie-request.adoc[]
 .request-body 请求体
@@ -56,7 +28,7 @@ include::{snippets}/saveDataPsi/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/saveDataPsi/http-response.adoc[]
 
-=== 2.4.5 psi根据机构配置接口
+=== 2.4.3 psi根据机构配置接口
 include::{snippets}/getPsiResourceAllocationList/curl-request.adoc[]
 include::{snippets}/getPsiResourceAllocationList/httpie-request.adoc[]
 .request-body 请求体
@@ -70,7 +42,7 @@ include::{snippets}/getPsiResourceAllocationList/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getPsiResourceAllocationList/http-response.adoc[]
 
-=== 2.4.6 任务列表接口
+=== 2.4.4 任务列表接口
 include::{snippets}/getPsiTaskList/curl-request.adoc[]
 include::{snippets}/getPsiTaskList/httpie-request.adoc[]
 .request-body 请求体
@@ -86,7 +58,7 @@ include::{snippets}/getPsiTaskList/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getPsiTaskList/http-response.adoc[]
 
-=== 2.4.7 根据机构查询任务接口
+=== 2.4.5 根据机构查询任务接口
 include::{snippets}/getOrganPsiTask/curl-request.adoc[]
 include::{snippets}/getOrganPsiTask/httpie-request.adoc[]
 .request-body 请求体
@@ -102,7 +74,7 @@ include::{snippets}/getOrganPsiTask/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getOrganPsiTask/http-response.adoc[]
 
-=== 2.4.8 psi任务详情接口
+=== 2.4.6 psi任务详情接口
 include::{snippets}/getPsiTaskDetails/curl-request.adoc[]
 include::{snippets}/getPsiTaskDetails/httpie-request.adoc[]
 .request-body 请求体
@@ -118,7 +90,7 @@ include::{snippets}/getPsiTaskDetails/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getPsiTaskDetails/http-response.adoc[]
 
-=== 2.4.9 psi删除接口
+=== 2.4.7 psi删除接口
 include::{snippets}/delPsiTask/curl-request.adoc[]
 include::{snippets}/delPsiTask/httpie-request.adoc[]
 .request-body 请求体
@@ -134,7 +106,7 @@ include::{snippets}/delPsiTask/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/delPsiTask/http-response.adoc[]
 
-=== 2.4.10 psi任务取消接口
+=== 2.4.8 psi任务取消接口
 include::{snippets}/cancelPsiTask/curl-request.adoc[]
 include::{snippets}/cancelPsiTask/httpie-request.adoc[]
 .request-body 请求体
@@ -150,7 +122,7 @@ include::{snippets}/cancelPsiTask/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/cancelPsiTask/http-response.adoc[]
 
-=== 2.4.11 psi任务重试接口
+=== 2.4.9 psi任务重试接口
 include::{snippets}/retryPsiTask/curl-request.adoc[]
 include::{snippets}/retryPsiTask/httpie-request.adoc[]
 .request-body 请求体

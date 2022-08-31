@@ -29,13 +29,23 @@ export default {
   methods: {
     getBreadcrumb() {
       // only show routes with meta.title
-      let matched = this.$route.matched.filter(item => item.meta && item.meta.title)
-      const first = matched[0]
+      const matched = this.$route.matched.filter(item => item.meta && item.meta.title)
+      // TODO 首页dashboard 添加后需添加上
+      // const first = matched[0]
 
-      if (!this.isDashboard(first)) {
-        matched = [{ path: '/', meta: { title: '首页' }}].concat(matched)
+      // if (!this.isDashboard(first)) {
+      //   matched = [{ path: '/', meta: { title: '首页' }}].concat(matched)
+      // }
+      // 在需要展示父级的路由meta中添加parent属性
+      if (matched.length > 1) {
+        const insertPosition = matched.length - 1
+        let parent = matched[insertPosition].meta.parent
+        while (parent) {
+          const route = this.$router.resolve(parent).route
+          matched.splice(insertPosition, 0, route)
+          parent = route.meta.parent
+        }
       }
-
       this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
     },
     isDashboard(route) {

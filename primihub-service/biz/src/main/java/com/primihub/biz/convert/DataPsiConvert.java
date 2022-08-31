@@ -1,7 +1,6 @@
 package com.primihub.biz.convert;
 
 import com.primihub.biz.entity.data.po.DataPsi;
-import com.primihub.biz.entity.data.po.DataPsiResource;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.req.DataPsiReq;
@@ -17,19 +16,6 @@ import java.util.Map;
 
 public class DataPsiConvert {
 
-    public static DataPsiResourceVo DataPsiResourceConvertVo(DataPsiResource dataPsiResource){
-        if (dataPsiResource==null)
-            return null;
-        DataPsiResourceVo dataPsiResourceVo = new DataPsiResourceVo();
-        dataPsiResourceVo.setId(dataPsiResource.getId());
-        dataPsiResourceVo.setResourceId(dataPsiResource.getResourceId());
-        dataPsiResourceVo.setTableStructureTemplate(dataPsiResource.getTableStructureTemplate());
-        dataPsiResourceVo.setOrganType(dataPsiResource.getOrganType());
-        dataPsiResourceVo.setResultsAllowOpen(dataPsiResource.getResultsAllowOpen());
-        dataPsiResourceVo.setKeywordList(StringUtils.isNotBlank(dataPsiResource.getKeywordList())?dataPsiResource.getKeywordList().split(","):new String[]{});
-        dataPsiResourceVo.setCreateDate(dataPsiResource.getCreateDate());
-        return dataPsiResourceVo;
-    }
 
     public static DataPsi DataPsiReqConvertPo(DataPsiReq req){
         DataPsi dataPsi = new DataPsi();
@@ -51,18 +37,6 @@ public class DataPsiConvert {
         return dataPsi;
     }
 
-    public static DataPsiResource DataPsiResourceReqConvertPo(DataPsiResourceReq req){
-        DataPsiResource dataPsiResource = new DataPsiResource();
-        dataPsiResource.setId(req.getId());
-        dataPsiResource.setResourceId(req.getResourceId());
-        dataPsiResource.setTableStructureTemplate(req.getTableStructureTemplate());
-        dataPsiResource.setOrganType(req.getOrganType());
-        dataPsiResource.setResultsAllowOpen(req.getResultsAllowOpen());
-        dataPsiResource.setKeywordList(req.getKeywordList());
-        dataPsiResource.setPsiResourceDesc(req.getPsiResourceDesc());
-        return dataPsiResource;
-
-    }
 
     public static PsiTaskVo DataPsiTaskConvertVo(DataPsiTask task){
         PsiTaskVo psiTaskVo = new PsiTaskVo();

@@ -169,13 +169,14 @@ public class SysUserControllerTest {
                                 fieldWithPath("result.sysUser").description("用户信息"),
                                 fieldWithPath("result.sysUser.userId").description("用户id"),
                                 fieldWithPath("result.sysUser.userAccount").description("用户账户"),
+                                fieldWithPath("result.sysUser.registerType").description("注册类型1：管理员创建 2：邮箱 3：手机"),
                                 fieldWithPath("result.sysUser.userName").description("用户昵称"),
                                 fieldWithPath("result.sysUser.roleIdList").description("角色id集合"),
                                 fieldWithPath("result.sysUser.roleIdListDesc").description("角色id集合描述"),
                                 fieldWithPath("result.sysUser.organIdList").description("机构id集合"),
                                 fieldWithPath("result.sysUser.organIdListDesc").description("机构id集合描述"),
-                                fieldWithPath("result.sysUser.rorganIdList").description("根机构id集合"),
-                                fieldWithPath("result.sysUser.rorganIdListDesc").description("根机构id集合描述"),
+//                                fieldWithPath("result.sysUser.rorganIdList").description("根机构id集合"),
+//                                fieldWithPath("result.sysUser.rorganIdListDesc").description("根机构id集合描述"),
                                 fieldWithPath("result.sysUser.authIdList").description("权限id集合"),
                                 fieldWithPath("result.sysUser.isForbid").description("是否禁用"),
                                 fieldWithPath("result.sysUser.isEditable").description("是否可编辑"),
@@ -216,6 +217,7 @@ public class SysUserControllerTest {
                 .param("userId","")
                 .param("userName","测试用户姓名")
                 .param("userAccount","account"+System.currentTimeMillis())
+                .param("registerType","1")
                 .param("roleIdList","")
                 .param("organIdList","")
                 .param("rOrganIdList","")
@@ -230,6 +232,7 @@ public class SysUserControllerTest {
                                 parameterWithName("userId").description("用户id(为空时新增，不为空修改)"),
                                 parameterWithName("userName").description("用户昵称"),
                                 parameterWithName("userAccount").description("用户账户 只有新增时才有效"),
+                                parameterWithName("registerType").description("注册类型1：管理员创建 2：邮箱 3：手机"),
                                 parameterWithName("roleIdList").description("添加的角色id集合 逗号分割 非必填"),
                                 parameterWithName("organIdList").description("添加的机构id集合 逗号分割 非必填"),
                                 parameterWithName("rOrganIdList").description("与organIdList对应，添加的机构根id集合 逗号分割 非必填"),
@@ -245,8 +248,9 @@ public class SysUserControllerTest {
                                 fieldWithPath("result.sysUser.userPassword").description(""),
                                 fieldWithPath("result.sysUser.userName").description("用户昵称"),
                                 fieldWithPath("result.sysUser.roleIdList").description("角色id集合"),
-                                fieldWithPath("result.sysUser.organIdList").description("机构id集合"),
-                                fieldWithPath("result.sysUser.rorganIdList").description("根机构id集合"),
+                                fieldWithPath("result.sysUser.registerType").description("注册类型1：管理员创建 2：邮箱 3：手机"),
+//                                fieldWithPath("result.sysUser.organIdList").description("机构id集合"),
+//                                fieldWithPath("result.sysUser.rorganIdList").description("根机构id集合"),
                                 fieldWithPath("result.sysUser.isForbid").description("是否禁用"),
                                 fieldWithPath("result.sysUser.isEditable").description("是否可编辑"),
                                 fieldWithPath("result.sysUser.isDel").description("是否删除"),
@@ -309,13 +313,14 @@ public class SysUserControllerTest {
                                 fieldWithPath("result.sysUserList").description("用户列表"),
                                 fieldWithPath("result.sysUserList[].userId").description("用户id"),
                                 fieldWithPath("result.sysUserList[].userAccount").description("用户账户"),
+                                fieldWithPath("result.sysUserList[].registerType").description("注册类型1：管理员创建 2：邮箱 3：手机"),
                                 fieldWithPath("result.sysUserList[].userName").description("用户昵称"),
                                 fieldWithPath("result.sysUserList[].roleIdList").description("角色id集合"),
                                 fieldWithPath("result.sysUserList[].roleIdListDesc").description("角色id集合描述"),
                                 fieldWithPath("result.sysUserList[].organIdList").description("机构id集合"),
                                 fieldWithPath("result.sysUserList[].organIdListDesc").description("机构id集合描述"),
-                                fieldWithPath("result.sysUserList[].rorganIdList").description("根机构id集合"),
-                                fieldWithPath("result.sysUserList[].rorganIdListDesc").description("根机构id集合描述"),
+//                                fieldWithPath("result.sysUserList[].rorganIdList").description("根机构id集合"),
+//                                fieldWithPath("result.sysUserList[].rorganIdListDesc").description("根机构id集合描述"),
                                 fieldWithPath("result.sysUserList[].authIdList").description("权限id集合"),
                                 fieldWithPath("result.sysUserList[].isForbid").description("是否禁用"),
                                 fieldWithPath("result.sysUserList[].isEditable").description("是否可编辑"),

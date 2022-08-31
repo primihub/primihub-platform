@@ -34,9 +34,10 @@ public class DataProjectConvert {
         return dataProject;
     }
 
-    public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject, List<Map<String, Object>> list){
+    public static DataProjectListVo dataProjectConvertListVo(DataProject dataProject, List<Map<String, Object>> list,Integer status){
         DataProjectListVo dataProjectListVo = new DataProjectListVo();
         dataProjectListVo.setId(dataProject.getId());
+        dataProjectListVo.setOrganId(dataProject.getCreatedOrganId());
         dataProjectListVo.setProjectId(dataProject.getProjectId());
         dataProjectListVo.setProjectName(dataProject.getProjectName());
         dataProjectListVo.setProjectDesc(dataProject.getProjectDesc());
@@ -44,23 +45,21 @@ public class DataProjectConvert {
         dataProjectListVo.setCreatedOrganName(dataProject.getCreatedOrganName());
         dataProjectListVo.setResourceNum(dataProject.getResourceNum());
         dataProjectListVo.setProviderOrganNames(dataProject.getProviderOrganNames());
-        dataProjectListVo.setStatus(dataProject.getStatus());
+        dataProjectListVo.setStatus(status==null||status==0?dataProject.getStatus():status);
         dataProjectListVo.setCreateDate(dataProject.getCreateDate());
         if (list!=null){
             for (Map<String, Object> objectMap : list) {
                 Object latestTaskStatus = objectMap.get("latestTaskStatus");
                 if (latestTaskStatus!=null && StringUtils.isNotBlank(latestTaskStatus.toString())){
                     if ("1".equals(latestTaskStatus.toString())){
-                        dataProjectListVo.setModelRunNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
-                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelRunNum());
+                        dataProjectListVo.setTaskSuccessNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
                     }
                     if ("2".equals(latestTaskStatus.toString())){
-                        dataProjectListVo.setModelSuccessNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
-                        dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelSuccessNum());
+                        dataProjectListVo.setTaskRunNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
                     }
-                }else {
-                    dataProjectListVo.setModelAssembleNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
-                    dataProjectListVo.setModelNum(dataProjectListVo.getModelNum()+ dataProjectListVo.getModelAssembleNum());
+                    if ("3".equals(latestTaskStatus.toString())){
+                        dataProjectListVo.setTaskFailNum(objectMap.get("statusCount")==null?0:Integer.valueOf(objectMap.get("statusCount").toString()));
+                    }
                 }
             }
 

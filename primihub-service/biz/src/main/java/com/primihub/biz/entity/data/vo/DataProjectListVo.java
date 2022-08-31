@@ -32,6 +32,11 @@ public class DataProjectListVo {
     private String userName;
 
     /**
+     * 创建机构id
+     */
+    private String organId;
+
+    /**
      * 机构名称
      */
     private String createdOrganName;
@@ -41,10 +46,10 @@ public class DataProjectListVo {
      */
     private Integer resourceNum;
 
-    private Integer modelNum = 0;
-    private Integer modelAssembleNum = 0;
-    private Integer modelRunNum = 0;
-    private Integer modelSuccessNum = 0;
+    private Integer taskNum = 0;
+    private Integer taskFailNum = 0;
+    private Integer taskRunNum = 0;
+    private Integer taskSuccessNum = 0;
 
     /**
      * 协作方机构名称 保存三个
@@ -62,4 +67,7 @@ public class DataProjectListVo {
     private Date createDate;
 
 
+    public Integer getTaskNum() {
+        return taskRunNum+taskSuccessNum+taskFailNum;
+    }
 }
