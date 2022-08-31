@@ -39,7 +39,7 @@ public class DataFusionResourceControllerTest {
                 .param("resourceAuthType","")
                 .param("organId","")
                 .param("serverAddress","http://localhost:8099")
-                .param("tagName","额度"))
+                .param("tagName",""))
                 .andExpect(status().isOk())
                 .andDo(document("getDataFusionResourceList",
                         preprocessRequest(prettyPrint()),
@@ -73,6 +73,7 @@ public class DataFusionResourceControllerTest {
                                 fieldWithPath("result.data[].resourceRowsCount").description("资源行数"),
                                 fieldWithPath("result.data[].resourceColumnCount").description("资源列数"),
                                 fieldWithPath("result.data[].resourceColumnNameList").optional().description("资源字段信息"),
+                                fieldWithPath("result.data[].openColumnNameList").optional().description("过滤后的资源字段信息"),
                                 fieldWithPath("result.data[].resourceContainsY").optional().description("资源字段中是否包含y字段 0否 1是"),
                                 fieldWithPath("result.data[].resourceYRowsCount").optional().description("资源y字段有效行数"),
                                 fieldWithPath("result.data[].resourceYRatio").optional().description("资源y字段有效行数占总行数的比例"),
@@ -89,7 +90,7 @@ public class DataFusionResourceControllerTest {
     public void testGetDataFusionResourceData() throws Exception{
         // 查询资源列表接口
         this.mockMvc.perform(get("/fusionResource/getDataResource")
-                .param("resourceId","e3d24cf47b71-faeb62b6-abc9-455b-a29a-e08dc89ac059")
+                .param("resourceId","382e758d7861-3b476616-d882-4cf2-b609-f0566a66df5f")
                 .param("serverAddress","http://localhost:8099"))
                 .andExpect(status().isOk())
                 .andDo(document("getDataFusionResourceData",
@@ -113,6 +114,7 @@ public class DataFusionResourceControllerTest {
                                 fieldWithPath("result.resourceRowsCount").description("资源行数"),
                                 fieldWithPath("result.resourceColumnCount").description("资源列数"),
                                 fieldWithPath("result.resourceColumnNameList").optional().description("资源字段信息"),
+                                fieldWithPath("result.openColumnNameList").optional().description("过滤后的资源字段信息"),
                                 fieldWithPath("result.resourceContainsY").optional().description("资源字段中是否包含y字段 0否 1是"),
                                 fieldWithPath("result.resourceYRowsCount").optional().description("资源y字段有效行数"),
                                 fieldWithPath("result.resourceYRatio").optional().description("资源y字段有效行数占总行数的比例"),

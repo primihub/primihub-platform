@@ -31,7 +31,10 @@ import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -45,7 +48,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ModelInitService {
+public class ModelInitService  {
 
 
 
@@ -68,7 +71,21 @@ public class ModelInitService {
 
 
     @Async
-    public void runModelTaskFeign(DataModel dataModel,DataTask dataTask){
+    public void runModelTask(DataModel dataModel,DataTask dataTask){
+        log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTaskPrRepository.updateDataTask(dataTask);
+        DataModelTask modelTask = new DataModelTask();
+        modelTask.setTaskId(dataTask.getTaskId());
+        modelTask.setModelId(dataModel.getModelId());
+        List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null,dataTask.getTaskId());
+        modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
+        dataModelPrRepository.saveDataModelTask(modelTask);
+    }
+
+
+    @Async
+    public void runModelTaskFeign(DataModel dataModel,DataTask dataTask,DataModelTask modelTask){
         log.info("run model task grpc modelId:{} modelName:{} start time:{}",dataModel.getModelId(),dataModel.getModelName(),System.currentTimeMillis());
         DataModelAndComponentReq dataModelAndComponentReq = null;
         if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
@@ -76,14 +93,11 @@ public class ModelInitService {
         }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.updateDataTask(dataTask);
-        DataModelTask modelTask = new DataModelTask();
-        modelTask.setTaskId(dataTask.getTaskId());
-        modelTask.setModelId(dataModel.getModelId());
         List<DataComponentReq> modelComponents = dataModelAndComponentReq.getModelComponents();
         Map<String, DataComponentReq> reqMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
         List<DataComponent> dataComponents = dataModelRepository.queryModelComponentByParams(dataModel.getModelId(), null,dataTask.getTaskId());
         modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
-        dataModelPrRepository.saveDataModelTask(modelTask);
+        dataModelPrRepository.updateDataModelTask(modelTask);
         log.info("检索model组件 数量:{}",modelComponents.size());
         ModelOutputPathDto outputPathDto = null;
         List<ModelProjectResourceVo> resourceList = null;
@@ -204,6 +218,7 @@ public class ModelInitService {
             }
             dataComponent.setEndTime(System.currentTimeMillis());
             modelTask.setComponentJson(JSONObject.toJSONString(dataComponents));
+            dataTaskPrRepository.updateDataTask(dataTask);
             dataModelPrRepository.updateDataModelTask(modelTask);
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());

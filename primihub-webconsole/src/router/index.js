@@ -51,15 +51,13 @@ export const asyncRoutes = [
     path: '/project',
     name: 'Project',
     component: Layout,
-    meta: { icon: 'el-icon-menu', title: '我的项目' },
     redirect: '/project/list',
+    meta: { icon: 'el-icon-menu', title: '项目管理' },
     children: [
       {
         path: 'list',
         name: 'ProjectList',
-        meta: {
-          title: '我的项目'
-        },
+        meta: { icon: 'el-icon-menu', title: '项目管理', breadcrumb: false },
         component: () => import('@/views/project/list')
       },
       {
@@ -75,50 +73,35 @@ export const asyncRoutes = [
         path: 'detail/:id',
         name: 'ProjectDetail',
         meta: {
-          title: '项目详情'
+          title: '项目详情',
+          activeMenu: '/project/list'
         },
         hidden: true,
         component: () => import('@/views/project/detail')
       },
       {
-        path: '/model/create',
+        path: 'detail/:id/createTask',
         name: 'ModelCreate',
         meta: {
-          title: '添加模型'
+          title: '新建任务',
+          activeMenu: '/project/list',
+          parent: { name: 'ProjectDetail' }
         },
         hidden: true,
         component: () => import('@/views/model/create/index')
       },
       {
-        path: '/model/detail/:id',
+        path: 'detail/:id/task/:taskId',
         name: 'ModelDetail',
         meta: {
-          title: '模型详情'
+          title: '任务详情',
+          activeMenu: '/project/list',
+          parent: { name: 'ProjectDetail' }
         },
         hidden: true,
-        component: () => import('@/views/model/detail')
-      },
-      {
-        path: '/model/history/:id',
-        name: 'ModelTaskHistory',
-        meta: {
-          title: '执行记录'
-        },
-        hidden: true,
-        component: () => import('@/views/model/history')
+        component: () => import('@/views/project/taskDetail')
       }
     ]
-  },
-  {
-    path: '/dag',
-    component: Layout,
-    meta: {},
-    hidden: true,
-    children: [{
-      path: '',
-      name: 'dagGraph',
-      component: () => import('@/views/dag')
-    }]
   },
   {
     path: '/privateSearch',
@@ -188,7 +171,8 @@ export const asyncRoutes = [
         path: 'detail/:id',
         name: 'ResourceDetail',
         meta: {
-          title: '资源详情'
+          title: '资源详情',
+          activeMenu: '/resource/list'
         },
         hidden: true,
         component: () => import('@/views/resource/detail')
@@ -197,22 +181,11 @@ export const asyncRoutes = [
         path: 'unionResourceDetail/:id',
         name: 'UnionResourceDetail',
         meta: {
-          title: '联邦资源详情'
+          title: '联邦资源详情',
+          activeMenu: '/resource/unionList'
         },
         hidden: true,
         component: () => import('@/views/resource/unionResourceDetail')
-      },
-      {
-        path: 'authRecord',
-        name: 'ResourceRecord',
-        meta: { title: '授权申请记录' },
-        component: () => import('@/views/resource/authRecord')
-      },
-      {
-        path: 'authAudit',
-        name: 'ResourceApprovalList',
-        meta: { title: '授权审批' },
-        component: () => import('@/views/resource/authAudit')
       }
     ]
   },
@@ -235,12 +208,6 @@ export const asyncRoutes = [
         component: () => import('@/views/setting/role'),
         meta: { title: '角色管理' }
       },
-      // {
-      //   path: 'organ',
-      //   name: 'OrganManage',
-      //   component: () => import('@/views/setting/organ'),
-      //   meta: { title: '机构管理', icon: 'el-icon-office-building' }
-      // },
       {
         path: 'center',
         name: 'CenterManage',

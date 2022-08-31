@@ -1,70 +1,39 @@
 <template>
-  <div class="container">
-    <el-row :gutter="20">
-      <el-col :span="6">
-        <section class="infos">
-          <div class="infos-title">
-            <h2>{{ projectName }}</h2>
-            <p class="infos-des">{{ projectId }}</p>
-          </div>
-          <el-descriptions :column="1" label-class-name="detail-title">
-            <el-descriptions-item>
-              <template slot="label">
-                <i class="el-icon-user" />
-                <strong>创建人</strong>
-              </template>
-              {{ userName }}
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template slot="label">
-                <i class="el-icon-tickets" />
-                <strong>项目描述</strong>
-              </template>
-              {{ projectDesc }}
-            </el-descriptions-item>
-            <el-descriptions-item>
-              <template slot="label">
-                <i class="el-icon-time" />
-                <strong>创建时间</strong>
-              </template>
-              {{ createDate }}
-            </el-descriptions-item>
-          </el-descriptions>
-          <div v-if="isShowAuditForm" class="audit">
-            <el-form ref="auditForm" :model="auditForm">
-              <el-form-item label="参与合作审核意见:">
-                <el-input
-                  ref="auditInput"
-                  v-model="auditForm.auditOpinion"
-                  type="textarea"
-                  maxlength="200"
-                  minlength="3"
-                  show-word-limit
-                />
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" size="small" @click="handleSubmit">同意</el-button>
-                <el-button type="danger" size="small" @click="handleRefused">拒绝</el-button>
-              </el-form-item>
-            </el-form>
-          </div>
-        </section>
-
-      </el-col>
-      <el-col :span="18">
-        <section class="organs">
-          <h3>参与机构</h3>
-          <el-button v-if="creator" type="primary" class="add-provider-button" @click="openProviderOrganDialog">添加更多协作者</el-button>
+  <div v-loading="listLoading" class="container">
+    <section class="infos">
+      <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
+        <el-descriptions-item label="项目ID">
+          {{ projectId }}
+        </el-descriptions-item>
+        <el-descriptions-item label="项目名称">
+          {{ projectName }}
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间">
+          {{ createDate }}
+        </el-descriptions-item>
+        <el-descriptions-item label="角色">
+          {{ creator? '项目创建方' : '项目协作方' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="项目描述">
+          {{ projectDesc }}
+        </el-descriptions-item>
+      </el-descriptions>
+      <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
+    </section>
+    <section>
+      <el-tabs v-model="tabName" class="tab-container" @tab-click="handleTabClick">
+        <el-tab-pane label="参与机构" name="organ">
+          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="openProviderOrganDialog">新增协作者</el-button>
           <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
             <el-tab-pane v-for="item in organs" :key="item.organId" :name="item.organId" :label="item.organId">
               <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
                 <span v-if="item.creator" class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
                 <span v-else :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
-                <!-- <span class="identity">{{ item.auditStatus === 0? '&lt;等待审核中&gt;':item.auditStatus === 2?'&lt;已拒绝&gt;':'' }}</span> -->
               </p>
-              <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain @click="openDialog(item.organId)">添加资源到此项目</el-button>
-              <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ item.auditOpinion }}</p>
+              <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain :disabled="projectStatus === 2" @click="openDialog(item.organId)">添加资源到此项目</el-button>
+              <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ formatEmoji(item.auditOpinion) }}</p>
               <ResourceTable
+                max-height="480"
                 :project-audit-status="projectAuditStatus"
                 :this-institution="thisInstitution"
                 :creator="creator"
@@ -79,19 +48,20 @@
               />
             </el-tab-pane>
           </el-tabs>
-        </section>
-        <section class="organs">
-          <h3>模型列表</h3>
-          <el-button v-if="creator" type="primary" class="add-provider-button" @click="toModelCreate">添加模型</el-button>
-          <Model :is-creator="creator" />
-        </section>
-      </el-col>
-    </el-row>
+        </el-tab-pane>
+        <el-tab-pane label="任务列表" name="modelTask">
+          <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">新建任务</el-button>
+          <Model :is-creator="creator" :project-status="projectStatus" />
+        </el-tab-pane>
+      </el-tabs>
+    </section>
 
     <!-- add resource dialog -->
     <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ProviderOrganDialog v-show="providerOrganIds.length>0 && providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ProviderOrganDialog v-show="providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" @delete="handleProviderOrganDelete" />
+    <!-- resource refused dialog-->
+    <ResourceApprovalDialog v-if="resourceApprovalDialogVisible" :visible="resourceApprovalDialogVisible" :resource-id="localResourceId" @close="handleResourceApprovalDialogClose" @submit="handleResourceApprovalDialogSubmit" />
     <!-- preview dialog -->
     <el-dialog
       :visible.sync="previewDialogVisible"
@@ -102,19 +72,22 @@
       <ResourcePreviewTable :data="previewList" height="500" />
     </el-dialog>
     <!-- preview dialog -->
+
   </div>
 </template>
 
 <script>
-import { mapActions, mapGetters } from 'vuex'
-import { getProjectDetail, approval, saveProject, closeProject, removeResource } from '@/api/project'
+import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
-import { findMyGroupOrgan } from '@/api/center'
+import { deCodeEmoji } from '@/utils/emoji-regex'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import ProviderOrganDialog from '@/components/ProviderOrganDialog'
+import ResourceApprovalDialog from '@/components/ResourceApprovalDialog'
 import ResourceTable from '@/components/ResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import Model from '@/components/Model'
+import ProjectAudit from '@/components/ProjectAudit'
 
 export default {
   components: {
@@ -122,14 +95,15 @@ export default {
     ProviderOrganDialog,
     ResourceTable,
     ResourcePreviewTable,
-    Model
+    Model,
+    ProjectAudit,
+    ResourceApprovalDialog
   },
   data() {
     return {
+      tabName: 'organ',
+      listLoading: false,
       serverAddress: '',
-      auditForm: {
-        auditOpinion: ''
-      },
       isShowAuditForm: false,
       projectName: '',
       projectId: '',
@@ -144,6 +118,7 @@ export default {
       providerOrganDialogVisible: false,
       previewDialogVisible: false,
       dialogVisible: false,
+      resourceApprovalDialogVisible: false,
       previewList: [],
       selectedOrganId: null,
       organList: [],
@@ -158,7 +133,10 @@ export default {
       },
       creator: false,
       tabPosition: 'left',
-      providerOrganIds: []
+      providerOrganIds: [],
+      projectStatus: -1, // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用,
+      resourceId: 0,
+      localResourceId: 0
     }
   },
   computed: {
@@ -177,67 +155,24 @@ export default {
     await this.fetchData()
   },
   methods: {
+    handleResourceApprovalDialogClose() {
+      this.resourceApprovalDialogVisible = false
+    },
+    async handleResourceApprovalDialogSubmit() {
+      await this.fetchData()
+      this.resourceApprovalDialogVisible = false
+    },
+    formatEmoji(text) {
+      return deCodeEmoji(text)
+    },
     statusStyle(status) {
       return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : ''
     },
     async openProviderOrganDialog() {
-      await this.findMyGroupOrgan()
       this.providerOrganDialogVisible = true
-    },
-    async findMyGroupOrgan() {
-      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
-      this.organList = result.dataList.organList
     },
     showAuditForm() {
       return this.organs.filter(item => item.organId === this.selectedOrganId)[0].auditStatus === 0
-    },
-    handleSubmit() {
-      this.$confirm('同意加入发起方的此次项目合作', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.isShowAuditForm = false
-        this.approval({
-          type: 1,
-          id: this.currentOrgan.id,
-          auditOpinion: this.auditForm.auditOpinion,
-          auditStatus: 1
-        })
-        this.$message({
-          type: 'success',
-          message: '加入成功'
-        })
-        location.reload()
-      }).catch(() => {})
-    },
-    handleRefused() {
-      if (this.auditForm.auditOpinion === '') {
-        this.$message({
-          type: 'warning',
-          message: '请填写审核意见'
-        })
-        this.$refs.auditInput.focus()
-      } else {
-        this.$confirm('拒绝与发起方的此次项目合作?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
-          this.approval({
-            type: 1,
-            id: this.currentOrgan.id,
-            auditOpinion: this.auditForm.auditOpinion,
-            auditStatus: 2
-          })
-          this.isShowAuditForm = false
-          this.$message({
-            type: 'success',
-            message: '拒绝与发起方的此次项目合作'
-          })
-          location.reload()
-        }).catch(() => {})
-      }
     },
     handleAgree(row) {
       this.approval({
@@ -246,44 +181,14 @@ export default {
         auditOpinion: '',
         auditStatus: 1
       })
-      this.$message({
-        type: 'success',
-        message: '授权成功'
-      })
-      this.isShowAuditForm = false
-      location.reload()
+      // location.reload()
     },
     handleResourceRefused(row) {
-      this.$prompt('请输入拒绝原因', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消'
-      }).then(({ value }) => {
-        if (!value) {
-          this.$message({
-            type: 'error',
-            message: '请输入拒绝原因'
-          })
-          return
-        } else if (value.length > 200) {
-          this.$message({
-            type: 'error',
-            message: '拒绝理由最多200字'
-          })
-          return
-        }
-        this.approval({
-          type: 2,
-          id: row.id,
-          auditOpinion: value,
-          auditStatus: 2
-        })
-        this.$message({
-          type: 'success',
-          message: '已拒绝'
-        })
-        this.isShowAuditForm = false
-        location.reload()
-      })
+      this.localResourceId = row.id
+      this.resourceApprovalDialogVisible = true
+    },
+    handleTabClick() {
+      // this.tabName = label
     },
     handleClick({ label = '' }) {
       this.differents = []
@@ -291,7 +196,7 @@ export default {
       this.selectedOrganId = label
       this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
       this.resourceList[this.selectedOrganId] = this.currentOrgan.resources
-      this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0
+      this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0 && this.projectStatus !== 2
       this.projectAuditStatus = this.currentOrgan.auditStatus === 1
       this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
     },
@@ -378,6 +283,7 @@ export default {
         if (success) {
           data.map(item => {
             this.organs.push({
+              id: item.id,
               organId: item.globalId,
               organName: item.globalName,
               participationIdentity: 2
@@ -387,6 +293,28 @@ export default {
         this.providerOrganIds = data
       }
       this.providerOrganDialogVisible = false
+    },
+    handleProviderOrganDelete(ids) {
+      // 全部取消
+      if (ids.length > 1) {
+        ids.map(id => {
+          this.removeOrgan(id)
+        })
+      } else {
+        this.removeOrgan(ids[0])
+      }
+    },
+    removeOrgan(id) {
+      removeOrgan({ id }).then(async res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '删除成功',
+            type: 'success'
+          })
+          this.selectedOrganId = this.userOrganId
+          await this.fetchData()
+        }
+      })
     },
     saveProject() {
       // const { projectName, projectDesc, projectOrgans } = this
@@ -426,8 +354,14 @@ export default {
         auditStatus,
         auditOpinion
       }
-      approval(params).then(({ result }) => {
-
+      approval(params).then(({ code, result }) => {
+        if (code === 0) {
+          this.$message({
+            type: 'success',
+            message: auditStatus === 1 ? '授权成功' : ''
+          })
+          this.fetchData()
+        }
       })
     },
     fetchData() {
@@ -437,11 +371,11 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectId, projectDesc, userName, createDate, organs, serverAddress, creator } = this.list
+          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status } = this.list
           this.serverAddress = serverAddress
           this.creator = creator
           this.projectName = projectName
-          this.projectId = projectId
+          this.projectStatus = status
           this.projectDesc = projectDesc
           this.userName = userName
           this.createDate = createDate
@@ -452,14 +386,16 @@ export default {
           this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
           this.currentOrgan = this.organs.filter(item => item.organId === this.selectedOrganId)[0]
           this.projectAuditStatus = this.currentOrgan.auditStatus === 1
-          this.isShowAuditForm = this.currentOrgan.auditStatus === 0
+          this.isShowAuditForm = this.projectStatus !== 2 && this.currentOrgan.auditStatus === 0
           this.providerOrganIds = this.organs.filter(item => item.participationIdentity === 2)
-          this.providerOrganIds = this.providerOrganIds.map(item => {
+          this.providerOrganIds = this.providerOrganIds?.map(item => {
             return {
+              id: item.id,
               globalId: item.organId,
               globalName: item.organName
             }
           })
+          this.SET_STATUS(this.projectStatus)
         }
       })
     },
@@ -486,11 +422,12 @@ export default {
     },
     toModelCreate() {
       this.$router.push({
-        path: '/model/create',
+        name: 'ModelCreate',
         query: { projectId: this.list.id }
       })
     },
-    ...mapActions('user', ['getInfo'])
+    ...mapActions('user', ['getInfo']),
+    ...mapMutations('project', ['SET_STATUS'])
   }
 }
 </script>
@@ -514,8 +451,11 @@ section{
   padding: 30px;
   margin-bottom: 30px;
 }
-.infos{
-  height: 100vh;
+::v-deep .el-table{
+  margin-top: 20px;
+}
+::v-deep .tab-container .el-tabs__item {
+  font-size: 16px;
 }
 .infos-title{
   margin-bottom: 10px;
@@ -571,13 +511,16 @@ section{
   margin: 0;
   border-top: none;
 }
+.audit{
+  max-width: 500px;
+}
 .auditOpinion{
   font-size: 14px;
   margin: 10px 0;
 }
-
 .tabs{
   background-color: #F5F7FA;
+  margin-top: 20px;
 }
 .status-0{
   color: $mainColor;

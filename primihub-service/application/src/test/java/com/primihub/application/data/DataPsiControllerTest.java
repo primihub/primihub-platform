@@ -32,76 +32,6 @@ public class DataPsiControllerTest {
     private MockMvc mockMvc;
 
     @Test
-    public  void testSaveOrUpdatePsiResource() throws Exception {
-        // 项目添加
-        this.mockMvc.perform(post("/psi/saveOrUpdatePsiResource")
-                .param("id","")
-                .param("resourceId","44")
-                .param("psiResourceDesc","psi描述")
-                .param("tableStructureTemplate","fssadfaeer_ddd")
-                .param("organType","0")
-                .param("resultsAllowOpen","0")
-                .param("keywordList","example_id"))
-                .andExpect(status().isOk())
-                .andDo(document("saveOrUpdatePsiResource",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        requestParameters(
-                                parameterWithName("id").description("psi资源id 是null保存 有值修改"),
-                                parameterWithName("resourceId").description("资源id"),
-                                parameterWithName("psiResourceDesc").description("psi资源描述"),
-                                parameterWithName("tableStructureTemplate").description("表结构模板"),
-                                parameterWithName("organType").description("机构类型 0 机构资源 默认0"),
-                                parameterWithName("resultsAllowOpen").description("是否允许结果出现在对方节点上 0允许 1不允许"),
-                                parameterWithName("keywordList").description("关键字 逗号间隔,")
-                        ),
-                        responseFields(
-                                fieldWithPath("code").description("返回码"),
-                                fieldWithPath("msg").description("返回码描述"),
-                                fieldWithPath("result").description("返回码结果"),
-                                fieldWithPath("result.id").description("psi资源id"),
-                                fieldWithPath("extra").description("额外信息")
-                        )
-                ));
-    }
-    @Test
-    public  void testGetPsiResourceDetails() throws Exception {
-        // 项目添加
-        this.mockMvc.perform(get("/psi/getPsiResourceDetails")
-                .param("resourceId","5"))
-                .andExpect(status().isOk())
-                .andDo(document("getPsiResourceDetails",
-                        preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint()),
-                        requestParameters(
-                                parameterWithName("resourceId").description("资源id")
-                        ),
-                        responseFields(
-                                fieldWithPath("code").description("返回码"),
-                                fieldWithPath("msg").description("返回码描述"),
-                                fieldWithPath("result").description("返回码结果"),
-                                fieldWithPath("result.resourceId").description("资源id"),
-                                fieldWithPath("result.resourceName").description("资源名称"),
-                                fieldWithPath("result.resourceState").description("资源状态 0可用"),
-                                fieldWithPath("result.resourceOrganId").description("资源机构id"),
-                                fieldWithPath("result.resourceOrganName").description("资源机构名称"),
-                                fieldWithPath("result.resourceField[].name").description("字段名称"),
-                                fieldWithPath("result.resourceField[].desc").description("描述"),
-                                fieldWithPath("result.resourceField[].check").description("是否选中"),
-                                fieldWithPath("result.psiResource").description("psi资源信息"),
-                                fieldWithPath("result.psiResource.id").description("psi资源信息id"),
-                                fieldWithPath("result.psiResource.resourceId").description("资源信息id"),
-                                fieldWithPath("result.psiResource.tableStructureTemplate").description("表结构模板"),
-                                fieldWithPath("result.psiResource.organType").description("机构类型 0 机构资源 默认0"),
-                                fieldWithPath("result.psiResource.resultsAllowOpen").description("是否允许结果出现在对方节点上 0允许 1不允许"),
-                                fieldWithPath("result.psiResource.keywordList[]").description("关键字"),
-                                fieldWithPath("result.psiResource.createDate").description("创建时间"),
-                                fieldWithPath("extra").description("额外信息")
-                        )
-                ));
-    }
-
-    @Test
     public  void testGetPsiResourceList() throws Exception {
         // 项目添加
         this.mockMvc.perform(get("/psi/getPsiResourceList")
@@ -160,22 +90,22 @@ public class DataPsiControllerTest {
     }
     @Test
     public  void testSaveDataPsi() throws Exception {
-        // 项目添加
         this.mockMvc.perform(post("/psi/saveDataPsi")
-                .param("ownOrganId","1")
-                .param("ownResourceId","45")
+                .param("ownOrganId","d881601a-0d51-4313-8813-382e758d7861")
+                .param("ownResourceId","1")
                 .param("ownKeyword","id")
-                .param("otherOrganId","2")
+                .param("otherOrganId","945908dc-bef5-4e39-be1a-40bdea66c03b")
                 .param("otherResourceId","47")
-                .param("otherKeyword","y")
+                .param("otherKeyword","1")
                 .param("resultName","huahuahau")
                 .param("outputFilePathType","0")
                 .param("outputNoRepeat","0")
                 .param("outputContent","0")
-                .param("columnCompleteStatistics","0")
+                .param("psiTag","0")
                 .param("outputFormat","csv")
                 .param("remarks","")
                 .param("resultOrganIds","1")
+                .param("serverAddress","http://localhost:8099")
                 .header("userId","1"))
                 .andExpect(status().isOk())
                 .andDo(document("saveDataPsi",
@@ -193,11 +123,12 @@ public class DataPsiControllerTest {
                                 parameterWithName("otherKeyword").description("其他机构资源关键字"),
                                 parameterWithName("outputFilePathType").description("文件路径输出类型 0默认 自动生成"),
                                 parameterWithName("outputNoRepeat").description("输出内容是否不去重 默认0 不去重 1去重"),
-                                parameterWithName("columnCompleteStatistics").description("是否对\"可统计\"的附加列做全表统计 默认0 是 1不是"),
+                                parameterWithName("psiTag").description("是否对\"可统计\"的附加列做全表统计 默认0 是 1不是"),
                                 parameterWithName("resultName").description("结果名称"),
                                 parameterWithName("outputContent").description("输出内容 默认0 0交集 1差集"),
                                 parameterWithName("outputFormat").description("输出格式"),
                                 parameterWithName("resultOrganIds").description("结果获取方 多机构\",\"号间隔"),
+                                parameterWithName("serverAddress").description("中心节点"),
                                 parameterWithName("remarks").description("备注")
                         ),
                         responseFields(
@@ -214,11 +145,12 @@ public class DataPsiControllerTest {
                                 fieldWithPath("result.dataPsi.otherKeyword").description("其他机构资源关键字"),
                                 fieldWithPath("result.dataPsi.outputFilePathType").description("文件路径输出类型 0默认 自动生成"),
                                 fieldWithPath("result.dataPsi.outputNoRepeat").description("输出内容是否不去重 默认0 不去重 1去重"),
-                                fieldWithPath("result.dataPsi.columnCompleteStatistics").description("是否对\"可统计\"的附加列做全表统计 默认0 是 1不是"),
                                 fieldWithPath("result.dataPsi.resultName").description("结果名称"),
                                 fieldWithPath("result.dataPsi.outputContent").description("输出内容 默认0 0交集 1差集"),
                                 fieldWithPath("result.dataPsi.outputFormat").description("输出格式 默认csv"),
                                 fieldWithPath("result.dataPsi.resultOrganIds").description("结果获取方 多机构\",\"号间隔"),
+                                fieldWithPath("result.dataPsi.tag").description("后端psi协议"),
+                                fieldWithPath("result.dataPsi.serverAddress").description("中心节点地址"),
                                 fieldWithPath("result.dataPsi.remarks").description("备注"),
                                 fieldWithPath("result.dataPsi.userId").description("用户id"),
                                 fieldWithPath("result.dataPsiTask").description("psi 任务信息"),
@@ -241,7 +173,8 @@ public class DataPsiControllerTest {
                 .param("pageNo","2")
                 .param("pageSize","5")
                 .param("serverAddress","http://localhost:8099")
-                .param("organId","f5d58a9d-401b-4211-bc4d-ae66e7e9157a"))
+                .param("resourceName","")
+                .param("organId",""))
                 .andExpect(status().isOk())
                 .andDo(document("getPsiResourceAllocationList",
                         preprocessRequest(prettyPrint()),
@@ -250,6 +183,7 @@ public class DataPsiControllerTest {
                                 parameterWithName("pageNo").description("第几页"),
                                 parameterWithName("pageSize").description("每页条数"),
                                 parameterWithName("serverAddress").description("中心节点地址"),
+                                parameterWithName("resourceName").description("资源名称"),
                                 parameterWithName("organId").description("机构id")
                         ),
                         responseFields(
@@ -387,7 +321,7 @@ public class DataPsiControllerTest {
                                 fieldWithPath("result.otherKeyword").description("其他机构资源关键字"),
                                 fieldWithPath("result.outputFilePathType").description("文件路径输出类型 0默认 自动生成"),
                                 fieldWithPath("result.outputNoRepeat").description("输出内容是否不去重 默认0 不去重 1去重"),
-                                fieldWithPath("result.columnCompleteStatistics").description("是否对\"可统计\"的附加列做全表统计 默认0 是 1不是"),
+                                fieldWithPath("result.tag").description("psi 后端协议"),
                                 fieldWithPath("result.resultName").description("结果名称"),
                                 fieldWithPath("result.outputContent").description("输出内容 默认0 0交集 1差集"),
                                 fieldWithPath("result.outputFormat").description("输出格式"),
@@ -430,7 +364,7 @@ public class DataPsiControllerTest {
     public  void testCancelPsiTask() throws Exception {
         // 项目添加
         this.mockMvc.perform(get("/psi/cancelPsiTask")
-                .param("taskId","270")
+                .param("taskId","2")
                 .header("userId","1"))
                 .andExpect(status().isOk())
                 .andDo(document("cancelPsiTask",
@@ -454,7 +388,7 @@ public class DataPsiControllerTest {
     public  void testRetryPsiTask() throws Exception {
         // 项目添加
         this.mockMvc.perform(get("/psi/retryPsiTask")
-                .param("taskId","1")
+                .param("taskId","2")
                 .header("userId","1"))
                 .andExpect(status().isOk())
                 .andDo(document("retryPsiTask",

@@ -4,6 +4,7 @@ export function getModelList(params) {
   return request({
     url: '/data/model/getmodellist',
     method: 'get',
+    showLoading: false,
     params
   })
 }
@@ -109,6 +110,14 @@ export function getModelTaskList(params) {
     url: '/data/task/getModelTaskList',
     method: 'get',
     showLoading: false,
+    params
+  })
+}
+// 重启运行模型
+export function restartTaskModel(params) {
+  return request({
+    url: '/data/model/restartTaskModel',
+    method: 'get',
     params
   })
 }

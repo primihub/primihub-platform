@@ -26,15 +26,18 @@
       </el-form-item>
       <el-form-item label="参与角色">
         <el-select v-model="searchForm.participationIdentity" placeholder="请选择" clearable>
-          <el-option label="发起者" value="1" />
-          <el-option label="协作者" value="2" />
+          <el-option label="发起方" value="1" />
+          <el-option label="协作方" value="2" />
         </el-select>
       </el-form-item>
       <el-form-item label="项目状态">
         <el-select v-model="searchForm.status" placeholder="请选择" clearable>
-          <el-option label="审核中" value="0" />
-          <el-option label="可用" value="1" />
-          <el-option label="关闭" value="2" />
+          <el-option
+            v-for="status in projectStatusList"
+            :key="status.value"
+            :label="status.label"
+            :value="status.value"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="创建时间">
@@ -51,10 +54,10 @@
         <div class="buttons">
           <el-button class="button" type="primary" icon="el-icon-search" @click="searchProject">查询</el-button>
           <el-button class="button" type="primary" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
-          <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
         </div>
       </el-form-item>
     </el-form>
+    <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
     <div class="tab-container">
       <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
         <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
@@ -75,8 +78,8 @@
           <no-data />
         </template>
         <template v-else>
-          <el-row :gutter="15">
-            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="5">
+          <el-row :gutter="18">
+            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="4">
               <project-item :project="item" />
             </el-col>
           </el-row>
@@ -87,6 +90,8 @@
         <el-table
           :data="projectList"
           border
+          highlight-current-row
+          :row-class-name="tableRowDisabled"
         >
           <el-table-column
             type="index"
@@ -98,7 +103,7 @@
             min-width="200"
           >
             <template slot-scope="{row}">
-              <template v-if="hasViewPermission">
+              <template v-if="hasViewPermission && row.status !== 2">
                 <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
               </template>
               <template v-else>
@@ -110,7 +115,6 @@
 
           <el-table-column
             label="参与机构"
-            min-width="150"
           >
             <template slot-scope="{row}">
               <span>发起方: {{ row.createdOrganName }}</span><br>
@@ -127,12 +131,12 @@
             </template>
           </el-table-column>
           <el-table-column
-            label="模型状态"
+            label="任务状态"
           >
             <template slot-scope="{row}">
-              配置中：{{ row.modelAssembleNum }}<br>
-              运行中：{{ row.modelRunNum }} <br>
-              成功：{{ row.modelSuccessNum || 0 }}<br>
+              运行中：{{ row.taskRunNum }} <br>
+              成功：{{ row.taskSuccessNum || 0 }}<br>
+              失败：{{ row.taskFailNum }}<br>
             </template>
           </el-table-column>
           <el-table-column
@@ -141,8 +145,8 @@
             align="center"
           />
           <el-table-column
-            prop="modelNum"
-            label="模型数量"
+            prop="taskNum"
+            label="任务数量"
             align="center"
           />
           <el-table-column
@@ -156,7 +160,12 @@
             min-width="160"
           >
             <template slot-scope="{row}">
-              <el-button v-if="hasViewPermission" type="text" icon="el-icon-view" @click="toProjectDetail(row.id)">查看</el-button>
+              <div class="buttons">
+                <el-link v-if="hasViewPermission" :disabled="row.status === 2" type="primary" @click="toProjectDetail(row.id)">查看</el-link>
+                <el-link v-if="hasDeletePermission && row.status === 1 && row.organId === userOrganId" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
+                <el-link v-if="hasOpenPermission && row.status === 2 && row.organId === userOrganId" type="primary" @click="projectActionHandler(row.id, 'open')">启用</el-link>
+              </div>
+
             </template>
           </el-table-column>
         </el-table>
@@ -168,7 +177,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getProjectList, getListStatistics } from '@/api/project'
+import { getProjectList, getListStatistics, closeProject, openProject } from '@/api/project'
 import ProjectItem from '@/components/ProjectItem'
 import NoData from '@/components/NoData'
 import Pagination from '@/components/Pagination'
@@ -188,25 +197,30 @@ export default {
   },
   data() {
     return {
+      projectId: 0,
       projectType: 'table',
       projectList: null,
       sysLocalOrganInfo: [],
       fusionList: [],
+      projectStatusList: [{ // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用
+        value: '0',
+        label: '审核中'
+      }, {
+        value: '1',
+        label: '可用'
+      }, {
+        value: '2',
+        label: '关闭'
+      }, {
+        value: '11',
+        label: '全部可用'
+      }, {
+        value: '12',
+        label: '部分可用'
+      }],
       organList: [],
       activeIndex: '0',
       listLoading: false,
-      // params: {
-      //   pageNo: 1,
-      //   pageSize: 10,
-      //   projectName: '',
-      //   serverAddress: '',
-      //   queryType: 0,
-      //   organId: '',
-      //   participationIdentity: '',
-      //   startDate: '',
-      //   endDate: '',
-      //   status: ''
-      // },
       searchForm: {
         projectName: '',
         serverAddress: '',
@@ -234,11 +248,18 @@ export default {
     hasViewPermission() {
       return this.$store.getters.buttonPermissionList.includes('ProjectDetail')
     },
+    hasDeletePermission() {
+      return this.$store.getters.buttonPermissionList.includes('ProjectDelete')
+    },
+    hasOpenPermission() {
+      return this.$store.getters.buttonPermissionList.includes('openProject')
+    },
     hasCreateAuth() {
       return this.buttonPermissionList.includes('ProjectCreate')
     },
     ...mapGetters([
-      'buttonPermissionList'
+      'buttonPermissionList',
+      'userOrganId'
     ])
   },
   async created() {
@@ -249,6 +270,67 @@ export default {
     this.getListStatistics()
   },
   methods: {
+    handleClose() {},
+    handleProjectCancel() {
+      this.dialogVisible = false
+    },
+    handleProjectAction() {
+      if (this.projectAction === 'close') {
+        this.closeProject()
+      } else if (this.projectAction === 'open') {
+        this.openProject()
+      }
+      this.dialogVisible = false
+    },
+    tableRowDisabled({ row }) {
+      if (row.status === 2) {
+        return 'table-row-disabled'
+      } else {
+        return ''
+      }
+    },
+    projectActionHandler(id, action) {
+      this.projectAction = action
+      this.dialogVisible = true
+      this.projectId = id
+      const text = action === 'close' ? '禁用后，数据、任务、模型将均不可用，进行中的任务立即停止，确认禁用么？' : '开启后，项目可正常发起任务，确认开启么？'
+      this.$confirm(text, '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        if (action === 'close') {
+          this.closeProject()
+        } else {
+          this.openProject()
+        }
+        this.dialogVisible = false
+      }).catch(() => {
+        this.dialogVisible = false
+      })
+    },
+    closeProject() {
+      closeProject({ id: this.projectId }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '禁用成功',
+            type: 'success'
+          })
+          this.fetchData()
+        }
+      })
+    },
+    openProject() {
+      openProject({ id: this.projectId }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '启动成功',
+            type: 'success'
+          })
+          this.fetchData()
+        }
+      })
+    },
     toggleType() {
       if (this.projectType === 'table') {
         this.projectType = 'card'
@@ -267,7 +349,7 @@ export default {
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : 'status-0 el-icon-refresh'
+      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 || status === 11 || status === 12 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : 'status-0 el-icon-refresh'
     },
     getListStatistics() {
       getListStatistics().then(({ result }) => {
@@ -405,13 +487,13 @@ export default {
 @import "../../styles/variables.scss";
 @import "~@/styles/resource.scss";
 h2 {
-    display: block;
-    font-size: 16px;
-    font-weight: normal;
-    margin-block-start: 0.2em;
-    margin-block-end: 0;
-    margin-inline-start: 0px;
-    margin-inline-end: 0px;
+  display: block;
+  font-size: 16px;
+  font-weight: normal;
+  margin-block-start: 0.2em;
+  margin-block-end: 0;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
 }
 ::v-deep .el-form--inline .el-form-item{
   margin: 10px 35px 10px 0;
@@ -424,12 +506,12 @@ h2 {
   background-color: #fff;
   display: flex;
   flex-wrap: wrap;
-  .add-button {
-    margin-right: auto;
-    height: 38px;
-    margin-left: 20px;
-    // display: inline-block;
-  }
+}
+.add-button {
+  margin-right: auto;
+  height: 38px;
+  margin-bottom: 20px;
+  // display: inline-block;
 }
 .button {
   margin: 0 3px;
@@ -466,7 +548,10 @@ h2 {
   // margin-left: auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  .el-link{
+    margin: 0 5px;
+  }
+  // justify-content: space-between;
   .type{
     font-size: 24px;
     line-height: 1;
@@ -521,5 +606,9 @@ h2 {
 }
 .status-2{
   color: #F56C6C;
+}
+::v-deep .el-table tr.table-row-disabled{
+  background-color: #f5f7fa;
+  color: #909399;
 }
 </style>

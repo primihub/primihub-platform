@@ -50,4 +50,6 @@ public interface DataModelRepository {
     @MapKey("modelId")
     Map<Long, Map<String,Object>> queryModelLatestTask(@Param("modelIds")Set<Long> modelIds);
 
+    List<Map<String, Object>> queryModelTask(@Param("modelIds")Set<Long> modelIds);
+
 }

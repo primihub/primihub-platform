@@ -257,7 +257,7 @@ public class DataProjectControllerTest {
                                 parameterWithName("participationIdentity").description("机构项目中参与身份 1发起者 2协作者"),
                                 parameterWithName("startDate").description("开始日期"),
                                 parameterWithName("endDate").description("结束日期"),
-                                parameterWithName("status").description("项目状态 0审核中 1可用 2关闭")
+                                parameterWithName("status").description("项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
@@ -269,6 +269,7 @@ public class DataProjectControllerTest {
                                 fieldWithPath("result.index").description("当前是第几页"),
                                 fieldWithPath("result.data[]").description("数据"),
                                 fieldWithPath("result.data[].id").description("本地项目ID"),
+                                fieldWithPath("result.data[].organId").description("创建机构ID"),
                                 fieldWithPath("result.data[].projectId").description("项目id"),
                                 fieldWithPath("result.data[].projectName").description("项目名称"),
                                 fieldWithPath("result.data[].projectDesc").description("项目描述"),
@@ -416,6 +417,8 @@ public class DataProjectControllerTest {
                 ));
     }
 
+
+
     @Test
     public void testRemoveResource() throws Exception{
         this.mockMvc.perform(post("/project/removeResource")
@@ -428,6 +431,28 @@ public class DataProjectControllerTest {
                         ),
                         requestParameters(
                                 parameterWithName("id").description("本地项目资源ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述 0成功"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testRemoveOrgan() throws Exception{
+        this.mockMvc.perform(post("/project/removeOrgan")
+                .param("id","1"))
+                .andExpect(status().isOk())
+                .andDo(document("removeOrgan",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("id").description("本地项目机构ID")
                         ),
                         responseFields(
                                 fieldWithPath("code").description("返回码"),
@@ -532,6 +557,28 @@ public class DataProjectControllerTest {
                                 fieldWithPath("result[].resourceColumnCount").description("资源列数"),
                                 fieldWithPath("result[].resourceContainsY").description("资源字段中是否包含y字段 0否 1是"),
                                 fieldWithPath("result[].auditStatus").description("审核状态 0审核中 1同意 2拒绝"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
+
+    @Test
+    public void testOpenProject() throws Exception{
+        this.mockMvc.perform(post("/project/openProject")
+                .param("id","6"))
+                .andExpect(status().isOk())
+                .andDo(document("openProject",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("id").description("本地项目ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述 0成功"),
+                                fieldWithPath("result").description("返回码结果"),
                                 fieldWithPath("extra").description("额外信息")
                         )
                 ));

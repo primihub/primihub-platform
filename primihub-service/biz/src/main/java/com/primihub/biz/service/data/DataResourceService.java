@@ -233,22 +233,15 @@ public class DataResourceService {
     }
 
     public BaseResultEntity deleteDataResource(Long resourceId) {
-        Integer count = dataResourceRepository.queryResourceProjectRelationCount(resourceId);
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        if (dataResource == null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到资源信息");
+        Integer count = dataResourceRepository.queryResourceProjectRelationCount(dataResource.getResourceFusionId());
         if (count>0){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该资源已关联项目");
         }
         dataResourcePrRepository.deleteResource(resourceId);
         return BaseResultEntity.success("删除资源成功");
-    }
-
-    public BaseResultEntity getAuthorizationList(PageReq req, Long userId,Integer status) {
-        List<DataResourceAuthRecordVo> dataResourceAuthRecordVos = dataResourceRepository.queryResourceAuthRecord(req.getOffset(), req.getPageSize(), userId,status);
-        if (dataResourceAuthRecordVos==null||dataResourceAuthRecordVos.size()==0){
-            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
-        }
-        Set<Long> organids = dataResourceAuthRecordVos.stream().map(DataResourceAuthRecordVo::getOrganId).collect(Collectors.toSet());
-        Long count = dataResourceRepository.queryResourceAuthRecordCount(userId,status);
-        return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResourceAuthRecordVos));
     }
 
 

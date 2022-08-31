@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataPsiPrRepository">
-    <insert id="saveDataPsiResource" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataPsiResource">
-        insert into data_psi_resource (resource_id,psi_resource_desc,table_structure_template,organ_type,results_allow_open,keyword_list,is_del,create_date,update_date)
-        values (#{resourceId},#{psiResourceDesc},#{tableStructureTemplate},#{organType},#{resultsAllowOpen},#{keywordList},0,now(),now())
-    </insert>
     <insert id="saveDataPsi" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataPsi">
         insert into data_psi (own_organ_id,own_resource_id,own_keyword,other_organ_id,other_resource_id,other_keyword,output_file_path_type,output_no_repeat,tag,result_name,output_content,output_format,result_organ_ids,remarks,server_address,user_id,is_del,create_date,update_date)
         values (#{ownOrganId},#{ownResourceId},#{ownKeyword},#{otherOrganId},#{otherResourceId},#{otherKeyword},#{outputFilePathType},${outputNoRepeat},#{tag},#{resultName},#{outputContent},#{outputFormat},#{resultOrganIds},#{remarks},#{serverAddress},#{userId},0,now(),now())
@@ -13,19 +9,7 @@
         insert into data_psi_task (psi_id,task_id,task_state,ascription,ascription_type,file_rows,file_path,is_del,create_date,update_date)
         values (#{psiId},#{taskId},#{taskState},#{ascription},#{ascriptionType},#{fileRows},#{filePath},0,now(),now())
     </insert>
-    <update id="updateDataPsiResource" parameterType="com.primihub.biz.entity.data.po.DataPsiResource">
-        update data_psi_resource
-        <set>
-            <if test="resourceId!=null">resource_id = #{resourceId},</if>
-            <if test="psiResourceDesc!=null">psi_resource_desc = #{psiResourceDesc},</if>
-            <if test="tableStructureTemplate!=null">table_structure_template = #{tableStructureTemplate},</if>
-            <if test="organType!=null">organ_type = #{organType},</if>
-            <if test="resultsAllowOpen!=null">results_allow_open = #{resultsAllowOpen},</if>
-            <if test="keywordList!=null">keyword_list = #{keywordList},</if>
-            update_date = now()
-        </set>
-        where id = #{id}
-    </update>
+
     <update id="updateDataPsiTask" parameterType="com.primihub.biz.entity.data.po.DataPsiTask">
         update data_psi_task
         <set>

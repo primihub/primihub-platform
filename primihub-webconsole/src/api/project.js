@@ -43,9 +43,23 @@ export function closeProject(data) {
     data
   })
 }
+export function openProject(data) {
+  return request({
+    url: '/data/project/openProject',
+    method: 'post',
+    data
+  })
+}
 export function removeResource(data) {
   return request({
     url: '/data/project/removeResource',
+    method: 'post',
+    data
+  })
+}
+export function removeOrgan(data) {
+  return request({
+    url: '/data/project/removeOrgan',
     method: 'post',
     data
   })

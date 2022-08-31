@@ -1,5 +1,5 @@
 <template>
-  <div class="item" @click="toProjectDetail">
+  <div class="item" :class="{'disabled': project.status === 2}" @click="toProjectDetail">
     <div class="header">
       <p><el-tag :type="statusStyle(project.status)" size="medium">{{ project.status | projectAuditStatusFilter }}</el-tag></p>
       <p class="header-title">{{ project.projectName }}</p>
@@ -8,21 +8,21 @@
       <div class="text"><span>发起方：</span><span>{{ project.createdOrganName }}</span></div>
       <div class="text"><span>协作方：</span><span>{{ project.providerOrganNames }}</span></div>
       <div class="text"><span>资源数量：</span><span>{{ project.resourceNum }}个</span></div>
-      <div class="text"><span>模型数量：</span><span>{{ project.modelNum }}个</span></div>
+      <div class="text"><span>任务数量：</span><span>{{ project.taskNum }}个</span></div>
       <div class="text"><span>创建时间：</span><span>{{ project.createDate }}</span></div>
     </div>
     <div class="footer">
       <div class="model-status text">
-        <span>{{ project.modelAssembleNum }}</span>
-        <span>配置中 <i class="el-icon-setting icon-1" /></span>
-      </div>
-      <div class="model-status text">
-        <span>{{ project.modelRunNum }}</span>
+        <span>{{ project.taskRunNum }}</span>
         <span>运行中 <i class="el-icon-refresh icon-2" /></span>
       </div>
       <div class="model-status text">
-        <span>{{ project.modelSuccessNum }}</span>
+        <span>{{ project.taskSuccessNum }}</span>
         <span>成功 <i class="el-icon-circle-check icon-3" /></span>
+      </div>
+      <div class="model-status text">
+        <span>{{ project.taskFailNum }}</span>
+        <span>失败 <i class="el-icon-circle-close icon-1" /></span>
       </div>
     </div>
   </div>
@@ -45,6 +45,13 @@ export default {
   },
   methods: {
     toProjectDetail() {
+      if (this.project.status === 2) {
+        this.$message({
+          message: '当前项目已关闭',
+          type: 'warning'
+        })
+        return
+      }
       this.$router.push({
         name: 'ProjectDetail',
         params: { id: this.project.id }
@@ -80,6 +87,10 @@ p {
   margin-bottom: 15px;
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);
+  }
+  &.disabled{
+    background-color: #f5f7fa;
+    color: #909399;
   }
 }
 .header {
@@ -129,7 +140,7 @@ p {
   }
 }
 .icon-1 {
-  color: rgb(144, 147, 153);
+  color: #F56C6C;
 }
 .icon-2 {
   color: rgb(64, 158, 255);

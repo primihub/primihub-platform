@@ -84,7 +84,6 @@ public class DataProjectOrgan {
     /**
      * 是否删除
      */
-    @JsonIgnore
     private Integer isDel;
 
     /**

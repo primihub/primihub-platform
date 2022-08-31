@@ -35,18 +35,18 @@
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
-              <el-input v-model="item.inputValue" size="mini" @change="handleChange(item)" />
+              <el-input v-model="item.inputValue" size="mini" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'textarea'">
-              <el-input v-model="item.inputValue" type="textarea" size="mini" />
+              <el-input v-model="item.inputValue" type="textarea" size="mini" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'radio'">
-              <el-radio-group v-model="item.inputValue" @change="handleChange(item)">
+              <el-radio-group v-model="item.inputValue" @change="handleChange">
                 <el-radio v-for="(r,index) in item.inputValues" :key="index" :label="r.key">{{ r.val }}</el-radio>
               </el-radio-group>
             </template>
             <template v-if="item.inputType === 'select'">
-              <el-select v-model="item.inputValue" placeholder="请选择" :value-key="item.typeCode" @change="handleChange(item)">
+              <el-select v-model="item.inputValue" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
                   :key="index"
@@ -170,7 +170,7 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
-    handleChange(item) {
+    handleChange() {
       console.log('handleChange', this.nodeData)
       this.$emit('change', this.nodeData)
     },

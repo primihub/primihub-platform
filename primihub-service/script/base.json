@@ -40,6 +40,7 @@
                 },
                 {
                     "is_show": 0,
+                    "is_required": 0,
                     "type_code": "modelDesc",
                     "type_name": "模型描述",
                     "input_type": "textarea",
@@ -48,6 +49,7 @@
                 },
                 {
                     "is_show": 0,
+                    "is_required": 1,
                     "type_code": "trainType",
                     "type_name": "训练类型",
                     "input_type": "radio",
@@ -73,6 +75,7 @@
             "component_types": [
                 {
                     "is_show": 0,
+                    "is_required": 1,
                     "type_code": "selectData",
                     "type_name": "选择数据",
                     "input_type": "none",
@@ -89,6 +92,7 @@
             "component_types": [
                 {
                     "is_show": 0,
+                    "is_required": 0,
                     "type_code": "features",
                     "type_name": "特征筛选",
                     "input_type": "select",
@@ -126,6 +130,7 @@
             "component_types": [
                 {
                     "is_show": 0,
+                    "is_required": 0,
                     "type_code": "sample",
                     "type_name": "样本抽样设计",
                     "input_type": "select",
@@ -155,6 +160,7 @@
             "component_types": [
                 {
                     "is_show": 0,
+                    "is_required": 0,
                     "type_code": "exception",
                     "type_name": "异常处理",
                     "input_type": "select",
@@ -204,6 +210,7 @@
             "component_types": [
                 {
                     "is_show": 0,
+                    "is_required": 0,
                     "type_code": "featureCoding",
                     "type_name": "特征编码",
                     "input_type": "select",
@@ -257,6 +264,7 @@
             "component_types": [
                 {
                     "is_show": 0,
+                    "is_required": 1,
                     "type_code": "modelType",
                     "type_name": "模型选择",
                     "input_type": "select",

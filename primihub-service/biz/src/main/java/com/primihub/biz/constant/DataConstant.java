@@ -22,7 +22,12 @@ public class DataConstant {
     public final static Pattern RESOURCE_PATTERN_LONG = Pattern.compile("^-?\\d{10,}$");
     public final static Pattern RESOURCE_PATTERN_DOUBLE = Pattern.compile("^-?\\d+\\.\\d+$");
     public final static Integer READ_DATA_ROW = 50;
-    public static final Integer COPY_PAGE_NUM = 20;
+    public final static Integer COPY_PAGE_NUM = 20;
+
+    // ModelComponentService impl bean name suffix
+    public final static String COMPONENT_BEAN_NAME_SUFFIX = "ComponentTaskServiceImpl";
+
+
 
 
 }

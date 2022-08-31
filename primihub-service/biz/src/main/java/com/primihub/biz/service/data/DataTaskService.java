@@ -69,6 +69,8 @@ public class DataTaskService {
     @Autowired
     private DataProjectRepository dataProjectRepository;
     @Autowired
+    private DataProjectPrRepository dataProjectPrRepository;
+    @Autowired
     private DataProjectService dataProjectService;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
@@ -249,22 +251,21 @@ public class DataTaskService {
         log.info(paramStr);
         ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
         shareProjectVo.supplement();
-        if (shareProjectVo.getProjectOrgans().size()==0)
-            shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
+        shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
         if (shareProjectVo.getProjectResources().size()==0)
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
-            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId());
-            log.info("select ProjectOrgans size:{}",dataProjectOrgans.size());
+            List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
             if (dataProjectOrgans.size()==0)
                 return;
             List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-            organIds.remove(sysLocalOrganId);
             Map<String, Map> organListMap = dataProjectService.getOrganListMap(organIds, shareProjectVo.getServerAddress());
+            List<String> organNames = new ArrayList<>();
             for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
                 if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
                     if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
                         Map map = organListMap.get(dataProjectOrgan.getOrganId());
+                        organNames.add(map.get("globalName").toString());
                         Object gatewayAddress = map==null?null:map.get("gatewayAddress");
                         if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
                             log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
@@ -285,7 +286,10 @@ public class DataTaskService {
                     }
                 }
             }
-
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
+            dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
+            dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
+            dataProjectPrRepository.updateDataProject(dataProject);
         }
     }
 
