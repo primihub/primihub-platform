@@ -591,7 +591,10 @@ export default {
         this.modelRunValidated = true
       }
     },
-    run() {
+    async run() {
+      // 运行前触发保存
+      this.isDraft = 1
+      await this.saveFn()
       this.checkRunValidated()
       if (!this.modelRunValidated) return
       runTaskModel({ modelId: this.modelId }).then(res => {
@@ -721,6 +724,7 @@ export default {
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.modelId = 0
+        this.isDraft = 0
       } else {
         this.modelId = modelId
       }
@@ -858,11 +862,10 @@ export default {
       return obj
     },
     toolBarSave() {
-      this.isDraft = 1
       this.saveFn()
     },
     // 保存模板文件
-    saveFn() { // 0 草稿
+    async saveFn() { // 0 草稿
       const data = this.graph.toJSON()
       const { cells } = data
       if (this.modelStartRun) { // 模型运行中不可操作
@@ -944,24 +947,23 @@ export default {
         this.selectComponentList = []
       }
 
-      saveModelAndComponent(JSON.stringify(this.saveParams)).then(res => {
-        if (res.code === 0) {
-          this.modelId = res.result.modelId
-          this.$notify.closeAll()
-          this.$notify({
-            message: '保存成功',
-            type: 'success',
-            duration: '1000'
-          })
-        } else {
-          this.$message({
-            message: res.msg,
-            type: 'error'
-          })
-        }
-        this.isClear = false
-        this.isDraft = this.isEdit ? 1 : 0
-      })
+      const res = await saveModelAndComponent(JSON.stringify(this.saveParams))
+      if (res.code === 0) {
+        this.modelId = res.result.modelId
+        this.$notify.closeAll()
+        this.$notify({
+          message: '保存成功',
+          type: 'success',
+          duration: '1000'
+        })
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error'
+        })
+      }
+      this.isClear = false
+      this.isDraft = this.isEdit ? 1 : 0
     },
     handleChange(data) {
       const { cells } = this.graph.toJSON()
