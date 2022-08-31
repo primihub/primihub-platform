@@ -2,7 +2,7 @@
   "name": "privacy-platform",
   "version": "1.0.0",
   "description": "原语隐私计算平台",
-  "author": "Primihub FrontEnd 原语前端",
+  "author": "PrimiHub FrontEnd 原语前端",
   "scripts": {
     "dev": "vue-cli-service serve",
     "build:prod": "vue-cli-service build",
