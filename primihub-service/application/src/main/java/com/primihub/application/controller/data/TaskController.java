@@ -94,7 +94,7 @@ public class TaskController {
 
     public void downloadDefaultTask(HttpServletResponse response,DataTask dataTask) throws Exception{
         File file = null;
-        if (dataTask.getTaskType().equals(TaskTypeEnum.MODEL.getTaskType())){
+        if (dataTask.getTaskType().equals(TaskTypeEnum.PSI.getTaskType())){
             DataPsiTask dataPsiTask = dataPsiRepository.selectPsiTaskById(dataTask.getTaskId());
             if (dataPsiTask!=null)
                 file = new File(dataPsiTask.getFilePath());
