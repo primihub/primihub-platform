@@ -27,6 +27,7 @@
             data_project dp on dm.project_id = dp.id
         WHERE
              dm.is_del = 0
+             and dm.is_draft = 1
             <include refid="listwhere"></include>
         ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
@@ -41,6 +42,7 @@
             data_project dp on dm.project_id = dp.id
         WHERE
              dm.is_del = 0
+             and dm.is_draft = 1
             <include refid="listwhere"></include>
     </select>
 
