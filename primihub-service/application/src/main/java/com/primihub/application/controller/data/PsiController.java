@@ -14,7 +14,10 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.UUID;
@@ -95,38 +98,53 @@ public class PsiController {
     }
 
     @GetMapping("downloadPsiTask")
-    public void downloadPsiTask(HttpServletResponse response,Long taskId){
+    public void downloadPsiTask(HttpServletResponse response,Long taskId) throws Exception{
         if (taskId==null||taskId==0L)
             return;
         DataPsiTask task = dataPsiService.selectPsiTaskById(taskId);
         DataPsi dataPsi = dataPsiService.selectPsiById(task.getPsiId());
-        String content = "no data";
-        String fileName = null;
-        if (dataPsi!=null){
-            if (task.getFileContent()!=null){
-                content = task.getFileContent();
-            }
-            fileName = dataPsi.getResultName()+".csv";
-        }else {
-            fileName = UUID.randomUUID().toString()+".csv";
-        }
-        OutputStream outputStream = null;
-        //将字符串转化为文件
-        byte[] currentLogByte = content.getBytes();
-        try {
-            // 告诉浏览器用什么软件可以打开此文件
+        File file = new File(task.getFilePath());
+        if (file!=null&&file.exists()){
+            String fileName = dataPsi.getResultName()+".csv";
+            FileInputStream inputStream = new FileInputStream(file);
             response.setHeader("content-Type","application/vnd.ms-excel");
-            // 下载文件的默认名称
-            response.setHeader("Content-disposition","attachment;filename="+ new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
-            response.setCharacterEncoding("UTF-8");
-            outputStream = response.getOutputStream();
-            outputStream.write(currentLogByte);
+            response.setHeader("content-disposition", "attachment; fileName=" + new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
+            ServletOutputStream outputStream = response.getOutputStream();
+            int len = 0;
+            byte[] data = new byte[1024];
+            while ((len = inputStream.read(data)) != -1) {
+                outputStream.write(data, 0, len);
+            }
             outputStream.close();
-            outputStream.flush();
-        }catch (Exception e) {
-            log.info("downloadPsiTask -- fileName:{} -- fileContent -- e:{}",fileName,content,e.getMessage());
+            inputStream.close();
+        }else {
+            String content = "no data";
+            String fileName = null;
+            if (dataPsi!=null){
+                if (task.getFileContent()!=null){
+                    content = task.getFileContent();
+                }
+                fileName = dataPsi.getResultName()+".csv";
+            }else {
+                fileName = UUID.randomUUID().toString()+".csv";
+            }
+            OutputStream outputStream = null;
+            //将字符串转化为文件
+            byte[] currentLogByte = content.getBytes();
+            try {
+                // 告诉浏览器用什么软件可以打开此文件
+                response.setHeader("content-Type","application/vnd.ms-excel");
+                // 下载文件的默认名称
+                response.setHeader("Content-disposition","attachment;filename="+ new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
+                response.setCharacterEncoding("UTF-8");
+                outputStream = response.getOutputStream();
+                outputStream.write(currentLogByte);
+                outputStream.close();
+                outputStream.flush();
+            }catch (Exception e) {
+                log.info("downloadPsiTask -- fileName:{} -- fileContent -- e:{}",fileName,content,e.getMessage());
+            }
         }
-
     }
 
     @GetMapping("delPsiTask")

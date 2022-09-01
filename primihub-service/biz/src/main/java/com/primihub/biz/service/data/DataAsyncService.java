@@ -234,7 +234,7 @@ public class DataAsyncService implements ApplicationContextAware {
             if (task1.getTaskState()!=4){
                 psiTask.setTaskState(1);
                 dataPsiPrRepository.updateDataPsiTask(psiTask);
-                psiTaskOutputFileHandle(psiTask);
+//                psiTaskOutputFileHandle(psiTask);
             }
         } catch (Exception e) {
             psiTask.setTaskState(3);
