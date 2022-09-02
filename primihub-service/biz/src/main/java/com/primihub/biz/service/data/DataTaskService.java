@@ -377,8 +377,8 @@ public class DataTaskService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无任务信息");
         if (dataTask.getTaskState()==2)
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"任务运行中无法删除");
-        if (dataTask.getTaskType()== TaskTypeEnum.MODEL.getTaskType())
-            deleteModel(taskId);
+//        if (dataTask.getTaskType()== TaskTypeEnum.MODEL.getTaskType())
+//            deleteModel(taskId);
         dataTask.setTaskState(TaskStateEnum.DELETE.getStateType());
         dataTaskPrRepository.updateDataTask(dataTask);
 //        dataTaskPrRepository.deleteDataTask(taskId);
