@@ -10,6 +10,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.PageReq;
@@ -378,7 +379,9 @@ public class DataTaskService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"任务运行中无法删除");
         if (dataTask.getTaskType()== TaskTypeEnum.MODEL.getTaskType())
             deleteModel(taskId);
-        dataTaskPrRepository.deleteDataTask(taskId);
+        dataTask.setTaskState(TaskStateEnum.DELETE.getStateType());
+        dataTaskPrRepository.updateDataTask(dataTask);
+//        dataTaskPrRepository.deleteDataTask(taskId);
         return BaseResultEntity.success();
     }
 

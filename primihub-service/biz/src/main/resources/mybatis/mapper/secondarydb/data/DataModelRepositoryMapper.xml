@@ -20,8 +20,7 @@
             dmt.task_id as latestTaskId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
-            dm.resource_num AS resourceNum,
-            dm.is_del as isDel
+            dm.resource_num AS resourceNum
         from
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
@@ -63,8 +62,7 @@
             resource_num as resourceNum,
             y_value_column as yValueColumn,
             is_draft as isDraft,
-            create_date as createDate,
-            is_del as isDel
+            create_date as createDate
         FROM
             data_model
         WHERE
