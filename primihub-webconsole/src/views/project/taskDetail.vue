@@ -1,9 +1,9 @@
 <template>
-  <div v-loading="listLoading" class="container">
+  <div v-loading="listLoading" class="container" :class="{'disabled': task.taskState === 5}">
     <section class="infos">
       <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
         <el-descriptions-item label="任务ID">
-          {{ task.taskId }}
+          {{ task.taskIdName }}
         </el-descriptions-item>
         <el-descriptions-item label="任务类型">
           模型
@@ -31,6 +31,10 @@
           {{ task.modelDesc }}
         </el-descriptions-item>
       </el-descriptions>
+      <div v-if="task.taskState === 1" class="buttons">
+        <el-button v-if="hasModelDownloadPermission" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
+        <el-button v-if="hasDeleteModelTaskPermission" :disabled="project.status === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
+      </div>
     </section>
     <section>
       <el-tabs v-model="tabName">
@@ -45,7 +49,7 @@
             >
               <template slot-scope="{row}">
                 <template v-if="hasViewPermission">
-                  <el-button :disabled="project.status === 2" size="mini" type="text" @click="toResourceDetailPage(row)">{{ row.resourceId }}</el-button>
+                  <el-button :disabled="project.status === 2 || task.taskState === 5" size="mini" type="text" @click="toResourceDetailPage(row)">{{ row.resourceId }}</el-button>
                 </template>
                 <template v-else>
                   <span>{{ row.resourceId }}</span>
@@ -88,7 +92,9 @@
 
 <script>
 import { getModelDetail } from '@/api/model'
+import { deleteTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'TaskDetail',
@@ -117,7 +123,8 @@ export default {
         1: '已完成',
         2: '执行中',
         3: '任务失败',
-        4: '取消'
+        4: '取消',
+        5: '已删除'
       }
       return statusMap[status]
     }
@@ -141,6 +148,12 @@ export default {
   computed: {
     hasViewPermission() {
       return this.$store.getters.buttonPermissionList.includes('UnionResourceDetail')
+    },
+    hasModelDownloadPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
+    },
+    hasDeleteModelTaskPermission() {
+      return this.$store.getters.buttonPermissionList.includes('deleteModelTask')
     }
   },
   created() {
@@ -151,7 +164,6 @@ export default {
     fetchData() {
       this.listLoading = true
       this.taskId = this.$route.params.taskId
-      this.modelId = this.$route.query.modelId || 0
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
@@ -167,7 +179,7 @@ export default {
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
+      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
     },
     toResourceDetailPage(row) {
       this.$router.push({
@@ -178,6 +190,40 @@ export default {
         query: {
           serverAddress: row.serverAddress
         }
+      })
+    },
+    async download() {
+      const timestamp = new Date().getTime()
+      const nonce = Math.floor(Math.random() * 1000 + 1)
+      const token = getToken()
+      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+    },
+    deleteModelTask() {
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        deleteTask(this.taskId).then(res => {
+          if (res.code === 0) {
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            this.fetchData()
+          }
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
+    },
+    toProjectDetail() {
+      this.$router.push({
+        name: 'ProjectDetail',
+        params: { id: this.project.id }
       })
     }
   }
@@ -202,6 +248,10 @@ export default {
   font-size: 14px;
 }
 .container {
+  &.disabled{
+    filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
+    -webkit-filter: grayscale(100%);
+  }
   .total-time-label{
     font-size: 18px;
     margin-right: 10px;
@@ -242,7 +292,7 @@ export default {
   color: #67C23A;
 }
 .status-processing{
-  background-color: #409EFF;
+  color: #909399;
 }
 .status-error{
   color: #F56C6C;
@@ -253,5 +303,9 @@ export default {
   color: #F56C6C;
   font-size: 12px;
   line-height: 1.2;
+}
+.buttons{
+  display: flex;
+  justify-content: flex-end;
 }
 </style>

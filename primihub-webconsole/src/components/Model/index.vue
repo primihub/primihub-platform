@@ -61,7 +61,6 @@
             <i :class="statusStyle(row.latestTaskStatus)" />
             {{ row.latestTaskStatus | taskStatusFilter }}
             <span v-if="row.latestTaskStatus === 3" class="error-tips">{{ row.taskErrorMsg }}</span>
-            <span v-if="row.latestTaskStatus === 2"> <i class="el-icon-loading" /></span>
           </template>
         </el-table-column>
         <!-- if not have permissions, hide the column -->
@@ -290,10 +289,12 @@ export default {
         if (res.length === 0) {
           clearInterval(this.timer)
         }
+      }).catch(() => {
+        clearInterval(this.taskTimer)
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
+      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
     },
     handlePagination(data) {
       this.params.pageNo = data.page
@@ -373,7 +374,7 @@ export default {
   color: #67C23A;
 }
 .status-processing{
-  background-color: #409EFF;
+  color: #909399;
 }
 .status-error{
   color: #F56C6C;

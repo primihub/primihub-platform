@@ -10,9 +10,6 @@
           <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>
         </template>
         <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
-        <el-descriptions-item v-if="hasModelDownloadPermission && state === 1" label="下载结果">
-          <el-button :disabled="projectStatus === 2" class="download-button" type="text" size="mini" icon="el-icon-download" @click="download">下载结果</el-button>
-        </el-descriptions-item>
       </el-descriptions>
     </div>
 
@@ -80,7 +77,6 @@
 
 <script>
 import { getModelDetail, getModelPrediction } from '@/api/model'
-import { getToken } from '@/utils/auth'
 
 export default {
   filters: {
@@ -121,11 +117,6 @@ export default {
       taskState: null
     }
   },
-  computed: {
-    hasModelDownloadPermission() {
-      return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
-    }
-  },
   created() {
     this.fetchData()
     // this.getChartsData()
@@ -160,12 +151,6 @@ export default {
         this.lineChartData = res.result.prediction
         console.log(this.lineChartData)
       })
-    },
-    async download() {
-      const timestamp = new Date().getTime()
-      const nonce = Math.floor(Math.random() * 1000 + 1)
-      const token = getToken()
-      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?modelId=${this.modelId}&taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     }
   }
 }
