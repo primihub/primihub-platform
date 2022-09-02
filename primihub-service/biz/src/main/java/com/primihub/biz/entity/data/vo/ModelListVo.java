@@ -48,4 +48,6 @@ public class ModelListVo {
         }
         return 0L;
     }
+
+    private Integer isDel;
 }
