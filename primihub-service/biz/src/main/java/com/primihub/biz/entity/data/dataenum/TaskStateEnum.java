@@ -10,7 +10,6 @@ public enum TaskStateEnum {
     IN_OPERATION(2,"运行中"),
     FAIL(3,"失败"),
     CANCEL(4,"取消"),
-    DELETE(5,"删除"),
     ;
     private Integer stateType;
     private String stateDesc;
