@@ -390,11 +390,12 @@ public class DataTaskService {
     public void deleteModel(Long taskId){
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask!=null){
-            DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
-            if (dataModel!=null){
-                dataModel.setIsDel(1);
-                dataModelPrRepository.updateDataModel(dataModel);
-            }
+            dataModelPrRepository.deleteModelByModelId(modelTask.getModelId(), 1);
+//            DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
+//            if (dataModel!=null){
+//                dataModel.setIsDel(1);
+//                dataModelPrRepository.updateDataModel(dataModel);
+//            }
         }
 //        dataModelPrRepository.deleteDataModelTask(taskId);
     }

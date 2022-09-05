@@ -50,7 +50,6 @@
             <if test="isDraft!=null">is_draft = #{isDraft},</if>
             <if test="userId!=null">user_id = #{userId},</if>
             <if test="organId!=null">organ_id = #{organId},</if>
-            <if test="isDel!=null">is_del = #{isDel},</if>
             <if test="componentJson!=null">component_json = #{componentJson},</if>
             update_date = now()
         </set>
