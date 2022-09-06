@@ -48,4 +48,5 @@ public class ModelListVo {
         }
         return 0L;
     }
+
 }

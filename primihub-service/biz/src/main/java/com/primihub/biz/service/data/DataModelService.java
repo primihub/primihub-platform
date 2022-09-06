@@ -477,6 +477,11 @@ public class DataModelService {
         DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
         if (modelComponentReq==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
+        Set<String> mandatorySet = baseConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsMandatory() == 0).map(ModelComponent::getComponentCode).collect(Collectors.toSet());
+        Set<String> reqSet = modelComponentReq.getModelComponents().stream().map(DataComponentReq::getComponentCode).collect(Collectors.toSet());
+        mandatorySet.removeAll(reqSet);
+        if (!mandatorySet.isEmpty())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少必选组件,请检查组件");
         for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
             BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
             if (baseResultEntity.getCode()!=0){
