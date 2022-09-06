@@ -1,45 +1,30 @@
 <template>
   <div class="app-container">
+    {{ modelId }}
     <div class="graph-container">
       <!-- 左侧列表组件区域 -->
-      <div class="shapes" :class="{'not-clickable': modelStartRun}">
-        <h2>新建模型</h2>
+      <div class="shapes">
+        <h2>新建流程</h2>
         <p class="tips">拖拽组件到右侧画布区</p>
         <div id="stencil" />
       </div>
       <div class="center-container">
-        <!--流程图工具栏-->
-        <tool-bar ref="toolBarRef" @save="toolBarSave()" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" />
-        <div id="flowContainer" ref="containerRef" class="container" />
-        <div ref="mapContainerRef" class="minimap-container" />
+        <TaskCanvas class="canvas-container" :model-id="modelId" :options="taskOptions" :save="autoSave" @change="handleNodeChange" @selectComponents="handleSelectComponents" />
+        <!--右侧工具栏-->
+        <right-drawer v-if="showDataConfig" ref="drawerRef" :node-data="nodeData" />
       </div>
-
-      <!--右侧工具栏-->
-      <right-drawer ref="drawerRef" :list-loading="rightInfoLoading" :show-data-config="showDataConfig" :node-data="nodeData" :class="{'not-clickable': modelStartRun}" @save="saveFn(0)" @change="handleChange" />
-
     </div>
   </div>
 </template>
 
 <script>
-import { Graph, Addon, FunctionExt, Shape } from '@antv/x6'
-import '@antv/x6-vue-shape'
-import DagNodeComponent from './components/nodes/DagNode.vue'
-import StartNodeComponent from './components/nodes/StartNode.vue'
-import ToolBar from './components/ToolBar/index.vue'
-import RightDrawer from './components/RightDrawer'
-import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan } from '@/api/model'
+import { Addon } from '@antv/x6'
+// import '@antv/x6-vue-shape'
+import TaskCanvas from '@/components/TaskCanvas'
 
-const lineAttr = { // 线样式
-  'line': {
-    'stroke': '#A2B1C3',
-    'targetMarker': {
-      'name': 'block',
-      'width': 12,
-      'height': 8
-    }
-  }
-}
+import RightDrawer from './components/RightDrawer'
+import { getModelComponent, saveModelAndComponent, runTaskModel } from '@/api/model'
+
 const ports = { // 圆点样式
   'groups': {
     'in': {
@@ -87,7 +72,7 @@ const ports = { // 圆点样式
 
 export default {
   components: {
-    ToolBar,
+    TaskCanvas,
     RightDrawer
   },
   data() {
@@ -103,32 +88,29 @@ export default {
       modelComponents: [], // 草稿详情
       modelId: 0,
       taskId: 0,
-      graphData: { cells: [] },
       projectId: 0,
       projectName: '',
-      isComplete: false,
       modelStartRun: false,
       canUndo: false,
-      resourceList: [],
-      yOptions: [],
-      taskTimer: null,
-      saveComponents: [], // 记录保存时有几个组件，用来判断任务是否轮询完成
-      hasReady: false,
-      resourceId: 0,
-      rightInfoLoading: false,
       selectComponentList: [],
       componentCode: '',
-      organs: [],
       destroyed: false,
       startNode: {},
       startData: [],
       componentsList: [],
-      requiredComponents: [],
       container: null,
       modelRunValidated: true,
       isClear: false,
       isDraft: 0,
-      isLoadHistory: true
+      isLoadHistory: true,
+      taskOptions: {
+        isRun: false,
+        isEditable: true,
+        showTime: false,
+        showDraft: true,
+        showComponentsDetails: this.isCopy
+      },
+      autoSave: false
     }
   },
   computed: {
@@ -138,215 +120,36 @@ export default {
     isCopy() {
       return this.$route.query.isCopy
     }
-
   },
   async mounted() {
     this.isDraft = this.isEdit ? 1 : 0
-    this.modelId = this.$route.query.modelId
+    this.modelId = Number(this.$route.query.modelId) || 0
     await this.init()
-    this.initToolBarEvent()
-    this.getModelComponentDetail()
+    // this.initToolBarEvent()
   },
   destroyed() {
     clearTimeout(this.taskTimer)
     this.selectComponentList = []
     this.destroyed = true
-    this.graph.dispose()
+    window.graph.dispose()
     console.log('destroyed model')
   },
   methods: {
     async init() {
-      Graph.registerNode(
-        'dag-node',
-        {
-          inherit: 'vue-shape',
-          width: 180,
-          height: 50,
-          component: {
-            template: `<dag-node-component />`,
-            components: {
-              DagNodeComponent
-            }
-          },
-          ports: {
-            ...ports
-          }
-        },
-        true
-      )
+      this.graph = window.graph
       // 获取左侧组件列表
       await this.getModelComponentsInfo()
-      // 初始化画布
-      this.container = this.$refs.containerRef
-      const minimapContainer = this.$refs.mapContainerRef
-      const width = this.container.scrollWidth
-      const height = this.container.scrollHeight
-      this.$refs.toolBarRef.width = width
-      this.graph = new Graph({
-        container: this.container,
-        width: width,
-        height: height,
-        autoResize: true,
-        snapline: true,
-        scroller: {
-          enabled: true,
-          pageBreak: false,
-          pannable: true
-        },
-        minimap: {
-          enabled: true,
-          container: minimapContainer,
-          scalable: false,
-          width: 200,
-          height: 200,
-          padding: 0
-        },
-        // panning: true,
-        background: {
-          color: '#F5F7FA'
-        },
-        grid: {
-          type: 'doubleMesh',
-          size: 10,
-          visible: true,
-          args: [
-            {
-              color: '#E7E8EA',
-              thickness: 1
-            },
-            {
-              color: '#CBCED3',
-              thickness: 1,
-              factor: 5
-            }
-          ]
-        },
-        mousewheel: {
-          enabled: true,
-          modifiers: ['ctrl', 'meta'],
-          minScale: 0.5,
-          maxScale: 2
-        },
-        highlighting: {
-          magnetAdsorbed: {
-            name: 'stroke',
-            args: {
-              attrs: {
-                fill: '#fff',
-                stroke: '#31d0c6',
-                strokeWidth: 4
-              }
-            }
-          }
-        },
-        connecting: {
-          router: {
-            name: 'manhattan',
-            args: {
-              padding: 1
-            }
-          },
-          connector: {
-            name: 'rounded',
-            args: {
-              radius: 8
-            }
-          },
-          anchor: 'center',
-          connectionPoint: 'anchor',
-          allowBlank: false,
-          snap: {
-            radius: 20
-          },
-          validateMagnet({ magnet }) {
-            return magnet.getAttribute('port-group') !== 'in'
-          },
-          createEdge() {
-            return new Shape.Edge({
-              attrs: {
-                line: {
-                  stroke: '#A2B1C3',
-                  strokeWidth: 2,
-                  targetMarker: {
-                    name: 'block',
-                    width: 12,
-                    height: 8
-                  }
-                }
-              },
-              zIndex: 0
-            })
-          }
-        },
-        selecting: {
-          enabled: true,
-          multiple: true,
-          rubberEdge: true,
-          rubberNode: true,
-          modifiers: 'shift',
-          rubberband: true
-        },
-        history: true,
-        clipboard: true,
-        keyboard: true
-      })
-
-      if (this.components) {
-        this.registerStartNode()
-        this.addStartNode()
-      }
 
       // 初始化左侧组件列表
       this.initStencil()
       this.initShape()
-
-      // 画布事件初始化
-      this.initEvent()
-      // 居中显示画布
-      // this.graph.centerContent()
       this.projectId = Number(this.$route.query.projectId) || 0
-    },
-    registerStartNode() {
-      this.startNode = this.components.filter(item => item.componentCode === 'start')[0]
-      this.nodeData = this.startNode
-      Graph.registerNode(
-        'start-node',
-        {
-          inherit: 'vue-shape',
-          width: 120,
-          height: 40,
-          component: {
-            template: `<start-node-component />`,
-            components: {
-              StartNodeComponent
-            }
-          },
-          ports: { ...ports }
-        },
-        true
-      )
-    },
-    addStartNode() {
-      const width = this.container.scrollWidth
-      // 60 = start node width
-      const x = width * 0.5 - 60
-      this.startData = this.components.filter(item => item.componentCode === 'start')[0]
-      this.graph.addNode({
-        x: x,
-        y: 150,
-        shape: 'start-node',
-        componentCode: this.startData.componentCode,
-        label: this.startData.componentName,
-        data: this.startData,
-        ports
-      })
     },
     initStencil() {
       const height = document.querySelector('#stencil').offsetHeight
       this.stencil = new Addon.Stencil({
         title: '',
-        target: this.graph,
-        // stencilGraphWidth: 330,
+        target: window.graph,
         stencilGraphHeight: height,
         x: 50,
         collapsable: true,
@@ -381,9 +184,8 @@ export default {
       stencilContainer.appendChild(this.stencil.container)
     },
     initShape() {
-      const { graph } = this
-      const imageNodes = this.componentsList.map((item) =>
-        graph.createNode({
+      const imageNodes = this.componentsList?.map((item) =>
+        window.graph.createNode({
           id: item.frontComponentId,
           componentCode: item.componentCode,
           shape: 'dag-node',
@@ -394,99 +196,6 @@ export default {
 
       )
       this.stencil.load(imageNodes)
-    },
-    showPorts(ports, show) {
-      for (let i = 0, len = ports.length; i < len; i = i + 1) {
-        ports[i].style.visibility = show ? 'visible' : 'hidden'
-      }
-    },
-    async getProjectResourceOrgan() {
-      const res = await getProjectResourceOrgan({ projectId: this.projectId })
-      if (res.code === 0) {
-        this.organs = res.result
-      }
-    },
-    // 画布事件初始化
-    initEvent() {
-      const { graph } = this
-      const container = document.getElementById('flowContainer')
-      graph.on('node:click', async({ node }) => {
-        this.nodeData = node.store.data.data
-      })
-
-      graph.on(
-        'node:mouseenter',
-        FunctionExt.debounce(() => {
-          const ports = container.querySelectorAll(
-            '.x6-port-body'
-          )
-          this.showPorts(ports, true)
-        }),
-        500
-      )
-      graph.on('node:mouseleave', () => {
-        const ports = container.querySelectorAll(
-          '.x6-port-body'
-        )
-        this.showPorts(ports, false)
-      })
-
-      graph.on('node:collapse', ({ node, e }) => {
-        e.stopPropagation()
-        node.toggleCollapse()
-        const collapsed = node.isCollapsed()
-        const cells = node.getDescendants()
-        cells.forEach((n) => {
-          if (collapsed) {
-            n.hide()
-          } else {
-            n.show()
-          }
-        })
-      })
-      graph.bindKey('backspace', () => {
-        const cells = graph.getSelectedCells()
-        if (cells.length) {
-          const currentCode = this.nodeData.componentCode
-          // remove duplicates
-          this.selectComponentList = [...new Set(this.selectComponentList)]
-          const index = this.selectComponentList.indexOf(currentCode)
-          if (index !== -1) {
-            this.selectComponentList.splice(index, 1)
-          }
-          graph.removeCells(cells)
-        }
-        this.nodeData = this.startNode
-      })
-
-      graph.on('edge:connected', ({ edge }) => {
-        edge.attr({
-          line: {
-            strokeDasharray: ''
-          }
-        })
-      })
-
-      graph.on('node:change:data', ({ node }) => {
-        const edges = graph.getIncomingEdges(node)
-        const { componentState } = node.getData()
-        // TODO line Animation ?
-        edges && edges.forEach((edge) => {
-          if (componentState === 2 || componentState === 0) {
-            edge.attr('line/strokeDasharray', 5)
-            edge.attr('line/style/animation', 'running-line 30s infinite linear')
-          } else {
-            edge.attr('line/strokeDasharray', '')
-            edge.attr('line/style/animation', '')
-          }
-        })
-      })
-    },
-    getProjectResourceData() {
-      getProjectResourceData({ projectId: this.projectId }).then(res => {
-        this.projectName = res.result.projectName
-        this.resourceList = res.result.resource
-      })
     },
     // 工具组件事件
     // 放大
@@ -503,7 +212,7 @@ export default {
     },
     // 清除画布
     clearFn() {
-      const { cells } = this.graph.toJSON()
+      const { cells } = window.graph.toJSON()
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',
@@ -519,12 +228,19 @@ export default {
         return
       }
       this.isClear = true
-      this.isDraft = this.isEdit ? 1 : 0
+      // this.isDraft = this.isEdit ? 1 : 0
       this.nodeData = this.startNode
       this.saveFn()
     },
+    // 重置画布
+    resetFn() {
+      this.graph.zoomTo(1)
+    },
+    toolBarSave() {
+      this.saveFn()
+    },
     initToolBarEvent() {
-      const { history } = this.graph
+      const { history } = window.graph
       history.on('change', () => {
         this.canUndo = history.canUndo()
         this.canRedo = history.canRedo()
@@ -533,7 +249,7 @@ export default {
           this.saveFn()
         }
       })
-      this.graph.bindKey(['ctrl+z', 'command+z'], () => {
+      window.graph.bindKey(['ctrl+z', 'command+z'], () => {
         if (history.canUndo()) {
           history.undo()
         }
@@ -541,7 +257,7 @@ export default {
       })
     },
     checkRunValidated() {
-      const data = this.graph.toJSON()
+      const data = window.graph.toJSON()
       const { cells } = data
       const startCom = cells.filter(item => item.componentCode === 'start')[0]
       const modelName = startCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
@@ -613,76 +329,18 @@ export default {
             type: 'info',
             duration: 5000
           })
-          this.taskTimer = window.setInterval(() => {
-            if (this.modelStartRun) { // 模型开始运行
-              setTimeout(this.getTaskModelComponent(), 0)
-            }
-          }, 1500)
-        }
-      })
-    },
-    getTaskModelComponent() {
-      getTaskModelComponent({ taskId: this.taskId }).then(res => {
-        const result = res.result.components
-        const taskState = res.result.taskState
-        if (taskState === 3) { // task failed
-          clearInterval(this.taskTimer)
-          this.$notify.closeAll()
-          this.$notify({
-            message: '运行失败',
-            type: 'error',
-            duration: 3000
-          })
-          this.modelStartRun = false
-          this.$confirm('任务运行失败, 是否重新运行?', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }).then(() => {
-            this.run()
-          }).catch(() => {
-          })
-          return
-        } else {
-          const taskResult = []
-          result && result.forEach((item) => {
-            const { componentCode, complete, componentState } = item
-            const nodes = this.graph.getNodes()
-            const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
-            const data = node.getData()
-            node.setData({
-              ...data,
-              componentState: componentState
-            })
-            if (complete) {
-              taskResult.push(componentCode)
-              node.setData({
-                ...data,
-                componentState: componentState,
-                complete: true
-              })
-            }
-          })
-          if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
-            clearInterval(this.taskTimer)
-            this.$notify.closeAll()
-            this.$notify({
-              message: '运行完成',
-              type: 'success',
-              duration: 3000
-            })
-            // to model task detail page
-            setTimeout(() => {
-              this.toModelDetail(this.taskId)
-            }, 1000)
-          }
+          // to model task detail page
+          setTimeout(() => {
+            this.toModelDetail(this.taskId)
+          }, 1000)
         }
       })
     },
     toModelDetail(id) {
       this.$router.push({
         name: `ModelDetail`,
-        params: { taskId: id }
+        params: { taskId: id },
+        query: { from: '0', modelId: this.modelId } // 跳转携带参数，用于预览tab展示 0 创建任务 1 生成模型
       })
     },
     // 获取左侧组件
@@ -691,182 +349,11 @@ export default {
       if (code === 0) {
         this.components = result
         this.componentsList = result.slice(1)
-        this.requiredComponents = result.filter(item => item.isMandatory === 0)
       }
-    },
-    // 获取模型组件详情
-    async getModelComponentDetail() {
-      const params = {
-        modelId: this.modelId,
-        projectId: this.projectId
-      }
-      const res = await getModelComponentDetail(params)
-      const modelComponents = res.result?.modelComponents
-      if ((this.isEdit || this.isCopy) && modelComponents && modelComponents.length > 0) { // It's is edit page
-        this.setComponentsDetail(res.result)
-      } else if (modelComponents && modelComponents.length > 1) {
-        this.$confirm('当前用户存在历史记录，是否加载?', '提示', {
-          confirmButtonText: '是',
-          cancelButtonText: '否',
-          closeOnClickModal: false,
-          type: 'warning'
-        }).then(() => {
-          this.setComponentsDetail(res.result)
-        }).catch(() => {
-          this.modelId = res.result.modelId
-          this.isLoadHistory = false
-          this.clearFn()
-        })
-      }
-    },
-    setComponentsDetail(data) {
-      const { modelId, modelComponents, modelPointComponents } = data
-      // 复制任务，需重置重新生成modelId
-      if (this.isCopy) {
-        this.modelId = 0
-        this.isDraft = 0
-      } else {
-        this.modelId = modelId
-      }
-      this.modelPointComponents = modelPointComponents
-      this.modelComponents = modelComponents
-      for (let index = 0; index < this.modelComponents.length; index++) {
-        const item = this.modelComponents[index]
-        // save the selected components
-        this.selectComponentList.push(item.componentCode)
-        const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-        item.componentValues.map(item => {
-          this.components[posIndex].componentTypes.map(c => {
-            if (c.typeCode === item.key && item.val !== '') {
-              c.inputValue = item.val
-            }
-          })
-        })
-      }
-      this.initGraphShape()
-    },
-    initGraphShape() {
-      console.log('this.modelComponents', this.modelComponents)
-      this.modelComponents && this.modelComponents.forEach(item => {
-        const { frontComponentId, componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
-        const { componentTypes, isMandatory } = this.components.find(item => {
-          return item.componentCode === componentCode
-        })
-        this.graphData.cells.push({
-          id: frontComponentId,
-          frontComponentId,
-          label: componentName,
-          componentCode,
-          position: {
-            x: coordinateX,
-            y: coordinateY
-          },
-          size: {
-            width,
-            height
-          },
-          shape,
-          ports,
-          data: {
-            componentCode,
-            componentName,
-            componentTypes,
-            isMandatory
-          },
-          zIndex: 1
-        })
-      })
-
-      this.modelPointComponents?.forEach(item => {
-        if (item.shape === 'edge') {
-          this.graphData.cells.push({
-            id: item.frontComponentId,
-            'shape': 'edge',
-            'attrs': lineAttr,
-            'zIndex': 0,
-            'source': item.input,
-            'target': item.output
-          })
-        }
-      })
-      this.graph.fromJSON(this.graphData)
-    },
-    filterFn(item, edgeList, cells) {
-      // 1. 在target中找，
-      // 找到:有输入 source.cell input 存放
-      // 没找到 :
-      // 2. 在source中找，
-      // 找到: 有输出 target.cell output 存放
-      // 没找到: 没有输入 input =[]
-      // 同时找到
-      // 有输入 source.cell 有输出 target.cell
-      const { shape } = item
-      const obj = {
-        input: [],
-        output: []
-      }
-      if (shape !== 'edge') {
-        const frontComponentId = item.frontComponentId
-        const inputRes = edgeList.find(item => {
-          return item.source.cell === frontComponentId
-        })
-        const outputRes = edgeList.find(item => {
-          return item.target.cell === frontComponentId
-        })
-        if (inputRes && outputRes) {
-          const inputId = outputRes.source.cell
-          const outputId = inputRes.target.cell
-          const outputData = cells.find(item => item.id === outputId)
-          const inputData = cells.find(item => item.id === inputId)
-          obj.output.push({
-            frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
-            portId: outputRes.target.port,
-            pointType: 'edge',
-            pointJson: ''
-          })
-          obj.input.push({
-            frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
-            portId: inputRes.source.port,
-            pointType: 'edge',
-            pointJson: ''
-          })
-        } else if (inputRes) {
-          const outputId = inputRes.target.cell
-          const outputData = cells.find(item => item.id === outputId)
-          obj.output.push({
-            frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
-            portId: inputRes.target.port,
-            pointType: 'edge',
-            pointJson: ''
-
-          })
-        } else if (outputRes) {
-          const inputId = outputRes.source.cell
-          const inputData = cells.find(item => item.id === inputId)
-          obj.input.push({
-            frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
-            portId: outputRes.source.port,
-            pointType: 'edge',
-            pointJson: ''
-          })
-        }
-      }
-      return obj
-    },
-    toolBarSave() {
-      this.saveFn()
     },
     // 保存模板文件
     async saveFn() { // 0 草稿
-      const data = this.graph.toJSON()
+      const data = window.graph.toJSON()
       const { cells } = data
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
@@ -940,7 +427,7 @@ export default {
         this.startData = cells.filter(item => item.componentCode === 'start')[0]
         this.graphData.cells = []
         this.graphData.cells.push(this.startData)
-        this.graph.fromJSON(this.graphData)
+        window.graph.fromJSON(this.graphData)
         const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
         this.saveParams.param.modelComponents = []
         this.saveParams.param.modelComponents.push(startParams)
@@ -965,11 +452,18 @@ export default {
       this.isClear = false
       this.isDraft = this.isEdit ? 1 : 0
     },
+    handleSelectComponents(data) {
+      this.selectComponentList = data
+    },
+    handleNodeChange(data) {
+      this.nodeData = data
+      this.showDataConfig = true
+    },
     handleChange(data) {
-      const { cells } = this.graph.toJSON()
+      const { cells } = window.graph.toJSON()
       const posIndex = cells.findIndex(item => item.componentCode === data.componentCode)
       cells[posIndex].data = data
-      this.graph.fromJSON(cells)
+      window.graph.fromJSON(cells)
       this.saveFn()
     }
   }

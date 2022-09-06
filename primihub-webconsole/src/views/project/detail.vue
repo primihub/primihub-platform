@@ -487,7 +487,7 @@ section{
   justify-content: space-between;
 }
 ::v-deep .el-descriptions-item__container{
-  margin: 5px;
+  margin: 5px 10px 0 0;
 }
 ::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
   padding-bottom: 0;

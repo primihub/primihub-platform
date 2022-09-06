@@ -1,19 +1,19 @@
 <template>
-  <div class="operating">
+  <div class="operating" :class="[style]">
     <el-tooltip v-if="options.buttons.includes('run')" class="item" effect="light" content="运行" placement="bottom">
       <i class="el-icon-video-play" @click="runFn" />
     </el-tooltip>
     <el-tooltip v-if="options.buttons.includes('save')" class="item" effect="light" content="保存" placement="bottom">
       <svg-icon icon-class="save" @click="saveFn" />
     </el-tooltip>
+    <el-tooltip v-if="options.buttons.includes('reset')" class="item" effect="light" content="重置" placement="bottom">
+      <i class="el-icon-full-screen" @click="resetFn" />
+    </el-tooltip>
     <el-tooltip v-if="options.buttons.includes('zoomIn')" class="item" effect="light" content="放大" placement="bottom">
       <i class="el-icon-zoom-in" @click="zoomInFn" />
     </el-tooltip>
     <el-tooltip v-if="options.buttons.includes('zoomOut')" class="item" effect="light" content="缩小" placement="bottom">
-      <i class="el-icon-zoom-out" :class="{opacity: !canZoomOut}" @click="zoomOutFn" />
-    </el-tooltip>
-    <el-tooltip v-if="options.buttons.includes('reset')" class="item" effect="light" content="重置" placement="bottom">
-      <i class="el-icon-full-screen" @click="resetFn" />
+      <i class="el-icon-zoom-out" @click="zoomOutFn" />
     </el-tooltip>
     <el-tooltip v-if="options.buttons.includes('clear')" class="item" effect="light" content="清空" placement="bottom">
       <svg-icon icon-class="clear" @click="clearFn" />
@@ -29,8 +29,9 @@ export default {
       type: Object,
       default: () => {
         return {
-          show: true,
-          buttons: ['run', 'save', 'zoomIn', 'zoomOut', 'reset', 'clear']
+          position: 'center', // 显示位置,默认center 'center'/'right'/'left
+          background: true, // 是否有背景色
+          buttons: ['run', 'save', 'zoomIn', 'zoomOut', 'reset', 'clear'] // 按钮列表
         }
       }
     }
@@ -40,6 +41,17 @@ export default {
       canUndo: '',
       canRedo: '',
       canZoomOut: true
+    }
+  },
+  computed: {
+    style() {
+      console.log('options', this.options)
+      return {
+        'hasBackgroundColor': this.options.background,
+        'left': this.options.position === 'left',
+        'right': this.options.position === 'right',
+        'center': this.options.position === 'center' // default
+      }
     }
   },
   methods: {
@@ -78,34 +90,50 @@ export default {
 
 <style lang="scss" scoped>
 .operating {
-  // width: 100%;
-  // height: 35px;
   display: flex;
   align-items: center;
   position: absolute;
   justify-content: center;
-  top: 10px;
-  left: 50%;
-  transform: translate3d(-50%,0px,0);
   z-index: 999;
-  // background-color: #f7f9fb;
-  background-color: #fff;
-  // border-bottom: 1px solid rgba(0,0,0,.08);
-  box-shadow: 1px 1px 4px rgba(0,0,0,.08);
   padding: 10px 20px;
+  &.left{
+    left: 0;
+    top: 0;
+  }
+  &.right{
+    right: 0px;
+    top: 0;
+  }
+  &.center{
+    top: 10px;
+    left: 50%;
+    transform: translate3d(-50%,0px,0);
+  }
   .el-tooltip {
-    font-size: 22px;
-    height: 22px;
     margin: 0 10px;
-    color: #515a6e;
     display: inline-block;
     vertical-align: middle;
-    &.opacity {
-      opacity: .5;
-    }
-  }
-  .el-tooltip{
+    text-align: center;
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 18px;
+    color: #fff;
+    background-color: rgba(0,0,0,.5);
+    border-radius: 50%;
     cursor: pointer;
+  }
+  &.hasBackgroundColor{
+    background-color: #fff;
+    box-shadow: 1px 1px 4px rgba(0,0,0,.08);
+    .el-tooltip{
+      font-size: 22px;
+      height: 22px;
+      line-height: 22px;
+      color: #515a6e;
+      background: none;
+      border-radius: 0;
+    }
   }
 }
 </style>

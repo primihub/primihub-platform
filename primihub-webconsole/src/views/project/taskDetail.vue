@@ -31,15 +31,17 @@
           {{ task.modelDesc }}
         </el-descriptions-item>
       </el-descriptions>
-      <div v-if="task.taskState === 1" class="buttons">
-        <el-button v-if="hasModelDownloadPermission" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
+      <div class="buttons">
+        <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
+        <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
         <el-button v-if="hasDeleteModelTaskPermission" :disabled="project.status === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
       </div>
     </section>
     <section>
-      <el-tabs v-model="tabName">
-        <el-tab-pane label="所用数据" name="resource">
+      <el-tabs v-model="tabName" @tab-click="handleTabClick">
+        <el-tab-pane label="所用数据" name="1">
           <el-table
+            v-if="tabName === '1'"
             :data="modelResources"
             border
           >
@@ -82,8 +84,13 @@
             </el-table-column>
           </el-table>
         </el-tab-pane>
-        <el-tab-pane v-if="task.taskState === 1" label="任务模型" name="model">
-          <TaskModel :state="task.taskState" :project-status="project.status" />
+        <el-tab-pane v-if="task.taskState === 1 || task.taskState === 5" label="任务模型" name="2">
+          <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
+        </el-tab-pane>
+        <el-tab-pane label="任务预览" name="3">
+          <template v-if="tabName === '3' && modelId">
+            <TaskView :model-id="modelId" :model-component="modelComponent" :state="task.taskState" class="panel" :restart-run="restartRun" @success="handleTaskComplete" />
+          </template>
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -91,30 +98,19 @@
 </template>
 
 <script>
+import { getToken } from '@/utils/auth'
 import { getModelDetail } from '@/api/model'
 import { deleteTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
-import { getToken } from '@/utils/auth'
+import TaskView from '@/components/TaskView'
 
 export default {
   name: 'TaskDetail',
   components: {
-    TaskModel
+    TaskModel,
+    TaskView
   },
   filters: {
-    quotaTypeFilter(type) {
-      const typeMap = {
-        1: '训练样本集',
-        2: '测试样本集'
-      }
-      return typeMap[type]
-    },
-    timeFilter(time) {
-      const hour = parseInt(time / 3600) < 10 ? '0' + parseInt(time / 3600) : parseInt(time / 3600)
-      const min = parseInt(time % 3600 / 60) < 10 ? '0' + parseInt(time % 3600 / 60) : parseInt(time % 3600 / 60)
-      const sec = parseInt(time % 3600 % 60) < 10 ? '0' + parseInt(time % 3600 % 60) : parseInt(time % 3600 % 60)
-      return hour + ':' + min + ':' + sec
-    },
     taskStatusFilter(status) {
       // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
       status = status || 0
@@ -132,7 +128,7 @@ export default {
   data() {
     return {
       taskId: null,
-      tabName: 'resource',
+      tabName: '',
       listLoading: false,
       model: {},
       modelQuotas: [],
@@ -142,7 +138,8 @@ export default {
       anotherQuotas: [],
       taskState: null,
       task: {},
-      project: {}
+      project: {},
+      restartRun: false
     }
   },
   computed: {
@@ -154,29 +151,41 @@ export default {
     },
     hasDeleteModelTaskPermission() {
       return this.$store.getters.buttonPermissionList.includes('deleteModelTask')
+    },
+    hasModelRunPermission() {
+      return this.$store.getters.buttonPermissionList.includes('ModelRun')
     }
   },
-  created() {
+  async created() {
     this.taskId = this.$route.params.id
-    this.fetchData()
+    const routerFrom = this.$route.query.from
+    this.tabName = routerFrom === '0' ? '3' : '1'
+    await this.fetchData()
   },
   methods: {
-    fetchData() {
+    async handleTaskComplete() {
+      await this.fetchData()
+    },
+    handleTabClick(tab, event) {
+      this.tabName = tab.name
+    },
+    async fetchData() {
       this.listLoading = true
       this.taskId = this.$route.params.taskId
-      getModelDetail({ taskId: this.taskId }).then((response) => {
+      const response = await getModelDetail({ taskId: this.taskId })
+      if (response.code === 0) {
         this.listLoading = false
-        console.log('response.data', response.result)
         const { task, model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, project } = response.result
         this.task = task
         this.project = project
         this.model = model
+        this.modelId = model.modelId ? model.modelId : this.$route.query.modelId
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
         this.modelComponent = modelComponent
         this.taskState = taskState
-      })
+      }
     },
     statusStyle(status) {
       return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
@@ -225,6 +234,11 @@ export default {
         name: 'ProjectDetail',
         params: { id: this.project.id }
       })
+    },
+    restartTaskModel() {
+      console.log('重启')
+      this.tabName = '3'
+      this.restartRun = true
     }
   }
 }
@@ -247,6 +261,16 @@ export default {
   padding: 8px;
   font-size: 14px;
 }
+::v-deep .el-tabs__nav{
+  transform: none;
+}
+::v-deep .el-descriptions-item__container{
+  margin: 5px 10px 0px 0;
+}
+.panel{
+  display: flex;
+}
+
 .container {
   &.disabled{
     filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
@@ -308,4 +332,5 @@ export default {
   display: flex;
   justify-content: flex-end;
 }
+
 </style>
