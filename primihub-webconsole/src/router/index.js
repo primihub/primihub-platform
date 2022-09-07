@@ -83,7 +83,7 @@ export const asyncRoutes = [
         path: 'detail/:id/createTask',
         name: 'ModelCreate',
         meta: {
-          title: '新建任务',
+          title: '创建任务',
           activeMenu: '/project/list',
           parent: { name: 'ProjectDetail' }
         },

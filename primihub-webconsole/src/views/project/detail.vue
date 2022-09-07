@@ -107,6 +107,7 @@ export default {
       isShowAuditForm: false,
       projectName: '',
       projectId: '',
+      id: '',
       projectAuditStatus: '',
       projectDesc: '',
       userName: '',
@@ -366,12 +367,13 @@ export default {
     },
     fetchData() {
       this.listLoading = true
-      this.projectId = this.$route.params.id || this.list.id
-      getProjectDetail({ id: this.projectId }).then(res => {
+      this.id = this.$route.params.id || this.list.id
+      getProjectDetail({ id: this.id }).then(res => {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status } = this.list
+          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status, projectId } = this.list
+          this.projectId = projectId
           this.serverAddress = serverAddress
           this.creator = creator
           this.projectName = projectName
@@ -485,11 +487,7 @@ section{
   justify-content: space-between;
 }
 ::v-deep .el-descriptions-item__container{
-  display: block;
-  margin: 5px 0;
-  strong{
-    margin-left: 5px;
-  }
+  margin: 5px 10px 0 0;
 }
 ::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
   padding-bottom: 0;

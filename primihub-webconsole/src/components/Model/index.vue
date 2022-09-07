@@ -9,10 +9,11 @@
         <!-- 解决加载数据时先显示no data -->
         <el-table-column
           label="任务ID"
+          min-width="100"
         >
           <template slot-scope="{row}">
             <template v-if="hasModelViewPermission">
-              <el-button :disabled="projectStatus === 2" type="text" @click="toModelDetail(row.latestTaskId)">{{ row.latestTaskId }}</el-button>
+              <el-button :disabled="projectStatus === 2" type="text" size="mini" @click="toModelDetail(row.latestTaskId)">{{ row.latestTaskIdName }}</el-button>
             </template>
             <template v-else>
               <span>{{ row.latestTaskId }}</span>
@@ -61,7 +62,6 @@
             <i :class="statusStyle(row.latestTaskStatus)" />
             {{ row.latestTaskStatus | taskStatusFilter }}
             <span v-if="row.latestTaskStatus === 3" class="error-tips">{{ row.taskErrorMsg }}</span>
-            <span v-if="row.latestTaskStatus === 2"> <i class="el-icon-loading" /></span>
           </template>
         </el-table-column>
         <!-- if not have permissions, hide the column -->
@@ -76,7 +76,7 @@
               <el-button v-if="hasCopyModelTaskPermission && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button>
               <el-button v-if="hasModelRunPermission && row.latestTaskStatus === 3 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-button>
               <el-button v-if="hasModelDownloadPermission && row.latestTaskStatus === 1 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click="download(row.latestTaskId)">下载结果</el-button>
-              <el-button v-if="hasDeleteModelTaskPermission && isCreator" type="text" size="mini" :disabled="row.latestTaskStatus === 2 || projectStatus === 2" @click="deleteModel(row.modelId)">删除</el-button>
+              <el-button v-if="hasDeleteModelTaskPermission && isCreator" type="text" size="mini" :disabled="row.latestTaskStatus === 2 || projectStatus === 2" @click="deleteTask(row.latestTaskId)">删除</el-button>
             </div>
           </template>
         </el-table-column>
@@ -87,7 +87,8 @@
 </template>
 
 <script>
-import { getModelList, runTaskModel, getTaskModelComponent, restartTaskModel, deleteModel } from '@/api/model'
+import { getModelList, runTaskModel, getTaskModelComponent, restartTaskModel } from '@/api/model'
+import { deleteTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import { getToken } from '@/utils/auth'
 
@@ -117,12 +118,6 @@ export default {
         3: 'PIR'
       }
       return statusMap[status]
-    },
-    timeFilter(time) {
-      const hour = parseInt(time / 3600) < 10 ? '0' + parseInt(time / 3600) : parseInt(time / 3600)
-      const min = parseInt(time % 3600 / 60) < 10 ? '0' + parseInt(time % 3600 / 60) : parseInt(time % 3600 / 60)
-      const sec = parseInt(time % 3600 % 60) < 10 ? '0' + parseInt(time % 3600 % 60) : parseInt(time % 3600 % 60)
-      return hour + ':' + min + ':' + sec
     }
   },
   props: {
@@ -223,17 +218,17 @@ export default {
         console.log(err)
       })
     },
-    deleteModel(modelId) {
+    deleteTask(taskId) {
       this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         this.listLoading = true
-        deleteModel({ modelId }).then(res => {
+        deleteTask(taskId).then(res => {
           if (res.code === 0) {
             // last page && all deleted, to the first page
-            this.modelList.splice(this.modelList.findIndex(item => item.modelId === modelId), 1)
+            this.modelList.splice(this.modelList.findIndex(item => item.taskId === taskId), 1)
             if (this.modelList.length === 0 && (this.params.pageNo === this.pageCount)) {
               this.params.pageNo = 1
             }
@@ -290,10 +285,12 @@ export default {
         if (res.length === 0) {
           clearInterval(this.timer)
         }
+      }).catch(() => {
+        clearInterval(this.taskTimer)
       })
     },
     statusStyle(status) {
-      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
+      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
     },
     handlePagination(data) {
       this.params.pageNo = data.page
@@ -359,6 +356,11 @@ export default {
 ::v-deep .el-form--inline .el-form-item {
   margin: 5px 10px!important;
 }
+::v-deep .el-button {
+    white-space: normal;
+    text-align: left;
+    line-height: 1.5;
+}
 .form-wrap{
   padding: 20px 0;
 }
@@ -373,7 +375,7 @@ export default {
   color: #67C23A;
 }
 .status-processing{
-  background-color: #409EFF;
+  color: #909399;
 }
 .status-error{
   color: #F56C6C;
