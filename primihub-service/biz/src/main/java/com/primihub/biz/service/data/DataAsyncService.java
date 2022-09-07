@@ -10,6 +10,7 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
@@ -117,7 +118,7 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         // 重新组装json
         req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
-        req.getDataModel().setIsDraft(1);
+        req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
         req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.updateDataTask(req.getDataTask());
         Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
