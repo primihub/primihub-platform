@@ -5,6 +5,9 @@
         <el-descriptions-item label="任务ID">
           {{ task.taskIdName }}
         </el-descriptions-item>
+        <el-descriptions-item label="任务名称">
+          {{ task.taskName }}
+        </el-descriptions-item>
         <el-descriptions-item label="任务类型">
           模型
         </el-descriptions-item>

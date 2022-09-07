@@ -538,7 +538,9 @@ export default {
       const data = this.graph.toJSON()
       const { cells } = data
       const startCom = cells.filter(item => item.componentCode === 'start')[0]
-      const modelName = startCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
+      const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
+      const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
+      const modelName = modelSelectCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
       const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
       const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
@@ -560,6 +562,12 @@ export default {
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
+        })
+        this.modelRunValidated = false
+      } else if (taskName === '') {
+        this.$message({
+          message: `运行失败：请输入任务名称`,
+          type: 'error'
         })
         this.modelRunValidated = false
       } else if (modelName === '') {

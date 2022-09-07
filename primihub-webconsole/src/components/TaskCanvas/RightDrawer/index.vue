@@ -100,6 +100,14 @@ export default {
         callback()
       }
     }
+    const taskNameValidate = (rule, value, callback) => {
+      console.log(value)
+      if (value === '') {
+        callback(new Error('请输入任务名称'))
+      } else {
+        callback()
+      }
+    }
     return {
       form: {
         dynamicError: {
@@ -122,6 +130,9 @@ export default {
       rules: {
         modelName: [
           { required: true, trigger: 'blur', validator: modelNameValidate }
+        ],
+        taskName: [
+          { required: true, trigger: 'blur', validator: taskNameValidate }
         ]
       }
     }
