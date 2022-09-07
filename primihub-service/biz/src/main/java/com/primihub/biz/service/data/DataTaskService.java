@@ -10,6 +10,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
+import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
@@ -390,7 +391,7 @@ public class DataTaskService {
     public void deleteModel(Long taskId){
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask!=null){
-            dataModelPrRepository.deleteModelByModelId(modelTask.getModelId(), 1);
+            dataModelPrRepository.deleteModelByModelId(modelTask.getModelId(), ModelStateEnum.SAVE.getStateType());
 //            DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
 //            if (dataModel!=null){
 //                dataModel.setIsDel(1);

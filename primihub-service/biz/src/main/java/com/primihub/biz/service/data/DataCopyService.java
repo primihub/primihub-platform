@@ -72,12 +72,6 @@ public class DataCopyService implements ApplicationContextAware {
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null||sysLocalOrganInfo.getOrganId().trim().equals(""))
                 return;
-//            try {
-//                sysLocalOrganInfo = sysFusionService.getSysLocalOrganInfo();
-//            } catch (NacosException e) {
-//                log.info("nacos-get",e);
-//                return ;
-//            }
 
             while(startOffset<endOffset) {
                 log.info(startOffset+"-"+endOffset);
