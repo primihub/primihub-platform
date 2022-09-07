@@ -34,7 +34,7 @@
       <div class="buttons">
         <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
         <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
-        <el-button v-if="hasDeleteModelTaskPermission" :disabled="project.status === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
+        <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
       </div>
     </section>
     <section>
@@ -88,9 +88,9 @@
           <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
         <el-tab-pane label="任务预览" name="3">
-          <template v-if="tabName === '3' && modelId">
-            <TaskView :model-id="modelId" :model-component="modelComponent" :state="task.taskState" class="panel" :restart-run="restartRun" @success="handleTaskComplete" />
-          </template>
+          <div v-if="tabName === '3' && modelId" class="canvas-panel">
+            <TaskCanvas :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @success="handleTaskComplete" />
+          </div>
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -102,13 +102,13 @@ import { getToken } from '@/utils/auth'
 import { getModelDetail } from '@/api/model'
 import { deleteTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
-import TaskView from '@/components/TaskView'
+import TaskCanvas from '@/components/TaskCanvas'
 
 export default {
   name: 'TaskDetail',
   components: {
     TaskModel,
-    TaskView
+    TaskCanvas
   },
   filters: {
     taskStatusFilter(status) {
@@ -139,7 +139,21 @@ export default {
       taskState: null,
       task: {},
       project: {},
-      restartRun: false
+      restartRun: false,
+      taskOptions: {
+        showTime: true,
+        showMinimap: false,
+        isEditable: false,
+        isRun: true,
+        showDraft: false,
+        showComponentsDetails: true,
+        center: true,
+        toolbarOptions: {
+          background: false,
+          position: 'right',
+          buttons: ['zoomIn', 'zoomOut', 'reset']
+        }
+      }
     }
   },
   computed: {
@@ -270,7 +284,13 @@ export default {
 .panel{
   display: flex;
 }
-
+.canvas-panel{
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  height: 100%;
+  position: relative;
+}
 .container {
   &.disabled{
     filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);

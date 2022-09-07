@@ -1,16 +1,16 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isClickable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
           <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
-          <el-button v-if="options.isClickable" type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
+          <el-button v-if="options.isEditable" type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
           <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
         </el-form-item>
         <el-form-item>
           <template v-if="providerOrganOptions.length>0">
             <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
-            <div v-if="options.isClickable" class="organ-select">
+            <div v-if="options.isEditable" class="organ-select">
               <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
                 <el-option
                   v-for="(v,index) in providerOrganOptions"
