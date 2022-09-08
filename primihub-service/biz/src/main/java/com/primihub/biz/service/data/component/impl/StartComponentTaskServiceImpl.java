@@ -28,11 +28,6 @@ public class StartComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
-        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
-    }
-
-    @Override
-    public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         Map<String, String> componentVals = getComponentVals(req.getComponentValues());
         DataTask dataTask = new DataTask();
         if (componentVals.containsKey("taskName")){
@@ -42,6 +37,11 @@ public class StartComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             dataTask.setTaskDesc(componentVals.get("taskDesc"));
         }
         taskReq.setDataTask(dataTask);
+        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
+    }
+
+    @Override
+    public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         return BaseResultEntity.success();
     }
 }
