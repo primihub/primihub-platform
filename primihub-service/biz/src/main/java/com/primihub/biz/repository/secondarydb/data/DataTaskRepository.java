@@ -12,5 +12,7 @@ import java.util.Set;
 public interface DataTaskRepository {
     DataTask selectDataTaskByTaskId(@Param("taskId") Long taskId);
 
+    DataTask selectDataTaskByTaskIdName(@Param("taskIdName") String taskIdName);
+
     List<DataTask> selectDataTaskByTaskIds(@Param("taskIds") Set<Long> taskIds);
 }

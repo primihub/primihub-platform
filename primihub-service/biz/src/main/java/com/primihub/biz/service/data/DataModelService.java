@@ -480,7 +480,15 @@ public class DataModelService {
             }
         }else {
             vo.getDataTask().setIsCooperation(1);
-            dataTaskPrRepository.saveDataTask(vo.getDataTask());
+            DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(vo.getDataTask().getTaskIdName());
+            if (dataTask==null){
+                dataTaskPrRepository.saveDataTask(vo.getDataTask());
+            }else {
+                vo.getDataTask().setTaskId(dataTask.getTaskId());
+                dataTaskPrRepository.updateDataTask(vo.getDataTask());
+                dataModelPrRepository.deleteDataModelTask(dataTask.getTaskId());
+                dataModelPrRepository.deleteDataModelResourceByTaskId(dataTask.getTaskId());
+            }
             vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
             vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
             dataModelPrRepository.saveDataModelTask(vo.getDataModelTask());
@@ -489,6 +497,7 @@ public class DataModelService {
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
             dataModelPrRepository.saveDataModelResource(vo.getDmrList());
+
         }
         return BaseResultEntity.success();
     }
