@@ -1,9 +1,13 @@
 <template>
-  <div class="canvas-container">
-    <!--工具栏-->
-    <ToolBar :options="options.toolbarOptions" @save="toolBarSave" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" @reset="resetFn" />
-    <div id="flowContainer" ref="containerRef" class="container" />
-    <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
+  <div class="canvas">
+    <div class="canvas-container">
+      <!--工具栏-->
+      <ToolBar :options="options.toolbarOptions" @save="toolBarSave" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" @reset="resetFn" />
+      <div id="flowContainer" ref="containerRef" class="container" />
+      <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
+    </div>
+    <!--右侧工具栏-->
+    <right-drawer v-if="showDataConfig" ref="drawerRef" :node-data="nodeData" :options="drawerOptions" @change="handleChange" />
   </div>
 </template>
 
@@ -13,10 +17,10 @@ import '@antv/x6-vue-shape'
 import DagNodeComponent from './nodes/DagNode.vue'
 import StartNodeComponent from './nodes/StartNode.vue'
 import ToolBar from './ToolBar'
+import RightDrawer from './RightDrawer'
 
 import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan, restartTaskModel } from '@/api/model'
 
-window.Graph = null
 const lineAttr = { // 线样式
   'line': {
     'stroke': '#A2B1C3',
@@ -75,7 +79,8 @@ const ports = { // 圆点样式
 export default {
   name: 'TaskCanvas',
   components: {
-    ToolBar
+    ToolBar,
+    RightDrawer
   },
   props: {
     modelId: {
@@ -110,10 +115,6 @@ export default {
       type: Array,
       default: () => []
     },
-    save: {
-      type: Boolean,
-      default: false
-    },
     restartRun: {
       type: Boolean,
       default: false
@@ -121,10 +122,12 @@ export default {
   },
   data() {
     return {
+      showDataConfig: false,
       container: null,
       width: 0,
       projectId: '',
       graph: null,
+      nodeData: null,
       saveParams: {}, // 保存接口需要参数
       modelComponents: [], // 草稿详情
       currentTaskId: 0,
@@ -140,14 +143,19 @@ export default {
       modelRunValidated: true,
       showDraft: false,
       taskTimer: null,
-      taskId: ''
+      taskId: '',
+      isDraft: 0,
+      isLoadHistory: true, // 是否已加载详情
+      drawerOptions: {
+        showSaveButton: this.options.showSaveButton,
+        isEditable: this.options.isEditable
+      }
     }
   },
   computed: {
     isCopy() {
       return this.$route.query.isCopy
     }
-
   },
   watch: {
     restartRun(newVal) {
@@ -160,12 +168,15 @@ export default {
   async mounted() {
     this.taskId = this.$route.params.taskId
     await this.init()
-    console.log('restartRun>>>>>>>>', this.restartRun)
+    await this.getModelComponentDetail()
+
+    // 画布可编辑，初始操作按钮事件
     if (this.options.isEditable) {
       this.initToolBarEvent()
     }
-    await this.getModelComponentDetail()
-    if (this.options.isRun && this.state === 2) {
+
+    // 任务运行中，轮询任务状态
+    if (this.state === 2) {
       this.taskTimer = window.setInterval(() => {
         setTimeout(this.getTaskModelComponent(), 0)
       }, 1500)
@@ -175,7 +186,7 @@ export default {
     clearTimeout(this.taskTimer)
     this.selectComponentList = []
     this.destroyed = true
-    // this.graph.dispose()
+    this.graph.dispose()
     console.log('destroyed model')
   },
   methods: {
@@ -209,9 +220,15 @@ export default {
         })
         return
       }
-      this.isClear = true
-      // this.isDraft = this.isEdit ? 1 : 0
+      this.startData = cells.filter(item => item.componentCode === 'start')[0]
       this.nodeData = this.startNode
+      this.graphData.cells = []
+      this.graphData.cells.push(this.startData)
+      this.graph.fromJSON(this.graphData)
+      this.selectComponentList = []
+      this.$emit('selectComponents', this.selectComponentList)
+      this.isClear = true
+
       this.saveFn()
     },
     // 重置画布
@@ -219,7 +236,14 @@ export default {
       this.graph.zoomTo(1)
     },
     toolBarSave() {
-      this.isDraft = this.isCopy ? 0 : 1
+      // this.isDraft = this.isCopy ? 0 : 1
+      this.saveFn()
+    },
+    handleChange(data) {
+      const { cells } = this.graph.toJSON()
+      const posIndex = cells.findIndex(item => item.componentCode === data.componentCode)
+      cells[posIndex].data = data
+      this.graph.fromJSON(cells)
       this.saveFn()
     },
     async init() {
@@ -376,7 +400,7 @@ export default {
     registerStartNode() {
       this.startNode = this.components.filter(item => item.componentCode === 'start')[0]
       this.nodeData = this.startNode
-      this.$emit('change', this.nodeData)
+      this.showDataConfig = true
       Graph.registerNode(
         'start-node',
         {
@@ -421,8 +445,6 @@ export default {
       const { graph } = this
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
-        console.log('click', this.nodeData)
-        this.$emit('change', this.nodeData)
       })
       graph.on('node:change:data', ({ node }) => {
         const edges = graph.getIncomingEdges(node)
@@ -516,7 +538,9 @@ export default {
       const data = this.graph.toJSON()
       const { cells } = data
       const startCom = cells.filter(item => item.componentCode === 'start')[0]
-      const modelName = startCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
+      const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
+      const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
+      const modelName = modelSelectCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
       const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
       const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
@@ -538,6 +562,12 @@ export default {
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
+        })
+        this.modelRunValidated = false
+      } else if (taskName === '') {
+        this.$message({
+          message: `运行失败：请输入任务名称`,
+          type: 'error'
         })
         this.modelRunValidated = false
       } else if (modelName === '') {
@@ -595,11 +625,13 @@ export default {
     restartTaskModel() {
       restartTaskModel({ taskId: this.taskId }).then(res => {
         if (res.code === 0) {
+          this.modelStartRun = true
           this.taskTimer = window.setInterval(() => {
             setTimeout(this.getTaskModelComponent(), 0)
           }, 1500)
         }
       }).catch(err => {
+        this.modelStartRun = false
         console.log(err)
       })
     },
@@ -621,13 +653,12 @@ export default {
           const taskResult = []
           result && result.forEach((item) => {
             const { componentCode, componentState, timeConsuming, componentName } = item
-            console.log('componentState', componentState)
             const nodes = this.graph.getNodes()
             const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
             node.setData({
               label: componentName,
               componentCode,
-              componentState,
+              componentState: 2,
               timeConsuming: timeConsuming / 1000
             })
             if (componentState === 1) {
@@ -638,6 +669,22 @@ export default {
                 componentState,
                 timeConsuming: timeConsuming / 1000
               })
+            } else if (componentState === 3) {
+              clearInterval(this.taskTimer)
+              this.$notify.closeAll()
+              node.setData({
+                label: componentName,
+                componentCode,
+                componentState,
+                timeConsuming: timeConsuming / 1000
+              })
+              this.$notify({
+                message: '运行失败',
+                type: 'error',
+                duration: 3000
+              })
+              this.modelStartRun = false
+              return
             }
           })
           if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
@@ -661,14 +708,13 @@ export default {
       })
     },
     initGraphShape() {
-      console.log('this.modelComponents', this.modelComponents)
       // 60 = start node width
       const x = this.width * 0.5 - (this.options.showTime ? 120 : 60)
       this.modelComponents && this.modelComponents.forEach(item => {
         const { frontComponentId, componentCode, coordinateX, coordinateY, width, height, componentName, shape } = item
-        const current = this.modelComponents.filter(v => v.componentCode === componentCode)[0]
-        const timeConsuming = current.timeConsuming
-        const componentState = current.componentState
+        const current = this.modelData.filter(v => v.componentCode === componentCode)[0]
+        const timeConsuming = current?.timeConsuming
+        const componentState = current?.componentState
         const { componentTypes, isMandatory } = this.components.find(item => {
           return item.componentCode === componentCode
         })
@@ -801,7 +847,6 @@ export default {
         })
         return
       }
-
       this.saveParams.param = {
         projectId: this.projectId,
         modelId: this.currentModelId,
@@ -856,14 +901,9 @@ export default {
 
       this.saveParams.param.modelPointComponents = modelPointComponents
       if (this.isClear) {
-        this.startData = cells.filter(item => item.componentCode === 'start')[0]
-        this.graphData.cells = []
-        this.graphData.cells.push(this.startData)
-        this.graph.fromJSON(this.graphData)
         const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
         this.saveParams.param.modelComponents = []
         this.saveParams.param.modelComponents.push(startParams)
-        this.selectComponentList = []
       }
 
       const res = await saveModelAndComponent(JSON.stringify(this.saveParams))
@@ -911,11 +951,13 @@ export default {
       }
       const res = await getModelComponentDetail(params)
       const modelComponents = res.result && res.result.modelComponents
-      console.log(modelComponents)
-      modelComponents && modelComponents.map(item => {
-        const current = this.modelData.filter(v => v.componentCode === item.componentCode)[0]
-        item.componentState = current.componentState
-        item.timeConsuming = current?.timeConsuming
+      // 生成模型后给对应组件设置耗时
+      modelComponents?.length > 0 && modelComponents.map(item => {
+        const current = item && this.modelData.filter(v => v.componentCode === item.componentCode)[0]
+        if (current) {
+          item.componentState = current?.componentState
+          item.timeConsuming = current?.timeConsuming
+        }
       })
       if (this.isCopy && modelComponents && modelComponents.length > 0) {
         this.setComponentsDetail(res.result)
@@ -934,8 +976,6 @@ export default {
       } else if (this.options.showComponentsDetails) {
         this.setComponentsDetail(res.result)
       }
-      console.log('showDraft', this.options.showDraft)
-      // this.setComponentsDetail(res.result)
     },
     setComponentsDetail(data) {
       const { modelComponents, modelPointComponents } = data
@@ -970,12 +1010,17 @@ export default {
 ::v-deep .x6-graph-scroller{
   overflow-x: hidden;
 }
-.canvas-container{
-  position: relative;
+.canvas{
   display: flex;
   overflow: hidden;
   height: 100%;
+  width: 100%;
+}
+.canvas-container{
+  display: flex;
+  position: relative;
   width: calc(100% - 300px);
+  height: 100%;
 }
 .container{
   flex: 1;

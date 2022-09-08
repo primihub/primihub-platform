@@ -54,10 +54,8 @@ export default {
     this.componentState = componentState
     this.timeConsuming = timeConsuming
     this.showTime = showTime
-    console.log('node', data)
     // 监听数据改变事件
     node.on('change:data', ({ current }) => {
-      // console.log(current)
       const { componentName, complete = false, isMandatory, componentState = 0, timeConsuming = 0, showTime } = current
       this.label = componentName
       this.complete = complete

@@ -21,7 +21,6 @@ export default {
     const { data } = node
     this.labelText = data.componentName
     this.showTime = data.showTime
-    console.log('startNode', data)
   }
 
 }
