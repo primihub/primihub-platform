@@ -506,6 +506,9 @@ public class DataModelService {
         Integer tolal = dataModelRepository.queryModelTaskSuccessCount(req);
         for (ModelTaskSuccessVo modelTaskSuccessVo : modelTaskSuccessVos) {
             modelTaskSuccessVo.setProviderOrgans(modelTaskSuccessVo.getProviderOrganNames().split(","));
+            if (modelTaskSuccessVo.getTaskEndTime()!=null&&modelTaskSuccessVo.getTaskEndTime()!=0){
+                modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
+            }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
     }
