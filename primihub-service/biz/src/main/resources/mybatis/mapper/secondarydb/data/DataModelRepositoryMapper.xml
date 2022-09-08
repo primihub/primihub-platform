@@ -274,5 +274,50 @@
         ) mt,data_task dt
         where mt.task_id = dt.task_id
     </select>
+    <select id="queryModelTaskSuccessList" resultType="com.primihub.biz.entity.data.vo.ModelTaskSuccessVo">
+        SELECT
+            dt.task_id taskId,
+            dt.task_id_name taskIdName,
+            dt.task_name taskName,
+            dt.task_end_time taskEndTime,
+            dm.model_id modelId,
+            dm.model_name modelName,
+            dp.id projectId,
+            dp.project_name projectName,
+            dp.created_organ_id createdOrganId,
+            dp.server_address serverAddress,
+            dp.provider_organ_names providerOrganNames,
+            (select count(id) from data_mr where task_id = dt.task_id) resourceNum
+        FROM
+            data_task dt left join data_model_task dmt on dt.task_id = dmt.task_id
+                         left join data_model dm on dmt.model_id = dm.model_id
+                         left join data_project dp on dm.project_id = dp.id
+        WHERE
+            dt.task_type = 1
+          AND dt.task_state = 1
+          AND dt.task_user_id = #{userId}
+          <include refid="modeltasksuccess"></include>
+        ORDER BY dt.task_id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="queryModelTaskSuccessCount" resultType="java.lang.Integer">
+        SELECT
+        count(dt.task_id)
+        FROM
+        data_task dt left join data_model_task dmt on dt.task_id = dmt.task_id
+        left join data_model dm on dmt.model_id = dm.model_id
+        left join data_project dp on dm.project_id = dp.id
+        WHERE
+        dt.task_type = 1
+        AND dt.task_state = 1
+        AND dt.task_user_id = #{userId}
+        <include refid="modeltasksuccess"></include>
+    </select>
+
+    <sql id="modeltasksuccess">
+        <if test="modelId!=null and modelId!=0">and dm.model_id =#{modelId}</if>
+        <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
+        <if test="successTime!=null and successTime!=0">dt.task_end_time BETWEEN #{successTime} AND (#{successTime} + 86400000)</if>
+    </sql>
 
 </mapper>

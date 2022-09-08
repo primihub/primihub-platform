@@ -3,7 +3,7 @@ package com.primihub.biz.repository.secondarydb.data;
 import com.primihub.biz.entity.data.po.DataComponent;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataModelTask;
-import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.req.ModelTaskSuccessReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.data.vo.*;
 import org.apache.ibatis.annotations.MapKey;
@@ -51,5 +51,12 @@ public interface DataModelRepository {
     Map<Long, Map<String,Object>> queryModelLatestTask(@Param("modelIds")Set<Long> modelIds);
 
     List<Map<String, Object>> queryModelTask(@Param("modelIds")Set<Long> modelIds);
+
+
+    List<ModelTaskSuccessVo> queryModelTaskSuccessList(ModelTaskSuccessReq req);
+
+    Integer queryModelTaskSuccessCount(ModelTaskSuccessReq req);
+
+
 
 }

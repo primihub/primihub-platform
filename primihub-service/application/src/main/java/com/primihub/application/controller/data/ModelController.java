@@ -6,6 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.req.DataModelReq;
+import com.primihub.biz.entity.data.req.ModelTaskSuccessReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataModelService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,6 +138,14 @@ public class ModelController {
         if (modelId==null||modelId==0L)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         return dataModelService.getModelPrediction(modelId);
+    }
+
+    @RequestMapping("getModelTaskSuccessList")
+    public BaseResultEntity getModelTaskSuccessList(@RequestHeader("userId") Long userId,ModelTaskSuccessReq req){
+        if (userId==null||userId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        req.setUserId(userId);
+        return dataModelService.getModelTaskSuccessList(req);
     }
 
 

@@ -25,6 +25,7 @@ import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.crypt.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -493,4 +494,34 @@ public class DataModelService {
     }
 
 
+    public BaseResultEntity getModelTaskSuccessList(ModelTaskSuccessReq req) {
+        if (StringUtils.isNotBlank(req.getSuccessDate())){
+            req.setSuccessTime(DateUtil.parseDate(req.getSuccessDate(),DateUtil.DateStyle.DATE_FORMAT_NORMAL.getFormat()).getTime());
+        }
+        List<ModelTaskSuccessVo> modelTaskSuccessVos = dataModelRepository.queryModelTaskSuccessList(req);
+        if (modelTaskSuccessVos.size()==0){
+            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        }
+        Map<String, Map> organListMap = new HashMap<>();
+        try {
+            Map<String, List<ModelTaskSuccessVo>> organMap = modelTaskSuccessVos.stream().collect(Collectors.groupingBy(ModelTaskSuccessVo::getServerAddress));
+            Iterator<Map.Entry<String, List<ModelTaskSuccessVo>>> iterator = organMap.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, List<ModelTaskSuccessVo>> next = iterator.next();
+                List<String> organIds = next.getValue().stream().distinct().map(ModelTaskSuccessVo::getCreatedOrganId).collect(Collectors.toList());
+                organListMap.putAll(dataProjectService.getOrganListMap(organIds, next.getKey()));
+            }
+        }catch (Exception e){
+            log.info(e.getMessage());
+        }
+        Integer tolal = dataModelRepository.queryModelTaskSuccessCount(req);
+        for (ModelTaskSuccessVo modelTaskSuccessVo : modelTaskSuccessVos) {
+            modelTaskSuccessVo.setProviderOrgans(modelTaskSuccessVo.getProviderOrganNames().split(","));
+            Map organ = organListMap.get(modelTaskSuccessVo.getCreatedOrganId());
+            if (organ!=null){
+                modelTaskSuccessVo.setCreatedOrgan(organ.get("globalName")!=null?organ.get("globalName").toString():"");
+            }
+        }
+        return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
+    }
 }
