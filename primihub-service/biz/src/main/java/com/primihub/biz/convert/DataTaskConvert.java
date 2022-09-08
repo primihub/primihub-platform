@@ -21,6 +21,7 @@ public class DataTaskConvert {
         if (dataTask.getTaskEndTime()!=null)
             dataModelTaskListVo.setTaskEndDate(new Date(dataTask.getTaskEndTime()));
         dataModelTaskListVo.setTaskErrorMsg(dataTask.getTaskErrorMsg());
+        dataModelTaskListVo.setIsCooperation(dataTask.getIsCooperation());
         return dataModelTaskListVo;
 
     }

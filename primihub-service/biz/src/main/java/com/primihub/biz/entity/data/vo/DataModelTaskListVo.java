@@ -68,4 +68,9 @@ public class DataModelTaskListVo {
         }
         return 0L;
     }
+    /**
+     * 是否协作任务 默认0
+     */
+    private Integer isCooperation;
+
 }
