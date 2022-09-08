@@ -86,7 +86,7 @@ public class DataModelService {
                         modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
                         modelResourceVo.setServerAddress(dataProject.getServerAddress());
                         if (map.get("organId")!=null){
-                            modelResourceVo.setParticipationIdentity(organConfiguration.getSysLocalOrganId().equals(map.get("organId").toString())?1:2);
+                            modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
                         }
                     }
                 }
