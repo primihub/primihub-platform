@@ -502,7 +502,6 @@ public class DataModelService {
         if (modelTaskSuccessVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
-        Map<String, Map> organListMap = new HashMap<>();
         Integer tolal = dataModelRepository.queryModelTaskSuccessCount(req);
         for (ModelTaskSuccessVo modelTaskSuccessVo : modelTaskSuccessVos) {
             modelTaskSuccessVo.setProviderOrgans(modelTaskSuccessVo.getProviderOrganNames().split(","));
