@@ -18,8 +18,6 @@ public class ModelTaskSuccessVo {
     private Long projectId;
     private String modelName;
     private String projectName;
-    @JsonIgnore
-    private String createdOrganId;
     private String createdOrgan;
     @JsonIgnore
     private String serverAddress;

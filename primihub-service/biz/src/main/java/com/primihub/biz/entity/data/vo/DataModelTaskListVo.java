@@ -24,6 +24,11 @@ public class DataModelTaskListVo {
     private String taskName;
 
     /**
+     * 任务描述
+     */
+    private String taskDesc;
+
+    /**
      * 任务状态(0未开始 1成功 2运行中 3失败 4取消)
      */
     private Integer taskState;

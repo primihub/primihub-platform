@@ -381,6 +381,7 @@ CREATE TABLE `data_task` (
                              `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
                              `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id展示名',
                              `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+                             `task_desc` varchar(255) DEFAULT NULL COMMENT '任务描述',
                              `task_state` int(11) DEFAULT '0' COMMENT '任务状态(0未开始 1成功 2运行中 3失败 4取消)',
                              `task_type` int(11) DEFAULT NULL COMMENT '任务类型 1、模型 2、PSI 3、PIR',
                              `task_result_path` varchar(255) DEFAULT NULL COMMENT '文件返回路径',
