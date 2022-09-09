@@ -448,7 +448,6 @@ h2{
   margin-block-end: 0.5em;
 }
 section{
-  border-radius: $sectionBorderRadius;
   background-color: #ffffff;
   padding: 30px;
   margin-bottom: 30px;
