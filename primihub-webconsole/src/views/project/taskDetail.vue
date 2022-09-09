@@ -12,7 +12,8 @@
           模型
         </el-descriptions-item>
         <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
-          <el-link type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          <el-link v-if="task.isCooperation === 0" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          <span v-else>{{ model.modelId }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="开始时间">
           {{ task.taskStartDate?task.taskStartDate: '未开始' }}

@@ -604,7 +604,7 @@ export default {
       await this.saveFn()
       this.checkRunValidated()
       if (!this.modelRunValidated) {
-        // this.isDraft = 0
+        this.isDraft = 0
         return
       }
       runTaskModel({ modelId: this.currentModelId }).then(res => {

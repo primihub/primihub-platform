@@ -10,12 +10,14 @@
           <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
         </template>
         <el-descriptions-item label="模型ID">{{ model.modelId }}</el-descriptions-item>
+        <template v-if="type==='model'">
+          <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
+        </template>
         <template v-if="model.yvalueColumn">
           <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>
         </template>
         <template v-if="type==='model'">
           <el-descriptions-item label="建模完成时间">{{ task.taskEndDate }}</el-descriptions-item>
-          <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
         </template>
       </el-descriptions>
       <div v-if="type === 'model' && task.taskState !== 5 && task.isCooperation === 0" class="buttons">
@@ -124,7 +126,8 @@ export default {
       lineChartData: [],
       anotherQuotas: [],
       taskState: null,
-      projectId: 0
+      projectId: 0,
+      task: {}
     }
   },
   created() {
