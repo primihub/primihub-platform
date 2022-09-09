@@ -12,7 +12,8 @@
           模型
         </el-descriptions-item>
         <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
-          {{ model.modelId }}
+          <el-link v-if="task.isCooperation === 0" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          <span v-else>{{ model.modelId }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="开始时间">
           {{ task.taskStartDate?task.taskStartDate: '未开始' }}
@@ -31,13 +32,13 @@
           </p>
         </el-descriptions-item>
         <el-descriptions-item label="任务描述">
-          {{ task.modelDesc }}
+          {{ task.taskDesc }}
         </el-descriptions-item>
       </el-descriptions>
       <div class="buttons">
         <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
         <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
-        <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
+        <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5 && task.isCooperation === 0" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
       </div>
     </section>
     <section>
@@ -90,9 +91,9 @@
         <el-tab-pane v-if="task.taskState === 1 || task.taskState === 5" label="任务模型" name="2">
           <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
-        <el-tab-pane label="任务预览" name="3">
-          <div v-if="tabName === '3' && modelId" class="canvas-panel">
-            <TaskCanvas :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @success="handleTaskComplete" />
+        <el-tab-pane v-if="task.isCooperation === 0" label="预览图" name="3">
+          <div class="canvas-panel">
+            <TaskCanvas v-if="tabName === '3' && modelId" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -180,7 +181,14 @@ export default {
     await this.fetchData()
   },
   methods: {
+    toModelDetail() {
+      this.$router.push({
+        path: `/model/detail/${this.modelId}`,
+        query: { taskId: this.task.taskId }
+      })
+    },
     async handleTaskComplete() {
+      this.restartRun = false
       await this.fetchData()
     },
     handleTabClick(tab, event) {
@@ -200,6 +208,7 @@ export default {
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
+        console.log(this.modelResources)
         this.modelComponent = modelComponent
         this.taskState = taskState
       }
@@ -255,6 +264,9 @@ export default {
     restartTaskModel() {
       console.log('重启')
       this.tabName = '3'
+      this.task.taskState = 2
+      this.task.taskStartDate = this.task.taskEndDate
+      this.task.taskEndDate = null
       this.restartRun = true
     }
   }
@@ -316,7 +328,6 @@ export default {
   }
   section {
     padding: 30px;
-    border-radius: 20px;
     background-color: #fff;
     margin-bottom: 30px;
   }

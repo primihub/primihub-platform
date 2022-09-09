@@ -1,16 +1,28 @@
 <template>
-  <div v-loading="listLoading" class="container">
+  <div v-loading="listLoading" class="container" :class="{'disabled': task.taskState === 5, 'model': type === 'model'}">
     <div class="section">
       <h3>模型信息</h3>
       <el-descriptions>
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">V-XGBoost</el-descriptions-item>
+        <template v-if="type==='model'">
+          <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
+        </template>
+        <el-descriptions-item label="模型ID">{{ model.modelId }}</el-descriptions-item>
+        <template v-if="type==='model'">
+          <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
+        </template>
         <template v-if="model.yvalueColumn">
           <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>
         </template>
-        <el-descriptions-item label="创建时间">{{ model.createDate }}</el-descriptions-item>
+        <template v-if="type==='model'">
+          <el-descriptions-item label="建模完成时间">{{ task.taskEndDate }}</el-descriptions-item>
+        </template>
       </el-descriptions>
+      <div v-if="type === 'model' && task.taskState !== 5 && task.isCooperation === 0" class="buttons">
+        <el-button type="danger" icon="el-icon-delete" @click="deleteModelTask">删除模型</el-button>
+      </div>
     </div>
 
     <div class="section">
@@ -76,7 +88,8 @@
 </template>
 
 <script>
-import { getModelDetail, getModelPrediction } from '@/api/model'
+import { getModelDetail } from '@/api/model'
+import { deleteTask } from '@/api/task'
 
 export default {
   filters: {
@@ -96,6 +109,10 @@ export default {
     projectStatus: {
       type: Number,
       default: 0
+    },
+    type: {
+      type: String,
+      default: 'task'
     }
   },
   data() {
@@ -104,46 +121,62 @@ export default {
       model: {},
       modelQuotas: [],
       modelResources: [],
-      modelId: 24,
+      modelId: 0,
       modelComponent: [],
       lineChartData: [],
       anotherQuotas: [],
-      taskState: null
+      taskState: null,
+      projectId: 0,
+      task: {}
     }
   },
   created() {
+    this.modelId = this.$route.query.modelId
+    this.taskId = this.$route.query.taskId || this.$route.params.taskId
     this.fetchData()
-    // this.getChartsData()
   },
   methods: {
-    toProjectCreatePage() {
+    toModelTaskDetail() {
       this.$router.push({
-        name: 'ProjectCreate'
+        path: `/project/detail/${this.projectId}/task/${this.taskId}`
       })
     },
-    searchProject() {
-      console.log('searchProject', this.searchName)
+    deleteModelTask() {
+      this.$confirm('此操作将永久删除该模型, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.listLoading = true
+        deleteTask(this.taskId).then(res => {
+          if (res.code === 0) {
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            this.fetchData()
+          }
+          this.listLoading = false
+        }).catch(() => {
+          this.listLoading = false
+        })
+      })
     },
     fetchData() {
       this.listLoading = true
-      this.taskId = this.$route.params.taskId
-      this.modelId = this.$route.query.modelId || 0
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, task, project } = response.result
+        this.task = task
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
         this.taskState = taskState
-      })
-    },
-    getChartsData() {
-      getModelPrediction({ modelId: this.modelId }).then(res => {
-        this.lineChartData = res.result.prediction
-        console.log(this.lineChartData)
+        this.projectId = project.projectId
       })
     }
   }
@@ -157,6 +190,10 @@ h3{
   font-size: 16px;
 }
 .container {
+  &.disabled{
+    filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
+    -webkit-filter: grayscale(100%);
+  }
   .total-time-label{
     font-size: 18px;
     margin-right: 10px;
@@ -173,14 +210,12 @@ h3{
     margin-right: 3px;
   }
   .section {
+    background-color: #fff;
     margin-bottom: 30px;
+    padding-bottom: 20px;
   }
-  .img-container{
-    display: flex;
-    img{
-      width: 500px;
-      max-width: 100%;
-    }
+  .container.model .section{
+    padding: 20px;
   }
 }
 ::v-deep .el-table th{
@@ -194,5 +229,9 @@ h3{
 }
 .quotas{
   max-width: 800px;
+}
+.buttons{
+  display: flex;
+  justify-content: flex-start;
 }
 </style>

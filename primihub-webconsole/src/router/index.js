@@ -190,6 +190,32 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/model',
+    component: Layout,
+    name: 'Model',
+    redirect: '/model/list',
+    meta: { title: '模型管理', icon: 'el-icon-files' },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'list',
+        name: 'ModelList',
+        component: () => import('@/views/model/list'),
+        meta: { title: '全部模型' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ModelDetail',
+        meta: {
+          title: '模型详情',
+          activeMenu: '/model/list'
+        },
+        hidden: true,
+        component: () => import('@/views/model/detail')
+      }
+    ]
+  },
+  {
     path: '/setting',
     component: Layout,
     name: 'Setting',

@@ -457,7 +457,6 @@ width: 1200px;
 }
 .inner-con{
   background: #fff;
-  border-radius: $sectionBorderRadius;
   padding: 30px 50px;
   margin: 20px 50px;
 }
