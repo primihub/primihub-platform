@@ -233,6 +233,7 @@ export default {
     },
     // 重置画布
     resetFn() {
+      this.graph.centerContent()
       this.graph.zoomTo(1)
     },
     toolBarSave() {

@@ -7,7 +7,7 @@
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
         <el-descriptions-item label="模型模版">V-XGBoost</el-descriptions-item>
         <template v-if="type==='model'">
-          <el-descriptions-item label="任务ID">{{ task.taskIdName }}</el-descriptions-item>
+          <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
         </template>
         <el-descriptions-item label="模型ID">{{ model.modelId }}</el-descriptions-item>
         <template v-if="model.yvalueColumn">
@@ -124,8 +124,7 @@ export default {
       lineChartData: [],
       anotherQuotas: [],
       taskState: null,
-      creator: false,
-      task: {}
+      projectId: 0
     }
   },
   created() {
@@ -134,6 +133,11 @@ export default {
     this.fetchData()
   },
   methods: {
+    toModelTaskDetail() {
+      this.$router.push({
+        path: `/project/detail/${this.projectId}/task/${this.taskId}`
+      })
+    },
     deleteModelTask() {
       this.$confirm('此操作将永久删除该模型, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -161,7 +165,7 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, task } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, task, project } = response.result
         this.task = task
         this.model = model
         this.anotherQuotas = anotherQuotas
@@ -169,7 +173,7 @@ export default {
         this.modelResources = modelResources
         this.modelComponent = modelComponent
         this.taskState = taskState
-        this.creator = response.result.project.creator
+        this.projectId = project.projectId
       })
     }
   }
