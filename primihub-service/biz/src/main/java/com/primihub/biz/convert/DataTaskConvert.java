@@ -12,6 +12,7 @@ public class DataTaskConvert {
         dataModelTaskListVo.setTaskId(dataTask.getTaskId());
         dataModelTaskListVo.setTaskIdName(dataTask.getTaskIdName());
         dataModelTaskListVo.setTaskName(dataTask.getTaskName());
+        dataModelTaskListVo.setTaskDesc(dataTask.getTaskDesc());
         dataModelTaskListVo.setTaskState(dataTask.getTaskState());
         dataModelTaskListVo.setTaskType(dataTask.getTaskType());
         dataModelTaskListVo.setTaskStartTime(dataTask.getTaskStartTime());
@@ -21,6 +22,7 @@ public class DataTaskConvert {
         if (dataTask.getTaskEndTime()!=null)
             dataModelTaskListVo.setTaskEndDate(new Date(dataTask.getTaskEndTime()));
         dataModelTaskListVo.setTaskErrorMsg(dataTask.getTaskErrorMsg());
+        dataModelTaskListVo.setIsCooperation(dataTask.getIsCooperation());
         return dataModelTaskListVo;
 
     }

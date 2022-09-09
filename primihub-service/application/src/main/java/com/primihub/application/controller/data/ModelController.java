@@ -38,7 +38,7 @@ public class ModelController {
      * @return
      */
     @GetMapping("getdatamodel")
-    public BaseResultEntity getDataProject(Long taskId){
+    public BaseResultEntity getDataModel(Long taskId){
         if (taskId==null||taskId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }

@@ -3,14 +3,15 @@
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataTaskPrRepository">
 
     <insert id="saveDataTask" parameterType="com.primihub.biz.entity.data.po.DataTask" keyProperty="taskId" useGeneratedKeys="true">
-        insert into data_task (task_id_name,task_name,task_state,task_type,task_result_path,task_result_content,task_start_time,task_end_time,task_user_id,task_error_msg,is_cooperation,is_del,create_date,update_date)
-        values (#{taskIdName},#{taskName},#{taskState},#{taskType},#{taskResultPath},#{taskResultContent},#{taskStartTime},#{taskEndTime},#{taskUserId},#{taskErrorMsg},#{isCooperation},0,now(),now())
+        insert into data_task (task_id_name,task_name,task_desc,task_state,task_type,task_result_path,task_result_content,task_start_time,task_end_time,task_user_id,task_error_msg,is_cooperation,is_del,create_date,update_date)
+        values (#{taskIdName},#{taskName},#{taskDesc},#{taskState},#{taskType},#{taskResultPath},#{taskResultContent},#{taskStartTime},#{taskEndTime},#{taskUserId},#{taskErrorMsg},#{isCooperation},0,now(),now())
     </insert>
     <update id="updateDataTask" parameterType="com.primihub.biz.entity.data.po.DataTask">
         update data_task
         <set>
             <if test="taskIdName!=null">task_id_name = #{taskIdName},</if>
             <if test="taskName!=null">task_name = #{taskName},</if>
+            <if test="taskDesc!=null">task_desc = #{taskDesc},</if>
             <if test="taskState!=null">task_state = #{taskState},</if>
             <if test="taskType!=null">task_type = #{taskType},</if>
             <if test="taskResultPath!=null">task_result_path = #{taskResultPath},</if>

@@ -284,7 +284,7 @@
             dm.model_name modelName,
             dp.id projectId,
             dp.project_name projectName,
-            dp.created_organ_id createdOrganId,
+            dp.created_organ_name createdOrgan,
             dp.server_address serverAddress,
             dp.provider_organ_names providerOrganNames,
             (select count(id) from data_mr where task_id = dt.task_id) resourceNum
@@ -317,7 +317,7 @@
     <sql id="modeltasksuccess">
         <if test="modelId!=null and modelId!=0">and dm.model_id =#{modelId}</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
-        <if test="successTime!=null and successTime!=0">dt.task_end_time BETWEEN #{successTime} AND (#{successTime} + 86400000)</if>
+        <if test="successTime!=null and successTime!=0">and dt.task_end_time BETWEEN #{successTime} AND (#{successTime} + 86400000)</if>
     </sql>
 
 </mapper>

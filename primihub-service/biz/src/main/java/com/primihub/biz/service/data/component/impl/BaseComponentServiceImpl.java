@@ -12,6 +12,7 @@ import com.primihub.biz.entity.data.vo.ModelComponent;
 import com.primihub.biz.entity.data.vo.ModelComponentType;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,7 +30,7 @@ public class BaseComponentServiceImpl {
         ModelComponent modelComponent = modelComponents.stream().filter(mc -> mc.getComponentCode().equals(req.getComponentCode())).findFirst().orElse(null);
         if (modelComponent==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"无法查找到"+req.getComponentName()+"组件信息");
-        Map<String, String> valueMap = req.getComponentValues().stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
+        Map<String, String> valueMap = getComponentVals(req.getComponentValues());
         for (ModelComponentType mct : modelComponent.getComponentTypes()) {
             if (mct.getIsRequired()!=null&&mct.getIsRequired()==1){
                 String value = valueMap.get(mct.getTypeCode());
@@ -66,5 +67,9 @@ public class BaseComponentServiceImpl {
         }
         taskReq.getDataComponents().add(DataModelConvert.dataModelReqConvertDataComponentPo(req));
         return BaseResultEntity.success(valueMap);
+    }
+
+    public Map<String,String> getComponentVals(List<DataComponentValue> componentValues){
+        return componentValues.stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
     }
 }

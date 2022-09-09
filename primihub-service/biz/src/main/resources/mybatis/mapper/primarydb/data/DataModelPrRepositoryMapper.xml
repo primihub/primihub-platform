@@ -108,5 +108,8 @@
     <delete id="deleteDataModelTask">
         delete from data_model_task where task_id = #{taskId}
     </delete>
+    <delete id="deleteDataModelResourceByTaskId">
+        delete from data_mr where task_id = #{taskId}
+    </delete>
 
 </mapper>

@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.data.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.primihub.biz.util.crypt.DateUtil;
 import lombok.Data;
@@ -13,13 +14,12 @@ public class ModelTaskSuccessVo {
     private String taskName;
     @JsonIgnore
     private Long taskEndTime;
-    private String taskEndDate;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
+    private Date taskEndDate;
     private Long modelId;
     private Long projectId;
     private String modelName;
     private String projectName;
-    @JsonIgnore
-    private String createdOrganId;
     private String createdOrgan;
     @JsonIgnore
     private String serverAddress;
@@ -27,8 +27,4 @@ public class ModelTaskSuccessVo {
     private String providerOrganNames;
     private String[] providerOrgans;
     private Integer resourceNum;
-
-    public String getTaskEndDate() {
-        return (taskEndTime!=null && taskEndTime!=0)? DateUtil.formatDate(new Date(taskEndTime),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat()) :null;
-    }
 }

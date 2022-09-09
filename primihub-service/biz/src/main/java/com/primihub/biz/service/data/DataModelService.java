@@ -86,7 +86,7 @@ public class DataModelService {
                         modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
                         modelResourceVo.setServerAddress(dataProject.getServerAddress());
                         if (map.get("organId")!=null){
-                            modelResourceVo.setParticipationIdentity(organConfiguration.getSysLocalOrganId().equals(map.get("organId").toString())?1:2);
+                            modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
                         }
                     }
                 }
@@ -349,14 +349,14 @@ public class DataModelService {
                 return baseResultEntity;
             }
         }
-        DataTask dataTask = new DataTask();
+        DataTask dataTask = taskReq.getDataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
         dataTask.setTaskUserId(userId);
         dataTaskPrRepository.saveDataTask(dataTask);
-        taskReq.setDataTask(dataTask);
+//        taskReq.setDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();
         modelTask.setTaskId(dataTask.getTaskId());
         modelTask.setModelId(dataModel.getModelId());
@@ -480,7 +480,15 @@ public class DataModelService {
             }
         }else {
             vo.getDataTask().setIsCooperation(1);
-            dataTaskPrRepository.saveDataTask(vo.getDataTask());
+            DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(vo.getDataTask().getTaskIdName());
+            if (dataTask==null){
+                dataTaskPrRepository.saveDataTask(vo.getDataTask());
+            }else {
+                vo.getDataTask().setTaskId(dataTask.getTaskId());
+                dataTaskPrRepository.updateDataTask(vo.getDataTask());
+                dataModelPrRepository.deleteDataModelTask(dataTask.getTaskId());
+                dataModelPrRepository.deleteDataModelResourceByTaskId(dataTask.getTaskId());
+            }
             vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
             vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
             dataModelPrRepository.saveDataModelTask(vo.getDataModelTask());
@@ -489,6 +497,7 @@ public class DataModelService {
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
             dataModelPrRepository.saveDataModelResource(vo.getDmrList());
+
         }
         return BaseResultEntity.success();
     }
@@ -502,24 +511,11 @@ public class DataModelService {
         if (modelTaskSuccessVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
-        Map<String, Map> organListMap = new HashMap<>();
-        try {
-            Map<String, List<ModelTaskSuccessVo>> organMap = modelTaskSuccessVos.stream().collect(Collectors.groupingBy(ModelTaskSuccessVo::getServerAddress));
-            Iterator<Map.Entry<String, List<ModelTaskSuccessVo>>> iterator = organMap.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, List<ModelTaskSuccessVo>> next = iterator.next();
-                List<String> organIds = next.getValue().stream().distinct().map(ModelTaskSuccessVo::getCreatedOrganId).collect(Collectors.toList());
-                organListMap.putAll(dataProjectService.getOrganListMap(organIds, next.getKey()));
-            }
-        }catch (Exception e){
-            log.info(e.getMessage());
-        }
         Integer tolal = dataModelRepository.queryModelTaskSuccessCount(req);
         for (ModelTaskSuccessVo modelTaskSuccessVo : modelTaskSuccessVos) {
             modelTaskSuccessVo.setProviderOrgans(modelTaskSuccessVo.getProviderOrganNames().split(","));
-            Map organ = organListMap.get(modelTaskSuccessVo.getCreatedOrganId());
-            if (organ!=null){
-                modelTaskSuccessVo.setCreatedOrgan(organ.get("globalName")!=null?organ.get("globalName").toString():"");
+            if (modelTaskSuccessVo.getTaskEndTime()!=null&&modelTaskSuccessVo.getTaskEndTime()!=0){
+                modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
             }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
