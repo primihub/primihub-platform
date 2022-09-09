@@ -559,6 +559,13 @@ body.book #toc,body.book #preamble,body.book h1.sect0,body.book .sect1>h2{page-b
 <li><a href="#_2_7_1_删除任务">2.7.1 删除任务</a></li>
 </ul>
 </li>
+<li><a href="#_2_8_推理相关接口">2.8 推理相关接口</a>
+<ul class="sectlevel2">
+<li><a href="#_2_8_1_导入推理接口">2.8.1 导入推理接口</a></li>
+<li><a href="#_2_8_2_推理列表接口">2.8.2 推理列表接口</a></li>
+<li><a href="#_2_8_2_推理详情接口">2.8.2 推理详情接口</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -18666,10 +18673,523 @@ Content-Length: 79
 </div>
 </div>
 </div>
+<div class="sect1">
+<h2 id="_2_8_推理相关接口">2.8 推理相关接口</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_2_8_1_导入推理接口">2.8.1 导入推理接口</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/reasoning/saveReasoning' -i -X POST \
+    -H 'userId: 1' \
+    -d 'reasoningName=%E6%8E%A8%E7%90%86&amp;reasoningDesc=%E6%8E%A8%E7%90%86%E6%8F%8F%E8%BF%B0&amp;taskId=1&amp;resourceList%5B0%5D.resourceId=2b598a7e3298-98af0345-1d93-4472-88ab-f72c79dbc4c8&amp;resourceList%5B0%5D.participationIdentity=1&amp;resourceList%5B1%5D.resourceId=2b598a7e3298-f9fd4938-5fe3-4b67-a551-3aab52215153&amp;resourceList%5B1%5D.participationIdentity=2'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ http --form POST 'http://localhost:8080/reasoning/saveReasoning' \
+    'userId:1' \
+    'reasoningName=推理' \
+    'reasoningDesc=推理描述' \
+    'taskId=1' \
+    'resourceList[0].resourceId=2b598a7e3298-98af0345-1d93-4472-88ab-f72c79dbc4c8' \
+    'resourceList[0].participationIdentity=1' \
+    'resourceList[1].resourceId=2b598a7e3298-f9fd4938-5fe3-4b67-a551-3aab52215153' \
+    'resourceList[1].participationIdentity=2'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">request-body 请求体</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">http-request 请求样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">POST /reasoning/saveReasoning HTTP/1.1
+userId: 1
+Host: localhost:8080
+Content-Type: application/x-www-form-urlencoded
+
+reasoningName=%E6%8E%A8%E7%90%86&amp;reasoningDesc=%E6%8E%A8%E7%90%86%E6%8F%8F%E8%BF%B0&amp;taskId=1&amp;resourceList%5B0%5D.resourceId=2b598a7e3298-98af0345-1d93-4472-88ab-f72c79dbc4c8&amp;resourceList%5B0%5D.participationIdentity=1&amp;resourceList%5B1%5D.resourceId=2b598a7e3298-f9fd4938-5fe3-4b67-a551-3aab52215153&amp;resourceList%5B1%5D.participationIdentity=2</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 213. request-parameters 请求参数说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reasoningName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reasoningDesc</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resourceList[0].resourceId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">资源ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resourceList[0].participationIdentity</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">参与身份 1发起者 2协作者</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resourceList[1].resourceId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">资源ID</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>resourceList[1].participationIdentity</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">参与身份 1发起者 2协作者</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 214. response-fields 返回字段说明</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>msg</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.reasoningId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理uuid</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">额外信息</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="title">http-response 返回结果样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 153
+
+{
+  &quot;code&quot; : 0,
+  &quot;msg&quot; : &quot;请求成功&quot;,
+  &quot;result&quot; : {
+    &quot;reasoningId&quot; : &quot;bcc85434-6b5e-4691-bbbf-d9598ddcacc6&quot;,
+    &quot;id&quot; : 3
+  },
+  &quot;extra&quot; : null
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_8_2_推理列表接口">2.8.2 推理列表接口</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/reasoning/getReasoningList?pageNo=1&amp;pageSize=5&amp;id=&amp;reasoningName=&amp;reasoningState=' -i -X GET \
+    -H 'userId: 1'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/reasoning/getReasoningList?pageNo=1&amp;pageSize=5&amp;id=&amp;reasoningName=&amp;reasoningState=' \
+    'userId:1'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">request-body 请求体</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">http-request 请求样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /reasoning/getReasoningList?pageNo=1&amp;pageSize=5&amp;id=&amp;reasoningName=&amp;reasoningState= HTTP/1.1
+userId: 1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 215. request-parameters 请求参数说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pageNo</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">第几页</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>pageSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页条数</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reasoningName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>reasoningState</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理状态</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 216. response-fields 返回字段说明</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>msg</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.total</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">总共的数据量</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.pageSize</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">每页显示多少条</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.totalPage</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">共有多少页</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.index</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">当前是第几页</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Array</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">数据</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].reasoningId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理uuid</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].reasoningName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].reasoningDesc</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].reasoningType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回几 就是几方</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].reasoningState</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">状态</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.data[].releaseDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">上线时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">额外信息</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="title">http-response 返回结果样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 960
+
+{
+  &quot;code&quot; : 0,
+  &quot;msg&quot; : &quot;请求成功&quot;,
+  &quot;result&quot; : {
+    &quot;total&quot; : 3,
+    &quot;pageSize&quot; : 5,
+    &quot;totalPage&quot; : 1,
+    &quot;index&quot; : 1,
+    &quot;data&quot; : [ {
+      &quot;id&quot; : 3,
+      &quot;reasoningId&quot; : &quot;bcc85434-6b5e-4691-bbbf-d9598ddcacc6&quot;,
+      &quot;reasoningName&quot; : &quot;推理&quot;,
+      &quot;reasoningDesc&quot; : &quot;推理描述&quot;,
+      &quot;reasoningType&quot; : 2,
+      &quot;reasoningState&quot; : 0,
+      &quot;taskId&quot; : 1,
+      &quot;releaseDate&quot; : null
+    }, {
+      &quot;id&quot; : 2,
+      &quot;reasoningId&quot; : &quot;5ad8cdbe-5e5d-4edc-b2a9-05d410cdb177&quot;,
+      &quot;reasoningName&quot; : &quot;推理&quot;,
+      &quot;reasoningDesc&quot; : &quot;推理描述&quot;,
+      &quot;reasoningType&quot; : 2,
+      &quot;reasoningState&quot; : 0,
+      &quot;taskId&quot; : 1,
+      &quot;releaseDate&quot; : null
+    }, {
+      &quot;id&quot; : 1,
+      &quot;reasoningId&quot; : &quot;7f5347bc-b150-4335-85a9-09a0afbc8b33&quot;,
+      &quot;reasoningName&quot; : &quot;推理&quot;,
+      &quot;reasoningDesc&quot; : &quot;推理描述&quot;,
+      &quot;reasoningType&quot; : 2,
+      &quot;reasoningState&quot; : 0,
+      &quot;taskId&quot; : 1,
+      &quot;releaseDate&quot; : null
+    } ]
+  },
+  &quot;extra&quot; : null
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_2_8_2_推理详情接口">2.8.2 推理详情接口</h3>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ curl 'http://localhost:8080/reasoning/getReasoning?id=1' -i -X GET</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="bash">$ http GET 'http://localhost:8080/reasoning/getReasoning?id=1'</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">request-body 请求体</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code></code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="title">http-request 请求样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">GET /reasoning/getReasoning?id=1 HTTP/1.1
+Host: localhost:8080</code></pre>
+</div>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 217. request-parameters 请求参数说明</caption>
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Parameter</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理id</p></td>
+</tr>
+</tbody>
+</table>
+<table class="tableblock frame-all grid-all stretch">
+<caption class="title">Table 218. response-fields 返回字段说明</caption>
+<colgroup>
+<col style="width: 33.3333%;">
+<col style="width: 33.3333%;">
+<col style="width: 33.3334%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">Path</th>
+<th class="tableblock halign-left valign-top">Type</th>
+<th class="tableblock halign-left valign-top">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>code</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>msg</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Object</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回码结果</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.id</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.reasoningId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理uuid</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.reasoningName</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理名称</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.reasoningDesc</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>String</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">推理描述</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.reasoningType</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">返回几 就是几方</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.reasoningState</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">状态</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.taskId</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Number</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">任务id</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>result.releaseDate</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">上线时间</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>extra</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>Null</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">额外信息</p></td>
+</tr>
+</tbody>
+</table>
+<div class="listingblock">
+<div class="title">http-response 返回结果样例</div>
+<div class="content">
+<pre class="CodeRay highlight nowrap"><code data-lang="http">HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 318
+
+{
+  &quot;code&quot; : 0,
+  &quot;msg&quot; : &quot;请求成功&quot;,
+  &quot;result&quot; : {
+    &quot;id&quot; : 1,
+    &quot;reasoningId&quot; : &quot;7f5347bc-b150-4335-85a9-09a0afbc8b33&quot;,
+    &quot;reasoningName&quot; : &quot;推理&quot;,
+    &quot;reasoningDesc&quot; : &quot;推理描述&quot;,
+    &quot;reasoningType&quot; : 2,
+    &quot;reasoningState&quot; : 0,
+    &quot;taskId&quot; : 1,
+    &quot;releaseDate&quot; : null
+  },
+  &quot;extra&quot; : null
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2022-08-23 17:35:29 +0800
+Last updated 2022-09-09 15:09:14 +0800
 </div>
 </div>
 </body>

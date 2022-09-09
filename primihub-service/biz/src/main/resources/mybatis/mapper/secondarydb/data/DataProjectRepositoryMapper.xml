@@ -170,6 +170,17 @@
         where project_id = #{projectId}
         and organ_id = #{organId}
     </select>
+    <select id="selectProjectResourceByResourceIds"
+            resultType="com.primihub.biz.entity.data.po.DataProjectResource">
+        select
+            DISTINCT resource_id resourceId,server_address serverAddress,organ_id  organId
+        from data_project_resource
+        where resource_id in
+        <foreach collection="resourceIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
 
     <sql id="selectDataProjectCondition">
         <if test="queryType==1">

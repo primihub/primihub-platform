@@ -29,6 +29,10 @@ public interface DataProjectRepository {
     List<DataProjectResource> selectProjectResourceByProjectIdAndOrganId(@Param("projectId") String projectId,@Param("organId") String organId);
     List<DataProjectResource> selectProjectResourceByProjectIds(@Param("projectIds") Set<String> projectIds);
 
+    List<DataProjectResource> selectProjectResourceByResourceIds(@Param("resourceIds") Set<String> resourceIds);
+
+
+
 
     List<Map<String,Object>> selectProjectStatics(@Param("organId")String organId);
 }

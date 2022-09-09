@@ -6,6 +6,7 @@ import com.primihub.biz.util.crypt.DateUtil;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ModelTaskSuccessVo {
@@ -20,11 +21,12 @@ public class ModelTaskSuccessVo {
     private Long projectId;
     private String modelName;
     private String projectName;
+    private String createdOrganId;
     private String createdOrgan;
     @JsonIgnore
     private String serverAddress;
     @JsonIgnore
     private String providerOrganNames;
-    private String[] providerOrgans;
+    private List<String> providerOrgans;
     private Integer resourceNum;
 }

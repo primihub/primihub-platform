@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository">
+
+    <insert id="saveDataReasoning" useGeneratedKeys="true" keyProperty="id" parameterType="com.primihub.biz.entity.data.po.DataReasoning">
+        insert into data_reasoning(reasoning_id,reasoning_name,reasoning_desc,reasoning_type,reasoning_state,task_id,release_date,user_id,is_del,create_date,update_date)
+        value (#{reasoningId},#{reasoningName},#{reasoningDesc},#{reasoningType},#{reasoningState},#{taskId},#{releaseDate},#{userId},0,now(),now())
+    </insert>
+
+    <insert id="saveDataReasoningResources" parameterType="com.primihub.biz.entity.data.po.DataReasoningResource">
+        insert into data_reasoning_resource(reasoning_id,resource_id,participation_identity,server_address,is_del,create_date,update_date)
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (#{item.reasoningId},#{item.resourceId},#{item.participationIdentity},#{item.serverAddress},0,now(),now())
+        </foreach>
+    </insert>
+
+    <update id="updateDataReasoning" parameterType="com.primihub.biz.entity.data.po.DataReasoning">
+        update data_reasoning
+        <set>
+            <if test="reasoningId">reasoning_id = #{reasoningId},</if>
+            <if test="reasoningName">reasoning_name = #{reasoningName},</if>
+            <if test="reasoningDesc">reasoning_desc = #{reasoningDesc},</if>
+            <if test="reasoningType">reasoning_type = #{reasoningType},</if>
+            <if test="reasoningState">reasoning_state = #{reasoningState},</if>
+            <if test="taskId">task_id = #{taskId},</if>
+            <if test="userId">user_id = #{userId},</if>
+            <if test="releaseDate">release_date = #{releaseDate},</if>
+            update_date = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDataReasoning">
+        delete from data_reasoning where id = #{id}
+    </delete>
+
+    <delete id="deleteDataReasoningResources">
+        delete from data_reasoning_resource where reasoning_id = #{reasoningId}
+    </delete>
+</mapper>

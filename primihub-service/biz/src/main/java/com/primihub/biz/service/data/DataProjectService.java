@@ -504,4 +504,7 @@ public class DataProjectService {
     }
 
 
+    public BaseResultEntity getResourceList(String organId) {
+        return BaseResultEntity.success();
+    }
 }

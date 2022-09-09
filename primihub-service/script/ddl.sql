@@ -396,6 +396,39 @@ CREATE TABLE `data_task` (
                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                              PRIMARY KEY (`task_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='数据任务表';
+
+DROP TABLE IF EXISTS `data_reasoning`;
+CREATE TABLE `data_reasoning` (
+                                  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '推理ID',
+                                  `reasoning_id` varchar(255) DEFAULT NULL COMMENT '推理展示uuid',
+                                  `reasoning_name` varchar(255) DEFAULT NULL COMMENT '推理名称',
+                                  `reasoning_desc` varchar(255) DEFAULT NULL COMMENT '推理描述',
+                                  `reasoning_type` tinyint DEFAULT NULL COMMENT '推理类型 0两方 1三方',
+                                  `reasoning_state` tinyint DEFAULT NULL COMMENT '推理状态',
+                                  `task_id` bigint DEFAULT NULL COMMENT '任务ID',
+                                  `user_id` bigint DEFAULT NULL COMMENT '用户ID',
+                                  `release_date` datetime DEFAULT NULL COMMENT '发布日期',
+                                  `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='推理表';
+
+
+DROP TABLE IF EXISTS `data_reasoning_resource`;
+CREATE TABLE `data_reasoning_resource` (
+                                           `id` bigint NOT NULL AUTO_INCREMENT COMMENT '推理资源ID',
+                                           `reasoning_id` bigint DEFAULT NULL COMMENT '推理ID',
+                                           `resource_id` varchar(64) DEFAULT NULL COMMENT '资源ID',
+                                           `organ_id` varchar(64) DEFAULT NULL COMMENT '机构ID',
+                                           `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                           `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
+                                           `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
+                                           `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                           `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                           PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='推理资源表';
+
 -- ----------------------------
 -- Table structure for sys_auth
 -- ----------------------------

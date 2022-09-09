@@ -43,6 +43,9 @@ public interface DataModelRepository {
 
     List<DataModelTask> queryModelTaskByModelId(Map<String,Object> map);
 
+
+    List<DataModelTask> queryModelTaskByTaskIds(@Param("taskIds") Set<Long> taskIds);
+
     Integer queryModelTaskByModelIdCount(@Param("modelId") Long modelId);
 
     List<Map<String, Object>> queryModelNumByProjectIds(@Param("projectIds")Set<Long> projectIds);

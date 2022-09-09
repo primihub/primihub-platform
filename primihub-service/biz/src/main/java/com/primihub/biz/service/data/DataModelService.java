@@ -512,12 +512,42 @@ public class DataModelService {
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
         Integer tolal = dataModelRepository.queryModelTaskSuccessCount(req);
+        Set<Long> taskIds = modelTaskSuccessVos.stream().map(ModelTaskSuccessVo::getTaskId).collect(Collectors.toSet());
+        List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByTaskIds(taskIds);
+        Map<Long, List<String>> taskResource = getTaskResource(dataModelTasks,modelTaskSuccessVos);
         for (ModelTaskSuccessVo modelTaskSuccessVo : modelTaskSuccessVos) {
-            modelTaskSuccessVo.setProviderOrgans(modelTaskSuccessVo.getProviderOrganNames().split(","));
             if (modelTaskSuccessVo.getTaskEndTime()!=null&&modelTaskSuccessVo.getTaskEndTime()!=0){
                 modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
             }
+            if(taskResource.containsKey(modelTaskSuccessVo.getTaskId())){
+                modelTaskSuccessVo.setProviderOrgans(taskResource.get(modelTaskSuccessVo.getTaskId()));
+            }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
+    }
+
+    private Map<Long,List<String>> getTaskResource(List<DataModelTask> dataModelTasks,List<ModelTaskSuccessVo> modelTaskSuccessVos){
+        Map<Long,List<String>> map = new HashMap<>();
+        Map<Long, ModelTaskSuccessVo> taskSuccessMap = modelTaskSuccessVos.stream().collect(Collectors.toMap(ModelTaskSuccessVo::getTaskId, Function.identity()));
+        for (DataModelTask dataModelTask : dataModelTasks) {
+            try {
+                List<DataComponent> dataComponentReqs = JSONArray.parseArray(dataModelTask.getComponentJson(), DataComponent.class);
+                DataComponent dataSet = dataComponentReqs.stream().filter(req -> req.getComponentCode().equals("dataSet")).findFirst().orElse(null);
+                if (dataSet!=null){
+                    List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(dataSet.getDataJson()).getJSONObject(0).getJSONArray("val").toJavaList(ModelProjectResourceVo.class);
+                    List<String> list = new ArrayList<>();
+                    for (ModelProjectResourceVo modelProjectResourceVo : modelProjectResourceVos) {
+                        if (!taskSuccessMap.get(dataModelTask.getTaskId()).getCreatedOrganId().equals(modelProjectResourceVo.getOrganId())){
+                            list.add(modelProjectResourceVo.getOrganId());
+                            list.add(modelProjectResourceVo.getOrganName());
+                        }
+                    }
+                    map.put(dataModelTask.getTaskId(),list);
+                }
+            }catch (Exception e){
+                log.info(e.getMessage());
+            }
+        }
+        return map;
     }
 }

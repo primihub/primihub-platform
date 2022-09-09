@@ -157,4 +157,12 @@ public class ProjectController {
         return dataProjectService.getProjectResourceOrgan(projectId,modelId);
     }
 
+    @GetMapping("getResourceList")
+    public BaseResultEntity getResourceList(String organId){
+        if (StringUtils.isBlank(organId)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
+        return dataProjectService.getResourceList(organId);
+    }
+
 }

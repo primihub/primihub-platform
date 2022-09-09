@@ -176,6 +176,7 @@
         WHERE
             model_id = #{modelId}
     </select>
+
     <select id="queryModelNumByProjectIds" resultType="java.util.Map">
         select
         DISTINCT dm.project_id projectId,dt.task_state latestTaskStatus,count(dt.task_id) statusCount
@@ -211,6 +212,21 @@
         where model_id = #{modelId}
         ORDER BY id desc
         LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="queryModelTaskByTaskIds" resultType="com.primihub.biz.entity.data.po.DataModelTask">
+        select
+            id,
+            model_id as modelId,
+            task_id as taskId,
+            predict_file as predictFile,
+            predict_content as predictContent,
+            component_json as componentJson
+        from data_model_task
+        where task_id in
+        <foreach collection="taskIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
     </select>
     <select id="queryModelTaskByModelIdCount" resultType="java.lang.Integer">
         select
@@ -284,6 +300,7 @@
             dm.model_name modelName,
             dp.id projectId,
             dp.project_name projectName,
+            dp.created_organ_id createdOrganId,
             dp.created_organ_name createdOrgan,
             dp.server_address serverAddress,
             dp.provider_organ_names providerOrganNames,
@@ -313,6 +330,8 @@
         AND dt.task_user_id = #{userId}
         <include refid="modeltasksuccess"></include>
     </select>
+
+
 
     <sql id="modeltasksuccess">
         <if test="modelId!=null and modelId!=0">and dm.model_id =#{modelId}</if>
