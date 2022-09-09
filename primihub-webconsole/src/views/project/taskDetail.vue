@@ -91,8 +91,8 @@
           <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
         <el-tab-pane v-if="task.isCooperation === 0" label="预览图" name="3">
-          <div v-if="tabName === '3' && modelId" class="canvas-panel">
-            <TaskCanvas :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @success="handleTaskComplete" />
+          <div class="canvas-panel">
+            <TaskCanvas v-if="tabName === '3' && modelId" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
         </el-tab-pane>
       </el-tabs>
@@ -187,6 +187,7 @@ export default {
       })
     },
     async handleTaskComplete() {
+      this.restartRun = false
       await this.fetchData()
     },
     handleTabClick(tab, event) {
@@ -262,6 +263,9 @@ export default {
     restartTaskModel() {
       console.log('重启')
       this.tabName = '3'
+      this.task.taskState = 2
+      this.task.taskStartDate = this.task.taskEndDate
+      this.task.taskEndDate = null
       this.restartRun = true
     }
   }

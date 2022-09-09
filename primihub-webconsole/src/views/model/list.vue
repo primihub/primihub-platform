@@ -159,7 +159,8 @@ export default {
         modelId,
         modelName: modelName.toString(),
         successDate,
-        pageNo: this.pageNo
+        pageNo: this.pageNo,
+        pageSize: this.pageSize
       }
       console.log('fetchData', params)
       getModelTaskSuccessList(params).then((response) => {

@@ -158,10 +158,11 @@ export default {
     }
   },
   watch: {
-    restartRun(newVal) {
-      console.log(newVal)
+    async restartRun(newVal) {
+      console.log('restartRun', newVal)
       if (newVal) {
-        this.restartTaskModel()
+        debugger
+        await this.restartTaskModel()
       }
     }
   },
@@ -174,12 +175,15 @@ export default {
     if (this.options.isEditable) {
       this.initToolBarEvent()
     }
-
-    // 任务运行中，轮询任务状态
-    if (this.state === 2) {
-      this.taskTimer = window.setInterval(() => {
-        setTimeout(this.getTaskModelComponent(), 0)
-      }, 1500)
+    if (this.restartRun) {
+      await this.restartTaskModel()
+    } else {
+      // 任务运行中，轮询任务状态
+      if (this.state === 2) {
+        this.taskTimer = window.setInterval(() => {
+          setTimeout(this.getTaskModelComponent(), 0)
+        }, 1500)
+      }
     }
   },
   destroyed() {
@@ -541,7 +545,7 @@ export default {
       const startCom = cells.filter(item => item.componentCode === 'start')[0]
       const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
       const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
-      const modelName = modelSelectCom.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
+      const modelName = modelSelectCom?.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
       const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
       const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
@@ -599,7 +603,10 @@ export default {
       this.isDraft = 1
       await this.saveFn()
       this.checkRunValidated()
-      if (!this.modelRunValidated) return
+      if (!this.modelRunValidated) {
+        // this.isDraft = 0
+        return
+      }
       runTaskModel({ modelId: this.currentModelId }).then(res => {
         if (res.code !== 0) {
           this.$message({
@@ -623,82 +630,66 @@ export default {
         }
       })
     },
-    restartTaskModel() {
-      restartTaskModel({ taskId: this.taskId }).then(res => {
-        if (res.code === 0) {
-          this.modelStartRun = true
-          this.taskTimer = window.setInterval(() => {
-            setTimeout(this.getTaskModelComponent(), 0)
-          }, 1500)
-        }
-      }).catch(err => {
-        this.modelStartRun = false
-        console.log(err)
-      })
+    async restartTaskModel() {
+      const res = await restartTaskModel({ taskId: this.taskId })
+      if (res.code === 0) {
+        this.modelStartRun = true
+        this.taskTimer = window.setInterval(() => {
+          setTimeout(this.getTaskModelComponent(), 0)
+        }, 1500)
+      }
     },
     getTaskModelComponent() {
       getTaskModelComponent({ taskId: this.taskId }).then(res => {
         const result = res.result.components
-        const taskState = res.result.taskState
-        if (taskState === 3) { // task failed
-          clearInterval(this.taskTimer)
-          this.$notify.closeAll()
-          this.$notify({
-            message: '运行失败',
-            type: 'error',
-            duration: 3000
+        const nodes = this.graph.getNodes()
+        const taskResult = []
+        result && result.forEach((item) => {
+          const { componentCode, componentState, timeConsuming, componentName } = item
+          const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
+          node.setData({
+            label: componentName,
+            componentCode,
+            componentState: 2,
+            timeConsuming: timeConsuming / 1000
           })
-          this.modelStartRun = false
-          return
-        } else {
-          const taskResult = []
-          result && result.forEach((item) => {
-            const { componentCode, componentState, timeConsuming, componentName } = item
-            const nodes = this.graph.getNodes()
-            const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
+          if (componentState === 1) {
+            taskResult.push(componentCode)
             node.setData({
               label: componentName,
               componentCode,
-              componentState: 2,
+              componentState,
               timeConsuming: timeConsuming / 1000
             })
-            if (componentState === 1) {
-              taskResult.push(componentCode)
-              node.setData({
-                label: componentName,
-                componentCode,
-                componentState,
-                timeConsuming: timeConsuming / 1000
-              })
-            } else if (componentState === 3) {
+            if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
               clearInterval(this.taskTimer)
               this.$notify.closeAll()
-              node.setData({
-                label: componentName,
-                componentCode,
-                componentState,
-                timeConsuming: timeConsuming / 1000
-              })
               this.$notify({
-                message: '运行失败',
-                type: 'error',
+                message: '运行完成',
+                type: 'success',
                 duration: 3000
               })
-              this.modelStartRun = false
-              return
+              this.$emit('complete')
             }
-          })
-          if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
+          } else if (componentState === 3) {
             clearInterval(this.taskTimer)
             this.$notify.closeAll()
+            node.setData({
+              label: componentName,
+              componentCode,
+              componentState,
+              timeConsuming: timeConsuming / 1000
+            })
             this.$notify({
-              message: '运行完成',
-              type: 'success',
+              message: '运行失败',
+              type: 'error',
               duration: 3000
             })
-            this.$emit('success')
+            this.$emit('complete')
+            this.modelStartRun = false
+            return
           }
-        }
+        })
       })
     },
     toModelDetail(id) {
