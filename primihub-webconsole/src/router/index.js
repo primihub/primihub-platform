@@ -216,6 +216,40 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/inference',
+    component: Layout,
+    name: 'ModelInference',
+    redirect: '/inference/list',
+    meta: { title: '模型推理', icon: 'el-icon-aim' },
+    children: [
+      {
+        path: 'list',
+        name: 'ModelInferenceList',
+        component: () => import('@/views/inference/list'),
+        meta: { title: '模型推理', breadcrumb: false }
+      },
+      {
+        path: 'task',
+        name: 'ModelInferenceTask',
+        hidden: true,
+        component: () => import('@/views/inference/task'),
+        meta: {
+          title: '模型推理任务'
+        }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ModelInferenceDetail',
+        meta: {
+          title: '模型推理详情',
+          activeMenu: '/inference/list'
+        },
+        hidden: true,
+        component: () => import('@/views/inference/detail')
+      }
+    ]
+  },
+  {
     path: '/setting',
     component: Layout,
     name: 'Setting',
