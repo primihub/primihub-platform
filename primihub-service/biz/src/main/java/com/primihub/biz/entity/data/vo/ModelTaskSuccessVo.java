@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ModelTaskSuccessVo {
@@ -27,6 +28,6 @@ public class ModelTaskSuccessVo {
     private String serverAddress;
     @JsonIgnore
     private String providerOrganNames;
-    private List<String> providerOrgans;
+    private Map<String,String> providerOrgans;
     private Integer resourceNum;
 }
