@@ -215,8 +215,8 @@ export default {
       }
       this.resourceDialogVisible = false
     },
-    async handlePagination(data) {
-      this.paginationOptions.pageNo = data.pageNo
+    async handlePagination(pageNo) {
+      this.paginationOptions.pageNo = pageNo
       await this.getResourceList()
     },
     async getResourceList() {
