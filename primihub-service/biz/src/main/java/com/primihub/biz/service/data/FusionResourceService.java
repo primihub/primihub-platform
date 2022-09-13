@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 @Slf4j
@@ -74,6 +75,27 @@ public class FusionResourceService {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"请求中心节点失败");
         }
     }
+
+    public BaseResultEntity getResourceListById(String serverAddress,String[] resourceIds) {
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+        try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap map = new LinkedMultiValueMap<>();
+            map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
+            map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
+            map.put("resourceIdArray", Arrays.asList(resourceIds));
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+            BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusionResource/getResourceListById",request, BaseResultEntity.class);
+            return resultEntity;
+        }catch (Exception e){
+            log.info("获取中心节点资源详情数据异常:{}",e.getMessage());
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"请求中心节点失败");
+        }
+    }
+
 
     public BaseResultEntity getResourceTagList(String serverAddress) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
