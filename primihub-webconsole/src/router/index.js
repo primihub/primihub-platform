@@ -216,36 +216,36 @@ export const asyncRoutes = [
     ]
   },
   {
-    path: '/inference',
+    path: '/reasoning',
     component: Layout,
-    name: 'ModelInference',
-    redirect: '/inference/list',
+    name: 'ModelReasoning',
+    redirect: '/reasoning/list',
     meta: { title: '模型推理', icon: 'el-icon-aim' },
     children: [
       {
         path: 'list',
-        name: 'ModelInferenceList',
-        component: () => import('@/views/inference/list'),
+        name: 'ModelReasoningList',
+        component: () => import('@/views/reasoning/list'),
         meta: { title: '模型推理', breadcrumb: false }
       },
       {
         path: 'task',
-        name: 'ModelInferenceTask',
+        name: 'ModelReasoningTask',
         hidden: true,
-        component: () => import('@/views/inference/task'),
+        component: () => import('@/views/reasoning/task'),
         meta: {
           title: '模型推理任务'
         }
       },
       {
         path: 'detail/:id',
-        name: 'ModelInferenceDetail',
+        name: 'ModelReasoningDetail',
         meta: {
           title: '模型推理详情',
-          activeMenu: '/inference/list'
+          activeMenu: '/reasoning/list'
         },
         hidden: true,
-        component: () => import('@/views/inference/detail')
+        component: () => import('@/views/reasoning/detail')
       }
     ]
   },

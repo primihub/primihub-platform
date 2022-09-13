@@ -35,7 +35,7 @@
           align="center"
         >
           <template slot-scope="{row}">
-            <el-link type="primary" @click="toTaskDetail(row.id)">{{ row.reasoningId }}</el-link>
+            <el-link type="primary" @click="toTaskDetail(row.id)">{{ row.id }}</el-link>
           </template>
         </el-table-column>
         <el-table-column
@@ -104,7 +104,7 @@ export default {
   methods: {
     toTaskPage() {
       this.$router.push({
-        name: 'ModelInferenceTask'
+        name: 'ModelReasoningTask'
       })
     },
     search() {
@@ -115,7 +115,6 @@ export default {
       console.log('reset')
       this.query.id = ''
       this.query.reasoningName = ''
-      // this.query.reasoningState = ''
       this.pageNo = 1
       this.fetchData()
     },
@@ -124,10 +123,9 @@ export default {
       this.query[name] = ''
       this.fetchData()
     },
-    handleDateClear() {},
     toTaskDetail(id) {
       this.$router.push({
-        name: 'ModelInferenceDetail',
+        name: 'ModelReasoningDetail',
         params: { id }
       })
     },

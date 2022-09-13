@@ -1,10 +1,10 @@
 <template>
   <div class="container">
-    <el-descriptions>
+    <el-descriptions :column="2" class="desc-container">
       <el-descriptions-item label="推理服务名称">{{ dataList.reasoningName }}</el-descriptions-item>
       <el-descriptions-item label="推理服务描述">{{ dataList.reasoningDesc }}</el-descriptions-item>
       <el-descriptions-item label="推理服务ID">{{ dataList.reasoningId }}</el-descriptions-item>
-      <el-descriptions-item label="类型">{{ dataList.reasoningType }}方</el-descriptions-item>
+      <el-descriptions-item label="类型">{{ dataList.reasoningType }}方推理</el-descriptions-item>
       <!-- <el-descriptions-item label="状态">{{ reasoningState }}</el-descriptions-item> -->
     </el-descriptions>
   </div>
@@ -16,31 +16,30 @@ export default {
   name: 'InferenceDetail',
   data() {
     return {
-      id: ''
+      id: '',
+      dataList: []
     }
   },
-  created() {
+  async mounted() {
     this.id = this.$route.params.id
+    await this.fetchData()
+    console.log(this.$route)
   },
   methods: {
-    fetchData() {
+    async fetchData() {
       this.listLoading = true
-      getReasoning({ id: this.id }).then((res) => {
-        console.log('response.data', res)
-        if (res.code === 0) {
-          const { result } = res.result
-          this.dataList = result.data
-          this.total = result.total
-          this.pageCount = result.totalPage
-        }
-
-        setTimeout(() => {
-          this.listLoading = false
-        }, 200)
-      }).catch(() => {
-        this.listLoading = false
-      })
+      const res = await getReasoning({ id: this.id })
+      if (res.code === 0) {
+        this.dataList = res.result
+      }
     }
   }
 }
 </script>
+<style lang="scss" scoped>
+.desc-container{
+  background-color: #ffffff;
+  padding: 30px;
+  margin-bottom: 30px;
+}
+</style>

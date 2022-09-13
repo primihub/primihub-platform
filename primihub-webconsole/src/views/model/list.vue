@@ -65,10 +65,15 @@
         />
         <el-table-column
           label="机构名称"
+          min-width="110"
         >
           <template slot-scope="{row}">
             <span>发起方: {{ row.createdOrgan }}</span><br>
-            <span>协作方: {{ row.providerOrgans.join(',') }}</span>
+            <div>协作方:
+              <span v-for="(item,index) in row.providerOrgans" :key="item.organId">
+                <span>{{ item.organName }}<span v-if="index === 0">，</span></span>
+              </span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column

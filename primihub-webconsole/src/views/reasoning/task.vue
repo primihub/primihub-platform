@@ -1,0 +1,226 @@
+<template>
+  <div class="container">
+    <el-form ref="form" :model="form" :rules="rules" class="form-container">
+      <el-form-item label="推理使用模型" prop="modelName">
+        <el-input v-model="form.modelName" class="model-name" placeholder="请选择模型" clearable @focus="openModelDialog" />
+      </el-form-item>
+      <el-form-item>
+        <p><strong class="required">*</strong>发起方:<span>{{ createdOrgan }}</span></p>
+        <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(createdOrganId,1)">选择资源</el-button>
+        <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId)" />
+      </el-form-item>
+      <el-form-item v-for="(item,index) in providerOrgans" :key="index">
+        <p><strong class="required">*</strong>参与方:<span>{{ item.organName }}</span></p>
+        <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(item.organId, 2)">选择资源</el-button>
+        <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId)" />
+      </el-form-item>
+      <el-form-item label="推理服务名称" prop="reasoningName">
+        <el-input v-model="form.reasoningName" placeholder="请输入推理服务名称" />
+      </el-form-item>
+      <el-form-item label="推理服务描述" prop="reasoningDesc">
+        <el-input
+          v-model="form.reasoningDesc"
+          type="textarea"
+          placeholder="请输入推理服务描述，限100字"
+          maxlength="100"
+          show-word-limit
+        />
+      </el-form-item>
+      <el-form-item class="form-footer">
+        <el-button type="primary" @click="onSubmit">导入</el-button>
+        <el-button @click="reset">重置</el-button>
+      </el-form-item>
+    </el-form>
+
+    <!-- model select dialog -->
+    <ModelSelectDialog :visible="dialogVisible" @submit="handleModelSubmit" @close="handleClose" />
+    <!-- add resource dialog -->
+    <ResourceDialog ref="dialogRef" top="10px" width="800px" title="选择资源" :show-status="false" :selected-data="selectedResourceId" :table-data="resourceList" :visible="resourceDialogVisible" @close="handleResourceDialogCancel" @submit="handleResourceDialogSubmit" />
+  </div>
+</template>
+
+<script>
+import { getResourceList } from '@/api/project'
+import { saveReasoning } from '@/api/reasoning'
+import ModelSelectDialog from '@/components/ModelSelectDialog'
+import ResourceTable from '@/components/ResourceTable'
+import ResourceDialog from '@/components/ResourceDialog'
+
+export default {
+  name: 'ModelInferenceTask',
+  components: {
+    ResourceTable,
+    ResourceDialog,
+    ModelSelectDialog
+  },
+  data() {
+    return {
+      dialogVisible: false,
+      resourceDialogVisible: false,
+      selectedResourceId: '',
+      resourceList: [],
+      taskId: 0,
+      selectedOrganId: '',
+      createdOrgan: '',
+      createdOrganId: '',
+      providerOrgans: [{
+        organId: '',
+        userOrganName: ''
+      }],
+      form: {
+        modelName: '',
+        taskId: '',
+        resourceId: '',
+        resourceList: [],
+        reasoningName: '',
+        reasoningDesc: '',
+        createdResourceId: '',
+        providerResourceId: ''
+      },
+      participationIdentity: 1,
+      selectedResource: [], // 选中
+      rules: {
+        modelName: [
+          { required: true, message: '请选择模型' }
+        ],
+        reasoningName: [
+          { required: true, message: '请输入推理服务名称' }
+        ],
+        reasoningDesc: [
+          { required: true, message: '请输入推理服务描述，限100字' }
+        ],
+        resourceId: [
+          { required: true }
+        ]
+      }
+    }
+  },
+  methods: {
+    reset() {
+      this.form.modelName = ''
+      this.form.taskId = ''
+      this.form.createdResourceId = ''
+      this.form.providerResourceId = ''
+      this.form.reasoningName = ''
+      this.form.reasoningDesc = ''
+      this.resourceList = []
+      this.selectedResource = []
+      this.$refs.form.resetFields()
+    },
+    handleRemove(organId) {
+      this.selectedResource[organId].splice(0)
+      const posIndex = this.form.resourceList.findIndex(item => item.organId === organId)
+      this.form.resourceList.splice(posIndex, 1)
+    },
+    async onSubmit() {
+      const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
+      if (createdResourceId === '' || providerResourceId === '') {
+        this.$message({
+          message: createdResourceId === '' ? '请输入发起方方资源' : '请输入参与方资源',
+          type: 'warning'
+        })
+        return
+      }
+      this.form.resourceList = [
+        {
+          participationIdentity: 1,
+          resourceId: createdResourceId
+        }, {
+          participationIdentity: 2,
+          resourceId: providerResourceId
+        }
+      ]
+
+      this.$refs['form'].validate(async valid => {
+        if (valid) {
+          const { code, result } = await saveReasoning({
+            taskId,
+            resourceList: this.form.resourceList,
+            reasoningName,
+            reasoningDesc
+          })
+          if (code === 0) {
+            this.$message({
+              message: '导入成功',
+              type: 'success'
+            })
+            this.$router.push({
+              name: 'ModelReasoningDetail',
+              params: { id: result.id }
+            })
+          }
+        }
+      })
+    },
+    async handleResourceSelect(organId, participationIdentity) {
+      this.selectedOrganId = organId
+      this.participationIdentity = participationIdentity
+      if (this.selectedResource[organId]) {
+        this.selectedResource[organId][0]?.resourceId
+      }
+      await this.getResourceList()
+      this.resourceDialogVisible = true
+    },
+    handleClose() {
+      this.dialogVisible = false
+    },
+    openModelDialog() {
+      this.dialogVisible = true
+    },
+    async handleModelSubmit(data) {
+      this.form.taskId = data.taskId
+      this.providerOrgans = data.providerOrgans
+      this.createdOrgan = data.createdOrgan
+      this.createdOrganId = data.createdOrganId
+      this.projectId = data.projectId
+      this.form.modelName = data.modelName
+      this.modelId = data.modelId
+      this.dialogVisible = false
+    },
+    handleResourceDialogCancel() {
+      this.resourceDialogVisible = false
+    },
+    handleResourceDialogSubmit(data) {
+      this.selectedResource[this.selectedOrganId] = [data]
+      if (this.participationIdentity === 1) {
+        this.form.createdResourceId = data.resourceId
+      } else {
+        this.form.providerResourceId = data.resourceId
+      }
+      this.resourceDialogVisible = false
+    },
+    async getResourceList() {
+      this.resourceList = []
+      const res = await getResourceList({ organId: this.selectedOrganId })
+      if (res.code === 0) {
+        this.resourceList = res.result.data
+      }
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.container{
+  background: #fff;
+  padding: 30px 0;
+  height: 100%;
+  .form-container{
+    width: 700px;
+    margin: 0 auto;
+  }
+}
+.select-button{
+  width: 100%;
+}
+.model-name{
+  cursor:default
+}
+.form-footer{
+  text-align: center;
+}
+.required{
+  color: #F56C6C;
+  margin-right: 5px;
+}
+</style>

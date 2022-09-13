@@ -4,7 +4,7 @@
     v-bind="$attrs"
   >
     <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
-    <ResourceTableSingleSelect max-height="530" :data="tableData" :selected-data="selectedData" @change="handleChange" />
+    <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <div class="buttons">
         <el-button size="medium" @click="closeDialog">取 消</el-button>
@@ -31,6 +31,10 @@ export default {
     selectedData: {
       type: String,
       default: ''
+    },
+    showStatus: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

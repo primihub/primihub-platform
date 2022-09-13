@@ -161,7 +161,6 @@ export default {
     async restartRun(newVal) {
       console.log('restartRun', newVal)
       if (newVal) {
-        debugger
         await this.restartTaskModel()
       }
     }
