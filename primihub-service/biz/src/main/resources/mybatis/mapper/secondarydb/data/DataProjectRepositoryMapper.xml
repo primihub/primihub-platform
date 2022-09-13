@@ -183,12 +183,23 @@
     </select>
     <select id="selectProjectResourceByOrganIdPage"
             resultType="com.primihub.biz.entity.data.po.DataProjectResource">
-        select DISTINCT resource_id resourceId,server_address serverAddress from data_project_resource
-        where audit_status = 1 and organ_id = #{organId}
+        SELECT
+            resource_id resourceId,
+            server_address serverAddress,
+            max(id) maxId
+        FROM
+            data_project_resource
+        WHERE
+            audit_status = 1 and organ_id = #{organId}
+        GROUP BY
+            resourceId,
+            serverAddress
+        ORDER BY
+            maxId DESC
         LIMIT #{offset},#{pageSize}
     </select>
     <select id="selectProjectResourceByOrganIdCount" resultType="java.lang.Integer">
-        select count(DISTINCT resource_id) serverAddress from data_project_resource
+        select count(DISTINCT resource_id) from data_project_resource
         where audit_status = 1 and organ_id = #{organId}
     </select>
 
