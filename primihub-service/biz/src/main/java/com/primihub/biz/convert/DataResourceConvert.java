@@ -200,9 +200,9 @@ public class DataResourceConvert {
         modelSelectResourceVo.setResourceName(dataResource.getResourceName());
         modelSelectResourceVo.setResourceRowsCount(dataResource.getFileRows());
         modelSelectResourceVo.setResourceColumnCount(dataResource.getFileColumns());
-        modelSelectResourceVo.setResourceContainsY(dataResource.getFileContainsY());
-        modelSelectResourceVo.setResourceYRowsCount(dataResource.getFileYRows());
-        modelSelectResourceVo.setResourceYRatio(dataResource.getFileYRatio());
+        modelSelectResourceVo.setResourceContainsY(dataResource.getFileContainsY()==null?0:dataResource.getFileContainsY());
+        modelSelectResourceVo.setResourceYRowsCount(dataResource.getFileYRows()==null?0:dataResource.getFileYRows());
+        modelSelectResourceVo.setResourceYRatio(dataResource.getFileYRatio()==null?new BigDecimal("0"):dataResource.getFileYRatio());
         return modelSelectResourceVo;
     }
 

@@ -540,7 +540,7 @@ public class DataModelService {
                             map.put(dataModelTask.getTaskId(),new HashMap(){
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
-                                    put("organId",modelProjectResourceVo.getOrganName());
+                                    put("organName",modelProjectResourceVo.getOrganName());
                                 }
                             });
                         }
