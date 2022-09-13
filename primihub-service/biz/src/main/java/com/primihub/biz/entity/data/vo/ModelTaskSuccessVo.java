@@ -28,6 +28,6 @@ public class ModelTaskSuccessVo {
     private String serverAddress;
     @JsonIgnore
     private String providerOrganNames;
-    private Map<String,String> providerOrgans;
+    private List<Map<String,String>> providerOrgans;
     private Integer resourceNum;
 }

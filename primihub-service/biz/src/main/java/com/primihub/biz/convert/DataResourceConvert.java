@@ -10,10 +10,8 @@ import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.math.BigDecimal;
+import java.util.*;
 
 
 public class DataResourceConvert {
@@ -40,7 +38,6 @@ public class DataResourceConvert {
         po.setResourceSource(req.getResourceSource());
         po.setUserId(userId);
         po.setOrganId(organId);
-        //TODO 先默认文件信息 liweihua
         po.setFileId(sysFile.getFileId());
         po.setFileSize(sysFile.getFileSize().intValue());
         po.setFileSuffix(sysFile.getFileSuffix());
@@ -195,5 +192,36 @@ public class DataResourceConvert {
             vo.getKeywordList().addAll(Arrays.asList(resourceColumnNameList.toString().split(",")));
         }
         return vo;
+    }
+
+    public static ModelSelectResourceVo resourceConvertSelectVo(DataResource dataResource){
+        ModelSelectResourceVo modelSelectResourceVo = new ModelSelectResourceVo();
+        modelSelectResourceVo.setResourceId(dataResource.getResourceFusionId());
+        modelSelectResourceVo.setResourceName(dataResource.getResourceName());
+        modelSelectResourceVo.setResourceRowsCount(dataResource.getFileRows());
+        modelSelectResourceVo.setResourceColumnCount(dataResource.getFileColumns());
+        modelSelectResourceVo.setResourceContainsY(dataResource.getFileContainsY()==null?0:dataResource.getFileContainsY());
+        modelSelectResourceVo.setResourceYRowsCount(dataResource.getFileYRows()==null?0:dataResource.getFileYRows());
+        modelSelectResourceVo.setResourceYRatio(dataResource.getFileYRatio()==null?new BigDecimal("0"):dataResource.getFileYRatio());
+        return modelSelectResourceVo;
+    }
+
+    public static ModelSelectResourceVo resourceMapConvertSelectVo(LinkedHashMap<String, Object> map){
+        ModelSelectResourceVo modelSelectResourceVo = new ModelSelectResourceVo();
+        modelSelectResourceVo.setResourceId(getMapValue(map,"resourceId",""));
+        modelSelectResourceVo.setResourceName(getMapValue(map,"resourceName",""));
+        modelSelectResourceVo.setResourceRowsCount(Integer.valueOf((getMapValue(map,"resourceRowsCount","0"))));
+        modelSelectResourceVo.setResourceColumnCount(Integer.valueOf((getMapValue(map,"resourceColumnCount","0"))));
+        modelSelectResourceVo.setResourceContainsY(Integer.valueOf((getMapValue(map,"resourceContainsY","0"))));
+        modelSelectResourceVo.setResourceYRowsCount(Integer.valueOf((getMapValue(map,"resourceYRowsCount","0"))));
+        modelSelectResourceVo.setResourceYRatio(new BigDecimal((getMapValue(map,"resourceYRatio","0"))));
+        return modelSelectResourceVo;
+    }
+
+    public static String getMapValue(LinkedHashMap<String, Object> map,String key,String defaultVal){
+        Object val = map.get(key);
+        if (val==null)
+            return defaultVal;
+        return val.toString();
     }
 }

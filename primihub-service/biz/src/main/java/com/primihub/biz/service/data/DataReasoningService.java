@@ -52,8 +52,9 @@ public class DataReasoningService {
         DataReasoning dataReasoning = DataReasoningConvert.dataReasoningReqConvertPo(req);
         Set<String> resourceIds = req.getResourceList().stream().map(DataReasoningResourceReq::getResourceId).collect(Collectors.toSet());
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByResourceIds(resourceIds);
-        if (dataProjectResources.isEmpty() || dataProjectResources.size()!=req.getResourceList().size())
+        if (dataProjectResources.isEmpty()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源信息");
+        }
         dataReasoningPrRepository.saveDataReasoning(dataReasoning);
         Map<String, String> resourceMap = dataProjectResources.stream().collect(Collectors.toMap(DataProjectResource::getResourceId, DataProjectResource::getServerAddress));
         List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId(), resourceMap.get(r.getResourceId()))).collect(Collectors.toList());

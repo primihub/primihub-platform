@@ -181,6 +181,16 @@
             #{item}
         </foreach>
     </select>
+    <select id="selectProjectResourceByOrganIdPage"
+            resultType="com.primihub.biz.entity.data.po.DataProjectResource">
+        select DISTINCT resource_id resourceId,server_address serverAddress from data_project_resource
+        where audit_status = 1 and organ_id = #{organId}
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="selectProjectResourceByOrganIdCount" resultType="java.lang.Integer">
+        select count(DISTINCT resource_id) serverAddress from data_project_resource
+        where audit_status = 1 and organ_id = #{organId}
+    </select>
 
     <sql id="selectDataProjectCondition">
         <if test="queryType==1">

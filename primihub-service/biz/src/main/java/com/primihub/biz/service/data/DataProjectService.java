@@ -7,11 +7,9 @@ import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
+import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.*;
-import com.primihub.biz.entity.data.po.DataProject;
-import com.primihub.biz.entity.data.po.DataProjectOrgan;
-import com.primihub.biz.entity.data.po.DataProjectResource;
-import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
@@ -19,6 +17,7 @@ import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -56,6 +55,10 @@ public class DataProjectService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private DataModelService dataModelService;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private FusionResourceService fusionResourceService;
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -504,7 +507,39 @@ public class DataProjectService {
     }
 
 
-    public BaseResultEntity getResourceList(String organId) {
-        return BaseResultEntity.success();
+    public BaseResultEntity getResourceList(String organId, PageReq req,String resourceName) {
+        Map<String,Object> paramMap = new HashMap<>();
+        paramMap.put("organId",organId);
+        paramMap.put("offset",req.getOffset());
+        paramMap.put("pageSize",req.getPageSize());
+        paramMap.put("resourceName",resourceName);
+        if (organConfiguration.getSysLocalOrganId().equals(organId)){
+            List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
+            if (dataResources.size()==0){
+                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+            }
+            Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
+            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
+        }else {
+            List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByOrganIdPage(paramMap);
+            Map<String, List<DataProjectResource>> serverAddress = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getServerAddress));
+            if (serverAddress.isEmpty()){
+                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+            }
+            Integer count = dataProjectRepository.selectProjectResourceByOrganIdCount(paramMap);
+            List<ModelSelectResourceVo> returnList = new ArrayList<>();
+            Iterator<Map.Entry<String, List<DataProjectResource>>> iterator = serverAddress.entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, List<DataProjectResource>> next = iterator.next();
+                BaseResultEntity baseResult = fusionResourceService.getResourceListById(next.getKey(),next.getValue().stream().map(DataProjectResource::getResourceId).toArray(String[]::new));
+                if (baseResult.getCode()==0){
+                    List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
+                    for (LinkedHashMap<String, Object> resourceMap : voList) {
+                        returnList.add(DataResourceConvert.resourceMapConvertSelectVo(resourceMap));
+                    }
+                }
+            }
+            return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),returnList));
+        }
     }
 }
