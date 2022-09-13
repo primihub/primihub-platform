@@ -7,6 +7,13 @@ export function getProjectList(params) {
     params
   })
 }
+export function getResourceList(params) {
+  return request({
+    url: '/data/project/getResourceList',
+    method: 'get',
+    params
+  })
+}
 export function getListStatistics(params) {
   return request({
     url: '/data/project/getListStatistics',

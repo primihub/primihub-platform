@@ -35,6 +35,7 @@
         </template>
       </el-table-column>
       <el-table-column
+        v-if="showStatus"
         prop="auditStatus"
         label="审核状态"
         align="center"
@@ -68,6 +69,10 @@ export default {
     selectedData: {
       type: String,
       default: ''
+    },
+    showStatus: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

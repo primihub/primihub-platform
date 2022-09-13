@@ -1,5 +1,6 @@
 <template>
   <el-dialog
+    v-loading="listLoading"
     title="选择模型"
     width="1000px"
     :visible="visible"
@@ -33,7 +34,11 @@
       >
         <template slot-scope="{row}">
           <span>发起方: {{ row.createdOrgan }}</span><br>
-          <span>协作方: {{ row.providerOrgans }}</span>
+          <div>协作方:
+            <span v-for="(item,index) in row.providerOrgans" :key="item.organId">
+              <span>{{ item.organName }}<span v-if="index === 0">，</span></span>
+            </span>
+          </div>
         </template>
       </el-table-column>
       <el-table-column
@@ -55,8 +60,10 @@
     </el-table>
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
-      <el-button @click="closeDialog">取 消</el-button>
-      <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      <div>
+        <el-button @click="closeDialog">取 消</el-button>
+        <el-button type="primary" @click="handleSubmit">确 定</el-button>
+      </div>
     </span>
   </el-dialog>
 </template>
@@ -101,14 +108,17 @@ export default {
   methods: {
     async getModelTaskSuccessList() {
       this.listLoading = true
-      const res = await getModelTaskSuccessList()
+      const res = await getModelTaskSuccessList({
+        pageSize: this.pageSize,
+        pageNo: this.pageNo
+      })
       this.modelList = res.result.data.map(item => {
         item.selected = false
         return item
       })
       console.log('modelList', this.modelList)
-      // this.total = result?.total
-      // this.pageCount = result?.totalPage
+      this.total = res.result?.total
+      this.pageCount = res.result?.totalPage
       this.listLoading = false
     },
     handleSelect(row) {
@@ -162,6 +172,11 @@ export default {
 .input-with-search{
   width: 300px;
   margin: 0 0 10px 0px;
+}
+.dialog-footer{
+  margin-top: 20px;
+  justify-content: space-between;
+  align-items: center;
 }
 .pagination-container {
   padding: 10px 0 0 0;
