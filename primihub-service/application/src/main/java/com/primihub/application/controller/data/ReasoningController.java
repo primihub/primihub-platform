@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RequestMapping("reasoning")
 @RestController
-public class DataReasoningController {
+public class ReasoningController {
 
     @Autowired
     private DataReasoningService dataReasoningService;
