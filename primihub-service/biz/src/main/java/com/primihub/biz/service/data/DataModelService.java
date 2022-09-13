@@ -514,7 +514,7 @@ public class DataModelService {
         Integer tolal = dataModelRepository.queryModelTaskSuccessCount(req);
         Set<Long> taskIds = modelTaskSuccessVos.stream().map(ModelTaskSuccessVo::getTaskId).collect(Collectors.toSet());
         List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByTaskIds(taskIds);
-        Map<Long,Map<String,String>> taskResource = getTaskResource(dataModelTasks,modelTaskSuccessVos);
+        Map<Long,List<Map<String,String>>> taskResource = getTaskResource(dataModelTasks,modelTaskSuccessVos);
         for (ModelTaskSuccessVo modelTaskSuccessVo : modelTaskSuccessVos) {
             if (modelTaskSuccessVo.getTaskEndTime()!=null&&modelTaskSuccessVo.getTaskEndTime()!=0){
                 modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
@@ -526,18 +526,19 @@ public class DataModelService {
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
     }
 
-    private Map<Long,Map<String,String>> getTaskResource(List<DataModelTask> dataModelTasks,List<ModelTaskSuccessVo> modelTaskSuccessVos){
-        Map<Long,Map<String,String>> map = new HashMap<>();
+    private Map<Long,List<Map<String,String>>> getTaskResource(List<DataModelTask> dataModelTasks,List<ModelTaskSuccessVo> modelTaskSuccessVos){
+        Map<Long,List<Map<String,String>>> map = new HashMap<>();
         Map<Long, ModelTaskSuccessVo> taskSuccessMap = modelTaskSuccessVos.stream().collect(Collectors.toMap(ModelTaskSuccessVo::getTaskId, Function.identity()));
         for (DataModelTask dataModelTask : dataModelTasks) {
             try {
                 List<DataComponent> dataComponentReqs = JSONArray.parseArray(dataModelTask.getComponentJson(), DataComponent.class);
                 DataComponent dataSet = dataComponentReqs.stream().filter(req -> req.getComponentCode().equals("dataSet")).findFirst().orElse(null);
                 if (dataSet!=null){
+                    List<Map<String,String>> list = new ArrayList<>();
                     List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(dataSet.getDataJson()).getJSONObject(0).getJSONArray("val").toJavaList(ModelProjectResourceVo.class);
                     for (ModelProjectResourceVo modelProjectResourceVo : modelProjectResourceVos) {
                         if (!taskSuccessMap.get(dataModelTask.getTaskId()).getCreatedOrganId().equals(modelProjectResourceVo.getOrganId())){
-                            map.put(dataModelTask.getTaskId(),new HashMap(){
+                            list.add(new HashMap(){
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
                                     put("organName",modelProjectResourceVo.getOrganName());
@@ -545,6 +546,7 @@ public class DataModelService {
                             });
                         }
                     }
+                    map.put(dataModelTask.getTaskId(),list);
 
                 }
             }catch (Exception e){
