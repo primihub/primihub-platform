@@ -185,6 +185,7 @@
             resultType="com.primihub.biz.entity.data.po.DataProjectResource">
         select DISTINCT resource_id resourceId,server_address serverAddress from data_project_resource
         where audit_status = 1 and organ_id = #{organId}
+        ORDER BY id desc
         LIMIT #{offset},#{pageSize}
     </select>
     <select id="selectProjectResourceByOrganIdCount" resultType="java.lang.Integer">
