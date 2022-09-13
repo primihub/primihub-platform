@@ -6,6 +6,7 @@
     <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
     <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedData" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
+      <pagination v-show="paginationOptions.pageCount>1" small :limit.sync="paginationOptions.pageSize" :page.sync="paginationOptions.pageNo" :total="paginationOptions.total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
         <el-button size="medium" @click="closeDialog">取 消</el-button>
         <el-button size="medium" type="primary" @click="handleSubmit">确 定</el-button>
@@ -16,11 +17,13 @@
 
 <script>
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
+import Pagination from '@/components/Pagination'
 // import SearchInput from '@/components/SearchInput'
 export default {
   name: 'ResourceDialog',
   components: {
-    ResourceTableSingleSelect
+    ResourceTableSingleSelect,
+    Pagination
     // SearchInput
   },
   props: {
@@ -35,6 +38,16 @@ export default {
     showStatus: {
       type: Boolean,
       default: true
+    },
+    paginationOptions: {
+      type: Object,
+      default: () => {
+        return {
+          pageCount: 1,
+          pageSize: 50,
+          total: 1
+        }
+      }
     }
   },
   data() {
@@ -43,7 +56,11 @@ export default {
       selectedResource: {},
       resourceName: '',
       listLoading: false,
-      selectedResourceId: ''
+      selectedResourceId: '',
+      pageCount: 1,
+      total: 0,
+      pageSize: 5,
+      pageNo: 1
     }
   },
   methods: {
@@ -64,6 +81,10 @@ export default {
     handleSubmit() {
       this.resourceName = ''
       this.$emit('submit', this.selectedResource)
+    },
+    handlePagination(data) {
+      this.pageNo = data.page
+      this.$emit('pagination', this.pageNo)
     }
   }
 }
@@ -86,7 +107,7 @@ export default {
 }
 .dialog-footer{
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-around;
   padding-bottom: 30px;
   align-items: center;
 }
@@ -98,7 +119,7 @@ export default {
   margin: 0 0 10px 0px;
 }
 .pagination-container {
-  padding: 10px 0 0 0;
+  padding: 0px 0 0 0;
   display: flex;
   justify-content: center;
 }
