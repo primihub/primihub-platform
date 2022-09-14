@@ -277,15 +277,10 @@ export const asyncRoutes = [
     ]
   },
   {
-    path: '/log',
+    path: 'http://118.190.39.100:30010/d/51j5zgnVk/logs-app?orgId=1&var-app=primihub-demo%2Fprimihubnode&var-search=',
     component: Layout,
     name: 'Log',
-    children: [
-      {
-        path: 'http://118.190.39.100:30010/d/51j5zgnVk/logs-app?orgId=1&var-app=primihub-demo%2Fprimihubnode&var-search=',
-        meta: { title: '日志管理', icon: 'el-icon-warning-outline' }
-      }
-    ]
+    meta: { title: '日志管理', icon: 'el-icon-warning-outline' }
   },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
