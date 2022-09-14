@@ -234,7 +234,8 @@ export const asyncRoutes = [
         hidden: true,
         component: () => import('@/views/reasoning/task'),
         meta: {
-          title: '模型推理任务'
+          title: '模型推理任务',
+          activeMenu: '/reasoning/list'
         }
       },
       {
