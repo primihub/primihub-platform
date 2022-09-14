@@ -5,17 +5,22 @@
         <el-input v-model="form.modelName" class="model-name" placeholder="请选择模型" clearable @focus="openModelDialog" />
       </el-form-item>
       <el-form-item>
-        <p><strong class="required">*</strong>发起方:<span>{{ createdOrgan }}</span></p>
+        <p><strong class="required">*</strong>发起方：<span>{{ createdOrgan }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(createdOrganId,1)">选择资源</el-button>
-        <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId)" />
+        <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId,1)" />
       </el-form-item>
       <el-form-item v-for="(item,index) in providerOrgans" :key="index">
-        <p><strong class="required">*</strong>参与方:<span>{{ item.organName }}</span></p>
+        <p><strong class="required">*</strong>参与方：<span>{{ item.organName }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(item.organId, 2)">选择资源</el-button>
-        <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId)" />
+        <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId,2)" />
       </el-form-item>
       <el-form-item label="推理服务名称" prop="reasoningName">
-        <el-input v-model="form.reasoningName" placeholder="请输入推理服务名称" />
+        <el-input
+          v-model="form.reasoningName"
+          placeholder="请输入推理服务名称"
+          maxlength="20"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="推理服务描述" prop="reasoningDesc">
         <el-input
@@ -35,7 +40,20 @@
     <!-- model select dialog -->
     <ModelSelectDialog :visible="dialogVisible" @submit="handleModelSubmit" @close="handleClose" />
     <!-- add resource dialog -->
-    <ResourceDialog ref="dialogRef" top="10px" width="800px" title="选择资源" :show-status="false" :selected-data="selectedResourceId" :table-data="resourceList" :visible="resourceDialogVisible" @close="handleResourceDialogCancel" @submit="handleResourceDialogSubmit" />
+    <ResourceDialog
+      ref="dialogRef"
+      top="10px"
+      width="800px"
+      title="选择资源"
+      :show-status="false"
+      :selected-data="selectedResourceId"
+      :table-data="resourceList"
+      :visible="resourceDialogVisible"
+      :pagination-options="paginationOptions"
+      @close="handleResourceDialogCancel"
+      @submit="handleResourceDialogSubmit"
+      @pagination="handlePagination"
+    />
   </div>
 </template>
 
@@ -92,6 +110,14 @@ export default {
         resourceId: [
           { required: true }
         ]
+      },
+      pageSize: 100,
+      pageNo: 1,
+      paginationOptions: {
+        pageSize: 5,
+        pageNo: 1,
+        total: 0,
+        pageCount: 0
       }
     }
   },
@@ -107,10 +133,13 @@ export default {
       this.selectedResource = []
       this.$refs.form.resetFields()
     },
-    handleRemove(organId) {
+    handleRemove(organId, participationIdentity) {
       this.selectedResource[organId].splice(0)
-      const posIndex = this.form.resourceList.findIndex(item => item.organId === organId)
-      this.form.resourceList.splice(posIndex, 1)
+      if (participationIdentity === 1) {
+        this.form.createdResourceId = ''
+      } else if (participationIdentity === 2) {
+        this.form.providerResourceId = ''
+      }
     },
     async onSubmit() {
       const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
@@ -155,9 +184,6 @@ export default {
     async handleResourceSelect(organId, participationIdentity) {
       this.selectedOrganId = organId
       this.participationIdentity = participationIdentity
-      if (this.selectedResource[organId]) {
-        this.selectedResource[organId][0]?.resourceId
-      }
       await this.getResourceList()
       this.resourceDialogVisible = true
     },
@@ -168,32 +194,48 @@ export default {
       this.dialogVisible = true
     },
     async handleModelSubmit(data) {
-      this.form.taskId = data.taskId
-      this.providerOrgans = data.providerOrgans
-      this.createdOrgan = data.createdOrgan
-      this.createdOrganId = data.createdOrganId
-      this.projectId = data.projectId
-      this.form.modelName = data.modelName
-      this.modelId = data.modelId
+      if (data) {
+        this.form.taskId = data.taskId
+        this.providerOrgans = data.providerOrgans
+        this.createdOrgan = data.createdOrgan
+        this.createdOrganId = data.createdOrganId
+        this.projectId = data.projectId
+        this.form.modelName = data.modelName
+        this.modelId = data.modelId
+      }
       this.dialogVisible = false
     },
     handleResourceDialogCancel() {
+      this.selectedResourceId = ''
       this.resourceDialogVisible = false
     },
     handleResourceDialogSubmit(data) {
-      this.selectedResource[this.selectedOrganId] = [data]
-      if (this.participationIdentity === 1) {
-        this.form.createdResourceId = data.resourceId
-      } else {
-        this.form.providerResourceId = data.resourceId
+      console.log('handleResourceDialogSubmit', data)
+      if (data.resourceId) {
+        this.selectedResource[this.selectedOrganId] = [data]
+        if (this.participationIdentity === 1) {
+          this.form.createdResourceId = data.resourceId
+        } else {
+          this.form.providerResourceId = data.resourceId
+        }
       }
+
       this.resourceDialogVisible = false
+    },
+    async handlePagination(pageNo) {
+      this.paginationOptions.pageNo = pageNo
+      await this.getResourceList()
     },
     async getResourceList() {
       this.resourceList = []
-      const res = await getResourceList({ organId: this.selectedOrganId })
+      const res = await getResourceList({
+        organId: this.selectedOrganId,
+        pageSize: this.paginationOptions.pageSize,
+        pageNo: this.paginationOptions.pageNo })
       if (res.code === 0) {
         this.resourceList = res.result.data
+        this.paginationOptions.pageCount = res.result.totalPage
+        this.paginationOptions.total = res.result.total
       }
     }
   }

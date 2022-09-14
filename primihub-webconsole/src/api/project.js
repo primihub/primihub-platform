@@ -11,6 +11,7 @@ export function getResourceList(params) {
   return request({
     url: '/data/project/getResourceList',
     method: 'get',
+    showLoading: false,
     params
   })
 }

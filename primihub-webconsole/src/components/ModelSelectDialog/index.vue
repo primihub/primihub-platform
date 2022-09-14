@@ -1,6 +1,5 @@
 <template>
   <el-dialog
-    v-loading="listLoading"
     title="选择模型"
     width="1000px"
     :visible="visible"
@@ -8,6 +7,7 @@
     v-bind="$attrs"
   >
     <el-table
+      v-loading="listLoading"
       border
       :data="modelList"
     >
@@ -36,7 +36,7 @@
           <span>发起方: {{ row.createdOrgan }}</span><br>
           <div>协作方:
             <span v-for="(item,index) in row.providerOrgans" :key="item.organId">
-              <span>{{ item.organName }}<span v-if="index === 0">，</span></span>
+              <span>{{ item.organName }}<span v-if="index === 0 && row.providerOrgans.length>1">，</span></span>
             </span>
           </div>
         </template>
@@ -85,6 +85,7 @@ export default {
   },
   data() {
     return {
+      dialogVisible: false,
       modelList: [],
       total: 0,
       currentPage: 1,
@@ -116,6 +117,7 @@ export default {
         item.selected = false
         return item
       })
+      this.dialogVisible = true
       console.log('modelList', this.modelList)
       this.total = res.result?.total
       this.pageCount = res.result?.totalPage

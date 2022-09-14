@@ -71,7 +71,7 @@
             <span>发起方: {{ row.createdOrgan }}</span><br>
             <div>协作方:
               <span v-for="(item,index) in row.providerOrgans" :key="item.organId">
-                <span>{{ item.organName }}<span v-if="index === 0">，</span></span>
+                <span>{{ item.organName }}<span v-if="index === 0 && row.providerOrgans.length>1">，</span></span>
               </span>
             </div>
           </template>

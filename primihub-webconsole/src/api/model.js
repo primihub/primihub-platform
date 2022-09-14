@@ -4,6 +4,7 @@ export function getModelTaskSuccessList(params) {
   return request({
     url: '/data/model/getModelTaskSuccessList',
     method: 'get',
+    showLoading: false,
     params
   })
 }
