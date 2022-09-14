@@ -188,6 +188,7 @@ public class SysAuthService {
                 {"模型推理列表","ModelReasoningList","2","ModelReasoning","","1","0"},
                 {"模型推理任务","ModelReasoningTask","3","ModelReasoning","","1","0"},
                 {"模型推理详情","ModelReasoningDetail","3","ModelReasoning","","1","0"},
+                {"日志","Log","1","","","1","0"},
         };
 
         Map<String,SysAuth> map=new HashMap<>();
