@@ -146,8 +146,6 @@ export default {
     padding: 25px;
     margin-top: 20px;
     background-color: #fff;
-    border-radius: 20px;
-    // border: 1px solid #DCDFE6;
     .organ-name{
       color: $mainColor;
       font-weight: bold;

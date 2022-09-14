@@ -201,12 +201,6 @@ export default {
       this.projectAuditStatus = this.currentOrgan.auditStatus === 1
       this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
     },
-    handleModelClick(id) {
-      this.$router.push({
-        name: 'ModelDetail',
-        params: { id }
-      })
-    },
     handlePreview(row) {
       this.resourceId = row.resourceId
       this.resourceFilePreview()
