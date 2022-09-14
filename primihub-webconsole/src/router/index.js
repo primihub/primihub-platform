@@ -92,7 +92,7 @@ export const asyncRoutes = [
       },
       {
         path: 'detail/:id/task/:taskId',
-        name: 'ModelDetail',
+        name: 'ModelTaskDetail',
         meta: {
           title: '任务详情',
           activeMenu: '/project/list',
@@ -192,7 +192,7 @@ export const asyncRoutes = [
   {
     path: '/model',
     component: Layout,
-    name: 'Model',
+    name: 'ModelList',
     redirect: '/model/list',
     meta: { title: '模型管理', icon: 'el-icon-files' },
     alwaysShow: true,
@@ -201,7 +201,7 @@ export const asyncRoutes = [
         path: 'list',
         name: 'ModelList',
         component: () => import('@/views/model/list'),
-        meta: { title: '全部模型' }
+        meta: { title: '模型管理', breadcrumb: false }
       },
       {
         path: 'detail/:id',
@@ -276,7 +276,17 @@ export const asyncRoutes = [
       }
     ]
   },
-
+  {
+    path: '/log',
+    component: Layout,
+    name: 'Log',
+    children: [
+      {
+        path: 'http://118.190.39.100:30010/d/51j5zgnVk/logs-app?orgId=1&var-app=primihub-demo%2Fprimihubnode&var-search=',
+        meta: { title: '日志管理', icon: 'el-icon-warning-outline' }
+      }
+    ]
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

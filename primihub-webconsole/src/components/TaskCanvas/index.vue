@@ -693,7 +693,7 @@ export default {
     },
     toModelDetail(id) {
       this.$router.push({
-        name: `ModelDetail`,
+        name: `ModelTaskDetail`,
         params: { taskId: id },
         query: { from: '0' } // 跳转携带参数，用于预览tab展示 0 创建任务 1 生成模型
       })

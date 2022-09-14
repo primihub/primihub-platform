@@ -255,7 +255,7 @@ export default {
     },
     toModelDetail(taskId) {
       this.$router.push({
-        name: `ModelDetail`,
+        name: `ModelTaskDetail`,
         params: { taskId }
       })
     },
