@@ -276,6 +276,16 @@ export const asyncRoutes = [
       }
     ]
   },
+  {
+    path: '/external-link',
+    component: Layout,
+    children: [
+      {
+        path: 'http://118.190.39.100:30010/d/liz0yRCZz/logs-app?orgId=1&var-app=zhangjianning%2Fprimihubnode&var-search=',
+        meta: { title: '日志管理', icon: 'el-icon-warning-outline' }
+      }
+    ]
+  },
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
