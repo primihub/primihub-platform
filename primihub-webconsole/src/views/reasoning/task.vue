@@ -7,12 +7,12 @@
       <el-form-item>
         <p><strong class="required">*</strong>发起方：<span>{{ createdOrgan }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(createdOrganId,1)">选择资源</el-button>
-        <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId)" />
+        <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId,1)" />
       </el-form-item>
       <el-form-item v-for="(item,index) in providerOrgans" :key="index">
         <p><strong class="required">*</strong>参与方：<span>{{ item.organName }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(item.organId, 2)">选择资源</el-button>
-        <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId)" />
+        <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId,2)" />
       </el-form-item>
       <el-form-item label="推理服务名称" prop="reasoningName">
         <el-input
@@ -133,10 +133,13 @@ export default {
       this.selectedResource = []
       this.$refs.form.resetFields()
     },
-    handleRemove(organId) {
+    handleRemove(organId, participationIdentity) {
       this.selectedResource[organId].splice(0)
-      const posIndex = this.form.resourceList.findIndex(item => item.organId === organId)
-      this.form.resourceList.splice(posIndex, 1)
+      if (participationIdentity === 1) {
+        this.form.createdResourceId = ''
+      } else if (participationIdentity === 2) {
+        this.form.providerResourceId = ''
+      }
     },
     async onSubmit() {
       const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
@@ -181,9 +184,6 @@ export default {
     async handleResourceSelect(organId, participationIdentity) {
       this.selectedOrganId = organId
       this.participationIdentity = participationIdentity
-      if (this.selectedResource[organId]) {
-        this.selectedResource[organId][0]?.resourceId
-      }
       await this.getResourceList()
       this.resourceDialogVisible = true
     },
@@ -194,25 +194,32 @@ export default {
       this.dialogVisible = true
     },
     async handleModelSubmit(data) {
-      this.form.taskId = data.taskId
-      this.providerOrgans = data.providerOrgans
-      this.createdOrgan = data.createdOrgan
-      this.createdOrganId = data.createdOrganId
-      this.projectId = data.projectId
-      this.form.modelName = data.modelName
-      this.modelId = data.modelId
+      if (data) {
+        this.form.taskId = data.taskId
+        this.providerOrgans = data.providerOrgans
+        this.createdOrgan = data.createdOrgan
+        this.createdOrganId = data.createdOrganId
+        this.projectId = data.projectId
+        this.form.modelName = data.modelName
+        this.modelId = data.modelId
+      }
       this.dialogVisible = false
     },
     handleResourceDialogCancel() {
+      this.selectedResourceId = ''
       this.resourceDialogVisible = false
     },
     handleResourceDialogSubmit(data) {
-      this.selectedResource[this.selectedOrganId] = [data]
-      if (this.participationIdentity === 1) {
-        this.form.createdResourceId = data.resourceId
-      } else {
-        this.form.providerResourceId = data.resourceId
+      console.log('handleResourceDialogSubmit', data)
+      if (data.resourceId) {
+        this.selectedResource[this.selectedOrganId] = [data]
+        if (this.participationIdentity === 1) {
+          this.form.createdResourceId = data.resourceId
+        } else {
+          this.form.providerResourceId = data.resourceId
+        }
       }
+
       this.resourceDialogVisible = false
     },
     async handlePagination(pageNo) {
