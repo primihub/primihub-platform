@@ -352,7 +352,7 @@ public class DataProjectService {
                     }
                 }
             }
-            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, project.getProjectId());
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).size());
             dataProjectPrRepository.updateDataProject(dataProject);
         }
