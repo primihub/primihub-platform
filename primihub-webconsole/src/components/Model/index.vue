@@ -205,7 +205,9 @@ export default {
           this.listLoading = false
           const posIndex = this.modelList.findIndex(item => item.latestTaskId === taskId)
           this.modelList[posIndex].latestTaskStatus = 2
-          this.fetchData()
+          this.timer = window.setInterval(() => {
+            setTimeout(this.fetchData(), 0)
+          }, 5000)
         } else {
           this.listLoading = false
           this.$message({

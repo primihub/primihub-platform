@@ -4,7 +4,7 @@
     v-bind="$attrs"
   >
     <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
-    <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedData" @change="handleChange" />
+    <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedResourceId" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="paginationOptions.pageCount>1" small :limit.sync="paginationOptions.pageSize" :page.sync="paginationOptions.pageNo" :total="paginationOptions.total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
@@ -53,10 +53,10 @@ export default {
   data() {
     return {
       resourceList: [],
-      selectedResource: {},
+      selectedResource: null,
       resourceName: '',
       listLoading: false,
-      selectedResourceId: '',
+      selectedResourceId: this.selectedData,
       pageCount: 1,
       total: 0,
       pageSize: 5,
@@ -65,6 +65,7 @@ export default {
   },
   methods: {
     handleChange(data) {
+      this.selectedResourceId = data.resourceId
       this.selectedResource = data
     },
     searchResource() {
@@ -75,12 +76,22 @@ export default {
       this.resourceName = searchName
     },
     closeDialog() {
+      this.selectedResource = null
+      this.selectedResourceId = ''
       this.resourceName = ''
       this.$emit('close')
     },
     handleSubmit() {
       this.resourceName = ''
-      this.$emit('submit', this.selectedResource)
+      if (!this.selectedResource) {
+        this.$message({
+          message: '请选择资源',
+          type: 'warning'
+        })
+        return
+      } else {
+        this.$emit('submit', this.selectedResource)
+      }
     },
     handlePagination(data) {
       this.pageNo = data.page
