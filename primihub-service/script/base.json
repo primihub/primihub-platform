@@ -10,6 +10,7 @@
     "needSignUriList":[
 
     ],
+    "adminUserIds": [1],
     "defaultPassword":"123456",
     "defaultPasswordVector":"excalibur",
     "primihubOfficalService": "http://127.0.0.1:8000",
