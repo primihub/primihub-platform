@@ -67,12 +67,13 @@ service.interceptors.request.use(
       } else {
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         const data = qs.parse(config.data)
+        console.log('request data', data)
         config.data = qs.stringify({
           ...data,
           timestamp,
           nonce,
           token: getToken()
-        })
+        }, { allowDots: true })
       }
     }
 

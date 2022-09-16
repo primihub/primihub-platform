@@ -54,7 +54,6 @@ export default {
 @import "~@/styles/variables.scss";
 .steps{
   background-color: #fff;
-  border-radius: $sectionBorderRadius;
   padding:50px;
 }
 </style>

@@ -83,7 +83,7 @@ export const asyncRoutes = [
         path: 'detail/:id/createTask',
         name: 'ModelCreate',
         meta: {
-          title: '新建任务',
+          title: '创建任务',
           activeMenu: '/project/list',
           parent: { name: 'ProjectDetail' }
         },
@@ -92,7 +92,7 @@ export const asyncRoutes = [
       },
       {
         path: 'detail/:id/task/:taskId',
-        name: 'ModelDetail',
+        name: 'ModelTaskDetail',
         meta: {
           title: '任务详情',
           activeMenu: '/project/list',
@@ -190,6 +190,67 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/model',
+    component: Layout,
+    name: 'ModelList',
+    redirect: '/model/list',
+    meta: { title: '模型管理', icon: 'el-icon-files' },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'list',
+        name: 'ModelList',
+        component: () => import('@/views/model/list'),
+        meta: { title: '模型管理', breadcrumb: false }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ModelDetail',
+        meta: {
+          title: '模型详情',
+          activeMenu: '/model/list'
+        },
+        hidden: true,
+        component: () => import('@/views/model/detail')
+      }
+    ]
+  },
+  {
+    path: '/reasoning',
+    component: Layout,
+    name: 'ModelReasoning',
+    redirect: '/reasoning/list',
+    meta: { title: '模型推理', icon: 'el-icon-aim' },
+    children: [
+      {
+        path: 'list',
+        name: 'ModelReasoningList',
+        component: () => import('@/views/reasoning/list'),
+        meta: { title: '模型推理', breadcrumb: false }
+      },
+      {
+        path: 'task',
+        name: 'ModelReasoningTask',
+        hidden: true,
+        component: () => import('@/views/reasoning/task'),
+        meta: {
+          title: '模型推理任务',
+          activeMenu: '/reasoning/list'
+        }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ModelReasoningDetail',
+        meta: {
+          title: '模型推理详情',
+          activeMenu: '/reasoning/list'
+        },
+        hidden: true,
+        component: () => import('@/views/reasoning/detail')
+      }
+    ]
+  },
+  {
     path: '/setting',
     component: Layout,
     name: 'Setting',
@@ -216,7 +277,12 @@ export const asyncRoutes = [
       }
     ]
   },
-
+  {
+    path: 'http://118.190.39.100:30010/d/51j5zgnVk/logs-app?orgId=1&var-app=primihub-demo%2Fprimihubnode&var-search=',
+    component: Layout,
+    name: 'Log',
+    meta: { title: '日志管理', icon: 'el-icon-warning-outline' }
+  },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

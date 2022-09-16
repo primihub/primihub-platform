@@ -32,8 +32,8 @@
                 {
                     "is_show": 0,
                     "is_required": 1,
-                    "type_code": "modelName",
-                    "type_name": "模型名称",
+                    "type_code": "taskName",
+                    "type_name": "任务名称",
                     "input_type": "text",
                     "input_value": "",
                     "input_values": []
@@ -41,8 +41,8 @@
                 {
                     "is_show": 0,
                     "is_required": 0,
-                    "type_code": "modelDesc",
-                    "type_name": "模型描述",
+                    "type_code": "taskDesc",
+                    "type_name": "任务描述",
                     "input_type": "textarea",
                     "input_value": "",
                     "input_values": []
@@ -275,6 +275,24 @@
                             "val": "V-XGBoost"
                         }
                     ]
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 1,
+                    "type_code": "modelName",
+                    "type_name": "模型名称",
+                    "input_type": "text",
+                    "input_value": "",
+                    "input_values": []
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "modelDesc",
+                    "type_name": "模型描述",
+                    "input_type": "textarea",
+                    "input_value": "",
+                    "input_values": []
                 }
             ]
         },

@@ -8,6 +8,8 @@ import java.util.List;
 public class ModelProjectResourceVo {
 
     private String organId;
+
+    private String organName;
     /**
      * 资源ID
      */

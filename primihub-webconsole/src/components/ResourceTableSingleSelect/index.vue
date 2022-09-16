@@ -10,7 +10,8 @@
     >
       <el-table-column label="选择" width="55">
         <template slot-scope="{row}">
-          <el-radio v-model="radioSelect" :label="row.resourceId" :disabled="row.auditStatus !== 1" @change="handleRadioChange(row)"><i /></el-radio>
+          <el-radio v-model="radioSelect" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
+          <!-- <el-radio v-model="radioSelect" :label="row.resourceId" :disabled="row.auditStatus !== 1" @change="handleRadioChange(row)"><i /></el-radio> -->
         </template>
       </el-table-column>
       <el-table-column
@@ -34,6 +35,7 @@
         </template>
       </el-table-column>
       <el-table-column
+        v-if="showStatus"
         prop="auditStatus"
         label="审核状态"
         align="center"
@@ -67,6 +69,10 @@ export default {
     selectedData: {
       type: String,
       default: ''
+    },
+    showStatus: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -81,7 +87,9 @@ export default {
     }
   },
   mounted() {
-    this.setCurrent(this.selectedData)
+    if (this.selectedData.length) {
+      this.setCurrent(this.selectedData)
+    }
   },
   methods: {
     handleRadioChange(row) {

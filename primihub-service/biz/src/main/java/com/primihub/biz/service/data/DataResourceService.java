@@ -88,12 +88,11 @@ public class DataResourceService {
             organIds.add(vo.getOrganId());
             return DataResourceConvert.dataResourcePoConvertVo(vo);
         }).collect(Collectors.toList());
-        // 标签信息
-        Map<Long, List<ResourceTagListVo>> resourceTagMap = dataResourceRepository.queryDataResourceListTags(resourceIds).stream().collect(Collectors.groupingBy(ResourceTagListVo::getResourceId));
-        // 用户信息
+        Map<Long, List<ResourceTagListVo>> resourceTagMap = dataResourceRepository.queryDataResourceListTags(resourceIds)
+                .stream()
+                .collect(Collectors.groupingBy(ResourceTagListVo::getResourceId));
         Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
         for (DataResourceVo dataResourceVo : voList) {
-            // TODO 查询用户信息 liweihua -- 完成
             SysUser sysUser = sysUserMap.get(dataResourceVo.getUserId());
             dataResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
             dataResourceVo.setTags(resourceTagMap.get(dataResourceVo.getResourceId()));
@@ -189,7 +188,6 @@ public class DataResourceService {
     }
 
     public BaseResultEntity getDataResource(Long resourceId) {
-        // 查询资源信息
         DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -199,7 +197,9 @@ public class DataResourceService {
         SysUser sysUser = sysUserService.getSysUserById(dataResourceVo.getUserId());
         dataResourceVo.setUserName(sysUser == null?"":sysUser.getUserName());
         dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
-        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getFileId(),dataResource.getResourceId()).stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList());
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getFileId(),dataResource.getResourceId())
+                .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
+                .collect(Collectors.toList());
         Map<String,Object> map = new HashMap<>();
         try {
             List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), 0, DataConstant.READ_DATA_ROW);
@@ -311,14 +311,6 @@ public class DataResourceService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL,"请检查文件编码格式");
         }
         return BaseResultEntity.success(csvVo);
-    }
-
-    public LinkedHashMap<String,Object> readValues(String[] values,String[] headers){
-        LinkedHashMap<String,Object> map = new LinkedHashMap<>();
-        for (int i = 0; i < headers.length; i++) {
-            map.put(headers[i],values[i]);
-        }
-        return map;
     }
 
     public List<DataFileField> batchInsertDataFileField(SysFile sysFile,String[] headers,LinkedHashMap<String,Object> dataMap) {

@@ -1,0 +1,42 @@
+=== 2.8.1 导入推理接口
+include::{snippets}/saveReasoning/curl-request.adoc[]
+include::{snippets}/saveReasoning/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/saveReasoning/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/saveReasoning/http-request.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/saveReasoning/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/saveReasoning/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/saveReasoning/http-response.adoc[]
+
+=== 2.8.2 推理列表接口
+include::{snippets}/getReasoningList/curl-request.adoc[]
+include::{snippets}/getReasoningList/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getReasoningList/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getReasoningList/http-request.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getReasoningList/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getReasoningList/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getReasoningList/http-response.adoc[]
+
+=== 2.8.2 推理详情接口
+include::{snippets}/getReasoning/curl-request.adoc[]
+include::{snippets}/getReasoning/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getReasoning/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getReasoning/http-request.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getReasoning/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getReasoning/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getReasoning/http-response.adoc[]
+
