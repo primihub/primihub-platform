@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" :node-data="nodeData" :options="drawerOptions" @change="handleChange" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -170,6 +170,8 @@ export default {
     await this.init()
     await this.getModelComponentDetail()
 
+    console.log('isEditable', this.options.isEditable)
+    console.log('history', this.graph.history)
     // 画布可编辑，初始操作按钮事件
     if (this.options.isEditable) {
       this.initToolBarEvent()
@@ -427,7 +429,7 @@ export default {
     },
     addStartNode() {
       // 60 = start node width
-      const x = this.width * 0.5 - 60
+      const x = this.width * 0.5 - 90
       this.startData = this.components.filter(item => item.componentCode === 'start')[0]
       this.graph.addNode({
         x: x,
@@ -735,6 +737,10 @@ export default {
           zIndex: 1
         })
       })
+      if (this.options.center) {
+        const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'start')
+        this.graphData.cells[posIndex].position.x = this.graphData.cells[posIndex].position.x + 30
+      }
 
       this.modelPointComponents?.forEach(item => {
         if (item.shape === 'edge') {

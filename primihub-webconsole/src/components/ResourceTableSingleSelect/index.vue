@@ -87,7 +87,7 @@ export default {
     }
   },
   mounted() {
-    if (this.selectedData.length) {
+    if (this.selectedData) {
       this.setCurrent(this.selectedData)
     }
   },
