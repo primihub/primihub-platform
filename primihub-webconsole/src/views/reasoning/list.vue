@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="container">
+  <div class="container">
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
         <el-form-item label="模型推理服务ID">
@@ -20,13 +20,14 @@
         </el-form-item> -->
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" size="small" @click="search">查询</el-button>
-          <el-button icon="el-icon-search" size="small" @click="reset">重置</el-button>
+          <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
     <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">模型推理</el-button>
-    <div class="model-list">
+    <div class="list">
       <el-table
+        v-loading="listLoading"
         :data="dataList"
       >
         <el-table-column
@@ -66,8 +67,8 @@
           align="center"
         /> -->
       </el-table>
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
   </div>
 </template>
 
@@ -158,6 +159,7 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
+      this.pageSize = data.limit
       this.fetchData()
     }
   }
@@ -174,7 +176,8 @@ export default {
   padding-top: 20px;
   background-color: #fff;
 }
-.model-list {
+.list {
+  padding: 30px;
   margin-top: 20px;
   border-top: 1px solid #eee;
   background-color: #fff;

@@ -10,7 +10,9 @@
       v-bind="$attrs"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
-    />
+    >
+      <span class="number">第 {{ currentPage }} / {{ total }} 页 </span>
+    </el-pagination>
   </div>
 </template>
 
@@ -40,7 +42,7 @@ export default {
     },
     layout: {
       type: String,
-      default: 'total, sizes, prev, pager, next, jumper'
+      default: 'total, slot, prev, pager, next, sizes, jumper'
     },
     background: {
       type: Boolean,
@@ -75,12 +77,13 @@ export default {
   },
   methods: {
     handleSizeChange(val) {
-      this.$emit('pagination', { page: this.currentPage, limit: val })
+      this.$emit('pagination', { page: 1, limit: val })
       if (this.autoScroll) {
         scrollTo(0, 800)
       }
     },
     handleCurrentChange(val) {
+      console.log('handleCurrentChange')
       this.$emit('pagination', { page: val, limit: this.pageSize })
       if (this.autoScroll) {
         scrollTo(0, 800)
@@ -92,11 +95,14 @@ export default {
 
 <style scoped>
 .pagination-container {
-  padding: 32px 16px;
+  padding: 32px 0;
   display: flex;
   justify-content: flex-end;
 }
 .pagination-container.hidden {
   display: none;
+}
+.number{
+  margin: 0 10px;
 }
 </style>
