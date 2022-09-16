@@ -6,6 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.DataProjectApprovalReq;
 import com.primihub.biz.entity.data.req.DataProjectQueryReq;
 import com.primihub.biz.entity.data.req.DataProjectReq;
+import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.util.crypt.DateUtil;
 import org.apache.commons.lang.StringUtils;
@@ -155,6 +156,14 @@ public class ProjectController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
         }
         return dataProjectService.getProjectResourceOrgan(projectId,modelId);
+    }
+
+    @GetMapping("getResourceList")
+    public BaseResultEntity getResourceList(String organId, PageReq req,String resourceName){
+        if (StringUtils.isBlank(organId)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
+        return dataProjectService.getResourceList(organId,req,resourceName);
     }
 
 }

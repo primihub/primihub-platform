@@ -432,4 +432,52 @@ public class DataModelControllerTest {
                         )
                 ));
     }
+    @Test
+    public void testGetModelTaskSuccessList() throws Exception{
+        // 删除资源接口
+        this.mockMvc.perform(get("/model/getModelTaskSuccessList")
+                .param("pageNo","1")
+                .param("pageSize","5")
+                .param("modelId","")
+                .param("modelName","")
+                .param("successDate","")
+                .header("userId","1"))
+                .andExpect(status().isOk())
+                .andDo(document("getModelTaskSuccessList",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("userId").description("用户id (前端不用传参)")
+                        ),
+                        requestParameters(
+                                parameterWithName("pageNo").description("页码"),
+                                parameterWithName("pageSize").description("每页条数"),
+                                parameterWithName("modelId").description("模型id"),
+                                parameterWithName("modelName").description("模型名称"),
+                                parameterWithName("successDate").description("完成时间")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("result.total").description("总共的数据量"),
+                                fieldWithPath("result.pageSize").description("每页显示多少条"),
+                                fieldWithPath("result.totalPage").description("共有多少页"),
+                                fieldWithPath("result.index").description("当前是第几页"),
+                                fieldWithPath("result.data[]").description("数据"),
+                                fieldWithPath("result.data[].taskId").optional().description("任务ID"),
+                                fieldWithPath("result.data[].taskIdName").optional().description("任务ID串"),
+                                fieldWithPath("result.data[].taskName").optional().description("任务名称"),
+                                fieldWithPath("result.data[].taskEndDate").optional().description("任务完成时间"),
+                                fieldWithPath("result.data[].modelId").optional().description("模型ID"),
+                                fieldWithPath("result.data[].modelName").optional().description("模型名称"),
+                                fieldWithPath("result.data[].projectId").optional().description("项目ID"),
+                                fieldWithPath("result.data[].projectName").optional().description("项目名称"),
+                                fieldWithPath("result.data[].createdOrgan").optional().description("发起方机构名称"),
+                                fieldWithPath("result.data[].providerOrgans[]").optional().description("协作方机构名称"),
+                                fieldWithPath("result.data[].resourceNum").optional().description("资源数"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
 }

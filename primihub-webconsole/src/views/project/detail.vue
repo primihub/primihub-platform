@@ -107,6 +107,7 @@ export default {
       isShowAuditForm: false,
       projectName: '',
       projectId: '',
+      id: '',
       projectAuditStatus: '',
       projectDesc: '',
       userName: '',
@@ -199,12 +200,6 @@ export default {
       this.isShowAuditForm = this.thisInstitution && this.currentOrgan.auditStatus === 0 && this.projectStatus !== 2
       this.projectAuditStatus = this.currentOrgan.auditStatus === 1
       this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
-    },
-    handleModelClick(id) {
-      this.$router.push({
-        name: 'ModelDetail',
-        params: { id }
-      })
     },
     handlePreview(row) {
       this.resourceId = row.resourceId
@@ -366,12 +361,13 @@ export default {
     },
     fetchData() {
       this.listLoading = true
-      this.projectId = this.$route.params.id || this.list.id
-      getProjectDetail({ id: this.projectId }).then(res => {
+      this.id = this.$route.params.id || this.list.id
+      getProjectDetail({ id: this.id }).then(res => {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status } = this.list
+          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status, projectId } = this.list
+          this.projectId = projectId
           this.serverAddress = serverAddress
           this.creator = creator
           this.projectName = projectName
@@ -446,7 +442,6 @@ h2{
   margin-block-end: 0.5em;
 }
 section{
-  border-radius: $sectionBorderRadius;
   background-color: #ffffff;
   padding: 30px;
   margin-bottom: 30px;
@@ -485,11 +480,7 @@ section{
   justify-content: space-between;
 }
 ::v-deep .el-descriptions-item__container{
-  display: block;
-  margin: 5px 0;
-  strong{
-    margin-left: 5px;
-  }
+  margin: 5px 10px 0 0;
 }
 ::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
   padding-bottom: 0;

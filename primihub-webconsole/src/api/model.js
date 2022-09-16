@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function getModelTaskSuccessList(params) {
+  return request({
+    url: '/data/model/getModelTaskSuccessList',
+    method: 'get',
+    showLoading: false,
+    params
+  })
+}
 export function getModelList(params) {
   return request({
     url: '/data/model/getmodellist',

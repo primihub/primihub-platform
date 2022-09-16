@@ -135,9 +135,11 @@ public class SysAuthService {
                 {"项目管理","Project","1","","","1","1"},
                 {"项目列表","ProjectList","2","Project","/project/getProjectList","1","1"},
                 {"项目详情","ProjectDetail","3","Project","/project/getProjectDetails","1","1"},
+                {"任务详情","ModelTaskDetail","3","Project","/project/getProjectDetails","1","1"},
                 {"新建项目","ProjectCreate","3","ProjectList","/project/saveOrUpdateProject","1","1"},
                 {"关闭项目","ProjectDelete","3","ProjectList","/project/closeProject","1","1"},
-                {"模型列表","ModelList","2","ProjectDetail","/model/getmodellist","1","1"},
+                {"模型管理","Model","1","","/model/getmodellist","1","1"},
+                {"模型列表","ModelList","2","Model","/model/getmodellist","1","1"},
                 {"模型详情","ModelDetail","3","ModelList","/model/getdatamodel","1","1"},
                 {"模型查看","ModelView","3","ModelList","/model/getdatamodel","1","1"},
                 {"添加模型","ModelCreate","3","ModelList","/model/saveModelAndComponent","1","1"},
@@ -183,6 +185,11 @@ public class SysAuthService {
                 {"项目启动","openProject","3","ProjectDetail","/project/openProject","1","0"},
                 {"模型任务删除","deleteModelTask","3","ProjectDetail","/task/deleteTask","1","0"},
                 {"模型复制","copyModelTask","3","ProjectDetail","","1","0"},
+                {"模型推理","ModelReasoning","1","","","1","0"},
+                {"模型推理列表","ModelReasoningList","2","ModelReasoning","","1","0"},
+                {"模型推理任务","ModelReasoningTask","3","ModelReasoning","","1","0"},
+                {"模型推理详情","ModelReasoningDetail","3","ModelReasoning","","1","0"},
+                {"日志","Log","1","","","1","0"},
         };
 
         Map<String,SysAuth> map=new HashMap<>();

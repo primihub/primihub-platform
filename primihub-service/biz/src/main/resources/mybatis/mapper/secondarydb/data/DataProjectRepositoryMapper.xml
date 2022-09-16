@@ -170,6 +170,38 @@
         where project_id = #{projectId}
         and organ_id = #{organId}
     </select>
+    <select id="selectProjectResourceByResourceIds"
+            resultType="com.primihub.biz.entity.data.po.DataProjectResource">
+        select
+            DISTINCT resource_id resourceId,server_address serverAddress,organ_id  organId
+        from data_project_resource
+        where resource_id in
+        <foreach collection="resourceIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectProjectResourceByOrganIdPage"
+            resultType="com.primihub.biz.entity.data.po.DataProjectResource">
+        SELECT
+            resource_id resourceId,
+            server_address serverAddress,
+            max(id) maxId
+        FROM
+            data_project_resource
+        WHERE
+            audit_status = 1 and organ_id = #{organId}
+        GROUP BY
+            resourceId,
+            serverAddress
+        ORDER BY
+            maxId DESC
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="selectProjectResourceByOrganIdCount" resultType="java.lang.Integer">
+        select count(DISTINCT resource_id) from data_project_resource
+        where audit_status = 1 and organ_id = #{organId}
+    </select>
 
     <sql id="selectDataProjectCondition">
         <if test="queryType==1">

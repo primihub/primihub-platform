@@ -4,6 +4,7 @@ import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectResource;
 import com.primihub.biz.entity.data.req.DataProjectQueryReq;
+import com.primihub.biz.entity.data.req.PageReq;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
@@ -27,7 +28,13 @@ public interface DataProjectRepository {
     DataProjectResource selectProjectResourceById(@Param("id") Long id);
     List<DataProjectResource> selectProjectResourceByProjectId(@Param("projectId") String projectId);
     List<DataProjectResource> selectProjectResourceByProjectIdAndOrganId(@Param("projectId") String projectId,@Param("organId") String organId);
+    List<DataProjectResource> selectProjectResourceByOrganIdPage(Map<String,Object> paramMap);
+    Integer selectProjectResourceByOrganIdCount(Map<String,Object> paramMap);
     List<DataProjectResource> selectProjectResourceByProjectIds(@Param("projectIds") Set<String> projectIds);
+
+    List<DataProjectResource> selectProjectResourceByResourceIds(@Param("resourceIds") Set<String> resourceIds);
+
+
 
 
     List<Map<String,Object>> selectProjectStatics(@Param("organId")String organId);

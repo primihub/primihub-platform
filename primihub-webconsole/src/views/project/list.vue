@@ -560,7 +560,6 @@ h2 {
 }
 .project-list {
   margin-top: 20px;
-  border-radius: $sectionBorderRadius;
   min-height: 200px;
 }
 .add-card {

@@ -1,40 +1,45 @@
 <template>
   <div class="operating">
-    <el-tooltip class="item" effect="light" content="运行" placement="bottom">
+    <el-tooltip v-if="options.buttons.includes('run')" class="item" effect="light" content="运行" placement="bottom">
       <i class="el-icon-video-play" @click="runFn" />
     </el-tooltip>
-    <el-tooltip class="item" effect="light" content="保存" placement="bottom">
+    <el-tooltip v-if="options.buttons.includes('save')" class="item" effect="light" content="保存" placement="bottom">
       <svg-icon icon-class="save" @click="saveFn" />
     </el-tooltip>
-    <!-- <el-tooltip class="item" effect="light" content="撤销" placement="bottom">
-      <i class="el-icon-refresh-left" :class="{opacity: !canUndo}" @click="undoFn" />
-    </el-tooltip>-->
-    <el-tooltip class="item" effect="light" content="放大" placement="bottom">
+    <el-tooltip v-if="options.buttons.includes('zoomIn')" class="item" effect="light" content="放大" placement="bottom">
       <i class="el-icon-zoom-in" @click="zoomInFn" />
     </el-tooltip>
-    <el-tooltip class="item" effect="light" content="缩小" placement="bottom">
+    <el-tooltip v-if="options.buttons.includes('zoomOut')" class="item" effect="light" content="缩小" placement="bottom">
       <i class="el-icon-zoom-out" :class="{opacity: !canZoomOut}" @click="zoomOutFn" />
     </el-tooltip>
-    <el-tooltip class="item" effect="light" content="清空" placement="bottom">
-      <!-- <i class="el-icon-delete" /> -->
+    <el-tooltip v-if="options.buttons.includes('reset')" class="item" effect="light" content="重置" placement="bottom">
+      <i class="el-icon-full-screen" @click="resetFn" />
+    </el-tooltip>
+    <el-tooltip v-if="options.buttons.includes('clear')" class="item" effect="light" content="清空" placement="bottom">
       <svg-icon icon-class="clear" @click="clearFn" />
     </el-tooltip>
-    <!-- <el-tooltip class="item" effect="light" content="重做" placement="bottom">
-      <i class="el-icon-refresh-right" :class="{opacity: !canRedo}" @click="redoFn" />
-    </el-tooltip> -->
-
   </div>
 </template>
 
 <script>
 export default {
   name: 'ToolBar',
+  props: {
+    options: {
+      type: Object,
+      default: () => {
+        return {
+          show: true,
+          buttons: ['run', 'save', 'zoomIn', 'zoomOut', 'reset', 'clear']
+        }
+      }
+    }
+  },
   data() {
     return {
       canUndo: '',
       canRedo: '',
       canZoomOut: true
-      // graph: null
     }
   },
   methods: {
@@ -62,6 +67,10 @@ export default {
     // 保存模板文件
     saveFn() {
       this.$emit('save')
+    },
+    // 重置
+    resetFn() {
+      this.$emit('reset')
     }
   }
 }
