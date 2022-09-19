@@ -2,6 +2,8 @@ package com.primihub.application.controller.data;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.service.data.PirService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -37,6 +39,14 @@ public class PirController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
         }
         return pirService.pirSubmitTask(serverAddress,resourceId,pirParam);
+    }
+    @RequestMapping("getPirTaskList")
+    public BaseResultEntity getPirTaskList(DataPirTaskReq req){
+        if (req.getTaskState()!=null){
+            if(!TaskStateEnum.TASK_STATE_MAP.containsKey(req.getTaskState()))
+                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"taskState");
+        }
+        return pirService.getPirTaskList(req);
     }
 
     @GetMapping("downloadPirTask")

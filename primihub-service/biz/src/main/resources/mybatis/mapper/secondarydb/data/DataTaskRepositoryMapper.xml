@@ -66,4 +66,37 @@
             update_date as updateDate
         from data_task where task_id_name = #{taskIdName}
     </select>
+    <select id="selectDataPirTaskPage" resultType="com.primihub.biz.entity.data.vo.DataPirTaskVo" parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
+        select
+            dpt.task_id taskId,
+            dpt.server_address serverAddress,
+            dpt.provider_organ_name organName,
+            dpt.resource_id resourceId,
+            dpt.resource_name resourceName,
+            dpt.retrieval_id retrievalId,
+            dpt.create_date createDate,
+            dt.task_state taskState
+        from
+             data_pir_task dpt,
+             data_task dt
+        <include refid="selectDataPirTaskWhere"/>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <select id="selectDataPirTaskCount" resultType="java.lang.Integer" parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
+        select
+            count(id)
+        from
+            data_pir_task dpt,
+            data_task dt
+        <include refid="selectDataPirTaskWhere"/>
+    </select>
+    <sql id="selectDataPirTaskWhere">
+        where
+        dpt.task_id = dt.task_id
+        <if test="resourceName!=null and resourceName!=''"> and dpt.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
+        <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
+        <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
+    </sql>
 </mapper>
