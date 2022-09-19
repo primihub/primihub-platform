@@ -45,7 +45,6 @@ public class ModelController {
         return dataModelService.getDataModel(taskId);
     }
 
-    //---------------------------------v0.2----------------------------------
     /**
      * 获取模型详情
      * @return

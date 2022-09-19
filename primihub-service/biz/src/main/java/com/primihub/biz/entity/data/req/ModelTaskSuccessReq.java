@@ -9,4 +9,5 @@ public class ModelTaskSuccessReq extends PageReq {
     private String successDate;
     private Long successTime;
     private Long userId;
+    private Integer isAdmin = 0;
 }
