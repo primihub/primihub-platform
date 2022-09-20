@@ -507,6 +507,8 @@ public class DataModelService {
         if (StringUtils.isNotBlank(req.getSuccessDate())){
             req.setSuccessTime(DateUtil.parseDate(req.getSuccessDate(),DateUtil.DateStyle.DATE_FORMAT_NORMAL.getFormat()).getTime());
         }
+        if (baseConfiguration.getAdminUserIds().contains(req.getUserId()))
+            req.setIsAdmin(1);
         List<ModelTaskSuccessVo> modelTaskSuccessVos = dataModelRepository.queryModelTaskSuccessList(req);
         if (modelTaskSuccessVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

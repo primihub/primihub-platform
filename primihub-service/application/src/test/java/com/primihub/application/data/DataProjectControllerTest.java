@@ -583,4 +583,58 @@ public class DataProjectControllerTest {
                         )
                 ));
     }
+
+    @Test
+    public  void testGetResourceList() throws Exception {
+        // 查询项目列表接口
+        this.mockMvc.perform(get("/project/getResourceList")
+                .param("pageNo","1")
+                .param("pageSize","5")
+                .param("projectName","")
+                .param("organId","")
+                .param("participationIdentity","")
+                .param("queryType","0")
+                .param("startDate","2022-06-23 00:00:00")
+                .param("endDate","")
+                .param("queryType","0")
+                .param("status",""))
+                .andExpect(status().isOk())
+                .andDo(document("getprojectlist",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                        ),
+                        requestParameters(
+                                parameterWithName("pageNo").description("第几页"),
+                                parameterWithName("pageSize").description("每页条数"),
+                                parameterWithName("organId").description("机构ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("code").description("返回码"),
+                                fieldWithPath("msg").description("返回码描述"),
+                                fieldWithPath("result").description("返回码结果"),
+                                fieldWithPath("result.total").description("总共的数据量"),
+                                fieldWithPath("result.pageSize").description("每页显示多少条"),
+                                fieldWithPath("result.totalPage").description("共有多少页"),
+                                fieldWithPath("result.index").description("当前是第几页"),
+                                fieldWithPath("result.data[]").description("数据"),
+                                fieldWithPath("result.data[].id").description("本地项目ID"),
+                                fieldWithPath("result.data[].organId").description("创建机构ID"),
+                                fieldWithPath("result.data[].projectId").description("项目id"),
+                                fieldWithPath("result.data[].projectName").description("项目名称"),
+                                fieldWithPath("result.data[].projectDesc").description("项目描述"),
+                                fieldWithPath("result.data[].userName").description("用户名称"),
+                                fieldWithPath("result.data[].createdOrganName").description("创建项目机构名称"),
+                                fieldWithPath("result.data[].resourceNum").description("资源数量"),
+                                fieldWithPath("result.data[].modelNum").description("模型数量"),
+                                fieldWithPath("result.data[].modelAssembleNum").description("模型配置中数量"),
+                                fieldWithPath("result.data[].modelRunNum").description("模型运行数量"),
+                                fieldWithPath("result.data[].modelSuccessNum").description("模型运行成功数量"),
+                                fieldWithPath("result.data[].providerOrganNames").description("协作方机构名称"),
+                                fieldWithPath("result.data[].status").description("项目状态 0审核中 1可用 2关闭"),
+                                fieldWithPath("result.data[].createDate").description("创建时间"),
+                                fieldWithPath("extra").description("额外信息")
+                        )
+                ));
+    }
 }

@@ -6,6 +6,10 @@
         insert into data_task (task_id_name,task_name,task_desc,task_state,task_type,task_result_path,task_result_content,task_start_time,task_end_time,task_user_id,task_error_msg,is_cooperation,is_del,create_date,update_date)
         values (#{taskIdName},#{taskName},#{taskDesc},#{taskState},#{taskType},#{taskResultPath},#{taskResultContent},#{taskStartTime},#{taskEndTime},#{taskUserId},#{taskErrorMsg},#{isCooperation},0,now(),now())
     </insert>
+    <insert id="saveDataPirTask" parameterType="com.primihub.biz.entity.data.po.DataPirTask">
+        insert into data_pir_task (task_id,server_address,provider_organ_name,resource_id,resource_name,retrieval_id,is_del,create_date,update_date)
+        values (#{taskId},#{serverAddress},#{providerOrganName},#{resourceId},#{resourceName},#{retrievalId},0,now(),now())
+    </insert>
     <update id="updateDataTask" parameterType="com.primihub.biz.entity.data.po.DataTask">
         update data_task
         <set>
@@ -27,5 +31,8 @@
     </update>
     <delete id="deleteDataTask">
         delete from data_task where task_id = #{taskId}
+    </delete>
+    <delete id="deleteDataPirTask">
+        delete from data_pir_task where task_id = #{taskId}
     </delete>
 </mapper>

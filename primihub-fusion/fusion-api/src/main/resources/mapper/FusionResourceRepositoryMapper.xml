@@ -128,17 +128,7 @@
             resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
-        where
-            go.group_id in
-            <foreach collection="groupList" index="index" item="item" open="("
-                     separator="," close=")">
-                #{item}
-            </foreach>
-            and (r.resource_auth_type=1
-                or r.organ_id=#{globalId}
-                or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 ))
-            and r.is_del=0
-            <include refid="fusionResourceCondition"></include>
+        <include refid="fusionResourceCondition"></include>
         order by r.id desc
         limit #{offset},#{pageSize}
     </select>
@@ -148,16 +138,7 @@
             count(distinct r.id)
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
-        where
-        go.group_id in
-        <foreach collection="groupList" index="index" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
-        and (r.resource_auth_type=1 or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 ))
-        and r.is_del=0
         <include refid="fusionResourceCondition"></include>
-
     </select>
 
     <select id="selectFusionResourceTag" resultType="java.lang.String">
@@ -193,6 +174,18 @@
     </select>
 
     <sql id="fusionResourceCondition">
+        where
+        go.group_id in
+            <foreach collection="groupList" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        and (
+            r.resource_auth_type=1
+            or r.organ_id=#{globalId}
+            or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 )
+        )
+        and r.is_del=0
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
         <if test="resourceId!=null and resourceId!=''">and r.resource_id = #{resourceId}</if>
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
