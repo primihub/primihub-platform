@@ -7,7 +7,9 @@ import com.primihub.entity.base.PageDataEntity;
 import com.primihub.entity.copy.dto.CopyResourceDto;
 import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.fusion.po.FusionOrgan;
+import com.primihub.entity.resource.enumeration.AuthTypeEnum;
 import com.primihub.entity.resource.param.ResourceParam;
+import com.primihub.entity.resource.po.FusionOrganResourceAuth;
 import com.primihub.entity.resource.po.FusionResource;
 import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.po.FusionResourceVisibilityAuth;
@@ -113,7 +115,7 @@ public class ResourceService {
                     resourceRepository.saveBatchResourceField(resourceFields);
                 }
             }
-            if (fusionResource.getResourceAuthType()==3){
+            if (fusionResource.getResourceAuthType().equals(AuthTypeEnum.VISIBILITY.getAuthType())){
                 List<String> authStringList=copyResourceDto.getAuthOrganList();
                 if(authStringList!=null) {
                     for (String authString : authStringList) {
@@ -147,5 +149,21 @@ public class ResourceService {
         Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
         return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()))).collect(Collectors.toList()));
+    }
+
+    public BaseResultEntity saveOrganResourceAuth(String organId, String resourceId, String projectId, Integer auditStatus) {
+        FusionOrgan fusionOrgan = fusionRepository.getFusionOrganByGlobalId(organId);
+        if (fusionOrgan==null)
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无机构信息");
+        FusionResource fusionResource = resourceRepository.selectFusionResourceByResourceId(resourceId);
+        if (fusionResource==null)
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无资源信息");
+        FusionOrganResourceAuth auth = new FusionOrganResourceAuth();
+        auth.setOrganId(fusionOrgan.getId());
+        auth.setResourceId(fusionResource.getId());
+        auth.setProjectId(projectId);
+        auth.setAuditStatus(auditStatus);
+        resourceRepository.saveFusionOrganResourceAuth(auth);
+        return BaseResultEntity.success();
     }
 }

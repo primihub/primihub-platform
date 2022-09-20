@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -109,6 +110,30 @@ public class FusionResourceService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusionResource/getResourceTagList",request, BaseResultEntity.class);
+            return BaseResultEntity.success(resultEntity.getResult());
+        }catch (Exception e){
+            log.info("获取中心节点资源标签数据异常:{}",e.getMessage());
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"请求中心节点失败");
+        }
+    }
+
+    public BaseResultEntity syncResourceUse(String serverAddress,String organId,String resourceId,String projectId,Integer auditStatus){
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap map = new LinkedMultiValueMap<>();
+            map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
+            map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
+            map.put("organId", new ArrayList(){{add(organId);}});
+            map.put("resourceId", new ArrayList(){{add(resourceId);}});
+            map.put("auditStatus", new ArrayList(){{add(auditStatus);}});
+            map.put("projectId", new ArrayList(){{add(projectId);}});
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+            BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusionResource/saveOrganResourceAuth",request, BaseResultEntity.class);
+            log.info("同步机构资源使用返回:{}", JSONObject.toJSONString(resultEntity));
             return BaseResultEntity.success(resultEntity.getResult());
         }catch (Exception e){
             log.info("获取中心节点资源标签数据异常:{}",e.getMessage());
