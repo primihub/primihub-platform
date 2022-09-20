@@ -118,6 +118,7 @@ public class FusionResourceService {
     }
 
     public BaseResultEntity syncResourceUse(String serverAddress,String organId,String resourceId,String projectId,Integer auditStatus){
+        log.info("进入");
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
@@ -132,6 +133,7 @@ public class FusionResourceService {
             map.put("auditStatus", new ArrayList(){{add(auditStatus);}});
             map.put("projectId", new ArrayList(){{add(projectId);}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+            log.info("url :{}/fusionResource/saveOrganResourceAuth",serverAddress);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusionResource/saveOrganResourceAuth",request, BaseResultEntity.class);
             log.info("同步机构资源使用返回:{}", JSONObject.toJSONString(resultEntity));
             return BaseResultEntity.success(resultEntity.getResult());
