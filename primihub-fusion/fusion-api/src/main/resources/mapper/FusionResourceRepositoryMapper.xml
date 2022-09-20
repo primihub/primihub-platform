@@ -88,6 +88,7 @@
             <if test="resourceYRatio!=null">resource_y_ratio = #{resourceYRatio},</if>
             <if test="resourceTag!=null">resource_tag = #{resourceTag},</if>
             <if test="organId!=null">organ_id = #{organId},</if>
+            <if test="isDel!=null">is_del = #{isDel},</if>
             u_time = now()
         </set>
         where id = #{id}
@@ -105,6 +106,14 @@
             u_time = now()
         </set>
         where field_id = #{fieldId}
+    </update>
+    <update id="updateFusionOrganResourceAuth" parameterType="com.primihub.entity.resource.po.FusionOrganResourceAuth">
+        update fusion_organ_resource_auth
+        <set>
+            <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
+            u_time = now()
+        </set>
+        where id = #{id}
     </update>
 
     <select id="selectFusionResourceById" resultMap="FusionResourceBaseResultMap">
@@ -203,6 +212,10 @@
         <foreach collection="authOrganList" index="index" item="item" separator=",">
             (#{item.resourceId},#{item.organGlobalId},0)
         </foreach>
+    </insert>
+    <insert id="saveFusionOrganResourceAuth" parameterType="com.primihub.entity.resource.po.FusionOrganResourceAuth">
+        insert into fusion_organ_resource_auth (resource_id,organ_id,project_id,audit_status,is_del,c_time,u_time)
+        values (#{resourceId},#{organId},#{projectId},#{auditStatus},0,now(),now())
     </insert>
 
 

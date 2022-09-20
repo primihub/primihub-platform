@@ -160,6 +160,8 @@ public class DataResourceConvert {
         dataResourceCopyVo.setResourceTag(tags);
         dataResourceCopyVo.setAuthOrganList(authOrganList);
         dataResourceCopyVo.setFieldList(new ArrayList<>());
+        if (dataResource.getIsDel()!=null && dataResource.getIsDel()!=0)
+            dataResourceCopyVo.setIsDel(dataResource.getIsDel());
         if (fieldList!=null&&fieldList.size()!=0){
             for (DataFileField dataFileField : fieldList) {
                 dataResourceCopyVo.getFieldList().add(dataResourceFieldPoConvertCopyVo(dataFileField));

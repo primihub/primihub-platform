@@ -246,6 +246,8 @@ public class DataProjectService {
             shareProjectVo.setProjectId(dataProjectResource.getProjectId());
             shareProjectVo.setServerAddress(dataProjectResource.getServerAddress());
             shareProjectVo.getProjectResources().add(dataProjectResource);
+            log.info("发送");
+            fusionResourceService.syncResourceUse(dataProjectResource.getServerAddress(),dataProjectResource.getOrganId(),dataProjectResource.getResourceId(),dataProjectResource.getProjectId(),dataProjectResource.getAuditStatus());
         }
         sendTask(shareProjectVo);
         return BaseResultEntity.success();

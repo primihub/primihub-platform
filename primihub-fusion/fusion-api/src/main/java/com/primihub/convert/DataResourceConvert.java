@@ -32,7 +32,7 @@ public class DataResourceConvert {
         fusionResource.setResourceYRatio(dto.getResourceYRatio());
         fusionResource.setResourceTag(String.valueOf(dto.getResourceTag()));
         fusionResource.setOrganId(dto.getOrganId());
-        fusionResource.setIsDel(0);
+        fusionResource.setIsDel(dto.getIsDel());
         return fusionResource;
 
     }

@@ -241,6 +241,11 @@ public class DataResourceService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该资源已关联项目");
         }
         dataResourcePrRepository.deleteResource(resourceId);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+            dataResource.setIsDel(1);
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+        }
         return BaseResultEntity.success("删除资源成功");
     }
 

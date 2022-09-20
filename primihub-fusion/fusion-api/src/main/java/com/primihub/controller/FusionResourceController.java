@@ -39,4 +39,18 @@ public class FusionResourceController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         return resourceService.getDataResource(resourceId);
     }
+    @RequestMapping("saveOrganResourceAuth")
+    public BaseResultEntity saveOrganResourceAuth(String organId,String resourceId,String projectId,Integer auditStatus){
+        if (StringUtils.isEmpty(organId))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        if (StringUtils.isEmpty(resourceId))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        if (StringUtils.isEmpty(projectId))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
+        if (auditStatus==null)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
+        return resourceService.saveOrganResourceAuth(organId,resourceId,projectId,auditStatus);
+    }
+
+
 }
