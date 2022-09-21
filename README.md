@@ -10,7 +10,8 @@ Providing production-level service capabilities:
 - Multi-Party Federated Model Registry
 - Multi-Party Cooperation Authority Management
 
-and have a clear dictory:
+
+and have a clear directory:
 
     ├─primihub-platform
         ├─primihub-fusion
@@ -24,9 +25,9 @@ and have a clear dictory:
         └─primihub-webconsole
 
 ## Getting Started
-before we start ,please refer to [primihub](https://github.com/primihub/primihub) and start node.
+Before we start, please refer to [primihub](https://github.com/primihub/primihub) and start node.
 
-then we can get started from those project.
+then we can get started from those projects.
 
 - [primihub-fusion](./primihub-fusion/README.md) : connect different primihub-service and have the right data access.
 - [primihub-service](./primihub-service/README.md) : provide all most of service capabilities and api.
