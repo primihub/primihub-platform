@@ -48,6 +48,6 @@ rest:
       read-timeout: 30000
 logging:
   level:
-    root: debug
+    root: info
   config: classpath:logback-privacy.xml
 

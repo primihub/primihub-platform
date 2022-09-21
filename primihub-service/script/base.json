@@ -4,6 +4,8 @@
         "/user/register",
         "/user/sendVerificationCode",
         "/user/forgetPassword",
+        "/captcha/get",
+        "/captcha/check",
         "/common/getValidatePublicKey",
         "/shareData/syncProject"
     ],
