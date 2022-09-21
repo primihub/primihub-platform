@@ -25,7 +25,6 @@ import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.SignUtil;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -69,12 +68,10 @@ public class SysUserService {
 
 
     public BaseResultEntity login(LoginParam loginParam){
-        if (StringUtils.isNotBlank(loginParam.getCaptchaVerification())){
-            loginParam.setToken(loginParam.getTokenKey());
-            ResponseModel verification = captchaService.verification(loginParam);
-            if (!verification.isSuccess())
-                return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
-        }
+        loginParam.setToken(loginParam.getTokenKey());
+        ResponseModel verification = captchaService.verification(loginParam);
+        if (!verification.isSuccess())
+            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
         if(privateKey==null)
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
