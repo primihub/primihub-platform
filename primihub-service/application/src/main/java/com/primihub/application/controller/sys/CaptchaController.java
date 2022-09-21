@@ -5,7 +5,9 @@ import com.anji.captcha.model.common.ResponseModel;
 import com.anji.captcha.model.vo.CaptchaVO;
 import com.anji.captcha.service.CaptchaService;
 import com.anji.captcha.util.StringUtils;
-import com.primihub.biz.entity.base.BaseCaptchaParam;
+import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.sys.param.BaseCaptchaParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,18 +25,28 @@ public class CaptchaController {
     private CaptchaService captchaService;
 
     @PostMapping("/get")
-    public ResponseModel get(@RequestBody BaseCaptchaParam data, HttpServletRequest request) {
+    public BaseResultEntity get(@RequestBody BaseCaptchaParam data, HttpServletRequest request) {
         data.setToken(data.getTokenKey());
         assert request.getRemoteHost()!=null;
         data.setBrowserInfo(getRemoteId(request));
-        return captchaService.get(data);
+        ResponseModel responseModel = captchaService.get(data);
+        if (responseModel.isSuccess()){
+            return BaseResultEntity.success(responseModel.getRepData());
+        }else {
+            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,responseModel.getRepMsg());
+        }
     }
 
     @PostMapping("/check")
-    public ResponseModel check(@RequestBody BaseCaptchaParam data, HttpServletRequest request) {
+    public BaseResultEntity check(@RequestBody BaseCaptchaParam data, HttpServletRequest request) {
         data.setToken(data.getTokenKey());
         data.setBrowserInfo(getRemoteId(request));
-        return captchaService.check(data);
+        ResponseModel responseModel = captchaService.check(data);
+        if (responseModel.isSuccess()){
+            return BaseResultEntity.success(responseModel.getRepData());
+        }else {
+            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,responseModel.getRepMsg());
+        }
     }
 
     //@PostMapping("/verify")

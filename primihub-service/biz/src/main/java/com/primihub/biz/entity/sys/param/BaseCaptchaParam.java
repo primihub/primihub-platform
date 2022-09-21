@@ -1,4 +1,4 @@
-package com.primihub.biz.entity.base;
+package com.primihub.biz.entity.sys.param;
 
 import com.anji.captcha.model.vo.CaptchaVO;
 import lombok.Data;
