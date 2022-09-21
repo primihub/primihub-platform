@@ -52,7 +52,7 @@ public class PirService {
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskName(pirDataResource.get("resourceName").toString());
-        dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());
         dataTaskPrRepository.saveDataTask(dataTask);
         DataPirTask dataPirTask = new DataPirTask();

@@ -146,6 +146,7 @@ public class DataResourceService {
         }
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
+        map.put("resourceFusionId",dataResource.getResourceFusionId());
         map.put("resourceName",dataResource.getResourceName());
         map.put("resourceDesc",dataResource.getResourceDesc());
         return BaseResultEntity.success(map);

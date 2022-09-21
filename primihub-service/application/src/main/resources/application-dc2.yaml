@@ -34,6 +34,21 @@ nacos:
     context-path: /nacos
     group: DEFAULT_GROUP
     file-extension: yaml
+aj:
+  captcha:
+    # jigsaw: classpath:images/yyjigsaw
+    cache-type: redis
+    water-mark: PrimiHub
+    slip-offset: 5
+    aes-status: true
+    interference-options: 2
+    req-frequency-limit-enable: true
+    req-get-lock-limit: 30
+    req-get-lock-seconds: 30
+    req-get-minute-limit: 120
+    req-check-minute-limit: 60
+    req-verify-minute-limit: 60
+    type: BLOCKPUZZLE
 logging:
   level:
     root: info
