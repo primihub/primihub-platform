@@ -82,7 +82,7 @@
         </el-table-column>
       </el-table>
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="params.pageSize" :page.sync="params.pageNo" :total="total" @pagination="handlePagination" />
+    <pagination v-show="pageCount>1" :limit.sync="params.pageSize" :page-count="pageCount" :page.sync="params.pageNo" :total="total" @pagination="handlePagination" />
   </div>
 </template>
 

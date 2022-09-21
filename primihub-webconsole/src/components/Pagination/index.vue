@@ -5,13 +5,14 @@
       :current-page.sync="currentPage"
       :page-size.sync="pageSize"
       :layout="layout"
+      :page-count="pageCount"
       :page-sizes="pageSizes"
       :total="total"
       v-bind="$attrs"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
     >
-      <span class="number">第 {{ currentPage }} / {{ total }} 页 </span>
+      <span class="number">第 {{ currentPage }} / {{ pageCount }} 页 </span>
     </el-pagination>
   </div>
 </template>
@@ -22,6 +23,10 @@ import { scrollTo } from '@/utils/scroll-to'
 export default {
   name: 'Pagination',
   props: {
+    pageCount: {
+      type: Number,
+      default: 1
+    },
     total: {
       required: true,
       type: Number

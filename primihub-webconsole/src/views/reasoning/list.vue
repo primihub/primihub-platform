@@ -67,7 +67,7 @@
           align="center"
         /> -->
       </el-table>
-      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
   </div>
 </template>
