@@ -1,6 +1,7 @@
 package com.primihub.repository;
 
 
+import com.primihub.entity.resource.param.OrganResourceParam;
 import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.entity.resource.po.FusionOrganResourceAuth;
 import com.primihub.entity.resource.po.FusionResource;
@@ -47,4 +48,8 @@ public interface FusionResourceRepository {
     void saveFusionOrganResourceAuth(FusionOrganResourceAuth fusionOrganResourceAuth);
 
     void updateFusionOrganResourceAuth(FusionOrganResourceAuth fusionOrganResourceAuth);
+
+    List<FusionResource> selectOrganResourcePage(OrganResourceParam param);
+
+    Integer selectOrganResourceCount(OrganResourceParam param);
 }

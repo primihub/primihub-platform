@@ -56,9 +56,9 @@ public class DataProjectService {
     @Autowired
     private DataModelService dataModelService;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
-    @Autowired
     private FusionResourceService fusionResourceService;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -196,7 +196,9 @@ public class DataProjectService {
             List<DataProjectResource> projectResources = organResourceMap.get(dataProjectOrganVo.getOrganId());
             if (projectResources!=null){
                 for (DataProjectResource projectResource : projectResources) {
-                    dataProjectOrganVo.getResources().add(DataProjectConvert.DataProjectResourceConvertVo(projectResource,resourceListMap.get(projectResource.getResourceId())));
+                    Map map = resourceListMap.get(projectResource.getResourceId());
+                    if (Integer.valueOf(map.get("available").toString()).equals("0"))
+                        dataProjectOrganVo.getResources().add(DataProjectConvert.DataProjectResourceConvertVo(projectResource,map));
                 }
             }
             organs.add(dataProjectOrganVo);
@@ -509,13 +511,15 @@ public class DataProjectService {
     }
 
 
-    public BaseResultEntity getResourceList(String organId, PageReq req,String resourceName) {
+    public BaseResultEntity getResourceList(OrganResourceReq req) {
+        if (req.getAuditStatus() == null || req.getAuditStatus() == 0)
+            req.setAuditStatus(1);
         Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("organId",organId);
+        paramMap.put("organId",req.getOrganId());
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("resourceName",resourceName);
-        if (organConfiguration.getSysLocalOrganId().equals(organId)){
+        paramMap.put("resourceName",req.getResourceName());
+        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -523,25 +527,7 @@ public class DataProjectService {
             Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
         }else {
-            List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByOrganIdPage(paramMap);
-            Map<String, List<DataProjectResource>> serverAddress = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getServerAddress));
-            if (serverAddress.isEmpty()){
-                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
-            }
-            Integer count = dataProjectRepository.selectProjectResourceByOrganIdCount(paramMap);
-            List<ModelSelectResourceVo> returnList = new ArrayList<>();
-            Iterator<Map.Entry<String, List<DataProjectResource>>> iterator = serverAddress.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, List<DataProjectResource>> next = iterator.next();
-                BaseResultEntity baseResult = fusionResourceService.getResourceListById(next.getKey(),next.getValue().stream().map(DataProjectResource::getResourceId).toArray(String[]::new));
-                if (baseResult.getCode()==0){
-                    List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
-                    for (LinkedHashMap<String, Object> resourceMap : voList) {
-                        returnList.add(DataResourceConvert.resourceMapConvertSelectVo(resourceMap));
-                    }
-                }
-            }
-            return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),returnList));
+            return fusionResourceService.getOrganResourceList(req);
         }
     }
 }

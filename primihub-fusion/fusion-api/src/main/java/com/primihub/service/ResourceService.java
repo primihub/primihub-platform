@@ -8,6 +8,7 @@ import com.primihub.entity.copy.dto.CopyResourceDto;
 import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.fusion.po.FusionOrgan;
 import com.primihub.entity.resource.enumeration.AuthTypeEnum;
+import com.primihub.entity.resource.param.OrganResourceParam;
 import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.entity.resource.po.FusionOrganResourceAuth;
 import com.primihub.entity.resource.po.FusionResource;
@@ -49,16 +50,17 @@ public class ResourceService {
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
         Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
-        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getResourceId()))).collect(Collectors.toList())));
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getResourceId()),null,param.getGlobalId())).collect(Collectors.toList())));
     }
 
-    public BaseResultEntity getDataResource(String resourceId) {
+    public BaseResultEntity getDataResource(String resourceId,String globalId) {
         FusionResource fusionResource = resourceRepository.selectFusionResourceByResourceId(resourceId);
         if (fusionResource==null)
             return BaseResultEntity.success();
         FusionOrgan fusionOrgan = fusionRepository.getFusionOrganByGlobalId(fusionResource.getOrganId());
+        Set<String> groupInOrganIds = getGroupInOrganIds(globalId);
         List<FusionResourceField> fusionResourceFields = resourceRepository.selectFusionResourceFieldById(fusionResource.getId());
-        return BaseResultEntity.success(DataResourceConvert.fusionResourcePoConvertVo(fusionResource,fusionOrgan==null?"":fusionOrgan.getGlobalName(),fusionResourceFields));
+        return BaseResultEntity.success(DataResourceConvert.fusionResourcePoConvertVo(fusionResource,fusionOrgan==null?"":fusionOrgan.getGlobalName(),fusionResourceFields,groupInOrganIds,globalId));
     }
 
 
@@ -140,7 +142,7 @@ public class ResourceService {
         return globalId.substring(24,36);
     }
 
-    public BaseResultEntity getResourceListById(String[] resourceIdArray) {
+    public BaseResultEntity getResourceListById(String[] resourceIdArray,String globalId) {
         List<FusionResource> fusionResources = resourceRepository.selectFusionResourceByResourceIds(Arrays.stream(resourceIdArray).collect(Collectors.toSet()));
         if (fusionResources.size()==0)
             return BaseResultEntity.success();
@@ -148,7 +150,8 @@ public class ResourceService {
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
         Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
-        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()))).collect(Collectors.toList()));
+        Set<String> groupInOrganIds = getGroupInOrganIds(globalId);
+        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()),groupInOrganIds,globalId)).collect(Collectors.toList()));
     }
 
     public BaseResultEntity saveOrganResourceAuth(String organId, String resourceId, String projectId, Integer auditStatus) {
@@ -165,5 +168,22 @@ public class ResourceService {
         auth.setAuditStatus(auditStatus);
         resourceRepository.saveFusionOrganResourceAuth(auth);
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity getOrganResourceList(OrganResourceParam param) {
+        List<FusionResource> fusionResources = resourceRepository.selectOrganResourcePage(param);
+        if (fusionResources.isEmpty())
+            return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
+        Integer count = resourceRepository.selectOrganResourceCount(param);
+        Set<String> organIds = fusionResources.stream().map(FusionResource::getOrganId).collect(Collectors.toSet());
+        Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),null,null,null)).collect(Collectors.toList())));
+    }
+
+    public Set<String> getGroupInOrganIds(String globalId){
+        List<Long> organInGroup = groupRepository.findOrganInGroup(globalId);
+        List<String> organIds = groupRepository.findOrganGlobalIdByGroupIdList(organInGroup);
+        organIds.add(globalId);
+        return new HashSet<>(organIds);
     }
 }

@@ -155,7 +155,10 @@
     </select>
 
     <select id="selectFusionResourceByResourceId" resultMap="FusionResourceBaseResultMap">
-        select <include refid="Fusion_Resource_Base_Column_List"/> from fusion_resource where resource_id = #{resourceId}
+        select
+            <include refid="Fusion_Resource_Base_Column_List"/>,
+            (select GROUP_CONCAT(organ_global_id) from fusion_resource_visibility_auth where resource_id = r.resource_id) authOrgans
+        from fusion_resource r where resource_id = #{resourceId}
     </select>
 
     <select id="selectFusionResourceByResourceIds" resultMap="FusionResourceBaseResultMap">
@@ -180,6 +183,44 @@
             #{item}
         </foreach>
         and protection_status = 1
+    </select>
+    <select id="selectOrganResourcePage" resultType="com.primihub.entity.resource.po.FusionResource">
+        select
+            distinct r.id,r.resource_id resourceId,r.resource_name resourceName,resource_desc resourceDesc,resource_type resourceType,
+                     resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
+                     resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
+                     resource_y_ratio resourceYRatio,resource_tag resourceTag,r.organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
+        from fusion_organ_resource_auth ora
+                 left join fusion_resource r on ora.resource_id = r.id
+                 left join fusion_organ fo on fo.global_id =r.organ_id
+        where (
+                r.resource_auth_type=1
+                or fo.global_id=#{organId}
+                or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{organId} )=1 )
+            )
+          and r.is_del=0
+        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
+        <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
+        order by r.id desc
+        limit #{offset},#{pageSize}
+    </select>
+    <select id="selectOrganResourceCount" resultType="java.lang.Integer">
+        select
+        count(distinct r.id)
+        from fusion_organ_resource_auth ora
+        left join fusion_resource r on ora.resource_id = r.id
+        left join fusion_organ fo on fo.global_id =r.organ_id
+        where (
+        r.resource_auth_type=1
+        or fo.global_id=#{organId}
+        or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{organId} )=1 )
+        )
+        and r.is_del=0
+        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
+        <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
+        order by r.id desc
     </select>
 
     <sql id="fusionResourceCondition">
