@@ -63,7 +63,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             }
             String[] modelResourceIds = resourceList.stream().map(ModelProjectResourceVo::getResourceId).toArray(String[]::new);
             BaseResultEntity baseResult = fusionResourceService.getResourceListById(dataProjectResources.get(0).getServerAddress(), modelResourceIds);
-            if (baseResult.getCode()==0)
+            if (baseResult.getCode()!=0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:"+baseResult.getMsg());
             List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
             if (voList == null && voList.size()==0)
