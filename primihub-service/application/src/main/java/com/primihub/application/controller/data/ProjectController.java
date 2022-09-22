@@ -3,10 +3,7 @@ package com.primihub.application.controller.data;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
-import com.primihub.biz.entity.data.req.DataProjectApprovalReq;
-import com.primihub.biz.entity.data.req.DataProjectQueryReq;
-import com.primihub.biz.entity.data.req.DataProjectReq;
-import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.util.crypt.DateUtil;
 import org.apache.commons.lang.StringUtils;
@@ -159,11 +156,14 @@ public class ProjectController {
     }
 
     @GetMapping("getResourceList")
-    public BaseResultEntity getResourceList(String organId, PageReq req,String resourceName){
-        if (StringUtils.isBlank(organId)){
+    public BaseResultEntity getResourceList(OrganResourceReq req){
+        if (StringUtils.isBlank(req.getOrganId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
         }
-        return dataProjectService.getResourceList(organId,req,resourceName);
+        if (StringUtils.isBlank(req.getServerAddress())){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
+        }
+        return dataProjectService.getResourceList(req);
     }
 
 }

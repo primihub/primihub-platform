@@ -14,15 +14,18 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.service.data.FusionResourceService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("dataSetComponentTaskServiceImpl")
@@ -34,6 +37,8 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
+    @Autowired
+    private FusionResourceService fusionResourceService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -56,6 +61,16 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 if (!resourceIds.contains(mprv.getResourceId()))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源["+mprv.getResourceName()+"]审核未通过或移除,不可使用");
             }
+            String[] modelResourceIds = resourceList.stream().map(ModelProjectResourceVo::getResourceId).toArray(String[]::new);
+            BaseResultEntity baseResult = fusionResourceService.getResourceListById(dataProjectResources.get(0).getServerAddress(), modelResourceIds);
+            if (baseResult.getCode()==0)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:"+baseResult.getMsg());
+            List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
+            if (voList == null && voList.size()==0)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:无数据信息");
+            List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.valueOf(data.get("available").toString()).equals("1")).collect(Collectors.toList());
+            if (!availableList.isEmpty())
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
         }catch (Exception e){
             log.info("modelId:{} Failed to convert JSON :{}",taskReq.getDataModel().getModelId(),e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型选择资源转换失败");

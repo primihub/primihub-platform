@@ -24,7 +24,7 @@ public class ModelTaskSuccessVo {
     private String projectName;
     private String createdOrganId;
     private String createdOrgan;
-    @JsonIgnore
+//    @JsonIgnore
     private String serverAddress;
     @JsonIgnore
     private String providerOrganNames;

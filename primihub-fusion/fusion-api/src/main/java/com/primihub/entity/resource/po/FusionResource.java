@@ -80,6 +80,8 @@ public class FusionResource {
      */
     private String organId;
 
+    private String authOrgans;
+
     /**
      * 是否删除
      */
