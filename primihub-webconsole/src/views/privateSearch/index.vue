@@ -160,11 +160,9 @@ export default {
     // 任务状态 任务状态(0未开始 1成功 2运行中 3失败 4取消)
     statusFilter(status) {
       const sourceMap = {
-        0: '未开始',
-        1: '成功',
         2: '查询中',
-        3: '失败',
-        4: '取消'
+        1: '成功',
+        3: '失败'
       }
       return sourceMap[status]
     }
