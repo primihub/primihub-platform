@@ -197,8 +197,8 @@ public class DataProjectService {
             if (projectResources!=null){
                 for (DataProjectResource projectResource : projectResources) {
                     Map map = resourceListMap.get(projectResource.getResourceId());
-                    if (Integer.valueOf(map.get("available").toString()).equals("0"))
-                        dataProjectOrganVo.getResources().add(DataProjectConvert.DataProjectResourceConvertVo(projectResource,map));
+//                    if (Integer.valueOf(map.get("available").toString()).equals("0"))
+                    dataProjectOrganVo.getResources().add(DataProjectConvert.DataProjectResourceConvertVo(projectResource,map));
                 }
             }
             organs.add(dataProjectOrganVo);

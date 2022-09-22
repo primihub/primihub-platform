@@ -68,6 +68,7 @@ public class DataModelService {
         }
         DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
         List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId);
+        List<ModelResourceVo> modelResources = new ArrayList<>();
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
             List<String> resourceId = modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toList());
@@ -76,17 +77,20 @@ public class DataModelService {
                 for (ModelResourceVo modelResourceVo : modelResourceVos) {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
                     if (map!=null){
-                        modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
-                        modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
-                        modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
-                        modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
-                        modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
-                        modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
-                        modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
-                        modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
-                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
-                        if (map.get("organId")!=null){
-                            modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
+                        if (Integer.valueOf(map.get("available").toString()).equals("0")){
+                            modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
+                            modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
+                            modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
+                            modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
+                            modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
+                            modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
+                            modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
+                            modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
+                            modelResourceVo.setServerAddress(dataProject.getServerAddress());
+                            if (map.get("organId")!=null){
+                                modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
+                            }
+                            modelResources.add(modelResourceVo);
                         }
                     }
                 }
@@ -104,7 +108,7 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-        map.put("modelResources",modelResourceVos);
+        map.put("modelResources",modelResources);
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
             ParserConfig parserConfig = new ParserConfig();
