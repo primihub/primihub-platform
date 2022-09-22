@@ -57,6 +57,8 @@ public class DataProjectService {
     private DataModelService dataModelService;
     @Autowired
     private FusionResourceService fusionResourceService;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -512,6 +514,20 @@ public class DataProjectService {
     public BaseResultEntity getResourceList(OrganResourceReq req) {
         if (req.getAuditStatus() == null || req.getAuditStatus() == 0)
             req.setAuditStatus(1);
-        return fusionResourceService.getOrganResourceList(req);
+        Map<String,Object> paramMap = new HashMap<>();
+        paramMap.put("organId",req.getOrganId());
+        paramMap.put("offset",req.getOffset());
+        paramMap.put("pageSize",req.getPageSize());
+        paramMap.put("resourceName",req.getResourceName());
+        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
+            List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
+            if (dataResources.size()==0){
+                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+            }
+            Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
+            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
+        }else {
+            return fusionResourceService.getOrganResourceList(req);
+        }
     }
 }
