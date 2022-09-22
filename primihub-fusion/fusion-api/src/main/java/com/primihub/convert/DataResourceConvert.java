@@ -64,6 +64,7 @@ public class DataResourceConvert {
         if (fusionResource.getResourceType().equals(AuthTypeEnum.VISIBILITY.getAuthType()) && !StringUtils.isEmpty(globalId)){
             if (!StringUtils.isEmpty(fusionResource.getAuthOrgans())){
                 Set<String> authOrgansSet = Arrays.stream(fusionResource.getAuthOrgans().split(",")).collect(Collectors.toSet());
+                authOrgansSet.add(fusionResource.getOrganId());
                 if (!authOrgansSet.contains(globalId))
                     fusionResourceVo.setAvailable(1);
             }
