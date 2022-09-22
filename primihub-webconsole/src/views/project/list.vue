@@ -158,6 +158,7 @@
             <el-table-column
               v-if="hasViewPermission"
               label="操作"
+              fixed="right"
               min-width="160"
             >
               <template slot-scope="{row}">

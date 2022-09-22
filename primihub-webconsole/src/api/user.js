@@ -44,6 +44,23 @@ export function sendVerificationCode(data) {
     data
   })
 }
+export function getCaptcha(data) {
+  console.log('getCaptcha', JSON.stringify(data))
+  return request({
+    url: '/sys/captcha/get',
+    method: 'POST',
+    type: 'json',
+    data
+  })
+}
+export function checkCaptcha(data) {
+  return request({
+    url: '/sys/captcha/check',
+    method: 'POST',
+    type: 'json',
+    data
+  })
+}
 
 export function logout() {
   return Promise.resolve({})

@@ -1,5 +1,5 @@
 <template>
-  <div v-loading.fullscreen.lock="listLoading" element-loading-text="查询中..." class="search-area">
+  <div class="search-area">
     <el-form ref="form" :model="form" :rules="rules" label-width="110px" class="demo-form">
       <div class="select-resource">
         <div v-if="isSelected" class="select-row">
@@ -12,7 +12,6 @@
         <div v-else class="dialog-con">
           <el-form-item label="选择查询资源" prop="resourceName">
             <OrganCascader v-model="cascaderValue" placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
-            <!-- <el-button icon="el-icon-search" type="primary" @click="openDialog">查询</el-button> -->
           </el-form-item>
         </div>
         <el-form-item label="检索ID" prop="pirParam">
@@ -39,10 +38,9 @@
 </template>
 
 <script>
-import { pirSubmitTask, getTaskData } from '@/api/PIR'
+import { pirSubmitTask } from '@/api/PIR'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceItemCreate from '@/components/ResourceItemCreate'
-// import ResourceDialog from '@/components/ResourceDialog'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import OrganCascader from '@/components/OrganCascader'
 
@@ -50,7 +48,6 @@ export default {
   components: {
     ResourceItemSimple,
     ResourceItemCreate,
-    // ResourceDialog,
     ProjectResourceDialog,
     OrganCascader
   },
@@ -98,35 +95,6 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
-    setInterval() {
-      // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
-      this.timer = window.setInterval(() => {
-        getTaskData({ taskId: this.taskId }).then(res => {
-          const taskState = res.result.taskState
-          switch (taskState) {
-            case 3:
-              this.$message({
-                message: '查询失败',
-                type: 'error'
-              })
-              clearInterval(this.timer)
-              this.listLoading = false
-              break
-            case 1:
-              clearInterval(this.timer)
-              this.$emit('next', {
-                taskId: this.taskId,
-                taskDate: taskState,
-                pirParam: this.form.pirParam
-              })
-              this.listLoading = false
-              break
-            default:
-              break
-          }
-        })
-      }, 1500)
-    },
     next() {
       if (this.selectResources.length === 0) {
         this.$message({
@@ -146,8 +114,10 @@ export default {
             pirParam: this.form.pirParam
           }).then(res => {
             if (res.code === 0) {
+              this.listLoading = false
               this.taskId = res.result.taskId
-              this.setInterval()
+              this.$emit('next', this.taskId)
+              this.toTaskListPage()
             } else {
               this.$message({
                 message: res.msg,
@@ -163,6 +133,11 @@ export default {
           console.log('error submit!!')
           return false
         }
+      })
+    },
+    toTaskListPage() {
+      this.$router.push({
+        name: 'PrivateSearchList'
       })
     },
     openDialog(isAdd) {
