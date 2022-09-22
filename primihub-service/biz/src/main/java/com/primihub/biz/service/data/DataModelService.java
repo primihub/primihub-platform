@@ -77,6 +77,7 @@ public class DataModelService {
                 for (ModelResourceVo modelResourceVo : modelResourceVos) {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
                     if (map!=null){
+                        log.info("resourceId:{}---available:{}",modelResourceVo.getResourceId(),map.get("available"));
                         if (Integer.valueOf(map.get("available").toString()).equals("0")){
                             modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
                             modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
