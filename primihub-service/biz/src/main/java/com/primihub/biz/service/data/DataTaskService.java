@@ -392,6 +392,7 @@ public class DataTaskService {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask!=null){
             dataModelPrRepository.deleteModelByModelId(modelTask.getModelId(), ModelStateEnum.SAVE.getStateType());
+            dataModelPrRepository.deleteModelTask(taskId);
 //            DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
 //            if (dataModel!=null){
 //                dataModel.setIsDel(1);
