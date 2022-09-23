@@ -15,10 +15,10 @@
     <div class="detail">
       <el-descriptions title="数据信息" :column="2" label-class-name="detail-title">
         <el-descriptions-item label="数据来源">{{ resource.resourceAuthType | sourceFilter }}</el-descriptions-item>
-        <el-descriptions-item label="特征量">{{ resource.resourceRowsCount }}</el-descriptions-item>
-        <el-descriptions-item label="样本量">{{ resource.resourceColumnCount }}</el-descriptions-item>
-        <el-descriptions-item label="正例样本数量">{{ resource.resourceYRowsCount }}</el-descriptions-item>
-        <el-descriptions-item label="正例样本比例">{{ resource.resourceYRatio }}%</el-descriptions-item>
+        <el-descriptions-item label="特征量">{{ resource.resourceColumnCount }}</el-descriptions-item>
+        <el-descriptions-item label="样本量">{{ resource.resourceRowsCount }}</el-descriptions-item>
+        <el-descriptions-item label="正例样本数量">{{ resource.resourceYRowsCount ? resource.resourceYRowsCount : 0 }}</el-descriptions-item>
+        <el-descriptions-item label="正例样本比例">{{ resource.resourceYRatio ? resource.resourceYRatio : 0 }}%</el-descriptions-item>
         <el-descriptions-item label="是否包含Y值">{{ resource.resourceContainsY === 1? '是': '否' }}</el-descriptions-item>
         <el-descriptions-item label="字段信息">{{ resource.resourceColumnNameList }}</el-descriptions-item>
       </el-descriptions>

@@ -106,7 +106,11 @@
         <el-table-column
           prop="retrievalId"
           label="检索ID"
-        />
+        >
+          <template slot-scope="{row}">
+            <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="taskState"
           label="查询状态"
@@ -187,25 +191,16 @@ export default {
       },
       statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
         {
-          label: '未开始',
-          value: 0
+          label: '查询中',
+          value: 2
         }, {
           label: '成功',
           value: 1
         },
         {
-          label: '查询中',
-          value: 2
-        },
-        {
           label: '失败',
           value: 3
-        },
-        {
-          label: '取消',
-          value: 4
         }
-
       ],
       dataList: [],
       searchList: [],
