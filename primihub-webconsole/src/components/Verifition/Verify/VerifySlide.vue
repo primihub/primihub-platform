@@ -1,11 +1,11 @@
 <template>
   <div style="position: relative;">
     <div
-      v-if="type === '2'"
       class="verify-img-out"
       :style="{height: (parseInt(setSize.imgHeight) + vSpace) + 'px'}"
     >
       <div
+        v-loading="listLoading"
         class="verify-img-panel"
         :style="{width: setSize.imgWidth,
                  height: setSize.imgHeight,}"
@@ -28,7 +28,7 @@
       <span class="verify-msg" v-text="text" />
       <div
         class="verify-left-bar"
-        :style="{width: (leftBarWidth!==undefined)?leftBarWidth: barSize.height, height: barSize.height, 'border-color': leftBarBorderColor, transaction: transitionWidth}"
+        :style="{width: (leftBarWidth!==undefined)?leftBarWidth: barSize.height, height: barSize.height, 'border-color': leftBarBorderColor, transaction: transitionWidth, background: leftBarBackGroundColor}"
       >
         <span class="verify-msg" v-text="finishText" />
         <div
@@ -37,12 +37,8 @@
           @touchstart="start"
           @mousedown="start"
         >
-          <i
-            :class="['verify-icon iconfont', iconClass]"
-            :style="{color: iconColor}"
-          />
+          <i :class="['verify-icon iconfont', iconClass]" />
           <div
-            v-if="type === '2'"
             class="verify-sub-block"
             :style="{'width':Math.floor(parseInt(setSize.imgWidth)*47/310)+ 'px',
                      'height': setSize.imgHeight,
@@ -57,11 +53,11 @@
     </div>
   </div>
 </template>
-<script type="text/babel">
+<script>
 /**
-     * VerifySlide
-     * @description 滑块
-     * */
+ * VerifySlide
+ * @description 滑块
+ * */
 import { aesEncrypt } from './../utils/ase'
 import { resetSize } from './../utils/util'
 import { getCaptcha, checkCaptcha } from '@/api/user'
@@ -70,22 +66,9 @@ import { getCaptcha, checkCaptcha } from '@/api/user'
 export default {
   name: 'VerifySlide',
   props: {
-    captchaType: {
-      type: String,
-      default: ''
-    },
-    type: {
-      type: String,
-      default: '1'
-    },
-    // 弹出式pop，固定fixed
-    mode: {
-      type: String,
-      default: 'fixed'
-    },
     vSpace: {
       type: Number,
-      default: 5
+      default: 15
     },
     explain: {
       type: String,
@@ -104,8 +87,8 @@ export default {
       type: Object,
       default() {
         return {
-          width: '50px',
-          height: '50px'
+          width: '40px',
+          height: '40px'
         }
       }
     },
@@ -125,13 +108,15 @@ export default {
   },
   data() {
     return {
+      listLoading: false,
+      captchaType: 'blockPuzzle',
       secretKey: '', // 后端返回的加密秘钥 字段
       passFlag: '', // 是否通过的标识
       backImgBase: '', // 验证码背景图片
       blockBackImgBase: '', // 验证滑块的背景图片
       backToken: '', // 后端返回的唯一token值
       startMoveTime: '', // 移动开始的时间
-      endMovetime: '', // 移动结束的时间
+      endMoveTime: '', // 移动结束的时间
       tipsBackColor: '', // 提示词的背景颜色
       tipWords: '',
       text: '',
@@ -149,13 +134,14 @@ export default {
       // 移动中样式
       moveBlockBackgroundColor: undefined,
       leftBarBorderColor: '#ddd',
-      iconColor: undefined,
+      leftBarBackGroundColor: '#f8faff',
       iconClass: 'icon-right',
       status: false, // 鼠标状态
       isEnd: false,		// 是够验证完成
       showRefresh: true,
       transitionLeft: '',
-      transitionWidth: ''
+      transitionWidth: '',
+      isOk: false
     }
   },
   computed: {
@@ -166,26 +152,17 @@ export default {
       return resetSize
     }
   },
-  watch: {
-    // type变化则全面刷新
-    type: {
-      immediate: true,
-      handler() {
-        this.init()
-      }
-    }
-  },
   mounted() {
+    this.init()
     // 禁止拖拽
     this.$el.onselectstart = function() {
       return false
     }
-    console.log(this.defaultImg)
   },
   methods: {
-    init() {
+    async init() {
       this.text = this.explain
-      this.getPicture()
+      await this.getPicture()
       this.$nextTick(() => {
         const setSize = this.resetSize(this)	// 重新设置宽度高度
         for (const key in setSize) {
@@ -194,7 +171,7 @@ export default {
         this.$parent.$emit('ready', this)
       })
 
-      var _this = this
+      const _this = this
 
       window.removeEventListener('touchmove', function(e) {
         _this.move(e)
@@ -230,18 +207,19 @@ export default {
     // 鼠标按下
     start: function(e) {
       e = e || window.event
+      let x = 0
       if (!e.touches) { // 兼容PC端
-        var x = e.clientX
+        x = e.clientX
       } else { // 兼容移动端
-        var x = e.touches[0].pageX
+        x = e.touches[0].pageX
       }
       this.startLeft = Math.floor(x - this.barArea.getBoundingClientRect().left)
       this.startMoveTime = +new Date() // 开始滑动的时间
       if (this.isEnd === false) {
         this.text = ''
-        this.moveBlockBackgroundColor = '#337ab7'
-        this.leftBarBorderColor = '#337AB7'
-        this.iconColor = '#fff'
+        this.moveBlockBackgroundColor = '#409EFF'
+        this.leftBarBorderColor = '#409EFF'
+        this.leftBarBackGroundColor = 'rgb(64, 158, 255, .3)'
         e.stopPropagation()
         this.status = true
       }
@@ -249,14 +227,15 @@ export default {
     // 鼠标移动
     move: function(e) {
       e = e || window.event
-      if (this.status && this.isEnd == false) {
+      let x = 0
+      if (this.status && this.isEnd === false) {
         if (!e.touches) { // 兼容PC端
-          var x = e.clientX
+          x = e.clientX
         } else { // 兼容移动端
-          var x = e.touches[0].pageX
+          x = e.touches[0].pageX
         }
-        var bar_area_left = this.barArea.getBoundingClientRect().left
-        var move_block_left = x - bar_area_left // 小方块相对于父元素的left值
+        const bar_area_left = this.barArea.getBoundingClientRect().left
+        let move_block_left = x - bar_area_left // 小方块相对于父元素的left值
         if (move_block_left >= this.barArea.offsetWidth - parseInt(parseInt(this.blockSize.width) / 2) - 2) {
           move_block_left = this.barArea.offsetWidth - parseInt(parseInt(this.blockSize.width) / 2) - 2
         }
@@ -271,11 +250,11 @@ export default {
 
     // 鼠标松开
     end: function() {
-      this.endMovetime = +new Date()
-      var _this = this
+      this.endMoveTime = +new Date()
+      const _this = this
       // 判断是否重合
       if (this.status && this.isEnd === false) {
-        var moveLeftDistance = parseInt((this.moveBlockLeft || '').replace('px', ''))
+        let moveLeftDistance = parseInt((this.moveBlockLeft || '').replace('px', ''))
         moveLeftDistance = moveLeftDistance * 310 / parseInt(this.setSize.imgWidth)
         const data = JSON.stringify({
           captchaType: this.captchaType,
@@ -286,19 +265,17 @@ export default {
           if (res.code === 0) {
             this.moveBlockBackgroundColor = '#5cb85c'
             this.leftBarBorderColor = '#5cb85c'
-            this.iconColor = '#fff'
+            this.leftBarBackGroundColor = 'rgb(103, 194, 58, .3)'
             this.iconClass = 'icon-check'
             this.showRefresh = false
             this.isEnd = true
-            if (this.mode === 'pop') {
-              setTimeout(() => {
-                this.$parent.clickShow = false
-                this.refresh()
-              }, 1500)
-            }
+            setTimeout(() => {
+              this.$parent.clickShow = false
+              this.refresh()
+            }, 1500)
             this.passFlag = true
-            this.tipWords = `${((this.endMovetime - this.startMoveTime) / 1000).toFixed(2)}s验证成功`
-            var captchaVerification = this.secretKey ? aesEncrypt(this.backToken + '---' + JSON.stringify({ x: moveLeftDistance, y: 5.0 }), this.secretKey) : this.backToken + '---' + JSON.stringify({ x: moveLeftDistance, y: 5.0 })
+            this.tipWords = `${((this.endMoveTime - this.startMoveTime) / 1000).toFixed(2)}s验证成功`
+            const captchaVerification = this.secretKey ? aesEncrypt(this.backToken + '---' + JSON.stringify({ x: moveLeftDistance, y: 5.0 }), this.secretKey) : this.backToken + '---' + JSON.stringify({ x: moveLeftDistance, y: 5.0 })
             console.log('captchaVerification>>>>>>', captchaVerification)
             setTimeout(() => {
               this.tipWords = ''
@@ -306,9 +283,9 @@ export default {
               this.$parent.$emit('success', { captchaVerification })
             }, 1000)
           } else {
-            this.moveBlockBackgroundColor = '#d9534f'
-            this.leftBarBorderColor = '#d9534f'
-            this.iconColor = '#fff'
+            this.moveBlockBackgroundColor = '#F56C6C'
+            this.leftBarBackGroundColor = 'rgba(245, 108, 108,.3)'
+            this.leftBarBorderColor = '#F56C6C'
             this.iconClass = 'icon-close'
             this.passFlag = false
             setTimeout(function() {
@@ -325,7 +302,7 @@ export default {
       }
     },
 
-    refresh: function() {
+    refresh: async function() {
       this.showRefresh = true
       this.finishText = ''
 
@@ -336,12 +313,12 @@ export default {
       this.transitionWidth = 'width .3s'
 
       this.leftBarBorderColor = '#ddd'
-      this.moveBlockBackgroundColor = '#fff'
-      this.iconColor = '#000'
+      this.leftBarBackGroundColor = '#ddd'
+      this.moveBlockBackgroundColor = '#f8faff'
       this.iconClass = 'icon-right'
       this.isEnd = false
 
-      this.getPicture()
+      await this.getPicture()
       setTimeout(() => {
         this.transitionWidth = ''
         this.transitionLeft = ''
@@ -350,29 +327,25 @@ export default {
     },
 
     // 请求背景图片和验证图片
-    getPicture() {
+    async getPicture() {
+      this.listLoading = true
       const data = JSON.stringify({
         captchaType: this.captchaType,
         clientUid: localStorage.getItem('slider'),
         ts: Date.now() // 现在的时间戳
       })
-      console.log('getPicture', data)
-      getCaptcha(data).then(res => {
-        if (res.code === 0) {
-          this.backImgBase = res.result.originalImageBase64
-          this.blockBackImgBase = res.result.jigsawImageBase64
-          this.backToken = res.result.token
-          this.secretKey = res.result.secretKey
-        } else {
-          this.tipWords = res.msg
-        }
-
-        // 判断接口请求次数是否失效
-        if (res.repCode === '6201') {
-          this.backImgBase = null
-          this.blockBackImgBase = null
-        }
-      })
+      const res = await getCaptcha(data)
+      if (res.code === 0) {
+        this.backImgBase = res.result.originalImageBase64
+        this.blockBackImgBase = res.result.jigsawImageBase64
+        this.backToken = res.result.token
+        this.secretKey = res.result.secretKey
+      } else {
+        this.tipWords = res.msg
+        this.backImgBase = null
+        this.blockBackImgBase = null
+      }
+      this.listLoading = false
     }
   }
 }

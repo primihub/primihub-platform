@@ -38,13 +38,13 @@
               name="password"
               tabindex="2"
               auto-complete="on"
-              @keyup.enter.native="checkPrama"
+              @keyup.enter.native="checkParma"
             />
             <span class="show-pwd" @click="showPwd">
               <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
             </span>
           </el-form-item>
-          <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkPrama">登录</el-button>
+          <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
         </el-form>
         <div class="forgot">
           <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
@@ -52,12 +52,7 @@
         </div>
       </div>
     </div>
-    <Verify
-      ref="verify"
-      :captcha-type="'blockPuzzle'"
-      :img-size="{width:'400px',height:'200px'}"
-      @success="handleSuccess"
-    />
+    <Verify ref="verify" @success="handleSuccess" />
   </div>
 </template>
 
@@ -65,7 +60,7 @@
 import { getValidatePublicKey } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
 import Poster from '@/components/Poster'
-import Verify from '@/components/Verifition/Verify'
+import Verify from '@/components/Verifition'
 
 export default {
   name: 'Login',
@@ -96,7 +91,8 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      redirect: undefined,
+      showVerify: false
     }
   },
   watch: {
@@ -111,11 +107,14 @@ export default {
     await this.getValidatePublicKey()
   },
   methods: {
-    checkPrama() {
-      this.$refs.verify.show()
+    checkParma() {
+      this.$refs.loginForm.validate(valid => {
+        if (valid) {
+          this.$refs.verify.show()
+        }
+      })
     },
     handleSuccess(data) {
-      console.log('handleSuccess', data)
       if (data !== '') {
         this.loginForm.captchaVerification = data.captchaVerification
         this.handleLogin()
@@ -164,9 +163,7 @@ export default {
           const crypt = new JSEncrypt()
           crypt.setKey(publicKey)
           const { username: userAccount, password, captchaVerification } = this.loginForm
-          console.log(userAccount)
           const userPassword = crypt.encrypt(password)
-          console.log({ userAccount, userPassword, validateKeyName: publicKeyName })
           const loginForm = { userAccount, userPassword, validateKeyName: publicKeyName, captchaVerification }
 
           this.$store.dispatch('user/login', loginForm).then(() => {
