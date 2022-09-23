@@ -194,11 +194,11 @@
                  left join fusion_resource r on ora.resource_id = r.id
                  left join fusion_organ fo on fo.global_id =r.organ_id
         where (
-                r.resource_auth_type=1
-                or fo.global_id=#{organId}
+                fo.global_id != #{organId}
                 or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{organId} )=1 )
             )
           and r.is_del=0
+          and r.resource_auth_type != 2
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
         <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
@@ -212,11 +212,11 @@
         left join fusion_resource r on ora.resource_id = r.id
         left join fusion_organ fo on fo.global_id =r.organ_id
         where (
-        r.resource_auth_type=1
-        or fo.global_id=#{organId}
+        fo.global_id != #{organId}
         or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{organId} )=1 )
         )
         and r.is_del=0
+        and r.resource_auth_type != 2
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
         <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
