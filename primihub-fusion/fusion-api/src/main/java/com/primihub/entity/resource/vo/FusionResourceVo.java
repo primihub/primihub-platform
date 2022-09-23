@@ -80,7 +80,7 @@ public class FusionResourceVo {
     /**
      * 联邦资源 可用状态 0可用 1不可用
      */
-    private Integer available = 0;
+    private Integer available;
 
     /**
      * 机构ID

@@ -61,15 +61,20 @@ public class DataResourceConvert {
         if (fieldList!=null&&fieldList.size()!=0){
             fusionResourceVo.setOpenColumnNameList(fieldList.stream().map(field-> StringUtils.isEmpty(field.getFieldAs())?field.getFieldName():field.getFieldAs()).collect(Collectors.joining(",")));
         }
-        if (fusionResource.getResourceType().equals(AuthTypeEnum.VISIBILITY.getAuthType()) && !StringUtils.isEmpty(globalId)){
-            if (!StringUtils.isEmpty(fusionResource.getAuthOrgans())){
+        fusionResourceVo.setAvailable(1);
+        if (fusionResource.getResourceAuthType().equals(AuthTypeEnum.PRIVATE.getAuthType()) && fusionResource.getOrganId().equals(globalId)){
+            fusionResourceVo.setAvailable(0);
+        }
+        if (fusionResource.getResourceAuthType().equals(AuthTypeEnum.VISIBILITY.getAuthType())){
+            if (!StringUtils.isEmpty(fusionResource.getAuthOrgans()) && !StringUtils.isEmpty(globalId)){
                 Set<String> authOrgansSet = Arrays.stream(fusionResource.getAuthOrgans().split(",")).collect(Collectors.toSet());
                 authOrgansSet.add(fusionResource.getOrganId());
                 if (!authOrgansSet.contains(globalId))
-                    fusionResourceVo.setAvailable(1);
+                    fusionResourceVo.setAvailable(0);
             }
-        }else {
-            fusionResourceVo.setAvailable(groupInOrganIds!=null && groupInOrganIds.contains(fusionResource.getOrganId())?0:1);
+        }
+        if(fusionResource.getResourceAuthType().equals(AuthTypeEnum.PUBLIC.getAuthType()) && groupInOrganIds!=null && groupInOrganIds.contains(fusionResource.getOrganId())) {
+            fusionResourceVo.setAvailable(0);
         }
         return fusionResourceVo;
     }

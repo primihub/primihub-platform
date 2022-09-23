@@ -36,6 +36,15 @@
         <include refid="resourceColumns"></include>
         FROM
         data_resource where is_del = 0
+        <choose>
+            <when test="isPsi!=null">
+                and organ_id = #{organId}
+                <if test="isOwn==null">and resource_auth_type = 1</if>
+            </when>
+            <otherwise>
+                and (resource_auth_type = 1 or resource_auth_type = 3)
+            </otherwise>
+        </choose>
         <include refid="queryCondition"></include>
         ORDER BY resource_id desc
         LIMIT #{offset},#{pageSize}
