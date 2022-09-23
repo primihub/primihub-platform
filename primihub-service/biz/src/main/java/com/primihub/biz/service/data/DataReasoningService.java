@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.convert.DataReasoningConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -25,7 +26,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class DataReasoningService {
-
+    @Autowired
+    private BaseConfiguration baseConfiguration;
     @Autowired
     private DataReasoningPrRepository dataReasoningPrRepository;
     @Autowired
@@ -38,6 +40,8 @@ public class DataReasoningService {
 
 
     public BaseResultEntity getReasoningList(ReasoningListReq req) {
+        if (baseConfiguration.getAdminUserIds().contains(req.getUserId()))
+            req.setIsAdmin(1);
         List<DataReasoning> dataReasonings = dataReasoningRepository.selectDataReasoninPage(req);
         if (dataReasonings.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
