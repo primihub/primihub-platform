@@ -99,7 +99,7 @@ service.interceptors.response.use(
     const { data } = response
     const { code, msg } = data
     if (code !== 0) {
-      if (code === -1 || code === 1001 || code === 1007) {
+      if (code === -1 || code === 1001 || code === 1007 || code === 118) {
         return data
       } else if (code === 100) {
         message({
