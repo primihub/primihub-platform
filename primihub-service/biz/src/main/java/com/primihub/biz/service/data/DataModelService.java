@@ -68,7 +68,6 @@ public class DataModelService {
         }
         DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
         List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId);
-        List<ModelResourceVo> modelResources = new ArrayList<>();
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
             List<String> resourceId = modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toList());
@@ -78,7 +77,7 @@ public class DataModelService {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
                     if (map!=null){
                         log.info("resourceId:{}---available:{}",modelResourceVo.getResourceId(),map.get("available"));
-                        if (Integer.valueOf(map.get("available").toString()).equals("0")){
+                            modelResourceVo.setAvailable(Integer.valueOf(map.get("available").toString()));
                             modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
                             modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
                             modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
@@ -91,8 +90,6 @@ public class DataModelService {
                             if (map.get("organId")!=null){
                                 modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
                             }
-                            modelResources.add(modelResourceVo);
-                        }
                     }
                 }
             }
@@ -109,7 +106,7 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-        map.put("modelResources",modelResources);
+        map.put("modelResources",modelResourceVos.stream().filter(vo->vo.getAvailable() == 0).collect(Collectors.toList()));
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
             ParserConfig parserConfig = new ParserConfig();
