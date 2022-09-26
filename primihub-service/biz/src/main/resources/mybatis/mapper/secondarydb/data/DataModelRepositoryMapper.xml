@@ -24,10 +24,12 @@
         from
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
+            data_task dt on dmt.task_id = dt.task_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
              dm.is_del = 0
              and dm.is_draft = 1
+             and dt.task_state != 5
             <include refid="listwhere"></include>
         ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
@@ -39,10 +41,12 @@
         FROM
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
+            data_task dt on dmt.task_id = dt.task_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
              dm.is_del = 0
              and dm.is_draft = 1
+             and dt.task_state != 5
             <include refid="listwhere"></include>
     </select>
 
