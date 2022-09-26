@@ -143,7 +143,7 @@ export default {
       modelList: null,
       params: {
         pageNo: 1,
-        pageSize: 5,
+        pageSize: 10,
         projectId: ''
       },
       total: 0,
