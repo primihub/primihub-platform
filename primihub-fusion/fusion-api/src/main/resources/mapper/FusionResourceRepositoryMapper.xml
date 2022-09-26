@@ -162,8 +162,9 @@
     </select>
 
     <select id="selectFusionResourceByResourceIds" resultMap="FusionResourceBaseResultMap">
-        select <include refid="Fusion_Resource_Base_Column_List"/>
-        from fusion_resource where resource_id in
+        select <include refid="Fusion_Resource_Base_Column_List"/>,
+        (select GROUP_CONCAT(organ_global_id) from fusion_resource_visibility_auth where resource_id = r.resource_id) authOrgans
+        from fusion_resource r where resource_id in
         <foreach collection="resourceIds" index="index" item="item" separator="," open="(" close=")" >
             #{item}
         </foreach>
