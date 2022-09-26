@@ -62,7 +62,8 @@
             resource_num as resourceNum,
             y_value_column as yValueColumn,
             is_draft as isDraft,
-            create_date as createDate
+            create_date as createDate,
+            is_del as isDel
         FROM
             data_model
         WHERE

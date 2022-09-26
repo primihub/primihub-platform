@@ -23,7 +23,7 @@ nacos:
     file-extension: yaml
 aj:
   captcha:
-    # jigsaw: classpath:images/yyjigsaw
+    jigsaw: classpath:images/yyjigsaw
     cache-type: redis
     water-mark: PrimiHub
     slip-offset: 5
