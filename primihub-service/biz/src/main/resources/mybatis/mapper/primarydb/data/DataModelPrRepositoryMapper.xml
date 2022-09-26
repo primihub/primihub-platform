@@ -112,7 +112,7 @@
         delete from data_mr where task_id = #{taskId}
     </delete>
     <update id="deleteModelTask">
-        update data_model_task set is_del = 1 where task_id = #{taskId}
+        update data_model_task set is_del = 1 where model_id = #{modelId}
     </update>
 
 </mapper>

@@ -60,7 +60,7 @@ public class DataResourceService {
     @Autowired
     private DataServiceGrpcClient dataServiceGrpcClient;
 
-    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, boolean isPsi){
+    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
@@ -71,9 +71,6 @@ public class DataResourceService {
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
         paramMap.put("userName",req.getUserName());
-        if (isPsi){
-            paramMap.put("isPsi","true");
-        }
         List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
         if (dataResources.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

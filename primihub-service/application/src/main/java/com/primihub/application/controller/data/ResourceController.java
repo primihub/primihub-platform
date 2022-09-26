@@ -38,7 +38,7 @@ public class ResourceController {
     @GetMapping("getdataresourcelist")
     public BaseResultEntity getDataResourceList(@RequestHeader("userId") Long userId,
                                                 DataResourceReq req){
-        return dataResourceService.getDataResourceList(req,userId,false);
+        return dataResourceService.getDataResourceList(req,userId);
     }
 
     /**

@@ -38,7 +38,7 @@
     </select>
 
     <sql id="whereDataReasonin">
-        and user_id = #{userId}
+        <if test="isAdmin == 0">and user_id = #{userId}</if>
         <if test="id!=null and id!=0"> and id = #{id} </if>
         <if test="reasoningState!=null"> and reasoning_state = #{reasoningState} </if>
         <if test="reasoningName!=null and reasoningName!=''"> and reasoning_name like CONCAT('%',#{reasoningName,jdbcType=VARCHAR},'%') </if>
