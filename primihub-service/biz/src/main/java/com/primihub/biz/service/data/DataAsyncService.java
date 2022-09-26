@@ -326,6 +326,7 @@ public class DataAsyncService implements ApplicationContextAware {
         sendShareModelTask(vo);
     }
 
+    @Async
     public void deleteModelTask(DataTask dataTask) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataTask.getTaskId());
         DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
