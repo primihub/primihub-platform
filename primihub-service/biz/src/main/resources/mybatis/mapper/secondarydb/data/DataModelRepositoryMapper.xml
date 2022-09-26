@@ -27,8 +27,7 @@
             data_task dt on dmt.task_id = dt.task_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
-             dm.is_del = 0
-             and dm.is_draft = 1
+             dm.is_draft = 1
              and dt.task_state != 5
             <include refid="listwhere"></include>
         ORDER BY dmt.task_id desc
@@ -44,8 +43,7 @@
             data_task dt on dmt.task_id = dt.task_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
-             dm.is_del = 0
-             and dm.is_draft = 1
+             dm.is_draft = 1
              and dt.task_state != 5
             <include refid="listwhere"></include>
     </select>
