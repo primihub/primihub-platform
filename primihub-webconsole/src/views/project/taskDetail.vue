@@ -47,6 +47,7 @@
           <el-table
             v-if="tabName === '1'"
             :data="modelResources"
+            :row-class-name="tableRowClassName"
             border
           >
             <el-table-column
@@ -54,8 +55,9 @@
               label="资源ID"
             >
               <template slot-scope="{row}">
+                <!-- available: 0 可用， 1不可用 -->
                 <template v-if="hasViewPermission">
-                  <el-button :disabled="project.status === 2 || task.taskState === 5" size="mini" type="text" @click="toResourceDetailPage(row)">{{ row.resourceId }}</el-button>
+                  <el-button :disabled="project.status === 2 || task.taskState === 5 || row.available === 1" size="mini" type="text" @click="toResourceDetailPage(row)">{{ row.resourceId }}</el-button>
                 </template>
                 <template v-else>
                   <span>{{ row.resourceId }}</span>
@@ -84,6 +86,14 @@
             >
               <template slot-scope="{row}">
                 {{ row.participationIdentity === 1? '发起方': '协作方' }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="available"
+              label="数据状态"
+            >
+              <template slot-scope="{row}">
+                {{ row.available === 1? '不可用': '可用' }}
               </template>
             </el-table-column>
           </el-table>
@@ -181,6 +191,14 @@ export default {
     await this.fetchData()
   },
   methods: {
+    tableRowClassName({ row }) {
+      console.log(row.available)
+      if (row.available === 1) {
+        return 'disabled'
+      } else {
+        return ''
+      }
+    },
     toModelDetail() {
       this.$router.push({
         path: `/model/detail/${this.modelId}`,
@@ -365,6 +383,9 @@ export default {
 .buttons{
   display: flex;
   justify-content: flex-end;
+}
+::v-deep .el-table .disabled {
+  color: #C0C4CC;
 }
 
 </style>

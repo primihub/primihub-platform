@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="container" :class="{'disabled': task.taskState === 5, 'model': type === 'model'}">
+  <div v-loading="listLoading" class="container" :class="{'disabled': model.isDel === 1, 'model': type === 'model'}">
     <div class="section">
       <h3>模型信息</h3>
       <el-descriptions>
@@ -20,7 +20,7 @@
           <el-descriptions-item label="建模完成时间">{{ task.taskEndDate }}</el-descriptions-item>
         </template>
       </el-descriptions>
-      <div v-if="type === 'model' && task.taskState !== 5 && task.isCooperation === 0" class="buttons">
+      <div v-if="type === 'model' && model.isDel !== 1 && task.isCooperation === 0" class="buttons">
         <el-button type="danger" icon="el-icon-delete" @click="deleteModelTask">删除模型</el-button>
       </div>
     </div>
@@ -88,8 +88,7 @@
 </template>
 
 <script>
-import { getModelDetail } from '@/api/model'
-import { deleteTask } from '@/api/task'
+import { getModelDetail, deleteModel } from '@/api/model'
 
 export default {
   filters: {
@@ -131,7 +130,7 @@ export default {
     }
   },
   created() {
-    this.modelId = this.$route.query.modelId
+    this.modelId = this.$route.params.id
     this.taskId = this.$route.query.taskId || this.$route.params.taskId
     this.fetchData()
   },
@@ -148,7 +147,7 @@ export default {
         type: 'warning'
       }).then(() => {
         this.listLoading = true
-        deleteTask(this.taskId).then(res => {
+        deleteModel({ modelId: this.modelId }).then(res => {
           if (res.code === 0) {
             this.$message({
               message: '删除成功',
@@ -168,14 +167,13 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, task, project } = response.result
+        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, task, project } = response.result
         this.task = task
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
-        this.taskState = taskState
         this.projectId = project.projectId
       })
     }

@@ -25,9 +25,6 @@
         <el-form-item label="资源名称">
           <el-input v-model="query.resourceName" size="small" placeholder="请输入" clearable @clear="handleClear('resourceName')" />
         </el-form-item>
-        <el-form-item label="资源Id">
-          <el-input v-model="query.resourceId" size="small" placeholder="请输入" clearable @clear="handleClear('resourceId')" />
-        </el-form-item>
         <el-form-item label="检索ID">
           <el-input v-model="query.retrievalId" size="small" placeholder="请输入" clearable @clear="handleClear('retrievalId')" />
         </el-form-item>
@@ -186,7 +183,6 @@ export default {
         organName: '',
         retrievalId: '',
         resourceName: '',
-        resourceId: '',
         taskState: ''
       },
       statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
@@ -235,7 +231,6 @@ export default {
       this.query.serverAddress = ''
       this.query.organName = ''
       this.query.resourceName = ''
-      this.query.resourceId = ''
       this.query.retrievalId = ''
       this.query.taskState = ''
       this.pageNo = 1
@@ -255,13 +250,12 @@ export default {
     },
     async fetchData() {
       this.listLoading = true
-      const { taskState, serverAddress, organName, resourceName, resourceId, retrievalId } = this.query
+      const { taskState, serverAddress, organName, resourceName, retrievalId } = this.query
       const params = {
         taskState,
         serverAddress,
         organName,
         resourceName,
-        resourceId,
         retrievalId,
         pageNo: this.pageNo,
         pageSize: this.pageSize
