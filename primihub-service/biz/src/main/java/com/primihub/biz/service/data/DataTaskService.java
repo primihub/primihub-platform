@@ -81,6 +81,9 @@ public class DataTaskService {
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
 
+    @Autowired
+    private DataAsyncService dataAsyncService;
+
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
         String fileHandleField = dataResource.getFileHandleField();
@@ -379,27 +382,13 @@ public class DataTaskService {
         if (dataTask.getTaskState()==2)
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"任务运行中无法删除");
         if (dataTask.getTaskType().equals(TaskTypeEnum.MODEL.getTaskType())){
-//            deleteModel(taskId);
+            dataAsyncService.deleteModelTask(dataTask);
             dataTask.setTaskState(TaskStateEnum.DELETE.getStateType());
             dataTaskPrRepository.updateDataTask(dataTask);
         }else {
             dataTaskPrRepository.deleteDataTask(taskId);
         }
         return BaseResultEntity.success();
-    }
-
-    public void deleteModel(Long taskId){
-        DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
-        if (modelTask!=null){
-            dataModelPrRepository.deleteModelByModelId(modelTask.getModelId(), ModelStateEnum.SAVE.getStateType());
-            dataModelPrRepository.deleteModelTask(taskId);
-//            DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
-//            if (dataModel!=null){
-//                dataModel.setIsDel(1);
-//                dataModelPrRepository.updateDataModel(dataModel);
-//            }
-        }
-//        dataModelPrRepository.deleteDataModelTask(taskId);
     }
 }
 

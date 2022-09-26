@@ -23,6 +23,7 @@ import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
@@ -69,6 +70,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private OrganConfiguration organConfiguration;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private DataModelRepository dataModelRepository;
     @Autowired
     private DataPsiPrRepository dataPsiPrRepository;
     @Autowired
@@ -318,6 +321,21 @@ public class DataAsyncService implements ApplicationContextAware {
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
         vo.setProjectId(dataProject.getProjectId());
         vo.setServerAddress(dataProject.getServerAddress());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+        vo.setShareOrganId(dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList()));
+        sendShareModelTask(vo);
+    }
+
+    @Async
+    public void deleteModelTask(DataTask dataTask) {
+        DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataTask.getTaskId());
+        DataModel dataModel = dataModelRepository.queryDataModelById(modelTask.getModelId());
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataModel.getProjectId(), null);
+        ShareModelVo vo = new ShareModelVo(dataProject);
+        vo.setDataTask(dataTask);
+        vo.setDataModelTask(modelTask);
+        dataModel.setIsDel(1);
+        vo.setDataModel(dataModel);
         List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
         vo.setShareOrganId(dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList()));
         sendShareModelTask(vo);
