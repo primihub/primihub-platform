@@ -98,24 +98,25 @@ public class ResourceService {
                 fusionResource.setId(fr.getId());
                 resourceRepository.updateFusionResource(fusionResource);
                 existenceTags.addAll(Arrays.asList(fr.getResourceTag().split(",")));
-                Map<String, FusionResourceField> resourceFieldMap = resourceRepository.selectFusionResourceFieldById(fr.getId()).stream().collect(Collectors.toMap(FusionResourceField::getFieldName, Function.identity()));
-                if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
-                    for (CopyResourceFieldDto dto : copyResourceDto.getFieldList()) {
-                        if (resourceFieldMap.get(dto.getFieldName())==null){
-                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), null);
-                            resourceRepository.saveResourceField(fusionResourceField);
-                        }else {
-                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), resourceFieldMap.get(dto.getFieldName()).getFieldId());
-                            resourceRepository.updateResourceField(fusionResourceField);
-                        }
-                    }
-                }
+                resourceRepository.deleteResourceFieldByResourceId(fr.getId());
+//                Map<String, FusionResourceField> resourceFieldMap = resourceRepository.selectFusionResourceFieldById(fr.getId()).stream().collect(Collectors.toMap(FusionResourceField::getFieldName, Function.identity()));
+//                if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
+//                    for (CopyResourceFieldDto dto : copyResourceDto.getFieldList()) {
+//                        if (resourceFieldMap.get(dto.getFieldName())==null){
+//                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), null);
+//                            resourceRepository.saveResourceField(fusionResourceField);
+//                        }else {
+//                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), resourceFieldMap.get(dto.getFieldName()).getFieldId());
+//                            resourceRepository.updateResourceField(fusionResourceField);
+//                        }
+//                    }
+//                }
             }else {
                 resourceRepository.saveFusionResource(fusionResource);
-                if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
-                    List<FusionResourceField> resourceFields = copyResourceDto.getFieldList().stream().map(field -> DataResourceConvert.copyResourceFieldDtoConvertPo(field, fusionResource.getId(), null)).collect(Collectors.toList());
-                    resourceRepository.saveBatchResourceField(resourceFields);
-                }
+            }
+            if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
+                List<FusionResourceField> resourceFields = copyResourceDto.getFieldList().stream().map(field -> DataResourceConvert.copyResourceFieldDtoConvertPo(field, fusionResource.getId(), null)).collect(Collectors.toList());
+                resourceRepository.saveBatchResourceField(resourceFields);
             }
             if (fusionResource.getResourceAuthType().equals(AuthTypeEnum.VISIBILITY.getAuthType())){
                 List<String> authStringList=copyResourceDto.getAuthOrganList();

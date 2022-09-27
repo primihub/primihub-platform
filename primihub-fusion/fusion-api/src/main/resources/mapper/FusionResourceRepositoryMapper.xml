@@ -203,7 +203,9 @@
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
         <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
-        <if test="columnStr!=null and columnStr!=''">and cast(resource_column_name_list as char) = #{columnStr}</if>
+        <if test="columnStr!=null and columnStr!=''">
+            and cast(r.resource_column_name_list as char) = #{columnStr}
+        </if>
         order by r.id desc
         limit #{offset},#{pageSize}
     </select>
@@ -247,6 +249,9 @@
 
     <delete id="deleteResourceAuthOrgan">
         delete from fusion_resource_visibility_auth where resource_id=#{resourceId}
+    </delete>
+    <delete id="deleteResourceFieldByResourceId">
+        delete from fusion_resource_field where resource_id = #{resourceId}
     </delete>
 
     <insert id="saveBatchResourceAuthOrgan">

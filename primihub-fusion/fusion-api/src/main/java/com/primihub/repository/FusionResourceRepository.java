@@ -33,6 +33,8 @@ public interface FusionResourceRepository {
 
     void updateFusionResource(FusionResource fusionResource);
 
+    void deleteResourceFieldByResourceId(Long resourceId);
+
     void updateResourceField(FusionResourceField fusionResourceField);
 
     void saveBatchResourceTag(@Param("tags") Set<String> tags);
