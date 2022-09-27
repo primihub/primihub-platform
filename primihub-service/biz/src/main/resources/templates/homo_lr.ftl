@@ -37,7 +37,7 @@ logger = get_logger("Homo-LR-Host")
 
 dataset.define("${guest_dataset}")
 dataset.define("${label_dataset}")
-dataset.define("breast_2")
+dataset.define("breast_0")
 
 
 class Arbiter:
