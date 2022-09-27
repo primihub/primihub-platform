@@ -35,9 +35,9 @@ def get_logger(name):
 logger = get_logger("Homo-LR-Host")
 
 
+dataset.define("breast_0")
 dataset.define("${guest_dataset}")
 dataset.define("${label_dataset}")
-dataset.define("breast_0")
 
 
 class Arbiter:
@@ -575,7 +575,7 @@ def run_homo_lr_guest(guest_info, arbiter_info, task_params={}):
     # data = pd.read_csv(guest_info['dataset'], header=0)
     # x, label = data_iris()
     # data = pd.read_csv(guest_info['dataset'], header=0)
-    data = ph.dataset.read(dataset_key="breast_0").df_data
+    data = ph.dataset.read(dataset_key="breast_2").df_data
 
     # label = data.pop('y').values
     label = data.iloc[:, -1].values
@@ -660,6 +660,45 @@ arbiter_info, guest_info, host_info, task_type, task_params = load_info()
 logger = get_logger(task_type)
 
 
+# @ph.context.function(role='host', protocol='lr', datasets=['breast_1'], port='8020', task_type="regression")
+# def run_host_party():
+#     logger.info("Start homo-LR host logic.")
+
+#     run_homo_lr_host(host_info, arbiter_info, task_params)
+
+#     logger.info("Finish homo-LR host logic.")
+
+
+# # @ph.context.function(
+# #     role=guest_info[0]['role'],
+# #     protocol=task_type,
+# #     #  datasets=host_info[0]['dataset'],
+# #     datasets=["guest_dataset"],
+# #     port=str(guest_info[0]['port']))
+# @ph.context.function(role='guest', protocol='lr', datasets=['breast_0'], port='8010', task_type="regression")
+# def run_guest_party():
+#     logger.info("Start homo-LR guest logic.")
+
+#     run_homo_lr_guest(guest_info, arbiter_info, task_params)
+
+#     logger.info("Finish homo-LR guest logic.")
+
+
+# @ph.context.function(role='arbiter', protocol='lr', datasets=['breast_2'], port='8030', task_type="regression")
+# def run_arbiter_party():
+
+#     run_homo_lr_arbiter(arbiter_info, guest_info, host_info, task_params)
+
+#     logger.info("Finish homo-LR arbiter logic.")
+
+@ph.context.function(role='arbiter', protocol='lr', datasets=['breast_0'], port='8010', task_type="regression")
+def run_arbiter_party():
+
+    run_homo_lr_arbiter(arbiter_info, guest_info, host_info, task_params)
+
+    logger.info("Finish homo-LR arbiter logic.")
+
+
 @ph.context.function(role='host', protocol='lr', datasets=['${label_dataset}'], port='8020', task_type="regression")
 def run_host_party():
     logger.info("Start homo-LR host logic.")
@@ -669,24 +708,10 @@ def run_host_party():
     logger.info("Finish homo-LR host logic.")
 
 
-# @ph.context.function(
-#     role=guest_info[0]['role'],
-#     protocol=task_type,
-#     #  datasets=host_info[0]['dataset'],
-#     datasets=["guest_dataset"],
-#     port=str(guest_info[0]['port']))
-@ph.context.function(role='guest', protocol='lr', datasets=['breast_0'], port='8010', task_type="regression")
+@ph.context.function(role='guest', protocol='lr', datasets=['${guest_dataset}'], port='8030', task_type="regression")
 def run_guest_party():
     logger.info("Start homo-LR guest logic.")
 
     run_homo_lr_guest(guest_info, arbiter_info, task_params)
 
     logger.info("Finish homo-LR guest logic.")
-
-
-@ph.context.function(role='arbiter', protocol='lr', datasets=['${guest_dataset}'], port='8030', task_type="regression")
-def run_arbiter_party():
-
-    run_homo_lr_arbiter(arbiter_info, guest_info, host_info, task_params)
-
-    logger.info("Finish homo-LR arbiter logic.")
