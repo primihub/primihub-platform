@@ -231,6 +231,7 @@ export default {
     async getResourceList() {
       this.resourceList = []
       const res = await getResourceList({
+        modelId: this.modelId,
         serverAddress: this.serverAddress,
         organId: this.selectedOrganId,
         pageSize: this.paginationOptions.pageSize,

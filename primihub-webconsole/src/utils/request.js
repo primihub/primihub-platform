@@ -5,7 +5,6 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import { message } from '@/utils/resetMessage'
 
-const token = getToken()
 let loadingInstance = null
 let needLoadingRequestCount = 0
 
@@ -47,14 +46,14 @@ service.interceptors.request.use(
       startLoading()
     }
     if (store.getters.token) {
-      config.headers['token'] = token
+      config.headers['token'] = getToken()
     }
     if (config.method === 'get') {
       config.params = {
         ...config.params,
         timestamp,
         nonce,
-        token
+        token: getToken()
       }
     } else if (config.method === 'post') {
       if (config.type === 'json') {
@@ -63,7 +62,7 @@ service.interceptors.request.use(
           ...config.data,
           timestamp,
           nonce,
-          token
+          token: getToken()
         })
       } else {
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
@@ -72,7 +71,7 @@ service.interceptors.request.use(
           ...data,
           timestamp,
           nonce,
-          token
+          token: getToken()
         }, { allowDots: true })
       }
     }
