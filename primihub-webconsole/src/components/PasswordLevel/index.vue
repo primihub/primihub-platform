@@ -8,7 +8,7 @@
 </template>
 
 <script>
-const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w\s]).{8,16}$/
+const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w]).{8,16}$/
 
 export default {
   name: 'PasswordLevel',

@@ -25,12 +25,16 @@
           <el-input
             :key="passwordType"
             ref="password"
-            v-model="formData.password"
+            v-model.trim="formData.password"
             :type="passwordType"
             placeholder="请输入新密码"
             name="password"
             tabindex="2"
             auto-complete="off"
+            style="ime-mode:disabled"
+            onpaste="return false"
+            ondragenter="return false"
+            oncontextmenu="return false"
           />
           <span class="show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
@@ -41,12 +45,13 @@
           <el-input
             :key="passwordAgainType"
             ref="passwordAgain"
-            v-model="formData.passwordAgain"
+            v-model.trim="formData.passwordAgain"
             :type="passwordAgainType"
             placeholder="请确认新密码"
             name="passwordAgain"
             tabindex="2"
             auto-complete="off"
+            style="ime-mode:disabled"
           />
           <span class="show-pwd" @click="showAgainPwd">
             <svg-icon :icon-class="passwordAgainType === 'password' ? 'eye' : 'eye-open'" />
@@ -64,7 +69,7 @@ import { getValidatePublicKey, updatePassword } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
 import PasswordLevel from '@/components/PasswordLevel'
 
-const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w\s]).{8,16}$/
+const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w]).{8,16}$/
 
 export default {
   name: 'FormData',
@@ -109,6 +114,13 @@ export default {
       timer: null,
       count: 3,
       countTimer: null
+    }
+  },
+  watch: {
+    'formData.password'(newVal) {
+      if (newVal) {
+        this.formData.password = this.formData.password.replace(/[\u4e00-\u9fa5]|(\s+)/ig, '')
+      }
     }
   },
   async mounted() {
