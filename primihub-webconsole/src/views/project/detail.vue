@@ -314,8 +314,7 @@ export default {
     saveProject() {
       // const { projectName, projectDesc, projectOrgans } = this
       this.saveParams.id = this.list.id
-      const params = JSON.stringify(this.saveParams)
-      saveProject(params).then(res => {
+      saveProject(this.saveParams).then(res => {
         if (res.code === 0) {
           this.$message({
             message: '添加成功',

@@ -5,8 +5,10 @@ import store from '@/store'
 import { getToken } from '@/utils/auth'
 import { message } from '@/utils/resetMessage'
 
+const token = getToken()
 let loadingInstance = null
 let needLoadingRequestCount = 0
+
 function startLoading() {
   if (needLoadingRequestCount === 0) {
     loadingInstance = Loading.service({
@@ -45,34 +47,32 @@ service.interceptors.request.use(
       startLoading()
     }
     if (store.getters.token) {
-      config.headers['token'] = getToken()
+      config.headers['token'] = token
     }
     if (config.method === 'get') {
       config.params = {
         ...config.params,
         timestamp,
         nonce,
-        token: getToken()
+        token
       }
     } else if (config.method === 'post') {
       if (config.type === 'json') {
         config.headers['Content-Type'] = 'application/json;charset=UTF-8'
-        const data = JSON.parse(config.data)
         config.data = JSON.stringify({
-          ...data,
+          ...config.data,
           timestamp,
           nonce,
-          token: getToken()
+          token
         })
       } else {
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         const data = qs.parse(config.data)
-        console.log('request data', data)
         config.data = qs.stringify({
           ...data,
           timestamp,
           nonce,
-          token: getToken()
+          token
         }, { allowDots: true })
       }
     }
@@ -91,10 +91,6 @@ service.interceptors.response.use(
     if (response.config.showLoading === undefined) {
       response.config.showLoading = true
     }
-    // console.log('request', response.config.showLoading)
-    // if (response.config.showLoading) {
-    //   endLoading()
-    // }
     endLoading()
     const { data } = response
     const { code, msg } = data

@@ -279,11 +279,11 @@ export default {
       if (this.status && this.isEnd === false) {
         let moveLeftDistance = parseInt((this.moveBlockLeft || '').replace('px', ''))
         moveLeftDistance = moveLeftDistance * 310 / parseInt(this.setSize.imgWidth)
-        const data = JSON.stringify({
+        const data = {
           captchaType: this.captchaType,
           'pointJson': this.secretKey ? aesEncrypt(JSON.stringify({ x: moveLeftDistance, y: 5.0 }), this.secretKey) : JSON.stringify({ x: moveLeftDistance, y: 5.0 }),
           'tokenKey': this.backToken
-        })
+        }
         if (moveLeftDistance === 0 || isNaN(moveLeftDistance)) return
         checkCaptcha(data).then(res => {
           if (res.code === 0) {
@@ -353,11 +353,11 @@ export default {
     // 请求背景图片和验证图片
     async getPicture() {
       this.listLoading = true
-      const data = JSON.stringify({
+      const data = {
         captchaType: this.captchaType,
         clientUid: localStorage.getItem('slider'),
         ts: Date.now() // 现在的时间戳
-      })
+      }
       const res = await getCaptcha(data)
       if (res.code === 0) {
         this.backImgBase = res.result.originalImageBase64
