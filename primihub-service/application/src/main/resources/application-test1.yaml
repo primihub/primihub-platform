@@ -45,9 +45,9 @@ aj:
     req-frequency-limit-enable: true
     req-get-lock-limit: 30
     req-get-lock-seconds: 30
-    req-get-minute-limit: 120
-    req-check-minute-limit: 60
-    req-verify-minute-limit: 60
+    req-get-minute-limit: 10
+    req-check-minute-limit: 10
+    req-verify-minute-limit: 10
     type: BLOCKPUZZLE
 logging:
   level:
