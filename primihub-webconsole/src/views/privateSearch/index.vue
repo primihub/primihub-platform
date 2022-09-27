@@ -83,7 +83,7 @@
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.resourceId" placement="top">
-              <el-link size="small" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
+              <el-link size="small" :disabled="row.available === 1" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
             </el-tooltip>
           </template>
         </el-table-column>
