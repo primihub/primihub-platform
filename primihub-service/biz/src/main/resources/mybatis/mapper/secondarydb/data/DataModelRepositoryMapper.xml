@@ -78,8 +78,9 @@
         FROM
             data_mr
         WHERE
-            model_id = #{modelId}
-            and task_id = #{taskId}
+            is_del = 0
+            <if test="modelId!=null and modelId!=0">and model_id = #{modelId}</if>
+            <if test="taskId!=null and taskId!=0">and task_id = #{taskId}</if>
     </select>
 
     <select id="queryModelQuotaVoList" resultType="com.primihub.biz.entity.data.vo.ModelQuotaVo">

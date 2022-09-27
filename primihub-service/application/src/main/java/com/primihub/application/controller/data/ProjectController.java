@@ -163,6 +163,8 @@ public class ProjectController {
         if (StringUtils.isBlank(req.getServerAddress())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
         }
+        if (req.getModelId()==null || req.getModelId()==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         return dataProjectService.getResourceList(req);
     }
 

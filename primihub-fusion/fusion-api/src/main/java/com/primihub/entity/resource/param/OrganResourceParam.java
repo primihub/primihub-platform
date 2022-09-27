@@ -8,4 +8,5 @@ public class OrganResourceParam extends PageParam {
     private String resourceName;
     private String projectId;
     private Integer auditStatus;
+    private String columnStr;
 }
