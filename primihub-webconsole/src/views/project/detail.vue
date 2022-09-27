@@ -393,6 +393,8 @@ export default {
           })
           this.SET_STATUS(this.projectStatus)
         }
+      }).catch(() => {
+        this.listLoading = false
       })
     },
     // compare array diffrent

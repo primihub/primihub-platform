@@ -174,7 +174,7 @@ export default {
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources
         this.modelComponent = modelComponent
-        this.projectId = project.projectId
+        this.projectId = project.id
       })
     }
   }

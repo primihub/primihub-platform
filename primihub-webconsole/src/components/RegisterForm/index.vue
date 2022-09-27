@@ -77,6 +77,12 @@
           <span class="show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
           </span>
+          <div v-if="formData.password" class="pwd-level">密码强度:
+            <span class="level" :class="{ level0: userRegPwdLevel >= 1 }" />
+            <span class="level" :class="{ level1: userRegPwdLevel >= 2 }" />
+            <span class="level" :class="{ level2: userRegPwdLevel >= 3 }" />
+            {{ levelText }}
+          </div>
         </el-form-item>
         <el-form-item prop="passwordAgain">
           <el-input
@@ -114,7 +120,7 @@ import { sendVerificationCode, register, forgetPassword } from '@/api/user'
 
 const emailPattern = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
 const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
-const pwdPattern = /(?=.*[a-z_])(?=.*\d)(?=.*[^a-z0-9_])[\S]{8,}/i
+const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w\s]).{8,16}$/
 
 export default {
   name: 'FormData',
@@ -149,10 +155,10 @@ export default {
     const validatePassword = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
-      } else if (value.length < 6 || value.length > 20) {
-        callback(new Error('密码长度在8-20个字符以内'))
+      } else if (value.length < 8 || value.length > 16) {
+        callback(new Error('密码长度在8-16个字符以内'))
       } else if (!pwdPattern.test(value)) { // 特殊字符:非字母数字且非下划线的字符
-        callback(new Error('密码至少8位且同时包含至少一个字母、一个数字和一个特殊字符'))
+        callback(new Error('密码至少8位且同时包含数字、大小写字母及特殊字符'))
       } else {
         callback()
       }
@@ -202,7 +208,9 @@ export default {
       sendCode: false,
       dialogVisible: false,
       count: 10,
-      countTimer: null
+      countTimer: null,
+      levelText: '弱',
+      userRegPwdLevel: 1 // 1:弱, 2:中 3:强
     }
   },
   computed: {
@@ -222,11 +230,41 @@ export default {
       return text
     }
   },
+  watch: {
+    'formData.password'(newVal) {
+      this.passwordCheck(newVal)
+    }
+  },
   destroyed() {
     clearInterval(this.timer)
     clearInterval(this.countTimer)
   },
   methods: {
+    passwordCheck(value) {
+      const numReg = /\d/
+      const letterReg = /[a-zA-z]/
+      const specialReg = /\W/
+
+      const weakReg = value.match(numReg) || value.match(letterReg) || value.match(specialReg)
+      const mediumReg = (value.match(numReg) && value.match(letterReg)) || (value.match(numReg) && value.match(specialReg)) || (value.match(letterReg) && value.match(specialReg))
+      const strongReg = value.match(pwdPattern)
+
+      if (value.length < 8) { // 最初级别
+        this.userRegPwdLevel = 1
+        this.levelText = '弱'
+        return false
+      }
+      if (strongReg) {
+        this.userRegPwdLevel = 3
+        this.levelText = '强'
+      } else if (mediumReg) {
+        this.userRegPwdLevel = 2
+        this.levelText = '中'
+      } else if (weakReg) {
+        this.userRegPwdLevel = 1
+        this.levelText = '弱'
+      }
+    },
     showNotice() {
       const title = this.codeType === 1 ? '注册成功' : '修改成功'
       const message = `<div><p>即将自动跳转至登录页（<span id="countDownNumber" style="font-weight:700;padding: 0 0.01rem">${this.count}</span>s）<p><div style="width:120px;line-height:30px;font-weight:700;background:#1989FA;color:#fff;border-radius:3px;text-align:center;cursor: pointer;margin-top:3px" id="login">立即登录</div></div>`
@@ -525,5 +563,29 @@ export default {
   color: #889aa4;
   cursor: pointer;
   user-select: none;
+}
+.pwd-level{
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  padding-top: 8px;
+  height: 20px;
+}
+.level{
+  display: inline-block;
+  width: 28px;
+  height: 4px;
+  background-color: #ddd;
+  margin: 0 3px;
+  text-align: center;
+}
+.level0{
+  background-color: #F56C6C;
+}
+.level1{
+  background-color: #E6A23C;
+}
+.level2{
+  background-color: #67C23A;
 }
 </style>
