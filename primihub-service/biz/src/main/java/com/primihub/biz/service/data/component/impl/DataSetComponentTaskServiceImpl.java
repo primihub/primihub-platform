@@ -73,6 +73,12 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             log.info("availableList - size :{}",availableList.size());
             if (!availableList.isEmpty())
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
+            String trainType = taskReq.getValueMap().get("trainType");
+            if ("2".equals(trainType)){
+                Set<Object> resourceColumnNameList = voList.stream().map(data -> data.get("resourceColumnNameList")).collect(Collectors.toSet());
+                if (resourceColumnNameList.contains(null) || resourceColumnNameList.size()!=1)
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源特征量不一致,不可使用");
+            }
         }catch (Exception e){
             log.info("modelId:{} Failed to convert JSON :{}",taskReq.getDataModel().getModelId(),e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型选择资源转换失败");

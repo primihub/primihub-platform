@@ -24,6 +24,7 @@ public class  ComponentTaskReq {
     private DataModelAndComponentReq modelComponentReq = null;
     private List<DataModelComponent> dataModelComponents = new ArrayList<>();
     private List<DataComponent> dataComponents = new ArrayList<>();
+    private Map<String, String> valueMap = new HashMap<>();
 
     public ComponentTaskReq(DataModel dataModel) {
         this.dataModel = dataModel;

@@ -8,6 +8,7 @@ public class DataConstant {
     public final static String FIELD_NAME_AS="field_";
     // Template address
     public final static String FREEMARKER_PYTHON_EN_PAHT= "disxgb_en.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_PAHT= "homo_lr.ftl";
     // python dataset host、guest
     public final static String PYTHON_LABEL_DATASET = "label_dataset";
     public final static String PYTHON_GUEST_DATASET = "guest_dataset";
