@@ -22,7 +22,9 @@ public interface DataResourceRepository {
 
     List<DataResource> queryDataResource(Map<String,Object> paramMap);
 
-    List<DataResource> queryDataResourceByResourceIds(@Param("resourceIds")Set<Long> resourceIds);
+    Integer queryDataResourceCount(Map<String,Object> paramMap);
+
+    List<DataResource> queryDataResourceByResourceIds(@Param("resourceIds")Set<Long> resourceIds,@Param("stringIds")Set<String> stringIds);
 
     List<DataResourceTag> queryTagsByResourceId(Long resourceId);
 
@@ -30,7 +32,6 @@ public interface DataResourceRepository {
 
     DataResource queryDataResourceByResourceFusionId(String resourceFusionId);
 
-    Integer queryDataResourceCount(Map<String,Object> paramMap);
 
     List<Long> queryResourceTagRelation(Long resourceId);
 

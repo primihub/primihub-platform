@@ -514,11 +514,18 @@ public class DataProjectService {
     public BaseResultEntity getResourceList(OrganResourceReq req) {
         if (req.getAuditStatus() == null || req.getAuditStatus() == 0)
             req.setAuditStatus(1);
+        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(req.getModelId(), null);
+        if (modelResourceVos.isEmpty())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"模型无资源信息");
+        List<DataResource> dataResourcesList = dataResourceRepository.queryDataResourceByResourceIds(null, modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toSet()));
+        if (dataResourcesList.isEmpty())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无资源信息");
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("organId",req.getOrganId());
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceName",req.getResourceName());
+        paramMap.put("fileHandleField",dataResourcesList.get(0).getFileHandleField());
         if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
@@ -527,6 +534,7 @@ public class DataProjectService {
             Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
         }else {
+            req.setColumnStr(dataResourcesList.get(0).getFileHandleField());
             return fusionResourceService.getOrganResourceList(req);
         }
     }

@@ -77,6 +77,9 @@
         <if test="userName!=null and userName!=''">
             and user_id in (select user_id from sys_user where is_del=0 and is_forbid=0 and user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%'))
         </if>
+        <if test="fileHandleField!=null and fileHandleField!=''">
+            and cast(file_handle_field as char) = #{fileHandleField}
+        </if>
     </sql>
 
     <select id="queryDataResourceById" resultType="com.primihub.biz.entity.data.po.DataResource">
@@ -137,11 +140,21 @@
         SELECT
         <include refid="resourceColumns"></include>
         FROM
-        data_resource where is_del = 0 and resource_id in
-        <foreach collection="resourceIds" index="index" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
+        data_resource where is_del = 0
+        <if test="resourceIds!=null">
+            and resource_id in
+            <foreach collection="resourceIds" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="stringIds!=null">
+            and resource_fusion_id in
+            <foreach collection="stringIds" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
     <select id="queryDataFileField" resultType="com.primihub.biz.entity.data.po.DataFileField">
         select

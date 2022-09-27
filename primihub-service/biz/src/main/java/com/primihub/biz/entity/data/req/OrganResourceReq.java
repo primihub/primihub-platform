@@ -9,4 +9,6 @@ public class OrganResourceReq extends PageReq {
     private String resourceName;
     private String projectId;
     private Integer auditStatus;
+    private Long modelId;
+    private String columnStr;
 }
