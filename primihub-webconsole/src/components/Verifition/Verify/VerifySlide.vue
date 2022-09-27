@@ -261,6 +261,7 @@ export default {
           'pointJson': this.secretKey ? aesEncrypt(JSON.stringify({ x: moveLeftDistance, y: 5.0 }), this.secretKey) : JSON.stringify({ x: moveLeftDistance, y: 5.0 }),
           'tokenKey': this.backToken
         })
+        if (moveLeftDistance === 0 || isNaN(moveLeftDistance)) return
         checkCaptcha(data).then(res => {
           if (res.code === 0) {
             this.moveBlockBackgroundColor = '#5cb85c'
