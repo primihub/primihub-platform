@@ -46,7 +46,7 @@
                      'background-size': setSize.imgWidth + ' ' + setSize.imgHeight,
             }"
           >
-            <img :src="'data:image/png;base64,'+blockBackImgBase" alt="" style="width:100%;height:100%;display:block">
+            <img v-show="blockBackImgBase" :src="'data:image/png;base64,'+blockBackImgBase" alt="" style="width:100%;height:100%;display:block">
           </div>
         </div>
       </div>
@@ -112,8 +112,8 @@ export default {
       captchaType: 'blockPuzzle',
       secretKey: '', // 后端返回的加密秘钥 字段
       passFlag: '', // 是否通过的标识
-      backImgBase: '', // 验证码背景图片
-      blockBackImgBase: '', // 验证滑块的背景图片
+      backImgBase: null, // 验证码背景图片
+      blockBackImgBase: null, // 验证滑块的背景图片
       backToken: '', // 后端返回的唯一token值
       startMoveTime: '', // 移动开始的时间
       endMoveTime: '', // 移动结束的时间
@@ -160,8 +160,31 @@ export default {
     }
   },
   methods: {
+    // 生成 uuid
+    uuid() {
+      var s = []
+      var hexDigits = '0123456789abcdef'
+      for (var i = 0; i < 36; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1)
+      }
+      s[14] = '4' // bits 12-15 of the time_hi_and_version field to 0010
+      s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1) // bits 6-7 of the clock_seq_hi_and_reserved to 01
+      s[8] = s[13] = s[18] = s[23] = '-'
+
+      var slider = 'slider' + '-' + s.join('')
+      var point = 'point' + '-' + s.join('')
+      // 判断下是否存在 slider
+      console.log(localStorage.getItem('slider'))
+      if (!localStorage.getItem('slider')) {
+        localStorage.setItem('slider', slider)
+      }
+      if (!localStorage.getItem('point')) {
+        localStorage.setItem('point', point)
+      }
+    },
     async init() {
       this.text = this.explain
+      this.uuid()
       await this.getPicture()
       this.$nextTick(() => {
         const setSize = this.resetSize(this)	// 重新设置宽度高度
@@ -251,16 +274,16 @@ export default {
     // 鼠标松开
     end: function() {
       this.endMoveTime = +new Date()
-      const _this = this
       // 判断是否重合
       if (this.status && this.isEnd === false) {
         let moveLeftDistance = parseInt((this.moveBlockLeft || '').replace('px', ''))
         moveLeftDistance = moveLeftDistance * 310 / parseInt(this.setSize.imgWidth)
-        const data = JSON.stringify({
+        const data = {
           captchaType: this.captchaType,
           'pointJson': this.secretKey ? aesEncrypt(JSON.stringify({ x: moveLeftDistance, y: 5.0 }), this.secretKey) : JSON.stringify({ x: moveLeftDistance, y: 5.0 }),
           'tokenKey': this.backToken
-        })
+        }
+        if (moveLeftDistance === 0 || isNaN(moveLeftDistance)) return
         checkCaptcha(data).then(res => {
           if (res.code === 0) {
             this.moveBlockBackgroundColor = '#5cb85c'
@@ -289,7 +312,7 @@ export default {
             this.iconClass = 'icon-close'
             this.passFlag = false
             setTimeout(function() {
-              _this.refresh()
+              this.refresh()
             }, 1000)
             this.$parent.$emit('error', this)
             this.tipWords = '验证失败'
@@ -329,11 +352,11 @@ export default {
     // 请求背景图片和验证图片
     async getPicture() {
       this.listLoading = true
-      const data = JSON.stringify({
+      const data = {
         captchaType: this.captchaType,
         clientUid: localStorage.getItem('slider'),
         ts: Date.now() // 现在的时间戳
-      })
+      }
       const res = await getCaptcha(data)
       if (res.code === 0) {
         this.backImgBase = res.result.originalImageBase64

@@ -73,6 +73,10 @@
             name="password"
             tabindex="2"
             auto-complete="off"
+            style="ime-mode:disabled"
+            onpaste="return false"
+            ondragenter="return false"
+            oncontextmenu="return false"
           />
           <span class="show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
@@ -89,6 +93,7 @@
             name="passwordAgain"
             tabindex="2"
             auto-complete="off"
+            style="ime-mode:disabled"
           />
           <span class="show-pwd" @click="showAgainPwd">
             <svg-icon :icon-class="passwordAgainType === 'password' ? 'eye' : 'eye-open'" />
@@ -116,7 +121,7 @@ import PasswordLevel from '@/components/PasswordLevel'
 
 const emailPattern = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
 const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
-const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w\s]).{8,16}$/
+const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w]).{8,16}$/
 
 export default {
   name: 'FormData',
@@ -152,6 +157,10 @@ export default {
     const validatePassword = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
+      } else if (/[\u4E00-\u9FA5]/.test(value)) {
+        callback(new Error('密码中不能包含中文'))
+      } else if (/\s/.test(value)) {
+        callback(new Error('密码中不能包含空格'))
       } else if (value.length < 8 || value.length > 16) {
         callback(new Error('密码长度在8-16个字符以内'))
       } else if (!pwdPattern.test(value)) { // 特殊字符:非字母数字且非下划线的字符
@@ -223,6 +232,13 @@ export default {
         text = this.codeType === 2 ? '请输入注册时的手机号' : '请输入手机号'
       }
       return text
+    }
+  },
+  watch: {
+    'formData.password'(newVal) {
+      if (newVal) {
+        this.formData.password = this.formData.password.replace(/[\u4e00-\u9fa5]|(\s+)/ig, '')
+      }
     }
   },
   destroyed() {

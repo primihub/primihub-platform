@@ -7,6 +7,7 @@ import { message } from '@/utils/resetMessage'
 
 let loadingInstance = null
 let needLoadingRequestCount = 0
+
 function startLoading() {
   if (needLoadingRequestCount === 0) {
     loadingInstance = Loading.service({
@@ -57,9 +58,8 @@ service.interceptors.request.use(
     } else if (config.method === 'post') {
       if (config.type === 'json') {
         config.headers['Content-Type'] = 'application/json;charset=UTF-8'
-        const data = JSON.parse(config.data)
         config.data = JSON.stringify({
-          ...data,
+          ...config.data,
           timestamp,
           nonce,
           token: getToken()
@@ -67,7 +67,6 @@ service.interceptors.request.use(
       } else {
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
         const data = qs.parse(config.data)
-        console.log('request data', data)
         config.data = qs.stringify({
           ...data,
           timestamp,
@@ -91,10 +90,6 @@ service.interceptors.response.use(
     if (response.config.showLoading === undefined) {
       response.config.showLoading = true
     }
-    // console.log('request', response.config.showLoading)
-    // if (response.config.showLoading) {
-    //   endLoading()
-    // }
     endLoading()
     const { data } = response
     const { code, msg } = data

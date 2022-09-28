@@ -903,7 +903,7 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
-      const res = await saveModelAndComponent(JSON.stringify(this.saveParams))
+      const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
         this.currentModelId = res.result.modelId
         this.$notify.closeAll()
