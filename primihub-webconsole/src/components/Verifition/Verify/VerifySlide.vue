@@ -46,7 +46,7 @@
                      'background-size': setSize.imgWidth + ' ' + setSize.imgHeight,
             }"
           >
-            <img :src="'data:image/png;base64,'+blockBackImgBase" alt="" style="width:100%;height:100%;display:block">
+            <img v-show="blockBackImgBase" :src="'data:image/png;base64,'+blockBackImgBase" alt="" style="width:100%;height:100%;display:block">
           </div>
         </div>
       </div>
@@ -112,8 +112,8 @@ export default {
       captchaType: 'blockPuzzle',
       secretKey: '', // 后端返回的加密秘钥 字段
       passFlag: '', // 是否通过的标识
-      backImgBase: '', // 验证码背景图片
-      blockBackImgBase: '', // 验证滑块的背景图片
+      backImgBase: null, // 验证码背景图片
+      blockBackImgBase: null, // 验证滑块的背景图片
       backToken: '', // 后端返回的唯一token值
       startMoveTime: '', // 移动开始的时间
       endMoveTime: '', // 移动结束的时间
@@ -274,7 +274,6 @@ export default {
     // 鼠标松开
     end: function() {
       this.endMoveTime = +new Date()
-      const _this = this
       // 判断是否重合
       if (this.status && this.isEnd === false) {
         let moveLeftDistance = parseInt((this.moveBlockLeft || '').replace('px', ''))
@@ -313,7 +312,7 @@ export default {
             this.iconClass = 'icon-close'
             this.passFlag = false
             setTimeout(function() {
-              _this.refresh()
+              this.refresh()
             }, 1000)
             this.$parent.$emit('error', this)
             this.tipWords = '验证失败'
