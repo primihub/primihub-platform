@@ -199,11 +199,12 @@ public class DataModelService {
                 // 模型名称
                 if (StringUtils.isBlank(paramValuesMap.get("modelName")))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少模型名称");
-                if (StringUtils.isBlank(paramValuesMap.get("trainType")))
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少训练类型");
+                // 取消训练类型保存放入 改为运行模型枚举处理
+//                if (StringUtils.isBlank(paramValuesMap.get("trainType")))
+//                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少训练类型");
                 dataModel.setModelName(paramValuesMap.get("modelName"));
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
-                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
+//                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
             }
             dataModel.setProjectId(params.getProjectId());
@@ -324,8 +325,8 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
         if (StringUtils.isBlank(dataModel.getModelName()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
-        if (dataModel.getTrainType()==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
+//        if (dataModel.getTrainType()==null)
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
         Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
             add(modelId);
         }});
@@ -352,6 +353,7 @@ public class DataModelService {
                 return baseResultEntity;
             }
         }
+        dataModelPrRepository.updateDataModel(taskReq.getDataModel());
         DataTask dataTask = taskReq.getDataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());

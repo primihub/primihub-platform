@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataModel;
@@ -39,17 +40,24 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
-        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
+        BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
+        if (baseResultEntity.getCode()!=0)
+            return baseResultEntity;
+        ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
+        taskReq.getDataModel().setTrainType(modelType.getTrainType());
+        return baseResultEntity;
     }
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
-        if(taskReq.getValueMap().get("trainType").equals("1")){
-           return portraitXGB(req,taskReq);
-        }else {
+        if (taskReq.getValueMap().get("modelType").equals("2")){
+            return portraitXGB(req,taskReq);
+        }else if (taskReq.getValueMap().get("modelType").equals("3")){
             return transverseXGB(req,taskReq);
         }
-
+        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+        taskReq.getDataTask().setTaskErrorMsg("运行失败:无法进行任务执行");
+        return BaseResultEntity.success();
     }
 
     private BaseResultEntity transverseXGB(DataComponentReq req, ComponentTaskReq taskReq) {
