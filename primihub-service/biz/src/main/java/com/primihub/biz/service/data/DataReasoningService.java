@@ -5,14 +5,14 @@ import com.primihub.biz.convert.DataReasoningConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
-import com.primihub.biz.entity.data.po.DataModelTask;
-import com.primihub.biz.entity.data.po.DataProjectResource;
-import com.primihub.biz.entity.data.po.DataReasoning;
-import com.primihub.biz.entity.data.po.DataReasoningResource;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataReasoningReq;
 import com.primihub.biz.entity.data.req.DataReasoningResourceReq;
 import com.primihub.biz.entity.data.req.ReasoningListReq;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataReasoningRepository;
@@ -36,6 +36,10 @@ public class DataReasoningService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataAsyncService dataAsyncService;
 
 
 
@@ -64,6 +68,7 @@ public class DataReasoningService {
         Map<String, String> resourceMap = dataProjectResources.stream().collect(Collectors.toMap(DataProjectResource::getResourceId, DataProjectResource::getServerAddress,(key1, key2) -> key2));
         List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId(), resourceMap.get(r.getResourceId()))).collect(Collectors.toList());
         dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
+        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList);
         Map<String,Object> map = new HashMap<>();
         map.put("id",dataReasoning.getId());
         map.put("reasoningId",dataReasoning.getReasoningId());

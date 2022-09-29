@@ -49,24 +49,6 @@
                     "input_type": "textarea",
                     "input_value": "",
                     "input_values": []
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 1,
-                    "type_code": "trainType",
-                    "type_name": "训练类型",
-                    "input_type": "radio",
-                    "input_value": "1",
-                    "input_values": [
-                        {
-                            "key": "1",
-                            "val": "纵向"
-                        },
-                        {
-                            "key": "2",
-                            "val": "横向"
-                        }
-                    ]
                 }
             ]
         },
@@ -171,35 +153,7 @@
                     "input_values": [
                         {
                             "key": "1",
-                            "val": "删除"
-                        },
-                        {
-                            "key": "2",
-                            "val": "视为缺失值"
-                        },
-                        {
-                            "key": "3",
-                            "val": "平均值修正"
-                        },
-                        {
-                            "key": "4",
-                            "val": "盖帽法"
-                        },
-                        {
-                            "key": "5",
-                            "val": "分箱法"
-                        },
-                        {
-                            "key": "6",
-                            "val": "回归插补"
-                        },
-                        {
-                            "key": "7",
-                            "val": "多重插补"
-                        },
-                        {
-                            "key": "8",
-                            "val": "不处理"
+                            "val": "缺失值和异常值处理"
                         }
                     ]
                 }
@@ -276,6 +230,10 @@
                         {
                             "key": "2",
                             "val": "V-XGBoost"
+                        },
+                        {
+                            "key": "3",
+                            "val": "横向LR"
                         }
                     ]
                 },
@@ -294,6 +252,15 @@
                     "type_code": "modelDesc",
                     "type_name": "模型描述",
                     "input_type": "textarea",
+                    "input_value": "",
+                    "input_values": []
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 1,
+                    "type_code": "arbiterOrgan",
+                    "type_name": "可信第三方选择",
+                    "input_type": "label",
                     "input_value": "",
                     "input_values": []
                 }

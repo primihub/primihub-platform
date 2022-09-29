@@ -24,6 +24,7 @@
             <if test="reasoningType">reasoning_type = #{reasoningType},</if>
             <if test="reasoningState">reasoning_state = #{reasoningState},</if>
             <if test="taskId">task_id = #{taskId},</if>
+            <if test="runTaskId">run_task_id = #{runTaskId},</if>
             <if test="userId">user_id = #{userId},</if>
             <if test="releaseDate">release_date = #{releaseDate},</if>
             update_date = now()
