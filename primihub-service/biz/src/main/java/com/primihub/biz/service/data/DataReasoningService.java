@@ -5,14 +5,14 @@ import com.primihub.biz.convert.DataReasoningConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
-import com.primihub.biz.entity.data.po.DataModelTask;
-import com.primihub.biz.entity.data.po.DataProjectResource;
-import com.primihub.biz.entity.data.po.DataReasoning;
-import com.primihub.biz.entity.data.po.DataReasoningResource;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataReasoningReq;
 import com.primihub.biz.entity.data.req.DataReasoningResourceReq;
 import com.primihub.biz.entity.data.req.ReasoningListReq;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataReasoningRepository;
@@ -36,6 +36,10 @@ public class DataReasoningService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataAsyncService dataAsyncService;
 
 
 
@@ -75,5 +79,36 @@ public class DataReasoningService {
         if (dataReasoning==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据");
         return BaseResultEntity.success(DataReasoningConvert.dataReasoningConvertVo(dataReasoning));
+    }
+
+    public BaseResultEntity runReasoning(Long id,Long userId){
+        DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninById(id);
+        if (dataReasoning==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据");
+        List<DataReasoningResource> dataReasoningResources = dataReasoningRepository.selectDataReasoningResource(id);
+        if (dataReasoningResources.isEmpty())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源数据");
+        String resourceId = null;
+        for (DataReasoningResource dataReasoningResource : dataReasoningResources) {
+            if (dataReasoningResource.getParticipationIdentity() == 1){
+                resourceId = dataReasoningResource.getResourceId();
+            }
+        }
+        if (resourceId == null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未发现发起方数据");
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskName(dataReasoning.getReasoningName());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskUserId(userId);
+        dataTaskPrRepository.saveDataTask(dataTask);
+        dataReasoning.setRunTaskId(dataTask.getTaskId());
+        dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        dataAsyncService.runReasoning(dataTask,dataReasoning,resourceId);
+        Map map = new HashMap();
+        map.put("taskId",dataTask.getTaskId());
+        return BaseResultEntity.success(map);
     }
 }

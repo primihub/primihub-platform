@@ -7,6 +7,7 @@ public enum TaskTypeEnum {
     MODEL(1,"模型"),
     PSI(2,"psi"),
     PIR(3,"pir"),
+    REASONING(4,"推理"),
     ;
     private Integer taskType;
     private String taskName;
