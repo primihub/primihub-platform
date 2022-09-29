@@ -60,6 +60,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         taskReq.getDataModel().setModelType(modelType.getType());
         if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
             String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+            log.info(arbiterOrgan);
             if (arbiterOrgan==null)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
@@ -68,6 +69,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"项目参与方少于3方");
             List<ModelProjectResourceVo> resourceLists = JSONObject.parseArray(taskReq.getValueMap().get("selectData"), ModelProjectResourceVo.class);
             Set<String> organIdSet = resourceLists.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+            log.info(organIdSet.toString());
             if (organIdSet.contains(arbiterOrgan))
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方不可以和数据集机构重复");
             DataFResourceReq fresourceReq = new DataFResourceReq();
