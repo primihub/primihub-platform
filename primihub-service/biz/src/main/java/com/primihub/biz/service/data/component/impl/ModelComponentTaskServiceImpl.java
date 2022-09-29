@@ -11,9 +11,11 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataProject;
+import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataFResourceReq;
+import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.service.data.FusionResourceService;
@@ -31,10 +33,8 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service("modelComponentTaskServiceImpl")
 @Slf4j
@@ -58,12 +58,20 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getTrainType().equals(ModelTypeEnum.TRANSVERSE_LR.getTrainType())){
-            if (taskReq.getValueMap().get("arbiterOrgan")==null)
+        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
+            String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+            if (arbiterOrgan==null)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
+            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+            if (dataProjectOrgans.size()<=2)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"项目参与方少于3方");
+            List<ModelProjectResourceVo> resourceLists = JSONObject.parseArray(taskReq.getValueMap().get("selectData"), ModelProjectResourceVo.class);
+            Set<String> organIdSet = resourceLists.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+            if (organIdSet.contains(arbiterOrgan))
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方不可以和数据集机构重复");
             DataFResourceReq fresourceReq = new DataFResourceReq();
-            fresourceReq.setOrganId(taskReq.getValueMap().get("arbiterOrgan"));
+            fresourceReq.setOrganId(arbiterOrgan);
             fresourceReq.setServerAddress(dataProject.getServerAddress());
             BaseResultEntity resourceList = fusionResourceService.getResourceList(fresourceReq);
             if (resourceList.getCode()!=0)
@@ -79,9 +87,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
-        if (taskReq.getValueMap().get("modelType").equals("2")){
+        if (taskReq.getValueMap().get("modelType").equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
-        }else if (taskReq.getValueMap().get("modelType").equals("3")){
+        }else if (taskReq.getValueMap().get("modelType").equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
             return lr(req,taskReq);
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
