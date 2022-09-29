@@ -12,6 +12,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
@@ -407,7 +408,23 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void runReasoning(DataTask dataTask,DataReasoning dataReasoning,String resourceId){
+    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList){
+        String resourceId = "";
+        for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
+            if (dataReasoningResource.getParticipationIdentity() == 1){
+                resourceId = dataReasoningResource.getResourceId();
+            }
+        }
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskName(dataReasoning.getReasoningName());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskUserId(dataReasoning.getUserId());
+        dataTaskPrRepository.saveDataTask(dataTask);
+        dataReasoning.setRunTaskId(dataTask.getTaskId());
+        dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_CALCULATION_FIELD,resourceId);
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT, freeMarkerConfigurer, map);

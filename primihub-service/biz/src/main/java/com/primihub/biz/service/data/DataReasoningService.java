@@ -68,6 +68,7 @@ public class DataReasoningService {
         Map<String, String> resourceMap = dataProjectResources.stream().collect(Collectors.toMap(DataProjectResource::getResourceId, DataProjectResource::getServerAddress,(key1, key2) -> key2));
         List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId(), resourceMap.get(r.getResourceId()))).collect(Collectors.toList());
         dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
+        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList);
         Map<String,Object> map = new HashMap<>();
         map.put("id",dataReasoning.getId());
         map.put("reasoningId",dataReasoning.getReasoningId());
@@ -79,36 +80,5 @@ public class DataReasoningService {
         if (dataReasoning==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据");
         return BaseResultEntity.success(DataReasoningConvert.dataReasoningConvertVo(dataReasoning));
-    }
-
-    public BaseResultEntity runReasoning(Long id,Long userId){
-        DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninById(id);
-        if (dataReasoning==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据");
-        List<DataReasoningResource> dataReasoningResources = dataReasoningRepository.selectDataReasoningResource(id);
-        if (dataReasoningResources.isEmpty())
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源数据");
-        String resourceId = null;
-        for (DataReasoningResource dataReasoningResource : dataReasoningResources) {
-            if (dataReasoningResource.getParticipationIdentity() == 1){
-                resourceId = dataReasoningResource.getResourceId();
-            }
-        }
-        if (resourceId == null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未发现发起方数据");
-        DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(UUID.randomUUID().toString());
-        dataTask.setTaskName(dataReasoning.getReasoningName());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskUserId(userId);
-        dataTaskPrRepository.saveDataTask(dataTask);
-        dataReasoning.setRunTaskId(dataTask.getTaskId());
-        dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        dataAsyncService.runReasoning(dataTask,dataReasoning,resourceId);
-        Map map = new HashMap();
-        map.put("taskId",dataTask.getTaskId());
-        return BaseResultEntity.success(map);
     }
 }
