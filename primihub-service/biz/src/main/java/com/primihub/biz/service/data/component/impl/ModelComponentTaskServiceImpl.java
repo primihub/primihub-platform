@@ -87,9 +87,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
-        if (taskReq.getValueMap().get("modelType").equals(ModelTypeEnum.V_XGBOOST.getType())){
+        if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
-        }else if (taskReq.getValueMap().get("modelType").equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
+        }else if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
             return lr(req,taskReq);
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
