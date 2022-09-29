@@ -5,13 +5,18 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataModel;
+import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
+import com.primihub.biz.entity.data.req.DataFResourceReq;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.service.data.FusionResourceService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
@@ -26,7 +31,10 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 @Service("modelComponentTaskServiceImpl")
 @Slf4j
@@ -37,6 +45,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     private WorkGrpcClient workGrpcClient;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
+    @Autowired
+    private FusionResourceService fusionResourceService;
+    @Autowired
+    private DataProjectRepository dataProjectRepository;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -45,22 +57,39 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             return baseResultEntity;
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
+        taskReq.getDataModel().setModelType(modelType.getType());
+        if (modelType.getTrainType().equals(ModelTypeEnum.TRANSVERSE_LR.getTrainType())){
+            if (taskReq.getValueMap().get("arbiterOrgan")==null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
+            DataFResourceReq fresourceReq = new DataFResourceReq();
+            fresourceReq.setOrganId(taskReq.getValueMap().get("arbiterOrgan"));
+            fresourceReq.setServerAddress(dataProject.getServerAddress());
+            BaseResultEntity resourceList = fusionResourceService.getResourceList(fresourceReq);
+            if (resourceList.getCode()!=0)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码1");
+            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
+            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
+            if (resourceDataList==null || resourceDataList.size()==0)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码2");
+            taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET,resourceDataList.get(0).get("resourceId").toString());
+        }
         return baseResultEntity;
     }
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         if (taskReq.getValueMap().get("modelType").equals("2")){
-            return portraitXGB(req,taskReq);
+            return xgb(req,taskReq);
         }else if (taskReq.getValueMap().get("modelType").equals("3")){
-            return transverseXGB(req,taskReq);
+            return lr(req,taskReq);
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
         taskReq.getDataTask().setTaskErrorMsg("运行失败:无法进行任务执行");
         return BaseResultEntity.success();
     }
 
-    private BaseResultEntity transverseXGB(DataComponentReq req, ComponentTaskReq taskReq) {
+    private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
@@ -116,7 +145,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity portraitXGB(DataComponentReq req, ComponentTaskReq taskReq){
+    public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {

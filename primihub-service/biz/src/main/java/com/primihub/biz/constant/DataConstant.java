@@ -12,6 +12,7 @@ public class DataConstant {
     // python dataset host、guest
     public final static String PYTHON_LABEL_DATASET = "label_dataset";
     public final static String PYTHON_GUEST_DATASET = "guest_dataset";
+    public final static String PYTHON_ARBITER_DATASET = "arbiter_dataset";
     public final static String PYTHON_CALCULATION_FIELD = "label_field";
 
     // Set the timeout for 5 minutes
