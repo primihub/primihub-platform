@@ -230,6 +230,6 @@ h3{
 }
 .buttons{
   display: flex;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 </style>
