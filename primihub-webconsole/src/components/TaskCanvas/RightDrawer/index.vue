@@ -30,15 +30,23 @@
       </template>
       <template v-else>
         <div v-for="item in nodeData.componentTypes" :key="item.typeCode">
-          <el-form-item :label="item.typeName " :prop="item.typeCode">
+          <!-- 模型选择为LR时显示可信第三方 -->
+          <template v-if="item.inputType === 'button' && item.typeCode === 'arbiterOrgan'">
+            <el-form-item v-if="showArbiterOrgan" :label="item.typeName" :prop="item.typeCode">
+              <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
+              <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
+              <el-button type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
+            </el-form-item>
+          </template>
+          <el-form-item v-else :label="item.typeName" :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
-              <el-input v-model="item.inputValue" size="mini" @change="handleChange" />
+              <el-input v-model="item.inputValue" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'textarea'">
-              <el-input v-model="item.inputValue" type="textarea" size="mini" @change="handleChange" />
+              <el-input v-model="item.inputValue" type="textarea" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'radio'">
               <el-radio-group v-model="item.inputValue" @change="handleChange">
@@ -46,7 +54,7 @@
               </el-radio-group>
             </template>
             <template v-if="item.inputType === 'select'">
-              <el-select v-model="item.inputValue" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
+              <el-select v-model="item.inputValue" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
                   :key="index"
@@ -62,6 +70,9 @@
     <el-button v-if="options.showSaveButton" type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
     <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <!-- add provider organ dialog -->
+    <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加可信第三方" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+
   </div>
 </template>
 
@@ -69,18 +80,22 @@
 import { getProjectResourceData, getProjectResourceOrgan } from '@/api/model'
 import ResourceDialog from '@/components/ResourceDialog'
 import ResourceDec from '@/components/ResourceDec'
+import ArbiterOrganDialog from '@/components/ArbiterOrganDialog'
 
 export default {
   components: {
     ResourceDialog,
-    ResourceDec
+    ResourceDec,
+    ArbiterOrganDialog
   },
   props: {
+    data: {
+      type: Array,
+      default: () => []
+    },
     nodeData: {
       type: Object,
-      default: () => {
-        return {}
-      }
+      default: () => {}
     },
     options: { // 可配置项
       type: Object,
@@ -109,6 +124,11 @@ export default {
       }
     }
     return {
+      organData: [],
+      arbiterOrganName: '',
+      arbiterOrganId: '',
+      providerOrganIds: null,
+      providerOrganDialogVisible: false,
       form: {
         dynamicError: {
           name: ''
@@ -133,6 +153,9 @@ export default {
         ],
         taskName: [
           { required: true, trigger: 'blur', validator: taskNameValidate }
+        ],
+        arbiterOrgan: [
+          { required: true, trigger: 'change' }
         ]
       }
     }
@@ -140,31 +163,64 @@ export default {
   computed: {
     isDataSelect() {
       return this.nodeData && this.nodeData.componentCode === 'dataSet'
+    },
+    isModelSelect() {
+      return this.nodeData && this.nodeData.componentCode === 'model'
+    },
+    showArbiterOrgan() {
+      if (this.nodeData && this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue === '3') {
+        return true
+      } else {
+        return false
+      }
     }
   },
   watch: {
     async nodeData(newVal) {
       if (newVal) {
-        if (this.nodeData.componentCode === 'dataSet') {
-          await this.getProjectResourceOrgan()
+        if (newVal.componentCode === 'dataSet') {
           this.getDataSetNodeData()
+        }
+        if (newVal.componentCode === 'model') {
+          this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
+          this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
         }
       }
     }
   },
   async created() {
     this.projectId = Number(this.$route.query.projectId) || Number(this.$route.params.id)
+    await this.getProjectResourceOrgan()
+    this.getDataSetNodeData()
   },
   methods: {
+    async openProviderOrganDialog() {
+      this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrganId)
+      this.providerOrganDialogVisible = true
+    },
+    closeProviderOrganDialog(data) {
+      this.providerOrganIds = data
+      this.providerOrganDialogVisible = false
+    },
+    handleProviderOrganSubmit(data) {
+      const posIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'arbiterOrgan')
+      this.providerOrganIds = data.organId
+      this.arbiterOrganName = data.organName
+      this.arbiterOrganId = data.organId
+      this.providerOrganDialogVisible = false
+      this.nodeData.componentTypes[posIndex].inputValue = data.organId
+      this.$emit('change', this.nodeData)
+    },
     getDataSetNodeData() {
-      this.inputValue = this.nodeData.componentTypes[0].inputValue
+      this.dataSetCom = this.$parent._data.components.find(item => item.componentCode === 'dataSet')
+      this.inputValue = this.dataSetCom.componentTypes[0].inputValue
       if (this.inputValue !== '') {
         this.inputValue = JSON.parse(this.inputValue)
         const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
         const initiateOrgan = this.inputValue.filter(item => item.participationIdentity === 1)
         this.providerOrgans = providerOrgans.length > 0 ? providerOrgans : this.providerOrgans
         this.initiateOrgan = initiateOrgan.length > 0 ? initiateOrgan[0] : this.initiateOrgan
-        this.providerOrganId = this.providerOrgans.length > 0 ? this.providerOrgans[0].organId : ''
+        this.providerOrganId = providerOrgans.length > 0 ? providerOrgans[0].organId : ''
         this.providerOrganName = this.providerOrgans.filter(item => item.organId === this.providerOrganId)[0].organName
       }
     },
@@ -194,7 +250,6 @@ export default {
       this.dialogVisible = true
     },
     handleChange() {
-      console.log('handleChange', this.nodeData)
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -239,7 +294,6 @@ export default {
       } else {
         this.inputValues.push(currentData)
       }
-      console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
     },
     async getProjectResourceData() {
@@ -260,8 +314,6 @@ export default {
         this.organs = res.result
         this.providerOrganOptions = this.organs.filter(item => item.participationIdentity === 2)
         this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
-        this.providerOrgans = []
-        this.providerOrganId = ''
       }
       this.listLoading = false
     },
@@ -292,7 +344,7 @@ p {
 .right-drawer {
   width: 300px;
   background: #fff;
-  padding: 10px 15px;
+  padding: 10px 20px;
 }
 .label-text{
   color: #666;
@@ -324,5 +376,15 @@ p {
 .not-clickable{
   cursor: default;
   pointer-events: none;
+}
+.tips{
+  font-size: 12px;
+  color: #999;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.block{
+  width: 100%;
+  display: block;
 }
 </style>

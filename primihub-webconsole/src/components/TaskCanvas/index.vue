@@ -547,10 +547,22 @@ export default {
       const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
       const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
       const modelName = modelSelectCom?.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
+      const modelType = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue
+      const arbiterOrganId = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
       const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
       const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
+
+      // 横向lr
+      if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
+        this.$message({
+          message: '请选择正确的可信第三方(arbiter方)',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
