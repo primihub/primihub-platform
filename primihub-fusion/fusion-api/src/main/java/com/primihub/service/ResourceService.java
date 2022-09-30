@@ -172,6 +172,7 @@ public class ResourceService {
     }
 
     public BaseResultEntity getOrganResourceList(OrganResourceParam param) {
+        log.info(param.toString());
         List<FusionResource> fusionResources = resourceRepository.selectOrganResourcePage(param);
         if (fusionResources.isEmpty())
             return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
