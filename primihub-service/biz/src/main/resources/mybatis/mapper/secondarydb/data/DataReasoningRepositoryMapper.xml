@@ -11,6 +11,7 @@
                reasoning_type reasoningType,
                reasoning_state reasoningState,
                task_id taskId,
+               run_task_id runTaskId,
                release_date releaseDate
         from data_reasoning where is_del = 0
         <include refid="whereDataReasonin"></include>

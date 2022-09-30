@@ -41,6 +41,7 @@ public class DataReasoningConvert {
         dataReasoningVo.setReasoningState(dataReasoning.getReasoningState());
         dataReasoningVo.setTaskId(dataReasoning.getTaskId());
         dataReasoningVo.setReleaseDate(dataReasoning.getReleaseDate());
+        dataReasoningVo.setRunTaskId(dataReasoning.getRunTaskId());
         return dataReasoningVo;
     }
 
