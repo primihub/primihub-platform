@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -246,7 +246,8 @@ export default {
       this.saveFn()
     },
     handleChange(data) {
-      const { cells } = this.graph.toJSON()
+      this.graphData = this.graph.toJSON()
+      const { cells } = this.graphData
       const posIndex = cells.findIndex(item => item.componentCode === data.componentCode)
       cells[posIndex].data = data
       this.graph.fromJSON(cells)
