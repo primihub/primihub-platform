@@ -415,6 +415,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 resourceId = dataReasoningResource.getResourceId();
             }
         }
+        log.info(resourceId);
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskName(dataReasoning.getReasoningName());
@@ -426,7 +427,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setRunTaskId(dataTask.getTaskId());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_CALCULATION_FIELD,resourceId);
+        map.put(DataConstant.PYTHON_LABEL_DATASET,resourceId);
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT, freeMarkerConfigurer, map);
         if (freemarkerContent != null) {
             try {
