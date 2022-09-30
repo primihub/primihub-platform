@@ -424,6 +424,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskUserId(dataReasoning.getUserId());
         dataTaskPrRepository.saveDataTask(dataTask);
         dataReasoning.setRunTaskId(dataTask.getTaskId());
+        dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_LABEL_DATASET,resourceId);
