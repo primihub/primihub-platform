@@ -184,45 +184,49 @@ class Arbiter:
         return ret
 
 
-def run_homo_lr_arbiter(arbiter_info, guest_info, host_info, task_params={}):
-    # host_nodes = role_node_map["host"]
-    # guest_nodes = role_node_map["guest"]
-    # arbiter_nodes = role_node_map["arbiter"]
+def run_homo_lr_arbiter(role_node_map, node_addr_map, data_key, task_params={}):
+    host_nodes = role_node_map["host"]
+    guest_nodes = role_node_map["guest"]
+    arbiter_nodes = role_node_map["arbiter"]
     eva_type = ph.context.Context.params_map.get("taskType", None)
 
-    if len(host_info) != 1:
+    if len(host_nodes) != 1:
         logger.error("Hetero LR only support one host party, but current "
-                     "task have {} host party.".format(len(host_info)))
+                     "task have {} host party.".format(len(host_nodes)))
         return
 
-    if len(guest_info) != 1:
+    if len(guest_nodes) != 1:
         logger.error("Hetero LR only support one guest party, but current "
-                     "task have {} guest party.".format(len(guest_info)))
+                     "task have {} guest party.".format(len(guest_nodes)))
         return
 
-    if len(arbiter_info) != 1:
+    if len(arbiter_nodes) != 1:
         logger.error("Hetero LR only support one arbiter party, but current "
-                     "task have {} arbiter party.".format(len(arbiter_info)))
+                     "task have {} arbiter party.".format(len(arbiter_nodes)))
         return
 
-    host_info = host_info[0]
-    guest_info = guest_info[0]
-    arbiter_info = arbiter_info[0]
+    # host_info = host_info[0]
+    # guest_info = guest_info[0]
+    # arbiter_info = arbiter_info[0]
     # arbiter_port = node_addr_map[arbiter_nodes[0]].split(":")[1]
-    arbiter_port = arbiter_info['port']
+    # arbiter_port = arbiter_info['port']
+    arbiter_port = node_addr_map[arbiter_nodes[0]].split(":")[1]
     proxy_server = ServerChannelProxy(arbiter_port)
     proxy_server.StartRecvLoop()
     logger.debug(
         "Create server proxy for arbiter, port {}.".format(arbiter_port))
 
     # host_ip, host_port = node_addr_map[host_nodes[0]].split(":")
-    host_ip, host_port = host_info['ip'], host_info['port']
+    # host_ip, host_port = host_info['ip'], host_info['port']
+    host_ip, host_port = node_addr_map[host_nodes[0]].split(":")
     proxy_client_host = ClientChannelProxy(host_ip, host_port, "host")
     logger.debug("Create client proxy to host,"
                  " ip {}, port {}.".format(host_ip, host_port))
 
     # guest_ip, guest_port = node_addr_map[guest_nodes[0]].split(":")
-    guest_ip, guest_port = guest_info['ip'], guest_info['port']
+    # guest_ip, guest_port = guest_info['ip'], guest_info['port']
+    guest_ip, guest_port = node_addr_map[guest_nodes[0]].split(":")
+
     proxy_client_guest = ClientChannelProxy(guest_ip, guest_port, "guest")
     logger.debug("Create client proxy to guest,"
                  " ip {}, port {}.".format(guest_ip, guest_port))
@@ -259,20 +263,7 @@ def run_homo_lr_arbiter(arbiter_info, guest_info, host_info, task_params={}):
         logger.info("epoch={} done".format(i))
 
     logger.info("####### start predict ######")
-    # X, y = iris_data()
-    # X, y = data_binary(dataset_filepath)
-    data = pd.read_csv(guest_info['dataset'], header=0)
-    label = data.pop('y').values
-    x = data.copy().values
-    # X = LRModel.normalization(X)
-    pre = client_arbiter.predict(x, config['category'])
-    logger.info('Classification result is:')
-    # acc = np.mean(y == pre)
-    acc = client_arbiter.evaluation(label, pre)
-    predict_file_path = ph.context.Context.get_predict_file_path()
-    with open(predict_file_path, 'wb') as evf:
-        pickle.dump({'acc': acc}, evf)
-    logger.info('acc is: %s' % acc)
+
     logger.info("All process done.")
     proxy_server.StopRecvLoop()
 
@@ -373,32 +364,35 @@ class Host:
         return [self.public_key.encrypt(i) for i in x]
 
 
-def run_homo_lr_host(host_info, arbiter_info=None, task_params={}):
-    # host_nodes = role_node_map["host"]
-    # arbiter_nodes = role_node_map["arbiter"]
+def run_homo_lr_host(role_node_map, node_addr_map, data_key, task_params={}):
+    host_nodes = role_node_map["host"]
+    arbiter_nodes = role_node_map["arbiter"]
     # eva_type = ph.context.Context.params_map.get("taskType", None)
 
-    if len(host_info) != 1:
-        logger.error("Hetero LR only support one host party, but current "
-                     "task have {} host party.".format(len(host_info)))
+    if len(host_nodes) != 1:
+        logger.error("Homo LR only support one host party, but current "
+                     "task have {} host party.".format(len(host_nodes)))
         return
 
-    if len(arbiter_info) != 1:
-        logger.error("Hetero LR only support one arbiter party, but current "
-                     "task have {} arbiter party.".format(len(arbiter_info)))
+    if len(arbiter_nodes) != 1:
+        logger.error("Homo LR only support one arbiter party, but current "
+                     "task have {} arbiter party.".format(len(arbiter_nodes)))
         return
 
-    host_info = host_info[0]
-    arbiter_info = arbiter_info[0]
+    # host_info = host_info[0]
+    host_port = node_addr_map[host_nodes[0]].split(":")[1]
+
+    # arbiter_info = arbiter_info[0]
+    arbiter_ip, arbiter_port = node_addr_map[arbiter_nodes[0]].split(":")
 
     # host_port = node_addr_map[host_nodes[0]].split(":")[1]
-    host_port = host_info['port']
+    # host_port = host_info['port']
     proxy_server = ServerChannelProxy(host_port)
     proxy_server.StartRecvLoop()
     logger.debug("Create server proxy for host, port {}.".format(host_port))
 
     # arbiter_ip, arbiter_port = node_addr_map[arbiter_nodes[0]].split(":")
-    arbiter_ip, arbiter_port = arbiter_info['ip'], arbiter_info['port']
+    # arbiter_ip, arbiter_port = arbiter_info['ip'], arbiter_info['port']
     proxy_client_arbiter = ClientChannelProxy(arbiter_ip, arbiter_port,
                                               "arbiter")
     logger.debug("Create client proxy to arbiter,"
@@ -413,9 +407,9 @@ def run_homo_lr_host(host_info, arbiter_info=None, task_params={}):
     }
     # x, label = data_binary(dataset_filepath)
     print("********",)
-    data = pd.read_csv(host_info['dataset'], header=0)
+    # data = pd.read_csv(host_info['dataset'], header=0)
 
-    data = ph.dataset.read(dataset_key="breast_1").df_data
+    data = ph.dataset.read(dataset_key=data_key).df_data
 
     # label = data.pop('y').values
     label = data.iloc[:, -1].values
@@ -430,7 +424,8 @@ def run_homo_lr_host(host_info, arbiter_info=None, task_params={}):
     batch_num_train = (count_train - 1) // config['batch_size'] + 1
     proxy_client_arbiter.Remote(batch_num_train, "batch_num")
     host_data_weight = config['batch_size']
-    client_host.need_encrypt = task_params['encrypted']
+    # client_host.need_encrypt = task_params['encrypted']
+    # client_host.need_encrypt = task_params['encrypted']
     if client_host.need_encrypt == 'YES':
         # if task_params['encrypted']:
         client_host.public_key = proxy_server.Get("pub")
@@ -537,31 +532,34 @@ class Guest:
             yield [d[start:end] for d in all_data]
 
 
-def run_homo_lr_guest(guest_info, arbiter_info, task_params={}):
-    # guest_nodes = role_node_map["guest"]
-    # arbiter_nodes = role_node_map["arbiter"]
+def run_homo_lr_guest(role_node_map, node_addr_map, datakey, task_params={}):
+    guest_nodes = role_node_map["guest"]
+    arbiter_nodes = role_node_map["arbiter"]
 
-    if len(guest_info) != 1:
-        logger.error("Hetero LR only support one guest party, but current "
-                     "task have {} guest party.".format(len(guest_info)))
+    if len(guest_nodes) != 1:
+        logger.error("Homo LR only support one guest party, but current "
+                     "task have {} guest party.".format(len(guest_nodes)))
         return
 
-    if len(arbiter_info) != 1:
-        logger.error("Hetero LR only support one arbiter party, but current "
-                     "task have {} arbiter party.".format(len(arbiter_info)))
+    if len(arbiter_nodes) != 1:
+        logger.error("Homo LR only support one arbiter party, but current "
+                     "task have {} arbiter party.".format(len(arbiter_nodes)))
         return
 
-    guest_info = guest_info[0]
-    arbiter_info = arbiter_info[0]
+    # guest_info = guest_info[0]
+    # arbiter_info = arbiter_info[0]
 
-    # guest_port = node_addr_map[guest_nodes[0]].split(":")[1]
-    guest_port = guest_info['port']
+    # # guest_port = node_addr_map[guest_nodes[0]].split(":")[1]
+    # guest_port = guest_info['port']
+    guest_port = node_addr_map[guest_nodes[0]].split(":")[1]
     proxy_server = ServerChannelProxy(guest_port)
     proxy_server.StartRecvLoop()
     logger.debug("Create server proxy for guest, port {}.".format(guest_port))
 
     # arbiter_ip, arbiter_port = node_addr_map[arbiter_nodes[0]].split(":")
-    arbiter_ip, arbiter_port = arbiter_info['ip'], arbiter_info['port']
+    # arbiter_ip, arbiter_port = arbiter_info['ip'], arbiter_info['port']
+    arbiter_ip, arbiter_port = node_addr_map[arbiter_nodes[0]].split(":")
+
     proxy_client_arbiter = ClientChannelProxy(arbiter_ip, arbiter_port,
                                               "arbiter")
     logger.debug("Create client proxy to arbiter,"
@@ -573,7 +571,7 @@ def run_homo_lr_guest(guest_info, arbiter_info, task_params={}):
     # data = pd.read_csv(guest_info['dataset'], header=0)
     # x, label = data_iris()
     # data = pd.read_csv(guest_info['dataset'], header=0)
-    data = ph.dataset.read(dataset_key="breast_2").df_data
+    data = ph.dataset.read(dataset_key=datakey).df_data
 
     # label = data.pop('y').values
     label = data.iloc[:, -1].values
@@ -650,9 +648,9 @@ def get_logger(name):
     return logger
 
 
-arbiter_info, guest_info, host_info, task_type, task_params = load_info()
-
-logger = get_logger(task_type)
+# arbiter_info, guest_info, host_info, task_type, task_params = load_info()
+task_params = {}
+logger = get_logger("Homo-LR")
 
 
 # @ph.context.function(role='host', protocol='lr', datasets=['breast_1'], port='8020', task_type="regression")
@@ -686,27 +684,70 @@ logger = get_logger(task_type)
 
 #     logger.info("Finish homo-LR arbiter logic.")
 
-@ph.context.function(role='arbiter', protocol='lr', datasets=['${arbiter_dataset}'], port='8010', task_type="regression")
-def run_arbiter_party():
+# role_nodeid_map = ph.context.Context.role_nodeid_map
+# node_addr_map = ph.context.Context.node_addr_map
 
-    run_homo_lr_arbiter(arbiter_info, guest_info, host_info, task_params)
+
+@ph.context.function(role='arbiter', protocol='lr', datasets=['${arbiter_dataset}'], port='9010', task_type="regression")
+def run_arbiter_party():
+    role_node_map = ph.context.Context.get_role_node_map()
+    node_addr_map = ph.context.Context.get_node_addr_map()
+    dataset_map = ph.context.Context.dataset_map
+    data_key = list(dataset_map.keys())[0]
+
+    logger.debug(
+        "role_nodeid_map {}".format(role_node_map))
+
+    logger.debug(
+        "dataset_map {}".format(dataset_map))
+
+    logger.debug(
+        "node_addr_map {}".format(node_addr_map))
+
+    run_homo_lr_arbiter(role_node_map, node_addr_map, data_key)
 
     logger.info("Finish homo-LR arbiter logic.")
 
 
-@ph.context.function(role='host', protocol='lr', datasets=['${label_dataset}'], port='8020', task_type="regression")
+@ph.context.function(role='host', protocol='lr', datasets=['${label_dataset}'], port='9020', task_type="regression")
 def run_host_party():
+    role_node_map = ph.context.Context.get_role_node_map()
+    node_addr_map = ph.context.Context.get_node_addr_map()
+    dataset_map = ph.context.Context.dataset_map
+
+    logger.debug(
+        "dataset_map {}".format(dataset_map))
+    data_key = list(dataset_map.keys())[0]
+
+    logger.debug(
+        "role_nodeid_map {}".format(role_node_map))
+
+    logger.debug(
+        "node_addr_map {}".format(node_addr_map))
     logger.info("Start homo-LR host logic.")
 
-    run_homo_lr_host(host_info, arbiter_info, task_params)
+    run_homo_lr_host(role_node_map, node_addr_map, data_key)
 
     logger.info("Finish homo-LR host logic.")
 
 
-@ph.context.function(role='guest', protocol='lr', datasets=['${guest_dataset}'], port='8030', task_type="regression")
+@ph.context.function(role='guest', protocol='lr', datasets=['${guest_dataset}'], port='9030', task_type="regression")
 def run_guest_party():
+    role_node_map = ph.context.Context.get_role_node_map()
+    node_addr_map = ph.context.Context.get_node_addr_map()
+    dataset_map = ph.context.Context.dataset_map
+
+    logger.debug(
+        "dataset_map {}".format(dataset_map))
+
+    data_key = list(dataset_map.keys())[0]
+    logger.debug(
+        "role_nodeid_map {}".format(role_node_map))
+
+    logger.debug(
+        "node_addr_map {}".format(node_addr_map))
     logger.info("Start homo-LR guest logic.")
 
-    run_homo_lr_guest(guest_info, arbiter_info, task_params)
+    run_homo_lr_guest(role_node_map, node_addr_map, datakey=data_key)
 
     logger.info("Finish homo-LR guest logic.")
