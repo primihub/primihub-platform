@@ -7,6 +7,7 @@ import lombok.ToString;
 @ToString
 public class OrganResourceParam extends PageParam {
     private String organId;
+    private Long authOrganId;
     private String resourceName;
     private String projectId;
     private Integer auditStatus;
