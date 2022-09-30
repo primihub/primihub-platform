@@ -452,8 +452,8 @@ def run_homo_lr_host(role_node_map, node_addr_map, data_key, task_params={}):
         logger.info("epoch=%i done" % i)
     logger.info("host training process done.")
     model_file_path = ph.context.Context.get_model_file_path()
-    logger.info("Current model file path is:",
-                model_file_path, ph.context.Context.params_map)
+    logger.info("Current model file path is: {}".format(model_file_path)
+                )
     with open(model_file_path, 'wb') as fm:
         pickle.dump(client_host.model.theta, fm)
 
@@ -688,7 +688,7 @@ logger = get_logger("Homo-LR")
 # node_addr_map = ph.context.Context.node_addr_map
 
 
-@ph.context.function(role='arbiter', protocol='lr', datasets=['${arbiter_dataset}'], port='9010', task_type="regression")
+@ph.context.function(role='arbiter', protocol='lr', datasets=['${arbiter_dataset}'], port='9010', task_type="lr-train")
 def run_arbiter_party():
     role_node_map = ph.context.Context.get_role_node_map()
     node_addr_map = ph.context.Context.get_node_addr_map()
@@ -709,7 +709,7 @@ def run_arbiter_party():
     logger.info("Finish homo-LR arbiter logic.")
 
 
-@ph.context.function(role='host', protocol='lr', datasets=['${label_dataset}'], port='9020', task_type="regression")
+@ph.context.function(role='host', protocol='lr', datasets=['${label_dataset}'], port='9020', task_type="lr-train")
 def run_host_party():
     role_node_map = ph.context.Context.get_role_node_map()
     node_addr_map = ph.context.Context.get_node_addr_map()
@@ -731,7 +731,7 @@ def run_host_party():
     logger.info("Finish homo-LR host logic.")
 
 
-@ph.context.function(role='guest', protocol='lr', datasets=['${guest_dataset}'], port='9030', task_type="regression")
+@ph.context.function(role='guest', protocol='lr', datasets=['${guest_dataset}'], port='9030', task_type="lr-train")
 def run_guest_party():
     role_node_map = ph.context.Context.get_role_node_map()
     node_addr_map = ph.context.Context.get_node_addr_map()
