@@ -535,6 +535,7 @@ public class DataProjectService {
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
         }else {
             req.setColumnStr(dataResourcesList.get(0).getFileHandleField());
+            log.info(JSONObject.toJSONString(req));
             return fusionResourceService.getOrganResourceList(req);
         }
     }
