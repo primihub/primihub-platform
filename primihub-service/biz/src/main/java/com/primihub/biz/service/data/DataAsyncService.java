@@ -464,6 +464,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
+                    dataReasoning.setReleaseDate(new Date());
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }else {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -479,7 +480,6 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
-        dataReasoning.setReleaseDate(new Date());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
