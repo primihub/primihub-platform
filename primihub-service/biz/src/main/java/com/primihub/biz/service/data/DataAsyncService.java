@@ -3,6 +3,7 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
@@ -27,9 +28,7 @@ import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
-import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.service.data.component.impl.StartComponentTaskServiceImpl;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.ZipUtils;
@@ -415,6 +414,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 resourceId = dataReasoningResource.getResourceId();
             }
         }
+        log.info(resourceId);
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskName(dataReasoning.getReasoningName());
@@ -424,16 +424,22 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskUserId(dataReasoning.getUserId());
         dataTaskPrRepository.saveDataTask(dataTask);
         dataReasoning.setRunTaskId(dataTask.getTaskId());
+        dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_CALCULATION_FIELD,resourceId);
+        map.put(DataConstant.PYTHON_LABEL_DATASET,resourceId);
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT, freeMarkerConfigurer, map);
         if (freemarkerContent != null) {
             try {
-                DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
+                log.info(freemarkerContent);
+                DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+                log.info(modelTask.toString());
+                log.info(modelTask.getTaskResultContent());
                 ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
+                log.info(modelOutputPathDto.toString());
                 StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
                 dataTask.setTaskResultPath(filePath.toString());
+                log.info(dataTask.getTaskResultPath());
                 Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
                 Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
                 Common.Params params = Common.Params.newBuilder()
@@ -459,6 +465,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
+                    dataReasoning.setReleaseDate(new Date());
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }else {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -468,6 +475,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg(e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
             dataReasoning.setReasoningState(dataTask.getTaskState());
         }

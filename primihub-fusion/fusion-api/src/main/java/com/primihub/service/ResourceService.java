@@ -172,6 +172,11 @@ public class ResourceService {
     }
 
     public BaseResultEntity getOrganResourceList(OrganResourceParam param) {
+        log.info(param.toString());
+        FusionOrgan fusionOrgan = fusionRepository.getFusionOrganByGlobalId(param.getOrganId());
+        if (fusionOrgan == null)
+            return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
+        param.setAuthOrganId(fusionOrgan.getId());
         List<FusionResource> fusionResources = resourceRepository.selectOrganResourcePage(param);
         if (fusionResources.isEmpty())
             return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));

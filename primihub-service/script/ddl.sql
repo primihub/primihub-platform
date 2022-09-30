@@ -422,6 +422,7 @@ CREATE TABLE `data_reasoning` (
                                   `reasoning_type` tinyint DEFAULT NULL COMMENT '推理类型 0两方 1三方',
                                   `reasoning_state` tinyint DEFAULT NULL COMMENT '推理状态',
                                   `task_id` bigint DEFAULT NULL COMMENT '任务ID',
+                                  `run_task_id` bigint DEFAULT NULL COMMENT '任务ID',
                                   `user_id` bigint DEFAULT NULL COMMENT '用户ID',
                                   `release_date` datetime DEFAULT NULL COMMENT '发布日期',
                                   `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
