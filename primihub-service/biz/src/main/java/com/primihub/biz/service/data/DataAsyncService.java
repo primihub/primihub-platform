@@ -432,10 +432,9 @@ public class DataAsyncService implements ApplicationContextAware {
         if (freemarkerContent != null) {
             try {
                 DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
-                ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
                 StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
                 dataTask.setTaskResultPath(filePath.toString());
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
+                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelTask.getTaskResultPath()).build();
                 Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("modelFileName", modelFileNameParamValue)
@@ -469,6 +468,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg(e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
             dataReasoning.setReasoningState(dataTask.getTaskState());
         }
