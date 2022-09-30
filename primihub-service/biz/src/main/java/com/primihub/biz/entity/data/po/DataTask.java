@@ -3,6 +3,7 @@ package com.primihub.biz.entity.data.po;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.sql.Blob;
 import java.util.Date;
@@ -17,6 +18,7 @@ import java.util.Date;
  */
 @Getter
 @Setter
+@ToString
 public class DataTask {
 
     public DataTask() {

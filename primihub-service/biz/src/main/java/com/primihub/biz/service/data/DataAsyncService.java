@@ -432,7 +432,7 @@ public class DataAsyncService implements ApplicationContextAware {
         if (freemarkerContent != null) {
             try {
                 log.info(freemarkerContent);
-                DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
+                DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
                 log.info(modelTask.toString());
                 log.info(modelTask.getTaskResultContent());
                 ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
