@@ -89,9 +89,9 @@ export default {
     ArbiterOrganDialog
   },
   props: {
-    data: {
-      type: Array,
-      default: () => []
+    graphData: {
+      type: Object,
+      default: () => {}
     },
     nodeData: {
       type: Object,
@@ -176,12 +176,17 @@ export default {
     }
   },
   watch: {
+    graphData(newVal) {
+      this.getDataSetComValue(newVal)
+    },
     async nodeData(newVal) {
       if (newVal) {
         if (newVal.componentCode === 'dataSet') {
+          this.inputValue = this.nodeData.componentTypes[0].inputValue
           this.getDataSetNodeData()
         }
         if (newVal.componentCode === 'model') {
+          this.getDataSetComValue(this.graphData)
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
         }
@@ -191,11 +196,15 @@ export default {
   async created() {
     this.projectId = Number(this.$route.query.projectId) || Number(this.$route.params.id)
     await this.getProjectResourceOrgan()
-    this.getDataSetNodeData()
   },
   methods: {
+    getDataSetComValue(value) {
+      const dataSetCom = value.cells.find(item => item.componentCode === 'dataSet')
+      this.inputValue = dataSetCom.data.componentTypes[0].inputValue
+      this.getDataSetNodeData()
+    },
     async openProviderOrganDialog() {
-      this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrganId)
+      this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrgans[0].organId)
       this.providerOrganDialogVisible = true
     },
     closeProviderOrganDialog(data) {
@@ -212,16 +221,14 @@ export default {
       this.$emit('change', this.nodeData)
     },
     getDataSetNodeData() {
-      this.dataSetCom = this.$parent._data.components.find(item => item.componentCode === 'dataSet')
-      this.inputValue = this.dataSetCom.componentTypes[0].inputValue
       if (this.inputValue !== '') {
         this.inputValue = JSON.parse(this.inputValue)
         const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
-        const initiateOrgan = this.inputValue.filter(item => item.participationIdentity === 1)
+        const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
         this.providerOrgans = providerOrgans.length > 0 ? providerOrgans : this.providerOrgans
-        this.initiateOrgan = initiateOrgan.length > 0 ? initiateOrgan[0] : this.initiateOrgan
+        this.initiateOrgan = initiateOrgan || this.initiateOrgan
         this.providerOrganId = providerOrgans.length > 0 ? providerOrgans[0].organId : ''
-        this.providerOrganName = this.providerOrgans.filter(item => item.organId === this.providerOrganId)[0].organName
+        this.providerOrganName = this.providerOrgans[0]?.organName
       }
     },
     handleResourceHeaderChange(data) {
@@ -254,6 +261,8 @@ export default {
     },
     handleProviderOrganChange(value) {
       this.providerOrganId = value
+      this.providerOrgans = []
+      this.selectedResourceId = ''
       this.providerOrganName = this.providerOrganOptions.filter(item => item.organId === value)[0].organName
     },
     handleDialogCancel() {
@@ -269,7 +278,7 @@ export default {
         data.organName = this.initiateOrgan.organName
         this.initiateOrgan = data
       } else {
-        data.organName = this.providerOrganOptions.filter(item => item.organId === this.providerOrganId)[0].organName
+        data.organName = this.providerOrganOptions.find(item => item.organId === this.providerOrganId).organName
         this.providerOrgans = [data]
       }
       this.selectedResourceId = data.resourceId
@@ -277,6 +286,7 @@ export default {
       this.setInputValue(data)
       this.save()
       this.dialogVisible = false
+      this.$emit('change', this.nodeData)
     },
     setInputValue(data) {
       if (!data.calculationField) {
@@ -285,10 +295,8 @@ export default {
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
-      const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
-      const currentData = {
-        ...data
-      }
+      const posIndex = this.inputValues.findIndex(item => item.participationIdentity === data.participationIdentity)
+      const currentData = data
       if (posIndex !== -1) {
         this.inputValues[posIndex] = currentData
       } else {
@@ -345,6 +353,7 @@ p {
   width: 300px;
   background: #fff;
   padding: 10px 20px;
+  overflow-y: scroll;
 }
 .label-text{
   color: #666;
