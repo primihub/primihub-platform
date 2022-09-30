@@ -434,6 +434,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 log.info(freemarkerContent);
                 DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
                 log.info(modelTask.toString());
+                log.info(modelTask.getTaskResultContent());
                 ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
                 log.info(modelOutputPathDto.toString());
                 StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
