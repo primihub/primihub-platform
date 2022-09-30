@@ -431,10 +431,15 @@ public class DataAsyncService implements ApplicationContextAware {
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT, freeMarkerConfigurer, map);
         if (freemarkerContent != null) {
             try {
+                log.info(freemarkerContent);
                 DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
+                log.info(modelTask.toString());
+                ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
+                log.info(modelOutputPathDto.toString());
                 StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
                 dataTask.setTaskResultPath(filePath.toString());
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelTask.getTaskResultPath()).build();
+                log.info(dataTask.getTaskResultPath());
+                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
                 Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("modelFileName", modelFileNameParamValue)
