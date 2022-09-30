@@ -3,6 +3,7 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
@@ -27,9 +28,7 @@ import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
-import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.service.data.component.impl.StartComponentTaskServiceImpl;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.ZipUtils;
@@ -480,6 +479,7 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
+        dataReasoning.setReleaseDate(new Date());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
