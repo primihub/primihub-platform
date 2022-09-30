@@ -69,6 +69,7 @@ public class FusionResourceService {
             map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             map.put("resourceName", new ArrayList(){{add(req.getResourceName());}});
+            map.put("columnStr", new ArrayList(){{add(req.getColumnStr());}});
             map.put("organId", new ArrayList(){{add(req.getOrganId());}});
             map.put("auditStatus", new ArrayList(){{add(req.getAuditStatus());}});
             map.put("pageNo", new ArrayList(){{add(req.getPageNo());}});
