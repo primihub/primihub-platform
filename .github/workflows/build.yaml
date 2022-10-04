@@ -5,6 +5,25 @@ on:
     branches: [ "main" ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+      - name: Run tests and collect coverage
+        run: mvn -B test -f primihub-fusion/fusion-api/pom.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          directory: ./primihub-fusion/fusion-api
+
   build-fusion:
     runs-on: ${{ matrix.os }}
     strategy:
