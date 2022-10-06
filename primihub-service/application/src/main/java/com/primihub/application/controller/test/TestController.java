@@ -97,6 +97,12 @@ public class TestController {
         return BaseResultEntity.success(info);
     }
 
+    @RequestMapping("/testFormatResources")
+    public BaseResultEntity formatResources(){
+        testService.formatResources();
+        return BaseResultEntity.success();
+    }
+
 
 
 }
