@@ -39,14 +39,7 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: |
-          if [ $(uname -s) == "Linux" ];
-          then
-            OS=linux
-          elif [ $(uname -s) == "Darwin" ];
-          then
-            OS=osx
-          fi
-          mvn -B package --file primihub-fusion/pom.xml -Dmaven.test.skip=true -Dasciidoctor.skip=true -Dos.detected.classifier=${OS}-$(uname -m)
+          mvn -B package --file primihub-fusion/pom.xml -Dmaven.test.skip=true -Dasciidoctor.skip=true
 
   build-service:
     runs-on: ${{ matrix.os }}
@@ -63,14 +56,7 @@ jobs:
           cache: maven
       - name: Build with Maven
         run: |
-          if [ $(uname -s) == "Linux" ];
-          then
-            OS=linux
-          elif [ $(uname -s) == "Darwin" ];
-          then
-            OS=osx
-          fi
-          mvn -B package --file primihub-fusion/pom.xml -Dmaven.test.skip=true -Dasciidoctor.skip=true -Dos.detected.classifier=${OS}-$(uname -m)
+          mvn -B package --file primihub-fusion/pom.xml -Dmaven.test.skip=true -Dasciidoctor.skip=true
 
   build-console:
     runs-on: ubuntu-latest
