@@ -25,35 +25,38 @@
           <el-input
             :key="passwordType"
             ref="password"
-            v-model="formData.password"
+            v-model.trim="formData.password"
             :type="passwordType"
             placeholder="请输入新密码"
             name="password"
             tabindex="2"
             auto-complete="off"
+            style="ime-mode:disabled"
+            onpaste="return false"
+            ondragenter="return false"
+            oncontextmenu="return false"
           />
           <span class="show-pwd" @click="showPwd">
             <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
           </span>
+          <PasswordLevel :value="formData.password" />
         </el-form-item>
         <el-form-item prop="passwordAgain">
           <el-input
             :key="passwordAgainType"
             ref="passwordAgain"
-            v-model="formData.passwordAgain"
+            v-model.trim="formData.passwordAgain"
             :type="passwordAgainType"
             placeholder="请确认新密码"
             name="passwordAgain"
             tabindex="2"
             auto-complete="off"
+            style="ime-mode:disabled"
           />
           <span class="show-pwd" @click="showAgainPwd">
             <svg-icon :icon-class="passwordAgainType === 'password' ? 'eye' : 'eye-open'" />
           </span>
         </el-form-item>
-        <!-- <div v-if="codeType===1" class="tips">
-          <span>已有账号？<el-button type="text" @click="toLogin">去登录</el-button></span>
-        </div> -->
         <el-button :loading="loading" type="primary" class="register-button" @click.native.prevent="handleSubmit">提交</el-button>
       </el-form>
     </div>
@@ -64,18 +67,21 @@
 <script>
 import { getValidatePublicKey, updatePassword } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
-const pwdPattern = /(?=.*[a-z_])(?=.*\d)(?=.*[^a-z0-9_])[\S]{8,}/i
+import PasswordLevel from '@/components/PasswordLevel'
+
+const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w]).{8,16}$/
 
 export default {
   name: 'FormData',
+  components: { PasswordLevel },
   data() {
     const validatePassword = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请输入密码'))
-      } else if (value.length < 6 || value.length > 20) {
-        callback(new Error('密码长度在8-20个字符以内'))
+      } else if (value.length < 8 || value.length > 16) {
+        callback(new Error('密码长度在8-16个字符以内'))
       } else if (!pwdPattern.test(value)) {
-        callback(new Error('密码至少8位且同时包含至少一个字母、一个数字和一个特殊字符'))
+        callback(new Error('密码至少8位且同时包含数字、大小写字母及特殊字符'))
       } else {
         callback()
       }
@@ -108,6 +114,13 @@ export default {
       timer: null,
       count: 3,
       countTimer: null
+    }
+  },
+  watch: {
+    'formData.password'(newVal) {
+      if (newVal) {
+        this.formData.password = this.formData.password.replace(/[\u4e00-\u9fa5]|(\s+)/ig, '')
+      }
     }
   },
   async mounted() {

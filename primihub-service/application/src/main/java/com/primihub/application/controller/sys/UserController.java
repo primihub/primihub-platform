@@ -5,7 +5,10 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.VerificationCodeEnum;
 import com.primihub.biz.entity.sys.param.*;
 import com.primihub.biz.service.sys.SysUserService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +20,8 @@ public class UserController {
 
     @Autowired
     private SysUserService sysUserService;
+    @Value("${primihub.interior.code:null}")
+    private String interiorCode;
 
     @RequestMapping("login")
     public BaseResultEntity login(LoginParam loginParam){
@@ -108,11 +113,11 @@ public class UserController {
         if(saveOrUpdateUserParam.getRegisterType()==null)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"registerType");
         saveOrUpdateUserParam.setUserId(null);
-
         saveOrUpdateUserParam.setRoleIdList(new Long[]{1000L});
-        if(!sysUserService.validateVerificationCode(VerificationCodeEnum.REGISTER.getCode(),saveOrUpdateUserParam.getUserAccount(),saveOrUpdateUserParam.getVerificationCode()))
-            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
-
+        if (StringUtils.isBlank(interiorCode) || !saveOrUpdateUserParam.getVerificationCode().equals(interiorCode) ){
+            if(!sysUserService.validateVerificationCode(VerificationCodeEnum.REGISTER.getCode(),saveOrUpdateUserParam.getUserAccount(),saveOrUpdateUserParam.getVerificationCode()))
+                return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
+        }
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 
@@ -140,8 +145,10 @@ public class UserController {
         if(!forgetPasswordParam.getPasswordAgain().equals(forgetPasswordParam.getPassword()))
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"password not match");
 
-        if(!sysUserService.validateVerificationCode(VerificationCodeEnum.FORGET_PASSWORD.getCode(),forgetPasswordParam.getUserAccount(),forgetPasswordParam.getVerificationCode()))
-            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
+        if (StringUtils.isBlank(interiorCode) || !forgetPasswordParam.getVerificationCode().equals(interiorCode) ) {
+            if (!sysUserService.validateVerificationCode(VerificationCodeEnum.FORGET_PASSWORD.getCode(), forgetPasswordParam.getUserAccount(), forgetPasswordParam.getVerificationCode()))
+                return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
+        }
 
         return sysUserService.forgetPassword(forgetPasswordParam);
     }

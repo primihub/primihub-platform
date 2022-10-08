@@ -82,7 +82,7 @@
         </el-table-column>
       </el-table>
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="params.pageSize" :page.sync="params.pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
+    <pagination v-show="pageCount>1" :limit.sync="params.pageSize" :page-count="pageCount" :page.sync="params.pageNo" :total="total" @pagination="handlePagination" />
   </div>
 </template>
 
@@ -143,7 +143,7 @@ export default {
       modelList: null,
       params: {
         pageNo: 1,
-        pageSize: 5,
+        pageSize: 10,
         projectId: ''
       },
       total: 0,

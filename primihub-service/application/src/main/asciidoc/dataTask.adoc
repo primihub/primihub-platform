@@ -14,7 +14,7 @@ include::{snippets}/getModelTaskList/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getModelTaskList/http-response.adoc[]
 
-=== 2.7.1 任务详情
+=== 2.7.2 任务详情
 include::{snippets}/getTaskData/curl-request.adoc[]
 include::{snippets}/getTaskData/httpie-request.adoc[]
 .request-body 请求体
@@ -30,7 +30,7 @@ include::{snippets}/getTaskData/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/getTaskData/http-response.adoc[]
 
-=== 2.7.1 删除任务
+=== 2.7.3 删除任务
 include::{snippets}/deleteTask/curl-request.adoc[]
 include::{snippets}/deleteTask/httpie-request.adoc[]
 .request-body 请求体
@@ -45,3 +45,19 @@ include::{snippets}/deleteTask/request-parameters.adoc[]
 include::{snippets}/deleteTask/response-fields.adoc[]
 .http-response 返回结果样例
 include::{snippets}/deleteTask/http-response.adoc[]
+
+=== 2.7.4 pir任务列表
+include::{snippets}/getPirTaskList/curl-request.adoc[]
+include::{snippets}/getPirTaskList/httpie-request.adoc[]
+.request-body 请求体
+include::{snippets}/getPirTaskList/request-body.adoc[]
+.http-request 请求样例
+include::{snippets}/getPirTaskList/http-request.adoc[]
+.request-headers 请求头说明
+include::{snippets}/getPirTaskList/request-headers.adoc[]
+.request-parameters 请求参数说明
+include::{snippets}/getPirTaskList/request-parameters.adoc[]
+.response-fields 返回字段说明
+include::{snippets}/getPirTaskList/response-fields.adoc[]
+.http-response 返回结果样例
+include::{snippets}/getPirTaskList/http-response.adoc[]

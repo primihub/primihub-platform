@@ -76,18 +76,20 @@ public class DataModelService {
                 for (ModelResourceVo modelResourceVo : modelResourceVos) {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
                     if (map!=null){
-                        modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
-                        modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
-                        modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
-                        modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
-                        modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
-                        modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
-                        modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
-                        modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
-                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
-                        if (map.get("organId")!=null){
-                            modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
-                        }
+                        log.info("resourceId:{}---available:{}",modelResourceVo.getResourceId(),map.get("available"));
+                            modelResourceVo.setAvailable(Integer.valueOf(map.get("available").toString()));
+                            modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
+                            modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
+                            modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
+                            modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
+                            modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
+                            modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
+                            modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
+                            modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
+                            modelResourceVo.setServerAddress(dataProject.getServerAddress());
+                            if (map.get("organId")!=null){
+                                modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
+                            }
                     }
                 }
             }
@@ -197,11 +199,12 @@ public class DataModelService {
                 // 模型名称
                 if (StringUtils.isBlank(paramValuesMap.get("modelName")))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少模型名称");
-                if (StringUtils.isBlank(paramValuesMap.get("trainType")))
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少训练类型");
+                // 取消训练类型保存放入 改为运行模型枚举处理
+//                if (StringUtils.isBlank(paramValuesMap.get("trainType")))
+//                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少训练类型");
                 dataModel.setModelName(paramValuesMap.get("modelName"));
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
-                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
+//                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
             }
             dataModel.setProjectId(params.getProjectId());
@@ -279,34 +282,35 @@ public class DataModelService {
         if (dataModel==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到模型信息");
         }
-        dataModel.setIsDel(1);
-        ShareModelVo vo = new ShareModelVo(dataModel);
-        Map<String,Map<String,Object>> map = dataModelRepository.queryModelLatestTask(new HashSet() {{
-            add(modelId);
-        }});
-        List<Map<String, Object>> taskList = new ArrayList<>();
-        if (map!=null&&!map.isEmpty()){
-            Iterator<Map.Entry<String, Map<String, Object>>> it = map.entrySet().iterator();
-            while (it.hasNext()){
-                Map<String, Object> value = it.next().getValue();
-                if (!value.containsKey("taskState")){
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型任务状态异常");
-                }
-                if (value.get("taskState").equals("2")){
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型任务正在运行无法删除");
-                }
-                taskList.add(value);
-            }
-            for (Map<String, Object> value : taskList) {
-                if (value.containsKey("taskId")){
-                    long taskId = Long.parseLong(value.get("taskId").toString());
-                    dataTaskPrRepository.deleteDataTask(taskId);
-                    dataModelPrRepository.deleteDataModelTask(taskId);
-                }
-            }
-        }
+//        dataModel.setIsDel(1);
+//        ShareModelVo vo = new ShareModelVo(dataModel);
+//        Map<String,Map<String,Object>> map = dataModelRepository.queryModelLatestTask(new HashSet() {{
+//            add(modelId);
+//        }});
+//        List<Map<String, Object>> taskList = new ArrayList<>();
+//        if (map!=null&&!map.isEmpty()){
+//            Iterator<Map.Entry<String, Map<String, Object>>> it = map.entrySet().iterator();
+//            while (it.hasNext()){
+//                Map<String, Object> value = it.next().getValue();
+//                if (!value.containsKey("taskState")){
+//                    return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型任务状态异常");
+//                }
+//                if (value.get("taskState").equals("2")){
+//                    return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"模型任务正在运行无法删除");
+//                }
+//                taskList.add(value);
+//            }
+//            for (Map<String, Object> value : taskList) {
+//                if (value.containsKey("taskId")){
+//                    long taskId = Long.parseLong(value.get("taskId").toString());
+//                    dataTaskPrRepository.deleteDataTask(taskId);
+//                    dataModelPrRepository.deleteDataModelTask(taskId);
+//                }
+//            }
+//        }
         dataModelPrRepository.deleteModelByModelId(modelId,dataModel.getIsDraft());
-        dataAsyncService.deleteModel(vo);
+        dataModelPrRepository.deleteModelTask(modelId);
+//        dataAsyncService.deleteModel(vo);
         return BaseResultEntity.success();
     }
 
@@ -321,8 +325,8 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
         if (StringUtils.isBlank(dataModel.getModelName()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
-        if (dataModel.getTrainType()==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
+//        if (dataModel.getTrainType()==null)
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
         Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
             add(modelId);
         }});
@@ -349,6 +353,7 @@ public class DataModelService {
                 return baseResultEntity;
             }
         }
+        dataModelPrRepository.updateDataModel(taskReq.getDataModel());
         DataTask dataTask = taskReq.getDataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
@@ -507,6 +512,8 @@ public class DataModelService {
         if (StringUtils.isNotBlank(req.getSuccessDate())){
             req.setSuccessTime(DateUtil.parseDate(req.getSuccessDate(),DateUtil.DateStyle.DATE_FORMAT_NORMAL.getFormat()).getTime());
         }
+        if (baseConfiguration.getAdminUserIds().contains(req.getUserId()))
+            req.setIsAdmin(1);
         List<ModelTaskSuccessVo> modelTaskSuccessVos = dataModelRepository.queryModelTaskSuccessList(req);
         if (modelTaskSuccessVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

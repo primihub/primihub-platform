@@ -16,7 +16,19 @@ import filter from '@/filters'
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
 
 // set ElementUI lang to zh
-Vue.use(ElementUI)
+Vue.use(ElementUI, {
+  locale: {
+    el: {
+      // 整体覆盖
+      pagination: {
+        pagesize: '条/页',
+        total: `共 {total} 条记录`,
+        goto: '跳至',
+        pageClassifier: '页'
+      }
+    }
+  }
+})
 // if need english element-ui, you can set it like this
 // Vue.use(ElementUI, { locale })
 

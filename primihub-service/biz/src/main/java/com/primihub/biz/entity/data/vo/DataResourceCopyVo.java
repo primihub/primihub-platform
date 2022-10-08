@@ -85,4 +85,6 @@ public class DataResourceCopyVo {
      * 资源字段列表
      */
     private List<DataResourceFieldCopyVo> fieldList;
+
+    private Integer isDel = 0;
 }

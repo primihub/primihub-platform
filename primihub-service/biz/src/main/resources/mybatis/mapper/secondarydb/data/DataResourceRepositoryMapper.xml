@@ -46,15 +46,6 @@
         count(resource_id)
         FROM
         data_resource where is_del = 0
-        <choose>
-            <when test="isPsi!=null">
-                and organ_id = #{organId}
-                <if test="isOwn==null">and resource_auth_type = 1</if>
-            </when>
-            <otherwise>
-                and (resource_auth_type = 1 or resource_auth_type = 3)
-            </otherwise>
-        </choose>
         <include refid="queryCondition"></include>
     </select>
 
@@ -85,6 +76,9 @@
         </if>
         <if test="userName!=null and userName!=''">
             and user_id in (select user_id from sys_user where is_del=0 and is_forbid=0 and user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%'))
+        </if>
+        <if test="fileHandleField!=null and fileHandleField!=''">
+            and cast(file_handle_field as char) = #{fileHandleField}
         </if>
     </sql>
 
@@ -146,11 +140,21 @@
         SELECT
         <include refid="resourceColumns"></include>
         FROM
-        data_resource where is_del = 0 and resource_id in
-        <foreach collection="resourceIds" index="index" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
+        data_resource where is_del = 0
+        <if test="resourceIds!=null">
+            and resource_id in
+            <foreach collection="resourceIds" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+        <if test="stringIds!=null">
+            and resource_fusion_id in
+            <foreach collection="stringIds" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
     </select>
     <select id="queryDataFileField" resultType="com.primihub.biz.entity.data.po.DataFileField">
         select

@@ -1,24 +1,27 @@
 <template>
-  <div class="app-container">
+  <div class="container">
     <h2>用户管理</h2>
     <el-button v-if="hasAddPermission" type="primary" icon="el-icon-plus" @click="addUser">新增用户</el-button>
-    <el-table
-      :data="list"
-      class="table-list"
-    >
-      <el-table-column align="center" label="序号" width="100" type="index" />
-      <el-table-column align="left" label="ID" prop="userId" width="100" />
-      <el-table-column align="left" label="账户名" prop="userAccount" />
-      <el-table-column align="left" label="昵称" prop="userName" />
-      <el-table-column align="left" label="角色名称" prop="roleIdListDesc" />
-      <el-table-column v-if="hasEditPermission || hasDeletePermission || hasResetPermission" label="操作" fixed="right" width="250">
-        <template slot-scope="scope">
-          <el-button v-if="hasEditPermission" type="text" icon="edit" @click="openEdit(scope.row)"><i class="el-icon-edit" type="primary" />编辑</el-button>
-          <el-button v-if="hasDeletePermission" type="text" icon="magic-stick" @click="handleDeleteUser(scope.row)"><i class="el-icon-delete" />删除</el-button>
-          <el-button v-if="hasResetPermission" type="text" icon="magic-stick" @click="handleInitPassword(scope.row)"><i class="el-icon-magic-stick" />重置密码</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
+    <div class="main">
+      <el-table
+        :data="list"
+        class="table-list"
+      >
+        <el-table-column align="center" label="序号" width="100" type="index" />
+        <el-table-column align="left" label="ID" prop="userId" width="100" />
+        <el-table-column align="left" label="账户名" prop="userAccount" />
+        <el-table-column align="left" label="昵称" prop="userName" />
+        <el-table-column align="left" label="角色名称" prop="roleIdListDesc" />
+        <el-table-column v-if="hasEditPermission || hasDeletePermission || hasResetPermission" label="操作" fixed="right" width="250">
+          <template slot-scope="scope">
+            <el-button v-if="hasEditPermission" type="text" icon="edit" @click="openEdit(scope.row)"><i class="el-icon-edit" type="primary" />编辑</el-button>
+            <el-button v-if="hasDeletePermission" type="text" icon="magic-stick" @click="handleDeleteUser(scope.row)"><i class="el-icon-delete" />删除</el-button>
+            <el-button v-if="hasResetPermission" type="text" icon="magic-stick" @click="handleInitPassword(scope.row)"><i class="el-icon-magic-stick" />重置密码</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNum" :total="itemTotalCount" @pagination="handlePagination" />
+    </div>
     <!-- 新增/编辑用户弹窗 -->
     <el-dialog :visible.sync="dialogVisible" custom-class="user-dialog" :title="dialogTitle" closable :before-close="closeDialog">
       <el-form ref="userForm" :model="userInfo" label-width="100px" :rules="rules" label-position="right">
@@ -74,7 +77,6 @@
         </div>
       </template>
     </el-dialog>
-    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNum" :total="itemTotalCount" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
   </div>
 </template>
 
@@ -289,14 +291,10 @@ export default {
 ::v-deep .el-table th{
   background: #fafafa;
 }
-::v-deep .el-select {
-  width: 300px;
-}
 .table-list{
   margin-top: 30px;
 }
-.dialog-footer{
-  text-align: center;
-  justify-content: center;
+.main{
+  background-color: #fff;
 }
 </style>

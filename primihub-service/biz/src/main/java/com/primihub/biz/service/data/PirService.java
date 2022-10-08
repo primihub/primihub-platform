@@ -2,20 +2,25 @@ package com.primihub.biz.service.data;
 
 
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -26,6 +31,8 @@ public class PirService {
     private FusionResourceService fusionResourceService;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataTaskRepository dataTaskRepository;
     @Autowired
     private DataAsyncService dataAsyncService;
 
@@ -45,12 +52,47 @@ public class PirService {
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskName(pirDataResource.get("resourceName").toString());
-        dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());
         dataTaskPrRepository.saveDataTask(dataTask);
+        DataPirTask dataPirTask = new DataPirTask();
+        dataPirTask.setTaskId(dataTask.getTaskId());
+        dataPirTask.setServerAddress(serverAddress);
+        dataPirTask.setRetrievalId(pirParam);
+        dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
+        dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
+        dataPirTask.setResourceId(resourceId);
+        dataTaskPrRepository.saveDataPirTask(dataPirTask);
         dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam,resourceRowsCount);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity getPirTaskList(DataPirTaskReq req) {
+        List<DataPirTaskVo> dataPirTaskVos = dataTaskRepository.selectDataPirTaskPage(req);
+        if (dataPirTaskVos.isEmpty())
+            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        Integer tolal = dataTaskRepository.selectDataPirTaskCount(req);
+        Map<String,LinkedHashMap<String, Object>> resourceMap= new HashMap<>();
+        Map<String, List<DataPirTaskVo>> resourceMapList = dataPirTaskVos.stream().collect(Collectors.groupingBy(DataPirTaskVo::getServerAddress));
+        Iterator<Map.Entry<String, List<DataPirTaskVo>>> it = resourceMapList.entrySet().iterator();
+        while (it.hasNext()){
+            Map.Entry<String, List<DataPirTaskVo>> next = it.next();
+            String[] ids = next.getValue().stream().map(DataPirTaskVo::getResourceId).toArray(String[]::new);
+            BaseResultEntity baseResult = fusionResourceService.getResourceListById(next.getKey(), ids);
+            if (baseResult.getCode()==0){
+                List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
+                if (voList != null && voList.size()!=0){
+                    resourceMap.putAll(voList.stream().collect(Collectors.toMap(data -> data.get("resourceId").toString(), Function.identity())));
+                }
+            }
+        }
+        for (DataPirTaskVo dataPirTaskVo : dataPirTaskVos) {
+            if (resourceMap.containsKey(dataPirTaskVo.getResourceId())){
+                DataTaskConvert.dataPirTaskPoConvertDataPirTaskVo(dataPirTaskVo,resourceMap.get(dataPirTaskVo.getResourceId()));
+            }
+        }
+        return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataPirTaskVos));
     }
 }

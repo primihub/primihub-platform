@@ -63,6 +63,18 @@ export default {
       pageNo: 1
     }
   },
+  computed: {
+    visible() {
+      return this.$attrs.visible
+    }
+  },
+  watch: {
+    visible(newVal) {
+      if (newVal) {
+        this.selectedResource = null
+      }
+    }
+  },
   methods: {
     handleChange(data) {
       this.selectedResourceId = data.resourceId

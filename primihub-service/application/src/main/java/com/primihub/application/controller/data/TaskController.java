@@ -84,7 +84,22 @@ public class TaskController {
                 outputStream.close();
                 inputStream.close();
             }else {
-                downloadTaskError(response,"无文件");
+                file = new File(modelOutputPathDto.getModelFileName());
+                if (file.exists()){
+                    FileInputStream inputStream = new FileInputStream(file);
+                    response.setHeader("content-Type","application/vnd.ms-excel");
+                    response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
+                    ServletOutputStream outputStream = response.getOutputStream();
+                    int len = 0;
+                    byte[] data = new byte[1024];
+                    while ((len = inputStream.read(data)) != -1) {
+                        outputStream.write(data, 0, len);
+                    }
+                    outputStream.close();
+                    inputStream.close();
+                }else {
+                    downloadTaskError(response,"无文件");
+                }
             }
         }else {
             downloadTaskError(response,"无文件");

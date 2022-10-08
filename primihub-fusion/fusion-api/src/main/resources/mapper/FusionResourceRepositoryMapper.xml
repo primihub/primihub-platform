@@ -88,6 +88,7 @@
             <if test="resourceYRatio!=null">resource_y_ratio = #{resourceYRatio},</if>
             <if test="resourceTag!=null">resource_tag = #{resourceTag},</if>
             <if test="organId!=null">organ_id = #{organId},</if>
+            <if test="isDel!=null">is_del = #{isDel},</if>
             u_time = now()
         </set>
         where id = #{id}
@@ -105,6 +106,14 @@
             u_time = now()
         </set>
         where field_id = #{fieldId}
+    </update>
+    <update id="updateFusionOrganResourceAuth" parameterType="com.primihub.entity.resource.po.FusionOrganResourceAuth">
+        update fusion_organ_resource_auth
+        <set>
+            <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
+            u_time = now()
+        </set>
+        where id = #{id}
     </update>
 
     <select id="selectFusionResourceById" resultMap="FusionResourceBaseResultMap">
@@ -128,17 +137,7 @@
             resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
-        where
-            go.group_id in
-            <foreach collection="groupList" index="index" item="item" open="("
-                     separator="," close=")">
-                #{item}
-            </foreach>
-            and (r.resource_auth_type=1
-                or r.organ_id=#{globalId}
-                or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 ))
-            and r.is_del=0
-            <include refid="fusionResourceCondition"></include>
+        <include refid="fusionResourceCondition"></include>
         order by r.id desc
         limit #{offset},#{pageSize}
     </select>
@@ -148,16 +147,7 @@
             count(distinct r.id)
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
-        where
-        go.group_id in
-        <foreach collection="groupList" index="index" item="item" open="("
-                 separator="," close=")">
-            #{item}
-        </foreach>
-        and (r.resource_auth_type=1 or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 ))
-        and r.is_del=0
         <include refid="fusionResourceCondition"></include>
-
     </select>
 
     <select id="selectFusionResourceTag" resultType="java.lang.String">
@@ -165,12 +155,16 @@
     </select>
 
     <select id="selectFusionResourceByResourceId" resultMap="FusionResourceBaseResultMap">
-        select <include refid="Fusion_Resource_Base_Column_List"/> from fusion_resource where resource_id = #{resourceId}
+        select
+            <include refid="Fusion_Resource_Base_Column_List"/>,
+            (select GROUP_CONCAT(organ_global_id) from fusion_resource_visibility_auth where resource_id = r.resource_id) authOrgans
+        from fusion_resource r where resource_id = #{resourceId}
     </select>
 
     <select id="selectFusionResourceByResourceIds" resultMap="FusionResourceBaseResultMap">
-        select <include refid="Fusion_Resource_Base_Column_List"/>
-        from fusion_resource where resource_id in
+        select <include refid="Fusion_Resource_Base_Column_List"/>,
+        (select GROUP_CONCAT(organ_global_id) from fusion_resource_visibility_auth where resource_id = r.resource_id) authOrgans
+        from fusion_resource r where resource_id in
         <foreach collection="resourceIds" index="index" item="item" separator="," open="(" close=")" >
             #{item}
         </foreach>
@@ -191,8 +185,60 @@
         </foreach>
         and protection_status = 1
     </select>
+    <select id="selectOrganResourcePage" resultType="com.primihub.entity.resource.po.FusionResource">
+        select
+            distinct r.id,r.resource_id resourceId,r.resource_name resourceName,resource_desc resourceDesc,resource_type resourceType,
+                     resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
+                     resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
+                     resource_y_ratio resourceYRatio,resource_tag resourceTag,r.organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
+        from fusion_organ_resource_auth ora
+                 left join fusion_resource r on ora.resource_id = r.id
+                 left join fusion_organ fo on fo.global_id =r.organ_id
+        where
+        ora.organ_id = #{authOrganId}
+            and r.is_del=0
+          and r.resource_auth_type != 2
+        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
+        <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
+        <if test="columnStr!=null and columnStr!=''">
+            and cast(r.resource_column_name_list as char) = #{columnStr}
+        </if>
+        order by r.id desc
+        limit #{offset},#{pageSize}
+    </select>
+    <select id="selectOrganResourceCount" resultType="java.lang.Integer">
+        select
+        count(distinct r.id)
+        from fusion_organ_resource_auth ora
+        left join fusion_resource r on ora.resource_id = r.id
+        left join fusion_organ fo on fo.global_id =r.organ_id
+        where
+        ora.organ_id = #{authOrganId}
+        and r.is_del=0
+        and r.resource_auth_type != 2
+        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
+        <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
+        <if test="columnStr!=null and columnStr!=''">
+            and cast(r.resource_column_name_list as char) = #{columnStr}
+        </if>
+        order by r.id desc
+    </select>
 
     <sql id="fusionResourceCondition">
+        where
+        go.group_id in
+            <foreach collection="groupList" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        and (
+            r.resource_auth_type=1
+            or r.organ_id=#{globalId}
+            or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 )
+        )
+        and r.is_del=0
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
         <if test="resourceId!=null and resourceId!=''">and r.resource_id = #{resourceId}</if>
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
@@ -203,6 +249,9 @@
     <delete id="deleteResourceAuthOrgan">
         delete from fusion_resource_visibility_auth where resource_id=#{resourceId}
     </delete>
+    <delete id="deleteResourceFieldByResourceId">
+        delete from fusion_resource_field where resource_id = #{resourceId}
+    </delete>
 
     <insert id="saveBatchResourceAuthOrgan">
         insert into fusion_resource_visibility_auth (resource_id,organ_global_id, is_del)
@@ -210,6 +259,10 @@
         <foreach collection="authOrganList" index="index" item="item" separator=",">
             (#{item.resourceId},#{item.organGlobalId},0)
         </foreach>
+    </insert>
+    <insert id="saveFusionOrganResourceAuth" parameterType="com.primihub.entity.resource.po.FusionOrganResourceAuth">
+        insert into fusion_organ_resource_auth (resource_id,organ_id,project_id,audit_status,is_del,c_time,u_time)
+        values (#{resourceId},#{organId},#{projectId},#{auditStatus},0,now(),now())
     </insert>
 
 

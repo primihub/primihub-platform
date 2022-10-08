@@ -1,5 +1,7 @@
 package com.primihub.biz.service.sys;
 
+import com.anji.captcha.model.common.ResponseModel;
+import com.anji.captcha.service.CaptchaService;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.RedisKeyConstant;
@@ -61,8 +63,15 @@ public class SysUserService {
     private OrganConfiguration organConfiguration;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
+    @Autowired
+    private CaptchaService captchaService;
+
 
     public BaseResultEntity login(LoginParam loginParam){
+        loginParam.setToken(loginParam.getTokenKey());
+        ResponseModel verification = captchaService.verification(loginParam);
+        if (!verification.isSuccess())
+            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
         if(privateKey==null)
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);

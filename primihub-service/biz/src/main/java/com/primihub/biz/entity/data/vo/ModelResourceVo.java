@@ -51,6 +51,8 @@ public class ModelResourceVo {
 
     private String serverAddress;
 
+    private Integer available;
+
     @JsonIgnore
     private String url;
 }

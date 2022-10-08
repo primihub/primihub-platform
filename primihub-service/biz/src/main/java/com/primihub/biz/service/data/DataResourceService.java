@@ -60,7 +60,7 @@ public class DataResourceService {
     @Autowired
     private DataServiceGrpcClient dataServiceGrpcClient;
 
-    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId, boolean isPsi){
+    public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("userId",userId);
         paramMap.put("offset",req.getOffset());
@@ -71,9 +71,6 @@ public class DataResourceService {
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
         paramMap.put("userName",req.getUserName());
-        if (isPsi){
-            paramMap.put("isPsi","true");
-        }
         List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
         if (dataResources.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -146,6 +143,7 @@ public class DataResourceService {
         }
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
+        map.put("resourceFusionId",dataResource.getResourceFusionId());
         map.put("resourceName",dataResource.getResourceName());
         map.put("resourceDesc",dataResource.getResourceDesc());
         return BaseResultEntity.success(map);
@@ -241,6 +239,11 @@ public class DataResourceService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该资源已关联项目");
         }
         dataResourcePrRepository.deleteResource(resourceId);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+            dataResource.setIsDel(1);
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+        }
         return BaseResultEntity.success("删除资源成功");
     }
 

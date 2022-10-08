@@ -1,6 +1,7 @@
 package com.primihub.entity.resource.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -77,12 +78,16 @@ public class FusionResourceVo {
     private List<String> resourceTag;
 
     /**
+     * 联邦资源 可用状态 0可用 1不可用
+     */
+    private Integer available;
+
+    /**
      * 机构ID
      */
     private String organId;
 
     private String organName;
-
     /**
      * 创建时间
      */

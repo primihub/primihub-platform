@@ -50,3 +50,20 @@
 .el-tabs--border-card{
   box-shadow: none;
 }
+
+.el-pagination {
+  color: #606266;
+  font-weight: normal;
+  font-size: 14px;
+}
+.el-pagination button, .el-pagination span:not([class*=suffix]){
+  font-size: 14px;
+}
+.el-pagination.is-background .btn-next, .el-pagination.is-background .btn-prev, .el-pagination.is-background .el-pager li{
+  border-radius: 5px;
+  border: 1px solid #DCDFE6;
+  background-color: #fff;
+}
+.el-pagination__jump{
+  margin-left: 0;
+}
