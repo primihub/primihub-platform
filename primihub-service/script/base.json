@@ -229,7 +229,7 @@
                     "input_values": [
                         {
                             "key": "2",
-                            "val": "V-XGBoost"
+                            "val": "纵向-XGBoost"
                         },
                         {
                             "key": "3",
