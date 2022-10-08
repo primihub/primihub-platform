@@ -34,7 +34,7 @@
           </el-table-column>
           <el-table-column align="center" label="列数" prop="fileColumns" sortable />
         </el-table>
-        <pagination v-show="totalPage>1" :background="false" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
+        <pagination v-show="totalPage>1" :background="false" :limit.sync="pageSize" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
       </div>
       <div v-if="otherOrganId" class="organ">
         <div class="header">

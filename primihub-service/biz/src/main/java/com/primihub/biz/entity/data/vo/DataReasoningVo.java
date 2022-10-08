@@ -20,6 +20,8 @@ public class DataReasoningVo {
 
     private Integer reasoningState;
 
+    private Long runTaskId;
+
     private Long taskId;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date releaseDate;

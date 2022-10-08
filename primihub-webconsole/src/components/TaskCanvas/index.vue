@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" :node-data="nodeData" :options="drawerOptions" @change="handleChange" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -170,6 +170,8 @@ export default {
     await this.init()
     await this.getModelComponentDetail()
 
+    console.log('isEditable', this.options.isEditable)
+    console.log('history', this.graph.history)
     // 画布可编辑，初始操作按钮事件
     if (this.options.isEditable) {
       this.initToolBarEvent()
@@ -244,7 +246,8 @@ export default {
       this.saveFn()
     },
     handleChange(data) {
-      const { cells } = this.graph.toJSON()
+      this.graphData = this.graph.toJSON()
+      const { cells } = this.graphData
       const posIndex = cells.findIndex(item => item.componentCode === data.componentCode)
       cells[posIndex].data = data
       this.graph.fromJSON(cells)
@@ -427,7 +430,7 @@ export default {
     },
     addStartNode() {
       // 60 = start node width
-      const x = this.width * 0.5 - 60
+      const x = this.width * 0.5 - 90
       this.startData = this.components.filter(item => item.componentCode === 'start')[0]
       this.graph.addNode({
         x: x,
@@ -545,10 +548,22 @@ export default {
       const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
       const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
       const modelName = modelSelectCom?.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
+      const modelType = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue
+      const arbiterOrganId = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
       const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
       const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
+
+      // 横向lr
+      if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
+        this.$message({
+          message: '请选择正确的可信第三方(arbiter方)',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
@@ -735,6 +750,10 @@ export default {
           zIndex: 1
         })
       })
+      if (this.options.center) {
+        const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'start')
+        this.graphData.cells[posIndex].position.x = this.graphData.cells[posIndex].position.x + 30
+      }
 
       this.modelPointComponents?.forEach(item => {
         if (item.shape === 'edge') {
@@ -897,7 +916,7 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
-      const res = await saveModelAndComponent(JSON.stringify(this.saveParams))
+      const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
         this.currentModelId = res.result.modelId
         this.$notify.closeAll()

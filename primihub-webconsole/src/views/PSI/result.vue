@@ -7,7 +7,7 @@
           <search-input @click="handelSearchA" @change="handleSearchNameChangeA" />
         </div>
         <PSITaskResult :data="allDataPsiTask" @delete="handleDelete" />
-        <pagination v-show="totalPage>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
+        <pagination v-show="totalPage>1" :limit.sync="pageSize" :page-count="totalPage" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
       </div>
     </div>
     <el-dialog

@@ -6,12 +6,15 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.google.protobuf.ByteString;
+import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.test.TestPrimaryRepository;
 import com.primihub.biz.repository.primaryredis.test.TestRedisRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.test.TestSecondaryRepository;
+import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.DataTaskService;
 import com.primihub.biz.entity.data.vo.ModelComponentJson;
 //import com.primihub.biz.entity.feign.FedlearnerJobApi;
@@ -51,23 +54,15 @@ public class TestService {
     @Autowired
     private TestRedisRepository testRedisRepository;
     @Autowired
-    private DataModelRepository dataModelRepository;
-    @Autowired
-    private SysFileSecondarydbRepository fileSecondarydbRepository;
-
-    @Autowired
     private WorkGrpcClient workGrpcClient;
-    @Autowired
-    private DataTaskService dataTaskService;
-
-    @Autowired
-    @LoadBalanced
-    private RestTemplate restTemplate;
-
     @Autowired
     private TestResourcePrimaryRepository testResourcePrimaryRepository;
     @Autowired
     private TestResourceSecondaryRepository testResourceSecondaryRepository;
+    @Autowired
+    private DataResourceService dataResourceService;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
 
     @Resource
     private Environment environment;
@@ -188,4 +183,10 @@ public class TestService {
         log.info("grpc结果:"+reply);
     }
 
+    public void formatResources() {
+        List<DataResource> copyResourceList = dataResourceRepository.findCopyResourceList(0L, 5000L);
+        for (DataResource dataResource : copyResourceList) {
+            dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl());
+        }
+    }
 }

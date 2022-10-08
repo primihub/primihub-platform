@@ -123,3 +123,22 @@ CREATE TABLE `fusion_resource_field` (
                                          `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                                          PRIMARY KEY (`field_id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for fusion_organ_resource_auth
+-- ----------------------------
+
+DROP TABLE IF EXISTS `fusion_organ_resource_auth`;
+CREATE TABLE `fusion_organ_resource_auth`  (
+                                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                               `resource_id` bigint(20) NOT NULL COMMENT '资源id',
+                                               `organ_id` bigint(20) NOT NULL COMMENT '机构id',
+                                               `project_id` varchar(255) DEFAULT NULL COMMENT '项目ID',
+                                               `audit_status` tinyint(4) NOT NULL DEFAULT '1' COMMENT '审核状态',
+                                               `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
+                                               `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                               `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+                                               PRIMARY KEY (`id`) USING BTREE,
+                                               INDEX `resource_id_ix`(`resource_id`) USING BTREE,
+                                               INDEX `organ_id_ix`(`organ_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;

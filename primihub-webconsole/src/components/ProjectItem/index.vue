@@ -85,6 +85,8 @@ p {
   display: flex;
   flex-direction: column;
   margin-bottom: 15px;
+  // border: 1px solid #e6e6e6;
+  box-shadow: 0px 2px 8px rgba(0,0,0,.1);
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);
   }

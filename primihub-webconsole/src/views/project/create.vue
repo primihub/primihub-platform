@@ -172,13 +172,12 @@ export default {
     submitForm() {
       const { projectName, projectDesc } = this.dataForm
       this.getProjectOrgans()
-      let params = {
+      const params = {
         serverAddress: this.serverAddress,
         projectName,
         projectDesc,
         projectOrgans: this.saveParams.projectOrgans
       }
-      params = JSON.stringify(params)
       this.$refs.dataForm.validate((valid) => {
         if (valid) {
           saveProject(params).then(res => {

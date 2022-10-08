@@ -24,10 +24,11 @@
         from
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
+            data_task dt on dmt.task_id = dt.task_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
-             dm.is_del = 0
-             and dm.is_draft = 1
+             dm.is_draft = 1
+             and dt.task_state != 5
             <include refid="listwhere"></include>
         ORDER BY dmt.task_id desc
         LIMIT #{offset},#{pageSize}
@@ -39,10 +40,11 @@
         FROM
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
+            data_task dt on dmt.task_id = dt.task_id left join
             data_project dp on dm.project_id = dp.id
         WHERE
-             dm.is_del = 0
-             and dm.is_draft = 1
+             dm.is_draft = 1
+             and dt.task_state != 5
             <include refid="listwhere"></include>
     </select>
 
@@ -62,7 +64,8 @@
             resource_num as resourceNum,
             y_value_column as yValueColumn,
             is_draft as isDraft,
-            create_date as createDate
+            create_date as createDate,
+            is_del as isDel
         FROM
             data_model
         WHERE
@@ -75,8 +78,9 @@
         FROM
             data_mr
         WHERE
-            model_id = #{modelId}
-            and task_id = #{taskId}
+            is_del = 0
+            <if test="modelId!=null and modelId!=0">and model_id = #{modelId}</if>
+            <if test="taskId!=null and taskId!=0">and task_id = #{taskId}</if>
     </select>
 
     <select id="queryModelQuotaVoList" resultType="com.primihub.biz.entity.data.vo.ModelQuotaVo">
@@ -181,7 +185,7 @@
         select
         DISTINCT dm.project_id projectId,dt.task_state latestTaskStatus,count(dt.task_id) statusCount
         from data_model_task dmt,data_task dt,data_model dm
-        where dmt.task_id = dt.task_id and dm.model_id = dmt.model_id and dm.is_del = 0
+        where dmt.task_id = dt.task_id and dm.model_id = dmt.model_id and dt.task_state != 5
         and dm.project_id in
         <foreach collection="projectIds" index="index" item="item" open="("
                  separator="," close=")">
@@ -311,8 +315,8 @@
                          left join data_project dp on dm.project_id = dp.id
         WHERE
             dt.task_type = 1
-          AND dt.task_state = 1
-          AND dt.task_user_id = #{userId}
+          AND dt.task_state in(1,5)
+          AND dmt.is_del = 0
           AND dt.is_cooperation = 0
           <include refid="modeltasksuccess"></include>
         ORDER BY dt.task_id desc
@@ -328,7 +332,7 @@
         WHERE
         dt.task_type = 1
         AND dt.task_state = 1
-        AND dt.task_user_id = #{userId}
+        AND dmt.is_del = 0
         AND dt.is_cooperation = 0
         <include refid="modeltasksuccess"></include>
     </select>
@@ -336,6 +340,7 @@
 
 
     <sql id="modeltasksuccess">
+        <if test="isAdmin == 0">AND dt.task_user_id = #{userId}</if>
         <if test="modelId!=null and modelId!=0">and dm.model_id =#{modelId}</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
         <if test="successTime!=null and successTime!=0">and dt.task_end_time BETWEEN #{successTime} AND (#{successTime} + 86400000)</if>

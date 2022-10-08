@@ -44,7 +44,7 @@ public class DataPsiService {
 
 
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId) {
-        return dataResourceService.getDataResourceList(req,null,true);
+        return dataResourceService.getDataResourceList(req,null);
     }
 
     public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress,String resourceName) {

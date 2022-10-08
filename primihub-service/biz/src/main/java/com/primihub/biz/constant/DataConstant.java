@@ -8,9 +8,12 @@ public class DataConstant {
     public final static String FIELD_NAME_AS="field_";
     // Template address
     public final static String FREEMARKER_PYTHON_EN_PAHT= "disxgb_en.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_PAHT= "homo_lr.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT= "homo_lr_infer.ftl";
     // python dataset host、guest
     public final static String PYTHON_LABEL_DATASET = "label_dataset";
     public final static String PYTHON_GUEST_DATASET = "guest_dataset";
+    public final static String PYTHON_ARBITER_DATASET = "arbiter_dataset";
     public final static String PYTHON_CALCULATION_FIELD = "label_field";
 
     // Set the timeout for 5 minutes

@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="container">
+  <div class="container">
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
         <el-form-item label="模型推理服务ID">
@@ -8,7 +8,7 @@
         <el-form-item label="模型推理服务名称">
           <el-input v-model="query.reasoningName" size="small" placeholder="请输入" clearable @clear="handleClear('reasoningName')" />
         </el-form-item>
-        <!-- <el-form-item label="状态">
+        <el-form-item label="状态">
           <el-select v-model="query.reasoningState" placeholder="请选择">
             <el-option
               v-for="item in statusOptions"
@@ -17,16 +17,17 @@
               :value="item.value"
             />
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" size="small" @click="search">查询</el-button>
-          <el-button icon="el-icon-search" size="small" @click="reset">重置</el-button>
+          <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
     <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">模型推理</el-button>
-    <div class="model-list">
+    <div class="list">
       <el-table
+        v-loading="listLoading"
         :data="dataList"
       >
         <el-table-column
@@ -49,35 +50,55 @@
         <el-table-column
           prop="reasoningType"
           label="推理类型"
-          min-width="120"
         >
           <template slot-scope="{row}">
             {{ row.reasoningType }}方推理
           </template>
         </el-table-column>
-        <!-- <el-table-column
-          prop="resourceNum"
-          label="上线日期"
-          align="center"
-        /> -->
-        <!-- <el-table-column
+        <el-table-column
           prop="reasoningState"
           label="状态"
+          min-width="60"
+        >
+          <template slot-scope="{row}">
+            <StatusIcon :status="row.reasoningState" />
+            {{ row.reasoningState | reasoningStateFilter }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="releaseDate"
+          label="上线日期"
           align="center"
-        /> -->
+        />
       </el-table>
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
   </div>
 </template>
 
 <script>
 import { getReasoningList } from '@/api/reasoning'
 import Pagination from '@/components/Pagination'
+import StatusIcon from '@/components/StatusIcon'
 
 export default {
   components: {
-    Pagination
+    Pagination,
+    StatusIcon
+  },
+  filters: {
+    reasoningStateFilter(status) {
+      status = status || 0
+      const statusMap = {
+        0: '未开始',
+        1: '完成',
+        2: '运行中',
+        3: '运行失败',
+        4: '取消',
+        5: '已删除'
+      }
+      return statusMap[status]
+    }
   },
   data() {
     return {
@@ -87,19 +108,35 @@ export default {
         reasoningName: '',
         reasoningState: ''
       },
-      statusOptions: [{
-        label: '',
-        value: 0
-      }],
+      statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
+        {
+          label: '运行中',
+          value: 2
+        }, {
+          label: '完成',
+          value: 1
+        },
+        {
+          label: '运行失败',
+          value: 3
+        }
+      ],
       dataList: null,
       pageNo: 1,
       pageSize: 10,
       total: 0,
-      pageCount: 0
+      pageCount: 0,
+      searchList: [],
+      timer: null
     }
   },
   created() {
     this.fetchData()
+    if (this.searchList.length > 0) {
+      this.timer = window.setInterval(() => {
+        setTimeout(this.fetchData(), 0)
+      }, 5000)
+    }
   },
   methods: {
     toTaskPage() {
@@ -112,10 +149,10 @@ export default {
       this.fetchData()
     },
     reset() {
-      console.log('reset')
       this.query.id = ''
       this.query.reasoningName = ''
       this.pageNo = 1
+      this.query.reasoningState = ''
       this.fetchData()
     },
     handleClear(name) {
@@ -137,10 +174,11 @@ export default {
     fetchData() {
       this.listLoading = true
       this.dataList = []
-      const { id, reasoningName } = this.query
+      const { id, reasoningName, reasoningState } = this.query
       const params = {
         id,
-        reasoningName: reasoningName,
+        reasoningState,
+        reasoningName,
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
@@ -151,6 +189,13 @@ export default {
         this.dataList = result.data
         this.total = result.total
         this.pageCount = result.totalPage
+        // filter the running task
+        this.searchList = this.dataList.filter(item => item.taskState === 2)
+        // No tasks are running
+        if (this.searchList.length === 0) {
+          this.startInterval = false
+          clearInterval(this.timer)
+        }
         this.listLoading = false
       }).catch(() => {
         this.listLoading = false
@@ -158,6 +203,7 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
+      this.pageSize = data.limit
       this.fetchData()
     }
   }
@@ -174,30 +220,11 @@ export default {
   padding-top: 20px;
   background-color: #fff;
 }
-.model-list {
+.list {
+  padding: 30px;
   margin-top: 20px;
   border-top: 1px solid #eee;
   background-color: #fff;
-}
-.status-default,.status-processing,.status-error,.status-end{
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 3px;
-}
-.status-default{
-  background-color: #409EFF;
-}
-.status-end{
-  background-color: #909399;
-}
-.status-processing{
-  background-color: #67C23A;
-}
-.status-error{
-  background-color: #F56C6C;
 }
 .pagination {
   padding: 50px;

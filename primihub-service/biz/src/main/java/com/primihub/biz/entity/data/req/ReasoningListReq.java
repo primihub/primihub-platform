@@ -11,4 +11,6 @@ public class ReasoningListReq extends PageReq {
     private Integer reasoningState;
 
     private Long userId;
+
+    private Integer isAdmin = 0;
 }

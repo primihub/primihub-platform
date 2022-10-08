@@ -11,6 +11,7 @@
                reasoning_type reasoningType,
                reasoning_state reasoningState,
                task_id taskId,
+               run_task_id runTaskId,
                release_date releaseDate
         from data_reasoning where is_del = 0
         <include refid="whereDataReasonin"></include>
@@ -33,12 +34,25 @@
             reasoning_type reasoningType,
             reasoning_state reasoningState,
             task_id taskId,
+            run_task_id runTaskId,
             release_date releaseDate
         from data_reasoning where id = #{id}
     </select>
+    <select id="selectDataReasoningResource"
+            resultType="com.primihub.biz.entity.data.po.DataReasoningResource">
+        select
+            reasoning_id reasoningId,
+            resource_id resourceId,
+            organ_id organId,
+            participation_identity participationIdentity,
+            server_address serverAddress
+        from
+             data_reasoning_resource
+        where reasoning_id = #{reasoningId}
+    </select>
 
     <sql id="whereDataReasonin">
-        and user_id = #{userId}
+        <if test="isAdmin == 0">and user_id = #{userId}</if>
         <if test="id!=null and id!=0"> and id = #{id} </if>
         <if test="reasoningState!=null"> and reasoning_state = #{reasoningState} </if>
         <if test="reasoningName!=null and reasoningName!=''"> and reasoning_name like CONCAT('%',#{reasoningName,jdbcType=VARCHAR},'%') </if>

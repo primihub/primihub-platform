@@ -48,6 +48,7 @@
     </div>
     <div class="resource">
       <el-table
+        v-loading="loading"
         :data="resourceList"
         border
       >
@@ -122,7 +123,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
 
   </div>
@@ -138,6 +139,7 @@ export default {
   components: { Pagination, TagsSelect },
   data() {
     return {
+      loading: false,
       tags: [],
       cascaderOptions: [],
       sysLocalOrganInfo: null,
@@ -225,6 +227,7 @@ export default {
       console.log(value, this.$refs.connectRef.getCheckedNodes())
     },
     async fetchData() {
+      this.loading = true
       this.resourceList = []
       const { resourceId, resourceName, tagName, resourceAuthType, organId } = this.query
       const params = {
@@ -252,6 +255,7 @@ export default {
           this.resourceList = data
         }
       }
+      this.loading = false
     },
     handlePagination(data) {
       this.pageNo = data.page

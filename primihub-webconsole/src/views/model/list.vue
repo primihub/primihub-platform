@@ -20,7 +20,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" size="small" @click="search">查询</el-button>
-          <el-button icon="el-icon-search" size="small" @click="reset">重置</el-button>
+          <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -82,8 +82,8 @@
           align="center"
         />
       </el-table>
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
   </div>
 </template>
 
@@ -206,6 +206,7 @@ export default {
   margin-top: 20px;
   border-top: 1px solid #eee;
   background-color: #fff;
+  padding: 30px;
 }
 .status-default,.status-processing,.status-error,.status-end{
   width: 6px;

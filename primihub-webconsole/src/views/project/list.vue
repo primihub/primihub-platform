@@ -58,120 +58,123 @@
       </el-form-item>
     </el-form>
     <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
-    <div class="tab-container">
-      <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
-        <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
-        <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
-        <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
-      </el-menu>
-      <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
 
-    </div>
+    <div class="main">
+      <div class="tab-container">
+        <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
+          <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
+          <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
+          <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
+        </el-menu>
+        <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
+      </div>
 
-    <div v-loading="listLoading" class="project-list">
-      <!-- <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
+      <div v-loading="listLoading" class="project-list">
+        <!-- <div v-if="hasCreateAuth" class="add-card" @click="toProjectCreatePage">
         <div class="icon-wrap"><i class="el-icon-document-add" /></div>
         <div class="text">添加项目</div>
       </div> -->
-      <template v-if="projectType=== 'card'">
-        <template v-if="noData">
-          <no-data />
+        <template v-if="projectType=== 'card'">
+          <template v-if="noData">
+            <no-data />
+          </template>
+          <template v-else>
+            <el-row :gutter="18">
+              <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="4">
+                <project-item :project="item" />
+              </el-col>
+            </el-row>
+
+          </template>
         </template>
         <template v-else>
-          <el-row :gutter="18">
-            <el-col v-for="item in projectList" :key="item.projectId" :xs="12" :sm="8" :md="8" :lg="6" :xl="4">
-              <project-item :project="item" />
-            </el-col>
-          </el-row>
+          <el-table
+            :data="projectList"
+            border
+            highlight-current-row
+            :row-class-name="tableRowDisabled"
+          >
+            <el-table-column
+              type="index"
+              width="40"
+              align="center"
+            />
+            <el-table-column
+              label="项目名称 / ID"
+              min-width="200"
+            >
+              <template slot-scope="{row}">
+                <template v-if="hasViewPermission && row.status !== 2">
+                  <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
+                </template>
+                <template v-else>
+                  {{ row.projectName }}<br>
+                </template>
+                <span>{{ row.projectId }}</span>
+              </template>
+            </el-table-column>
 
+            <el-table-column
+              label="参与机构"
+            >
+              <template slot-scope="{row}">
+                <span>发起方: {{ row.createdOrganName }}</span><br>
+                <span>协作方: {{ row.providerOrganNames }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="项目状态"
+              prop="status"
+              width="80"
+            >
+              <template slot-scope="{row}">
+                <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="任务状态"
+            >
+              <template slot-scope="{row}">
+                运行中：{{ row.taskRunNum }} <br>
+                成功：{{ row.taskSuccessNum || 0 }}<br>
+                失败：{{ row.taskFailNum }}<br>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="resourceNum"
+              label="资源数量"
+              align="center"
+            />
+            <el-table-column
+              prop="taskNum"
+              label="任务数量"
+              align="center"
+            />
+            <el-table-column
+              label="创建时间"
+              prop="createDate"
+              min-width="160"
+            />
+            <el-table-column
+              v-if="hasViewPermission"
+              label="操作"
+              fixed="right"
+              min-width="160"
+            >
+              <template slot-scope="{row}">
+                <div class="buttons">
+                  <el-link v-if="hasViewPermission" :disabled="row.status === 2" type="primary" @click="toProjectDetail(row.id)">查看</el-link>
+                  <el-link v-if="hasDeletePermission && row.status === 1 && row.organId === userOrganId" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
+                  <el-link v-if="hasOpenPermission && row.status === 2 && row.organId === userOrganId" type="primary" @click="projectActionHandler(row.id, 'open')">启用</el-link>
+                </div>
+
+              </template>
+            </el-table-column>
+          </el-table>
         </template>
-      </template>
-      <template v-else>
-        <el-table
-          :data="projectList"
-          border
-          highlight-current-row
-          :row-class-name="tableRowDisabled"
-        >
-          <el-table-column
-            type="index"
-            width="40"
-            align="center"
-          />
-          <el-table-column
-            label="项目名称 / ID"
-            min-width="200"
-          >
-            <template slot-scope="{row}">
-              <template v-if="hasViewPermission && row.status !== 2">
-                <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
-              </template>
-              <template v-else>
-                {{ row.projectName }}<br>
-              </template>
-              <span>{{ row.projectId }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column
-            label="参与机构"
-          >
-            <template slot-scope="{row}">
-              <span>发起方: {{ row.createdOrganName }}</span><br>
-              <span>协作方: {{ row.providerOrganNames }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="项目状态"
-            prop="status"
-            width="80"
-          >
-            <template slot-scope="{row}">
-              <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="任务状态"
-          >
-            <template slot-scope="{row}">
-              运行中：{{ row.taskRunNum }} <br>
-              成功：{{ row.taskSuccessNum || 0 }}<br>
-              失败：{{ row.taskFailNum }}<br>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="resourceNum"
-            label="资源数量"
-            align="center"
-          />
-          <el-table-column
-            prop="taskNum"
-            label="任务数量"
-            align="center"
-          />
-          <el-table-column
-            label="创建时间"
-            prop="createDate"
-            min-width="160"
-          />
-          <el-table-column
-            v-if="hasViewPermission"
-            label="操作"
-            min-width="160"
-          >
-            <template slot-scope="{row}">
-              <div class="buttons">
-                <el-link v-if="hasViewPermission" :disabled="row.status === 2" type="primary" @click="toProjectDetail(row.id)">查看</el-link>
-                <el-link v-if="hasDeletePermission && row.status === 1 && row.organId === userOrganId" type="danger" @click="projectActionHandler(row.id, 'close')">禁用</el-link>
-                <el-link v-if="hasOpenPermission && row.status === 2 && row.organId === userOrganId" type="primary" @click="projectActionHandler(row.id, 'open')">启用</el-link>
-              </div>
-
-            </template>
-          </el-table-column>
-        </el-table>
-      </template>
+        <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
+      </div>
     </div>
-    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :total="total" layout="total, prev, pager, next, jumper" @pagination="handlePagination" />
   </div>
 </template>
 
@@ -495,6 +498,11 @@ h2 {
   margin-inline-start: 0px;
   margin-inline-end: 0px;
 }
+
+::v-deep .el-menu.el-menu--horizontal{
+  border-bottom: none;
+}
+
 ::v-deep .el-form--inline .el-form-item{
   margin: 10px 35px 10px 0;
 }
@@ -537,6 +545,10 @@ h2 {
   font-size: initial;
   font-weight: bold;
 }
+
+.main{
+  background-color: #fff;
+}
 .tab-container{
   display: flex;
   align-items: center;
@@ -559,8 +571,12 @@ h2 {
   }
 }
 .project-list {
-  margin-top: 20px;
+  // margin-top: 20px;
   min-height: 200px;
+  background-color: #fff;
+  margin: 0 30px 0 30px;
+  padding-top: 30px;
+  border-top: 1px solid #e6e6e6;
 }
 .add-card {
   width: 285px;
@@ -594,7 +610,7 @@ h2 {
 .pagination-container {
   padding-top: 50px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   // background-color: #fff;
 }
 .status-0{

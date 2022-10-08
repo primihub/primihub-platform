@@ -301,7 +301,7 @@ export default {
             })
           }
           this.loading = true
-          saveResource(JSON.stringify(this.dataForm)).then(res => {
+          saveResource(this.dataForm).then(res => {
             this.loading = false
             if (res.code === 0) {
               this.toResourceDetail(res.result.resourceId)

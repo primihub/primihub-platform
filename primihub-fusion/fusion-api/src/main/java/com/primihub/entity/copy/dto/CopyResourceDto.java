@@ -81,4 +81,6 @@ public class CopyResourceDto {
      * 资源字段列表
      */
     private List<CopyResourceFieldDto> fieldList;
+
+    private Integer isDel = 0;
 }

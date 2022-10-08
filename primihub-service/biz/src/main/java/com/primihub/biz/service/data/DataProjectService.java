@@ -56,9 +56,9 @@ public class DataProjectService {
     @Autowired
     private DataModelService dataModelService;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
-    @Autowired
     private FusionResourceService fusionResourceService;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -196,7 +196,9 @@ public class DataProjectService {
             List<DataProjectResource> projectResources = organResourceMap.get(dataProjectOrganVo.getOrganId());
             if (projectResources!=null){
                 for (DataProjectResource projectResource : projectResources) {
-                    dataProjectOrganVo.getResources().add(DataProjectConvert.DataProjectResourceConvertVo(projectResource,resourceListMap.get(projectResource.getResourceId())));
+                    Map map = resourceListMap.get(projectResource.getResourceId());
+//                    if (Integer.valueOf(map.get("available").toString()).equals("0"))
+                    dataProjectOrganVo.getResources().add(DataProjectConvert.DataProjectResourceConvertVo(projectResource,map));
                 }
             }
             organs.add(dataProjectOrganVo);
@@ -246,6 +248,8 @@ public class DataProjectService {
             shareProjectVo.setProjectId(dataProjectResource.getProjectId());
             shareProjectVo.setServerAddress(dataProjectResource.getServerAddress());
             shareProjectVo.getProjectResources().add(dataProjectResource);
+            log.info("发送");
+            fusionResourceService.syncResourceUse(dataProjectResource.getServerAddress(),dataProjectResource.getOrganId(),dataProjectResource.getResourceId(),dataProjectResource.getProjectId(),dataProjectResource.getAuditStatus());
         }
         sendTask(shareProjectVo);
         return BaseResultEntity.success();
@@ -507,13 +511,22 @@ public class DataProjectService {
     }
 
 
-    public BaseResultEntity getResourceList(String organId, PageReq req,String resourceName) {
+    public BaseResultEntity getResourceList(OrganResourceReq req) {
+        if (req.getAuditStatus() == null || req.getAuditStatus() == 0)
+            req.setAuditStatus(1);
+        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(req.getModelId(), null);
+        if (modelResourceVos.isEmpty())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"模型无资源信息");
+        List<DataResource> dataResourcesList = dataResourceRepository.queryDataResourceByResourceIds(null, modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toSet()));
+        if (dataResourcesList.isEmpty())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无资源信息");
         Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("organId",organId);
+        paramMap.put("organId",req.getOrganId());
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("resourceName",resourceName);
-        if (organConfiguration.getSysLocalOrganId().equals(organId)){
+        paramMap.put("resourceName",req.getResourceName());
+        paramMap.put("fileHandleField",rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
+        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -521,25 +534,13 @@ public class DataProjectService {
             Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
         }else {
-            List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByOrganIdPage(paramMap);
-            Map<String, List<DataProjectResource>> serverAddress = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getServerAddress));
-            if (serverAddress.isEmpty()){
-                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
-            }
-            Integer count = dataProjectRepository.selectProjectResourceByOrganIdCount(paramMap);
-            List<ModelSelectResourceVo> returnList = new ArrayList<>();
-            Iterator<Map.Entry<String, List<DataProjectResource>>> iterator = serverAddress.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, List<DataProjectResource>> next = iterator.next();
-                BaseResultEntity baseResult = fusionResourceService.getResourceListById(next.getKey(),next.getValue().stream().map(DataProjectResource::getResourceId).toArray(String[]::new));
-                if (baseResult.getCode()==0){
-                    List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
-                    for (LinkedHashMap<String, Object> resourceMap : voList) {
-                        returnList.add(DataResourceConvert.resourceMapConvertSelectVo(resourceMap));
-                    }
-                }
-            }
-            return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),returnList));
+            req.setColumnStr(rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
+            log.info(JSONObject.toJSONString(req));
+            return fusionResourceService.getOrganResourceList(req);
         }
+    }
+
+    public String rmFileHandleFieldY(String fileHandleField){
+        return Arrays.stream(fileHandleField.split(",")).filter(key->!key.equals("y")).collect(Collectors.joining(","));
     }
 }

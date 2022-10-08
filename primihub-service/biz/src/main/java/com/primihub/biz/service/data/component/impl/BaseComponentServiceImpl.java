@@ -31,6 +31,7 @@ public class BaseComponentServiceImpl {
         if (modelComponent==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"无法查找到"+req.getComponentName()+"组件信息");
         Map<String, String> valueMap = getComponentVals(req.getComponentValues());
+        taskReq.getValueMap().putAll(valueMap);
         for (ModelComponentType mct : modelComponent.getComponentTypes()) {
             if (mct.getIsRequired()!=null&&mct.getIsRequired()==1){
                 String value = valueMap.get(mct.getTypeCode());
