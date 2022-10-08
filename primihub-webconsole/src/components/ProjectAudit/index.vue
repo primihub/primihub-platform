@@ -78,7 +78,11 @@ export default {
     },
     async approval() {
       console.log('发送请求')
-      console.log('发送请求1', encodeEmoji(auditOpinion))
+      try {
+        console.log('发送请求1', encodeEmoji(auditOpinion))
+      } catch (error) {
+        console.log(error)
+      }
       const { auditOpinion, auditStatus } = this.auditForm
       const params = {
         type: 1,
