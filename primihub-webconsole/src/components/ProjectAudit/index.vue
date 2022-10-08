@@ -43,7 +43,6 @@ export default {
   },
   methods: {
     handleSubmit() {
-      console.log('同意')
       this.$confirm('同意加入发起方的此次项目合作', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -56,7 +55,6 @@ export default {
       })
     },
     handleRefused() {
-      console.log('拒绝')
       if (this.auditForm.auditOpinion === '') {
         this.$message({
           type: 'warning',
@@ -77,7 +75,6 @@ export default {
       }
     },
     async approval() {
-      console.log('发送请求')
       try {
         console.log('发送请求1', encodeEmoji(auditOpinion))
       } catch (error) {
@@ -88,9 +85,8 @@ export default {
         type: 1,
         id: this.projectId,
         auditStatus,
-        auditOpinion: auditOpinion !== '' ? encodeEmoji(auditOpinion) : ''
+        auditOpinion
       }
-      console.log('请求参数', params)
       try {
         const res = await approval(params)
         if (res.code === 0) {
@@ -99,8 +95,7 @@ export default {
             type: 'success',
             message
           })
-          console.log('请求成功', res)
-        // location.reload()
+          location.reload()
         }
       } catch (error) {
         console.log(error)
