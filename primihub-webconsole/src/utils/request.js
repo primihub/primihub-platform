@@ -66,6 +66,7 @@ service.interceptors.request.use(
         })
       } else {
         config.headers['Content-Type'] = 'application/x-www-form-urlencoded'
+        console.log('post请求', config.data)
         const data = qs.parse(config.data)
         config.data = qs.stringify({
           ...data,
@@ -73,6 +74,7 @@ service.interceptors.request.use(
           nonce,
           token: getToken()
         }, { allowDots: true })
+        console.log('post请求2', config.data)
       }
     }
 
