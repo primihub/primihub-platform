@@ -1,16 +1,16 @@
 import emojiRegex from 'emoji-regex'
-// const emojiRegex = require('emoji-regex')
 
 export function matchEmoji(text) {
   const regex = emojiRegex()
+  text = typeof text === 'string' ? text.toString() : text
   // length>0: 匹配到 null:未匹配到
-  return text.toString().match(regex)
+  return text.match(regex)
 }
 
 export function encodeEmoji(str) {
   const regex = emojiRegex()
-  console.log(typeof str)
-  return str.toString().replace(regex, p => `emoji(${p.codePointAt(0)})`)
+  str = typeof str === 'string' ? str.toString() : str
+  return str.replace(regex, p => `emoji(${p.codePointAt(0)})`)
 }
 
 export function deCodeEmoji(str) {
