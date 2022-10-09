@@ -89,8 +89,12 @@ public class SysUserService {
         StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(userPassword);
         String signPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
         if(!signPassword.equals(sysUser.getUserPassword())){
-            sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
-            return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+            Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
+            if (number>=3){
+                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT,"连续错误6次,账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
+            }else {
+                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+            }
         }
         return baseLogin(sysUser);
     }
