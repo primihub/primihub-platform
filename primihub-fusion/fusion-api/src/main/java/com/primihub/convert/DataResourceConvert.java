@@ -35,6 +35,8 @@ public class DataResourceConvert {
         fusionResource.setResourceTag(String.valueOf(dto.getResourceTag()));
         fusionResource.setOrganId(dto.getOrganId());
         fusionResource.setIsDel(dto.getIsDel());
+        fusionResource.setResourceState(dto.getResourceState());
+        fusionResource.setResourceHashCode(dto.getResourceHashCode());
         return fusionResource;
 
     }
@@ -78,6 +80,8 @@ public class DataResourceConvert {
                 fusionResourceVo.setAvailable(0);
             }
         }
+        fusionResourceVo.setResourceState(fusionResource.getResourceState());
+        fusionResourceVo.setResourceHashCode(fusionResource.getResourceHashCode());
         return fusionResourceVo;
     }
 

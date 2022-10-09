@@ -67,6 +67,8 @@ CREATE TABLE `fusion_resource`  (
                                     `resource_y_ratio` decimal(10, 2) NULL DEFAULT NULL COMMENT '文件字段y值内容不为空的行数在总行的占比',
                                     `resource_tag` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源标签 格式tag,tag',
                                     `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '机构ID',
+                                    `resource_hash_code` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '资源hash值',
+                                    `resource_state` tinyint NOT NULL DEFAULT '0' COMMENT '资源状态 0上线 1下线',
                                     `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
                                     `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                     `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',

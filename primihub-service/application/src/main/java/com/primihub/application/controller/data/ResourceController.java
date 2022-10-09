@@ -4,6 +4,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
+import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
 import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
 import com.primihub.biz.entity.data.req.PageReq;
@@ -160,6 +161,20 @@ public class ResourceController {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"类型错误");
         }
         return dataResourceService.updateDataResourceField(req,fieldTypeEnum);
+    }
+
+
+    @RequestMapping("resourceStatusChange")
+    public BaseResultEntity resourceStatusChange(Long resourceId,Integer resourceState){
+        if (resourceId==null||resourceId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        }
+        if (resourceState==null){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceState");
+        }
+        if (!ResourceStateEnum.RESOURCE_STATE_MAP.containsKey(resourceState))
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"resourceState");
+        return dataResourceService.resourceStatusChange(resourceId,resourceState);
     }
 
 

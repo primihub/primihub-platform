@@ -100,9 +100,19 @@ public class DataResource {
      */
     private String url;
     /**
+     * 资源hash文件编码
+     */
+    private String resourceHashCode;
+
+    /**
+     * 资源状态 目前有 0上线 1下线
+     */
+    private Integer resourceState;
+    /**
      * 是否删除
      */
     private Integer isDel;
+
     /**
      * 创建时间
      */
