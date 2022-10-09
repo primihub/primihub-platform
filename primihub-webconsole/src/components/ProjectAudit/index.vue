@@ -94,7 +94,7 @@ export default {
               type: 'success',
               message
             })
-            location.reload()
+            // location.reload()
           }
         })
       } catch (error) {
