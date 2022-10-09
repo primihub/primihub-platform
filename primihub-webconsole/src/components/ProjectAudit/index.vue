@@ -76,21 +76,18 @@ export default {
     },
     async approval() {
       try {
-        console.log('发送请求1', encodeEmoji(auditOpinion))
-      } catch (error) {
-        console.log(error)
-      }
-      const { auditOpinion, auditStatus } = this.auditForm
-      const params = {
-        type: 1,
-        id: this.projectId,
-        auditStatus,
-        auditOpinion
-      }
-      try {
+        let auditOpinion = this.auditForm.auditOpinion
+        auditOpinion = auditOpinion !== '' ? encodeEmoji(auditOpinion) : ''
+        console.log('发送请求1', auditOpinion)
+        const params = {
+          type: 1,
+          id: this.projectId,
+          auditStatus: this.auditForm.auditStatus,
+          auditOpinion
+        }
         const res = await approval(params)
         if (res.code === 0) {
-          const message = auditStatus === 1 ? '加入成功' : '已拒绝与发起方的此次项目合作'
+          const message = this.auditForm.auditStatus === 1 ? '加入成功' : '已拒绝与发起方的此次项目合作'
           this.$message({
             type: 'success',
             message
