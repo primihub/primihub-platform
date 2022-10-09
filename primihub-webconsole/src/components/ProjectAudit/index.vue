@@ -77,17 +77,8 @@ export default {
     },
     approval() {
       try {
-        const auditOpinion = this.auditForm.auditOpinion
-        console.log('type', typeof auditOpinion)
-        console.log('encodeEmoji', encodeEmoji(auditOpinion))
-      } catch (error) {
-        console.warn(error)
-      }
-      try {
         let auditOpinion = this.auditForm.auditOpinion
-        console.log(matchEmoji(auditOpinion))
         auditOpinion = matchEmoji(auditOpinion) ? encodeEmoji(auditOpinion) : auditOpinion
-        console.log('发送请求1', auditOpinion)
         const params = {
           type: 1,
           id: this.projectId,
@@ -102,7 +93,7 @@ export default {
               type: 'success',
               message
             })
-            // location.reload()
+            location.reload()
           }
         })
       } catch (error) {
