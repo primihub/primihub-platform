@@ -32,6 +32,11 @@ public class FileUtil {
         return -0;
     }
 
+    public static boolean isFileExists(String filePath){
+        File file = new File(filePath);
+        return file.exists();
+    }
+
     public static String getFileContent(String filePath){
         try {
             File file = new File(filePath);
