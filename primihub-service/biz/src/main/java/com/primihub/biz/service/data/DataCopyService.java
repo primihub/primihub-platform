@@ -84,6 +84,7 @@ public class DataCopyService implements ApplicationContextAware {
                     Method method = clazz.getMethod(enu.getFunctionName(), Long.class,Long.class,String.class,String.class);
                     Object result = method.invoke(object,task.getTaskType()==1?startOffset:endOffset,endOffset,sysLocalOrganInfo.getOrganId(),task.getFusionServerAddress());
                     copyDto.setCopyPart(JSON.toJSONString(result));
+//                    log.info(copyDto.getCopyPart());
                 } catch (Exception e) {
                     log.info("handleFusionCopyTask", e);
                     return ;
