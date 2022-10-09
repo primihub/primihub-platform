@@ -20,8 +20,8 @@
 </template>
 
 <script>
-import { approval } from '@/api/project'
 import { encodeEmoji, matchEmoji } from '@/utils/emoji-regex'
+import { approval } from '@/api/project'
 
 export default {
   name: 'ProjectAudit',
@@ -50,8 +50,9 @@ export default {
       }).then(() => {
         this.auditForm.auditStatus = 1
         this.approval()
-      }).catch(() => {
+      }).catch((err) => {
         this.auditForm.auditStatus = 0
+        console.warn(err)
       })
     },
     handleRefused() {
@@ -75,6 +76,13 @@ export default {
       }
     },
     approval() {
+      try {
+        const auditOpinion = this.auditForm.auditOpinion
+        console.log('type', typeof auditOpinion)
+        console.log('encodeEmoji', encodeEmoji(auditOpinion))
+      } catch (error) {
+        console.warn(error)
+      }
       try {
         let auditOpinion = this.auditForm.auditOpinion
         console.log(matchEmoji(auditOpinion))
