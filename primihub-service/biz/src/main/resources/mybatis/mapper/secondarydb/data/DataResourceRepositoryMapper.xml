@@ -20,6 +20,8 @@
         file_y_ratio as fileYRatio,
         resource_fusion_id as resourceFusionId,
         public_organ_id as publicOrganId,
+        resource_state as resourceState,
+        resource_hash_code as resourceHashCode,
         db_id as dbId,
         user_id as userId,
         organ_id as organId,

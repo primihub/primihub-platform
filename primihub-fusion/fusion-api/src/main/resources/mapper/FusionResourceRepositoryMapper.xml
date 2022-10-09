@@ -17,6 +17,8 @@
         <result column="resource_y_rows_count" property="resourceYRowsCount" />
         <result column="resource_y_ratio" property="resourceYRatio" />
         <result column="resource_tag" property="resourceTag" />
+        <result column="resource_state" property="resourceState" />
+        <result column="resource_hash_code" property="resourceHashCode" />
         <result column="organ_id" property="organId" />
         <result column="is_del" property="isDel" />
         <result column="c_time" property="cTime" />
