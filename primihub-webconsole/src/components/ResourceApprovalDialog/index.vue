@@ -69,7 +69,8 @@ export default {
         type: 2,
         id: this.resourceId,
         auditStatus,
-        auditOpinion: encodeEmoji(auditOpinion)
+        // auditOpinion: encodeEmoji(auditOpinion)
+        auditOpinion
       }
       const res = await approval(params)
       if (res.code === 0) {
