@@ -1,4 +1,5 @@
-const emojiRegex = require('emoji-regex')
+import emojiRegex from 'emoji-regex'
+// const emojiRegex = require('emoji-regex')
 
 export function matchEmoji(text) {
   const regex = emojiRegex()
