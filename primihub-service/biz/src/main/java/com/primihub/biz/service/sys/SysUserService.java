@@ -81,7 +81,7 @@ public class SysUserService {
         if(sysUser==null||sysUser.getUserId()==null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         if(!sysUserPrimaryRedisRepository.loginVerification(sysUser.getUserId()))
-            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN);
+            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
         String userPassword;
         try {
             userPassword=CryptUtil.decryptRsaWithPrivateKey(loginParam.getUserPassword(),privateKey);
