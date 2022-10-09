@@ -133,11 +133,18 @@ service.interceptors.response.use(
         setTimeout(() => {
           window.location.reload()
         }, 2000)
+      } else if (code === 109 || code === 119) { // 登录限制
+        message({
+          message: msg,
+          type: 'error',
+          duration: 5000
+        })
       } else {
         message({
           message: msg || '请求异常',
           type: 'error'
         })
+        return data
       }
       return data
     } else {

@@ -64,14 +64,17 @@ const actions = {
   // user login
   login({ commit }, userInfo) {
     return new Promise((resolve, reject) => {
-      login(userInfo).then(({ result }) => {
-        const { sysUser, token, grantAuthRootList } = result
+      login(userInfo).then(({ result, code }) => {
+        if (code === 0) {
+          const { sysUser = {}, token, grantAuthRootList } = result
 
-        commit('SET_USER_INFO', sysUser)
-        commit('SET_PERMISSION', grantAuthRootList)
-        setToken(token)
-        resolve()
+          commit('SET_USER_INFO', sysUser)
+          commit('SET_PERMISSION', grantAuthRootList)
+          setToken(token)
+          resolve()
+        }
       }).catch(error => {
+        console.log(error)
         reject(error)
       })
     })

@@ -111,7 +111,7 @@ export default {
       listLoading: false,
       captchaType: 'blockPuzzle',
       secretKey: '', // 后端返回的加密秘钥 字段
-      passFlag: false, // 是否通过的标识
+      passFlag: '', // 是否通过的标识
       backImgBase: null, // 验证码背景图片
       blockBackImgBase: null, // 验证滑块的背景图片
       backToken: '', // 后端返回的唯一token值
@@ -140,7 +140,8 @@ export default {
       isEnd: false,		// 是够验证完成
       showRefresh: true,
       transitionLeft: '',
-      transitionWidth: ''
+      transitionWidth: '',
+      isOk: false
     }
   },
   computed: {
@@ -273,7 +274,6 @@ export default {
     // 鼠标松开
     end: function() {
       this.endMoveTime = +new Date()
-      const _this = this
       // 判断是否重合
       if (this.status && this.isEnd === false) {
         let moveLeftDistance = parseInt((this.moveBlockLeft || '').replace('px', ''))
@@ -298,6 +298,7 @@ export default {
             console.log('captchaVerification>>>>>>', captchaVerification)
             setTimeout(() => {
               this.tipWords = ''
+              this.$parent.closeBox()
               this.$parent.$emit('success', { captchaVerification })
             }, 1000)
           } else {
@@ -306,13 +307,11 @@ export default {
             this.leftBarBorderColor = '#F56C6C'
             this.iconClass = 'icon-close'
             this.passFlag = false
-            setTimeout(function() {
-              _this.refresh()
-            }, 1000)
             this.$parent.$emit('error', this)
             this.tipWords = '验证失败'
             setTimeout(() => {
               this.tipWords = ''
+              this.$parent.closeBox()
             }, 1000)
           }
         })

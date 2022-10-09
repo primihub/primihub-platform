@@ -44,7 +44,7 @@
               <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
             </span>
           </el-form-item>
-          <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
+          <el-button type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
         </el-form>
         <div class="login-type">
           <p>其他登录方式</p>
@@ -95,7 +95,6 @@ export default {
         username: [{ required: true, trigger: 'blur', message: '请输入手机号/邮箱/用户名' }],
         password: [{ required: true, trigger: 'blur', validator: validatePassword }]
       },
-      loading: false,
       passwordType: 'password',
       redirect: undefined,
       showVerify: false
@@ -125,6 +124,10 @@ export default {
         this.loginForm.captchaVerification = data.captchaVerification
         this.handleLogin()
       }
+    },
+    handleFail() {
+      console.log('handleFail')
+      this.$refs.verify.closeBox()
     },
     forgotPwd() {
       this.$router.push({
@@ -156,7 +159,6 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          this.loading = true
           const { publicKey, publicKeyName } = this.publicKeyData
           if (!publicKey) {
             this.$message({
@@ -172,11 +174,9 @@ export default {
           const userPassword = crypt.encrypt(password)
           const loginForm = { userAccount, userPassword, validateKeyName: publicKeyName, captchaVerification }
 
-          this.$store.dispatch('user/login', loginForm).then(() => {
+          this.$store.dispatch('user/login', loginForm).then(res => {
+            console.log('1111', res)
             this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
           })
         } else {
           console.log('error submit!!')
