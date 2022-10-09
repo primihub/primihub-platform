@@ -86,3 +86,7 @@ div:focus {
   border-radius: 5px;
   opacity: .8;
 }
+.disabled{
+  filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
+  -webkit-filter: grayscale(100%);
+}
