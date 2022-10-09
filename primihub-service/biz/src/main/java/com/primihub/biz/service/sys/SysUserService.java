@@ -94,7 +94,7 @@ public class SysUserService {
             Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
             log.info("user_id:{},number:{}",sysUser.getUserId(),number);
             if (number>=3){
-                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT,"连续错误6次,账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
+                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT,"连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
             }else {
                 return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
             }
