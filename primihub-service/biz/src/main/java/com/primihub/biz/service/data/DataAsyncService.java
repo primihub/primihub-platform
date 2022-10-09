@@ -308,7 +308,7 @@ public class DataAsyncService implements ApplicationContextAware {
             if (reply.getRetCode()==0){
                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-                if (FileUtil.isFileExists(dataTask.getTaskResultPath())){
+                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("运行失败:无文件信息");
                 }
