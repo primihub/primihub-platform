@@ -23,6 +23,7 @@ import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.tool.PlatformHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.SignUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.BeanUtils;
@@ -42,6 +43,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class SysUserService {
 
@@ -90,6 +92,7 @@ public class SysUserService {
         String signPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
         if(!signPassword.equals(sysUser.getUserPassword())){
             Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
+            log.info("user_id:{},number:{}",sysUser.getUserId(),number);
             if (number>=3){
                 return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT,"连续错误6次,账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
             }else {
@@ -126,7 +129,7 @@ public class SysUserService {
         String token= PlatformHelper.generateOwnToken(SysConstant.SYS_USER_TOKEN_PREFIX,sysUser.getUserId(),date);
 
         sysUserPrimaryRedisRepository.updateUserLoginStatus(token,sysUserListVO);
-
+        sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(sysUser.getUserId());
         Map map=new HashMap<>();
         map.put("sysUser",sysUserListVO);
         map.put("grantAuthRootList",grantAuthRootList);
