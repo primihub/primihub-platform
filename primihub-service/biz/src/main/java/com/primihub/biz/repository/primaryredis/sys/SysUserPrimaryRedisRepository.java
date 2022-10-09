@@ -83,7 +83,7 @@ public class SysUserPrimaryRedisRepository {
         stringRedisTemplate.expire(userKey,1, TimeUnit.HOURS);
     }
 
-    public void loginErrorRecordNumber(Long userId){
+    public Long loginErrorRecordNumber(Long userId){
         String userKey=RedisKeyConstant.SYS_USER_LOGIN_PASS_ERRER_KEY.replace("<user_id>",userId.toString());
         Long increment = stringRedisTemplate.opsForValue().increment(userKey);
         if (increment == null || increment == 1L){
@@ -93,6 +93,7 @@ public class SysUserPrimaryRedisRepository {
             log.info("The password exceeds the number of errors user_id:{} num:{}",userId,SysConstant.SYS_USER_PASS_ERRER_NUM);
             stringRedisTemplate.expire(userKey,SysConstant.SYS_USER_LOGIN_LIMIT_NUM, TimeUnit.HOURS);
         }
+        return increment;
     }
 
     public void deleteLoginErrorRecordNumber(Long userId){
