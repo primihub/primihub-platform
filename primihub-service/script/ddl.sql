@@ -281,6 +281,8 @@ CREATE TABLE `data_resource`  (
                                   `resource_auth_type` int(1) DEFAULT NULL COMMENT '授权类型（公开，私有）',
                                   `resource_source` int(1) DEFAULT NULL COMMENT '资源来源（文件上传，数据库链接）',
                                   `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
+                                  `resource_hash_code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源hash值',
+                                  `resource_state` tinyint NOT NULL DEFAULT '0' COMMENT '资源状态 0上线 1下线',
                                   `file_id` int(8) DEFAULT NULL COMMENT '文件id',
                                   `file_size` int(32) DEFAULT NULL COMMENT '文件大小',
                                   `file_suffix` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '文件后缀',

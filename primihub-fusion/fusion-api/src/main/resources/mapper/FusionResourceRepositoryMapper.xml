@@ -48,8 +48,8 @@
     </sql>
 
     <insert id="saveFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource" keyProperty="id" useGeneratedKeys="true">
-        insert into fusion_resource (resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id, is_del, c_time, u_time)
-        values (#{resourceId},#{resourceName},#{resourceDesc},#{resourceType},#{resourceAuthType},#{resourceRowsCount},#{resourceColumnCount},#{resourceColumnNameList},#{resourceContainsY},#{resourceYRowsCount},#{resourceYRatio},#{resourceTag},#{organId},0,now(),now())
+        insert into fusion_resource (resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag,resource_state,resource_hash_code, organ_id, is_del, c_time, u_time)
+        values (#{resourceId},#{resourceName},#{resourceDesc},#{resourceType},#{resourceAuthType},#{resourceRowsCount},#{resourceColumnCount},#{resourceColumnNameList},#{resourceContainsY},#{resourceYRowsCount},#{resourceYRatio},#{resourceTag},#{resourceState},#{resourceHashCode},#{organId},0,now(),now())
     </insert>
 
     <insert id="saveBatchResourceTag" parameterType="java.lang.String">
@@ -89,6 +89,8 @@
             <if test="resourceTag!=null">resource_tag = #{resourceTag},</if>
             <if test="organId!=null">organ_id = #{organId},</if>
             <if test="isDel!=null">is_del = #{isDel},</if>
+            <if test="resourceState!=null">resource_state = #{resourceState},</if>
+            <if test="resourceHashCode!=null">resource_hash_code = #{resourceHashCode},</if>
             u_time = now()
         </set>
         where id = #{id}

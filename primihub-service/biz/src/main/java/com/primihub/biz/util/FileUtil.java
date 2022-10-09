@@ -4,9 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -181,8 +183,17 @@ public class FileUtil {
         return dataList;
     }
 
-    public static void main(String[] args) {
-        System.out.println(FileUtil.getCsvData("E://x.csv",0,50));
+    public static void main(String[] args) throws Exception {
+//        System.out.println(FileUtil.getCsvData("E://x.csv",0,50));
+//        File file = new File("/Users/zhongziqian/Downloads/7a1ff80f-9e00-48f1-9a46-338fdc5f3aa9.csv");
+        long start = System.currentTimeMillis();
+        File file = new File("/Users/zhongziqian/Downloads/c0e309f0-0924-4b8d-84e1-947a1617aafc.csv");
+        System.out.println(hashFile(file));
+        long end1 = System.currentTimeMillis();
+        System.out.println(end1 - start);
+        System.out.println(md5HashCode(file));
+        long end2 = System.currentTimeMillis();
+        System.out.println(end2 - start);
     }
 
     public static LinkedHashMap<String,Object> readValues(String[] values, String[] headers){
@@ -191,6 +202,73 @@ public class FileUtil {
             map.put(headers[i],values[i]);
         }
         return map;
+    }
+    /**
+     * 计算文件hash值
+     */
+    public static String hashFile(File file) throws Exception {
+        FileInputStream fis = null;
+        String sha256 = null;
+        try {
+            fis = new FileInputStream(file);
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte buffer[] = new byte[1024];
+            int length = -1;
+            while ((length = fis.read(buffer, 0, 1024)) != -1) {
+                md.update(buffer, 0, length);
+            }
+            byte[] digest = md.digest();
+            sha256 = byte2hexLower(digest);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new Exception("计算文件hash值错误");
+        } finally {
+            try {
+                if (fis != null) {
+                    fis.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return sha256;
+    }
+
+    private static String byte2hexLower(byte[] b) {
+        String hs = "";
+        String stmp = "";
+        for (int i = 0; i < b.length; i++) {
+            stmp = Integer.toHexString(b[i] & 0XFF);
+            if (stmp.length() == 1) {
+                hs = hs + "0" + stmp;
+            } else {
+                hs = hs + stmp;
+            }
+        }
+        return hs;
+    }
+
+    public static String md5HashCode(File file) {
+        try {
+            InputStream fis = new FileInputStream(file);
+            //拿到一个MD5转换器,如果想使用SHA-1或SHA-256，则传入SHA-1,SHA-256
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            //分多次将一个文件读入，对于大型文件而言，比较推荐这种方式，占用内存比较少。
+            byte[] buffer = new byte[1024];
+            int length = -1;
+            while ((length = fis.read(buffer, 0, 1024)) != -1) {
+                md.update(buffer, 0, length);
+            }
+            fis.close();
+            //转换并返回包含16个元素字节数组,返回数值范围为-128到127
+            byte[] md5Bytes  = md.digest();
+            BigInteger bigInt = new BigInteger(1, md5Bytes);//1代表绝对值
+            return bigInt.toString(16);//转换为16进制
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
     }
 
 //    public static void main(String[] args) {

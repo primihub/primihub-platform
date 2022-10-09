@@ -108,7 +108,9 @@ public class DataResourceService {
             List<DataResourceFieldReq> fieldList = req.getFieldList();
             if (fieldList==null||fieldList.size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"字段信息不能为空");
-            handleDataResourceFile(dataResource,sysFile);
+            BaseResultEntity handleDataResourceFileResult = handleDataResourceFile(dataResource, sysFile);
+            if (handleDataResourceFileResult.getCode()!=0)
+                return handleDataResourceFileResult;
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
@@ -394,7 +396,7 @@ public class DataResourceService {
         return copyVolist;
     }
 
-    public void handleDataResourceFile(DataResource dataResource,SysFile sysFile){
+    public BaseResultEntity handleDataResourceFile(DataResource dataResource,SysFile sysFile){
         File file = new File(sysFile.getFileUrl());
         if (file.exists()) {
             dataResource.setFileRows(FileUtil.getFileLineNumber(sysFile.getFileUrl())-1);
@@ -413,7 +415,17 @@ public class DataResourceService {
                 BigDecimal yRowRatio = new BigDecimal(resourceFileYRow).divide(new BigDecimal(dataResource.getFileRows()),6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
                 dataResource.setFileYRatio(yRowRatio);
             }
+            try {
+                String md5hash = FileUtil.md5HashCode(file);
+                dataResource.setResourceHashCode(md5hash);
+            }catch (Exception e){
+                log.info("resource_id:{} - url:{} - e:{}",dataResource.getResourceId(),sysFile.getFileUrl(),e.getMessage());
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"文件hash出错");
+            }
+        }else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无文件信息");
         }
+        return BaseResultEntity.success();
     }
     public Integer getResourceFileYRow(List<String> fileContent){
         String field = fileContent.get(0);
@@ -463,5 +475,20 @@ public class DataResourceService {
     }
 
 
+    public BaseResultEntity resourceStatusChange(Long resourceId, Integer resourceState) {
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        if (dataResource==null){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"找不到资源信息");
+        }
+        if(!dataResource.getResourceState().equals(resourceState)){
+            dataResource.setResourceState(resourceState);
+            dataResourcePrRepository.editResource(dataResource);
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+            }
+        }
+        return BaseResultEntity.success();
+    }
 }
 
