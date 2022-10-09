@@ -308,37 +308,4 @@ export default {
     z-index: 3;
 }
 
-/*字体图标的css*/
-@font-face {
-  font-family: "iconfont";
-  src: url('../../assets/fonts/iconfont.woff2?t=1663834013586') format('woff2'),
-      url('../../assets/fonts/iconfont.woff?t=1663834013586') format('woff'),
-      url('../../assets/fonts/iconfont.ttf?t=1663834013586') format('truetype');
-}
-
-.iconfont {
-    font-family: "iconfont" !important;
-    font-size: 16px;
-    font-style: normal;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-.icon-close:before {
-  color: #000;
-  content: "\e6fc";
-}
-
-.icon-check:before {
-  content: "\e632";
-  color: #fff;
-}
-
-.icon-right:before {
-  content: "\e6ae";
-  color: #000;
-}
-.icon-refresh:before {
-  content: "\e676";
-  color: #000;
-}
 </style>

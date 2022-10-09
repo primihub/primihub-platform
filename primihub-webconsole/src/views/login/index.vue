@@ -46,6 +46,12 @@
           </el-form-item>
           <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
         </el-form>
+        <div class="login-type">
+          <p>其他登录方式</p>
+          <div class="login-icon">
+            <a href="" class="icon iconfont icon-github" />
+          </div>
+        </div>
         <div class="forgot">
           <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
           <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
@@ -232,10 +238,6 @@ h1{
 </style>
 
 <style lang="scss" scoped>
-
-</style>
-
-<style lang="scss" scoped>
 $bg:#2d3a4b;
 $dark_gray:#889aa4;
 $light_gray:#000;
@@ -317,6 +319,15 @@ $light_gray:#000;
     padding: 64px;
     box-shadow: 0 16px 32px 0 rgb(0 0 0 / 8%);
     margin-top: 30px;
+  }
+  .login-type{
+    color: #999999;
+    font-size: 14px;
+    .icon{
+      display: inline-block;
+      font-size: 30px;
+      margin: 10px;
+    }
   }
   .forgot {
     color: #1989FA;
