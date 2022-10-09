@@ -1,13 +1,21 @@
 package com.primihub.biz.service.test;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
+import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.test.TestPrimaryRepository;
 import com.primihub.biz.repository.primaryredis.test.TestRedisRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
@@ -22,6 +30,7 @@ import com.primihub.biz.entity.data.vo.ModelComponentJson;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.repository.resourceprimarydb.test.TestResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.test.TestResourceSecondaryRepository;
+import com.primihub.biz.util.FileUtil;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -33,16 +42,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import primihub.rpc.Common;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -63,6 +71,12 @@ public class TestService {
     private DataResourceService dataResourceService;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private DataResourcePrRepository dataResourcePrRepository;
+    @Autowired
+    private OrganConfiguration organConfiguration;
+    @Autowired
+    private SingleTaskChannel singleTaskChannel;
 
     @Resource
     private Environment environment;
@@ -183,10 +197,39 @@ public class TestService {
         log.info("grpc结果:"+reply);
     }
 
-    public void formatResources() {
+    public void formatResources(String tag) {
+        tag = StringUtils.isBlank(tag)?"grpc":tag;
         List<DataResource> copyResourceList = dataResourceRepository.findCopyResourceList(0L, 5000L);
         for (DataResource dataResource : copyResourceList) {
-            dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl());
+            if (tag.contains("grpc")){
+                dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl());
+            }else if (tag.contains("copy")){
+                if (StringUtils.isBlank(dataResource.getResourceHashCode())){
+                    try {
+                        File file = new File(dataResource.getUrl());
+                        if (file.exists()){
+                            dataResource.setResourceHashCode(FileUtil.md5HashCode(file));
+                            dataResourcePrRepository.editResource(dataResource);
+                        }
+                    }catch (Exception e){
+                        log.info("id:{}  ====  url:{}   错误：",dataResource.getResourceId(),dataResource.getUrl());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+        if (tag.contains("copy")){
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            if (sysLocalOrganInfo!=null){
+                Map<String, SysOrganFusion> fusionMap = sysLocalOrganInfo.getFusionMap();
+                if (fusionMap!=null){
+                    Iterator<Map.Entry<String, SysOrganFusion>> iterator = fusionMap.entrySet().iterator();
+                    while (iterator.hasNext()){
+                        Map.Entry<String, SysOrganFusion> next = iterator.next();
+                        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),next.getValue()))).build());
+                    }
+                }
+            }
         }
     }
 }
