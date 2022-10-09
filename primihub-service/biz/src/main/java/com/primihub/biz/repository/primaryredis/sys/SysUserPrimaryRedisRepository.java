@@ -1,7 +1,10 @@
 package com.primihub.biz.repository.primaryredis.sys;
 
 import com.primihub.biz.constant.RedisKeyConstant;
+import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.sys.vo.SysUserListVO;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -10,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @Component
 public class SysUserPrimaryRedisRepository {
 
@@ -77,6 +81,33 @@ public class SysUserPrimaryRedisRepository {
         String userKey=RedisKeyConstant.SYS_USER_LOGIN_STATUS_HASH_KEY.replace("<user_id>",userId.toString());
         stringRedisTemplate.expire(tokenKey,1, TimeUnit.HOURS);
         stringRedisTemplate.expire(userKey,1, TimeUnit.HOURS);
+    }
+
+    public void loginErrorRecordNumber(Long userId){
+        String userKey=RedisKeyConstant.SYS_USER_LOGIN_PASS_ERRER_KEY.replace("<user_id>",userId.toString());
+        Long increment = stringRedisTemplate.opsForValue().increment(userKey);
+        if (increment == null || increment == 1L){
+            stringRedisTemplate.expire(userKey, 1, TimeUnit.HOURS);
+        }
+        if (increment!=null && increment >= SysConstant.SYS_USER_PASS_ERRER_NUM){
+            log.info("The password exceeds the number of errors user_id:{} num:{}",userId,SysConstant.SYS_USER_PASS_ERRER_NUM);
+            stringRedisTemplate.expire(userKey,SysConstant.SYS_USER_LOGIN_LIMIT_NUM, TimeUnit.HOURS);
+        }
+    }
+
+    public void deleteLoginErrorRecordNumber(Long userId){
+        String userKey=RedisKeyConstant.SYS_USER_LOGIN_PASS_ERRER_KEY.replace("<user_id>",userId.toString());
+        stringRedisTemplate.delete(userKey);
+    }
+
+    public boolean loginVerification(Long userId){
+        String userKey=RedisKeyConstant.SYS_USER_LOGIN_PASS_ERRER_KEY.replace("<user_id>",userId.toString());
+        String userVal = stringRedisTemplate.opsForValue().get(userKey);
+        if (StringUtils.isBlank(userVal))
+            return true;
+        if (Long.parseLong(userVal) >= SysConstant.SYS_USER_PASS_ERRER_NUM)
+            return false;
+        return true;
     }
 
 }

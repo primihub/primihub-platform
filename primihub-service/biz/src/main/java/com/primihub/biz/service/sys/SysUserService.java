@@ -78,7 +78,8 @@ public class SysUserService {
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(loginParam.getUserAccount());
         if(sysUser==null||sysUser.getUserId()==null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
-
+        if(!sysUserPrimaryRedisRepository.loginVerification(sysUser.getUserId()))
+            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN);
         String userPassword;
         try {
             userPassword=CryptUtil.decryptRsaWithPrivateKey(loginParam.getUserPassword(),privateKey);
@@ -87,9 +88,14 @@ public class SysUserService {
         } 
         StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(userPassword);
         String signPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
-        if(!signPassword.equals(sysUser.getUserPassword()))
+        if(!signPassword.equals(sysUser.getUserPassword())){
+            sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
             return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+        }
+        return baseLogin(sysUser);
+    }
 
+    public BaseResultEntity baseLogin(SysUser sysUser){
         Set<Long> roleIdSet=Stream.of(sysUser.getRoleIdList().split(",")).filter(item->!item.equals(""))
                 .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
         Set<Long> authIdList=sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
@@ -330,6 +336,7 @@ public class SysUserService {
             }
         };
         sysUserPrimarydbRepository.updateSysUserExplicit(paramMap);
+        sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(userId);
     }
 
     public BaseResultEntity findUserByAccount(String userAccount){
