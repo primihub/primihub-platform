@@ -98,10 +98,11 @@ public class TestController {
     }
 
     @RequestMapping("/testFormatResources")
-    public BaseResultEntity formatResources(){
-        testService.formatResources();
+    public BaseResultEntity formatResources(String tag){
+        testService.formatResources(tag);
         return BaseResultEntity.success();
     }
+
 
 
 
