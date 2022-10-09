@@ -3,12 +3,13 @@ const emojiRegex = require('emoji-regex')
 export function matchEmoji(text) {
   const regex = emojiRegex()
   // length>0: 匹配到 null:未匹配到
-  return text.match(regex)
+  return text.toString().match(regex)
 }
 
 export function encodeEmoji(str) {
   const regex = emojiRegex()
-  return str.replace(regex, p => `emoji(${p.codePointAt(0)})`)
+  console.log(typeof str)
+  return str.toString().replace(regex, p => `emoji(${p.codePointAt(0)})`)
 }
 
 export function deCodeEmoji(str) {
