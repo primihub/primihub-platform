@@ -42,7 +42,8 @@
 
     <!-- 通用查询结果列 -->
     <sql id="Fusion_Resource_Base_Column_List">
-        id, resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id, is_del, c_time, u_time
+        id, resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count,resource_state resourceState,
+        resource_hash_code resourceHashCode, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id, is_del, c_time, u_time
     </sql>
 
     <sql id="Fusion_Resource_Field_Base_Column_List">
@@ -138,6 +139,7 @@
             distinct r.id,resource_id resourceId,resource_name resourceName,resource_desc resourceDesc,resource_type resourceType,
             resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
             resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
+            resource_state resourceState,resource_hash_code resourceHashCode,
             resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
         from fusion_resource r
         left join fusion_go go on go.organ_global_id =r.organ_id
@@ -193,6 +195,7 @@
         select
             distinct r.id,r.resource_id resourceId,r.resource_name resourceName,resource_desc resourceDesc,resource_type resourceType,
                      resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
+                     resource_state resourceState,resource_hash_code resourceHashCode,
                      resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
                      resource_y_ratio resourceYRatio,resource_tag resourceTag,r.organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
         from fusion_organ_resource_auth ora
@@ -201,7 +204,8 @@
         where
         ora.organ_id = #{authOrganId}
             and r.is_del=0
-          and r.resource_auth_type != 2
+        and r.resource_state = 0
+        and r.resource_auth_type != 2
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
         <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
@@ -220,6 +224,7 @@
         where
         ora.organ_id = #{authOrganId}
         and r.is_del=0
+        and r.resource_state = 0
         and r.resource_auth_type != 2
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
@@ -232,7 +237,8 @@
 
     <sql id="fusionResourceCondition">
         where
-        go.group_id in
+        r.resource_state = 0
+        and go.group_id in
             <foreach collection="groupList" index="index" item="item" open="("
                      separator="," close=")">
                 #{item}
