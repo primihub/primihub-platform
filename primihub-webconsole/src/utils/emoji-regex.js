@@ -8,6 +8,7 @@ export function matchEmoji(text) {
 
 export function encodeEmoji(str) {
   const regex = emojiRegex()
+  console.log(str.replace(regex, p => `emoji(${p.codePointAt(0)})`))
   return str.replace(regex, p => `emoji(${p.codePointAt(0)})`)
 }
 
