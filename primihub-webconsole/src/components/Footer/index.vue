@@ -1,0 +1,17 @@
+<template>
+  <div class="footer">
+    <p>北京原语科技有限公司 V1.4.0</p>
+  </div>
+</template>
+
+<style lang="scss" scoped>
+.footer{
+  font-size: 14px;
+  color: #D7D7D7;
+  position: absolute;
+  bottom: -50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+</style>

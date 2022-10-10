@@ -57,7 +57,10 @@
           <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
         </div>
       </div>
+      <Footer />
     </div>
+
+    <CompanyIntro />
     <Verify ref="verify" @success="handleSuccess" />
   </div>
 </template>
@@ -67,12 +70,16 @@ import { getValidatePublicKey } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
 import Poster from '@/components/Poster'
 import Verify from '@/components/Verifition'
+import Footer from '@/components/Footer'
+import CompanyIntro from '@/components/CompanyIntro'
 
 export default {
   name: 'Login',
   components: {
     Poster,
-    Verify
+    Verify,
+    Footer,
+    CompanyIntro
   },
   data() {
     const validatePassword = (rule, value, callback) => {
@@ -249,8 +256,9 @@ $light_gray:#000;
   background-size: cover;
   background-repeat: no-repeat;
   text-align: center;
+  position: relative;
+  overflow: hidden;
   .login-form {
-    position: relative;
     width: 400px;
     max-width: 100%;
     /* padding: 160px 35px 0; */
