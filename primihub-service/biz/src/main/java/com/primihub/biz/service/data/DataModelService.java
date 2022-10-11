@@ -563,7 +563,7 @@ public class DataModelService {
         return map;
     }
 
-    public BaseResultEntity saveComponentDraft(ComponentDraftReq req) {
+    public BaseResultEntity saveOrUpdateComponentDraft(ComponentDraftReq req) {
         try {
             req.setComponentJson(formatComponent(req.getComponentJson()));
         }catch (Exception e){
@@ -572,6 +572,9 @@ public class DataModelService {
         }
         DataComponentDraft dataComponentDraft = DataModelConvert.componentDraftReqCovertPo(req);
         if (dataComponentDraft.getDraftId()!=null && dataComponentDraft.getDraftId()!=0L){
+            DataComponentDraft draft = dataModelRepository.queryComponentDraftById(dataComponentDraft.getDraftId());
+            if (draft==null)
+                BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"未查询到草稿信息");
             dataModelPrRepository.updateComponentDraft(dataComponentDraft);
         }else {
             Integer count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());

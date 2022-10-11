@@ -1,6 +1,7 @@
 package com.primihub.biz.repository.secondarydb.data;
 
 import com.primihub.biz.entity.data.po.DataComponent;
+import com.primihub.biz.entity.data.po.DataComponentDraft;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataModelTask;
 import com.primihub.biz.entity.data.req.ModelTaskSuccessReq;
@@ -64,4 +65,6 @@ public interface DataModelRepository {
     Integer queryComponentDraftCountByUserId(@Param("userId")Long userId);
 
     List<DataComponentDraftVo> queryComponentDraftListByUserId(@Param("userId")Long userId);
+
+    DataComponentDraft queryComponentDraftById(@Param("draftId")Long draftId);
 }

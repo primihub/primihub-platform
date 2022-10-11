@@ -145,8 +145,8 @@ public class ModelController {
         return dataModelService.getModelTaskSuccessList(req);
     }
 
-    @RequestMapping("saveComponentDraft")
-    public BaseResultEntity saveComponentDraft(@RequestHeader("userId") Long userId, ComponentDraftReq req){
+    @RequestMapping("saveOrUpdateComponentDraft")
+    public BaseResultEntity saveOrUpdateComponentDraft(@RequestHeader("userId") Long userId, ComponentDraftReq req){
         if (userId==null||userId==0L)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
         req.setUserId(userId);
@@ -154,7 +154,7 @@ public class ModelController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"componentJson");
         if (StringUtils.isBlank(req.getComponentImage()))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"componentImage");
-        return dataModelService.saveComponentDraft(req);
+        return dataModelService.saveOrUpdateComponentDraft(req);
     }
 
     @RequestMapping("getComponentDraftList")
