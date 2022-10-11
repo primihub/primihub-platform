@@ -37,7 +37,7 @@
         insert into data_model_task (model_id,task_id,predict_file,predict_content,component_json,is_del,create_date,update_date)
         values (#{modelId},#{taskId},#{predictFile},#{predictContent},#{componentJson},0,now(),now())
     </insert>
-    <insert id="saveComponentDraft" parameterType="com.primihub.biz.entity.data.po.DataComponentDraft" useGeneratedKeys="true" keyProperty="draft_id">
+    <insert id="saveComponentDraft" parameterType="com.primihub.biz.entity.data.po.DataComponentDraft" useGeneratedKeys="true" keyProperty="draftId">
         insert into data_component_draft (draft_name,user_id,component_json,component_image,is_del,create_date,update_date)
         values (#{draftName},#{userId},#{componentJson},#{componentImage},0,now(),now())
     </insert>
