@@ -564,6 +564,12 @@ public class DataModelService {
     }
 
     public BaseResultEntity saveComponentDraft(ComponentDraftReq req) {
+        try {
+            req.setComponentJson(formatComponent(req.getComponentJson()));
+        }catch (Exception e){
+            log.info(e.getMessage());
+            BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件解析失败");
+        }
         DataComponentDraft dataComponentDraft = DataModelConvert.componentDraftReqCovertPo(req);
         if (dataComponentDraft.getDraftId()!=null && dataComponentDraft.getDraftId()!=0L){
             dataModelPrRepository.updateComponentDraft(dataComponentDraft);
@@ -581,5 +587,17 @@ public class DataModelService {
 
     public BaseResultEntity getComponentDraftList(Long userId) {
         return BaseResultEntity.success(dataModelRepository.queryComponentDraftListByUserId(userId));
+    }
+
+    private String formatComponent(String componentJson){
+        DataModelAndComponentReq dataModelAndComponentReq = JSONObject.parseObject(componentJson, DataModelAndComponentReq.class);
+        for (DataComponentReq modelComponent : dataModelAndComponentReq.getModelComponents()) {
+            if(modelComponent.getComponentCode().equals("dataSet")){
+                for (DataComponentValue componentValue : modelComponent.getComponentValues()) {
+                    componentValue.setVal("");
+                }
+            }
+        }
+        return JSONObject.toJSONString(dataModelAndComponentReq);
     }
 }
