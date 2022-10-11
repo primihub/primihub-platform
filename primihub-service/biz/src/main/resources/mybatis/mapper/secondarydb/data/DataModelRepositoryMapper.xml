@@ -336,7 +336,20 @@
         AND dt.is_cooperation = 0
         <include refid="modeltasksuccess"></include>
     </select>
-
+    <select id="queryComponentDraftCountByUserId" resultType="java.lang.Integer">
+        select count(draft_id) from data_component_draft where user_id = #{userId}
+    </select>
+    <select id="queryComponentDraftListByUserId" resultType="com.primihub.biz.entity.data.vo.DataComponentDraftVo">
+        select
+            draft_id draftId,
+            draft_name draftName,
+            component_json componentJson,
+            component_image componentImage,
+            create_date createDate,
+            update_date updateDate
+        from data_component_draft
+        where user_id = #{userId}
+    </select>
 
 
     <sql id="modeltasksuccess">

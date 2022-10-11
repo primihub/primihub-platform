@@ -562,4 +562,24 @@ public class DataModelService {
         }
         return map;
     }
+
+    public BaseResultEntity saveComponentDraft(ComponentDraftReq req) {
+        DataComponentDraft dataComponentDraft = DataModelConvert.componentDraftReqCovertPo(req);
+        if (dataComponentDraft.getDraftId()!=null && dataComponentDraft.getDraftId()!=0L){
+            dataModelPrRepository.updateComponentDraft(dataComponentDraft);
+        }else {
+            Integer count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());
+            if (count>=20) {
+                BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿已到最高20个,请清除其他草稿重试。");
+            }
+            dataModelPrRepository.saveComponentDraft(dataComponentDraft);
+        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("draftId",dataComponentDraft.getDraftId());
+        return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity getComponentDraftList(Long userId) {
+        return BaseResultEntity.success(dataModelRepository.queryComponentDraftListByUserId(userId));
+    }
 }

@@ -4,11 +4,9 @@ package com.primihub.application.controller.data;
 import com.primihub.biz.entity.base.BaseJsonParam;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
-import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
-import com.primihub.biz.entity.data.req.DataModelReq;
-import com.primihub.biz.entity.data.req.ModelTaskSuccessReq;
-import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.service.data.DataModelService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -145,6 +143,25 @@ public class ModelController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
         req.setUserId(userId);
         return dataModelService.getModelTaskSuccessList(req);
+    }
+
+    @RequestMapping("saveComponentDraft")
+    public BaseResultEntity saveComponentDraft(@RequestHeader("userId") Long userId, ComponentDraftReq req){
+        if (userId==null||userId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        req.setUserId(userId);
+        if (StringUtils.isBlank(req.getComponentJson()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"componentJson");
+        if (StringUtils.isBlank(req.getComponentImage()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"componentImage");
+        return dataModelService.saveComponentDraft(req);
+    }
+
+    @RequestMapping("getComponentDraftList")
+    public BaseResultEntity getComponentDraftList(@RequestHeader("userId") Long userId){
+        if (userId==null||userId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        return dataModelService.getComponentDraftList(userId);
     }
 
 

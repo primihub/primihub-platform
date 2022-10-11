@@ -61,5 +61,7 @@ public interface DataModelRepository {
     Integer queryModelTaskSuccessCount(ModelTaskSuccessReq req);
 
 
+    Integer queryComponentDraftCountByUserId(@Param("userId")Long userId);
 
+    List<DataComponentDraftVo> queryComponentDraftListByUserId(@Param("userId")Long userId);
 }
