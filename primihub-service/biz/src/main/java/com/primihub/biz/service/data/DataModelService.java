@@ -579,7 +579,7 @@ public class DataModelService {
         }else {
             int count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());
             if (count>=20) {
-                BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿已到最高20个,请清除其他草稿重试。");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿已到最高20个,请清除其他草稿重试。");
             }
             dataModelPrRepository.saveComponentDraft(dataComponentDraft);
         }
