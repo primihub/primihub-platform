@@ -114,6 +114,12 @@ export default {
             message: '保存成功',
             type: 'success'
           })
+        } else {
+          this.$message({
+            message: '最多保存20个草稿，请在“导入草稿”中删除草稿重试。',
+            type: 'error',
+            duration: 5000
+          })
         }
       })
     },
@@ -143,9 +149,8 @@ export default {
       this.toPNG()
     },
     beforeSaveDraft() {
-      console.log('beforeSaveDraft', this.componentJson.modelComponents.length)
       // 只有开始组件不可保存
-      if (this.componentJson.modelComponents.length > 1) {
+      if (this.componentJson.modelComponents && this.componentJson.modelComponents.length > 1) {
         return true
       } else {
         this.$message({
