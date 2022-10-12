@@ -115,6 +115,9 @@
     <delete id="deleteDataModelResourceByTaskId">
         delete from data_mr where task_id = #{taskId}
     </delete>
+    <delete id="deleteComponentDraft">
+        delete from data_component_draft where draft_id = #{draftId}
+    </delete>
     <update id="deleteModelTask">
         update data_model_task set is_del = 1 where model_id = #{modelId}
     </update>

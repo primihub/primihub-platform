@@ -45,4 +45,6 @@ public interface DataModelPrRepository {
     void saveComponentDraft(DataComponentDraft dataComponentDraft);
 
     void updateComponentDraft(DataComponentDraft dataComponentDraft);
+
+    void deleteComponentDraft(@Param("draftId") Long draftId);
 }

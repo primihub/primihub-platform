@@ -603,4 +603,12 @@ public class DataModelService {
         }
         return JSONObject.toJSONString(dataModelAndComponentReq);
     }
+
+    public BaseResultEntity deleteComponentDraft(Long draftId,Long userId) {
+        DataComponentDraft dataComponentDraft = dataModelRepository.queryComponentDraftById(draftId);
+        if (dataComponentDraft==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到草稿信息");
+        dataModelPrRepository.deleteComponentDraft(draftId);
+        return BaseResultEntity.success();
+    }
 }

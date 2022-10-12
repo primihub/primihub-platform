@@ -164,6 +164,16 @@ public class ModelController {
         return dataModelService.getComponentDraftList(userId);
     }
 
+    @RequestMapping("deleteComponentDraft")
+    public BaseResultEntity deleteComponentDraft(@RequestHeader("userId") Long userId,Long draftId){
+        if (userId==null||userId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        if (draftId==null||draftId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"draftId");
+        return dataModelService.deleteComponentDraft(draftId,userId);
+    }
+
+
 
 
 
