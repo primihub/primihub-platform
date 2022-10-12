@@ -577,7 +577,7 @@ public class DataModelService {
                 BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"未查询到草稿信息");
             dataModelPrRepository.updateComponentDraft(dataComponentDraft);
         }else {
-            Integer count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());
+            int count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());
             if (count>=20) {
                 BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿已到最高20个,请清除其他草稿重试。");
             }

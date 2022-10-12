@@ -349,6 +349,7 @@
             update_date updateDate
         from data_component_draft
         where user_id = #{userId}
+        ORDER BY draft_id desc
     </select>
     <select id="queryComponentDraftById" resultType="com.primihub.biz.entity.data.po.DataComponentDraft">
         select

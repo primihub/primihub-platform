@@ -46,6 +46,11 @@ public class SysUser {
      * 注册类型1：管理员创建 2：邮箱 3：手机
      */
     private Integer registerType;
+
+    /**
+     * 第三方uuid
+     */
+    private String authUuid;
     /**
      * 创建时间
      */
