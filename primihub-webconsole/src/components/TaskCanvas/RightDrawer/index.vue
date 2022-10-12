@@ -200,12 +200,19 @@ export default {
   methods: {
     getDataSetComValue(value) {
       const dataSetCom = value.cells.find(item => item.componentCode === 'dataSet')
-      this.inputValue = dataSetCom.data.componentTypes[0].inputValue
+      this.inputValue = dataSetCom ? dataSetCom?.data.componentTypes[0].inputValue : ''
       this.getDataSetNodeData()
     },
     async openProviderOrganDialog() {
-      this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrgans[0].organId)
-      this.providerOrganDialogVisible = true
+      if (this.initiateOrgan.organId && this.providerOrgans.length > 0) {
+        this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrgans[0].organId)
+        this.providerOrganDialogVisible = true
+      } else {
+        this.$message({
+          message: '请先选择数据集',
+          type: 'warning'
+        })
+      }
     },
     closeProviderOrganDialog(data) {
       this.providerOrganIds = data
