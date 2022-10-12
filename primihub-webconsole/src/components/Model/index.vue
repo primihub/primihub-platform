@@ -68,7 +68,7 @@
         <el-table-column
           v-if="isCreator && !(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission && !hasCopyModelTaskPermission && !hasModelDownloadPermission && !hasDeleteModelTaskPermission)"
           label="操作"
-          width="220"
+          width="130"
           fixed="right"
         >
           <template slot-scope="{row}">

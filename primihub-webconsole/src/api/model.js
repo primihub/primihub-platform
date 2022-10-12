@@ -1,5 +1,28 @@
 import request from '@/utils/request'
 
+export function deleteComponentDraft(params) {
+  return request({
+    url: '/data/model/deleteComponentDraft',
+    method: 'get',
+    params
+  })
+}
+export function saveOrUpdateComponentDraft(data) {
+  return request({
+    url: '/data/model/saveOrUpdateComponentDraft',
+    method: 'post',
+    data
+  })
+}
+
+export function getComponentDraftList(params) {
+  return request({
+    url: '/data/model/getComponentDraftList',
+    method: 'get',
+    params
+  })
+}
+
 export function getModelTaskSuccessList(params) {
   return request({
     url: '/data/model/getModelTaskSuccessList',
