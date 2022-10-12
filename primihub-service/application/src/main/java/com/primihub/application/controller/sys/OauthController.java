@@ -1,5 +1,6 @@
 package com.primihub.application.controller.sys;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.OAuthSourceEnum;
@@ -77,11 +78,6 @@ public class OauthController {
         response.reset();
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
-        response.getWriter().println(BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,message+"-配置异常,请尝试联系我们!"));
-    }
-
-    public static void main(String[] args) {
-        String val = "https://test2.primihub.com/#/auth?authPublicKey=%s&user=%s";
-        System.out.println(String.format(val,"111","2222"));
+        response.getWriter().println(JSONObject.toJSONString(BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,message+"-配置异常,请尝试联系我们!")));
     }
 }

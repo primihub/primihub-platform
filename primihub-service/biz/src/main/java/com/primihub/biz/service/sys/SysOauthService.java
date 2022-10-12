@@ -74,6 +74,8 @@ public class SysOauthService {
     }
 
     public BaseResultEntity authDataLogin(AuthCallback callback,OAuthSourceEnum source) {
+        BaseAuthConfig baseAuthConfig = baseConfiguration.getAuthConfigs().get(source.getSourceName());
+        log.info(baseAuthConfig.getRedirectUrl());
         if (!getOauthList().contains(source.getSourceName())){
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,source.getSourceName()+"授权未配置,不支持登录");
         }
@@ -91,7 +93,6 @@ public class SysOauthService {
         String seqStr = String.format("%06d", seq);
         String authPublicKey=new StringBuilder().append(SysConstant.SYS_COMMON_AUTH_PUBLIC_KEY_PREFIX).append(dateStr).append(seqStr).toString();
         sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, authUuid);
-        BaseAuthConfig baseAuthConfig = baseConfiguration.getAuthConfigs().get(source.getSourceName());
         String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, sysUser != null);
         log.info(url);
         return BaseResultEntity.success(url);
