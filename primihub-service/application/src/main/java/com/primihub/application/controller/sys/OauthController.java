@@ -54,7 +54,7 @@ public class OauthController {
     }
 
     @RequestMapping("/{source}/callback")
-    public void gitHubLogin(AuthCallback callback,HttpServletResponse response,@PathVariable("source") String source) throws IOException {
+    public void oauthLogin(AuthCallback callback,HttpServletResponse response,@PathVariable("source") String source) throws IOException {
         if (StringUtils.isEmpty(source) && !OAuthSourceEnum.AUTH_MAP.containsKey(source)){
             oauthError(response,"来源");
         }else {

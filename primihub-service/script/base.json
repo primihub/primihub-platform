@@ -6,8 +6,13 @@
         "/user/forgetPassword",
         "/captcha/get",
         "/captcha/check",
+        "/oauth/getAuthList",
+        "/oauth/authLogin",
+        "/oauth/github/render",
+        "/oauth/github/callback",
         "/common/getValidatePublicKey",
-        "/shareData/syncProject"
+        "/shareData/syncProject",
+        "/shareData/syncModel"
     ],
     "needSignUriList":[
 

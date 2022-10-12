@@ -92,7 +92,9 @@ public class SysOauthService {
         String authPublicKey=new StringBuilder().append(SysConstant.SYS_COMMON_AUTH_PUBLIC_KEY_PREFIX).append(dateStr).append(seqStr).toString();
         sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, authUuid);
         BaseAuthConfig baseAuthConfig = baseConfiguration.getAuthConfigs().get(source.getSourceName());
-        return BaseResultEntity.success(String.format(baseAuthConfig.getRedirectUrl(),authPublicKey,sysUser!=null));
+        String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, sysUser != null);
+        log.info(url);
+        return BaseResultEntity.success(url);
     }
 
     public BaseResultEntity authLogin(LoginParam loginParam) {
