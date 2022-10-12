@@ -100,12 +100,6 @@ public class SysUserService {
                 return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
             }
         }
-        if(StringUtils.isNotBlank(loginParam.getAuthPublicKey())){
-            String authUuid = sysCommonPrimaryRedisRepository.getKey(loginParam.getAuthPublicKey());
-            if (StringUtils.isNotBlank(authUuid)){
-                sysUserPrimarydbRepository.updateSysUserExplicit(new HashMap(){{put("authUuid",authUuid);put("userId",sysUser.getUserId());}});
-            }
-        }
         return baseLogin(sysUser);
     }
 
@@ -173,11 +167,13 @@ public class SysUserService {
             sysUser.setIsForbid(saveOrUpdateUserParam.getIsForbid());
             sysUser.setIsEditable(1);
             sysUser.setIsDel(0);
-            if(StringUtils.isNotBlank(saveOrUpdateUserParam.getAuthPublicKey())){
-                String authUuid = sysCommonPrimaryRedisRepository.getKey(saveOrUpdateUserParam.getAuthPublicKey());
-                if (StringUtils.isNotBlank(authUuid))
-                    sysUser.setAuthUuid(authUuid);
-            }
+            if (saveOrUpdateUserParam.getAuthUuid()!=null)
+                sysUser.setAuthUuid(saveOrUpdateUserParam.getAuthUuid());
+//            if(StringUtils.isNotBlank(saveOrUpdateUserParam.getAuthPublicKey())){
+//                String authUuid = sysCommonPrimaryRedisRepository.getKey(saveOrUpdateUserParam.getAuthPublicKey());
+//                if (StringUtils.isNotBlank(authUuid))
+//                    sysUser.setAuthUuid(authUuid);
+//            }
             sysUserPrimarydbRepository.insertSysUser(sysUser);
             userId=sysUser.getUserId();
         }else{

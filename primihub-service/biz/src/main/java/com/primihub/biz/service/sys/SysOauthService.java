@@ -9,6 +9,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.OAuthSourceEnum;
 import com.primihub.biz.entity.sys.param.LoginParam;
+import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.entity.sys.vo.BaseAuthConfig;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
@@ -92,7 +93,9 @@ public class SysOauthService {
         Long seq=sysCommonPrimaryRedisRepository.getCurrentSecondIncr(dateStr);
         String seqStr = String.format("%06d", seq);
         String authPublicKey=new StringBuilder().append(SysConstant.SYS_COMMON_AUTH_PUBLIC_KEY_PREFIX).append(dateStr).append(seqStr).toString();
-        sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, authUuid);
+        authUser.setToken(null);
+        authUser.setRawUserInfo(null);
+        sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, JSONObject.toJSONString(authUser));
         String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, sysUser != null);
         log.info(url);
         return BaseResultEntity.success(url);
@@ -108,5 +111,30 @@ public class SysOauthService {
         if (sysUser == null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         return sysUserService.baseLogin(sysUser);
+    }
+
+    public boolean validateVerificationCode(Integer code, String userAccount, String verificationCode) {
+        return sysUserService.validateVerificationCode(code,userAccount,verificationCode);
+    }
+
+    public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam) {
+        String authUserJson = sysCommonPrimaryRedisRepository.getKey(saveOrUpdateUserParam.getAuthPublicKey());
+        try {
+            if (StringUtils.isBlank(authUserJson)){
+                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息null");
+            }
+            AuthUser authUser = JSONObject.parseObject(authUserJson, AuthUser.class);
+            if (authUser==null){
+                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息异常 null");
+            }
+            saveOrUpdateUserParam.setUserName(StringUtils.isNotBlank(authUser.getNickname())?authUser.getNickname():"user");
+            if (StringUtils.isBlank(authUser.getSource()) || StringUtils.isBlank(authUser.getUuid()))
+                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息来源或唯一标识为空");
+            saveOrUpdateUserParam.setAuthUuid(authUser.getSource()+authUser.getUuid());
+        }catch (Exception e){
+            log.info(e.getMessage());
+            return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"授权注册失败");
+        }
+        return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 }

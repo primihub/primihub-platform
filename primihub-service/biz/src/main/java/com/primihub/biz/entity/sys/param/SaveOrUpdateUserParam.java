@@ -42,4 +42,6 @@ public class SaveOrUpdateUserParam {
     private String verificationCode;
 
     private String authPublicKey;
+
+    private String authUuid;
 }

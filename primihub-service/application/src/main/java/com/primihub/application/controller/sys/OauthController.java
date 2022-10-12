@@ -4,16 +4,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.OAuthSourceEnum;
+import com.primihub.biz.entity.sys.enumeration.VerificationCodeEnum;
 import com.primihub.biz.entity.sys.param.LoginParam;
+import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
 import com.primihub.biz.service.sys.SysOauthService;
-import me.zhyd.oauth.config.AuthConfig;
 import me.zhyd.oauth.model.AuthCallback;
-import me.zhyd.oauth.model.AuthResponse;
-import me.zhyd.oauth.request.AuthGithubRequest;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import me.zhyd.oauth.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,6 +28,10 @@ public class OauthController {
     @Autowired
     private SysOauthService sysOauthService;
 
+    @Value("${primihub.interior.code:null}")
+    private String interiorCode;
+
+
     @RequestMapping("getAuthList")
     public BaseResultEntity getOauthList(){
         return BaseResultEntity.success(sysOauthService.getOauthList());
@@ -38,6 +42,22 @@ public class OauthController {
         if(loginParam.getAuthPublicKey()==null||loginParam.getAuthPublicKey().trim().equals(""))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
         return sysOauthService.authLogin(loginParam);
+    }
+    @RequestMapping("authRegister")
+    public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam){
+        if(saveOrUpdateUserParam.getAuthPublicKey()==null||saveOrUpdateUserParam.getAuthPublicKey().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
+        if(saveOrUpdateUserParam.getVerificationCode()==null||saveOrUpdateUserParam.getVerificationCode().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"verificationCode");
+        if(saveOrUpdateUserParam.getRegisterType()==null)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"registerType");
+        saveOrUpdateUserParam.setUserId(null);
+        saveOrUpdateUserParam.setRoleIdList(new Long[]{1000L});
+        if (org.apache.commons.lang.StringUtils.isBlank(interiorCode) || !saveOrUpdateUserParam.getVerificationCode().equals(interiorCode) ){
+            if(!sysOauthService.validateVerificationCode(VerificationCodeEnum.REGISTER.getCode(),saveOrUpdateUserParam.getUserAccount(),saveOrUpdateUserParam.getVerificationCode()))
+                return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
+        }
+        return sysOauthService.authRegister(saveOrUpdateUserParam);
     }
 
     @RequestMapping("/{source}/render")
