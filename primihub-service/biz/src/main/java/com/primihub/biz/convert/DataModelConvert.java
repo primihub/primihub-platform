@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.primihub.biz.entity.data.po.DataComponent;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.req.ComponentDraftReq;
 import com.primihub.biz.entity.data.vo.ComponentResourceVo;
 import com.primihub.biz.entity.data.vo.DataComponentVo;
 import com.primihub.biz.entity.data.vo.DataModelComponentVo;
@@ -150,6 +151,18 @@ public class DataModelConvert {
             modelProjectResourceVo.setFileHandleField(Arrays.asList(resourceColumnNameList.split(",")));
         }
         return modelProjectResourceVo;
+    }
+
+    public static DataComponentDraft componentDraftReqCovertPo(ComponentDraftReq req){
+        DataComponentDraft dataComponentDraft = new DataComponentDraft();
+        dataComponentDraft.setDraftId(req.getDraftId());
+        dataComponentDraft.setDraftName(req.getDraftName());
+        dataComponentDraft.setUserId(req.getUserId());
+        dataComponentDraft.setComponentJson(req.getComponentJson());
+        dataComponentDraft.setComponentImage(req.getComponentImage());
+        dataComponentDraft.setIsDel(0);
+        return dataComponentDraft;
+
     }
 
 }

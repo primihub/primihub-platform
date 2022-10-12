@@ -24,6 +24,21 @@ CREATE TABLE `data_model` (
                               PRIMARY KEY (`model_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='模型表';
 -- ----------------------------
+-- Table structure for data_model
+-- ----------------------------
+DROP TABLE IF EXISTS `data_component_draft`;
+CREATE TABLE `data_component_draft` (
+                              `draft_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
+                              `draft_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '草稿名称',
+                              `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                              `component_json` blob COMMENT '组件json',
+                              `component_image` blob COMMENT '组件图',
+                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                              PRIMARY KEY (`model_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='组件草稿表';
+-- ----------------------------
 -- Table structure for data_model_component
 -- ----------------------------
 DROP TABLE IF EXISTS `data_model_component`;

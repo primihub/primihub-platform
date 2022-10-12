@@ -18,4 +18,5 @@ public interface SysUserSecondarydbRepository {
     Long selectSysUserListCountByParam(Map paramMap);
     Boolean isExistUserAccount(@Param("userAccount") String userAccount);
     SysUser selectUserByUserAccount(@Param("userAccount")String userAccount);
+    SysUser selectUserByAuthUuid(@Param("authUuid")String authUuid);
 }

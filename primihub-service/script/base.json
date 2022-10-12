@@ -6,8 +6,13 @@
         "/user/forgetPassword",
         "/captcha/get",
         "/captcha/check",
+        "/oauth/getAuthList",
+        "/oauth/authLogin",
+        "/oauth/github/render",
+        "/oauth/github/callback",
         "/common/getValidatePublicKey",
-        "/shareData/syncProject"
+        "/shareData/syncProject",
+        "/shareData/syncModel"
     ],
     "needSignUriList":[
 
@@ -25,6 +30,15 @@
     "resultUrlDirPrefix": "/data/result/",
     "runModelFileUrlDirPrefix": "/data/result/runModel/",
     "usefulToken": "excalibur_forever_ABCDEFGHIJKLMN",
+    "authConfigs":{
+        "github": {
+            "redirectUrl":"",
+            "authEnable": 1,
+            "clientId": "",
+            "clientSecret": "",
+            "redirectUri": ""
+        }
+    },
     "model_components": [
         {
             "component_code": "start",

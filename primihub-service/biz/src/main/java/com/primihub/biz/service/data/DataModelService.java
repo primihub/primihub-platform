@@ -562,4 +562,53 @@ public class DataModelService {
         }
         return map;
     }
+
+    public BaseResultEntity saveOrUpdateComponentDraft(ComponentDraftReq req) {
+        try {
+            req.setComponentJson(formatComponent(req.getComponentJson()));
+        }catch (Exception e){
+            log.info(e.getMessage());
+            BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件解析失败");
+        }
+        DataComponentDraft dataComponentDraft = DataModelConvert.componentDraftReqCovertPo(req);
+        if (dataComponentDraft.getDraftId()!=null && dataComponentDraft.getDraftId()!=0L){
+            DataComponentDraft draft = dataModelRepository.queryComponentDraftById(dataComponentDraft.getDraftId());
+            if (draft==null)
+                BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"未查询到草稿信息");
+            dataModelPrRepository.updateComponentDraft(dataComponentDraft);
+        }else {
+            int count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());
+            if (count>=20) {
+                BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿已到最高20个,请清除其他草稿重试。");
+            }
+            dataModelPrRepository.saveComponentDraft(dataComponentDraft);
+        }
+        Map<String,Object> map = new HashMap<>();
+        map.put("draftId",dataComponentDraft.getDraftId());
+        return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity getComponentDraftList(Long userId) {
+        return BaseResultEntity.success(dataModelRepository.queryComponentDraftListByUserId(userId));
+    }
+
+    private String formatComponent(String componentJson){
+        DataModelAndComponentReq dataModelAndComponentReq = JSONObject.parseObject(componentJson, DataModelAndComponentReq.class);
+        for (DataComponentReq modelComponent : dataModelAndComponentReq.getModelComponents()) {
+            if(modelComponent.getComponentCode().equals("dataSet")){
+                for (DataComponentValue componentValue : modelComponent.getComponentValues()) {
+                    componentValue.setVal("");
+                }
+            }
+        }
+        return JSONObject.toJSONString(dataModelAndComponentReq);
+    }
+
+    public BaseResultEntity deleteComponentDraft(Long draftId,Long userId) {
+        DataComponentDraft dataComponentDraft = dataModelRepository.queryComponentDraftById(draftId);
+        if (dataComponentDraft==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到草稿信息");
+        dataModelPrRepository.deleteComponentDraft(draftId);
+        return BaseResultEntity.success();
+    }
 }

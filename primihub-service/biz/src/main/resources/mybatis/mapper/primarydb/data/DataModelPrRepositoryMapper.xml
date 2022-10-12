@@ -37,6 +37,10 @@
         insert into data_model_task (model_id,task_id,predict_file,predict_content,component_json,is_del,create_date,update_date)
         values (#{modelId},#{taskId},#{predictFile},#{predictContent},#{componentJson},0,now(),now())
     </insert>
+    <insert id="saveComponentDraft" parameterType="com.primihub.biz.entity.data.po.DataComponentDraft" useGeneratedKeys="true" keyProperty="draftId">
+        insert into data_component_draft (draft_name,user_id,component_json,component_image,is_del,create_date,update_date)
+        values (#{draftName},#{userId},#{componentJson},#{componentImage},0,now(),now())
+    </insert>
     <update id="updateDataModel" parameterType="com.primihub.biz.entity.data.po.DataModel">
         update data_model
         <set>
@@ -111,8 +115,21 @@
     <delete id="deleteDataModelResourceByTaskId">
         delete from data_mr where task_id = #{taskId}
     </delete>
+    <delete id="deleteComponentDraft">
+        delete from data_component_draft where draft_id = #{draftId}
+    </delete>
     <update id="deleteModelTask">
         update data_model_task set is_del = 1 where model_id = #{modelId}
+    </update>
+    <update id="updateComponentDraft" parameterType="com.primihub.biz.entity.data.po.DataComponentDraft">
+        update data_component_draft
+        <set>
+            <if test="draftName!=null and draftName!=''">draft_name = #{draftName},</if>
+            <if test="componentJson!=null and componentJson!=''">component_json = #{componentJson},</if>
+            <if test="componentImage!=null and componentImage!=''">component_image = #{componentImage},</if>
+            update_date = now()
+        </set>
+        where draft_id = #{draftId}
     </update>
 
 </mapper>

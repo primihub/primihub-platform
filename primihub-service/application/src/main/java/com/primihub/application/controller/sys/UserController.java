@@ -35,11 +35,6 @@ public class UserController {
         return sysUserService.login(loginParam);
     }
 
-    @RequestMapping("login1")
-    public ModelAndView login1(){
-        return new ModelAndView("redirect:http://test1.primihub.com/");
-    }
-
     @RequestMapping("logout")
     public BaseResultEntity logout(@RequestHeader(value = "token",defaultValue = "") String token,@RequestHeader(value = "userId",defaultValue = "-1") Long userId){
         return sysUserService.logout(token,userId);
