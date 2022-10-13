@@ -1,77 +1,74 @@
 <template>
   <div class="login-container">
     <div class="body">
-      <div class="poster-wrap">
-        <Poster />
-      </div>
       <div class="login-wrap">
-        <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-          <div class="title-container">
-            <h3 class="title">登录</h3>
-          </div>
+        <CompanyIntro />
+        <div class="login-form">
+          <el-form ref="loginForm" :model="loginForm" :rules="loginRules" auto-complete="on" label-position="left">
+            <div class="title-container">
+              <h3 class="title">登录</h3>
+            </div>
 
-          <el-form-item prop="username">
-            <span class="svg-container">
-              <svg-icon icon-class="user" />
-            </span>
-            <el-input
-              ref="username"
-              v-model="loginForm.username"
-              placeholder="请输入手机号/邮箱/用户名"
-              name="username"
-              type="text"
-              tabindex="1"
-              auto-complete="on"
-            />
-          </el-form-item>
+            <el-form-item prop="username">
+              <span class="svg-container">
+                <svg-icon icon-class="user" />
+              </span>
+              <el-input
+                ref="username"
+                v-model="loginForm.username"
+                placeholder="请输入手机号/邮箱/用户名"
+                name="username"
+                type="text"
+                tabindex="1"
+                auto-complete="on"
+              />
+            </el-form-item>
 
-          <el-form-item prop="password">
-            <span class="svg-container">
-              <svg-icon icon-class="password" />
-            </span>
-            <el-input
-              :key="passwordType"
-              ref="password"
-              v-model="loginForm.password"
-              :type="passwordType"
-              placeholder="请输入密码"
-              name="password"
-              tabindex="2"
-              auto-complete="on"
-              @keyup.enter.native="checkParma"
-            />
-            <span class="show-pwd" @click="showPwd">
-              <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
-            </span>
-          </el-form-item>
-          <el-button type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
-        </el-form>
-        <div v-if="authList.length > 0" class="login-type">
-          <p>其他登录方式</p>
-          <div class="login-icon">
-            <span v-for="item in authList" :key="item.name" @click="toLoginPage(item)">
-              <span class="icon iconfont" :class="item.icon" />
-            </span>
+            <el-form-item prop="password">
+              <span class="svg-container">
+                <svg-icon icon-class="password" />
+              </span>
+              <el-input
+                :key="passwordType"
+                ref="password"
+                v-model="loginForm.password"
+                :type="passwordType"
+                placeholder="请输入密码"
+                name="password"
+                tabindex="2"
+                auto-complete="on"
+                @keyup.enter.native="checkParma"
+              />
+              <span class="show-pwd" @click="showPwd">
+                <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+              </span>
+            </el-form-item>
+            <el-button type="primary" style="width:100%;margin-bottom:10px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
+          </el-form>
+          <div class="forgot">
+            <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
+            <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
           </div>
-        </div>
-        <div class="forgot">
-          <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
-          <el-link type="primary" @click.stop="forgotPwd">忘记密码？</el-link>
+          <div v-if="authList.length > 0" class="login-type">
+            <p>其他登录方式</p>
+            <div class="login-icon">
+              <span v-for="item in authList" :key="item.name" @click="toLoginPage(item)">
+                <span class="icon iconfont" :class="item.icon" />
+              </span>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />
     </div>
 
-    <CompanyIntro />
     <Verify ref="verify" @success="handleSuccess" />
   </div>
 </template>
 
 <script>
 import { getValidatePublicKey, getAuthList } from '@/api/user'
-import { param2Obj } from '@/utils/index'
 import JSEncrypt from 'jsencrypt'
-import Poster from '@/components/Poster'
 import Verify from '@/components/Verifition'
 import Footer from '@/components/Footer'
 import CompanyIntro from '@/components/CompanyIntro'
@@ -79,7 +76,6 @@ import CompanyIntro from '@/components/CompanyIntro'
 export default {
   name: 'Login',
   components: {
-    Poster,
     Verify,
     Footer,
     CompanyIntro
@@ -213,45 +209,43 @@ export default {
 }
 </script>
 
-<style lang="scss">
-/* 修复input 背景不协调 和光标变色 */
-/* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
-
-$bg:#283443;
+<style lang="scss" scoped>
+$bg:#2d3a4b;
+$dark_gray:#889aa4;
 $light_gray:#000;
 $cursor: #000;
 
-@supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
-  .login-container .el-input input {
-    color: $cursor;
-  }
-}
-h1{
-  text-align: center;
-}
-/* reset element-ui css */
-.login-container {
-  .el-input {
-    display: inline-block;
+::v-deep .el-input {
+  display: inline-block;
+  height: 47px;
+  width: 85%;
+
+  input {
+    background: transparent;
+    border: 0px;
+    -webkit-appearance: none;
+    border-radius: 0px;
+    padding: 12px 5px 12px 15px;
+    color: $light_gray;
     height: 47px;
-    width: 85%;
+    caret-color: $cursor;
 
-    input {
-      background: transparent;
-      border: 0px;
-      -webkit-appearance: none;
-      border-radius: 0px;
-      padding: 12px 5px 12px 15px;
-      color: $light_gray;
-      height: 47px;
-      caret-color: $cursor;
-
-      &:-webkit-autofill {
-        box-shadow: 0 0 0px 1000px #fff inset !important;
-        -webkit-text-fill-color: $cursor !important;
-      }
+    &:-webkit-autofill {
+      box-shadow: 0 0 0px 1000px #fff inset !important;
+      -webkit-text-fill-color: $cursor !important;
     }
   }
+}
+.login-container {
+  width: 100vw;
+  height: 100vh;
+  background-image: url("/images/bg.png");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
 
   .el-form-item {
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -259,27 +253,10 @@ h1{
     border-radius: 5px;
     color: #454545;
   }
-}
-</style>
-
-<style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#000;
-.login-container {
-  width: 100vw;
-  height: 100vh;
-  background-image: url("/images/login-bg.jpg");
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
   .login-form {
-    width: 400px;
+    width: 50%;
+    padding: 80px 59px;
     max-width: 100%;
-    /* padding: 160px 35px 0; */
     margin: 0 auto;
     overflow: hidden;
   }
@@ -316,7 +293,7 @@ $light_gray:#000;
       font-size: 26px;
       color: $light_gray;
       margin: 0px auto 40px auto;
-      text-align: center;
+      text-align: left;
       font-weight: bold;
     }
   }
@@ -337,18 +314,22 @@ $light_gray:#000;
     }
   }
   .login-wrap {
+    display: flex;
     flex-grow: 1;
     flex-shrink: 0;
     position: relative;
     background-color: #fff;
-    border-radius: 30px;
-    padding: 64px;
+    border-radius: 10px;
+    // padding: 64px;
     box-shadow: 0 16px 32px 0 rgb(0 0 0 / 8%);
     margin-top: 30px;
+    width: 1000px;
+    height: 500px;
   }
   .login-type{
     color: #999999;
     font-size: 14px;
+    margin-top: 20px;
     .icon{
       display: inline-block;
       font-size: 30px;
