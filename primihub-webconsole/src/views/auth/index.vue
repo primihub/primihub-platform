@@ -53,6 +53,7 @@
               </div>
             </el-form-item>
             <el-button :loading="loading" type="primary" class="register-button" @click.native.prevent="handleSubmit">绑定并登录</el-button>
+            <p class="tips"><span>已有账号？<el-button type="text" @click="toLogin">去登录</el-button></span></p>
           </el-form>
 
         </div>
@@ -195,6 +196,12 @@ export default {
         this.formData.captchaVerification = data.captchaVerification
         this.authLogin()
       }
+    },
+    toLogin() {
+      this.$router.push({
+        path: '/login',
+        replace: true
+      })
     }
   }
 }
@@ -260,5 +267,9 @@ export default {
 }
 .register-button{
   width: 100%;
+}
+.tips{
+  color: #666;
+  margin: 10px 0;
 }
 </style>

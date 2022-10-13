@@ -7,7 +7,7 @@
 <style lang="scss" scoped>
 .footer{
   font-size: 14px;
-  color: #D7D7D7;
+  color: #999;
   position: absolute;
   bottom: -50px;
   left: 0;
