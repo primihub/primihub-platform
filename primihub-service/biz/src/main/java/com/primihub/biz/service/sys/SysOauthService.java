@@ -135,6 +135,10 @@ public class SysOauthService {
             log.info(e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"授权注册失败");
         }
+        SysUser sysUser = userSecondarydbRepository.selectUserByUserAccount(saveOrUpdateUserParam.getUserAccount());
+        if (sysUser!=null){
+            saveOrUpdateUserParam.setUserId(sysUser.getUserId());
+        }
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 }
