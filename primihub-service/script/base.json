@@ -8,6 +8,7 @@
         "/captcha/check",
         "/oauth/getAuthList",
         "/oauth/authLogin",
+        "/oauth/authRegister",
         "/oauth/github/render",
         "/oauth/github/callback",
         "/common/getValidatePublicKey",

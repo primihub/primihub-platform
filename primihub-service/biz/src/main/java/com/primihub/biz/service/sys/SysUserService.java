@@ -189,6 +189,7 @@ public class SysUserService {
                         put("userId",saveOrUpdateUserParam.getUserId());
                         put("userName",saveOrUpdateUserParam.getUserName());
                         put("isForbid",saveOrUpdateUserParam.getIsForbid());
+                        put("authUuid",saveOrUpdateUserParam.getAuthUuid());
                     }
                 };
                 sysUserPrimarydbRepository.updateSysUserExplicit(paramMap);
