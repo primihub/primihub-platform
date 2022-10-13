@@ -161,7 +161,7 @@ public class SysOauthService {
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"授权注册失败");
         }
 
-
+        log.info(JSONObject.toJSONString(saveOrUpdateUserParam));
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 }

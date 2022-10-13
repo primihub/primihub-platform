@@ -183,7 +183,7 @@ public class SysUserService {
             if(sysUser.getIsEditable().equals(0))
                 return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"该记录是不可编辑状态");
             if((saveOrUpdateUserParam.getUserName()!=null&&!saveOrUpdateUserParam.getUserName().trim().equals(""))
-                ||(saveOrUpdateUserParam.getIsForbid()!=null)){
+                ||(saveOrUpdateUserParam.getIsForbid()!=null)||(saveOrUpdateUserParam.getAuthUuid()!=null)){
                 Map paramMap=new HashMap(){
                     {
                         put("userId",saveOrUpdateUserParam.getUserId());
