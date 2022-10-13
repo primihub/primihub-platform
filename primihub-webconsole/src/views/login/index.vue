@@ -46,10 +46,12 @@
           </el-form-item>
           <el-button type="primary" style="width:100%;margin-bottom:30px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
         </el-form>
-        <div class="login-type">
+        <div v-if="authList.length > 0" class="login-type">
           <p>其他登录方式</p>
           <div class="login-icon">
-            <a href="" class="icon iconfont icon-github" />
+            <span v-for="item in authList" :key="item.name" @click="toLoginPage(item)">
+              <span class="icon iconfont" :class="item.icon" />
+            </span>
           </div>
         </div>
         <div class="forgot">
@@ -66,7 +68,8 @@
 </template>
 
 <script>
-import { getValidatePublicKey } from '@/api/user'
+import { getValidatePublicKey, getAuthList } from '@/api/user'
+import { param2Obj } from '@/utils/index'
 import JSEncrypt from 'jsencrypt'
 import Poster from '@/components/Poster'
 import Verify from '@/components/Verifition'
@@ -104,7 +107,8 @@ export default {
       },
       passwordType: 'password',
       redirect: undefined,
-      showVerify: false
+      showVerify: false,
+      authList: []
     }
   },
   watch: {
@@ -117,8 +121,14 @@ export default {
   },
   async mounted() {
     await this.getValidatePublicKey()
+    await this.getAuthList()
   },
   methods: {
+    toLoginPage(item) {
+      const timestamp = new Date().getTime()
+      const nonce = Math.floor(Math.random() * 1000 + 1)
+      window.open(`${process.env.VUE_APP_BASE_API}/sys/oauth/${item.name}/render?timestamp=${timestamp}&nonce=${nonce}`)
+    },
     checkParma() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
@@ -153,6 +163,15 @@ export default {
       const { publicKey, publicKeyName } = result
       this.publicKeyData = { publicKey, publicKeyName }
     },
+    async getAuthList() {
+      const { result = {}} = await getAuthList()
+      this.authList = result.map(item => {
+        return {
+          name: item,
+          icon: 'icon-' + item
+        }
+      })
+    },
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -182,7 +201,6 @@ export default {
           const loginForm = { userAccount, userPassword, validateKeyName: publicKeyName, captchaVerification }
 
           this.$store.dispatch('user/login', loginForm).then(res => {
-            console.log('1111', res)
             this.$router.push({ path: this.redirect || '/' })
           })
         } else {

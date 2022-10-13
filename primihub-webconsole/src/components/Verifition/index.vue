@@ -1,15 +1,16 @@
 <template>
-  <div v-show="showBox" class="mask">
+  <div v-if="showBox" class="mask">
     <div :class="mode=='pop'?'verifybox':''" :style="{'max-width':parseInt(imgSize.width)+30+'px'}">
       <div v-if="mode=='pop'" class="verifybox-top">
         请完成安全验证
-        <span class="verifybox-close" @click="closeBox">
+        <span v-if="showClose" class="verifybox-close" @click="closeBox">
           <i class="iconfont icon-close" />
         </span>
       </div>
       <div class="verifybox-bottom">
         <!-- 验证码容器 -->
         <VerifySlide
+          v-if="showBox"
           ref="instance"
           :mode="mode"
           :img-size="imgSize"
@@ -63,6 +64,10 @@ export default {
     barSize: {
       type: Object,
       default: () => {}
+    },
+    showClose: {
+      type: Boolean,
+      default: true
     }
   },
   data() {
@@ -234,6 +239,7 @@ export default {
     box-sizing: content-box;
     border: 1px solid #ddd;
     border-radius: 4px;
+    width: 100%;
 }
 
 .verify-bar-area .verify-move-block {
@@ -306,6 +312,7 @@ export default {
 
 .verify-bar-area .verify-msg {
     z-index: 3;
+    width: 100%;
 }
 
 </style>

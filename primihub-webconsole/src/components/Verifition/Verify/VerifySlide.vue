@@ -1,11 +1,10 @@
 <template>
-  <div style="position: relative;">
+  <div v-loading="listLoading" style="position: relative;">
     <div
       class="verify-img-out"
       :style="{height: (parseInt(setSize.imgHeight) + vSpace) + 'px'}"
     >
       <div
-        v-loading="listLoading"
         class="verify-img-panel"
         :style="{width: setSize.imgWidth,
                  height: setSize.imgHeight,}"
@@ -183,7 +182,6 @@ export default {
       }
     },
     async init() {
-      this.text = this.explain
       this.uuid()
       await this.getPicture()
       this.$nextTick(() => {
@@ -191,6 +189,7 @@ export default {
         for (const key in setSize) {
           this.$set(this.setSize, key, setSize[key])
         }
+        this.text = this.explain
         this.$parent.$emit('ready', this)
       })
 
