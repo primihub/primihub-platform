@@ -145,19 +145,23 @@ public class SysOauthService {
             if (authUser==null){
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息异常 null");
             }
-            saveOrUpdateUserParam.setUserName(StringUtils.isNotBlank(authUser.getNickname())?authUser.getNickname():"user");
+
             if (StringUtils.isBlank(authUser.getSource()) || StringUtils.isBlank(authUser.getUuid()))
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息来源或唯一标识为空");
             saveOrUpdateUserParam.setAuthUuid(authUser.getSource()+authUser.getUuid());
+            SysUser sysUser = userSecondarydbRepository.selectUserByUserAccount(saveOrUpdateUserParam.getUserAccount());
+            if (sysUser!=null){
+                saveOrUpdateUserParam.setUserId(sysUser.getUserId());
+            }else {
+                saveOrUpdateUserParam.setUserName(StringUtils.isNotBlank(authUser.getUsername())?authUser.getUsername():"user");
+            }
 //            sysCommonPrimaryRedisRepository.setAuthUserKey(saveOrUpdateUserParam.getAuthPublicKey(), saveOrUpdateUserParam.getAuthUuid());
         }catch (Exception e){
             log.info(e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"授权注册失败");
         }
-        SysUser sysUser = userSecondarydbRepository.selectUserByUserAccount(saveOrUpdateUserParam.getUserAccount());
-        if (sysUser!=null){
-            saveOrUpdateUserParam.setUserId(sysUser.getUserId());
-        }
+
+        log.info(JSONObject.toJSONString(saveOrUpdateUserParam));
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 }
