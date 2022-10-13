@@ -122,11 +122,12 @@ export default {
   async mounted() {
     await this.getValidatePublicKey()
     await this.getAuthList()
-    console.log(param2Obj(decodeURI(location.href)))
   },
   methods: {
     toLoginPage(item) {
-      window.open(`http://test2.primihub.com/prod-api/sys/oauth/${item.name}/render?timestamp=1&nonce=2`)
+      const timestamp = new Date().getTime()
+      const nonce = Math.floor(Math.random() * 1000 + 1)
+      window.open(`${process.env.VUE_APP_BASE_API}/sys/oauth/${item.name}/render?timestamp=${timestamp}&nonce=${nonce}`)
     },
     checkParma() {
       this.$refs.loginForm.validate(valid => {
