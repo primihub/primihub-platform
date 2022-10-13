@@ -27,8 +27,8 @@ public class SysCommonPrimaryRedisRepository {
         primaryStringRedisTemplate.expire(key,61, TimeUnit.SECONDS);
     }
 
-    public void setAuthUserKey(String key,String authUuid){
-        primaryStringRedisTemplate.opsForValue().set(key,authUuid);
+    public void setAuthUserKey(String key,String authUserJson){
+        primaryStringRedisTemplate.opsForValue().set(key,authUserJson);
         primaryStringRedisTemplate.expire(key,301, TimeUnit.SECONDS);
     }
 
