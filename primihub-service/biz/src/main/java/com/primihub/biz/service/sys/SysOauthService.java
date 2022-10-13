@@ -119,9 +119,10 @@ public class SysOauthService {
 
     public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam) {
         String authUserJson = sysCommonPrimaryRedisRepository.getKey(saveOrUpdateUserParam.getAuthPublicKey());
+        log.info(authUserJson);
         try {
             if (StringUtils.isBlank(authUserJson)){
-                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息null");
+                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息过期,请重新授权");
             }
             AuthUser authUser = JSONObject.parseObject(authUserJson, AuthUser.class);
             if (authUser==null){
@@ -131,6 +132,7 @@ public class SysOauthService {
             if (StringUtils.isBlank(authUser.getSource()) || StringUtils.isBlank(authUser.getUuid()))
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息来源或唯一标识为空");
             saveOrUpdateUserParam.setAuthUuid(authUser.getSource()+authUser.getUuid());
+            sysCommonPrimaryRedisRepository.setAuthUserKey(saveOrUpdateUserParam.getAuthPublicKey(), saveOrUpdateUserParam.getAuthUuid());
         }catch (Exception e){
             log.info(e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"授权注册失败");
