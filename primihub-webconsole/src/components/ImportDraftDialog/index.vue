@@ -9,22 +9,28 @@
       <span class="tip">若使用草稿将清空当前画布，替换为所选草稿</span>
     </div>
     <div v-loading="loading" class="dialog-container">
-      <div v-for="(item,index) in data" :key="index" :span="6" class="item">
-        <div class="card" :class="{'selected': item.checked}" @click="handleSelect(item)">
-          <div class="check">
-            <el-checkbox v-model="item.checked" @change="handleSelect(item)" />
-          </div>
-          <div class="button" @click="deleteDraft(item)">
-            <div class="delete-icon"><i class="el-icon-more" /></div>
-            <el-button v-if="item.showDeleteButton" type="primary" size="mini" class="delete-button" plain @click.stop="handleDeleteDraft(item)">删除草稿</el-button>
-          </div>
-          <img :src="item.componentImage" class="image">
-          <div class="info">
-            <div class="info-name">{{ item.draftName }}</div>
-            <div class="time">{{ item.updateDate }}保存</div>
+      <template v-if="noData">
+        <no-data />
+      </template>
+      <template v-else>
+        <div v-for="(item,index) in data" :key="index" :span="6" class="item">
+          <div class="card" :class="{'selected': item.checked}" @click="handleSelect(item)">
+            <div class="check">
+              <el-checkbox v-model="item.checked" @change="handleSelect(item)" />
+            </div>
+            <div class="button" @click="deleteDraft(item)">
+              <div class="delete-icon"><i class="el-icon-more" /></div>
+              <el-button v-if="item.showDeleteButton" type="primary" size="mini" class="delete-button" plain @click.stop="handleDeleteDraft(item)">删除草稿</el-button>
+            </div>
+            <img :src="item.componentImage" class="image">
+            <div class="info">
+              <div class="info-name">{{ item.draftName }}</div>
+              <div class="time">{{ item.updateDate }}保存</div>
+            </div>
           </div>
         </div>
-      </div>
+      </template>
+
     </div>
 
     <span slot="footer" class="dialog-footer">
@@ -36,14 +42,19 @@
 
 <script>
 import { getComponentDraftList, deleteComponentDraft } from '@/api/model'
+import NoData from '@/components/NoData'
 
 export default {
   name: 'ImportDraftDialog',
+  components: {
+    NoData
+  },
   data() {
     return {
       loading: false,
       data: [],
-      selectedDraft: null
+      selectedDraft: null,
+      noData: false
     }
   },
   computed: {
@@ -64,11 +75,17 @@ export default {
         pageSize: this.pageSize
       }
       getComponentDraftList(params).then(res => {
-        this.data = res.result.map(item => {
-          item.checked = false
-          item.showDeleteButton = false
-          return item
-        })
+        if (res.result.length > 0) {
+          this.noData = false
+          this.data = res.result.map(item => {
+            item.checked = false
+            item.showDeleteButton = false
+            return item
+          })
+        } else {
+          this.noData = true
+        }
+
         console.log(this.data)
       })
     },
@@ -167,7 +184,7 @@ export default {
   padding: 0px 10px;
   overflow-y: scroll;
   width: 100%;
-  height: 460px;
+  max-height: 460px;
   display: flex;
   flex-wrap: wrap;
  align-items:flex-start;

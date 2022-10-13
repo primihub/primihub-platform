@@ -13,6 +13,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+.icon-exchange:before {
+  color: #b9b9b9;
+  content: "\e6d2";
+}
 .icon-close:before {
   color: #333;
   content: "\e6fc";
