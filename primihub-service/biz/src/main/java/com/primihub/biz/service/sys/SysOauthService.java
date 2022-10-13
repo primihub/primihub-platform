@@ -153,7 +153,7 @@ public class SysOauthService {
             if (sysUser!=null){
                 saveOrUpdateUserParam.setUserId(sysUser.getUserId());
             }else {
-                saveOrUpdateUserParam.setUserName(StringUtils.isNotBlank(authUser.getNickname())?authUser.getNickname():"user");
+                saveOrUpdateUserParam.setUserName(StringUtils.isNotBlank(authUser.getUsername())?authUser.getUsername():"user");
             }
 //            sysCommonPrimaryRedisRepository.setAuthUserKey(saveOrUpdateUserParam.getAuthPublicKey(), saveOrUpdateUserParam.getAuthUuid());
         }catch (Exception e){
