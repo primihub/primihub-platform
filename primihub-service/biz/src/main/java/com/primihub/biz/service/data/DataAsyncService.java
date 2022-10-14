@@ -199,7 +199,7 @@ public class DataAsyncService implements ApplicationContextAware {
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
         log.info("psi available:{}",available);
-        if (available==1){
+        if (available.equals("1")){
             Date date=new Date();
             StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
             psiTask.setFilePath(sb.toString());
