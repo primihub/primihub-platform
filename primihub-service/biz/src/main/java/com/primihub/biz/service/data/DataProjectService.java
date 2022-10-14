@@ -461,7 +461,14 @@ public class DataProjectService {
             return BaseResultEntity.success(new ArrayList());
         List<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toList());
         Map<String, Map> resourceMap = getResourceListMap(resourceIds, dataProject.getServerAddress());
-        return BaseResultEntity.success(dataProjectResources.stream().map(resource->DataModelConvert.projectResourcePoCovertModelResourceVo(resource,resourceMap.get(resource.getResourceId()))).collect(Collectors.toList()));
+        List<ModelProjectResourceVo> list = new ArrayList<>();
+        for (DataProjectResource dataProjectResource : dataProjectResources) {
+            Map map = resourceMap.get(dataProjectResource.getResourceId());
+            if (map!=null && map.containsKey("available") && map.get("available").equals("0")){
+                list.add(DataModelConvert.projectResourcePoCovertModelResourceVo(dataProjectResource, map));
+            }
+        }
+        return BaseResultEntity.success(list);
     }
 
     public BaseResultEntity getProjectResourceOrgan(Long projectId,Long modelId) {
