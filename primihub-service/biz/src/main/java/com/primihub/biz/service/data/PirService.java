@@ -45,6 +45,9 @@ public class PirService {
         if (dataResource.getCode()!=0)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
         Map<String, Object> pirDataResource = (LinkedHashMap)dataResource.getResult();
+        int available = Integer.parseInt(pirDataResource.getOrDefault("available","1").toString());
+        if (available == 1)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
         Object resourceRowsCountObj = pirDataResource.get("resourceRowsCount");
         if (resourceRowsCountObj==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源行数获取错误");
