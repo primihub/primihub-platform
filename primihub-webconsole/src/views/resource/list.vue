@@ -45,7 +45,7 @@
           label="名称"
         >
           <template slot-scope="{row}">
-            <template v-if="hasViewPermission">
+            <template v-if="hasViewPermission && row.resourceState === 0">
               <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
             </template>
             <template v-else>
@@ -120,7 +120,7 @@
         >
           <template slot-scope="{row}">
             <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
-            <el-button v-if="hasEditPermission" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
+            <el-button v-if="hasEditPermission && row.resourceState === 0" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
             <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
           </template>
         </el-table-column>

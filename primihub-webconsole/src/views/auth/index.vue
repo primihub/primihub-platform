@@ -271,5 +271,6 @@ export default {
 .tips{
   color: #666;
   margin: 10px 0;
+  font-size: 14px;
 }
 </style>
