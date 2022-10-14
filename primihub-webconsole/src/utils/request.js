@@ -94,7 +94,7 @@ service.interceptors.response.use(
     const { data } = response
     const { code, msg } = data
     if (code !== 0) {
-      if (code === -1 || code === 1001 || code === 1007 || code === 118) {
+      if (code === -1 || code === 1001 || code === 1007) {
         return data
       } else if (code === 100) {
         message({
@@ -133,11 +133,11 @@ service.interceptors.response.use(
         setTimeout(() => {
           window.location.reload()
         }, 2000)
-      } else if (code === 109 || code === 119 || code === 120) { // 登录限制
+      } else if (code === 109 || code === 119 || code === 120 || code === 118) { // 登录限制
         message({
           message: msg,
           type: 'error',
-          duration: 5000
+          duration: 2000
         })
         return data
       } else {

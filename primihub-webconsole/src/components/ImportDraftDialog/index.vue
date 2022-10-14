@@ -74,14 +74,27 @@ export default {
       const params = {
         pageSize: this.pageSize
       }
+      console.log('selectedDraft', this.selectedDraft)
       getComponentDraftList(params).then(res => {
         if (res.result.length > 0) {
           this.noData = false
-          this.data = res.result.map(item => {
-            item.checked = false
-            item.showDeleteButton = false
-            return item
-          })
+          if (!this.selectedDraft) {
+            this.data = res.result.map(item => {
+              item.checked = false
+              item.showDeleteButton = false
+              return item
+            })
+          } else {
+            this.data = res.result.map(item => {
+              if (item.draftId === this.selectedDraft.draftId) {
+                item.checked = true
+              } else {
+                item.checked = false
+              }
+              item.showDeleteButton = false
+              return item
+            })
+          }
         } else {
           this.noData = true
         }
@@ -99,6 +112,8 @@ export default {
       this.$emit('close')
     },
     handleSubmit() {
+      this.selectedDraft = this.data.find(item => item.checked === true)
+      console.log('selectedDraft', this.selectedDraft)
       if (!this.selectedDraft) {
         this.$message({
           message: '请选择草稿',
@@ -117,8 +132,7 @@ export default {
       })
     },
     handleSelect(draft) {
-      this.selectedDraft = draft
-      draft.checked = true
+      draft.checked = !draft.checked
       const other = this.data.filter(item => item.draftId !== draft.draftId)
       other.map(item => {
         item.checked = false
