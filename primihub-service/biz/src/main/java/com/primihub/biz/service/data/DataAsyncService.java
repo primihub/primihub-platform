@@ -183,7 +183,7 @@ public class DataAsyncService implements ApplicationContextAware {
     public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi){
         DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
         String resourceId,resourceColumnNameList;
-        Integer available;
+        int available;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
             DataResource otherDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOtherResourceId()));
             resourceId = StringUtils.isNotBlank(otherDataResource.getResourceFusionId())?otherDataResource.getResourceFusionId():otherDataResource.getResourceId().toString();
@@ -199,7 +199,7 @@ public class DataAsyncService implements ApplicationContextAware {
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
         log.info("psi available:{}",available);
-        if (available.equals("1")){
+        if (available==1){
             Date date=new Date();
             StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
             psiTask.setFilePath(sb.toString());
@@ -255,11 +255,11 @@ public class DataAsyncService implements ApplicationContextAware {
                 psiTask.setTaskState(3);
                 log.info("grpc Exception:{}",e.getMessage());
             }
+            log.info("grpc end dataPsiId:{} - psiTaskId:{} - outputFilePath{} - time:{}",dataPsi.getId(),psiTask.getId(),psiTask.getFilePath(),System.currentTimeMillis());
         }else {
             psiTask.setTaskState(3);
         }
         dataPsiPrRepository.updateDataPsiTask(psiTask);
-        log.info("grpc end dataPsiId:{} - psiTaskId:{} - outputFilePath{} - time:{}",dataPsi.getId(),psiTask.getId(),psiTask.getFilePath(),System.currentTimeMillis());
     }
     public void psiTaskOutputFileHandle(DataPsiTask task){
         if (task.getTaskState()!=1)
