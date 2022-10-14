@@ -137,7 +137,7 @@ service.interceptors.response.use(
         message({
           message: msg,
           type: 'error',
-          duration: 2000
+          duration: 5000
         })
         return data
       } else {

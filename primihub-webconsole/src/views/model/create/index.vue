@@ -134,6 +134,7 @@ export default {
       this.draftName = data.draftName
       this.componentJson = JSON.parse(data.componentJson)
       this.componentDetail = this.componentJson
+      this.deleteComponentsVal(this.componentJson)
       console.log('handleImportDraftDialogSubmit', this.componentJson)
       this.importDraftDialogVisible = false
     },

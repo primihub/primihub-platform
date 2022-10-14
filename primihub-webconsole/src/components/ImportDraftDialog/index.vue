@@ -103,7 +103,6 @@ export default {
       })
     },
     closeDialog() {
-      this.selectedDraft = null
       this.data = this.data.map(item => {
         item.checked = false
         item.showDeleteButton = false
