@@ -33,42 +33,6 @@
         select distinct tag_name from data_resource_tag WHERE is_del = 0
     </select>
 
-    <sql id="queryCondition">
-        <if test="resourceState!=null">
-            and resource_state = #{resourceState}
-        </if>
-        <if test="resourceId!=null and resourceId!=0">
-            and resource_id = #{resourceId}
-        </if>
-        <if test="resourceAuthType!=null and resourceAuthType!=0">
-            and resource_auth_type = #{resourceAuthType}
-        </if>
-        <if test="resourceName!=null and resourceName!=''">
-            and resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="tag!=null and tag!=''">
-            and resource_id in
-            (
-            select DISTINCT rt.resource_id from data_resource_tag drt,data_rt rt
-            where drt.tag_id = rt.tag_id
-            <choose>
-                <when test="selectTag==0">
-                    and drt.tag_name = #{tag}
-                </when>
-                <otherwise>
-                    and drt.tag_name like CONCAT('%',#{tag,jdbcType=VARCHAR},'%')
-                </otherwise>
-            </choose>
-            )
-        </if>
-        <if test="userName!=null and userName!=''">
-            and user_id in (select user_id from sys_user where is_del=0 and is_forbid=0 and user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%'))
-        </if>
-        <if test="fileHandleField!=null and fileHandleField!=''">
-            and cast(file_handle_field as char) = #{fileHandleField}
-        </if>
-    </sql>
-
     <select id="queryDataResource" resultType="com.primihub.biz.entity.data.po.DataResource">
         SELECT
         <include refid="resourceColumns"></include>
@@ -86,6 +50,42 @@
         data_resource where is_del = 0
         <include refid="queryCondition"></include>
     </select>
+
+    <sql id="queryCondition">
+        <if test="resourceState!=null">
+            and resource_state = #{resourceState}
+        </if>
+        <if test="resourceId!=null and resourceId!=0">
+            and resource_id = #{resourceId}
+        </if>
+        <if test="resourceAuthType!=null and resourceAuthType!=0">
+            and resource_auth_type = #{resourceAuthType}
+        </if>
+        <if test="resourceName!=null and resourceName!=''">
+            and resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tag!=null and tag!=''">
+            and resource_id in
+            (
+                select DISTINCT rt.resource_id from data_resource_tag drt,data_rt rt
+                where drt.tag_id = rt.tag_id
+                <choose>
+                    <when test="selectTag==0">
+                        and drt.tag_name = #{tag}
+                    </when>
+                    <otherwise>
+                        and drt.tag_name like CONCAT('%',#{tag,jdbcType=VARCHAR},'%')
+                    </otherwise>
+                </choose>
+            )
+        </if>
+        <if test="userName!=null and userName!=''">
+            and user_id in (select user_id from sys_user where is_del=0 and is_forbid=0 and user_name like CONCAT('%',#{userName,jdbcType=VARCHAR},'%'))
+        </if>
+        <if test="fileHandleField!=null and fileHandleField!=''">
+            and cast(file_handle_field as char) = #{fileHandleField}
+        </if>
+    </sql>
 
     <select id="queryDataResourceById" resultType="com.primihub.biz.entity.data.po.DataResource">
         SELECT
