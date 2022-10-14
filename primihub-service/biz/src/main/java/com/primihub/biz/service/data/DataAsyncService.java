@@ -188,7 +188,7 @@ public class DataAsyncService implements ApplicationContextAware {
             DataResource otherDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOtherResourceId()));
             resourceId = StringUtils.isNotBlank(otherDataResource.getResourceFusionId())?otherDataResource.getResourceFusionId():otherDataResource.getResourceId().toString();
             resourceColumnNameList = otherDataResource.getFileHandleField();
-            available = 0;
+            available = otherDataResource.getResourceState();
         }else {
             BaseResultEntity dataResource = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
             if (dataResource.getCode()!=0)
@@ -198,6 +198,7 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
+        log.info("psi available:{}",available);
         if (available==1){
             Date date=new Date();
             StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
