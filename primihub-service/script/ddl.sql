@@ -314,6 +314,8 @@ CREATE TABLE `data_resource`  (
                                   `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
                                   `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
                                   `url` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源表示路径',
+                                  `resource_hash_code` varchar(255) DEFAULT NULL COMMENT '资源hash值',
+                                  `resource_state` tinyint(4) NOT NULL DEFAULT '0' COMMENT '资源状态 0上线 1下线',
                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -679,9 +681,11 @@ CREATE TABLE `sys_user`  (
                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更改时间',
+                             `auth_uuid` varchar(255) NOT NULL COMMENT '第三方uuid',
                              `register_type` tinyint(4) NOT NULL COMMENT '注册类型1：管理员创建 2：邮箱 3：手机',
                              PRIMARY KEY (`user_id`) USING BTREE,
                              UNIQUE INDEX `ix_unique_user_account`(`user_account`) USING BTREE COMMENT '账户名称唯一索引'
+                             KEY `ix_index_auth_uuid` (`auth_uuid`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
