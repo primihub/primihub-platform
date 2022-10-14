@@ -310,6 +310,7 @@ export default {
         this.inputValues.push(currentData)
       }
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
+      this.handleChange()
     },
     async getProjectResourceData() {
       this.resourceList = []
