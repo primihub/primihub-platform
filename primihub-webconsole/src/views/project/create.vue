@@ -57,6 +57,7 @@
       </el-form-item>
       <el-form-item>
         <el-button
+          :loading="loading"
           type="primary"
           :disabled="dataForm.providerOrganIds.length === 0"
           @click="submitForm"
@@ -94,6 +95,7 @@ export default {
   components: { ProjectResourceDialog, ResourceTable, ProviderOrganDialog, ResourcePreviewTable },
   data() {
     return {
+      loading: false,
       fieldListLoading: false,
       dataForm: {
         projectName: '',
@@ -180,14 +182,18 @@ export default {
       }
       this.$refs.dataForm.validate((valid) => {
         if (valid) {
+          this.loading = true
           saveProject(params).then(res => {
             if (res.code === 0) {
+              this.loading = false
               const id = res.result.id
               this.$router.push({
                 name: 'ProjectDetail',
                 params: { id }
               })
             }
+          }).catch(() => {
+            this.loading = false
           })
         } else {
           console.log('error submit!!')
