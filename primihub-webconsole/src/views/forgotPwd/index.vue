@@ -7,6 +7,7 @@
       <div class="register-wrap">
         <RegisterForm :code-type="2" />
       </div>
+      <Footer />
     </div>
   </div>
 </template>
@@ -14,12 +15,14 @@
 <script>
 import Poster from '@/components/Poster'
 import RegisterForm from '@/components/RegisterForm'
+import Footer from '@/components/Footer'
 
 export default {
   name: 'Register',
   components: {
     RegisterForm,
-    Poster
+    Poster,
+    Footer
   },
   data() {
     return {
@@ -51,6 +54,7 @@ export default {
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
+  position: relative;
   // display: flex;
   // align-items: center;
   .body{

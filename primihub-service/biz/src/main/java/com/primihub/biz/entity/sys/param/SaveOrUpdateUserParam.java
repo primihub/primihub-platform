@@ -40,4 +40,8 @@ public class SaveOrUpdateUserParam {
      * 验证码
      */
     private String verificationCode;
+
+    private String authPublicKey;
+
+    private String authUuid;
 }

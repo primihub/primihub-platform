@@ -85,5 +85,6 @@ export default {
 }
 .buttons{
   display: flex;
+  justify-content: flex-end;
 }
 </style>

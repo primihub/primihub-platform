@@ -1,0 +1,45 @@
+/*字体图标的css*/
+@font-face {
+  font-family: "iconfont";
+  src: url('../assets/fonts/iconfont.woff2?t=1663834013586') format('woff2'),
+      url('../assets/fonts/iconfont.woff?t=1663834013586') format('woff'),
+      url('../assets/fonts/iconfont.ttf?t=1663834013586') format('truetype');
+}
+
+.iconfont {
+    font-family:Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif "iconfont" !important;
+    font-size: 16px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.icon-exchange:before {
+  color: #b9b9b9;
+  content: "\e6d2";
+}
+.icon-close:before {
+  color: #333;
+  content: "\e6fc";
+}
+
+.icon-check:before {
+  content: "\e632";
+  color: #fff;
+}
+
+.icon-right:before {
+  content: "\e6ae";
+  color: #333;
+}
+.icon-refresh:before {
+  content: "\e676";
+  color: #333;
+}
+.icon-github:before {
+  content: "\e885";
+  color: #333;
+}
+.icon-weixin:before {
+  content: "\e600";
+  color: #333;
+}

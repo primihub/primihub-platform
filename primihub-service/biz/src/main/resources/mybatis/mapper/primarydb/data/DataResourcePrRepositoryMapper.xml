@@ -3,9 +3,9 @@
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataResourcePrRepository">
     <insert id="saveResource" keyProperty="resourceId" useGeneratedKeys="true"
             parameterType="com.primihub.biz.entity.data.po.DataResource">
-        insert into data_resource (resource_name,resource_desc,resource_auth_type,resource_source,
+        insert into data_resource (resource_name,resource_desc,resource_auth_type,resource_source,resource_hash_code,resource_state,
                     resource_num,file_id,file_size,file_suffix,file_columns,file_rows,file_handle_field,file_contains_y,file_y_rows,file_y_ratio,file_handle_status,public_organ_id,resource_fusion_id,db_id,user_id,organ_id,url,create_date,update_date)
-        values (#{resourceName},#{resourceDesc},#{resourceAuthType},#{resourceSource},#{resourceNum},#{fileId},
+        values (#{resourceName},#{resourceDesc},#{resourceAuthType},#{resourceSource},#{resourceHashCode},#{resourceState},#{resourceNum},#{fileId},
                 #{fileSize},#{fileSuffix},#{fileColumns},#{fileRows},#{fileHandleField},#{fileContainsY},#{fileYRows},#{fileYRatio},#{fileHandleStatus},#{publicOrganId},#{resourceFusionId},#{dbId},#{userId},#{organId},#{url},now(),now())
     </insert>
 
@@ -58,6 +58,8 @@
             <if test="resourceNum!=null">
                 resource_num = #{resourceNum},
             </if>
+            <if test="resourceHashCode!=null"> resource_hash_code = #{resourceHashCode},</if>
+            <if test="resourceState!=null"> resource_state = #{resourceState},</if>
             <if test="fileId!=null"> file_id = #{fileId},</if>
             <if test="fileSize!=null">file_size = #{fileSize},</if>
             <if test="fileSuffix!=null"> file_suffix = #{fileSuffix},</if>

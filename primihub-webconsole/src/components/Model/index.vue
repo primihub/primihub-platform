@@ -68,15 +68,13 @@
         <el-table-column
           v-if="isCreator && !(!hasModelTaskHistoryPermission && !hasModelRunPermission && !hasModelEditPermission && !hasCopyModelTaskPermission && !hasModelDownloadPermission && !hasDeleteModelTaskPermission)"
           label="操作"
-          width="220"
+          width="130"
           fixed="right"
         >
           <template slot-scope="{row}">
             <div>
               <el-button v-if="hasCopyModelTaskPermission && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button>
               <el-button v-if="hasModelRunPermission && row.latestTaskStatus === 3 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-button>
-              <el-button v-if="hasModelDownloadPermission && row.latestTaskStatus === 1 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click="download(row.latestTaskId)">下载结果</el-button>
-              <el-button v-if="hasDeleteModelTaskPermission && isCreator" type="text" size="mini" :disabled="row.latestTaskStatus === 2 || projectStatus === 2" @click="deleteTask(row.latestTaskId)">删除</el-button>
             </div>
           </template>
         </el-table-column>

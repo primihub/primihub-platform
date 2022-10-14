@@ -25,7 +25,7 @@
 
 <script>
 import { approval } from '@/api/project'
-import { encodeEmoji } from '@/utils/emoji-regex'
+import { encodeEmoji, matchEmoji } from '@/utils/emoji-regex'
 
 export default {
   name: 'ResourceApprovalDialog',
@@ -64,20 +64,25 @@ export default {
       await this.approval()
     },
     async approval() {
-      const { auditOpinion, auditStatus } = this.form
-      const params = {
-        type: 2,
-        id: this.resourceId,
-        auditStatus,
-        auditOpinion: encodeEmoji(auditOpinion)
-      }
-      const res = await approval(params)
-      if (res.code === 0) {
-        this.$message({
-          type: 'success',
-          message: '已拒绝'
-        })
-        this.$emit('submit')
+      try {
+        let auditOpinion = this.form.auditOpinion
+        auditOpinion = matchEmoji(auditOpinion) ? encodeEmoji(auditOpinion) : auditOpinion
+        const params = {
+          type: 2,
+          id: this.resourceId,
+          auditStatus: this.form.auditStatus,
+          auditOpinion
+        }
+        const res = await approval(params)
+        if (res.code === 0) {
+          this.$message({
+            type: 'success',
+            message: '已拒绝'
+          })
+          this.$emit('submit')
+        }
+      } catch (error) {
+        console.log(error)
       }
     }
   }

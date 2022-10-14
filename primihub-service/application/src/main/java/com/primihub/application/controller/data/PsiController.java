@@ -142,7 +142,7 @@ public class PsiController {
                 outputStream.close();
                 outputStream.flush();
             }catch (Exception e) {
-                log.info("downloadPsiTask -- fileName:{} -- fileContent -- e:{}",fileName,content,e.getMessage());
+                log.info("downloadPsiTask -- fileName:{} -- fileContent:{} -- e:{}",fileName,content,e.getMessage());
             }
         }
     }

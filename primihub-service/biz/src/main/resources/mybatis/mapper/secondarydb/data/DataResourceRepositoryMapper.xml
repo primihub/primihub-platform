@@ -20,6 +20,8 @@
         file_y_ratio as fileYRatio,
         resource_fusion_id as resourceFusionId,
         public_organ_id as publicOrganId,
+        resource_state as resourceState,
+        resource_hash_code as resourceHashCode,
         db_id as dbId,
         user_id as userId,
         organ_id as organId,
@@ -50,6 +52,9 @@
     </select>
 
     <sql id="queryCondition">
+        <if test="resourceState!=null">
+            and resource_state = #{resourceState}
+        </if>
         <if test="resourceId!=null and resourceId!=0">
             and resource_id = #{resourceId}
         </if>

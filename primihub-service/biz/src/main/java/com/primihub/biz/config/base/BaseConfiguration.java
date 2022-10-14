@@ -2,11 +2,13 @@ package com.primihub.biz.config.base;
 
 import com.alibaba.nacos.api.config.annotation.NacosConfigurationProperties;
 import com.primihub.biz.entity.data.vo.ModelComponent;
+import com.primihub.biz.entity.sys.vo.BaseAuthConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Getter
@@ -30,4 +32,6 @@ public class BaseConfiguration {
     private String runModelFileUrlDirPrefix;
     private List<ModelComponent> modelComponents;
     private String usefulToken;
+    // auth
+    private Map<String, BaseAuthConfig> authConfigs;
 }

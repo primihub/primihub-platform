@@ -3,6 +3,7 @@
 @import './transition.scss';
 @import './element-ui.scss';
 @import './sidebar.scss';
+@import './iconfont.css';
 
 body {
   height: 100%;
@@ -84,4 +85,8 @@ div:focus {
   background-color: #b6b6b6;
   border-radius: 5px;
   opacity: .8;
+}
+.disabled{
+  filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
+  -webkit-filter: grayscale(100%);
 }

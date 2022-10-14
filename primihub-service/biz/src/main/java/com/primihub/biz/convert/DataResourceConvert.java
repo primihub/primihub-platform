@@ -48,6 +48,7 @@ public class DataResourceConvert {
         po.setDbId(0L);
         po.setUrl(sysFile.getFileUrl());
         po.setPublicOrganId(req.getPublicOrganId());
+        po.setResourceState(0);
         return po;
     }
 
@@ -89,6 +90,8 @@ public class DataResourceConvert {
         vo.setUserId(po.getUserId());
         vo.setUrl(po.getUrl());
         vo.setFileHandleField(StringUtils.isBlank(po.getFileHandleField())?new String[]{}:po.getFileHandleField().split(","));
+        vo.setResourceState(po.getResourceState());
+        vo.setResourceHashCode(po.getResourceHashCode());
         return vo;
     }
     public static DataFileFieldVo DataFileFieldPoConvertVo(DataFileField fileField){
@@ -167,6 +170,8 @@ public class DataResourceConvert {
                 dataResourceCopyVo.getFieldList().add(dataResourceFieldPoConvertCopyVo(dataFileField));
             }
         }
+        dataResourceCopyVo.setResourceState(dataResource.getResourceState());
+        dataResourceCopyVo.setResourceHashCode(dataResource.getResourceHashCode());
         return dataResourceCopyVo;
     }
 

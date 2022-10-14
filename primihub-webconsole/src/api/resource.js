@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function resourceStatusChange(data) {
+  return request({
+    url: '/data/resource/resourceStatusChange',
+    method: 'post',
+    data
+  })
+}
+
 export function getResourceList(params) {
   return request({
     url: '/data/resource/getdataresourcelist',

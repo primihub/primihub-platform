@@ -25,6 +25,8 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     OUTNUMBER(116,"超出当天发送条数"),
     SMS_FAILURE(117,"SMS发送失败"),
     VERIFICATION_CODE(118,"验证码失败"),
+    RESTRICT_LOGIN(119,"限制登录"),
+    AUTH_LOGIN(120,"授权登录失败"),
     DATA_SAVE_FAIL(1001,"添加失败"),
     DATA_EDIT_FAIL(1002,"编辑失败"),
     DATA_QUERY_NULL(1003,"数据为空"),

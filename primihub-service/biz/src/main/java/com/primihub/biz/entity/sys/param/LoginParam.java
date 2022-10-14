@@ -7,4 +7,5 @@ public class LoginParam extends BaseCaptchaParam {
     private String userAccount;
     private String userPassword;
     private String validateKeyName;
+    private String authPublicKey;
 }
