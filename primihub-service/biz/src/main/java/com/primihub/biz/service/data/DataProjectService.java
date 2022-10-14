@@ -464,6 +464,8 @@ public class DataProjectService {
         List<ModelProjectResourceVo> list = new ArrayList<>();
         for (DataProjectResource dataProjectResource : dataProjectResources) {
             Map map = resourceMap.get(dataProjectResource.getResourceId());
+            log.info("1:{} - 2:{} 3:{}",map!=null,map.containsKey("available"),map.get("available").equals("0"));
+            log.info("{}",map.get("available"));
             if (map!=null && map.containsKey("available") && map.get("available").equals("0")){
                 list.add(DataModelConvert.projectResourcePoCovertModelResourceVo(dataProjectResource, map));
             }
