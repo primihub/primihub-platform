@@ -146,7 +146,7 @@ export default {
       selectedResourceId: '',
       participationIdentity: 2,
       inputValues: [],
-      inputValue: this.nodeData && this.nodeData.componentTypes[0].inputValue,
+      inputValue: '',
       rules: {
         modelName: [
           { required: true, trigger: 'blur', validator: modelNameValidate }
@@ -176,22 +176,22 @@ export default {
     }
   },
   watch: {
-    graphData(newVal) {
-      this.getDataSetComValue(newVal)
-    },
     async nodeData(newVal) {
       if (newVal) {
         if (newVal.componentCode === 'dataSet') {
           this.inputValue = this.nodeData.componentTypes[0].inputValue
           this.getDataSetNodeData()
-        }
-        if (newVal.componentCode === 'model') {
+        } else if (newVal.componentCode === 'model') {
           this.getDataSetComValue(this.graphData)
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+        } else {
+          this.inputValue = ''
         }
       }
-    }
+    },
+    deep: true,
+    immediate: true
   },
   async created() {
     this.projectId = Number(this.$route.query.projectId) || Number(this.$route.params.id)
@@ -236,6 +236,14 @@ export default {
         this.initiateOrgan = initiateOrgan || this.initiateOrgan
         this.providerOrganId = providerOrgans.length > 0 ? providerOrgans[0].organId : ''
         this.providerOrganName = this.providerOrgans[0]?.organName
+      } else {
+        this.resourceList = []
+        this.providerOrgans = []
+        this.providerOrganId = ''
+        this.providerOrganName = ''
+        this.initiateOrgan.resourceId = ''
+        this.selectedResourceId = ''
+        this.inputValue = ''
       }
     },
     handleResourceHeaderChange(data) {

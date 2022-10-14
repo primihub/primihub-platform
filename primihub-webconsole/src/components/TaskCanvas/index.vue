@@ -172,14 +172,20 @@ export default {
       if (newVal) {
         console.log('componentsDetail', newVal)
         this.graph.clearCells()
+        this.nodeData = this.startNode
         this.graphData.cells = []
+        this.graph.fromJSON(this.graphData)
+        this.selectComponentList = []
+        this.$emit('selectComponents', this.selectComponentList)
         this.setComponentsDetail(newVal)
         this.$message({
           message: '导入成功',
           type: 'success'
         })
       }
-    }
+    },
+    deep: true,
+    immediate: true
   },
   async mounted() {
     this.taskId = this.$route.params.taskId
@@ -223,6 +229,16 @@ export default {
       if (Num > 0.1) {
         this.graph.zoom(-0.1)
       }
+    },
+    deleteComponentsVal() {
+      this.graphData.cells.map(item => {
+        if (item.shape === 'dag-node') {
+          item.data.componentTypes.map(c => {
+            c.inputValue = ''
+          })
+        }
+      })
+      console.log('deleteComponentsVal', this.graphData)
     },
     // 清除画布
     clearFn() {
