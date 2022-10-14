@@ -525,6 +525,7 @@ public class DataProjectService {
         paramMap.put("offset",req.getOffset());
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceName",req.getResourceName());
+        paramMap.put("resourceState",0);
         paramMap.put("fileHandleField",rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
         if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);

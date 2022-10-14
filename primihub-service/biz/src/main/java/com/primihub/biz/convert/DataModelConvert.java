@@ -132,6 +132,7 @@ public class DataModelConvert {
         modelProjectOrganVo.setOrganName(organMap==null?"":organMap.get("globalName")==null?"":organMap.get("globalName").toString());
         if (resourceVo!=null)
             modelProjectOrganVo.getResources().add(resourceVo);
+        modelProjectOrganVo.setServerAddress(organ.getServerAddress());
         return modelProjectOrganVo;
     }
 

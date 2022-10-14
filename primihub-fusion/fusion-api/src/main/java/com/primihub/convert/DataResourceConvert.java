@@ -64,7 +64,7 @@ public class DataResourceConvert {
             fusionResourceVo.setOpenColumnNameList(fieldList.stream().map(field-> StringUtils.isEmpty(field.getFieldAs())?field.getFieldName():field.getFieldAs()).collect(Collectors.joining(",")));
         }
         fusionResourceVo.setAvailable(1);
-        if (fusionResource.getIsDel() == 0){
+        if (fusionResource.getIsDel() == 0 && fusionResource.getResourceState() == 0){
             if (fusionResource.getResourceAuthType().equals(AuthTypeEnum.PRIVATE.getAuthType()) && fusionResource.getOrganId().equals(globalId)){
                 fusionResourceVo.setAvailable(0);
             }
