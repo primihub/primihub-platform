@@ -15,6 +15,8 @@ public class DataConstant {
     public final static String PYTHON_GUEST_DATASET = "guest_dataset";
     public final static String PYTHON_ARBITER_DATASET = "arbiter_dataset";
     public final static String PYTHON_CALCULATION_FIELD = "label_field";
+    public final static String PYTHON_LABEL_PORT = "label_port";
+    public final static String PYTHON_GUEST_PORT = "guest_port";
 
     // Set the timeout for 5 minutes
     public final static Integer UPDATE_MODEL_TIMEOUT = 300000;
@@ -29,6 +31,10 @@ public class DataConstant {
 
     // ModelComponentService impl bean name suffix
     public final static String COMPONENT_BEAN_NAME_SUFFIX = "ComponentTaskServiceImpl";
+
+    // Port number Range
+    public final static Long[] GUEST_PORT_RANGE = new Long[]{20000L,30000L};
+    public final static Long[] HOST_PORT_RANGE = new Long[]{40000L,50000L};
 
 
 

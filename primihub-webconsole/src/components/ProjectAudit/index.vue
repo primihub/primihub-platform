@@ -20,8 +20,8 @@
 </template>
 
 <script>
+import { encodeEmoji, matchEmoji } from '@/utils/emoji-regex'
 import { approval } from '@/api/project'
-import { encodeEmoji } from '@/utils/emoji-regex'
 
 export default {
   name: 'ProjectAudit',
@@ -47,11 +47,12 @@ export default {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
-      }).then(async() => {
+      }).then(() => {
         this.auditForm.auditStatus = 1
-        await this.approval()
-      }).catch(() => {
+        this.approval()
+      }).catch((err) => {
         this.auditForm.auditStatus = 0
+        console.warn(err)
       })
     },
     handleRefused() {
@@ -66,28 +67,37 @@ export default {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
-        }).then(async() => {
+        }).then(() => {
           this.auditForm.auditStatus = 2
-          await this.approval()
-        }).catch(() => {})
+          this.approval()
+        }).catch(err => {
+          console.log(err)
+        })
       }
     },
-    async approval() {
-      const { auditOpinion, auditStatus } = this.auditForm
-      const params = {
-        type: 1,
-        id: this.projectId,
-        auditStatus,
-        auditOpinion: encodeEmoji(auditOpinion)
-      }
-      const res = await approval(params)
-      if (res.code === 0) {
-        const message = auditStatus === 1 ? '加入成功' : '已拒绝与发起方的此次项目合作'
-        this.$message({
-          type: 'success',
-          message
+    approval() {
+      try {
+        let auditOpinion = this.auditForm.auditOpinion
+        auditOpinion = matchEmoji(auditOpinion) ? encodeEmoji(auditOpinion) : auditOpinion
+        const params = {
+          type: 1,
+          id: this.projectId,
+          auditStatus: this.auditForm.auditStatus,
+          auditOpinion
+        }
+        console.log(params)
+        approval(params).then(res => {
+          if (res.code === 0) {
+            const message = this.auditForm.auditStatus === 1 ? '加入成功' : '已拒绝与发起方的此次项目合作'
+            this.$message({
+              type: 'success',
+              message
+            })
+            location.reload()
+          }
         })
-        location.reload()
+      } catch (error) {
+        console.log(error)
       }
     }
   }

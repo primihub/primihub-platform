@@ -93,6 +93,14 @@ public class FusionResourceVo {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date createDate;
+    /**
+     * 资源hash文件编码
+     */
+    private String resourceHashCode;
 
+    /**
+     * 资源状态 目前有 0上线 1下线
+     */
+    private Integer resourceState;
 
 }

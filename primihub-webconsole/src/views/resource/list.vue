@@ -33,6 +33,7 @@
     <div class="resource">
       <el-table
         :data="resourceList"
+        :row-class-name="tableRowDisabled"
         border
       >
         <el-table-column
@@ -44,7 +45,7 @@
           label="名称"
         >
           <template slot-scope="{row}">
-            <template v-if="hasViewPermission">
+            <template v-if="hasViewPermission && row.resourceState === 0">
               <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
             </template>
             <template v-else>
@@ -85,8 +86,8 @@
           <template slot-scope="{row}">
             特征量：{{ row.fileColumns }}<br>
             样本量：{{ row.fileRows }} <br>
-            正例样本数量：{{ row.fileYRows }}<br>
-            正例样本比例：{{ row.fileYRatio }}% <br>
+            正例样本数量：{{ row.fileYRows ? row.fileYRows : 0 }}<br>
+            正例样本比例：{{ row.fileYRatio? row.fileYRatio : 0 }}% <br>
           </template>
         </el-table-column>
         <el-table-column
@@ -107,15 +108,20 @@
           </template>
         </el-table-column>
         <el-table-column
+          prop="resourceHashCode"
+          label="文件Hash"
+          min-width="120"
+        />
+        <el-table-column
           label="操作"
           fixed="right"
           width="160"
           align="center"
         >
           <template slot-scope="{row}">
-            <el-button type="text" icon="el-icon-view" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
-            <el-button v-if="hasEditPermission" icon="el-icon-edit" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
-            <!-- <el-button v-if="hasDeletePermission" size="mini" icon="el-icon-delete" type="danger" @click="handleResourceDelete(row.resourceId)">删除</el-button> -->
+            <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+            <el-button v-if="hasEditPermission && row.resourceState === 0" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
+            <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -127,7 +133,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { getResourceList, getResourceTags, deleteResource } from '@/api/resource'
+import { getResourceList, getResourceTags, deleteResource, resourceStatusChange } from '@/api/resource'
 import Pagination from '@/components/Pagination'
 import TagsSelect from '@/components/TagsSelect'
 
@@ -170,10 +176,30 @@ export default {
     ])
   },
   async created() {
-    this.fetchData()
+    await this.fetchData()
     await this.getResourceTags()
   },
   methods: {
+    tableRowDisabled({ row }) {
+      if (row.resourceState === 1) {
+        return 'disabled'
+      } else {
+        return ''
+      }
+    },
+    changeResourceStatus({ resourceId, resourceState }) {
+      resourceState = resourceState === 0 ? 1 : 0
+      resourceStatusChange({ resourceId, resourceState }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: resourceState === 0 ? '上线成功' : '下线成功',
+            type: 'success'
+          })
+          const posIndex = this.resourceList.findIndex(item => item.resourceId === resourceId)
+          this.resourceList[posIndex].resourceState = resourceState
+        }
+      })
+    },
     async getResourceTags() {
       const { result } = await getResourceTags()
       this.tags = result && result.map((item, index) => {
@@ -249,7 +275,7 @@ export default {
     handleSearchNameChange(searchName) {
       this.searchName = searchName
     },
-    fetchData() {
+    async fetchData() {
       this.resourceList = []
       const { resourceName, tag, userName, resourceSource, selectTag } = this.query
       const resourceId = Number(this.query.resourceId)
@@ -270,16 +296,15 @@ export default {
         resourceSource,
         selectTag
       }
-      getResourceList(params).then((res) => {
-        if (res.code === 0) {
-          const { data, total, totalPage } = res.result
-          this.total = total
-          this.pageCount = totalPage
-          if (data.length > 0) {
-            this.resourceList = data
-          }
+      const res = await getResourceList(params)
+      if (res.code === 0) {
+        const { data, total, totalPage } = res.result
+        this.total = total
+        this.pageCount = totalPage
+        if (data.length > 0) {
+          this.resourceList = data
         }
-      })
+      }
     },
     handlePagination(data) {
       this.pageNo = data.page

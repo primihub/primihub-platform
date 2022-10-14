@@ -102,6 +102,11 @@
           </template>
         </el-table-column>
         <el-table-column
+          prop="resourceHashCode"
+          label="文件Hash"
+          min-width="120"
+        />
+        <el-table-column
           label="数据信息"
           min-width="200"
         >

@@ -15,14 +15,23 @@
 //import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 //import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 //import com.primihub.biz.service.data.*;
+//import com.primihub.biz.service.data.component.impl.ModelComponentTaskServiceImpl;
 //import com.primihub.biz.util.FileUtil;
 //import lombok.extern.slf4j.Slf4j;
 //import org.junit.Test;
 //import org.junit.runner.RunWith;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.http.HttpEntity;
+//import org.springframework.http.HttpHeaders;
+//import org.springframework.http.MediaType;
 //import org.springframework.test.context.junit4.SpringRunner;
+//import org.springframework.util.LinkedMultiValueMap;
+//import org.springframework.util.MultiValueMap;
+//import org.springframework.web.client.RestTemplate;
 //
+//import javax.annotation.Resource;
+//import java.util.ArrayList;
 //import java.util.HashMap;
 //import java.util.List;
 //import java.util.Map;
@@ -33,8 +42,6 @@
 //public class DataResourceTest {
 //
 //    @Autowired
-//    private ModelInitService modelInitService;
-//    @Autowired
 //    private DataResourceRepository dataResourceRepository;
 //    @Autowired
 //    private SysFileSecondarydbRepository sysFileSecondarydbRepository;
@@ -44,13 +51,10 @@
 //    private DataTaskService dataTaskService;
 //    @Autowired
 //    private DataMpcService dataMpcService;
+//    @Resource(name="soaRestTemplate")
+//    private RestTemplate restTemplate;
 //    @Autowired
-//    private PsiAsyncService psiAsyncService;
-//    @Autowired
-//    private PirService pirService;
-//
-//    @Autowired
-//    private DataPsiRepository dataPsiRepository;
+//    private ModelComponentTaskServiceImpl modelComponentTaskServiceImpl;
 //
 //    @Test
 //    public void batchInsertDataFileField(){
@@ -101,28 +105,30 @@
 //        dataTaskService.handleRunSql(JSONObject.toJSONString(map));
 //    }
 //
-//    @Test
-//    public void psiGrpcRun(){
-//        DataPsi dataPsi = dataPsiRepository.selectPsiById(276L);
-//        DataPsiTask task = dataPsiRepository.selectPsiTaskById(276L);
-//        psiAsyncService.psiGrpcRun(task,dataPsi);
-//    }
 //
-//    @Test
-//    public void pirGrpcRun(){
-//        pirService.pirSubmitTask(60L,"1,3,5");
-//    }
-//
-//    @Test
-//    public void resourceFilePreview(){
-////        SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(1063L);
-//        BaseResultEntity baseResultEntity = dataResourceService.resourceFilePreview(1063L);
-//        log.info(JSONObject.toJSONString(baseResultEntity, SerializerFeature.WriteMapNullValue));
-//    }
 //
 //    @Test
 //    public void testBatchDataFusionResource(){
 //        dataTaskService.batchDataFusionResource("{\"serverAddress\":\"http://localhost:8099\"}");
+//    }
+//
+//    @Test
+//    public void aaaaa(){
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//        MultiValueMap map = new LinkedMultiValueMap<>();
+//        map.put("globalId", new ArrayList(){{add("047bb7ce-5049-4f14-b5d8-3586b8181386");}});
+//        map.put("pinCode", new ArrayList(){{add("GdmGcvjDo0AXP3Dt");}});
+//        map.put("resourceIdArray", new ArrayList(){{add("2b598a7e3298-20737fef-095f-425e-9586-b414ce581a32");}});
+//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+//        BaseResultEntity resultEntity=restTemplate.postForObject("http://127.0.0.1:8099/fusionResource/getResourceListById",request, BaseResultEntity.class);
+//        System.out.println();
+//    }
+//
+//    @Test
+//    public void aaadfsf(){
+////        Long[] portNumber = modelComponentTaskServiceImpl.getPortNumber();
+//        System.out.println();
 //    }
 //
 //}

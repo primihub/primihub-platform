@@ -41,4 +41,10 @@ public interface DataModelPrRepository {
     void deleteModelTask(Long modelId);
 
     void updateDataComponent(DataComponent dataComponent);
+
+    void saveComponentDraft(DataComponentDraft dataComponentDraft);
+
+    void updateComponentDraft(DataComponentDraft dataComponentDraft);
+
+    void deleteComponentDraft(@Param("draftId") Long draftId);
 }

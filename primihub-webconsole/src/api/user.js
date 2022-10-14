@@ -1,5 +1,11 @@
 import request from '@/utils/request'
 
+export function getAuthList() {
+  return request({
+    url: '/sys/oauth/getAuthList',
+    method: 'GET'
+  })
+}
 export function getValidatePublicKey() {
   return request({
     url: '/sys/common/getValidatePublicKey?',
@@ -11,6 +17,14 @@ export function getValidatePublicKey() {
 export function login(data) {
   return request({
     url: '/sys/user/login',
+    method: 'POST',
+    data
+  })
+}
+
+export function authLogin(data) {
+  return request({
+    url: '/sys/oauth/authLogin',
     method: 'POST',
     data
   })
@@ -39,6 +53,15 @@ export function updatePassword(data) {
 export function sendVerificationCode(data) {
   return request({
     url: '/sys/user/sendVerificationCode',
+    method: 'POST',
+    showLoading: false,
+    data
+  })
+}
+
+export function authRegister(data) {
+  return request({
+    url: '/sys/oauth/authRegister',
     method: 'POST',
     showLoading: false,
     data

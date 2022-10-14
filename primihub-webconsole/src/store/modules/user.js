@@ -1,4 +1,4 @@
-import { login, logout } from '@/api/user'
+import { login, logout, authLogin } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 const USER_INFO = 'userInfo'
@@ -62,16 +62,37 @@ const mutations = {
 
 const actions = {
   // user login
+  authLogin({ commit }, userInfo) {
+    return new Promise((resolve, reject) => {
+      authLogin(userInfo).then(({ result, code }) => {
+        if (code === 0) {
+          const { sysUser = {}, token, grantAuthRootList } = result
+
+          commit('SET_USER_INFO', sysUser)
+          commit('SET_PERMISSION', grantAuthRootList)
+          setToken(token)
+          resolve()
+        }
+      }).catch(error => {
+        console.log(error)
+        reject(error)
+      })
+    })
+  },
+  // user login
   login({ commit }, userInfo) {
     return new Promise((resolve, reject) => {
-      login(userInfo).then(({ result }) => {
-        const { sysUser, token, grantAuthRootList } = result
+      login(userInfo).then(({ result, code }) => {
+        if (code === 0) {
+          const { sysUser = {}, token, grantAuthRootList } = result
 
-        commit('SET_USER_INFO', sysUser)
-        commit('SET_PERMISSION', grantAuthRootList)
-        setToken(token)
-        resolve()
+          commit('SET_USER_INFO', sysUser)
+          commit('SET_PERMISSION', grantAuthRootList)
+          setToken(token)
+          resolve()
+        }
       }).catch(error => {
+        console.log(error)
         reject(error)
       })
     })

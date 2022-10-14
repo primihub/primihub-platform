@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
@@ -28,6 +29,7 @@ import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
@@ -39,6 +41,8 @@ import java.util.stream.Collectors;
 @Service("modelComponentTaskServiceImpl")
 @Slf4j
 public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -156,6 +160,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     }
 
     public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
+        Long[] portNumber = getPortNumber();
+        taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
+        taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
@@ -215,5 +222,32 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
         }
         return BaseResultEntity.success();
+    }
+
+    public Long[] getPortNumber(){
+        Long[] port = new Long[2];
+        String hostKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "h");
+        String guestKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "g");
+        // 递增还是递减
+        String squareKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "s");
+        String squareVal = stringRedisTemplate.opsForValue().get(squareKey);
+        String hostVal = stringRedisTemplate.opsForValue().get(hostKey);
+        if (StringUtils.isBlank(hostVal)){
+            stringRedisTemplate.opsForValue().set(squareKey,"0");
+            stringRedisTemplate.opsForValue().set(hostKey,DataConstant.HOST_PORT_RANGE[0].toString());
+            stringRedisTemplate.opsForValue().set(guestKey,DataConstant.GUEST_PORT_RANGE[0].toString());
+        }
+        if (StringUtils.isBlank(squareVal) || "0".equals(squareVal)){
+            port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
+            port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
+            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0]))
+                stringRedisTemplate.opsForValue().set(squareKey,"1");
+        }else {
+            port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
+            port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
+            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0]))
+                stringRedisTemplate.opsForValue().set(squareKey,"0");
+        }
+        return port;
     }
 }

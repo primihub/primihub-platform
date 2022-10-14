@@ -39,6 +39,7 @@ public class DataTaskConvert {
         pirTask.setResourceYRowsCount(Integer.valueOf((getMapValue(map,"resourceYRowsCount","0"))));
         pirTask.setResourceYRatio(new BigDecimal((getMapValue(map,"resourceYRatio","0"))));
         pirTask.setAvailable(Integer.valueOf((getMapValue(map,"available","0"))));
+        pirTask.setResourceState(Integer.valueOf((getMapValue(map,"resourceState","1"))));
     }
 
     public static String getMapValue(LinkedHashMap<String, Object> map,String key,String defaultVal){

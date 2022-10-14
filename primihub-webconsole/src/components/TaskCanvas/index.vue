@@ -118,6 +118,10 @@ export default {
     restartRun: {
       type: Boolean,
       default: false
+    },
+    componentsDetail: {
+      type: Object,
+      default: () => null
     }
   },
   data() {
@@ -163,7 +167,25 @@ export default {
       if (newVal) {
         await this.restartTaskModel()
       }
-    }
+    },
+    async componentsDetail(newVal) {
+      if (newVal) {
+        console.log('componentsDetail', newVal)
+        this.graph.clearCells()
+        this.nodeData = this.startNode
+        this.graphData.cells = []
+        this.graph.fromJSON(this.graphData)
+        this.selectComponentList = []
+        this.$emit('selectComponents', this.selectComponentList)
+        this.setComponentsDetail(newVal)
+        this.$message({
+          message: '导入成功',
+          type: 'success'
+        })
+      }
+    },
+    deep: true,
+    immediate: true
   },
   async mounted() {
     this.taskId = this.$route.params.taskId
@@ -207,6 +229,16 @@ export default {
       if (Num > 0.1) {
         this.graph.zoom(-0.1)
       }
+    },
+    deleteComponentsVal() {
+      this.graphData.cells.map(item => {
+        if (item.shape === 'dag-node') {
+          item.data.componentTypes.map(c => {
+            c.inputValue = ''
+          })
+        }
+      })
+      console.log('deleteComponentsVal', this.graphData)
     },
     // 清除画布
     clearFn() {
@@ -414,6 +446,15 @@ export default {
           inherit: 'vue-shape',
           width: 120,
           height: 40,
+          attrs: {
+            body: {
+              stroke: '#34e2c4',
+              strokeWidth: 2,
+              fill: '#e4fffa',
+              rx: 20,
+              ry: 20
+            }
+          },
           component: {
             template: `<start-node-component />`,
             components: {
@@ -916,6 +957,7 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
+      this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
         this.currentModelId = res.result.modelId
@@ -1011,6 +1053,7 @@ export default {
         })
       }
       this.initGraphShape()
+      this.saveFn()
     }
   }
 }

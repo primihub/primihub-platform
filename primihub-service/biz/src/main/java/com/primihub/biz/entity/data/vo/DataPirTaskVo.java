@@ -29,6 +29,8 @@ public class DataPirTaskVo {
 
     private Integer resourceYRowsCount;
 
+    private Integer resourceState;
+
     private BigDecimal resourceYRatio;
 
     private String retrievalId;

@@ -23,8 +23,10 @@ import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.tool.PlatformHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.SignUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -42,6 +44,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Slf4j
 @Service
 public class SysUserService {
 
@@ -78,7 +81,8 @@ public class SysUserService {
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(loginParam.getUserAccount());
         if(sysUser==null||sysUser.getUserId()==null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
-
+        if(!sysUserPrimaryRedisRepository.loginVerification(sysUser.getUserId()))
+            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
         String userPassword;
         try {
             userPassword=CryptUtil.decryptRsaWithPrivateKey(loginParam.getUserPassword(),privateKey);
@@ -87,9 +91,19 @@ public class SysUserService {
         } 
         StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(userPassword);
         String signPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
-        if(!signPassword.equals(sysUser.getUserPassword()))
-            return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+        if(!signPassword.equals(sysUser.getUserPassword())){
+            Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
+            log.info("user_id:{},number:{}",sysUser.getUserId(),number);
+            if (number>=3){
+                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT,"连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
+            }else {
+                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+            }
+        }
+        return baseLogin(sysUser);
+    }
 
+    public BaseResultEntity baseLogin(SysUser sysUser){
         Set<Long> roleIdSet=Stream.of(sysUser.getRoleIdList().split(",")).filter(item->!item.equals(""))
                 .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
         Set<Long> authIdList=sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
@@ -116,7 +130,7 @@ public class SysUserService {
         String token= PlatformHelper.generateOwnToken(SysConstant.SYS_USER_TOKEN_PREFIX,sysUser.getUserId(),date);
 
         sysUserPrimaryRedisRepository.updateUserLoginStatus(token,sysUserListVO);
-
+        sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(sysUser.getUserId());
         Map map=new HashMap<>();
         map.put("sysUser",sysUserListVO);
         map.put("grantAuthRootList",grantAuthRootList);
@@ -153,6 +167,13 @@ public class SysUserService {
             sysUser.setIsForbid(saveOrUpdateUserParam.getIsForbid());
             sysUser.setIsEditable(1);
             sysUser.setIsDel(0);
+            if (saveOrUpdateUserParam.getAuthUuid()!=null)
+                sysUser.setAuthUuid(saveOrUpdateUserParam.getAuthUuid());
+//            if(StringUtils.isNotBlank(saveOrUpdateUserParam.getAuthPublicKey())){
+//                String authUuid = sysCommonPrimaryRedisRepository.getKey(saveOrUpdateUserParam.getAuthPublicKey());
+//                if (StringUtils.isNotBlank(authUuid))
+//                    sysUser.setAuthUuid(authUuid);
+//            }
             sysUserPrimarydbRepository.insertSysUser(sysUser);
             userId=sysUser.getUserId();
         }else{
@@ -162,12 +183,13 @@ public class SysUserService {
             if(sysUser.getIsEditable().equals(0))
                 return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"该记录是不可编辑状态");
             if((saveOrUpdateUserParam.getUserName()!=null&&!saveOrUpdateUserParam.getUserName().trim().equals(""))
-                ||(saveOrUpdateUserParam.getIsForbid()!=null)){
+                ||(saveOrUpdateUserParam.getIsForbid()!=null)||(saveOrUpdateUserParam.getAuthUuid()!=null)){
                 Map paramMap=new HashMap(){
                     {
                         put("userId",saveOrUpdateUserParam.getUserId());
                         put("userName",saveOrUpdateUserParam.getUserName());
                         put("isForbid",saveOrUpdateUserParam.getIsForbid());
+                        put("authUuid",saveOrUpdateUserParam.getAuthUuid());
                     }
                 };
                 sysUserPrimarydbRepository.updateSysUserExplicit(paramMap);
@@ -330,6 +352,7 @@ public class SysUserService {
             }
         };
         sysUserPrimarydbRepository.updateSysUserExplicit(paramMap);
+        sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(userId);
     }
 
     public BaseResultEntity findUserByAccount(String userAccount){

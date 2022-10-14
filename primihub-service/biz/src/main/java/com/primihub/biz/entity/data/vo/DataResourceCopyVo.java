@@ -87,4 +87,13 @@ public class DataResourceCopyVo {
     private List<DataResourceFieldCopyVo> fieldList;
 
     private Integer isDel = 0;
+    /**
+     * 资源hash文件编码
+     */
+    private String resourceHashCode;
+
+    /**
+     * 资源状态 目前有 0上线 1下线
+     */
+    private Integer resourceState;
 }
