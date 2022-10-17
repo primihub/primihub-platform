@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui'
+import VueAnalytics from 'vue-analytics'
 import { message } from '@/utils/resetMessage'
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 import 'element-ui/lib/theme-chalk/index.css'
@@ -15,10 +16,9 @@ import '@/permission' // permission control
 import filter from '@/filters'
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
 
-import VueAnalytics from 'vue-analytics'
+import defaultSettings from '@/settings'
 const isProd = process.env.NODE_ENV === 'production'
-
-const trackingID = ''
+const trackingID = defaultSettings.googleAnalytics.trackingID || ''
 if (trackingID !== '') {
   Vue.use(VueAnalytics, {
     id: trackingID,
