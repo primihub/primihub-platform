@@ -15,6 +15,21 @@ import '@/permission' // permission control
 import filter from '@/filters'
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
 
+import VueAnalytics from 'vue-analytics'
+const isProd = process.env.NODE_ENV === 'production'
+
+const trackingID = ''
+if (trackingID !== '') {
+  Vue.use(VueAnalytics, {
+    id: trackingID,
+    router,
+    debug: {
+      enabled: !isProd,
+      sendHitTask: isProd
+    }
+  })
+}
+
 // set ElementUI lang to zh
 Vue.use(ElementUI, {
   locale: {
