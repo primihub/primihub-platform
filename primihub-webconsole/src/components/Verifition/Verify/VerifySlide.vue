@@ -310,7 +310,7 @@ export default {
             this.tipWords = '验证失败'
             setTimeout(() => {
               this.tipWords = ''
-              this.$parent.closeBox()
+              this.refresh()
             }, 1000)
           }
         })
