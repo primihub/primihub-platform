@@ -85,7 +85,7 @@
               label="角色"
             >
               <template slot-scope="{row}">
-                {{ row.participationIdentity === 1? '发起方': '协作方' }}
+                {{ row.participationIdentity === 1 ? '发起方': row.organId === userOrganId ? '本机构' : '协作方' }}
               </template>
             </el-table-column>
             <el-table-column
@@ -101,7 +101,7 @@
         <el-tab-pane v-if="task.taskState === 1 || task.taskState === 5" label="任务模型" name="2">
           <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
-        <el-tab-pane v-if="task.isCooperation === 0" label="预览图" name="3">
+        <el-tab-pane v-if="task.taskState === 1" label="预览图" name="3">
           <div class="canvas-panel">
             <TaskCanvas v-if="tabName === '3' && modelId" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
@@ -182,6 +182,9 @@ export default {
     },
     hasModelRunPermission() {
       return this.$store.getters.buttonPermissionList.includes('ModelRun')
+    },
+    userOrganId() {
+      return this.$store.getters.userOrganId
     }
   },
   async created() {
@@ -226,7 +229,8 @@ export default {
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
-        console.log(this.modelResources)
+        // provider organ only view own resource data
+        this.modelResources = this.modelResources.filter(item => item.organId === this.userOrganId)
         this.modelComponent = modelComponent
         this.taskState = taskState
       }
