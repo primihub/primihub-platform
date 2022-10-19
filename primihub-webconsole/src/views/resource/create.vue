@@ -79,10 +79,14 @@
           <div class="item-wrap-normal">
             <el-radio-group v-model="dataForm.resourceSource">
               <el-radio :label="1">文件上传</el-radio>
+              <el-radio :label="2">数据库导入</el-radio>
             </el-radio-group>
           </div>
           <template v-if="dataForm.resourceSource === 1">
             <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
+          </template>
+          <template v-if="dataForm.resourceSource === 2">
+            <DatabaseImport @data="getData" />
           </template>
         </template>
         <template v-else>
@@ -96,7 +100,6 @@
         element-loading-spinner="el-icon-loading"
       >
         <el-col v-if="fieldList.length > 0" :span="12">
-          <h3>字段信息</h3>
           <EditResourceTable
             border
             height="500"
@@ -106,7 +109,6 @@
           />
         </el-col>
         <el-col v-if="dataList.length >0" :span="12">
-          <h3>数据资源预览</h3>
           <ResourcePreviewTable :data="dataList" height="500" />
         </el-col>
       </el-row>
@@ -124,18 +126,20 @@
 </template>
 
 <script>
+import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
 import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import Cascader from '@/components/Cascader'
-import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
+import DatabaseImport from '@/components/DatabaseImport'
 
 export default {
   components: {
     Upload,
     EditResourceTable,
     ResourcePreviewTable,
-    Cascader
+    Cascader,
+    DatabaseImport
   },
   filters: {
     sourceFilter(source) {
@@ -223,6 +227,10 @@ export default {
     }
   },
   methods: {
+    getData({ dataList = [], fieldList = [] }) {
+      this.dataList = dataList || []
+      this.fieldList = fieldList || []
+    },
     handleResourceChange(data) {
       this.fieldList = data
       this.dataForm.fieldList = this.formatParams()
