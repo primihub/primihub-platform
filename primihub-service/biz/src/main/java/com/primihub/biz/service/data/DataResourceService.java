@@ -528,7 +528,7 @@ public class DataResourceService {
     }
 
     public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource){
-        if (StringUtils.isNotBlank(dataResource.getResourceFusionId())){
+        if (StringUtils.isBlank(dataResource.getResourceFusionId())){
             dataResource.setResourceFusionId(UUID.randomUUID().toString());
         }
         if (dataResource.getResourceSource() == 1){
