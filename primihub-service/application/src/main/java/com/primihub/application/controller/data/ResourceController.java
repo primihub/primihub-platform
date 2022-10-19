@@ -13,7 +13,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * 资源管理
+ */
 @RequestMapping("resource")
 @RestController
 public class ResourceController {
@@ -81,12 +83,12 @@ public class ResourceController {
             if (req.getTags()==null||req.getTags().size()==0){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"tags");
             }
-            if (req.getResourceAuthType() == 1){
+            if (req.getResourceSource() == 1){
                 if (req.getFileId()==null||req.getFileId()==0L){
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
                 }
             }
-            if (req.getResourceAuthType() == 2){
+            if (req.getResourceSource() == 2){
                 if (req.getDataSource() == null)
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSource");
                 if (req.getDataSource().getDbType()==null || req.getDataSource().getDbType()<=0)

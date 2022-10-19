@@ -103,29 +103,31 @@ public class DataResourceService {
     }
 
     public BaseResultEntity saveDataResource(DataResourceReq req,Long userId){
-        SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(req.getFileId());
-        if (sysFile==null){
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"file");
-        }
-        DataResource dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null,sysFile);
+        Map<String,Object> map = new HashMap<>();
         try {
+            DataResource dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null);
             List<DataResourceFieldReq> fieldList = req.getFieldList();
-            if (fieldList==null||fieldList.size()==0)
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"字段信息不能为空");
-            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
-                dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
-            }
             BaseResultEntity handleDataResourceFileResult = null;
             DataSource dataSource = null;
-            if (dataResource.getResourceSource() == 1){
+            if (req.getResourceSource() == 1){
+                SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(req.getFileId());
+                if (sysFile==null){
+                    return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"file");
+                }
+                dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null,sysFile);
                 handleDataResourceFileResult = handleDataResourceFile(dataResource, sysFile);
-            }else if (dataResource.getResourceSource() == 2){
+            }else if (req.getResourceSource() == 2){
                 dataSource  = DataSourceConvert.DataSourceReqConvertPo(req.getDataSource());
                 handleDataResourceFileResult = handleDataResourceSource(dataResource,fieldList,dataSource);
             }
             if (handleDataResourceFileResult.getCode()!=0)
                 return handleDataResourceFileResult;
+
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
+                dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
+            }
+
             if (!resourceSynGRPCDataSet(dataSource,dataResource)){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
             }
@@ -134,7 +136,10 @@ public class DataResourceService {
                 dataResource.setDbId(dataSource.getId());
             }
             dataResourcePrRepository.saveResource(dataResource);
-            List<DataFileField> dataFileFieldList = fieldList.stream().map(field -> DataResourceConvert.DataFileFieldReqConvertPo(field, sysFile.getFileId(), dataResource.getResourceId())).collect(Collectors.toList());
+            List<DataFileField> dataFileFieldList = new ArrayList<>();
+            for (DataResourceFieldReq field : fieldList) {
+                dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
+            }
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
             List<String> tags = req.getTags();
             for (String tagName : tags) {
@@ -154,15 +159,15 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
                 singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             }
+            map.put("resourceId",dataResource.getResourceId());
+            map.put("resourceFusionId",dataResource.getResourceFusionId());
+            map.put("resourceName",dataResource.getResourceName());
+            map.put("resourceDesc",dataResource.getResourceDesc());
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
         }
-        Map<String,Object> map = new HashMap<>();
-        map.put("resourceId",dataResource.getResourceId());
-        map.put("resourceFusionId",dataResource.getResourceFusionId());
-        map.put("resourceName",dataResource.getResourceName());
-        map.put("resourceDesc",dataResource.getResourceDesc());
+
         return BaseResultEntity.success(map);
     }
 

@@ -11,12 +11,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 数据集数据库接口
+ */
 @RequestMapping("dbsource")
 @RestController
 public class SourceController {
     @Autowired
     private DataSourceService dataSourceService;
 
+    /**
+     * 检测数据库连接
+     * @param req
+     * @return
+     */
     @PostMapping("healthConnection")
     public BaseResultEntity healthConnection(@RequestBody DataSourceReq req){
         if (req.getDbType()==null || req.getDbType()<=0)
@@ -32,6 +40,11 @@ public class SourceController {
         return dataSourceService.healthConnection(req);
     }
 
+    /**
+     * 数据库表详情
+     * @param req
+     * @return
+     */
     @PostMapping("tableDetails")
     public BaseResultEntity dataSourceTableDetails(@RequestBody DataSourceReq req){
         if (req.getDbType()==null || req.getDbType()<=0)
