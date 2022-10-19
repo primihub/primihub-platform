@@ -45,6 +45,8 @@ public class DataResourceReq extends PageReq{
 
     private List<DataSourceOrganReq> fusionOrganList;
 
+    private DataSourceReq dataSource;
+
     private String userName;
 
 }

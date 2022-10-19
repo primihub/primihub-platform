@@ -77,19 +77,19 @@ public class DataModelService {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
                     if (map!=null){
                         log.info("resourceId:{}---available:{}",modelResourceVo.getResourceId(),map.get("available"));
-                            modelResourceVo.setAvailable(Integer.valueOf(map.get("available").toString()));
-                            modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
-                            modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
-                            modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
-                            modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
-                            modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
-                            modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
-                            modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
-                            modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
-                            modelResourceVo.setServerAddress(dataProject.getServerAddress());
-                            if (map.get("organId")!=null){
-                                modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
-                            }
+                        modelResourceVo.setAvailable(Integer.valueOf(map.get("available").toString()));
+                        modelResourceVo.setResourceName(map.get("resourceName")==null?"":map.get("resourceName").toString());
+                        modelResourceVo.setOrganName(map.get("organName")==null?"":map.get("organName").toString());
+                        modelResourceVo.setOrganId(map.get("organId")==null?"":map.get("organId").toString());
+                        modelResourceVo.setFileNum(map.get("resourceRowsCount")==null?0:Integer.parseInt(map.get("resourceRowsCount").toString()));
+                        modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
+                        modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount")==null?0:Integer.parseInt(map.get("resourceColumnCount").toString()));
+                        modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
+                        modelResourceVo.setResourceType(map.get("resourceType")==null?0:Integer.parseInt(map.get("resourceType").toString()));
+                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
+                        if (map.get("organId")!=null){
+                            modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
+                        }
                     }
                 }
             }
@@ -564,19 +564,26 @@ public class DataModelService {
     }
 
     public BaseResultEntity saveOrUpdateComponentDraft(ComponentDraftReq req) {
-        try {
-            req.setComponentJson(formatComponent(req.getComponentJson()));
-        }catch (Exception e){
-            log.info(e.getMessage());
-            BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件解析失败");
-        }
+//        try {
+//            req.setComponentJson(formatComponent(req.getComponentJson()));
+//        }catch (Exception e){
+//            log.info(e.getMessage());
+//            BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"组件解析失败");
+//        }
         DataComponentDraft dataComponentDraft = DataModelConvert.componentDraftReqCovertPo(req);
+        List<DataComponentDraftVo> dataComponentDraftVos = dataModelRepository.queryComponentDraftListByUserId(req.getUserId());
+        Set<String> nameSet = dataComponentDraftVos.stream().map(DataComponentDraftVo::getDraftName).collect(Collectors.toSet());
         if (dataComponentDraft.getDraftId()!=null && dataComponentDraft.getDraftId()!=0L){
             DataComponentDraft draft = dataModelRepository.queryComponentDraftById(dataComponentDraft.getDraftId());
             if (draft==null)
                 BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"未查询到草稿信息");
+            nameSet.remove(draft.getDraftName());
+            if (nameSet.contains(req.getDraftName()))
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿名称重复");
             dataModelPrRepository.updateComponentDraft(dataComponentDraft);
         }else {
+            if (nameSet.contains(req.getDraftName()))
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿名称重复");
             int count = dataModelRepository.queryComponentDraftCountByUserId(req.getUserId());
             if (count>=20) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"草稿已到最高20个,请清除其他草稿重试。");
