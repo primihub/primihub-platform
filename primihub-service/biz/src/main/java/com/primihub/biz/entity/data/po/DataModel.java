@@ -66,7 +66,7 @@ public class DataModel {
     /**
      * 组件json
      */
-    @JsonIgnore
+//    @JsonIgnore
     private String componentJson;
 
     /**

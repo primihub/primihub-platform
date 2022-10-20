@@ -12,6 +12,7 @@
         "/oauth/github/render",
         "/oauth/github/callback",
         "/common/getValidatePublicKey",
+        "/common/getTrackingID",
         "/shareData/syncProject",
         "/shareData/syncModel"
     ],
@@ -289,4 +290,4 @@
             "component_types": []
         }
     ]
-}
+},
