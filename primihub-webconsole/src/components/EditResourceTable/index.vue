@@ -1,54 +1,58 @@
 <template>
-  <el-table
-    :data="data"
-    class="table-list"
-    v-bind="$attrs"
-  >
-    <el-table-column align="center" label="字段名称" prop="fieldName" />
-    <el-table-column align="center" label="数据类型" prop="fieldType">
-      <template slot-scope="{row}">
-        <el-select v-model="row.fieldType" size="mini" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
-          <el-option
-            v-for="(item,index) in fieldTypeList"
-            :key="index"
-            :label="item.label"
-            :value="item.value"
+  <div>
+    <h3>字段信息</h3>
+    <el-table
+      :data="data"
+      class="table-list"
+      v-bind="$attrs"
+    >
+      <el-table-column align="center" label="字段名称" prop="fieldName" />
+      <el-table-column align="center" label="数据类型" prop="fieldType">
+        <template slot-scope="{row}">
+          <el-select v-model="row.fieldType" size="mini" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
+            <el-option
+              v-for="(item,index) in fieldTypeList"
+              :key="index"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </template>
+      </el-table-column>
+      <el-table-column label="关联键" prop="relevance" align="center" width="60">
+        <template slot-scope="{row}">
+          <el-checkbox v-model="row.relevance" :disabled="!isEditable" @change="handleChange(row)" />
+        </template>
+      </el-table-column>
+      <el-table-column label="分组键" prop="grouping" align="center" width="60">
+        <template slot-scope="{row}">
+          <el-checkbox v-model="row.grouping" :disabled="!isEditable" @change="handleChange(row)" />
+        </template>
+      </el-table-column>
+      <el-table-column label="保护开关" prop="protectionStatus" align="center" width="80">
+        <template slot-scope="{row}">
+          <el-switch
+            v-model="row.protectionStatus"
+            :disabled="!isEditable"
+            active-color="#13ce66"
+            inactive-color="#ccc"
+            @change="handleChange(row)"
           />
-        </el-select>
-      </template>
-    </el-table-column>
-    <el-table-column label="关联键" prop="relevance" align="center" width="60">
-      <template slot-scope="{row}">
-        <el-checkbox v-model="row.relevance" :disabled="!isEditable" @change="handleChange(row)" />
-      </template>
-    </el-table-column>
-    <el-table-column label="分组键" prop="grouping" align="center" width="60">
-      <template slot-scope="{row}">
-        <el-checkbox v-model="row.grouping" :disabled="!isEditable" @change="handleChange(row)" />
-      </template>
-    </el-table-column>
-    <el-table-column label="保护开关" prop="protectionStatus" align="center" width="80">
-      <template slot-scope="{row}">
-        <el-switch
-          v-model="row.protectionStatus"
-          :disabled="!isEditable"
-          active-color="#13ce66"
-          inactive-color="#ccc"
-          @change="handleChange(row)"
-        />
-      </template>
-    </el-table-column>
-    <el-table-column align="center" label="描述" prop="fieldDesc">
-      <template slot-scope="{row}">
-        <el-input
-          v-model="row.fieldDesc"
-          :disabled="!isEditable"
-          size="mini"
-          @change="handleChange(row)"
-        />
-      </template>
-    </el-table-column>
-  </el-table>
+        </template>
+      </el-table-column>
+      <el-table-column align="center" label="描述" prop="fieldDesc">
+        <template slot-scope="{row}">
+          <el-input
+            v-model="row.fieldDesc"
+            :disabled="!isEditable"
+            size="mini"
+            @change="handleChange(row)"
+          />
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+
 </template>
 
 <script>
@@ -129,9 +133,3 @@ export default {
 
 }
 </script>
-
-<style lang="scss" scoped>
-::v-deep .el-table .el-table__cell{
-  padding: 5px 0;
-}
-</style>

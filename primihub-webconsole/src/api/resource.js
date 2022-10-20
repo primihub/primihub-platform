@@ -1,5 +1,22 @@
 import request from '@/utils/request'
 
+export function healthConnection(data) {
+  return request({
+    url: '/data/dbsource/healthConnection',
+    method: 'post',
+    type: 'json',
+    data
+  })
+}
+export function tableDetails(data) {
+  return request({
+    url: '/data/dbsource/tableDetails',
+    method: 'post',
+    type: 'json',
+    data
+  })
+}
+
 export function resourceStatusChange(data) {
   return request({
     url: '/data/resource/resourceStatusChange',

@@ -51,7 +51,7 @@
         </el-tab-pane>
         <el-tab-pane label="任务列表" name="modelTask">
           <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">新建任务</el-button>
-          <Model :is-creator="creator" :project-status="projectStatus" />
+          <ModelTaskList :is-creator="creator" :project-status="projectStatus" />
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -86,7 +86,7 @@ import ProviderOrganDialog from '@/components/ProviderOrganDialog'
 import ResourceApprovalDialog from '@/components/ResourceApprovalDialog'
 import ResourceTable from '@/components/ResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
-import Model from '@/components/Model'
+import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
 
 export default {
@@ -95,7 +95,7 @@ export default {
     ProviderOrganDialog,
     ResourceTable,
     ResourcePreviewTable,
-    Model,
+    ModelTaskList,
     ProjectAudit,
     ResourceApprovalDialog
   },

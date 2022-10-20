@@ -1030,7 +1030,8 @@ export default {
       }
     },
     setComponentsDetail(data) {
-      const { modelComponents, modelPointComponents } = data
+      if (!data) return
+      const { modelComponents = [], modelPointComponents } = data
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0
@@ -1053,7 +1054,9 @@ export default {
         })
       }
       this.initGraphShape()
-      this.saveFn()
+      if (this.options.isEditable) {
+        this.saveFn()
+      }
     }
   }
 }
