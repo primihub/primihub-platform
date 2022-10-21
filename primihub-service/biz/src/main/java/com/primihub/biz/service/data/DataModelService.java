@@ -360,6 +360,7 @@ public class DataModelService {
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
         dataTask.setTaskUserId(userId);
+        dataTask.setCreateDate(new Date());
         dataTaskPrRepository.saveDataTask(dataTask);
 //        taskReq.setDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();

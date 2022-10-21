@@ -28,6 +28,7 @@ public class  ComponentTaskReq {
 
     public ComponentTaskReq(DataModel dataModel) {
         this.dataModel = dataModel;
+        this.dataTask = new DataTask();
     }
 
     public DataModelAndComponentReq getModelComponentReq(){
