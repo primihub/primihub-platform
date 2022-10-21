@@ -43,6 +43,8 @@ public class SysOauthService {
     private CaptchaService captchaService;
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private SysOAuthStateCacheService oAuthStateCacheService;
 
     public AuthRequest getAuthRequest(OAuthSourceEnum source){
         AuthRequest authRequest = null;
@@ -50,13 +52,13 @@ public class SysOauthService {
             BaseAuthConfig baseAuthConfig = baseConfiguration.getAuthConfigs().get(OAuthSourceEnum.GITHUB.getSourceName());
             if (baseAuthConfig!=null){
                 // RedirectUri URL encoding needs to be converted
-                authRequest = new AuthGithubRequest(baseAuthConfig);
+                authRequest = new AuthGithubRequest(baseAuthConfig,oAuthStateCacheService);
             }
         }else if (source == OAuthSourceEnum.WEIXIN){
             BaseAuthConfig baseAuthConfig = baseConfiguration.getAuthConfigs().get(OAuthSourceEnum.WEIXIN.getSourceName());
             if (baseAuthConfig!=null){
                 // RedirectUri URL encoding needs to be converted
-                authRequest = new AuthWeChatOpenRequest(baseAuthConfig);
+                authRequest = new AuthWeChatOpenRequest(baseAuthConfig,oAuthStateCacheService);
             }
         }
         return authRequest;
