@@ -82,6 +82,7 @@ public class SysOauthService {
         }
         AuthRequest authRequest = getAuthRequest(source);
         AuthResponse login = authRequest.login(callback);
+        log.info(JSONObject.toJSONString(login));
         if (login.getCode() != AuthResponseStatus.SUCCESS.getCode())
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,source.getSourceName()+"授权登录失败");
         AuthUser authUser = (AuthUser)login.getData();
