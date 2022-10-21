@@ -5,6 +5,7 @@ import com.primihub.biz.entity.data.vo.ModelComponent;
 import com.primihub.biz.entity.sys.vo.BaseAuthConfig;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -34,4 +35,8 @@ public class BaseConfiguration {
     private String usefulToken;
     // auth
     private Map<String, BaseAuthConfig> authConfigs;
+    // mail
+    private MailProperties mailProperties;
+    // Use in mail text content
+    private String systemDomainName;
 }

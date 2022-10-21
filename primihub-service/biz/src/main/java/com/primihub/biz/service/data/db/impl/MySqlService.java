@@ -9,6 +9,7 @@ import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.db.DataDBService;
+import com.primihub.biz.util.DataUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 @Service
 public class MySqlService extends DataDBService {
 
-    private static final String pattern="jdbc:(?<type>[a-z]+)://(?<host>[a-zA-Z0-9-//.]+):(?<port>[0-9]+)/(?<database>[a-zA-Z0-9_//-]+)?";
+
 
     protected static final String QUERY_TABLES_SQL = "select table_name as tableName from information_schema.tables where table_schema = ? order by table_name desc";
     protected static final String QUERY_DETAILS_SQL = "select * from <tableName> limit 0,50";
@@ -39,7 +40,7 @@ public class MySqlService extends DataDBService {
     @Override
     public BaseResultEntity healthConnection(DataSource dbSource) {
         String url = dbSource.getDbUrl();
-        String dataBaseName = getDataBaseName(url);
+        String dataBaseName = DataUtil.getJDBCData(url).get("database");
         if (StringUtils.isBlank(dataBaseName))
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
         dbSource.setDbName(dataBaseName);
@@ -115,15 +116,5 @@ public class MySqlService extends DataDBService {
                 jdbcDataSource.close();
             }
         }
-    }
-
-    private String getDataBaseName(String url){
-        Pattern namePattern = Pattern.compile(pattern);
-        Matcher dateMatcher = namePattern.matcher(url);
-        String database = null;
-        while (dateMatcher.find()) {
-            database = dateMatcher.group("database");
-        }
-        return database;
     }
 }

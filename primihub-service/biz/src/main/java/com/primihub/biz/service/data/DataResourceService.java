@@ -25,6 +25,7 @@ import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.data.db.impl.MySqlService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.sys.SysUserService;
+import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
 import java_data_service.NewDatasetRequest;
@@ -198,6 +199,11 @@ public class DataResourceService {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+        }
+        if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
+            resourceSynGRPCDataSet(null,dataResource);
+        }else {
+            resourceSynGRPCDataSet(null,dataResource);
         }
         resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
@@ -535,12 +541,13 @@ public class DataResourceService {
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
         }
         Map<String,Object> map = new HashMap<>();
-        map.put("dbType",dataSource.getDbType());
-        map.put("dbUrl",dataSource.getDbUrl());
-        map.put("dbUsername",dataSource.getDbUsername());
-        map.put("dbPassword", dataSource.getDbPassword());
-        map.put("dbTableName", dataSource.getDbTableName());
+//        map.put("dbType",dataSource.getDbType());
+//        map.put("dbUrl",dataSource.getDbUrl());
+        map.put("username",dataSource.getDbUsername());
+        map.put("password", dataSource.getDbPassword());
+        map.put("tableName", dataSource.getDbTableName());
         map.put("dbName", dataSource.getDbName());
+        map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
         return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map));
     }
 

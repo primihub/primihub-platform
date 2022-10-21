@@ -32,6 +32,16 @@
     "resultUrlDirPrefix": "/data/result/",
     "runModelFileUrlDirPrefix": "/data/result/runModel/",
     "usefulToken": "excalibur_forever_ABCDEFGHIJKLMN",
+    "systemDomainName":"",
+    "mailProperties":{
+        "host":"",
+        "username":"",
+        "port":465,
+        "password":"",
+        "properties":{
+
+        }
+    },
     "authConfigs":{
         "github": {
             "redirectUrl":"",

@@ -22,13 +22,18 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
+import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.primarydb.sys.SysUserPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
+import com.primihub.biz.service.sys.SysEmailService;
+import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.ZipUtils;
@@ -94,6 +99,10 @@ public class DataAsyncService implements ApplicationContextAware {
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
+    @Autowired
+    private SysUserSecondarydbRepository sysUserSecondarydbRepository;
+    @Autowired
+    private SysEmailService sysEmailService;
 
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
@@ -153,7 +162,7 @@ public class DataAsyncService implements ApplicationContextAware {
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
-        if (req.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
             log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
             ShareModelVo vo = new ShareModelVo();
             vo.setDataModel(req.getDataModel());
@@ -163,6 +172,9 @@ public class DataAsyncService implements ApplicationContextAware {
             vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
             sendShareModelTask(vo);
         }
+
+        sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
+
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap){
@@ -494,4 +506,29 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
+    public void sendModelTaskMail(DataTask dataTask,Long projectId){
+        if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+            return;
+        SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(dataTask.getTaskUserId());
+        if (sysUser == null)
+            log.info("task_id:{} The task email was not sent. Reason for not sending : No user information",dataTask.getTaskIdName());
+        if (!DataUtil.isEmail(sysUser.getUserAccount()))
+            log.info("task_id:{} The task email was not sent. Reason for not sending : The user account is not an email address",dataTask.getTaskIdName());
+        StringBuilder sb = new StringBuilder();
+        sb.append("尊敬的【");
+        sb.append(sysUser.getUserName());
+        sb.append("】您在【");
+        sb.append(DateUtil.formatDate(dataTask.getCreateDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat()));
+        sb.append("】使用【");
+        sb.append(sysUser.getUserAccount());
+        sb.append("】创建的任务已失败，请前往原语Primihub隐私计算平台查看详情\n");
+        if (StringUtils.isNotBlank(dataTask.getTaskName())){
+            sb.append("任务名称：【").append(dataTask.getTaskName()).append("】\n");
+        }
+        sb.append("任务ID：【").append(dataTask.getTaskIdName()).append("】\n");
+        if (StringUtils.isNotBlank(baseConfiguration.getSystemDomainName())){
+            sb.append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
+        }
+        sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
+    }
 }
