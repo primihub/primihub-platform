@@ -6,7 +6,7 @@
           <p class="organ-name"><i class="el-icon-office-building" />{{ ownOrganName }}</p>
           <search-input @click="handelSearchA" @change="handleSearchNameChangeA" />
         </div>
-        <PSITaskResult :data="allDataPsiTask" @delete="handleDelete" />
+        <PSITaskResult :data="allDataPsiTask" @delete="handleDelete" @cancel="handleCancel" />
         <pagination v-show="totalPage>1" :limit.sync="pageSize" :page-count="totalPage" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
       </div>
     </div>
@@ -76,6 +76,9 @@ export default {
       if (data.length === 0 && (this.pageNo === this.totalPage)) {
         this.pageNo = 1
       }
+      this.getPsiTaskList()
+    },
+    handleCancel() {
       this.getPsiTaskList()
     },
     getPsiTaskList() {

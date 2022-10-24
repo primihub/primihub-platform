@@ -31,8 +31,12 @@
       <el-table-column label="时间" prop="createDate" />
       <el-table-column label="操作" min-width="120px" align="center">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" icon="el-icon-view" @click="openDialog(row.taskId)">查看</el-button>
-          <el-button type="danger" size="mini" icon="el-icon-delete" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-button>
+          <p class="tool-buttons">
+            <el-link type="primary" @click="openDialog(row.taskId)">查看</el-link>
+            <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
+            <el-link type="danger" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-link>
+          </p>
+
         </template>
       </el-table-column>
     </el-table>
@@ -48,7 +52,7 @@
 </template>
 
 <script>
-import { getPsiTaskDetails, delPsiTask, retryPsiTask } from '@/api/PSI'
+import { getPsiTaskDetails, delPsiTask, retryPsiTask, cancelPsiTask } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 
 export default {
@@ -134,11 +138,26 @@ export default {
               type: 'success',
               duration: 1000
             })
+            clearInterval(this.timer)
             this.$emit('delete', this.tableData)
           }
         })
       }).catch(() => {})
     },
+    async cancelTask(row) {
+      const res = await cancelPsiTask({ taskId: row.taskId })
+      if (res.code === 0) {
+        const posIndex = this.tableData.findIndex(item => item.taskId === row.taskId)
+        this.tableData[posIndex].taskState === 4
+        this.$notify({
+          message: '取消成功',
+          type: 'success',
+          duration: 1000
+        })
+        this.$emit('cancel', { taskId: row.taskId })
+      }
+    },
+
     retry(taskId) {
       this.taskId = taskId
       retryPsiTask({ taskId }).then(res => {
@@ -191,9 +210,6 @@ export default {
   background: #fafafa;
   font-size: 14px;
 }
-::v-deep .el-table,::v-deep .el-divider__text, .el-link{
-  font-size: 12px;
-}
 ::v-deep .el-descriptions__body{
   background-color: #fafafa;
   padding: 10px 20px 10px 20px;
@@ -241,5 +257,10 @@ export default {
 }
 .state-error{
   background-color: #F56C6C;
+}
+.tool-buttons{
+  .el-link{
+    margin: 0 3px;
+  }
 }
 </style>
