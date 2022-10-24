@@ -33,6 +33,8 @@ public class BaseConfiguration {
     private String runModelFileUrlDirPrefix;
     private List<ModelComponent> modelComponents;
     private String usefulToken;
+    // resource
+    private boolean displayDatabaseSourceType = false;
     // auth
     private Map<String, BaseAuthConfig> authConfigs;
     // mail

@@ -38,7 +38,7 @@ aj:
   captcha:
     #    jigsaw: classpath:images/yyjigsaw
     cache-type: redis
-#    water-mark: PrimiHub
+    water-mark: PrimiHub
     slip-offset: 5
     aes-status: true
     interference-options: 2

@@ -38,6 +38,7 @@ import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -260,7 +261,12 @@ public class DataAsyncService implements ApplicationContextAware {
                 log.info("grpc结果:"+reply);
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
                 if (task1.getTaskState()!=4){
-                    psiTask.setTaskState(1);
+                    if (FileUtil.isFileExists(psiTask.getFilePath())){
+                        psiTask.setTaskState(1);
+                    }else {
+                        psiTask.setTaskState(3);
+                    }
+
 //                psiTaskOutputFileHandle(psiTask);
                 }
             } catch (Exception e) {
@@ -438,7 +444,8 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         log.info(resourceId);
         DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(UUID.randomUUID().toString());
+//        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(dataReasoning.getReasoningName());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
