@@ -198,5 +198,9 @@ public class ResourceController {
         return dataResourceService.resourceStatusChange(resourceId,resourceState);
     }
 
+    @RequestMapping("displayDatabaseSourceType")
+    public BaseResultEntity displayDatabaseSourceType(){
+        return dataResourceService.displayDatabaseSourceType();
+    }
 
 }

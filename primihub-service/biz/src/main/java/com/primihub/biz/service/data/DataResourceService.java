@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
@@ -64,6 +65,8 @@ public class DataResourceService {
     private DataServiceGrpcClient dataServiceGrpcClient;
     @Autowired
     private DataSourceService dataSourceService;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -589,6 +592,10 @@ public class DataResourceService {
             }
         }
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity displayDatabaseSourceType() {
+        return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
     }
 }
 
