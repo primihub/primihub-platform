@@ -226,7 +226,7 @@
         from
             data_file_field
         where
-            file_id = #{fileId} and resource_id = #{resourceId}
+            resource_id = #{resourceId}
     </select>
 
     <select id="findCopyResourceList" resultType="com.primihub.biz.entity.data.po.DataResource">
