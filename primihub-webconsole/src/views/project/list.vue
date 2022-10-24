@@ -116,6 +116,7 @@
 
             <el-table-column
               label="参与机构"
+              min-width="120"
             >
               <template slot-scope="{row}">
                 <span>发起方: {{ row.createdOrganName }}</span><br>

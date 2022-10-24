@@ -229,7 +229,7 @@ export default {
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
-        if (task.isCooperation === 1) {
+        if (this.task.isCooperation === 1) {
           // provider organ only view own resource data
           this.modelResources = this.modelResources.filter(item => item.organId === this.userOrganId)
         }

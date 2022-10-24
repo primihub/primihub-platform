@@ -43,6 +43,7 @@
         <el-table-column
           prop="resourceName"
           label="名称"
+          min-width="130"
         >
           <template slot-scope="{row}">
             <template v-if="hasViewPermission && row.resourceState === 0">
@@ -88,14 +89,8 @@
             样本量：{{ row.fileRows }} <br>
             正例样本数量：{{ row.fileYRows ? row.fileYRows : 0 }}<br>
             正例样本比例：{{ row.fileYRatio? row.fileYRatio : 0 }}% <br>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="是否包含Y值"
-        >
-          <template slot-scope="{row}">
-            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含</el-tag>
-            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含</el-tag>
+            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含Y值</el-tag>
+            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含Y值</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -110,7 +105,7 @@
         <el-table-column
           prop="resourceHashCode"
           label="文件Hash"
-          min-width="120"
+          min-width="130"
         />
         <el-table-column
           label="操作"
@@ -119,9 +114,9 @@
           align="center"
         >
           <template slot-scope="{row}">
-            <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
-            <el-button v-if="hasEditPermission && row.resourceState === 0" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
-            <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+            <el-button type="text" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+            <el-button v-if="hasEditPermission && row.resourceState === 0" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
+            <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
           </template>
         </el-table-column>
       </el-table>

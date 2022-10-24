@@ -54,7 +54,7 @@
       >
         <el-table-column
           label="机构名称 / ID"
-          min-width="200"
+          min-width="160"
         >
           <template slot-scope="{row}">
             <span>{{ row.organName }}</span> <br>
@@ -63,7 +63,7 @@
         </el-table-column>
         <el-table-column
           label="资源 / Id"
-          min-width="210"
+          min-width="160"
         >
           <template slot-scope="{row}">
             <template v-if="hasViewPermission">
@@ -104,7 +104,7 @@
         <el-table-column
           prop="resourceHashCode"
           label="文件Hash"
-          min-width="120"
+          min-width="130"
         />
         <el-table-column
           label="数据信息"
