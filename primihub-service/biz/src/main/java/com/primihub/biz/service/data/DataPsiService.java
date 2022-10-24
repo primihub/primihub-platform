@@ -15,6 +15,7 @@ import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,7 +98,8 @@ public class DataPsiService {
         dataPsiPrRepository.saveDataPsi(dataPsi);
         DataPsiTask task = new DataPsiTask();
         task.setPsiId(dataPsi.getId());
-        task.setTaskId(UUID.randomUUID().toString());
+//        task.setTaskId(UUID.randomUUID().toString());
+        task.setTaskId(Long.toString(SnowflakeId.getInstance().nextId()));
         task.setTaskState(0);
         if (dataPsi.getResultOrganIds().indexOf(",")!=-1){
             task.setAscription("双方获取");

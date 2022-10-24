@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
@@ -25,6 +26,7 @@ import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.data.db.impl.MySqlService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.sys.SysUserService;
+import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
 import java_data_service.NewDatasetRequest;
@@ -63,6 +65,8 @@ public class DataResourceService {
     private DataServiceGrpcClient dataServiceGrpcClient;
     @Autowired
     private DataSourceService dataSourceService;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -199,6 +203,11 @@ public class DataResourceService {
         if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
+        if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
+            resourceSynGRPCDataSet(null,dataResource);
+        }else {
+            resourceSynGRPCDataSet(null,dataResource);
+        }
         resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
@@ -217,7 +226,7 @@ public class DataResourceService {
         SysUser sysUser = sysUserService.getSysUserById(dataResourceVo.getUserId());
         dataResourceVo.setUserName(sysUser == null?"":sysUser.getUserName());
         dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
-        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getFileId(),dataResource.getResourceId())
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
                 .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
                 .collect(Collectors.toList());
         Map<String,Object> map = new HashMap<>();
@@ -535,12 +544,13 @@ public class DataResourceService {
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
         }
         Map<String,Object> map = new HashMap<>();
-        map.put("dbType",dataSource.getDbType());
-        map.put("dbUrl",dataSource.getDbUrl());
-        map.put("dbUsername",dataSource.getDbUsername());
-        map.put("dbPassword", dataSource.getDbPassword());
-        map.put("dbTableName", dataSource.getDbTableName());
+//        map.put("dbType",dataSource.getDbType());
+//        map.put("dbUrl",dataSource.getDbUrl());
+        map.put("username",dataSource.getDbUsername());
+        map.put("password", dataSource.getDbPassword());
+        map.put("tableName", dataSource.getDbTableName());
         map.put("dbName", dataSource.getDbName());
+        map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
         return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map));
     }
 
@@ -582,6 +592,10 @@ public class DataResourceService {
             }
         }
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity displayDatabaseSourceType() {
+        return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
     }
 }
 
