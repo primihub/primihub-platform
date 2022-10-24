@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function displayDatabaseSourceType(params) {
+  return request({
+    url: '/data/resource/displayDatabaseSourceType',
+    method: 'get',
+    params
+  })
+}
+
 export function healthConnection(data) {
   return request({
     url: '/data/dbsource/healthConnection',
@@ -8,6 +16,7 @@ export function healthConnection(data) {
     data
   })
 }
+
 export function tableDetails(data) {
   return request({
     url: '/data/dbsource/tableDetails',

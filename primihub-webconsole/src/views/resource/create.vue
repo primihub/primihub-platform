@@ -79,14 +79,14 @@
           <div class="item-wrap-normal">
             <el-radio-group v-model="dataForm.resourceSource">
               <el-radio :label="1">文件上传</el-radio>
-              <el-radio :label="2">数据库导入</el-radio>
+              <el-radio v-if="showDatabaseRadio" :label="2">数据库导入</el-radio>
             </el-radio-group>
           </div>
           <template v-if="dataForm.resourceSource === 1">
             <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
           </template>
           <template v-if="dataForm.resourceSource === 2">
-            <DatabaseImport @data="getData" />
+            <DatabaseImport @success="handleImportSuccess" />
           </template>
         </template>
         <template v-else>
@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
+import { saveResource, getResourceDetail, resourceFilePreview, displayDatabaseSourceType } from '@/api/resource'
 import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
@@ -216,7 +216,8 @@ export default {
         leaf: 'leaf',
         lazy: true
       },
-      authOrganList: []
+      authOrganList: [],
+      showDatabaseRadio: false
     }
   },
   async created() {
@@ -225,11 +226,20 @@ export default {
     if (this.isEditPage) {
       await this.getResourceDetail()
     }
+    await this.displayDatabaseSourceType()
   },
   methods: {
-    getData({ dataList = [], fieldList = [] }) {
-      this.dataList = dataList || []
-      this.fieldList = fieldList || []
+    async displayDatabaseSourceType() {
+      const res = await displayDatabaseSourceType()
+      if (res.code === 0) {
+        this.showDatabaseRadio = res.result
+      }
+    },
+    handleImportSuccess(data) {
+      this.dataForm.dataSource = data.dataSource
+      this.fieldList = data.fieldList
+      this.dataForm.fieldList = this.formatParams()
+      this.dataList = data.dataList
     },
     handleResourceChange(data) {
       this.fieldList = data
@@ -295,9 +305,16 @@ export default {
     async submitForm() {
       this.$refs['dataForm'].validate(async(valid) => {
         if (valid) {
-          if (this.dataForm.fileId === -1) {
+          if (this.dataForm.resourceSource === '1' && this.dataForm.fileId === '') {
             this.$message({
               message: '请先上传文件',
+              type: 'warning'
+            })
+            this.loading = false
+            return
+          } else if (this.dataForm.fieldList.length < 1) {
+            this.$message({
+              message: '请先上传文件或导入数据',
               type: 'warning'
             })
             this.loading = false
@@ -309,13 +326,20 @@ export default {
             })
           }
           this.loading = true
+          console.log(this.dataForm)
           saveResource(this.dataForm).then(res => {
             this.loading = false
             if (res.code === 0) {
               this.toResourceDetail(res.result.resourceId)
             } else {
               this.loading = false
+              this.$message({
+                message: res.msg,
+                type: 'error'
+              })
             }
+          }).catch(err => {
+            console.log(err)
           })
         } else {
           this.loading = false
