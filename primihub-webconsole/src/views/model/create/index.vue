@@ -114,12 +114,6 @@ export default {
             message: '保存成功',
             type: 'success'
           })
-        } else {
-          this.$message({
-            message: '最多保存20个草稿，请在“导入草稿”中删除草稿重试。',
-            type: 'error',
-            duration: 5000
-          })
         }
       })
     },
@@ -169,6 +163,13 @@ export default {
       }
     },
     saveAsDraft() {
+      if (this.draftId === '') {
+        this.$message({
+          message: '请先保存草稿',
+          type: 'warning'
+        })
+        return
+      }
       if (this.beforeSaveDraft()) {
         this.draftDialogTitle = '保存为新草稿'
         this.saveDraftType = 1
