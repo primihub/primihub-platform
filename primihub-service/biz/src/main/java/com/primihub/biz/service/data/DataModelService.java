@@ -26,6 +26,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -355,7 +356,8 @@ public class DataModelService {
         }
         dataModelPrRepository.updateDataModel(taskReq.getDataModel());
         DataTask dataTask = taskReq.getDataTask();
-        dataTask.setTaskIdName(UUID.randomUUID().toString());
+//        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTask.setTaskState(TaskStateEnum.INIT.getStateType());
