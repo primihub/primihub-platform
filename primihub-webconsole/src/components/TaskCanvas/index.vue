@@ -170,7 +170,10 @@ export default {
     },
     async componentsDetail(newVal) {
       if (newVal) {
-        console.log('componentsDetail', newVal)
+        // only same project can load data
+        if (newVal.projectId !== this.projectId) {
+          this.deleteComponentsVal(newVal)
+        }
         this.graph.clearCells()
         this.nodeData = this.startNode
         this.graphData.cells = []
@@ -231,14 +234,8 @@ export default {
       }
     },
     deleteComponentsVal() {
-      this.graphData.cells.map(item => {
-        if (item.shape === 'dag-node') {
-          item.data.componentTypes.map(c => {
-            c.inputValue = ''
-          })
-        }
-      })
-      console.log('deleteComponentsVal', this.graphData)
+      const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'dataSet')
+      this.graphData.cells[posIndex].data.componentTypes[0].inputValue = ''
     },
     // 清除画布
     clearFn() {
