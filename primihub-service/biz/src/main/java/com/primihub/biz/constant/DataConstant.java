@@ -39,11 +39,5 @@ public class DataConstant {
     // email
     public final static String TASK_EMAIL_SUBJECT ="[Primihub] Primihub Platform Task Notification!";
 
-    public final static String TASK_EMAIL_TEXT= "" +
-            "尊敬的【<username>】您在【<date>】使用【<user>】创建的任务已失败，请前往原语Primihub隐私计算平台查看详情\n" +
-            "任务名称：【<taskname>】\n" +
-            "任务ID：【<taskidname>】\n" +
-            "【http://<prefix>.primihub.com/#/project/detail/<projectId>/task/<taskid>】";
-
 
 }
