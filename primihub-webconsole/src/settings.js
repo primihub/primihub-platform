@@ -13,7 +13,10 @@ module.exports = {
    * @description Whether show the logo in sidebar
    */
   sidebarLogo: false,
-  googleAnalytics: {
-    trackingID: ''
-  }
+
+  /**
+   * @type {boolean} true | false
+   * @description for google analytics
+   */
+  googleAnalytics: true
 }

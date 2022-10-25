@@ -100,9 +100,8 @@ export default {
   methods: {
     // 保存模板文件
     saveOrUpdateComponentDraft() {
-      this.deleteComponentsVal(this.componentJson)
       const params = {
-        draftId: this.draftId,
+        draftId: this.saveDraftType === 0 ? this.draftId : '',
         draftName: this.draftName,
         componentJson: JSON.stringify(this.componentJson),
         componentImage: this.componentImage
@@ -116,9 +115,8 @@ export default {
           })
         } else {
           this.$message({
-            message: '最多保存20个草稿，请在“导入草稿”中删除草稿重试。',
-            type: 'error',
-            duration: 5000
+            message: res.msg,
+            type: 'error'
           })
         }
       })
@@ -134,8 +132,6 @@ export default {
       this.draftName = data.draftName
       this.componentJson = JSON.parse(data.componentJson)
       this.componentDetail = this.componentJson
-      this.deleteComponentsVal(this.componentJson)
-      console.log('handleImportDraftDialogSubmit', this.componentJson)
       this.importDraftDialogVisible = false
     },
     handleDraftDialogClose() {
@@ -144,9 +140,6 @@ export default {
     handleDraftDialogSubmit(data) {
       this.draftDialogVisible = false
       this.draftName = data.draftName
-      if (this.saveDraftType === 1) {
-        this.draftId = ''
-      }
       this.toPNG()
     },
     beforeSaveDraft() {
@@ -169,6 +162,13 @@ export default {
       }
     },
     saveAsDraft() {
+      if (this.beforeSaveDraft() && this.draftId === '') {
+        this.$message({
+          message: '请先保存草稿',
+          type: 'warning'
+        })
+        return
+      }
       if (this.beforeSaveDraft()) {
         this.draftDialogTitle = '保存为新草稿'
         this.saveDraftType = 1
@@ -324,7 +324,9 @@ export default {
       const dataSetComIndex = data?.modelComponents.findIndex(item => item.componentCode === name)
       data?.modelComponents[dataSetComIndex]?.componentValues.map(item => {
         item.val = ''
+        return item
       })
+      return data
     },
     getSaveParams(data) {
       this.componentJson = data
