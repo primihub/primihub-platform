@@ -100,9 +100,8 @@ export default {
   methods: {
     // 保存模板文件
     saveOrUpdateComponentDraft() {
-      this.deleteComponentsVal(this.componentJson)
       const params = {
-        draftId: this.draftId,
+        draftId: this.saveDraftType === 0 ? this.draftId : '',
         draftName: this.draftName,
         componentJson: JSON.stringify(this.componentJson),
         componentImage: this.componentImage
@@ -113,6 +112,11 @@ export default {
           this.$message({
             message: '保存成功',
             type: 'success'
+          })
+        } else {
+          this.$message({
+            message: res.msg,
+            type: 'error'
           })
         }
       })
@@ -127,9 +131,11 @@ export default {
       this.draftId = data.draftId
       this.draftName = data.draftName
       this.componentJson = JSON.parse(data.componentJson)
+      // only same project can load data
+      if (this.componentJson.projectId !== this.projectId) {
+        this.deleteComponentsVal(this.componentJson)
+      }
       this.componentDetail = this.componentJson
-      this.deleteComponentsVal(this.componentJson)
-      console.log('handleImportDraftDialogSubmit', this.componentJson)
       this.importDraftDialogVisible = false
     },
     handleDraftDialogClose() {
@@ -138,9 +144,6 @@ export default {
     handleDraftDialogSubmit(data) {
       this.draftDialogVisible = false
       this.draftName = data.draftName
-      if (this.saveDraftType === 1) {
-        this.draftId = ''
-      }
       this.toPNG()
     },
     beforeSaveDraft() {
@@ -163,7 +166,7 @@ export default {
       }
     },
     saveAsDraft() {
-      if (this.draftId === '') {
+      if (this.beforeSaveDraft() && this.draftId === '') {
         this.$message({
           message: '请先保存草稿',
           type: 'warning'
