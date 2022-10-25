@@ -131,10 +131,6 @@ export default {
       this.draftId = data.draftId
       this.draftName = data.draftName
       this.componentJson = JSON.parse(data.componentJson)
-      // only same project can load data
-      if (this.componentJson.projectId !== this.projectId) {
-        this.deleteComponentsVal(this.componentJson)
-      }
       this.componentDetail = this.componentJson
       this.importDraftDialogVisible = false
     },
@@ -328,7 +324,9 @@ export default {
       const dataSetComIndex = data?.modelComponents.findIndex(item => item.componentCode === name)
       data?.modelComponents[dataSetComIndex]?.componentValues.map(item => {
         item.val = ''
+        return item
       })
+      return data
     },
     getSaveParams(data) {
       this.componentJson = data
