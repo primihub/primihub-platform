@@ -99,6 +99,7 @@ export default {
           this.loading = false
         } else {
           this.noData = true
+          this.loading = false
         }
 
         console.log(this.data)
