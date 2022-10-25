@@ -537,7 +537,8 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         sb.append("任务ID：【").append(dataTask.getTaskIdName()).append("】\n");
         if (StringUtils.isNotBlank(baseConfiguration.getSystemDomainName())){
-            sb.append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
+            sb.append("<a href=\"").append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
+            sb.append("\">").append("点击查询任务详情").append("</a>");
         }
         sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
     }
