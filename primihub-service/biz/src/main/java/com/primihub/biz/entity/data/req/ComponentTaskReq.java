@@ -7,10 +7,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Data
 @Slf4j
@@ -25,6 +22,7 @@ public class  ComponentTaskReq {
     private List<DataModelComponent> dataModelComponents = new ArrayList<>();
     private List<DataComponent> dataComponents = new ArrayList<>();
     private Map<String, String> valueMap = new HashMap<>();
+    private List<LinkedHashMap<String,Object>> fusionResourceList;
 
     public ComponentTaskReq(DataModel dataModel) {
         this.dataModel = dataModel;

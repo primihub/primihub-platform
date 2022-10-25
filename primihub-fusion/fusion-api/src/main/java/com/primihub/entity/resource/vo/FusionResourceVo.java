@@ -2,11 +2,13 @@ package com.primihub.entity.resource.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.primihub.entity.resource.po.FusionResourceField;
 import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 
 @Data
@@ -102,5 +104,7 @@ public class FusionResourceVo {
      * 资源状态 目前有 0上线 1下线
      */
     private Integer resourceState;
+
+    private List<FusionResourceField> fieldList;
 
 }
