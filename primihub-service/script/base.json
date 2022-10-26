@@ -283,7 +283,7 @@
                 },
                 {
                     "is_show": 0,
-                    "is_required": 1,
+                    "is_required": 0,
                     "type_code": "arbiterOrgan",
                     "type_name": "可信第三方选择",
                     "input_type": "label",

@@ -48,6 +48,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
         log.info("ids:{}",ids);
+        log.info("ids:{}",JSONObject.toJSONString(ids));
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EXCEPTION_PAHT, freeMarkerConfigurer, new HashMap(){{put("datasets",JSONObject.toJSON(ids));}});
         log.info("freemarkerContent:{}",freemarkerContent);
         if (freemarkerContent != null) {
