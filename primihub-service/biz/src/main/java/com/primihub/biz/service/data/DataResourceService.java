@@ -632,6 +632,7 @@ public class DataResourceService {
         BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
             return baseResultEntity;
+        derivationDataResource.setResourceFusionId(UUID.randomUUID().toString());
         dataResourcePrRepository.saveResource(derivationDataResource);
         List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
         for (DataFileField dataFileField : dataFileFields) {
@@ -642,7 +643,7 @@ public class DataResourceService {
         DataResourceTag dataResourceTag = new DataResourceTag("衍生数据");
         dataResourcePrRepository.saveResourceTag(dataResourceTag);
         dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-        return BaseResultEntity.success();
+        return BaseResultEntity.success(derivationDataResource.getResourceFusionId());
     }
 }
 

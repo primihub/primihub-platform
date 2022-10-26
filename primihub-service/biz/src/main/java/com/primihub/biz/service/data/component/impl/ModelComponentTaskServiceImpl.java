@@ -93,6 +93,16 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
+        if (taskReq.getDerivationList()!=null && taskReq.getDerivationList().size()!=0){
+            Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, String> next = iterator.next();
+                if (taskReq.getDerivationList().containsKey(next.getValue())){
+                    String newDataSetId = taskReq.getDerivationList().get(next.getValue()).getNewDataSetId();
+                    taskReq.getFreemarkerMap().put(next.getKey(),newDataSetId);
+                }
+            }
+        }
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
         }else if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.TRANSVERSE_LR.getType())){

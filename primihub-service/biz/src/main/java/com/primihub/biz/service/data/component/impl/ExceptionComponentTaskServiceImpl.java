@@ -8,9 +8,11 @@ import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
+import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FreemarkerUtil;
@@ -38,6 +40,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
     private WorkGrpcClient workGrpcClient;
     @Autowired
     private DataResourceService dataResourceService;
+    @Autowired
+    private DataModelPrRepository dataModelPrRepository;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -89,6 +93,12 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
+                }else {
+                    DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
+                    dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
+                    dataModelResource.setResourceId(derivationResource.getResult().toString());
+                    dataModelPrRepository.saveDataModelResource(dataModelResource);
+                    taskReq.getDmrList().add(dataModelResource);
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

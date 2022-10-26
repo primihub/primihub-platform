@@ -106,7 +106,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
             taskReq.getDmrList().add(dataModelResource);
         }
-        dataModelPrRepository.saveDataModelResource(taskReq.getDmrList());
+        dataModelPrRepository.saveDataModelResourceList(taskReq.getDmrList());
         return BaseResultEntity.success();
     }
 }

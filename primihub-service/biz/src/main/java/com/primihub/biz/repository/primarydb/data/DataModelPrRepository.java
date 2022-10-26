@@ -18,7 +18,9 @@ public interface DataModelPrRepository {
 
     void updateDataModel(DataModel dataModel);
 
-    void saveDataModelResource(List<DataModelResource> list);
+    void saveDataModelResourceList(List<DataModelResource> list);
+
+    void saveDataModelResource(DataModelResource dataModelResource);
 
     void saveDataModelQuota(DataModelQuota modelQuota);
 
