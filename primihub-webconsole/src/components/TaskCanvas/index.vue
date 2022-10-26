@@ -172,7 +172,7 @@ export default {
       if (newVal) {
         // only same project can load data
         if (newVal.projectId !== this.projectId) {
-          this.deleteComponentsVal(newVal)
+          this.deleteComponentsVal()
         }
         this.graph.clearCells()
         this.nodeData = this.startNode
@@ -235,7 +235,9 @@ export default {
     },
     deleteComponentsVal() {
       const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'dataSet')
-      this.graphData.cells[posIndex].data.componentTypes[0].inputValue = ''
+      if (posIndex !== -1) {
+        this.graphData.cells[posIndex].data.componentTypes[0].inputValue = ''
+      }
     },
     // 清除画布
     clearFn() {
@@ -759,7 +761,7 @@ export default {
         const current = this.modelData.filter(v => v.componentCode === componentCode)[0]
         const timeConsuming = current?.timeConsuming
         const componentState = current?.componentState
-        const { componentTypes, isMandatory } = this.components.find(item => {
+        const component = this.components.find(item => {
           return item.componentCode === componentCode
         })
         this.graphData.cells.push({
@@ -781,8 +783,8 @@ export default {
             componentState,
             componentCode,
             componentName,
-            componentTypes,
-            isMandatory,
+            componentTypes: component && component.componentTypes,
+            isMandatory: component && component.isMandatory,
             timeConsuming
           },
           zIndex: 1
@@ -919,7 +921,7 @@ export default {
             output: item.target
           })
         } else {
-          const { componentCode, componentName, componentTypes } = data
+          const { componentCode, componentName, componentTypes = [] } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
           for (let i = 0; i < componentTypes.length; i++) {
@@ -1042,13 +1044,15 @@ export default {
         this.selectComponentList.push(item.componentCode)
         this.$emit('selectComponents', this.selectComponentList)
         const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-        item.componentValues.map(item => {
-          this.components[posIndex].componentTypes.map(c => {
-            if (c.typeCode === item.key && item.val !== '') {
-              c.inputValue = item.val
-            }
+        if (posIndex !== -1) {
+          item.componentValues.map(item => {
+            this.components[posIndex]?.componentTypes.map(c => {
+              if (c.typeCode === item.key && item.val !== '') {
+                c.inputValue = item.val
+              }
+            })
           })
-        })
+        }
       }
       this.initGraphShape()
       if (this.options.isEditable) {
