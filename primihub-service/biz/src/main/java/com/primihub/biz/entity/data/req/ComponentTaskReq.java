@@ -3,6 +3,7 @@ package com.primihub.biz.entity.data.req;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
+import com.primihub.biz.service.data.component.impl.ExceptionComponentTaskServiceImpl;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -23,6 +24,7 @@ public class  ComponentTaskReq {
     private List<DataComponent> dataComponents = new ArrayList<>();
     private Map<String, String> valueMap = new HashMap<>();
     private List<LinkedHashMap<String,Object>> fusionResourceList;
+    private Map<String, ExceptionComponentTaskServiceImpl.ExceptionEntity> derivationList;
 
     public ComponentTaskReq(DataModel dataModel) {
         this.dataModel = dataModel;

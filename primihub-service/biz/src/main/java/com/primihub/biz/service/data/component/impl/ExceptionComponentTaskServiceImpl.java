@@ -1,25 +1,23 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
-import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
-import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
+import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
-import com.primihub.biz.util.ZipUtils;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
@@ -38,6 +36,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
     private WorkGrpcClient workGrpcClient;
+    @Autowired
+    private DataResourceService dataResourceService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -52,10 +52,11 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         map.put("dataStr",JSONObject.toJSONString(ids));
         log.info(JSONObject.toJSONString(map));
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EXCEPTION_PAHT, freeMarkerConfigurer, map);
-        log.info("freemarkerContent:{}",freemarkerContent);
+        log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {
                 Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+                taskReq.setDerivationList(exceptionEntityMap);
                 log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
                 Common.Params params = Common.Params.newBuilder()
@@ -79,7 +80,19 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         .build();
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
+                if(reply.getRetCode() == 2){
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
+                }
+                // derivation resource datas
+                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(exceptionEntityMap, taskReq.getDataTask().getTaskUserId(), "异常值处理");
+                if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
+                }
             } catch (Exception e) {
+                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:"+e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
             }
         }
@@ -101,7 +114,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         public ExceptionEntity(Map<String, Integer> columns) {
             this.columns = columns;
         }
-
+        @JsonIgnore
         private Map<String,Integer> columns;
         private String newDataSetId = UUID.randomUUID().toString();
     }

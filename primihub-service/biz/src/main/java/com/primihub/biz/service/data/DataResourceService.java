@@ -13,18 +13,19 @@ import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.*;
+import com.primihub.biz.entity.data.req.DataResourceFieldReq;
+import com.primihub.biz.entity.data.req.DataResourceReq;
+import com.primihub.biz.entity.data.req.DataSourceOrganReq;
+import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.DataServiceGrpcClient;
-import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
-import com.primihub.biz.service.data.db.impl.MySqlService;
-import com.primihub.biz.service.sys.SysOrganService;
+import com.primihub.biz.service.data.component.impl.ExceptionComponentTaskServiceImpl;
 import com.primihub.biz.service.sys.SysUserService;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
@@ -35,11 +36,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
@@ -119,7 +117,7 @@ public class DataResourceService {
                     return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"file");
                 }
                 dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null,sysFile);
-                handleDataResourceFileResult = handleDataResourceFile(dataResource, sysFile);
+                handleDataResourceFileResult = handleDataResourceFile(dataResource, sysFile.getFileUrl());
             }else if (req.getResourceSource() == 2){
                 dataSource  = DataSourceConvert.DataSourceReqConvertPo(req.getDataSource());
                 handleDataResourceFileResult = handleDataResourceSource(dataResource,fieldList,dataSource);
@@ -429,6 +427,8 @@ public class DataResourceService {
         Map<Long, List<DataFileField>> fileFieldListMap = fileFieldList.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
         List<DataResourceCopyVo> copyVolist = new ArrayList();
         for (DataResource dataResource : resourceList) {
+            if (dataResource.getResourceSource() == 3)
+                continue;
             if (dataResource.getResourceFusionId()==null||dataResource.getResourceFusionId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
                 dataResourcePrRepository.editResource(dataResource);
@@ -447,11 +447,11 @@ public class DataResourceService {
         return copyVolist;
     }
 
-    public BaseResultEntity handleDataResourceFile(DataResource dataResource,SysFile sysFile){
-        File file = new File(sysFile.getFileUrl());
+    public BaseResultEntity handleDataResourceFile(DataResource dataResource,String url){
+        File file = new File(url);
         if (file.exists()) {
-            dataResource.setFileRows(FileUtil.getFileLineNumber(sysFile.getFileUrl())-1);
-            List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), null);
+            dataResource.setFileRows(FileUtil.getFileLineNumber(url)-1);
+            List<String> fileContent = FileUtil.getFileContent(url, null);
             if (fileContent.size() > 0) {
                 dataResource.setFileHandleField(fileContent.get(0));
                 dataResource.setFileColumns(dataResource.getFileHandleField().split(",").length);
@@ -470,7 +470,7 @@ public class DataResourceService {
                 String md5hash = FileUtil.md5HashCode(file);
                 dataResource.setResourceHashCode(md5hash);
             }catch (Exception e){
-                log.info("resource_id:{} - url:{} - e:{}",dataResource.getResourceId(),sysFile.getFileUrl(),e.getMessage());
+                log.info("resource_id:{} - url:{} - e:{}",dataResource.getResourceId(),url,e.getMessage());
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"文件hash出错");
             }
         }else {
@@ -596,6 +596,53 @@ public class DataResourceService {
 
     public BaseResultEntity displayDatabaseSourceType() {
         return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
+    }
+
+    public BaseResultEntity saveDerivationResource(Map<String, ExceptionComponentTaskServiceImpl.ExceptionEntity> derivationList,Long userId,String derivationType) {
+        Set<String> resourceIds = derivationList.keySet();
+        DataResource dataResource = null;
+        for (String resourceId : resourceIds) {
+            dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+            if (dataResource!=null)
+                break;
+        }
+        if (dataResource == null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
+        String url = dataResource.getUrl();
+        url = url.replace(".csv","_abnormal.csv");
+        File file = new File(url);
+        if (!file.exists())
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
+        DataResource derivationDataResource = new DataResource();
+        derivationDataResource.setUrl(url);
+        derivationDataResource.setResourceName(dataResource.getResourceName() + derivationType);
+        derivationDataResource.setResourceAuthType(1);
+        derivationDataResource.setResourceSource(3);
+        derivationDataResource.setUserId(userId);
+        derivationDataResource.setOrganId(0L);
+        derivationDataResource.setFileId(0L);
+        derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
+        derivationDataResource.setFileSuffix(".csv");
+        derivationDataResource.setFileColumns(0);
+        derivationDataResource.setFileRows(0);
+        derivationDataResource.setFileHandleStatus(0);
+        derivationDataResource.setResourceNum(0);
+        derivationDataResource.setDbId(0L);
+        derivationDataResource.setResourceState(0);
+        BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+            return baseResultEntity;
+        dataResourcePrRepository.saveResource(derivationDataResource);
+        List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
+        for (DataFileField dataFileField : dataFileFields) {
+            dataFileField.setFileId(null);
+            dataFileField.setResourceId(derivationDataResource.getResourceId());
+        }
+        dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
+        DataResourceTag dataResourceTag = new DataResourceTag("衍生数据");
+        dataResourcePrRepository.saveResourceTag(dataResourceTag);
+        dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
+        return BaseResultEntity.success();
     }
 }
 

@@ -28,7 +28,6 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
-import com.primihub.biz.repository.primarydb.sys.SysUserPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
@@ -78,6 +77,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private OrganConfiguration organConfiguration;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private DataResourceService dataResourceService;
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
@@ -171,11 +172,10 @@ public class DataAsyncService implements ApplicationContextAware {
             vo.setDataModelTask(req.getDataModelTask());
             vo.setDmrList(req.getDmrList());
             vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+            vo.setDerivationList(req.getDerivationList());
             sendShareModelTask(vo);
         }
-
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
-
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap){
