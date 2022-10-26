@@ -147,15 +147,15 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
                     taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-//                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
-//                    if (StringUtils.isNotBlank(taskReq.getDataModelTask().getPredictContent())){
-//                        log.info("zip -- modelId:{} -- taskId:{} -- start",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-//                        ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
-//                        log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-//                    }else {
-//                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-//                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
-//                    }
+                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
+                    if (StringUtils.isNotBlank(taskReq.getDataModelTask().getPredictContent())){
+                        log.info("zip -- modelId:{} -- taskId:{} -- start",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
+                        ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
+                        log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
+                    }else {
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                    }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
