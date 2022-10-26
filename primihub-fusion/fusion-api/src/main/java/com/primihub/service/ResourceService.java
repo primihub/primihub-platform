@@ -1,5 +1,6 @@
 package com.primihub.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.convert.DataResourceConvert;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
@@ -188,8 +189,12 @@ public class ResourceService {
 
     public Set<String> getGroupInOrganIds(String globalId){
         List<Long> organInGroup = groupRepository.findOrganInGroup(globalId);
-        List<String> organIds = groupRepository.findOrganGlobalIdByGroupIdList(organInGroup);
-        organIds.add(globalId);
-        return new HashSet<>(organIds);
+        Set<String> organIdSet = new HashSet<>();
+        organIdSet.add(globalId);
+        if (!organInGroup.isEmpty()){
+            List<String> organIds = groupRepository.findOrganGlobalIdByGroupIdList(organInGroup);
+            organIdSet.addAll(organIds);
+        }
+        return organIdSet;
     }
 }
