@@ -610,6 +610,7 @@ public class DataResourceService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
         String url = dataResource.getUrl();
         url = url.replace(".csv","_abnormal.csv");
+        log.info(url);
         File file = new File(url);
         if (!file.exists())
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");

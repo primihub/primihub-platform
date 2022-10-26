@@ -87,18 +87,20 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 if(reply.getRetCode() == 2){
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
-                }
-                // derivation resource datas
-                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(exceptionEntityMap, taskReq.getDataTask().getTaskUserId(), "异常值处理");
-                if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
                 }else {
-                    DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
-                    dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
-                    dataModelResource.setResourceId(derivationResource.getResult().toString());
-                    dataModelPrRepository.saveDataModelResource(dataModelResource);
-                    taskReq.getDmrList().add(dataModelResource);
+                    // derivation resource datas
+                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(exceptionEntityMap, taskReq.getDataTask().getTaskUserId(), "异常值处理");
+                    log.info(JSONObject.toJSONString(derivationResource));
+                    if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                        taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
+                    }else {
+                        DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
+                        dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
+                        dataModelResource.setResourceId(derivationResource.getResult().toString());
+                        dataModelPrRepository.saveDataModelResource(dataModelResource);
+                        taskReq.getDmrList().add(dataModelResource);
+                    }
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
