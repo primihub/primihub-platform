@@ -188,7 +188,6 @@
         <foreach collection="resourceIds" index="index" item="item" separator="," open="(" close=")" >
             #{item}
         </foreach>
-        and protection_status = 1
     </select>
     <select id="selectOrganResourcePage" resultType="com.primihub.entity.resource.po.FusionResource">
         select
