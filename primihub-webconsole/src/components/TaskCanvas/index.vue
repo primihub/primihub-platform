@@ -287,8 +287,8 @@ export default {
         'dag-node',
         {
           inherit: 'vue-shape',
-          width: 180,
-          height: 50,
+          width: 200,
+          height: 52,
           component: {
             template: `<dag-node-component />`,
             components: {
@@ -331,7 +331,7 @@ export default {
           height: 160,
           padding: 10
         },
-        // panning: true,
+        panning: true,
         background: {
           color: '#F5F7FA'
         },
@@ -363,7 +363,7 @@ export default {
             args: {
               attrs: {
                 fill: '#fff',
-                stroke: '#31d0c6',
+                stroke: '#34e2c4',
                 strokeWidth: 4
               }
             }
@@ -396,12 +396,7 @@ export default {
               attrs: {
                 line: {
                   stroke: '#A2B1C3',
-                  strokeWidth: 2,
-                  targetMarker: {
-                    name: 'block',
-                    width: 12,
-                    height: 8
-                  }
+                  strokeDasharray: '5 5'
                 }
               },
               zIndex: 0
@@ -488,6 +483,13 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
+      graph.on('edge:connected', ({ edge }) => {
+        edge.attr({
+          line: {
+            strokeDasharray: ''
+          }
+        })
+      })
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
@@ -582,17 +584,31 @@ export default {
     checkRunValidated() {
       const data = this.graph.toJSON()
       const { cells } = data
-      const startCom = cells.filter(item => item.componentCode === 'start')[0]
-      const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
-      const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
-      const modelName = modelSelectCom?.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
-      const modelType = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue
-      const arbiterOrganId = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
-      const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
-      const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
+      const { modelComponents, modelPointComponents } = this.saveParams.param
+      const startCom = modelComponents.find(item => item.componentCode === 'start')
+
+      const modelSelectCom = modelComponents.find(item => item.componentCode === 'model')
+      const taskName = startCom.componentValues.find(item => item.key === 'taskName')?.val
+      const modelName = modelSelectCom?.componentValues.find(item => item.key === 'modelName')?.val
+      const modelType = modelSelectCom?.componentValues.find(item => item.key === 'modelType')?.val
+      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === 'arbiterOrgan')?.val
+
+      const dataSetCom = modelComponents.find(item => item.componentCode === 'dataSet')
+      const dataValue = dataSetCom.componentValues.find(item => item.key === 'selectData').val
+      const value = dataValue !== '' ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      // check start node target component is't dataSet
+      const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
+      if (line.output.cell !== dataSetCom.frontComponentId) {
+        this.$message({
+          message: '流程错误:请先选择数据集组件',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
       // 横向lr
       if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
         this.$message({
@@ -836,16 +852,16 @@ export default {
           const inputData = cells.find(item => item.id === inputId)
           obj.output.push({
             frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
+            componentCode: outputData?.data.componentCode,
+            componentName: outputData?.data.componentName,
             portId: outputRes.target.port,
             pointType: 'edge',
             pointJson: ''
           })
           obj.input.push({
             frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
+            componentCode: inputData?.data.componentCode,
+            componentName: inputData?.data.componentName,
             portId: inputRes.source.port,
             pointType: 'edge',
             pointJson: ''
@@ -855,8 +871,8 @@ export default {
           const outputData = cells.find(item => item.id === outputId)
           obj.output.push({
             frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
+            componentCode: outputData?.data.componentCode,
+            componentName: outputData?.data.componentName,
             portId: inputRes.target.port,
             pointType: 'edge',
             pointJson: ''
@@ -867,8 +883,8 @@ export default {
           const inputData = cells.find(item => item.id === inputId)
           obj.input.push({
             frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
+            componentCode: inputData?.data.componentCode,
+            componentName: inputData?.data.componentName,
             portId: outputRes.source.port,
             pointType: 'edge',
             pointJson: ''
@@ -954,6 +970,9 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
+      // dataSet component in the second
+      this.checkOrder()
+
       this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
@@ -971,6 +990,15 @@ export default {
         })
       }
       this.isClear = false
+    },
+    checkOrder() {
+      const { modelComponents } = this.saveParams.param
+      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
+      const dataSetCom = modelComponents[dataSetIndex]
+      if (dataSetIndex !== 1 && dataSetIndex !== -1) {
+        this.saveParams.param.modelComponents.splice(dataSetIndex, 1)
+        this.saveParams.param.modelComponents.splice(1, 0, dataSetCom)
+      }
     },
     getProjectResourceData() {
       getProjectResourceData({ projectId: this.projectId }).then(res => {
