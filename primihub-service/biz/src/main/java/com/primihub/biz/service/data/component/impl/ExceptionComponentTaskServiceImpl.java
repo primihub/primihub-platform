@@ -8,6 +8,7 @@ import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
@@ -48,8 +49,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
     }
 
-    @Override
-    public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
+    public BaseResultEntity exception(ComponentTaskReq taskReq){
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
         log.info("ids:{}",ids);
         Map<String, String> map =new HashMap<>();
@@ -60,7 +60,6 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         if (freemarkerContent != null) {
             try {
                 Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
-                taskReq.setDerivationList(exceptionEntityMap);
                 log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
                 Common.Params params = Common.Params.newBuilder()
@@ -69,7 +68,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
-                        .setName("ExceptionComponentTask")
+                        .setName("ExceptionComponentTaskException")
                         .setLanguage(Common.Language.PYTHON)
                         .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
@@ -88,18 +87,31 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
                 }else {
+                    List<ModelDerivationDto> derivationList = new ArrayList<>();
+                    Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
+                    while (iterator.hasNext()){
+                        Map.Entry<String, ExceptionEntity> next = iterator.next();
+                        String key = next.getKey();
+                        ExceptionEntity value = next.getValue();
+                        derivationList.add(new ModelDerivationDto(key,"abnormal","异常值处理",value.getNewDataSetId()));
+                    }
+                    taskReq.getDerivationList().addAll(derivationList);
+                    taskReq.setNewest(derivationList);
                     // derivation resource datas
-                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(exceptionEntityMap, taskReq.getDataTask().getTaskUserId(), "异常值处理");
+                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
                     log.info(JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
                     }else {
-                        DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
-                        dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
-                        dataModelResource.setResourceId(derivationResource.getResult().toString());
-                        dataModelPrRepository.saveDataModelResource(dataModelResource);
-                        taskReq.getDmrList().add(dataModelResource);
+                        List<String> resourceIds = (List<String>)derivationResource.getResult();
+                        for (String resourceId : resourceIds) {
+                            DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
+                            dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
+                            dataModelResource.setResourceId(resourceId);
+                            dataModelPrRepository.saveDataModelResource(dataModelResource);
+                            taskReq.getDmrList().add(dataModelResource);
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -107,6 +119,94 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:"+e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
             }
+        }
+        return BaseResultEntity.success();
+    }
+
+    @Override
+    public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
+        Map<String, String> componentVals = getComponentVals(req.getComponentValues());
+        String exception = componentVals.get("exception");
+        if ("1".equals(exception)){
+            return exception(taskReq);
+        }else if ("2".equals(exception)){
+            return missingValue(taskReq,componentVals);
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity missingValue(ComponentTaskReq taskReq,Map<String, String> componentVals){
+        try {
+            Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+            List<String> resourceIds = new ArrayList<>();
+            if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
+                for (ModelDerivationDto modelDerivationDto : taskReq.getNewest()) {
+                    resourceIds.add(modelDerivationDto.getNewResourceId());
+                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getResourceId()));
+                    exceptionEntityMap.remove(modelDerivationDto.getResourceId());
+                }
+            }else {
+                resourceIds.addAll(exceptionEntityMap.keySet());
+            }
+            log.info("resourceIds:{}",resourceIds);
+            log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
+            Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
+            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
+            Common.Params params = Common.Params.newBuilder()
+                    .putParamMap("ColumnInfo", columnInfoParamValue)
+                    .putParamMap("dataFile", dataFileParamValue)
+                    .build();
+            Common.Task task = Common.Task.newBuilder()
+                    .setType(Common.TaskType.ACTOR_TASK)
+                    .setParams(params)
+                    .setName("ExceptionComponentTaskMissing")
+                    .setLanguage(Common.Language.PROTO)
+                    .setCodeBytes(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .build();
+            log.info("grpc Common.Task :\n{}", task.toString());
+            PushTaskRequest request = PushTaskRequest.newBuilder()
+                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                    .setTask(task)
+                    .setSequenceNumber(11)
+                    .setClientProcessedUpTo(22)
+                    .build();
+            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+            log.info("grpc结果:{}", reply.toString());
+            if(reply.getRetCode() == 2){
+                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
+            }else {
+                List<ModelDerivationDto> derivationList = new ArrayList<>();
+                Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, ExceptionEntity> next = iterator.next();
+                    String key = next.getKey();
+                    ExceptionEntity value = next.getValue();
+                    derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId()));
+                }
+                // derivation resource datas
+                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
+                log.info(JSONObject.toJSONString(derivationResource));
+                if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
+                }else {
+                    List<String> resourceIdLst = (List<String>)derivationResource.getResult();
+                    for (String resourceId : resourceIdLst) {
+                        DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
+                        dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
+                        dataModelResource.setResourceId(resourceId);
+                        dataModelPrRepository.saveDataModelResource(dataModelResource);
+                        taskReq.getDmrList().add(dataModelResource);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:"+e.getMessage());
+            log.info("grpc Exception:{}", e.getMessage());
         }
         return BaseResultEntity.success();
     }

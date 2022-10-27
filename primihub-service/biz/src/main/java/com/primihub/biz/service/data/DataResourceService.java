@@ -12,6 +12,7 @@ import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
+import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -598,8 +600,9 @@ public class DataResourceService {
         return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
     }
 
-    public BaseResultEntity saveDerivationResource(Map<String, ExceptionComponentTaskServiceImpl.ExceptionEntity> derivationList,Long userId,String derivationType) {
-        Set<String> resourceIds = derivationList.keySet();
+    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList, Long userId) {
+        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getResourceId));
+        Set<String> resourceIds = map.keySet();
         DataResource dataResource = null;
         for (String resourceId : resourceIds) {
             dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
@@ -608,43 +611,46 @@ public class DataResourceService {
         }
         if (dataResource == null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
-        String url = dataResource.getUrl();
-        url = url.replace(".csv","_abnormal.csv");
-        log.info(url);
-        File file = new File(url);
-        if (!file.exists())
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
-        DataResource derivationDataResource = new DataResource();
-        derivationDataResource.setUrl(url);
-        derivationDataResource.setResourceName(dataResource.getResourceName() + derivationType);
-        derivationDataResource.setResourceAuthType(1);
-        derivationDataResource.setResourceSource(3);
-        derivationDataResource.setUserId(userId);
-        derivationDataResource.setOrganId(0L);
-        derivationDataResource.setFileId(0L);
-        derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
-        derivationDataResource.setFileSuffix(".csv");
-        derivationDataResource.setFileColumns(0);
-        derivationDataResource.setFileRows(0);
-        derivationDataResource.setFileHandleStatus(0);
-        derivationDataResource.setResourceNum(0);
-        derivationDataResource.setDbId(0L);
-        derivationDataResource.setResourceState(0);
-        BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
-            return baseResultEntity;
-        derivationDataResource.setResourceFusionId(UUID.randomUUID().toString());
-        dataResourcePrRepository.saveResource(derivationDataResource);
-        List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
-        for (DataFileField dataFileField : dataFileFields) {
-            dataFileField.setFileId(null);
-            dataFileField.setResourceId(derivationDataResource.getResourceId());
+        List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
+        for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
+            String url = dataResource.getUrl();
+            url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+            log.info(url);
+            File file = new File(url);
+            if (!file.exists())
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
+            DataResource derivationDataResource = new DataResource();
+            derivationDataResource.setUrl(url);
+            derivationDataResource.setResourceName(dataResource.getResourceName() + modelDerivationDto.getDerivationType());
+            derivationDataResource.setResourceAuthType(1);
+            derivationDataResource.setResourceSource(3);
+            derivationDataResource.setUserId(userId);
+            derivationDataResource.setOrganId(0L);
+            derivationDataResource.setFileId(0L);
+            derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
+            derivationDataResource.setFileSuffix(".csv");
+            derivationDataResource.setFileColumns(0);
+            derivationDataResource.setFileRows(0);
+            derivationDataResource.setFileHandleStatus(0);
+            derivationDataResource.setResourceNum(0);
+            derivationDataResource.setDbId(0L);
+            derivationDataResource.setResourceState(0);
+            BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
+            if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+                return baseResultEntity;
+            derivationDataResource.setResourceFusionId(UUID.randomUUID().toString());
+            dataResourcePrRepository.saveResource(derivationDataResource);
+            List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
+            for (DataFileField dataFileField : dataFileFields) {
+                dataFileField.setFileId(null);
+                dataFileField.setResourceId(derivationDataResource.getResourceId());
+            }
+            dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
+            DataResourceTag dataResourceTag = new DataResourceTag("衍生数据");
+            dataResourcePrRepository.saveResourceTag(dataResourceTag);
+            dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
         }
-        dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
-        DataResourceTag dataResourceTag = new DataResourceTag("衍生数据");
-        dataResourcePrRepository.saveResourceTag(dataResourceTag);
-        dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-        return BaseResultEntity.success(derivationDataResource.getResourceFusionId());
+        return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
     }
 }
 

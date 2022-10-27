@@ -9,6 +9,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataProject;
@@ -36,6 +37,7 @@ import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("modelComponentTaskServiceImpl")
@@ -93,12 +95,13 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
-        if (taskReq.getDerivationList()!=null && taskReq.getDerivationList().size()!=0){
+        if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
+            Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId, Function.identity()));
             Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
             while (iterator.hasNext()){
                 Map.Entry<String, String> next = iterator.next();
-                if (taskReq.getDerivationList().containsKey(next.getValue())){
-                    String newDataSetId = taskReq.getDerivationList().get(next.getValue()).getNewDataSetId();
+                if (derivationMap.containsKey(next.getValue())){
+                    String newDataSetId = derivationMap.get(next.getValue()).getNewResourceId();
                     taskReq.getFreemarkerMap().put(next.getKey(),newDataSetId);
                 }
             }
