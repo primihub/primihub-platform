@@ -641,7 +641,44 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1055, 1, 1056, 0, '2022-07-19 08:51:05.228', '2022-07-19 08:51:05.228');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1056, 1, 1057, 0, '2022-07-19 08:51:05.228', '2022-07-19 08:51:05.228');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1057, 1, 1059, 0, '2022-07-19 08:51:05.228', '2022-07-19 08:51:05.228');
-
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1058, 1000, 1001, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1059, 1000, 1002, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1060, 1000, 1005, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1061, 1000, 1006, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1062, 1000, 1003, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1063, 1000, 1050, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1064, 1000, 1051, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1065, 1000, 1052, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1066, 1000, 1053, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1067, 1000, 1004, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1068, 1000, 1007, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1069, 1000, 1008, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1070, 1000, 1009, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1071, 1000, 1010, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1072, 1000, 1011, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1073, 1000, 1012, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1074, 1000, 1013, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1075, 1000, 1014, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1076, 1000, 1015, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1077, 1000, 1016, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1078, 1000, 1017, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1079, 1000, 1018, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1080, 1000, 1059, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1081, 1000, 1019, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1082, 1000, 1020, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1083, 1000, 1021, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1084, 1000, 1022, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1085, 1000, 1023, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1086, 1000, 1024, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1087, 1000, 1025, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1088, 1000, 1026, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1089, 1000, 1027, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1090, 1000, 1028, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1091, 1000, 1054, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1092, 1000, 1055, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1093, 1000, 1056, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1094, 1000, 1057, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1095, 1000, 1058, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 -- ----------------------------
 -- Table structure for sys_role
