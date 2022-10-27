@@ -42,7 +42,8 @@ const fileSizeFilter = (limit) => {
 const sourceFilter = (source) => {
   const sourceMap = {
     1: '文件上传',
-    2: '数据库导入'
+    2: '数据库导入',
+    3: '衍生数据'
   }
   return sourceMap[source]
 }

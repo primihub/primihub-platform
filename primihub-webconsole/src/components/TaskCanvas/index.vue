@@ -170,7 +170,10 @@ export default {
     },
     async componentsDetail(newVal) {
       if (newVal) {
-        console.log('componentsDetail', newVal)
+        // only same project can load data
+        if (newVal.projectId !== this.projectId) {
+          this.deleteComponentsVal()
+        }
         this.graph.clearCells()
         this.nodeData = this.startNode
         this.graphData.cells = []
@@ -231,14 +234,10 @@ export default {
       }
     },
     deleteComponentsVal() {
-      this.graphData.cells.map(item => {
-        if (item.shape === 'dag-node') {
-          item.data.componentTypes.map(c => {
-            c.inputValue = ''
-          })
-        }
-      })
-      console.log('deleteComponentsVal', this.graphData)
+      const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'dataSet')
+      if (posIndex !== -1) {
+        this.graphData.cells[posIndex].data.componentTypes[0].inputValue = ''
+      }
     },
     // 清除画布
     clearFn() {
@@ -290,8 +289,8 @@ export default {
         'dag-node',
         {
           inherit: 'vue-shape',
-          width: 180,
-          height: 50,
+          width: 200,
+          height: 52,
           component: {
             template: `<dag-node-component />`,
             components: {
@@ -334,7 +333,7 @@ export default {
           height: 160,
           padding: 10
         },
-        // panning: true,
+        panning: true,
         background: {
           color: '#F5F7FA'
         },
@@ -366,7 +365,7 @@ export default {
             args: {
               attrs: {
                 fill: '#fff',
-                stroke: '#31d0c6',
+                stroke: '#34e2c4',
                 strokeWidth: 4
               }
             }
@@ -399,12 +398,7 @@ export default {
               attrs: {
                 line: {
                   stroke: '#A2B1C3',
-                  strokeWidth: 2,
-                  targetMarker: {
-                    name: 'block',
-                    width: 12,
-                    height: 8
-                  }
+                  strokeDasharray: '5 5'
                 }
               },
               zIndex: 0
@@ -491,6 +485,13 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
+      graph.on('edge:connected', ({ edge }) => {
+        edge.attr({
+          line: {
+            strokeDasharray: ''
+          }
+        })
+      })
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
@@ -585,17 +586,31 @@ export default {
     checkRunValidated() {
       const data = this.graph.toJSON()
       const { cells } = data
-      const startCom = cells.filter(item => item.componentCode === 'start')[0]
-      const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
-      const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
-      const modelName = modelSelectCom?.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
-      const modelType = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue
-      const arbiterOrganId = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
-      const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
-      const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
+      const { modelComponents, modelPointComponents } = this.saveParams.param
+      const startCom = modelComponents.find(item => item.componentCode === 'start')
+
+      const modelSelectCom = modelComponents.find(item => item.componentCode === 'model')
+      const taskName = startCom.componentValues.find(item => item.key === 'taskName')?.val
+      const modelName = modelSelectCom?.componentValues.find(item => item.key === 'modelName')?.val
+      const modelType = modelSelectCom?.componentValues.find(item => item.key === 'modelType')?.val
+      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === 'arbiterOrgan')?.val
+
+      const dataSetCom = modelComponents.find(item => item.componentCode === 'dataSet')
+      const dataValue = dataSetCom.componentValues.find(item => item.key === 'selectData').val
+      const value = dataValue !== '' ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      // check start node target component is't dataSet
+      const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
+      if (line.output.cell !== dataSetCom.frontComponentId) {
+        this.$message({
+          message: '流程错误:请先选择数据集组件',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
       // 横向lr
       if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
         this.$message({
@@ -762,7 +777,7 @@ export default {
         const current = this.modelData.filter(v => v.componentCode === componentCode)[0]
         const timeConsuming = current?.timeConsuming
         const componentState = current?.componentState
-        const { componentTypes, isMandatory } = this.components.find(item => {
+        const component = this.components.find(item => {
           return item.componentCode === componentCode
         })
         this.graphData.cells.push({
@@ -781,11 +796,12 @@ export default {
           shape,
           ports,
           data: {
+            frontComponentId,
             componentState,
             componentCode,
             componentName,
-            componentTypes,
-            isMandatory,
+            componentTypes: component && component.componentTypes,
+            isMandatory: component && component.isMandatory,
             timeConsuming
           },
           zIndex: 1
@@ -839,16 +855,16 @@ export default {
           const inputData = cells.find(item => item.id === inputId)
           obj.output.push({
             frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
+            componentCode: outputData?.data.componentCode,
+            componentName: outputData?.data.componentName,
             portId: outputRes.target.port,
             pointType: 'edge',
             pointJson: ''
           })
           obj.input.push({
             frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
+            componentCode: inputData?.data.componentCode,
+            componentName: inputData?.data.componentName,
             portId: inputRes.source.port,
             pointType: 'edge',
             pointJson: ''
@@ -858,8 +874,8 @@ export default {
           const outputData = cells.find(item => item.id === outputId)
           obj.output.push({
             frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
+            componentCode: outputData?.data.componentCode,
+            componentName: outputData?.data.componentName,
             portId: inputRes.target.port,
             pointType: 'edge',
             pointJson: ''
@@ -870,8 +886,8 @@ export default {
           const inputData = cells.find(item => item.id === inputId)
           obj.input.push({
             frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
+            componentCode: inputData?.data.componentCode,
+            componentName: inputData?.data.componentName,
             portId: outputRes.source.port,
             pointType: 'edge',
             pointJson: ''
@@ -922,7 +938,7 @@ export default {
             output: item.target
           })
         } else {
-          const { componentCode, componentName, componentTypes } = data
+          const { componentCode, componentName, componentTypes = [] } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
           for (let i = 0; i < componentTypes.length; i++) {
@@ -957,6 +973,9 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
+      // dataSet component in the second
+      this.checkOrder()
+
       this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
@@ -974,6 +993,15 @@ export default {
         })
       }
       this.isClear = false
+    },
+    checkOrder() {
+      const { modelComponents } = this.saveParams.param
+      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
+      const dataSetCom = modelComponents[dataSetIndex]
+      if (dataSetIndex !== 1 && dataSetIndex !== -1) {
+        this.saveParams.param.modelComponents.splice(dataSetIndex, 1)
+        this.saveParams.param.modelComponents.splice(1, 0, dataSetCom)
+      }
     },
     getProjectResourceData() {
       getProjectResourceData({ projectId: this.projectId }).then(res => {
@@ -1045,13 +1073,15 @@ export default {
         this.selectComponentList.push(item.componentCode)
         this.$emit('selectComponents', this.selectComponentList)
         const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-        item.componentValues.map(item => {
-          this.components[posIndex].componentTypes.map(c => {
-            if (c.typeCode === item.key && item.val !== '') {
-              c.inputValue = item.val
-            }
+        if (posIndex !== -1) {
+          item.componentValues.map(item => {
+            this.components[posIndex]?.componentTypes.map(c => {
+              if (c.typeCode === item.key && item.val !== '') {
+                c.inputValue = item.val
+              }
+            })
           })
-        })
+        }
       }
       this.initGraphShape()
       if (this.options.isEditable) {

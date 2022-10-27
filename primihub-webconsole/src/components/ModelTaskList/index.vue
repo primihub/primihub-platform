@@ -41,7 +41,7 @@
           min-width="150"
         >
           <template slot-scope="{row}">
-            <span>{{ row.taskEndDate? row.taskEndDate:'未开始' }}</span> <br>
+            <span>{{ row.taskEndDate? row.taskEndDate:'未结束' }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column

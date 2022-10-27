@@ -211,6 +211,8 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
+        psiTask.setTaskState(2);
+        dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}",available);
         if (available==0){
             Date date=new Date();
@@ -255,19 +257,16 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
                         .build();
-                psiTask.setTaskState(2);
-                dataPsiPrRepository.updateDataPsiTask(psiTask);
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
+                psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState()!=4){
                     if (FileUtil.isFileExists(psiTask.getFilePath())){
                         psiTask.setTaskState(1);
                     }else {
                         psiTask.setTaskState(3);
                     }
-
-//                psiTaskOutputFileHandle(psiTask);
                 }
             } catch (Exception e) {
                 psiTask.setTaskState(3);
@@ -517,10 +516,14 @@ public class DataAsyncService implements ApplicationContextAware {
         if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
             return;
         SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(dataTask.getTaskUserId());
-        if (sysUser == null)
+        if (sysUser == null){
             log.info("task_id:{} The task email was not sent. Reason for not sending : No user information",dataTask.getTaskIdName());
-        if (!DataUtil.isEmail(sysUser.getUserAccount()))
+            return;
+        }
+        if (!DataUtil.isEmail(sysUser.getUserAccount())){
             log.info("task_id:{} The task email was not sent. Reason for not sending : The user account is not an email address",dataTask.getTaskIdName());
+            return;
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("尊敬的【");
         sb.append(sysUser.getUserName());
@@ -534,7 +537,8 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         sb.append("任务ID：【").append(dataTask.getTaskIdName()).append("】\n");
         if (StringUtils.isNotBlank(baseConfiguration.getSystemDomainName())){
-            sb.append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
+            sb.append("<a href=\"").append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
+            sb.append("\">").append("点击查询任务详情").append("</a>");
         }
         sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
     }
