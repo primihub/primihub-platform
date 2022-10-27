@@ -39,7 +39,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-row v-if="nodeData.componentTypes[0].inputValue === '2'" :gutter="10">
+        <el-row v-if="nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
           <el-col :span="12">
             <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures.length }}/{{ featuresOptions.length }})</el-button>
             <div class="feature-container">
@@ -83,7 +83,7 @@
           </el-select>
         </el-form-item>
         <template v-if="nodeData.componentTypes[0].inputValue === '1'">
-          <el-row>
+          <el-row :gutter="20">
             <el-col :span="12">
               <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedExceptionFeatures.length }}/{{ featuresOptions.length }})</el-button>
               <div class="feature-container">
@@ -233,7 +233,7 @@ export default {
 
       ],
       selectedFeaturesCode: '',
-      selectedFeaturesIndex: 0,
+      selectedFeaturesIndex: '',
       selectedDataAlignFeatures: [],
       selectedExceptionFeatures: [],
       selectedFeatures: [],
