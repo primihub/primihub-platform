@@ -28,6 +28,102 @@
           </template>
         </el-form-item>
       </template>
+      <template v-else-if="nodeData.componentCode === 'dataAlign'">
+        <el-form-item :label="nodeData.componentTypes[0].typeName">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+            <el-option
+              v-for="(v,index) in nodeData.componentTypes[0].inputValues"
+              :key="index"
+              :label="v.val"
+              :value="v.key"
+            />
+          </el-select>
+        </el-form-item>
+        <el-row v-if="nodeData.componentTypes[0].inputValue === '2'" :gutter="10">
+          <el-col :span="12">
+            <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures.length }}/{{ featuresOptions.length }})</el-button>
+            <div class="feature-container">
+              <el-tag v-for="(item,index) in selectedDataAlignFeatures" :key="index" type="primary" size="mini">{{ item }}</el-tag>
+            </div>
+            <el-form-item />
+          </el-col>
+          <el-col :span="12">
+            <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+              <el-option
+                v-for="(v) in nodeData.componentTypes[2].inputValues"
+                :key="v.key"
+                :label="v.val"
+                :value="v.key"
+              />
+            </el-select>
+          </el-col>
+        </el-row>
+      </template>
+      <template v-else-if="nodeData.componentCode === 'exception'">
+        <el-form-item :label="nodeData.componentTypes[0].typeName">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+            <el-option
+              v-for="(v,index) in nodeData.componentTypes[0].inputValues"
+              :key="index"
+              :label="v.val"
+              :value="v.key"
+            />
+          </el-select>
+        </el-form-item>
+      </template>
+      <template v-else-if="nodeData.componentCode === 'missing'">
+        <el-form-item :label="nodeData.componentTypes[0].typeName">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+            <el-option
+              v-for="(v,index) in nodeData.componentTypes[0].inputValues"
+              :key="index"
+              :label="v.val"
+              :value="v.key"
+            />
+          </el-select>
+        </el-form-item>
+        <template v-if="nodeData.componentTypes[0].inputValue === '1'">
+          <el-row>
+            <el-col :span="12">
+              <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedExceptionFeatures.length }}/{{ featuresOptions.length }})</el-button>
+              <div class="feature-container">
+                <el-tag v-for="(item,index) in selectedExceptionFeatures" :key="index" type="primary" size="mini">{{ item }}</el-tag>
+              </div>
+              <el-form-item />
+            </el-col>
+            <el-col :span="12">
+              <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+                <el-option
+                  v-for="(v) in nodeData.componentTypes[2].inputValues"
+                  :key="v.key"
+                  :label="v.val"
+                  :value="v.key"
+                />
+              </el-select>
+            </el-col>
+          </el-row>
+        </template>
+      </template>
+      <template v-else-if="nodeData.componentCode === 'featuresPoints'">
+        <el-form-item :label="nodeData.componentTypes[0].typeName">
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+                <el-option
+                  v-for="(v,index) in nodeData.componentTypes[0].inputValues"
+                  :key="index"
+                  :label="v.val"
+                  :value="v.key"
+                />
+              </el-select>
+            </el-col>
+
+            <el-col :span="12">
+              <el-input-number v-model="nodeData.componentTypes[1].inputValue" controls-position="right" :min="1" :max="100" /> 箱
+            </el-col>
+          </el-row>
+        </el-form-item>
+      </template>
       <template v-else>
         <div v-for="item in nodeData.componentTypes" :key="item.typeCode">
           <!-- 模型选择为LR时显示可信第三方 -->
@@ -73,6 +169,7 @@
     <!-- add provider organ dialog -->
     <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加可信第三方" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
+    <FeatureSelectDialog :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
 </template>
 
@@ -81,12 +178,14 @@ import { getProjectResourceData, getProjectResourceOrgan } from '@/api/model'
 import ResourceDialog from '@/components/ResourceDialog'
 import ResourceDec from '@/components/ResourceDec'
 import ArbiterOrganDialog from '@/components/ArbiterOrganDialog'
+import FeatureSelectDialog from '@/components/FeatureSelectDialog'
 
 export default {
   components: {
     ResourceDialog,
     ResourceDec,
-    ArbiterOrganDialog
+    ArbiterOrganDialog,
+    FeatureSelectDialog
   },
   props: {
     graphData: {
@@ -124,11 +223,26 @@ export default {
       }
     }
     return {
+      emptyMissingData: {
+        selectedExceptionFeatures: [],
+        inputValue: '',
+        inputValues: [],
+        typeName: ''
+      },
+      missingData: [
+
+      ],
+      selectedFeaturesCode: '',
+      selectedFeaturesIndex: 0,
+      selectedDataAlignFeatures: [],
+      selectedExceptionFeatures: [],
+      selectedFeatures: [],
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
       providerOrganIds: null,
       providerOrganDialogVisible: false,
+      featuresDialogVisible: false,
       form: {
         dynamicError: {
           name: ''
@@ -173,6 +287,21 @@ export default {
       } else {
         return false
       }
+    },
+    featuresOptions() {
+      this.getDataSetComValue(this.graphData)
+      if (this.providerOrgans.length > 0 && this.providerOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
+        let intersection = this.providerOrgans.length > 0 && this.providerOrgans[0].fileHandleField.filter(v => this.initiateOrgan.fileHandleField.includes(v))
+        intersection = intersection.map((val, key) => {
+          return {
+            key: key + '',
+            val
+          }
+        })
+        return intersection
+      } else {
+        return []
+      }
     }
   },
   watch: {
@@ -185,6 +314,12 @@ export default {
           this.getDataSetComValue(this.graphData)
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+        } else if (newVal.componentCode === 'dataAlign') {
+          this.selectedDataAlignFeatures = this.nodeData.componentTypes[1].inputValue !== '' ? this.nodeData.componentTypes[1].inputValue.split(',') : []
+          this.selectedFeatures = this.selectedDataAlignFeatures
+        } else if (newVal.componentCode === 'missing') {
+          this.selectedExceptionFeatures = this.nodeData.componentTypes[1].inputValue !== '' ? this.nodeData.componentTypes[1].inputValue.split(',') : []
+          this.selectedFeatures = this.selectedExceptionFeatures
         } else {
           this.inputValue = ''
         }
@@ -200,8 +335,11 @@ export default {
   methods: {
     getDataSetComValue(value) {
       const dataSetCom = value.cells.find(item => item.componentCode === 'dataSet')
-      this.inputValue = dataSetCom ? dataSetCom?.data.componentTypes[0].inputValue : ''
-      this.getDataSetNodeData()
+      if (dataSetCom) {
+        const dataSetComVal = dataSetCom.data.componentTypes[0].inputValue
+        this.inputValue = dataSetComVal
+        this.getDataSetNodeData()
+      }
     },
     async openProviderOrganDialog() {
       if (this.initiateOrgan.organId && this.providerOrgans.length > 0) {
@@ -232,18 +370,11 @@ export default {
         this.inputValue = JSON.parse(this.inputValue)
         const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
         const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
-        this.providerOrgans = providerOrgans.length > 0 ? providerOrgans : this.providerOrgans
         this.initiateOrgan = initiateOrgan || this.initiateOrgan
-        this.providerOrganId = providerOrgans.length > 0 ? providerOrgans[0].organId : ''
-        this.providerOrganName = this.providerOrgans[0]?.organName
-      } else {
-        this.resourceList = []
-        this.providerOrgans = []
-        this.providerOrganId = ''
-        this.providerOrganName = ''
-        this.initiateOrgan.resourceId = ''
-        this.selectedResourceId = ''
-        this.inputValue = ''
+        if (providerOrgans.length > 0) {
+          this.providerOrgans = providerOrgans
+          this.providerOrganId = this.providerOrgans[0].organId
+        }
       }
     },
     handleResourceHeaderChange(data) {
@@ -343,6 +474,29 @@ export default {
     },
     save() {
       this.$emit('save')
+    },
+    openFeaturesDialog(code) {
+      this.selectedFeaturesCode = code
+      if (this.selectedFeaturesCode === 'dataAlign') {
+        this.selectedFeatures = this.selectedDataAlignFeatures
+      } else if (this.selectedFeaturesCode === 'exception') {
+        this.selectedFeatures = this.selectedExceptionFeatures
+      }
+      this.featuresDialogVisible = true
+    },
+    handleFeatureDialogSubmit(data) {
+      if (this.selectedFeaturesCode === 'dataAlign') {
+        this.selectedDataAlignFeatures = data
+        this.nodeData.componentTypes[1].inputValue = data.join(',')
+      } else if (this.selectedFeaturesCode === 'missing') {
+        this.selectedExceptionFeatures = data
+        this.nodeData.componentTypes[1].inputValue = data.join(',')
+      }
+      this.featuresDialogVisible = false
+      this.handleChange()
+    },
+    handleFeatureDialogClose() {
+      this.featuresDialogVisible = false
     }
   }
 }
@@ -360,6 +514,10 @@ p {
 }
 ::v-deep .el-form-item__label{
   float: none;
+}
+::v-deep .el-input-number{
+  box-sizing: border-box;
+  width: calc(100% - 20px)
 }
 
 .select{
@@ -411,5 +569,8 @@ p {
 .block{
   width: 100%;
   display: block;
+}
+.feature-container{
+  margin: 10px 0;
 }
 </style>

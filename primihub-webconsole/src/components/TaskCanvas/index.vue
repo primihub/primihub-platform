@@ -796,6 +796,7 @@ export default {
           shape,
           ports,
           data: {
+            frontComponentId,
             componentState,
             componentCode,
             componentName,
