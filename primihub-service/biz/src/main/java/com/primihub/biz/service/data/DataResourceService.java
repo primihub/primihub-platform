@@ -638,7 +638,7 @@ public class DataResourceService {
             BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
             if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
                 return baseResultEntity;
-            derivationDataResource.setResourceFusionId(UUID.randomUUID().toString());
+            derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
             dataResourcePrRepository.saveResource(derivationDataResource);
             List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
             for (DataFileField dataFileField : dataFileFields) {
