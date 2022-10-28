@@ -79,6 +79,7 @@ public class DataResourceService {
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
         paramMap.put("userName",req.getUserName());
+        paramMap.put("derivation",req.getDerivation());
         List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
         if (dataResources.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -646,7 +647,7 @@ public class DataResourceService {
                 dataFileField.setResourceId(derivationDataResource.getResourceId());
             }
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
-            DataResourceTag dataResourceTag = new DataResourceTag("衍生数据");
+            DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
             dataResourcePrRepository.saveResourceTag(dataResourceTag);
             dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
         }

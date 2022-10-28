@@ -85,6 +85,14 @@
         <if test="fileHandleField!=null and fileHandleField!=''">
             and cast(file_handle_field as char) = #{fileHandleField}
         </if>
+        <choose>
+            <when test="derivation == 1">
+                and resource_source = 3
+            </when>
+            <otherwise>
+                and resource_source != 3
+            </otherwise>
+        </choose>
     </sql>
 
     <select id="queryDataResourceById" resultType="com.primihub.biz.entity.data.po.DataResource">
