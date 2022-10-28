@@ -120,6 +120,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:" + e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return BaseResultEntity.success();
