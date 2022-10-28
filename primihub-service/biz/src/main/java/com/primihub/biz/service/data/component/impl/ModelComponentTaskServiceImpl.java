@@ -89,6 +89,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             if (resourceDataList==null || resourceDataList.size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码2");
             taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET,resourceDataList.get(0).get("resourceId").toString());
+            taskReq.getFusionResourceList().add(resourceDataList.get(0));
         }
         return baseResultEntity;
     }
