@@ -74,7 +74,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
-                    .setName("ExceptionComponentTaskMissing")
+                    .setName("missing_val_processing")
                     .setLanguage(Common.Language.PROTO)
                     .setCodeBytes(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
                     .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
