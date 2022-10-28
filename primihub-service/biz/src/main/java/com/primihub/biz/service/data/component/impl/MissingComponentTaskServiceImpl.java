@@ -69,7 +69,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("ColumnInfo", columnInfoParamValue)
-                    .putParamMap("dataFile", dataFileParamValue)
+                    .putParamMap("Data_File", dataFileParamValue)
                     .build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
