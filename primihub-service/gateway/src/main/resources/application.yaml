@@ -18,7 +18,7 @@ spring:
     name: gateway
   servlet:
     multipart:
-      enabled: true
+      enabled: false
       max-file-size: 10MB
       max-request-size: 10MB
       file-size-threshold: 1MB
