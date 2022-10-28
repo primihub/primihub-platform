@@ -143,8 +143,11 @@ public class DataResourceConvert {
         dataFileField.setFieldName(req.getFieldName());
         dataFileField.setFieldId(req.getFieldId());
         dataFileField.setFieldAs(req.getFieldAs());
-        if (fieldTypeEnum!=null)
-            dataFileField.setFieldType(fieldTypeEnum.getCode());
+        if (StringUtils.isNotBlank(req.getFieldType())){
+            dataFileField.setFieldType(Integer.valueOf(req.getFieldType()));
+        }
+//        if (fieldTypeEnum!=null)
+//            dataFileField.setFieldType(fieldTypeEnum.getCode());
         dataFileField.setFieldDesc(req.getFieldDesc());
         dataFileField.setRelevance(req.getRelevance());
         dataFileField.setGrouping(req.getGrouping());
