@@ -76,14 +76,14 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                     .setParams(params)
                     .setName("missing_val_processing")
                     .setLanguage(Common.Language.PROTO)
-                    .setCodeBytes(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
+                    .setCodeBytes(ByteString.copyFrom("missing_val_processing".getBytes(StandardCharsets.UTF_8)))
                     .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("Data_File")
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("missing_val_processing".getBytes(StandardCharsets.UTF_8)))
+                    .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
