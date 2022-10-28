@@ -270,4 +270,62 @@
         data_resource where is_del = 0 and resource_fusion_id = #{resourceFusionId}
     </select>
 
+    <select id="queryDerivationResourceList" resultType="com.primihub.biz.entity.data.vo.DataDerivationResourceVo">
+        SELECT
+            dr.resource_id as resourceId,
+            dr.resource_name as resourceName,
+            dr.resource_desc as resourceDesc,
+            dr.resource_auth_type as resourceAuthType,
+            dr.resource_source as resourceSource,
+            dr.resource_num as resourceNum,
+            dr.file_size as fileSize,
+            dr.file_suffix as fileSuffix,
+            dr.file_columns as fileColumns,
+            dr.file_rows as fileRows,
+            dr.file_handle_field as fileHandleField,
+            dr.file_handle_status as fileHandleStatus,
+            dr.file_contains_y as fileContainsY,
+            dr.file_y_rows as fileYRows,
+            dr.file_y_ratio as fileYRatio,
+            dr.resource_fusion_id as resourceFusionId,
+            dr.public_organ_id as publicOrganId,
+            dr.resource_state as resourceState,
+            dr.resource_hash_code as resourceHashCode,
+            dr.user_id as userId,
+            dr.organ_id as organId,
+            dr.create_date as createDate,
+            dt.task_id as taskId,
+            dt.task_id_name as taskIdName,
+            (select GROUP_CONCAT(tag_name) from data_rt rt,data_resource_tag t where rt.tag_id = t.tag_id and rt.resource_id = dr.resource_id ) tag
+        FROM
+            data_resource dr,
+            data_mr mr,
+            data_task dt
+        WHERE
+            dr.resource_fusion_id = mr.resource_id
+          and mr.task_id = dt.task_id
+          and dr.is_del = 0
+          and dr.resource_source = 3
+          and mr.task_id in (select mt.task_id from data_model_task mt,data_model dm where mt.model_id = dm.model_id and dm.project_id = #{projectId})
+    </select>
+    <select id="queryDataFileFieldById" resultType="com.primihub.biz.entity.data.po.DataFileField">
+        select
+            field_id as fieldId,
+            file_id as fileId,
+            resource_id as resourceId,
+            field_name as fieldName,
+            field_as as fieldAs,
+            field_type as fieldType,
+            field_desc as fieldDesc,
+            `relevance`,
+            `grouping`,
+            protection_status as protectionStatus,
+            create_date as createDate,
+            update_date as updateDate
+        from
+            data_file_field
+        where
+            field_id = #{id}
+    </select>
+
 </mapper>

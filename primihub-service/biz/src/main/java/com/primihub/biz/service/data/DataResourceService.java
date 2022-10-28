@@ -87,11 +87,9 @@ public class DataResourceService {
         Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
         List<Long> resourceIds = new ArrayList<>();
         Set<Long> userIds = new HashSet<>();
-        Set<Long> organIds = new HashSet<>();
         List<DataResourceVo> voList = dataResources.stream().map(vo->{
             resourceIds.add(vo.getResourceId());
             userIds.add(vo.getUserId());
-            organIds.add(vo.getOrganId());
             return DataResourceConvert.dataResourcePoConvertVo(vo);
         }).collect(Collectors.toList());
         Map<Long, List<ResourceTagListVo>> resourceTagMap = dataResourceRepository.queryDataResourceListTags(resourceIds)
@@ -304,11 +302,19 @@ public class DataResourceService {
     }
 
     public BaseResultEntity updateDataResourceField(DataResourceFieldReq req, FieldTypeEnum fieldTypeEnum) {
+        DataFileField dataFileField1 = dataResourceRepository.queryDataFileFieldById(req.getFieldId());
+        if (dataFileField1==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无字段信息");
         if (StringUtils.isNotBlank(req.getFieldAs()))
             if (!req.getFieldAs().substring(0,1).matches(DataConstant.MATCHES))
                 return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"字段别名格式错误");
         DataFileField dataFileField = DataResourceConvert.DataFileFieldReqConvertPo(req, fieldTypeEnum);
         dataResourcePrRepository.updateResourceFileField(dataFileField);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+            DataResource dataResource = dataResourceRepository.queryDataResourceById(dataFileField1.getResourceId());
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+        }
         return BaseResultEntity.success();
     }
 

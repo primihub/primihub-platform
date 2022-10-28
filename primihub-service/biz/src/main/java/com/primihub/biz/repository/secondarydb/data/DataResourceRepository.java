@@ -2,6 +2,7 @@ package com.primihub.biz.repository.secondarydb.data;
 
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.vo.DataDerivationResourceVo;
 import com.primihub.biz.entity.data.vo.DataResourceAuthRecordVo;
 import com.primihub.biz.entity.data.vo.DataResourceRecordVo;
 import com.primihub.biz.entity.data.vo.ResourceTagListVo;
@@ -32,6 +33,7 @@ public interface DataResourceRepository {
 
     DataResource queryDataResourceByResourceFusionId(String resourceFusionId);
 
+    List<DataDerivationResourceVo> queryDerivationResourceList(Long projectId);
 
     List<Long> queryResourceTagRelation(Long resourceId);
 
@@ -44,6 +46,8 @@ public interface DataResourceRepository {
     List<DataFileField> queryDataFileField(Map<String,Object> paramMap);
 
     List<DataFileField> queryDataFileFieldByFileId(@Param("resourceId")Long resourceId);
+
+    DataFileField queryDataFileFieldById(Long id);
 
     Integer queryDataFileFieldCount(Map<String,Object> paramMap);
 
