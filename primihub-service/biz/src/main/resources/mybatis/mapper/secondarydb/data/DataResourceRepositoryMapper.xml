@@ -326,10 +326,10 @@
             and mr.task_id in (select mt.task_id from data_model_task mt,data_model dm where mt.model_id = dm.model_id and dm.project_id = #{projectId})
         </if>
         <if test="startDate!=null and startDate!=''">
-            and dr.create_date &gt;= #{startData}
+            and dr.create_date &gt;= #{startDate}
         </if>
         <if test="endDate!=null and endDate!=''">
-            and dr.create_date &lt;= #{endData}
+            and dr.create_date &lt;= #{endDate}
         </if>
     </sql>
     <select id="queryDataFileFieldById" resultType="com.primihub.biz.entity.data.po.DataFileField">
