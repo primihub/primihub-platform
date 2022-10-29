@@ -148,6 +148,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             this.newDataSetId= UUID.randomUUID().toString();
             this.psiPath = psiPath + newDataSetId +".csv";
             this.index = index;
+            this.outputPath = psiPath + UUID.randomUUID().toString() +".csv";
         }
 
         private String newDataSetId;
