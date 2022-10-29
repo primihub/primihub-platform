@@ -236,6 +236,7 @@
     <sql id="fusionResourceCondition">
         where
         r.resource_state = 0
+        and r.resource_type != 3
         and go.group_id in
             <foreach collection="groupList" index="index" item="item" open="("
                      separator="," close=")">

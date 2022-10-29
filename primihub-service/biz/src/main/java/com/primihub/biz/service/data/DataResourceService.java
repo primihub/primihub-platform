@@ -426,8 +426,8 @@ public class DataResourceService {
         Map<Long, List<DataFileField>> fileFieldListMap = fileFieldList.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
         List<DataResourceCopyVo> copyVolist = new ArrayList();
         for (DataResource dataResource : resourceList) {
-            if (dataResource.getResourceSource() == 3)
-                continue;
+//            if (dataResource.getResourceSource() == 3)
+//                continue;
             if (dataResource.getResourceFusionId()==null||dataResource.getResourceFusionId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
                 dataResourcePrRepository.editResource(dataResource);
@@ -609,6 +609,7 @@ public class DataResourceService {
         if (dataResource == null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
         List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
             String url = dataResource.getUrl();
             if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
@@ -650,6 +651,9 @@ public class DataResourceService {
             DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
             dataResourcePrRepository.saveResourceTag(dataResourceTag);
             dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
+            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+            }
         }
         return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
     }

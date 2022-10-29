@@ -58,6 +58,8 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到项目资源信息");
             Set<String> resourceIds = dataProjectResources.stream().filter(dpr -> dpr.getAuditStatus() == 1).map(DataProjectResource::getResourceId).collect(Collectors.toSet());
             for (ModelProjectResourceVo mprv : resourceList) {
+                if (mprv.getDerivation() == 1)
+                    continue;
                 if (!resourceIds.contains(mprv.getResourceId()))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源["+mprv.getResourceName()+"]审核未通过或移除,不可使用");
             }
