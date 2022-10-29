@@ -302,7 +302,7 @@
         LIMIT #{offset},#{pageSize}
     </select>
     <sql id="queryDerivationResourceListWhere">
-        and dr.resource_source == 3
+        and dr.resource_source = 3
         <if test="resourceId!=null and resourceId!=''">
             and dr.resource_fusion_id = #{resourceId}
         </if>
@@ -347,6 +347,19 @@
             data_file_field
         where
             field_id = #{id}
+    </select>
+    <select id="queryDerivationResourceListCount" resultType="java.lang.Integer">
+        SELECT
+         count(dr.resource_id)
+        FROM
+        data_resource dr,
+        data_mr mr,
+        data_task dt
+        WHERE
+        dr.resource_fusion_id = mr.resource_id
+        and mr.task_id = dt.task_id
+        and dr.is_del = 0
+        <include refid="queryDerivationResourceListWhere"/>
     </select>
 
 </mapper>
