@@ -117,4 +117,6 @@ public class DataDerivationResourceVo {
         }
         return fileHandleField;
     }
+
+    private Long projectId;
 }
