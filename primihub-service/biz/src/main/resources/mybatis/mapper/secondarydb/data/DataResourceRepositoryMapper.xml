@@ -298,7 +298,7 @@
           and mr.task_id = dt.task_id
           and dr.is_del = 0
         <include refid="queryDerivationResourceListWhere"/>
-        ORDER BY resource_id desc
+        ORDER BY dr.resource_id desc
         LIMIT #{offset},#{pageSize}
     </select>
     <sql id="queryDerivationResourceListWhere">
