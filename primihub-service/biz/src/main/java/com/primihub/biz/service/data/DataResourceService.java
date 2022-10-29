@@ -610,7 +610,11 @@ public class DataResourceService {
         List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
         for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
             String url = dataResource.getUrl();
-            url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+            if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
+                url = modelDerivationDto.getPath();
+            }else {
+                url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+            }
             log.info(url);
             File file = new File(url);
             if (!file.exists())
