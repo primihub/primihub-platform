@@ -651,6 +651,9 @@ public class DataResourceService {
 
     public BaseResultEntity getDerivationResourceList(DerivationResourceReq req) {
         List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+        if (dataDerivationResourceVos.size()==0){
+            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        }
         Set<Long> userIds = dataDerivationResourceVos.stream().map(DataDerivationResourceVo::getUserId).collect(Collectors.toSet());
         Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -660,7 +663,9 @@ public class DataResourceService {
             dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
             dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
         }
-        return BaseResultEntity.success(dataDerivationResourceVos);
+        Integer count = dataResourceRepository.queryDerivationResourceListCount(req);
+
+        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataDerivationResourceVos));
     }
 }
 
