@@ -275,7 +275,7 @@
             dr.file_suffix as fileSuffix,
             dr.file_columns as fileColumns,
             dr.file_rows as fileRows,
-            dr.file_handle_field as fileHandleField,
+            dr.file_handle_field as handleField,
             dr.file_handle_status as fileHandleStatus,
             dr.file_contains_y as fileContainsY,
             dr.file_y_rows as fileYRows,

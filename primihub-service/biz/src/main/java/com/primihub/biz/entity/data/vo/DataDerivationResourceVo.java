@@ -3,6 +3,7 @@ package com.primihub.biz.entity.data.vo;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -73,6 +74,11 @@ public class DataDerivationResourceVo {
      * 文件字段y值内容不为空的行数在总行的占比
      */
     private BigDecimal fileYRatio;
+
+    @JsonIgnore
+    private String handleField;
+
+    private String[] fileHandleField;
     /**
      * 用户id
      */
@@ -104,4 +110,11 @@ public class DataDerivationResourceVo {
     private String taskIdName;
 
     private String tag;
+
+    public String[] getFileHandleField() {
+        if (StringUtils.isNotBlank(handleField)){
+            return handleField.split(",");
+        }
+        return fileHandleField;
+    }
 }
