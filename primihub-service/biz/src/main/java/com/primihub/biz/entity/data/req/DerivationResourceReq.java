@@ -14,7 +14,7 @@ public class DerivationResourceReq extends PageReq {
 
     private Long projectId;
 
-    private String startData;
+    private String startDate;
 
-    private String endData;
+    private String endDate;
 }

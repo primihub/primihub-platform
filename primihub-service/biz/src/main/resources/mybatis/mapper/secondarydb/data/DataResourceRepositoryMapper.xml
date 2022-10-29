@@ -325,10 +325,10 @@
         <if test="projectId!=null and projectId!=''">
             and mr.task_id in (select mt.task_id from data_model_task mt,data_model dm where mt.model_id = dm.model_id and dm.project_id = #{projectId})
         </if>
-        <if test="startData!=null and startData!=''">
+        <if test="startDate!=null and startDate!=''">
             and dr.create_date &gt;= #{startData}
         </if>
-        <if test="endData!=null and endData!=''">
+        <if test="endDate!=null and endDate!=''">
             and dr.create_date &lt;= #{endData}
         </if>
     </sql>
