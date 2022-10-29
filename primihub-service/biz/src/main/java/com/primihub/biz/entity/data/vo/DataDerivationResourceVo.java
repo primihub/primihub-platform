@@ -74,10 +74,6 @@ public class DataDerivationResourceVo {
      */
     private BigDecimal fileYRatio;
     /**
-     * 数据库id
-     */
-    private Long dbId;
-    /**
      * 用户id
      */
     private Long userId;
@@ -86,7 +82,7 @@ public class DataDerivationResourceVo {
     /**
      * 机构id
      */
-    private Long organId;
+    private String organId;
 
     /**
      * 机构名称

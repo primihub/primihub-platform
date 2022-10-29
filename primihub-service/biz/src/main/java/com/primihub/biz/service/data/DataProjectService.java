@@ -557,12 +557,18 @@ public class DataProjectService {
     }
 
     public BaseResultEntity getDerivationResourceList(Long projectId) {
-        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(projectId);
+        DerivationResourceReq req = new DerivationResourceReq();
+        req.setProjectId(projectId);
+        req.setPageSize(1000);
+        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
         Set<Long> userIds = dataDerivationResourceVos.stream().map(DataDerivationResourceVo::getUserId).collect(Collectors.toSet());
         Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         for (DataDerivationResourceVo dataDerivationResourceVo : dataDerivationResourceVos) {
             SysUser sysUser = sysUserMap.get(dataDerivationResourceVo.getUserId());
             dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
+            dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
+            dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
         }
         return BaseResultEntity.success(dataDerivationResourceVos);
     }

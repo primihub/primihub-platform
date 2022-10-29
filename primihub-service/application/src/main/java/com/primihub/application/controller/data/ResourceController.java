@@ -7,6 +7,7 @@ import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
 import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
+import com.primihub.biz.entity.data.req.DerivationResourceReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataResourceService;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +43,11 @@ public class ResourceController {
     public BaseResultEntity getDataResourceList(@RequestHeader("userId") Long userId,
                                                 DataResourceReq req){
         return dataResourceService.getDataResourceList(req,userId);
+    }
+
+    @GetMapping("getDerivationResourceList")
+    public BaseResultEntity getDerivationResourceList(DerivationResourceReq req){
+        return dataResourceService.getDerivationResourceList(req);
     }
 
     /**

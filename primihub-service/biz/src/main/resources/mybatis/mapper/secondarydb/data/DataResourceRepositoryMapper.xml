@@ -52,6 +52,7 @@
     </select>
 
     <sql id="queryCondition">
+        and resource_source != 3
         <if test="resourceState!=null">
             and resource_state = #{resourceState}
         </if>
@@ -85,14 +86,6 @@
         <if test="fileHandleField!=null and fileHandleField!=''">
             and cast(file_handle_field as char) = #{fileHandleField}
         </if>
-        <choose>
-            <when test="derivation == 1">
-                and resource_source = 3
-            </when>
-            <otherwise>
-                and resource_source != 3
-            </otherwise>
-        </choose>
     </sql>
 
     <select id="queryDataResourceById" resultType="com.primihub.biz.entity.data.po.DataResource">
@@ -292,7 +285,6 @@
             dr.resource_state as resourceState,
             dr.resource_hash_code as resourceHashCode,
             dr.user_id as userId,
-            dr.organ_id as organId,
             dr.create_date as createDate,
             dt.task_id as taskId,
             dt.task_id_name as taskIdName,
@@ -305,9 +297,38 @@
             dr.resource_fusion_id = mr.resource_id
           and mr.task_id = dt.task_id
           and dr.is_del = 0
-          and dr.resource_source = 3
-          and mr.task_id in (select mt.task_id from data_model_task mt,data_model dm where mt.model_id = dm.model_id and dm.project_id = #{projectId})
+        <include refid="queryDerivationResourceListWhere"/>
+        ORDER BY resource_id desc
+        LIMIT #{offset},#{pageSize}
     </select>
+    <sql id="queryDerivationResourceListWhere">
+        and dr.resource_source == 3
+        <if test="resourceId!=null and resourceId!=''">
+            and dr.resource_fusion_id = #{resourceId}
+        </if>
+        <if test="resourceName!=null and resourceName!=''">
+            and dr.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tag!=null and tag!=''">
+            and dr.resource_id in
+            (
+            select DISTINCT rt.resource_id from data_resource_tag drt,data_rt rt
+            where drt.tag_id = rt.tag_id and drt.tag_name like CONCAT('%',#{tag,jdbcType=VARCHAR},'%')
+            )
+        </if>
+        <if test="taskIdName!=null and taskIdName!=''">
+            and dt.task_id_name like CONCAT('%',#{taskIdName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="projectId!=null and projectId!=''">
+            and mr.task_id in (select mt.task_id from data_model_task mt,data_model dm where mt.model_id = dm.model_id and dm.project_id = #{projectId})
+        </if>
+        <if test="startData!=null and startData!=''">
+            and dr.create_date &gt;= #{startData}
+        </if>
+        <if test="endData!=null and endData!=''">
+            and dr.create_date &lt;= #{endData}
+        </if>
+    </sql>
     <select id="queryDataFileFieldById" resultType="com.primihub.biz.entity.data.po.DataFileField">
         select
             field_id as fieldId,

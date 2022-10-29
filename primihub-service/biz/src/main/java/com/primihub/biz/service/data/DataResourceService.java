@@ -14,10 +14,7 @@ import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataResourceFieldReq;
-import com.primihub.biz.entity.data.req.DataResourceReq;
-import com.primihub.biz.entity.data.req.DataSourceOrganReq;
-import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
@@ -650,6 +647,20 @@ public class DataResourceService {
             dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
         }
         return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
+    }
+
+    public BaseResultEntity getDerivationResourceList(DerivationResourceReq req) {
+        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+        Set<Long> userIds = dataDerivationResourceVos.stream().map(DataDerivationResourceVo::getUserId).collect(Collectors.toSet());
+        Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        for (DataDerivationResourceVo dataDerivationResourceVo : dataDerivationResourceVos) {
+            SysUser sysUser = sysUserMap.get(dataDerivationResourceVo.getUserId());
+            dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
+            dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
+            dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
+        }
+        return BaseResultEntity.success(dataDerivationResourceVos);
     }
 }
 
