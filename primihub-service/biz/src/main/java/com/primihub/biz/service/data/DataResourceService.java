@@ -165,6 +165,7 @@ public class DataResourceService {
             map.put("resourceDesc",dataResource.getResourceDesc());
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
+            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
         }
 
