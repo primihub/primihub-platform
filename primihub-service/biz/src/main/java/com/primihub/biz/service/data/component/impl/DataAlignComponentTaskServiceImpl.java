@@ -59,7 +59,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         BaseResultEntity baseResultEntity = runPsi(req, taskReq);
         if (baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-
+            runAssemblyData((Map<String, ModelEntity>)baseResultEntity.getResult(),req,taskReq);
         }else {
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
             taskReq.getDataTask().setTaskErrorMsg(baseResultEntity.getMsg());
