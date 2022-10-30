@@ -4,9 +4,9 @@
       <el-table
         v-loading="listLoading"
         :data="modelList"
+        empty-text="暂无任务"
         border
       >
-        <!-- 解决加载数据时先显示no data -->
         <el-table-column
           label="任务ID"
           min-width="100"
