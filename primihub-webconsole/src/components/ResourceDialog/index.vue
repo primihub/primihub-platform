@@ -4,14 +4,7 @@
     v-bind="$attrs"
   >
     <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
-    <el-tabs v-model="activeName">
-      <el-tab-pane label="原始数据资源" name="first">
-        <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedResourceId" @change="handleChange" />
-      </el-tab-pane>
-      <el-tab-pane label="衍生数据资源" name="second">
-        <DerivedResourceTableSingleSelect />
-      </el-tab-pane>
-    </el-tabs>
+    <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedResourceId" @change="handleChange" />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="paginationOptions.pageCount>1" small :limit.sync="paginationOptions.pageSize" :page.sync="paginationOptions.pageNo" :total="paginationOptions.total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
@@ -25,13 +18,11 @@
 <script>
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
-import DerivedResourceTableSingleSelect from '@/components/DerivedResourceTableSingleSelect'
 // import SearchInput from '@/components/SearchInput'
 export default {
   name: 'ResourceDialog',
   components: {
     ResourceTableSingleSelect,
-    DerivedResourceTableSingleSelect,
     Pagination
     // SearchInput
   },
@@ -69,8 +60,7 @@ export default {
       pageCount: 1,
       total: 0,
       pageSize: 5,
-      pageNo: 1,
-      activeName: 'first'
+      pageNo: 1
     }
   },
   computed: {
