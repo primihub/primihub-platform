@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export function getDerivationResourceList(params) {
+  return request({
+    url: '/data/resource/getDerivationResourceList',
+    method: 'get',
+    params
+  })
+}
 export function displayDatabaseSourceType(params) {
   return request({
     url: '/data/resource/displayDatabaseSourceType',

@@ -1,5 +1,5 @@
 <template>
-  <div class="canvas">
+  <div ref="canvas" class="canvas">
     <div class="canvas-container">
       <!--工具栏-->
       <ToolBar :options="options.toolbarOptions" @save="toolBarSave" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" @reset="resetFn" />
@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -170,10 +170,7 @@ export default {
     },
     async componentsDetail(newVal) {
       if (newVal) {
-        // only same project can load data
-        if (newVal.projectId !== this.projectId) {
-          this.deleteComponentsVal()
-        }
+        console.log('componentsDetail', newVal)
         this.graph.clearCells()
         this.nodeData = this.startNode
         this.graphData.cells = []
@@ -211,6 +208,13 @@ export default {
         }, 1500)
       }
     }
+    // fix canvas autoResize error
+    window.addEventListener('resize', () => {
+      const _this = this
+      this.$nextTick(() => {
+        _this.container.style.width = _this.$refs.canvas && _this.$refs.canvas.offsetWidth
+      })
+    })
   },
   destroyed() {
     clearTimeout(this.taskTimer)
@@ -234,10 +238,14 @@ export default {
       }
     },
     deleteComponentsVal() {
-      const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'dataSet')
-      if (posIndex !== -1) {
-        this.graphData.cells[posIndex].data.componentTypes[0].inputValue = ''
-      }
+      this.graphData.cells.map(item => {
+        if (item.shape === 'dag-node') {
+          item.data.componentTypes.map(c => {
+            c.inputValue = ''
+          })
+        }
+      })
+      console.log('deleteComponentsVal', this.graphData)
     },
     // 清除画布
     clearFn() {
@@ -289,8 +297,8 @@ export default {
         'dag-node',
         {
           inherit: 'vue-shape',
-          width: 200,
-          height: 52,
+          width: 180,
+          height: 50,
           component: {
             template: `<dag-node-component />`,
             components: {
@@ -318,7 +326,6 @@ export default {
         container: this.container,
         width: this.width,
         height: height,
-        autoResize: true,
         snapline: true,
         scroller: {
           enabled: true,
@@ -333,7 +340,7 @@ export default {
           height: 160,
           padding: 10
         },
-        panning: true,
+        // panning: true,
         background: {
           color: '#F5F7FA'
         },
@@ -365,7 +372,7 @@ export default {
             args: {
               attrs: {
                 fill: '#fff',
-                stroke: '#34e2c4',
+                stroke: '#31d0c6',
                 strokeWidth: 4
               }
             }
@@ -485,13 +492,6 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
-      graph.on('edge:connected', ({ edge }) => {
-        edge.attr({
-          line: {
-            strokeDasharray: ''
-          }
-        })
-      })
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
@@ -720,8 +720,8 @@ export default {
           node.setData({
             label: componentName,
             componentCode,
-            componentState: 2,
-            timeConsuming: timeConsuming / 1000
+            componentState,
+            timeConsuming: Math.ceil(timeConsuming / 1000)
           })
           if (componentState === 1) {
             taskResult.push(componentCode)
@@ -729,7 +729,7 @@ export default {
               label: componentName,
               componentCode,
               componentState,
-              timeConsuming: timeConsuming / 1000
+              timeConsuming: Math.ceil(timeConsuming / 1000)
             })
             if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
               clearInterval(this.taskTimer)
@@ -777,7 +777,7 @@ export default {
         const current = this.modelData.filter(v => v.componentCode === componentCode)[0]
         const timeConsuming = current?.timeConsuming
         const componentState = current?.componentState
-        const component = this.components.find(item => {
+        const { componentTypes, isMandatory } = this.components.find(item => {
           return item.componentCode === componentCode
         })
         this.graphData.cells.push({
@@ -796,12 +796,11 @@ export default {
           shape,
           ports,
           data: {
-            frontComponentId,
             componentState,
             componentCode,
             componentName,
-            componentTypes: component && component.componentTypes,
-            isMandatory: component && component.isMandatory,
+            componentTypes,
+            isMandatory,
             timeConsuming
           },
           zIndex: 1
@@ -938,7 +937,7 @@ export default {
             output: item.target
           })
         } else {
-          const { componentCode, componentName, componentTypes = [] } = data
+          const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
           for (let i = 0; i < componentTypes.length; i++) {
@@ -973,13 +972,13 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
-      // dataSet component in the second
-      this.checkOrder()
-
       this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
         this.currentModelId = res.result.modelId
+        if (this.isCopy) {
+          this.$route.query.modelId = this.currentModelId
+        }
         this.$notify.closeAll()
         this.$notify({
           message: '保存成功',
@@ -993,15 +992,6 @@ export default {
         })
       }
       this.isClear = false
-    },
-    checkOrder() {
-      const { modelComponents } = this.saveParams.param
-      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
-      const dataSetCom = modelComponents[dataSetIndex]
-      if (dataSetIndex !== 1 && dataSetIndex !== -1) {
-        this.saveParams.param.modelComponents.splice(dataSetIndex, 1)
-        this.saveParams.param.modelComponents.splice(1, 0, dataSetCom)
-      }
     },
     getProjectResourceData() {
       getProjectResourceData({ projectId: this.projectId }).then(res => {
@@ -1058,8 +1048,7 @@ export default {
       }
     },
     setComponentsDetail(data) {
-      if (!data) return
-      const { modelComponents = [], modelPointComponents } = data
+      const { modelComponents, modelPointComponents } = data
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0
@@ -1073,20 +1062,16 @@ export default {
         this.selectComponentList.push(item.componentCode)
         this.$emit('selectComponents', this.selectComponentList)
         const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-        if (posIndex !== -1) {
-          item.componentValues.map(item => {
-            this.components[posIndex]?.componentTypes.map(c => {
-              if (c.typeCode === item.key && item.val !== '') {
-                c.inputValue = item.val
-              }
-            })
+        item.componentValues.map(item => {
+          this.components[posIndex].componentTypes.map(c => {
+            if (c.typeCode === item.key && item.val !== '') {
+              c.inputValue = item.val
+            }
           })
-        }
+        })
       }
       this.initGraphShape()
-      if (this.options.isEditable) {
-        this.saveFn()
-      }
+      this.saveFn()
     }
   }
 }
@@ -1101,6 +1086,7 @@ export default {
   overflow: hidden;
   height: 100%;
   width: 100%;
+  min-width: 200px
 }
 .canvas-container{
   display: flex;
@@ -1110,6 +1096,8 @@ export default {
 }
 .container{
   flex: 1;
+  width: 100%;
+  min-width: 1600px;
 }
 .not-clickable{
   cursor: default;
@@ -1119,5 +1107,8 @@ export default {
   position: absolute;
   bottom: 1px;
   right: 0;
+}
+.right-drawer{
+  min-width: 300px;
 }
 </style>

@@ -2,17 +2,20 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
+        <el-form-item label="项目ID">
+          <el-input v-model="query.projectId" placeholder="请输入项目ID" />
+        </el-form-item>
         <el-form-item label="数据ID">
           <el-input v-model="query.resourceId" placeholder="请输入资源ID" />
         </el-form-item>
         <el-form-item label="资源名称">
           <el-input v-model="query.resourceName" placeholder="请输入资源名称" />
         </el-form-item>
-        <el-form-item label="任务名称">
-          <el-input v-model="query.taskName" placeholder="请输入任务名称" />
+        <el-form-item label="任务ID">
+          <el-input v-model="query.taskIdName" placeholder="请输入任务ID" />
         </el-form-item>
         <el-form-item label="衍生数据来源">
-          <el-input v-model="query.resourceSource" placeholder="请输入衍生数据来源" />
+          <el-input v-model="query.tag" placeholder="请输入衍生数据来源" />
         </el-form-item>
         <el-form-item label="创建时间">
           <el-date-picker
@@ -31,7 +34,7 @@
       </el-form>
     </div>
     <div class="resource">
-      <DerivedDataTable />
+      <DerivedDataTable :data="resourceList" />
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
 
@@ -39,7 +42,7 @@
 </template>
 
 <script>
-import { getResourceList } from '@/api/fusionResource'
+import { getDerivationResourceList } from '@/api/resource'
 import Pagination from '@/components/Pagination'
 import DerivedDataTable from '@/components/DerivedDataTable'
 
@@ -51,13 +54,14 @@ export default {
       tags: [],
       serverAddressList: [],
       query: {
+        projectId: '',
         resourceId: '',
         resourceName: '',
-        resourceSource: '',
+        tag: '',
         createDate: [],
         startDate: '',
         endDate: '',
-        taskName: ''
+        taskIdName: ''
       },
       cascaderValue: [],
       resourceList: [],
@@ -83,11 +87,12 @@ export default {
   },
   methods: {
     reset() {
+      this.query.projectId = ''
       this.query.resourceId = ''
       this.query.resourceName = ''
-      this.query.resourceSource = ''
+      this.query.tag = ''
       this.query.createDate = []
-      this.query.taskName = ''
+      this.query.taskIdName = ''
       this.pageNo = 1
       this.fetchData()
     },
@@ -97,19 +102,37 @@ export default {
     async fetchData() {
       this.loading = true
       this.resourceList = []
+      const resourceId = Number(this.query.resourceId)
+      if (resourceId !== '' && isNaN(resourceId)) {
+        this.$message({
+          message: '资源id为数字',
+          type: 'warning'
+        })
+        return
+      }
       const createDate = this.query.createDate
       this.query.startDate = createDate && createDate[0]
       this.query.endDate = createDate && createDate[1]
-      console.log(this.query)
-      // const { code, result } = await getResourceList(params)
-      // if (code === 0) {
-      //   const { data, total, totalPage } = result
-      //   this.total = total
-      //   this.pageCount = totalPage
-      //   if (data.length > 0) {
-      //     this.resourceList = data
-      //   }
-      // }
+      const params = {
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
+        projectId: this.query.projectId,
+        resourceName: this.query.resourceName,
+        resourceId: this.query.resourceId,
+        startDate: createDate && createDate[0],
+        endDate: createDate && createDate[1],
+        taskIdName: this.query.taskIdName,
+        tag: this.query.tag
+      }
+      const { code, result } = await getDerivationResourceList(params)
+      if (code === 0) {
+        const { data, total, totalPage } = result
+        this.total = total
+        this.pageCount = totalPage
+        if (data.length > 0) {
+          this.resourceList = data
+        }
+      }
       this.loading = false
     },
     handlePagination(data) {

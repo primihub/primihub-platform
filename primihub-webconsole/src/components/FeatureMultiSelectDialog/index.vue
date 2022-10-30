@@ -5,10 +5,9 @@
     v-bind="$attrs"
     :before-close="handleClose"
   >
-    {{ selectedData }}
-    <el-radio-group v-if="data.length>0" v-model="radio">
-      <el-radio v-for="item in data" :key="item.key" :label="item.val" />
-    </el-radio-group>
+    <el-checkbox-group v-if="data.length>0" v-model="checkList">
+      <el-checkbox v-for="item in data" :key="item.key" :label="item.val" />
+    </el-checkbox-group>
     <NoData v-else />
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click="handleClose">取 消</el-button>
@@ -32,24 +31,20 @@ export default {
       default: () => []
     },
     selectedData: {
-      type: String,
-      default: ''
+      type: Array,
+      default: () => []
     }
   },
   data() {
     return {
       dialogVisible: false,
-      checkList: this.selectedData,
-      radio: this.selectedData
+      checkList: this.selectedData
     }
   },
   watch: {
     selectedData(newVal) {
       if (newVal) {
-        console.log('watch selectedData', newVal)
-        this.radio = newVal
-      } else {
-        this.radio = ''
+        this.checkList = newVal
       }
     }
   },
@@ -58,7 +53,7 @@ export default {
       this.$emit('close')
     },
     handleDialogSubmit() {
-      this.$emit('submit', this.radio)
+      this.$emit('submit', this.checkList)
     }
 
   }

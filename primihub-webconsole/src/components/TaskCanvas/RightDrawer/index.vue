@@ -41,9 +41,9 @@
         </el-form-item>
         <el-row v-if="nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
           <el-col :span="12">
-            <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures.length }}/{{ featuresOptions.length }})</el-button>
+            <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
             <div class="feature-container">
-              <el-tag v-for="(item,index) in selectedDataAlignFeatures" :key="index" type="primary" size="mini">{{ item }}</el-tag>
+              <el-tag v-if="selectedDataAlignFeatures" type="primary" size="mini">{{ selectedDataAlignFeatures }}</el-tag>
             </div>
             <el-form-item />
           </el-col>
@@ -85,9 +85,9 @@
         <template v-if="nodeData.componentTypes[0].inputValue === '1'">
           <el-row :gutter="20">
             <el-col :span="12">
-              <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedExceptionFeatures.length }}/{{ featuresOptions.length }})</el-button>
+              <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
               <div class="feature-container">
-                <el-tag v-for="(item,index) in selectedExceptionFeatures" :key="index" type="primary" size="mini">{{ item }}</el-tag>
+                <el-tag v-if="selectedExceptionFeatures" type="primary" size="mini">{{ selectedExceptionFeatures }}</el-tag>
               </div>
               <el-form-item />
             </el-col>
@@ -165,7 +165,7 @@
     </el-form>
     <el-button v-if="options.showSaveButton" type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
-    <ResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
     <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加可信第三方" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
@@ -175,14 +175,14 @@
 
 <script>
 import { getProjectResourceData, getProjectResourceOrgan } from '@/api/model'
-import ResourceDialog from '@/components/ResourceDialog'
+import ModelTaskResourceDialog from '@/components/ModelTaskResourceDialog'
 import ResourceDec from '@/components/ResourceDec'
 import ArbiterOrganDialog from '@/components/ArbiterOrganDialog'
 import FeatureSelectDialog from '@/components/FeatureSelectDialog'
 
 export default {
   components: {
-    ResourceDialog,
+    ModelTaskResourceDialog,
     ResourceDec,
     ArbiterOrganDialog,
     FeatureSelectDialog
@@ -234,9 +234,9 @@ export default {
       ],
       selectedFeaturesCode: '',
       selectedFeaturesIndex: '',
-      selectedDataAlignFeatures: [],
-      selectedExceptionFeatures: [],
-      selectedFeatures: [],
+      selectedDataAlignFeatures: null,
+      selectedExceptionFeatures: null,
+      selectedFeatures: null,
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
@@ -261,6 +261,7 @@ export default {
       participationIdentity: 2,
       inputValues: [],
       inputValue: '',
+      resourceChanged: false,
       rules: {
         modelName: [
           { required: true, trigger: 'blur', validator: modelNameValidate }
@@ -306,6 +307,7 @@ export default {
   },
   watch: {
     async nodeData(newVal) {
+      console.log('watch newVal', newVal)
       if (newVal) {
         if (newVal.componentCode === 'dataSet') {
           this.inputValue = this.nodeData.componentTypes[0].inputValue
@@ -315,11 +317,12 @@ export default {
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
         } else if (newVal.componentCode === 'dataAlign') {
-          this.selectedDataAlignFeatures = this.nodeData.componentTypes[1].inputValue !== '' ? this.nodeData.componentTypes[1].inputValue.split(',') : []
+          this.selectedDataAlignFeatures = this.resourceChanged ? null : this.nodeData.componentTypes[1]?.inputValue !== '' ? this.nodeData.componentTypes[1]?.inputValue : null
           this.selectedFeatures = this.selectedDataAlignFeatures
         } else if (newVal.componentCode === 'missing') {
-          this.selectedExceptionFeatures = this.nodeData.componentTypes[1].inputValue !== '' ? this.nodeData.componentTypes[1].inputValue.split(',') : []
+          this.selectedExceptionFeatures = this.resourceChanged ? null : newVal.componentTypes[1].inputValue !== '' ? newVal.componentTypes[1].inputValue : null
           this.selectedFeatures = this.selectedExceptionFeatures
+          console.log('watch selectedExceptionFeatures', this.selectedExceptionFeatures)
         } else {
           this.inputValue = ''
         }
@@ -384,6 +387,8 @@ export default {
     async openDialog(organId, participationIdentity) {
       this.participationIdentity = participationIdentity
       this.selectedOrganId = organId
+      sessionStorage.setItem('organ', JSON.stringify({ organId: this.selectedOrganId, participationIdentity: this.participationIdentity }))
+      console.log(organId)
       if (this.selectedOrganId === '') {
         this.$message({
           message: '请先选择机构',
@@ -394,6 +399,7 @@ export default {
       if (this.inputValue) {
         const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
         if (currentOrgan) {
+          console.log(this.inputValue)
           this.selectedResourceId = currentOrgan.resourceId
         } else {
           this.selectedResourceId = ''
@@ -407,24 +413,36 @@ export default {
     },
     handleProviderOrganChange(value) {
       this.providerOrganId = value
-      this.providerOrgans = []
-      this.selectedResourceId = ''
       this.providerOrganName = this.providerOrganOptions.filter(item => item.organId === value)[0].organName
     },
     handleDialogCancel() {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
+      console.log(data)
       // not selecting resource
       if (!data.resourceId) {
         this.dialogVisible = false
         return
       }
       if (this.participationIdentity === 1) {
+        // is not first select
+        if ('resourceId' in this.initiateOrgan && this.initiateOrgan.resourceId !== data.resourceId) {
+          this.resourceChanged = true
+        }
         data.organName = this.initiateOrgan.organName
+        this.initiateOrgan = []
         this.initiateOrgan = data
       } else {
+        // is not first select
+        if (this.providerOrgans.length > 0 && 'resourceId' in this.providerOrgans[0]) {
+          console.log(this.providerOrgans.length)
+          console.log('resourceId' in this.providerOrgans[0])
+          debugger
+          this.resourceChanged = true
+        }
         data.organName = this.providerOrganOptions.find(item => item.organId === this.providerOrganId).organName
+        this.providerOrgans = []
         this.providerOrgans = [data]
       }
       this.selectedResourceId = data.resourceId
@@ -435,19 +453,20 @@ export default {
       this.$emit('change', this.nodeData)
     },
     setInputValue(data) {
-      if (!data.calculationField) {
-        data.calculationField = data.fileHandleField[0]
-      }
+      // set default feature value
+      data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField[0] : ''
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
       const posIndex = this.inputValues.findIndex(item => item.participationIdentity === data.participationIdentity)
       const currentData = data
+      console.log('currentData', currentData)
       if (posIndex !== -1) {
-        this.inputValues[posIndex] = currentData
+        this.inputValues.splice(posIndex, 1, currentData)
       } else {
         this.inputValues.push(currentData)
       }
+      console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
       this.handleChange()
     },
@@ -485,13 +504,18 @@ export default {
       this.featuresDialogVisible = true
     },
     handleFeatureDialogSubmit(data) {
+      console.log(data)
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedDataAlignFeatures = data
-        this.nodeData.componentTypes[1].inputValue = data.join(',')
+        this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
+        this.selectedFeatures = this.selectedDataAlignFeatures
       } else if (this.selectedFeaturesCode === 'missing') {
         this.selectedExceptionFeatures = data
-        this.nodeData.componentTypes[1].inputValue = data.join(',')
+        this.nodeData.componentTypes[1].inputValue = this.selectedExceptionFeatures
+        this.selectedFeatures = this.selectedExceptionFeatures
+        console.log(this.selectedExceptionFeatures)
       }
+      console.log(this.nodeData)
       this.featuresDialogVisible = false
       this.handleChange()
     },
