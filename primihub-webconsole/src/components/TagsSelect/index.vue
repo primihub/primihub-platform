@@ -28,11 +28,23 @@ export default {
     data: {
       type: Array,
       default: () => []
+    },
+    reset: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
       tagName: ''
+    }
+  },
+  watch: {
+    reset(newVal) {
+      if (newVal) {
+        this.tagName = ''
+        this.$emit('change', this.tagName)
+      }
     }
   },
   methods: {

@@ -10,7 +10,7 @@
           <el-input v-model="query.resourceName" placeholder="请输入资源名称" />
         </el-form-item>
         <el-form-item label="关键词">
-          <TagsSelect :data="tags" :remote="false" @filter="searchResource" @change="handleTagChange" />
+          <TagsSelect :data="tags" :reset="isReset" :remote="false" @filter="searchResource" @change="handleTagChange" />
         </el-form-item>
         <el-form-item label="上传者">
           <el-input v-model="query.userName" placeholder="请输入上传者名称" />
@@ -27,6 +27,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
+          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -34,6 +35,7 @@
       <el-table
         :data="resourceList"
         :row-class-name="tableRowDisabled"
+        empty-text="暂无数据"
         border
       >
         <el-table-column
@@ -43,7 +45,6 @@
         <el-table-column
           prop="resourceName"
           label="名称"
-          min-width="130"
         >
           <template slot-scope="{row}">
             <template v-if="hasViewPermission && row.resourceState === 0">
@@ -89,8 +90,14 @@
             样本量：{{ row.fileRows }} <br>
             正例样本数量：{{ row.fileYRows ? row.fileYRows : 0 }}<br>
             正例样本比例：{{ row.fileYRatio? row.fileYRatio : 0 }}% <br>
-            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含Y值</el-tag>
-            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含Y值</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="是否包含Y值"
+        >
+          <template slot-scope="{row}">
+            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含</el-tag>
+            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含</el-tag>
           </template>
         </el-table-column>
         <el-table-column
@@ -105,7 +112,7 @@
         <el-table-column
           prop="resourceHashCode"
           label="文件Hash"
-          min-width="130"
+          min-width="120"
         />
         <el-table-column
           label="操作"
@@ -114,9 +121,9 @@
           align="center"
         >
           <template slot-scope="{row}">
-            <el-button type="text" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
-            <el-button v-if="hasEditPermission && row.resourceState === 0" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
-            <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+            <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+            <el-button v-if="hasEditPermission && row.resourceState === 0" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
+            <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -150,7 +157,8 @@ export default {
       pageCount: 0,
       pageNo: 1,
       pageSize: 10,
-      resourceName: ''
+      resourceName: '',
+      isReset: false
     }
   },
   computed: {
@@ -175,6 +183,17 @@ export default {
     await this.getResourceTags()
   },
   methods: {
+    reset() {
+      this.isReset = true
+      this.query.resourceId = ''
+      this.query.resourceName = ''
+      this.query.tag = ''
+      this.query.userName = ''
+      this.query.resourceSource = ''
+      this.query.selectTag = ''
+      this.pageNo = 1
+      this.fetchData()
+    },
     tableRowDisabled({ row }) {
       if (row.resourceState === 1) {
         return 'disabled'
@@ -289,7 +308,8 @@ export default {
         tag,
         userName,
         resourceSource,
-        selectTag
+        selectTag,
+        derivation: 0
       }
       const res = await getResourceList(params)
       if (res.code === 0) {
@@ -299,6 +319,7 @@ export default {
         if (data.length > 0) {
           this.resourceList = data
         }
+        this.isReset = false
       }
     },
     handlePagination(data) {
