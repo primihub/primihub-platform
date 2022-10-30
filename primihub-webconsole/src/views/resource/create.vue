@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div v-loading="loading" class="app-container">
     <h2><span v-if="isEditPage">编辑</span><span v-else>新建</span>资源</h2>
     <el-form
       ref="dataForm"
