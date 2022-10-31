@@ -36,7 +36,7 @@ public class ShareModelVo {
     private Long timestamp;
     private Integer nonce;
     private List<String> shareOrganId;
-    private List<ModelDerivationDto> derivationList;
+//    private List<ModelDerivationDto> derivationList;
 
     public void init(DataProject project){
         this.projectId = project.getProjectId();

@@ -60,6 +60,11 @@ public class ResourceController {
         return dataResourceService.getDerivationResourceList(req);
     }
 
+    @GetMapping("getDerivationResourceData")
+    public BaseResultEntity getDerivationResourceData(DerivationResourceReq req){
+        return dataResourceService.getDerivationResourceList(req);
+    }
+
     /**
      * 增加或删除资源接口
      * @param req       资源信息
