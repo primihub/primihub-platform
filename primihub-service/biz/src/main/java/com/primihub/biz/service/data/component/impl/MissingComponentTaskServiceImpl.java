@@ -28,6 +28,7 @@ import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -56,13 +57,30 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
             Map<String, MissingComponentTaskServiceImpl.ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+//            if (newest!=null && newest.size()!=0){
+//                log.info("newset:{}",JSONObject.toJSONString(newest));
+//                ids = new ArrayList<>();
+//                for (ModelDerivationDto modelDerivationDto : newest) {
+//                    ids.add(modelDerivationDto.getNewResourceId());
+//                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
+//                    exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
+//                }
+//                log.info("newids:{}", ids);
+//            }
             if (newest!=null && newest.size()!=0){
                 log.info("newset:{}",JSONObject.toJSONString(newest));
                 ids = new ArrayList<>();
-                for (ModelDerivationDto modelDerivationDto : newest) {
-                    ids.add(modelDerivationDto.getNewResourceId());
-                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
-                    exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
+                Map<String, ModelDerivationDto> dtoMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
+                Iterator<Map.Entry<String, MissingComponentTaskServiceImpl.ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
+                while (iterator.hasNext()){
+                    Map.Entry<String, MissingComponentTaskServiceImpl.ExceptionEntity> next = iterator.next();
+                    if (dtoMap.containsKey(next.getKey())){
+                        ModelDerivationDto modelDerivationDto = dtoMap.get(next.getKey());
+                        exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
+                        exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
+                    }else {
+                        ids.add(next.getKey());
+                    }
                 }
                 log.info("newids:{}", ids);
             }
