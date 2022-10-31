@@ -8,6 +8,7 @@ import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dto.GrpcComponentDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
@@ -55,7 +56,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
         List<ModelDerivationDto> newest = taskReq.getNewest();
         log.info("ids:{}", ids);
-        Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+        Map<String, GrpcComponentDto> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
         if (newest!=null && newest.size()!=0){
             log.info("newset:{}",JSONObject.toJSONString(newest));
             for (ModelDerivationDto modelDerivationDto : newest) {
@@ -101,12 +102,12 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
                 } else {
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
-                    Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
+                    Iterator<Map.Entry<String, GrpcComponentDto>> iterator = exceptionEntityMap.entrySet().iterator();
                     Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                     while (iterator.hasNext()) {
-                        Map.Entry<String, ExceptionEntity> next = iterator.next();
+                        Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         String key = next.getKey();
-                        ExceptionEntity value = next.getValue();
+                        GrpcComponentDto value = next.getValue();
                         if (dtoMap!=null && dtoMap.containsKey(key)){
                             derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,dtoMap.get(key)));
                         }else {
@@ -143,25 +144,13 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
     }
 
 
-    public Map<String, ExceptionEntity> getExceptionEntityMap(List<LinkedHashMap<String, Object>> maps) {
-        Map<String, ExceptionEntity> map = new HashMap<>();
+    public Map<String, GrpcComponentDto> getExceptionEntityMap(List<LinkedHashMap<String, Object>> maps) {
+        Map<String, GrpcComponentDto> map = new HashMap<>();
         for (LinkedHashMap<String, Object> dataMap : maps) {
             List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>) dataMap.get("fieldList");
             Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
-            map.put(dataMap.get("resourceId").toString(), new ExceptionEntity(fieldMap,dataMap.get("resourceId").toString()));
+            map.put(dataMap.get("resourceId").toString(), new GrpcComponentDto(fieldMap,dataMap.get("resourceId").toString()));
         }
         return map;
-    }
-
-    @Data
-    public class ExceptionEntity {
-        public ExceptionEntity(Map<String, Integer> columns,String resourceId) {
-            this.columns = columns;
-            this.newDataSetId = resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
-        }
-
-        @JsonIgnore
-        private Map<String, Integer> columns;
-        private String newDataSetId;
     }
 }
