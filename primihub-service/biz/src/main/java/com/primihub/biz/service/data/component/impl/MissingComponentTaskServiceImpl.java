@@ -105,11 +105,13 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                     String key = next.getKey();
                     log.info("key:{}",key);
                     ExceptionEntity value = next.getValue();
+                    log.info("value:{}",JSONObject.toJSONString(value));
                     if (dtoMap!=null && dtoMap.containsKey(key)){
                         derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,dtoMap.get(key)));
                     }else {
                         derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,key));
                     }
+                    log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
                 }
                 // derivation resource datas
                 BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
