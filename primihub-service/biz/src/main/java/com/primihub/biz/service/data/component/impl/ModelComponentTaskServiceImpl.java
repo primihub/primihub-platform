@@ -97,7 +97,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
-            Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId, Function.identity()));
+            Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
             Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
             while (iterator.hasNext()){
                 Map.Entry<String, String> next = iterator.next();

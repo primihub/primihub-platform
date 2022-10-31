@@ -57,8 +57,8 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
                 for (ModelDerivationDto modelDerivationDto : taskReq.getNewest()) {
                     resourceIds.add(modelDerivationDto.getNewResourceId());
-                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getResourceId()));
-                    exceptionEntityMap.remove(modelDerivationDto.getResourceId());
+                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
+                    exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
                 }
             }else {
                 resourceIds.addAll(exceptionEntityMap.keySet());
@@ -96,11 +96,16 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             }else {
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
+                Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                 while (iterator.hasNext()){
                     Map.Entry<String, ExceptionEntity> next = iterator.next();
                     String key = next.getKey();
                     ExceptionEntity value = next.getValue();
-                    derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId()));
+                    if (dtoMap!=null && dtoMap.containsKey(key)){
+                        derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),dtoMap.get(key)));
+                    }else {
+                        derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),key));
+                    }
                 }
                 // derivation resource datas
                 BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
@@ -132,18 +137,20 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
         for (LinkedHashMap<String, Object> dataMap : maps) {
             List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>)dataMap.get("fieldList");
             Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
-            map.put(dataMap.get("resourceId").toString(),new ExceptionEntity(fieldMap));
+            map.put(dataMap.get("resourceId").toString(),new ExceptionEntity(fieldMap,dataMap.get("resourceId").toString()));
         }
         return map;
     }
 
     @Data
-    public class ExceptionEntity{
-        public ExceptionEntity(Map<String, Integer> columns) {
+    public class ExceptionEntity {
+        public ExceptionEntity(Map<String, Integer> columns,String resourceId) {
             this.columns = columns;
+            this.newDataSetId = resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
         }
+
         @JsonIgnore
-        private Map<String,Integer> columns;
-        private String newDataSetId = UUID.randomUUID().toString();
+        private Map<String, Integer> columns;
+        private String newDataSetId;
     }
 }

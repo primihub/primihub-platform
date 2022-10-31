@@ -101,11 +101,16 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 } else {
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
+                    Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                     while (iterator.hasNext()) {
                         Map.Entry<String, ExceptionEntity> next = iterator.next();
                         String key = next.getKey();
                         ExceptionEntity value = next.getValue();
-                        derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId()));
+                        if (dtoMap!=null && dtoMap.containsKey(key)){
+                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),dtoMap.get(key)));
+                        }else {
+                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),key));
+                        }
                     }
                     taskReq.getDerivationList().addAll(derivationList);
                     taskReq.setNewest(derivationList);
@@ -142,19 +147,20 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         for (LinkedHashMap<String, Object> dataMap : maps) {
             List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>) dataMap.get("fieldList");
             Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
-            map.put(dataMap.get("resourceId").toString(), new ExceptionEntity(fieldMap));
+            map.put(dataMap.get("resourceId").toString(), new ExceptionEntity(fieldMap,dataMap.get("resourceId").toString()));
         }
         return map;
     }
 
     @Data
     public class ExceptionEntity {
-        public ExceptionEntity(Map<String, Integer> columns) {
+        public ExceptionEntity(Map<String, Integer> columns,String resourceId) {
             this.columns = columns;
+            this.newDataSetId = resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
         }
 
         @JsonIgnore
         private Map<String, Integer> columns;
-        private String newDataSetId = UUID.randomUUID().toString();
+        private String newDataSetId;
     }
 }

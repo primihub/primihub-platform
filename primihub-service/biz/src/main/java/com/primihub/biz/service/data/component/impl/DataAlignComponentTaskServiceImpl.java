@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -40,6 +41,8 @@ import java.util.stream.Collectors;
 public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
     private BaseConfiguration baseConfiguration;
+    @Autowired
+    private OrganConfiguration organConfiguration;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
@@ -104,11 +107,16 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 } else {
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, ModelEntity>> iterator = map.entrySet().iterator();
+                    Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                     while (iterator.hasNext()) {
                         Map.Entry<String, ModelEntity> next = iterator.next();
                         String key = next.getKey();
                         ModelEntity value = next.getValue();
-                        derivationList.add(new ModelDerivationDto(key, null, req.getComponentName(), value.getNewDataSetId(),value.getOutputPath()));
+                        if (dtoMap!=null && dtoMap.containsKey(key)){
+                            derivationList.add(new ModelDerivationDto(key, null, req.getComponentName(), value.getNewDataSetId(),value.getOutputPath(),dtoMap.get(key)));
+                        }else {
+                            derivationList.add(new ModelDerivationDto(key, null, req.getComponentName(), value.getNewDataSetId(),value.getOutputPath(),key));
+                        }
                     }
                     taskReq.getDerivationList().addAll(derivationList);
                     taskReq.setNewest(derivationList);
@@ -144,8 +152,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
     @Data
     public class ModelEntity {
-        public ModelEntity(String psiPath, int index) {
-            this.newDataSetId= UUID.randomUUID().toString();
+        public ModelEntity(String psiPath, int index,String resourceId) {
+            this.newDataSetId= resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
             this.psiPath = psiPath + newDataSetId +".csv";
             this.index = index;
             this.outputPath = psiPath + UUID.randomUUID().toString() +".csv";
@@ -192,8 +200,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             if (serverIndex<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐协作方特征未查询到");
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
-            ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex);
-            ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex);
+            ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
+            ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex,serverData.getResourceId());
             Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(clientData.getResourceId()).build();
             Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(serverData.getResourceId()).build();
             Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(0).build();

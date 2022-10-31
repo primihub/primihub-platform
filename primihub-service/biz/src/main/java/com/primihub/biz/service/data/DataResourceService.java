@@ -432,12 +432,10 @@ public class DataResourceService {
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
                 dataResourcePrRepository.editResource(dataResource);
             }else {
-                if (dataResource.getResourceSource() != 3){
-                    String organShortCode = dataResource.getResourceFusionId().substring(0, 12);
-                    if (!localOrganShortCode.equals(organShortCode)){
-                        dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
-                        dataResourcePrRepository.editResource(dataResource);
-                    }
+                String organShortCode = dataResource.getResourceFusionId().substring(0, 12);
+                if (!localOrganShortCode.equals(organShortCode)){
+                    dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
+                    dataResourcePrRepository.editResource(dataResource);
                 }
             }
             List<String> tags = Optional.ofNullable(resourceTagMap.get(dataResource.getResourceId())).map(list -> list.stream().map(ResourceTagListVo::getTagName).collect(Collectors.toList())).orElse(null);
