@@ -19,6 +19,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
+import com.primihub.biz.service.sys.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,9 @@ public class DataProjectService {
     private FusionResourceService fusionResourceService;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private SysUserService sysUserService;
+
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -550,5 +554,22 @@ public class DataProjectService {
 
     public String rmFileHandleFieldY(String fileHandleField){
         return Arrays.stream(fileHandleField.split(",")).filter(key->!key.equals("y")).collect(Collectors.joining(","));
+    }
+
+    public BaseResultEntity getDerivationResourceList(Long projectId) {
+        DerivationResourceReq req = new DerivationResourceReq();
+        req.setProjectId(projectId);
+        req.setPageSize(1000);
+        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+        Set<Long> userIds = dataDerivationResourceVos.stream().map(DataDerivationResourceVo::getUserId).collect(Collectors.toSet());
+        Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        for (DataDerivationResourceVo dataDerivationResourceVo : dataDerivationResourceVos) {
+            SysUser sysUser = sysUserMap.get(dataDerivationResourceVo.getUserId());
+            dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
+            dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
+            dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
+        }
+        return BaseResultEntity.success(dataDerivationResourceVos);
     }
 }

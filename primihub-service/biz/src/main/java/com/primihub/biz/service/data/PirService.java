@@ -14,6 +14,7 @@ import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,8 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源行数获取错误");
         Integer resourceRowsCount = (Integer) resourceRowsCountObj - 1;
         DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(UUID.randomUUID().toString());
+//        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(pirDataResource.get("resourceName").toString());
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());

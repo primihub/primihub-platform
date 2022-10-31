@@ -131,6 +131,10 @@
             (#{item.resourceId},#{item.organGlobalId},#{item.organName},#{item.organServerAddress},#{item.isDel})
         </foreach>
     </insert>
+    <insert id="saveSource" parameterType="com.primihub.biz.entity.data.po.DataSource" keyProperty="id" useGeneratedKeys="true">
+        insert into data_source (db_type,db_driver,db_url,db_name,db_username,db_password,is_del,create_date,update_date)
+        values (#{dbType},#{dbDriver},#{dbUrl},#{dbName},#{dbUsername},#{dbPassword},0,now(),now())
+    </insert>
 
     <delete id="deleteVisibilityAuthByResourceId">
         delete from data_resource_visibility_auth where resource_id=#{resourceId}

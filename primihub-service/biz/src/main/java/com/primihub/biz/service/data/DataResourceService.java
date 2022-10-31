@@ -1,44 +1,49 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.convert.DataResourceConvert;
+import com.primihub.biz.convert.DataSourceConvert;
 import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
+import com.primihub.biz.entity.data.dataenum.SourceEnum;
+import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataResourceFieldReq;
-import com.primihub.biz.entity.data.req.DataResourceReq;
-import com.primihub.biz.entity.data.req.DataSourceOrganReq;
-import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.DataServiceGrpcClient;
-import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
-import com.primihub.biz.service.sys.SysOrganService;
+import com.primihub.biz.service.data.component.impl.ExceptionComponentTaskServiceImpl;
 import com.primihub.biz.service.sys.SysUserService;
+import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.crypt.SignUtil;
 import java_data_service.NewDatasetRequest;
 import java_data_service.NewDatasetResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,6 +64,14 @@ public class DataResourceService {
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private DataServiceGrpcClient dataServiceGrpcClient;
+    @Autowired
+    private DataSourceService dataSourceService;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
+    @Autowired
+    private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataModelRepository dataModelRepository;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -71,6 +84,7 @@ public class DataResourceService {
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
         paramMap.put("userName",req.getUserName());
+        paramMap.put("derivation",req.getDerivation());
         List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
         if (dataResources.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -78,11 +92,9 @@ public class DataResourceService {
         Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
         List<Long> resourceIds = new ArrayList<>();
         Set<Long> userIds = new HashSet<>();
-        Set<Long> organIds = new HashSet<>();
         List<DataResourceVo> voList = dataResources.stream().map(vo->{
             resourceIds.add(vo.getResourceId());
             userIds.add(vo.getUserId());
-            organIds.add(vo.getOrganId());
             return DataResourceConvert.dataResourcePoConvertVo(vo);
         }).collect(Collectors.toList());
         Map<Long, List<ResourceTagListVo>> resourceTagMap = dataResourceRepository.queryDataResourceListTags(resourceIds)
@@ -99,27 +111,43 @@ public class DataResourceService {
     }
 
     public BaseResultEntity saveDataResource(DataResourceReq req,Long userId){
-        SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(req.getFileId());
-        if (sysFile==null){
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"file");
-        }
-        DataResource dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null,sysFile);
+        Map<String,Object> map = new HashMap<>();
         try {
+            DataResource dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null);
             List<DataResourceFieldReq> fieldList = req.getFieldList();
-            if (fieldList==null||fieldList.size()==0)
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"字段信息不能为空");
-            BaseResultEntity handleDataResourceFileResult = handleDataResourceFile(dataResource, sysFile);
+            BaseResultEntity handleDataResourceFileResult = null;
+            DataSource dataSource = null;
+            if (req.getResourceSource() == 1){
+                SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(req.getFileId());
+                if (sysFile==null){
+                    return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"file");
+                }
+                dataResource = DataResourceConvert.dataResourceReqConvertPo(req,userId,null,sysFile);
+                handleDataResourceFileResult = handleDataResourceFile(dataResource, sysFile.getFileUrl());
+            }else if (req.getResourceSource() == 2){
+                dataSource  = DataSourceConvert.DataSourceReqConvertPo(req.getDataSource());
+                handleDataResourceFileResult = handleDataResourceSource(dataResource,fieldList,dataSource);
+            }
             if (handleDataResourceFileResult.getCode()!=0)
                 return handleDataResourceFileResult;
+
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!sysLocalOrganInfo.getOrganId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
-            if (!resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl())){
+
+            if (!resourceSynGRPCDataSet(dataSource,dataResource)){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
             }
+            if (dataSource!=null){
+                dataResourcePrRepository.saveSource(dataSource);
+                dataResource.setDbId(dataSource.getId());
+            }
             dataResourcePrRepository.saveResource(dataResource);
-            List<DataFileField> dataFileFieldList = fieldList.stream().map(field -> DataResourceConvert.DataFileFieldReqConvertPo(field, sysFile.getFileId(), dataResource.getResourceId())).collect(Collectors.toList());
+            List<DataFileField> dataFileFieldList = new ArrayList<>();
+            for (DataResourceFieldReq field : fieldList) {
+                dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
+            }
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
             List<String> tags = req.getTags();
             for (String tagName : tags) {
@@ -139,15 +167,16 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
                 singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             }
+            map.put("resourceId",dataResource.getResourceId());
+            map.put("resourceFusionId",dataResource.getResourceFusionId());
+            map.put("resourceName",dataResource.getResourceName());
+            map.put("resourceDesc",dataResource.getResourceDesc());
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
+            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
         }
-        Map<String,Object> map = new HashMap<>();
-        map.put("resourceId",dataResource.getResourceId());
-        map.put("resourceFusionId",dataResource.getResourceFusionId());
-        map.put("resourceName",dataResource.getResourceName());
-        map.put("resourceDesc",dataResource.getResourceDesc());
+
         return BaseResultEntity.success(map);
     }
 
@@ -179,6 +208,11 @@ public class DataResourceService {
         if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
+        if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
+            resourceSynGRPCDataSet(null,dataResource);
+        }else {
+            resourceSynGRPCDataSet(null,dataResource);
+        }
         resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
@@ -197,7 +231,7 @@ public class DataResourceService {
         SysUser sysUser = sysUserService.getSysUserById(dataResourceVo.getUserId());
         dataResourceVo.setUserName(sysUser == null?"":sysUser.getUserName());
         dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
-        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getFileId(),dataResource.getResourceId())
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
                 .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
                 .collect(Collectors.toList());
         Map<String,Object> map = new HashMap<>();
@@ -338,8 +372,30 @@ public class DataResourceService {
         return fileFieldList;
     }
 
+    public List<DataFileField> batchInsertDataDataSourceField(Set<String> headers,Map<String,Object> dataMap) {
+        List<DataFileField> fileFieldList = new ArrayList<>();
+        int i = 1;
+        Iterator<String> iterator = headers.iterator();
+        while (iterator.hasNext()){
+            String fieldName = iterator.next();
+            if (StringUtils.isNotBlank(fieldName)) {
+                FieldTypeEnum fieldType = dataMap.containsKey(fieldName)&&dataMap.get(fieldName)!=null?getFieldType(dataMap.get(fieldName).toString()):FieldTypeEnum.STRING;
+                if (fieldName.substring(0, 1).matches(DataConstant.MATCHES)) {
+                    fileFieldList.add(new DataFileField(null, fieldName,fieldType.getCode(), null));
+                } else {
+                    fileFieldList.add(new DataFileField(null, fieldName,fieldType.getCode(), DataConstant.FIELD_NAME_AS + i));
+                    i++;
+                }
+            } else {
+                fileFieldList.add(new DataFileField(null, fieldName,FieldTypeEnum.STRING.getCode(), DataConstant.FIELD_NAME_AS + i));
+                i++;
+            }
+        }
+        return fileFieldList;
+    }
 
-    private FieldTypeEnum getFieldType(String fieldVal) {
+
+    public FieldTypeEnum getFieldType(String fieldVal) {
         if (StringUtils.isBlank(fieldVal)) {
             return FieldTypeEnum.STRING;
         }
@@ -378,6 +434,8 @@ public class DataResourceService {
         Map<Long, List<DataFileField>> fileFieldListMap = fileFieldList.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
         List<DataResourceCopyVo> copyVolist = new ArrayList();
         for (DataResource dataResource : resourceList) {
+//            if (dataResource.getResourceSource() == 3)
+//                continue;
             if (dataResource.getResourceFusionId()==null||dataResource.getResourceFusionId().trim().equals("")){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
                 dataResourcePrRepository.editResource(dataResource);
@@ -396,11 +454,11 @@ public class DataResourceService {
         return copyVolist;
     }
 
-    public BaseResultEntity handleDataResourceFile(DataResource dataResource,SysFile sysFile){
-        File file = new File(sysFile.getFileUrl());
+    public BaseResultEntity handleDataResourceFile(DataResource dataResource,String url){
+        File file = new File(url);
         if (file.exists()) {
-            dataResource.setFileRows(FileUtil.getFileLineNumber(sysFile.getFileUrl())-1);
-            List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), null);
+            dataResource.setFileRows(FileUtil.getFileLineNumber(url)-1);
+            List<String> fileContent = FileUtil.getFileContent(url, null);
             if (fileContent.size() > 0) {
                 dataResource.setFileHandleField(fileContent.get(0));
                 dataResource.setFileColumns(dataResource.getFileHandleField().split(",").length);
@@ -419,7 +477,7 @@ public class DataResourceService {
                 String md5hash = FileUtil.md5HashCode(file);
                 dataResource.setResourceHashCode(md5hash);
             }catch (Exception e){
-                log.info("resource_id:{} - url:{} - e:{}",dataResource.getResourceId(),sysFile.getFileUrl(),e.getMessage());
+                log.info("resource_id:{} - url:{} - e:{}",dataResource.getResourceId(),url,e.getMessage());
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"文件hash出错");
             }
         }else {
@@ -427,6 +485,40 @@ public class DataResourceService {
         }
         return BaseResultEntity.success();
     }
+
+    public BaseResultEntity handleDataResourceSource(DataResource dataResource, List<DataResourceFieldReq> fieldList, DataSource dataSource) {
+        List<String> fieldNames = fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toList());
+        BaseResultEntity baseResultEntity = dataSourceService.tableDataStatistics(dataSource, fieldNames.contains("y") || fieldNames.contains("Y"));
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+            return baseResultEntity;
+        Map<String,Object> map = (Map<String, Object>) baseResultEntity.getResult();
+        Object total = map.get("total");
+        if (total!=null){
+            dataResource.setFileRows(Integer.parseInt(total.toString()));
+            dataResource.setFileHandleField(fieldNames.stream().collect(Collectors.joining(",")));
+            dataResource.setFileColumns(fieldNames.size());
+        }else {
+            dataResource.setFileHandleField("");
+            dataResource.setFileColumns(0);
+        }
+        Object ytotal = map.get("ytotal");
+        if (ytotal!=null){
+            dataResource.setFileContainsY(1);
+            dataResource.setFileYRows(Integer.parseInt(ytotal.toString()));
+            BigDecimal yRowRatio = new BigDecimal(dataResource.getFileYRows()).divide(new BigDecimal(dataResource.getFileRows()),6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+            dataResource.setFileYRatio(yRowRatio);
+        }
+        try {
+            String md5hash = SignUtil.getMD5ValueLowerCaseByDefaultEncode(dataSource.getDbUrl());
+            dataResource.setResourceHashCode(md5hash);
+        }catch (Exception e){
+            log.info("resource_id:{} - url:{} - e:{}",dataResource.getResourceId(),dataSource.getDbUrl(),e.getMessage());
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"数据库url hash出错");
+        }
+        return BaseResultEntity.success();
+    }
+
+
     public Integer getResourceFileYRow(List<String> fileContent){
         String field = fileContent.get(0);
         if (StringUtils.isBlank(field))
@@ -449,6 +541,24 @@ public class DataResourceService {
             }
         }
         return yRow;
+    }
+
+    public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource){
+        if (StringUtils.isBlank(dataResource.getResourceFusionId())){
+            dataResource.setResourceFusionId(UUID.randomUUID().toString());
+        }
+        if (dataResource.getResourceSource() !=2 ){
+            return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
+        }
+        Map<String,Object> map = new HashMap<>();
+//        map.put("dbType",dataSource.getDbType());
+//        map.put("dbUrl",dataSource.getDbUrl());
+        map.put("username",dataSource.getDbUsername());
+        map.put("password", dataSource.getDbPassword());
+        map.put("tableName", dataSource.getDbTableName());
+        map.put("dbName", dataSource.getDbName());
+        map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
+        return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map));
     }
 
     public Boolean resourceSynGRPCDataSet(String suffix,String id,String url){
@@ -489,6 +599,141 @@ public class DataResourceService {
             }
         }
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity displayDatabaseSourceType() {
+        return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
+    }
+
+    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList, Long userId) {
+        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getResourceId));
+        Set<String> resourceIds = map.keySet();
+        DataResource dataResource = null;
+        for (String resourceId : resourceIds) {
+            dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+            if (dataResource!=null)
+                break;
+        }
+        if (dataResource == null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
+        List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
+            String url = dataResource.getUrl();
+            if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
+                url = modelDerivationDto.getPath();
+            }else {
+                url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+            }
+            log.info(url);
+            File file = new File(url);
+            if (!file.exists())
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
+            DataResource derivationDataResource = new DataResource();
+            derivationDataResource.setUrl(url);
+            derivationDataResource.setResourceName(dataResource.getResourceName() + modelDerivationDto.getDerivationType());
+            derivationDataResource.setResourceAuthType(2);
+            derivationDataResource.setResourceSource(3);
+            derivationDataResource.setUserId(userId);
+            derivationDataResource.setOrganId(0L);
+            derivationDataResource.setFileId(0L);
+            derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
+            derivationDataResource.setFileSuffix(".csv");
+            derivationDataResource.setFileColumns(0);
+            derivationDataResource.setFileRows(0);
+            derivationDataResource.setFileHandleStatus(0);
+            derivationDataResource.setResourceNum(0);
+            derivationDataResource.setDbId(0L);
+            derivationDataResource.setResourceState(0);
+            BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
+            if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+                return baseResultEntity;
+            derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
+            dataResourcePrRepository.saveResource(derivationDataResource);
+            List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
+            for (DataFileField dataFileField : dataFileFields) {
+                dataFileField.setFileId(null);
+                dataFileField.setResourceId(derivationDataResource.getResourceId());
+            }
+            dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
+            DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
+            dataResourcePrRepository.saveResourceTag(dataResourceTag);
+            dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
+            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+            }
+        }
+        return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
+    }
+
+    public BaseResultEntity getDerivationResourceList(DerivationResourceReq req) {
+        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+        if (dataDerivationResourceVos.size()==0){
+            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        }
+        Set<Long> userIds = dataDerivationResourceVos.stream().map(DataDerivationResourceVo::getUserId).collect(Collectors.toSet());
+        Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        for (DataDerivationResourceVo dataDerivationResourceVo : dataDerivationResourceVos) {
+            SysUser sysUser = sysUserMap.get(dataDerivationResourceVo.getUserId());
+            dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
+            dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
+            dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
+        }
+        Integer count = dataResourceRepository.queryDerivationResourceListCount(req);
+
+        return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataDerivationResourceVos));
+    }
+
+    public DataResource getDataResourceUrl(Long resourceId) {
+        return dataResourceRepository.queryDataResourceById(resourceId);
+    }
+
+    public BaseResultEntity getDerivationResourceData(DerivationResourceReq req) {
+        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+        if (dataDerivationResourceVos.size()==0){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无数据信息");
+        }
+        DataDerivationResourceVo dataDerivationResourceVo = dataDerivationResourceVos.get(0);
+        DataDerivationResourceDataVo dataVo= DataResourceConvert.dataDerivationResourcePoConvertDataVo(dataDerivationResourceVo);
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataVo.getProjectId(), null);
+        dataVo.setServerAddress(dataProject.getServerAddress());
+        DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataVo.getTaskId());
+        if (modelTask==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+        }
+        if (StringUtils.isBlank(modelTask.getComponentJson())){
+            return BaseResultEntity.success();
+        }
+        List<DataComponent> dataComponents = JSONObject.parseArray(modelTask.getComponentJson(),DataComponent.class);
+        dataComponents = dataComponents.stream().filter(d->d.getComponentName().equals(dataVo.getTag())||d.getComponentCode().equals("dataSet")).collect(Collectors.toList());
+        for (DataComponent dataComponent : dataComponents) {
+            Map<String, String> map = JSONArray.parseArray(dataComponent.getDataJson(), DataComponentValue.class).stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal));
+            if (dataComponent.getComponentName().equals(dataVo.getTag())){
+                dataVo.setTotalTime(dataComponent.getEndTime() - dataComponent.getStartTime());
+                if (map.containsKey("selectFeatures")){
+                    dataVo.setAlignFeature(map.get("selectFeatures"));
+                }else if (map.containsKey("MultipleSelected")){
+                    dataVo.setAlignFeature(map.get("MultipleSelected"));
+                }
+            }
+            if (dataComponent.getComponentCode().equals("dataSet")){
+                log.info(dataComponent.getDataJson());
+                List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(map.get("selectData"), ModelProjectResourceVo.class);
+                for (ModelProjectResourceVo modelProjectResourceVo : modelProjectResourceVos) {
+                    if (modelProjectResourceVo.getParticipationIdentity() == 1){
+                        dataVo.setInitiateOrganResource(modelProjectResourceVo.getResourceId());
+                    }else if (modelProjectResourceVo.getParticipationIdentity() == 2){
+                        dataVo.setProviderOrganResource(modelProjectResourceVo.getResourceId());
+                    }
+                }
+            }
+
+        }
+        SysUser sysUser = sysUserService.getSysUserById(dataVo.getUserId());
+        if (sysUser!=null)
+            dataVo.setUserName(sysUser.getUserName());
+        return BaseResultEntity.success(dataVo);
     }
 }
 

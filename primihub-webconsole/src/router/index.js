@@ -159,6 +159,12 @@ export const asyncRoutes = [
         meta: { title: '我的资源' }
       },
       {
+        path: 'derivedDataList',
+        name: 'DerivedDataList',
+        component: () => import('@/views/resource/derivedDataList'),
+        meta: { title: '衍生数据资源' }
+      },
+      {
         path: 'unionList',
         name: 'UnionList',
         component: () => import('@/views/resource/unionList'),
@@ -197,7 +203,18 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/resource/unionResourceDetail')
+      },
+      {
+        path: 'derivedDataResourceDetail/:id',
+        name: 'DerivedDataResourceDetail',
+        meta: {
+          title: '衍生数据资源详情',
+          activeMenu: '/resource/derivedDataList'
+        },
+        hidden: true,
+        component: () => import('@/views/resource/derivedDataResourceDetail')
       }
+
     ]
   },
   {

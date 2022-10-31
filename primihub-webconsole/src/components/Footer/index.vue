@@ -1,6 +1,6 @@
 <template>
   <div class="footer">
-    <p>北京原语科技有限公司 V1.4.0</p>
+    <p>北京原语科技有限公司 V1.4.5</p>
   </div>
 </template>
 

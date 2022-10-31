@@ -43,11 +43,11 @@ aj:
     aes-status: true
     interference-options: 2
     req-frequency-limit-enable: true
-    req-get-lock-limit: 30
+    req-get-lock-limit: 60
     req-get-lock-seconds: 30
-    req-get-minute-limit: 10
-    req-check-minute-limit: 10
-    req-verify-minute-limit: 10
+    req-get-minute-limit: 60
+    req-check-minute-limit: 60
+    req-verify-minute-limit: 60
     type: BLOCKPUZZLE
 logging:
   level:
