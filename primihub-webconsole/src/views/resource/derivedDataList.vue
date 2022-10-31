@@ -2,9 +2,6 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="项目ID">
-          <el-input v-model="query.projectId" placeholder="请输入项目ID" />
-        </el-form-item>
         <el-form-item label="数据ID">
           <el-input v-model="query.resourceId" placeholder="请输入资源ID" />
         </el-form-item>
@@ -54,7 +51,6 @@ export default {
       tags: [],
       serverAddressList: [],
       query: {
-        projectId: '',
         resourceId: '',
         resourceName: '',
         tag: '',
@@ -87,7 +83,6 @@ export default {
   },
   methods: {
     reset() {
-      this.query.projectId = ''
       this.query.resourceId = ''
       this.query.resourceName = ''
       this.query.tag = ''
@@ -116,7 +111,6 @@ export default {
       const params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
-        projectId: this.query.projectId,
         resourceName: this.query.resourceName,
         resourceId: this.query.resourceId,
         startDate: createDate && createDate[0],

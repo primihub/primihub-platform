@@ -209,7 +209,7 @@ export const asyncRoutes = [
         name: 'DerivedDataResourceDetail',
         meta: {
           title: '衍生数据资源详情',
-          activeMenu: '/resource/DerivedDataList'
+          activeMenu: '/resource/derivedDataList'
         },
         hidden: true,
         component: () => import('@/views/resource/derivedDataResourceDetail')

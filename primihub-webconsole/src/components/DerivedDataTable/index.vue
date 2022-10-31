@@ -10,12 +10,12 @@
       min-width="100"
     >
       <template slot-scope="{row}">
-        <el-link size="small" type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link>
+        <el-link :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link>
       </template>
     </el-table-column>
     <el-table-column
       prop="resourceId"
-      label="资源ID"
+      label="ID"
       align="center"
     >
       <template slot-scope="{row}">
@@ -41,7 +41,7 @@
       min-width="100"
     >
       <template slot-scope="{row}">
-        <el-link size="small" type="primary" @click="toModelTaskDetail(row)">{{ row.taskIdName }}</el-link>
+        <el-link :underline="false" size="small" type="primary" @click="toModelTaskDetail(row)">{{ row.taskIdName }}</el-link>
       </template>
     </el-table-column>
     <el-table-column
