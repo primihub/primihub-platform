@@ -20,10 +20,10 @@
             <div class="item-row">
               <div class="item">
                 <el-form-item label="资源表" prop="ownResourceId">
-                  <ResourceSelect :value="formData.ownResourceId" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
+                  <ResourceSelect :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="ownKeyword">
-                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" clearable placeholder="请选择" @change="handleOwnKeywordChange">
+                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" no-data-text="暂无数据" clearable placeholder="请选择" @change="handleOwnKeywordChange">
                     <el-option
                       v-for="(item,index) in ownOrganResourceField"
                       :key="index"
@@ -39,10 +39,10 @@
               </div>
               <div class="item">
                 <el-form-item label="资源表" prop="otherResourceId">
-                  <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
+                  <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="otherKeyword">
-                  <el-select v-model="formData.otherKeyword" placeholder="请选择" clearable @change="handleOtherKeywordChange">
+                  <el-select v-model="formData.otherKeyword" no-data-text="暂无数据" placeholder="请选择" clearable @change="handleOtherKeywordChange">
                     <el-option
                       v-for="(item,index) in otherOrganResourceField"
                       :key="index"

@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+/**
+ * 文件上传
+ */
 @RequestMapping("file")
 @RestController
 public class FileController {
@@ -17,6 +20,12 @@ public class FileController {
     @Autowired
     private SysFileService sysFileService;
 
+    /**
+     * 小文件上传
+     * @param file
+     * @param fileSource
+     * @return
+     */
     @RequestMapping("upload")
     public BaseResultEntity upload(@RequestParam(value = "file") MultipartFile file,Integer fileSource){
         if(fileSource==null)

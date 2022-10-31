@@ -12,6 +12,7 @@
         "/oauth/github/render",
         "/oauth/github/callback",
         "/common/getValidatePublicKey",
+        "/common/getTrackingID",
         "/shareData/syncProject",
         "/shareData/syncModel"
     ],
@@ -31,6 +32,16 @@
     "resultUrlDirPrefix": "/data/result/",
     "runModelFileUrlDirPrefix": "/data/result/runModel/",
     "usefulToken": "excalibur_forever_ABCDEFGHIJKLMN",
+    "systemDomainName":"",
+    "mailProperties":{
+        "host":"",
+        "username":"",
+        "port":465,
+        "password":"",
+        "properties":{
+
+        }
+    },
     "authConfigs":{
         "github": {
             "redirectUrl":"",
@@ -289,4 +300,4 @@
             "component_types": []
         }
     ]
-}
+},

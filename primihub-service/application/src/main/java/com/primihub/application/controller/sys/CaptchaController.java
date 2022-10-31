@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 
-
+/**
+ * 图片验证码
+ */
 @RestController
 @RequestMapping("/captcha")
 public class CaptchaController {
@@ -24,6 +26,12 @@ public class CaptchaController {
     @Autowired
     private CaptchaService captchaService;
 
+    /**
+     * 获取图片验证码
+     * @param data
+     * @param request
+     * @return
+     */
     @PostMapping("/get")
     public BaseResultEntity get(@RequestBody BaseCaptchaParam data, HttpServletRequest request) {
         data.setToken(data.getTokenKey());
@@ -37,6 +45,12 @@ public class CaptchaController {
         }
     }
 
+    /**
+     * 校验图片验证码
+     * @param data
+     * @param request
+     * @return
+     */
     @PostMapping("/check")
     public BaseResultEntity check(@RequestBody BaseCaptchaParam data, HttpServletRequest request) {
         data.setToken(data.getTokenKey());

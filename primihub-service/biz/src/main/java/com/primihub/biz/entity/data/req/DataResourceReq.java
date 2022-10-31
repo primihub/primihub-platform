@@ -26,6 +26,9 @@ public class DataResourceReq extends PageReq{
      */
     private Integer resourceSource;
 
+    /**
+     * 标签列表
+     */
     private List<String> tags;
 
     /**
@@ -39,11 +42,16 @@ public class DataResourceReq extends PageReq{
      */
     private Integer selectTag = 0;
 
+    /**
+     * 文件
+     */
     private Long fileId;
 
     private List<DataResourceFieldReq> fieldList;
 
     private List<DataSourceOrganReq> fusionOrganList;
+
+    private DataSourceReq dataSource;
 
     private String userName;
 

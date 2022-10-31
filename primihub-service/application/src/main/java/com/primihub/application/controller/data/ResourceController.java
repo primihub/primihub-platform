@@ -13,7 +13,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * 资源管理
+ */
 @RequestMapping("resource")
 @RestController
 public class ResourceController {
@@ -73,17 +75,36 @@ public class ResourceController {
             if (req.getResourceAuthType()==null || req.getResourceAuthType()==0){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceAuthType");
             }
-
             if(!DataResourceAuthType.AUTH_TYPE_MAP.containsKey(req.getResourceAuthType()))
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"resourceAuthType");
-            if (req.getResourceSource()==null || req.getResourceSource()==0){
+            if (req.getResourceSource()==null || req.getResourceSource()<=0){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceSource");
             }
             if (req.getTags()==null||req.getTags().size()==0){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"tags");
             }
-            if (req.getFileId()==null||req.getFileId()==0L){
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
+            if (req.getResourceSource() == 1){
+                if (req.getFileId()==null||req.getFileId()==0L){
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
+                }
+            }
+            if (req.getResourceSource() == 2){
+                if (req.getDataSource() == null)
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSource");
+                if (req.getDataSource().getDbType()==null || req.getDataSource().getDbType()<=0)
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Type");
+                if (StringUtils.isBlank(req.getDataSource().getDbDriver()))
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Driver");
+                if (StringUtils.isBlank(req.getDataSource().getDbUrl()))
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Url");
+                if (StringUtils.isBlank(req.getDataSource().getDbUsername()))
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Username");
+                if (StringUtils.isBlank(req.getDataSource().getDbPassword()))
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Password");
+                if (StringUtils.isBlank(req.getDataSource().getDbName()))
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"DbName");
+                if (StringUtils.isBlank(req.getDataSource().getDbTableName()))
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"DbTableName");
             }
             if (req.getFieldList()==null || req.getFieldList().size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldList");
@@ -177,5 +198,9 @@ public class ResourceController {
         return dataResourceService.resourceStatusChange(resourceId,resourceState);
     }
 
+    @RequestMapping("displayDatabaseSourceType")
+    public BaseResultEntity displayDatabaseSourceType(){
+        return dataResourceService.displayDatabaseSourceType();
+    }
 
 }

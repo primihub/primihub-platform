@@ -52,6 +52,29 @@ public class DataResourceConvert {
         return po;
     }
 
+    public static DataResource dataResourceReqConvertPo(DataResourceReq req, Long userId, Long organId){
+        DataResource po = new DataResource();
+        po.setResourceId(req.getResourceId());
+        po.setResourceName(req.getResourceName());
+        po.setResourceDesc(req.getResourceDesc());
+        po.setResourceAuthType(req.getResourceAuthType());
+        po.setResourceSource(req.getResourceSource());
+        po.setUserId(userId);
+        po.setOrganId(organId);
+        po.setFileId(0L);
+        po.setFileSize(0);
+        po.setFileSuffix("");
+        po.setFileColumns(0);
+        po.setFileRows(0);
+        po.setFileHandleStatus(0);
+        po.setResourceNum(0);
+        po.setDbId(0L);
+        po.setUrl("");
+        po.setPublicOrganId(req.getPublicOrganId());
+        po.setResourceState(0);
+        return po;
+    }
+
     public static void editResourceReqConvertPo(DataResourceReq req, DataResource po){
         if (req.getResourceName()!=null && !req.getResourceName().trim().equals("")){
             po.setResourceName(req.getResourceName());

@@ -4,9 +4,9 @@
       <el-table
         v-loading="listLoading"
         :data="modelList"
+        empty-text="暂无任务"
         border
       >
-        <!-- 解决加载数据时先显示no data -->
         <el-table-column
           label="任务ID"
           min-width="100"
@@ -41,7 +41,7 @@
           min-width="150"
         >
           <template slot-scope="{row}">
-            <span>{{ row.taskEndDate? row.taskEndDate:'未开始' }}</span> <br>
+            <span>{{ row.taskEndDate? row.taskEndDate:'未结束' }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column
