@@ -1,5 +1,5 @@
 <template>
-  <div class="canvas">
+  <div ref="canvas" class="canvas">
     <div class="canvas-container">
       <!--工具栏-->
       <ToolBar :options="options.toolbarOptions" @save="toolBarSave" @zoomIn="zoomInFn" @zoomOut="zoomOutFn" @run="run" @clear="clearFn" @reset="resetFn" />
@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -170,10 +170,7 @@ export default {
     },
     async componentsDetail(newVal) {
       if (newVal) {
-        // only same project can load data
-        if (newVal.projectId !== this.projectId) {
-          this.deleteComponentsVal(newVal)
-        }
+        console.log('componentsDetail', newVal)
         this.graph.clearCells()
         this.nodeData = this.startNode
         this.graphData.cells = []
@@ -211,6 +208,13 @@ export default {
         }, 1500)
       }
     }
+    // fix canvas autoResize error
+    window.addEventListener('resize', () => {
+      const _this = this
+      this.$nextTick(() => {
+        _this.container.style.width = _this.$refs.canvas && _this.$refs.canvas.offsetWidth
+      })
+    })
   },
   destroyed() {
     clearTimeout(this.taskTimer)
@@ -234,8 +238,14 @@ export default {
       }
     },
     deleteComponentsVal() {
-      const posIndex = this.graphData.cells.findIndex(item => item.componentCode === 'dataSet')
-      this.graphData.cells[posIndex].data.componentTypes[0].inputValue = ''
+      this.graphData.cells.map(item => {
+        if (item.shape === 'dag-node') {
+          item.data.componentTypes.map(c => {
+            c.inputValue = ''
+          })
+        }
+      })
+      console.log('deleteComponentsVal', this.graphData)
     },
     // 清除画布
     clearFn() {
@@ -316,7 +326,6 @@ export default {
         container: this.container,
         width: this.width,
         height: height,
-        autoResize: true,
         snapline: true,
         scroller: {
           enabled: true,
@@ -396,12 +405,7 @@ export default {
               attrs: {
                 line: {
                   stroke: '#A2B1C3',
-                  strokeWidth: 2,
-                  targetMarker: {
-                    name: 'block',
-                    width: 12,
-                    height: 8
-                  }
+                  strokeDasharray: '5 5'
                 }
               },
               zIndex: 0
@@ -582,17 +586,31 @@ export default {
     checkRunValidated() {
       const data = this.graph.toJSON()
       const { cells } = data
-      const startCom = cells.filter(item => item.componentCode === 'start')[0]
-      const modelSelectCom = cells.filter(item => item.componentCode === 'model')[0]
-      const taskName = startCom.data.componentTypes.filter(item => item.typeCode === 'taskName')[0].inputValue
-      const modelName = modelSelectCom?.data.componentTypes.filter(item => item.typeCode === 'modelName')[0].inputValue
-      const modelType = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue
-      const arbiterOrganId = modelSelectCom?.data.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
-      const dataSetCom = cells.filter(item => item.componentCode === 'dataSet')
-      const value = dataSetCom.length && dataSetCom[0]?.data.componentTypes[0].inputValue !== '' ? JSON.parse(dataSetCom[0]?.data.componentTypes[0].inputValue) : ''
+      const { modelComponents, modelPointComponents } = this.saveParams.param
+      const startCom = modelComponents.find(item => item.componentCode === 'start')
+
+      const modelSelectCom = modelComponents.find(item => item.componentCode === 'model')
+      const taskName = startCom.componentValues.find(item => item.key === 'taskName')?.val
+      const modelName = modelSelectCom?.componentValues.find(item => item.key === 'modelName')?.val
+      const modelType = modelSelectCom?.componentValues.find(item => item.key === 'modelType')?.val
+      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === 'arbiterOrgan')?.val
+
+      const dataSetCom = modelComponents.find(item => item.componentCode === 'dataSet')
+      const dataValue = dataSetCom.componentValues.find(item => item.key === 'selectData').val
+      const value = dataValue !== '' ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      // check start node target component is't dataSet
+      const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
+      if (line.output.cell !== dataSetCom.frontComponentId) {
+        this.$message({
+          message: '流程错误:请先选择数据集组件',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
       // 横向lr
       if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
         this.$message({
@@ -702,8 +720,8 @@ export default {
           node.setData({
             label: componentName,
             componentCode,
-            componentState: 2,
-            timeConsuming: timeConsuming / 1000
+            componentState,
+            timeConsuming: Math.ceil(timeConsuming / 1000)
           })
           if (componentState === 1) {
             taskResult.push(componentCode)
@@ -711,7 +729,7 @@ export default {
               label: componentName,
               componentCode,
               componentState,
-              timeConsuming: timeConsuming / 1000
+              timeConsuming: Math.ceil(timeConsuming / 1000)
             })
             if (taskResult.length === result.length) { // 所有任务运行完成，停止轮询
               clearInterval(this.taskTimer)
@@ -759,7 +777,7 @@ export default {
         const current = this.modelData.filter(v => v.componentCode === componentCode)[0]
         const timeConsuming = current?.timeConsuming
         const componentState = current?.componentState
-        const { componentTypes, isMandatory } = this.components.find(item => {
+        const component = this.components.find(item => {
           return item.componentCode === componentCode
         })
         this.graphData.cells.push({
@@ -778,11 +796,12 @@ export default {
           shape,
           ports,
           data: {
+            frontComponentId,
             componentState,
             componentCode,
             componentName,
-            componentTypes,
-            isMandatory,
+            componentTypes: component && component.componentTypes,
+            isMandatory: component && component.isMandatory,
             timeConsuming
           },
           zIndex: 1
@@ -836,16 +855,16 @@ export default {
           const inputData = cells.find(item => item.id === inputId)
           obj.output.push({
             frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
+            componentCode: outputData?.data.componentCode,
+            componentName: outputData?.data.componentName,
             portId: outputRes.target.port,
             pointType: 'edge',
             pointJson: ''
           })
           obj.input.push({
             frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
+            componentCode: inputData?.data.componentCode,
+            componentName: inputData?.data.componentName,
             portId: inputRes.source.port,
             pointType: 'edge',
             pointJson: ''
@@ -855,8 +874,8 @@ export default {
           const outputData = cells.find(item => item.id === outputId)
           obj.output.push({
             frontComponentId: outputId,
-            componentCode: outputData.data.componentCode,
-            componentName: outputData.data.componentName,
+            componentCode: outputData?.data.componentCode,
+            componentName: outputData?.data.componentName,
             portId: inputRes.target.port,
             pointType: 'edge',
             pointJson: ''
@@ -867,8 +886,8 @@ export default {
           const inputData = cells.find(item => item.id === inputId)
           obj.input.push({
             frontComponentId: inputId,
-            componentCode: inputData.data.componentCode,
-            componentName: inputData.data.componentName,
+            componentCode: inputData?.data.componentCode,
+            componentName: inputData?.data.componentName,
             portId: outputRes.source.port,
             pointType: 'edge',
             pointJson: ''
@@ -922,13 +941,16 @@ export default {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
 
-          for (let i = 0; i < componentTypes.length; i++) {
-            const item = componentTypes[i]
-            componentValues.push({
-              key: item.typeCode,
-              val: item.inputValue
-            })
+          if (componentTypes) {
+            for (let i = 0; i < componentTypes.length; i++) {
+              const item = componentTypes[i]
+              componentValues.push({
+                key: item.typeCode,
+                val: item.inputValue
+              })
+            }
           }
+
           // format 参数
           modelComponents.push({
             frontComponentId: item.frontComponentId,
@@ -958,6 +980,9 @@ export default {
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
         this.currentModelId = res.result.modelId
+        if (this.isCopy) {
+          this.$route.query.modelId = this.currentModelId
+        }
         this.$notify.closeAll()
         this.$notify({
           message: '保存成功',
@@ -1027,8 +1052,7 @@ export default {
       }
     },
     setComponentsDetail(data) {
-      if (!data) return
-      const { modelComponents = [], modelPointComponents } = data
+      const { modelComponents, modelPointComponents } = data
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0
@@ -1043,7 +1067,7 @@ export default {
         this.$emit('selectComponents', this.selectComponentList)
         const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
         item.componentValues.map(item => {
-          this.components[posIndex].componentTypes.map(c => {
+          this.components[posIndex]?.componentTypes.map(c => {
             if (c.typeCode === item.key && item.val !== '') {
               c.inputValue = item.val
             }
@@ -1068,6 +1092,7 @@ export default {
   overflow: hidden;
   height: 100%;
   width: 100%;
+  min-width: 200px
 }
 .canvas-container{
   display: flex;
@@ -1077,6 +1102,8 @@ export default {
 }
 .container{
   flex: 1;
+  width: 100%;
+  min-width: 1600px;
 }
 .not-clickable{
   cursor: default;
@@ -1086,5 +1113,8 @@ export default {
   position: absolute;
   bottom: 1px;
   right: 0;
+}
+.right-drawer{
+  min-width: 300px;
 }
 </style>

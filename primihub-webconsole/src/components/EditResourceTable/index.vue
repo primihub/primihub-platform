@@ -81,20 +81,23 @@ export default {
     return {
       tableLoading: false,
       fieldTypeList: [{
+        value: 0,
+        label: 'String'
+      }, {
         value: 1,
         label: 'Integer'
       }, {
         value: 2,
-        label: 'Long'
+        label: 'Double'
       }, {
         value: 3,
-        label: 'Double'
+        label: 'Long'
       }, {
         value: 4,
         label: 'Enum'
       }, {
         value: 5,
-        label: 'String'
+        label: 'Boolean'
       }],
       params: []
     }

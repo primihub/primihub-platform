@@ -2,8 +2,8 @@
   <el-descriptions :column="1" border label-class-name="detail-title" class="resource-data">
     <el-descriptions-item label="资源名称">{{ data.resourceName }}</el-descriptions-item>
     <el-descriptions-item label="资源id">{{ data.resourceId }}</el-descriptions-item>
-    <el-descriptions-item label="特征量">{{ data.resourceColumnCount }}</el-descriptions-item>
-    <el-descriptions-item label="样本量">{{ data.resourceRowsCount }}</el-descriptions-item>
+    <el-descriptions-item label="特征量">{{ data.resourceColumnCount || data.fileColumns }}</el-descriptions-item>
+    <el-descriptions-item label="样本量">{{ data.resourceRowsCount || data.fileRows }}</el-descriptions-item>
     <el-descriptions-item label="是否包含Y值">{{ data.resourceContainsY === 1? '是': '否' }}</el-descriptions-item>
     <!-- <el-descriptions-item label="选择特征">
       <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange">全选</el-checkbox>

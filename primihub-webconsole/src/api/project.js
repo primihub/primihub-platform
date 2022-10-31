@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function getDerivationResourceList(params) {
+  return request({
+    url: '/data/project/getDerivationResourceList',
+    method: 'get',
+    params
+  })
+}
+
 export function getProjectList(params) {
   return request({
     url: '/data/project/getProjectList',

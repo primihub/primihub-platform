@@ -172,7 +172,7 @@ export default {
         this.model = model
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
-        this.modelResources = modelResources
+        this.modelResources = modelResources.filter(item => item.resourceType !== 3)
         this.modelComponent = modelComponent
         this.projectId = project.id
       })

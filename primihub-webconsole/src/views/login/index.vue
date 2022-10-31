@@ -116,7 +116,6 @@ export default {
     }
   },
   async mounted() {
-    await this.getValidatePublicKey()
     await this.getAuthList()
   },
   methods: {
@@ -179,8 +178,9 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
+      this.$refs.loginForm.validate(async valid => {
         if (valid) {
+          await this.getValidatePublicKey()
           const { publicKey, publicKeyName } = this.publicKeyData
           if (!publicKey) {
             this.$message({

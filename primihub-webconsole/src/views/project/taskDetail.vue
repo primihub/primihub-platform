@@ -221,15 +221,16 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelQuotas, modelResources, modelComponent, anotherQuotas, taskState, project } = response.result
+        const { task, model, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
         this.task = task
         this.project = project
         this.model = model
         this.modelId = model.modelId ? model.modelId : this.$route.query.modelId
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
+        const modelResources = response.result.modelResources.filter(item => item.resourceType !== 3)
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
-        if (task.isCooperation === 1) {
+        if (this.task.isCooperation === 1) {
           // provider organ only view own resource data
           this.modelResources = this.modelResources.filter(item => item.organId === this.userOrganId)
         }

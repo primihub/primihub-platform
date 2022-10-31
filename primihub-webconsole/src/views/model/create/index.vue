@@ -131,6 +131,10 @@ export default {
       this.draftId = data.draftId
       this.draftName = data.draftName
       this.componentJson = JSON.parse(data.componentJson)
+      // only same project can load data
+      if (this.componentJson.projectId !== this.projectId) {
+        this.componentJson = this.deleteComponentsVal(this.componentJson)
+      }
       this.componentDetail = this.componentJson
       this.importDraftDialogVisible = false
     },
