@@ -66,6 +66,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 Map.Entry<String, ExceptionEntity> next = iterator.next();
                 if (dtoMap.containsKey(next.getKey())){
                     ModelDerivationDto modelDerivationDto = dtoMap.get(next.getKey());
+                    ids.add(modelDerivationDto.getNewResourceId());
                     exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
                     exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
                 }else {

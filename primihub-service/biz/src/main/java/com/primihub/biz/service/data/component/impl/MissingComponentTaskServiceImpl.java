@@ -71,11 +71,14 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 log.info("newset:{}",JSONObject.toJSONString(newest));
                 ids = new ArrayList<>();
                 Map<String, ModelDerivationDto> dtoMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
+                log.info("dtoMap:{}",JSONObject.toJSONString(dtoMap));
                 Iterator<Map.Entry<String, MissingComponentTaskServiceImpl.ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
                 while (iterator.hasNext()){
                     Map.Entry<String, MissingComponentTaskServiceImpl.ExceptionEntity> next = iterator.next();
+                    log.info("key:{}",dtoMap.containsKey(next.getKey()));
                     if (dtoMap.containsKey(next.getKey())){
                         ModelDerivationDto modelDerivationDto = dtoMap.get(next.getKey());
+                        ids.add(modelDerivationDto.getNewResourceId());
                         exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
                         exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
                     }else {
