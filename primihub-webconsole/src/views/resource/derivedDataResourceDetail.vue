@@ -100,9 +100,15 @@ export default {
     },
     showInput() {
       this.inputVisible = true
+      this.$nextTick(() => {
+        this.$refs.nameInput.focus()
+      })
     },
     showDescInput() {
       this.descInputVisible = true
+      this.$nextTick(() => {
+        this.$refs.descInput.focus()
+      })
     },
     handleInputConfirm() {
       this.inputVisible = false
@@ -110,6 +116,7 @@ export default {
     },
     handleDescInputConfirm() {
       this.descInputVisible = false
+      if (!this.resource.resourceDesc) return
       this.saveResource()
     },
     toResourceDetailPage(id) {
