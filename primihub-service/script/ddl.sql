@@ -566,6 +566,8 @@ INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_aut
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1057, '模型推理详情', 'ModelReasoningDetail', 3, 1054, 1054, '1054,1057', '', 'own', 3, 1, 1, 0, 0, '2022-09-14 08:41:41.344', '2022-09-14 08:41:41.345');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1058, '日志', 'Log', 1, 0, 1058, '1058', '', 'own', 8, 0, 1, 0, 0, '2022-09-14 08:41:41.346', '2022-09-14 08:41:41.348');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1059, '匿踪查询任务', 'PIRTask', 2, 1016, 1016, '1016,1059', ' ', 'own', 2, 2, 1, 0, 0, '2022-09-21 08:47:42.129', '2022-09-21 09:36:39.176');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1060, '衍生数据资源', 'DerivedDataList', 2, 1022, 1022, '1022,1060', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 18:33:03.000', '2022-10-30 18:33:08.000');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1061, '衍生数据资源详情', 'DerivedDataResourceDetail', 2, 1060, 1022, '1022,1060,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 10:34:38.945', '2022-10-30 10:34:38.945');
 -- ----------------------------
 -- Table structure for sys_ra
 -- ----------------------------
@@ -679,6 +681,10 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1093, 1000, 1056, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1094, 1000, 1057, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1095, 1000, 1058, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1096, 1, 1060, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1097, 1, 1061, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1098, 1000, 1060, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1099, 1000, 1061, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 -- ----------------------------
 -- Table structure for sys_role
