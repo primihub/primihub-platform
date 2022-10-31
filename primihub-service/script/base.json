@@ -134,7 +134,7 @@
                     "type_code": "encryption",
                     "type_name": "加密方式",
                     "input_type": "none",
-                    "input_value": "",
+                    "input_value": "1",
                     "input_values": [
                         {
                             "key": "1",
@@ -206,10 +206,6 @@
                         {
                             "key": "1",
                             "val": "平均值"
-                        },
-                        {
-                            "key": "2",
-                            "val": "最大值"
                         }
                     ]
                 }
