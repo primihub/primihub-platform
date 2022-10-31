@@ -28,7 +28,6 @@ import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -59,19 +58,11 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
         if (newest!=null && newest.size()!=0){
             log.info("newset:{}",JSONObject.toJSONString(newest));
-            ids = new ArrayList<>();
-            Map<String, ModelDerivationDto> dtoMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
-            Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
-            while (iterator.hasNext()){
-                Map.Entry<String, ExceptionEntity> next = iterator.next();
-                if (dtoMap.containsKey(next.getKey())){
-                    ModelDerivationDto modelDerivationDto = dtoMap.get(next.getKey());
-                    ids.add(modelDerivationDto.getNewResourceId());
-                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
-                    exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
-                }else {
-                    ids.add(next.getKey());
-                }
+            for (ModelDerivationDto modelDerivationDto : newest) {
+                ids.add(modelDerivationDto.getNewResourceId());
+                ids.remove(modelDerivationDto.getOriginalResourceId());
+                exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
+                exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
             }
             log.info("newids:{}", ids);
         }
