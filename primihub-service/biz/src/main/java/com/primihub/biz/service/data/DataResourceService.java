@@ -676,5 +676,12 @@ public class DataResourceService {
 
         return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataDerivationResourceVos));
     }
+
+    public String getDataResourceUrl(Long resourceId) {
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        if (dataResource==null)
+            return null;
+        return dataResource.getUrl();
+    }
 }
 
