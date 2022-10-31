@@ -718,6 +718,7 @@ public class DataResourceService {
                 }
             }
             if (dataComponent.getComponentCode().equals("dataSet")){
+                log.info(dataComponent.getDataJson());
                 List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(dataComponent.getDataJson(), ModelProjectResourceVo.class);
                 for (ModelProjectResourceVo modelProjectResourceVo : modelProjectResourceVos) {
                     if (modelProjectResourceVo.getParticipationIdentity() == 1){
