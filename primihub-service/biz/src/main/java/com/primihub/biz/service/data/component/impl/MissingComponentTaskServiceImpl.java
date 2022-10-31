@@ -99,9 +99,11 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 Iterator<Map.Entry<String, ExceptionEntity>> iterator = exceptionEntityMap.entrySet().iterator();
                 Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
+                log.info("dtoMap:{}",JSONObject.toJSONString(dtoMap));
                 while (iterator.hasNext()){
                     Map.Entry<String, ExceptionEntity> next = iterator.next();
                     String key = next.getKey();
+                    log.info("key:{}",key);
                     ExceptionEntity value = next.getValue();
                     if (dtoMap!=null && dtoMap.containsKey(key)){
                         derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,dtoMap.get(key)));
