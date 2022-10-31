@@ -62,7 +62,7 @@ public class ResourceController {
 
     @GetMapping("getDerivationResourceData")
     public BaseResultEntity getDerivationResourceData(DerivationResourceReq req){
-        return dataResourceService.getDerivationResourceList(req);
+        return dataResourceService.getDerivationResourceData(req);
     }
 
     /**

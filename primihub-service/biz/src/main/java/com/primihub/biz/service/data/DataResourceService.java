@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
@@ -21,7 +22,10 @@ import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.DataServiceGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.data.component.impl.ExceptionComponentTaskServiceImpl;
 import com.primihub.biz.service.sys.SysUserService;
@@ -64,6 +68,10 @@ public class DataResourceService {
     private DataSourceService dataSourceService;
     @Autowired
     private BaseConfiguration baseConfiguration;
+    @Autowired
+    private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataModelRepository dataModelRepository;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -679,6 +687,49 @@ public class DataResourceService {
 
     public DataResource getDataResourceUrl(Long resourceId) {
         return dataResourceRepository.queryDataResourceById(resourceId);
+    }
+
+    public BaseResultEntity getDerivationResourceData(DerivationResourceReq req) {
+        List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+        if (dataDerivationResourceVos.size()==0){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无数据信息");
+        }
+        DataDerivationResourceVo dataDerivationResourceVo = dataDerivationResourceVos.get(0);
+        DataDerivationResourceDataVo dataVo= DataResourceConvert.dataDerivationResourcePoConvertDataVo(dataDerivationResourceVo);
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataVo.getProjectId(), null);
+        dataVo.setServerAddress(dataProject.getServerAddress());
+        DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataVo.getTaskId());
+        if (modelTask==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+        }
+        if (StringUtils.isBlank(modelTask.getComponentJson())){
+            return BaseResultEntity.success();
+        }
+        List<DataComponent> dataComponents = JSONObject.parseArray(modelTask.getComponentJson(),DataComponent.class);
+        dataComponents = dataComponents.stream().filter(d->d.getComponentName().equals(dataVo.getTag())||d.getComponentCode().equals("dataSet")).collect(Collectors.toList());
+        for (DataComponent dataComponent : dataComponents) {
+            Map<String, String> map = JSONArray.parseArray(dataComponent.getDataJson(), DataComponentValue.class).stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal));
+            if (dataComponent.getComponentName().equals(dataVo.getTag())){
+                dataVo.setTotalTime(dataComponent.getEndTime() - dataComponent.getStartTime());
+                if (map.containsKey("selectFeatures")){
+                    dataVo.setAlignFeature(map.get("selectFeatures"));
+                }else if (map.containsKey("MultipleSelected")){
+                    dataVo.setAlignFeature(map.get("MultipleSelected"));
+                }
+            }
+            if (dataComponent.getComponentCode().equals("dataSet")){
+                List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(dataComponent.getDataJson(), ModelProjectResourceVo.class);
+                for (ModelProjectResourceVo modelProjectResourceVo : modelProjectResourceVos) {
+                    if (modelProjectResourceVo.getParticipationIdentity() == 1){
+                        dataVo.setInitiateOrganResource(modelProjectResourceVo.getResourceId());
+                    }else if (modelProjectResourceVo.getParticipationIdentity() == 2){
+                        dataVo.setProviderOrganResource(modelProjectResourceVo.getResourceId());
+                    }
+                }
+            }
+
+        }
+        return BaseResultEntity.success(dataVo);
     }
 }
 

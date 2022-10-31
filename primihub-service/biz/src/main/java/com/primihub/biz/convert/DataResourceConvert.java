@@ -258,4 +258,37 @@ public class DataResourceConvert {
             return defaultVal;
         return val.toString();
     }
+
+    public static DataDerivationResourceDataVo dataDerivationResourcePoConvertDataVo(DataDerivationResourceVo dataDerivationResourceVo) {
+        DataDerivationResourceDataVo dataDerivationResourceDataVo = new DataDerivationResourceDataVo();
+        dataDerivationResourceDataVo.setResourceId(dataDerivationResourceVo.getResourceId());
+        dataDerivationResourceDataVo.setResourceName(dataDerivationResourceVo.getResourceName());
+        dataDerivationResourceDataVo.setResourceDesc(dataDerivationResourceVo.getResourceDesc());
+        dataDerivationResourceDataVo.setResourceAuthType(dataDerivationResourceVo.getResourceAuthType());
+        dataDerivationResourceDataVo.setResourceSource(dataDerivationResourceVo.getResourceSource());
+        dataDerivationResourceDataVo.setResourceNum(dataDerivationResourceVo.getResourceNum());
+        dataDerivationResourceDataVo.setFileId(dataDerivationResourceVo.getFileId());
+        dataDerivationResourceDataVo.setFileSize(dataDerivationResourceVo.getFileSize());
+        dataDerivationResourceDataVo.setFileSuffix(dataDerivationResourceVo.getFileSuffix());
+        dataDerivationResourceDataVo.setFileRows(dataDerivationResourceVo.getFileRows());
+        dataDerivationResourceDataVo.setFileColumns(dataDerivationResourceVo.getFileColumns());
+        dataDerivationResourceDataVo.setFileHandleStatus(dataDerivationResourceVo.getFileHandleStatus());
+        dataDerivationResourceDataVo.setFileContainsY(dataDerivationResourceVo.getFileContainsY());
+        dataDerivationResourceDataVo.setFileYRows(dataDerivationResourceVo.getFileYRows());
+        dataDerivationResourceDataVo.setFileYRatio(dataDerivationResourceVo.getFileYRatio());
+        dataDerivationResourceDataVo.setHandleField(dataDerivationResourceVo.getHandleField());
+        dataDerivationResourceDataVo.setFileHandleField(dataDerivationResourceVo.getFileHandleField());
+        dataDerivationResourceDataVo.setUserId(dataDerivationResourceVo.getUserId());
+        dataDerivationResourceDataVo.setUserName(dataDerivationResourceVo.getUserName());
+        dataDerivationResourceDataVo.setOrganId(dataDerivationResourceVo.getOrganId());
+        dataDerivationResourceDataVo.setOrganName(dataDerivationResourceVo.getOrganName());
+        dataDerivationResourceDataVo.setCreateDate(dataDerivationResourceVo.getCreateDate());
+        dataDerivationResourceDataVo.setResourceHashCode(dataDerivationResourceVo.getResourceHashCode());
+        dataDerivationResourceDataVo.setTaskId(dataDerivationResourceVo.getTaskId());
+        dataDerivationResourceDataVo.setTaskIdName(dataDerivationResourceVo.getTaskIdName());
+        dataDerivationResourceDataVo.setTag(dataDerivationResourceVo.getTag());
+        dataDerivationResourceDataVo.setProjectId(dataDerivationResourceVo.getProjectId());
+        return dataDerivationResourceDataVo;
+
+    }
 }

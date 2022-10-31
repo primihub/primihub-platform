@@ -7,13 +7,12 @@ import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 资源表
  */
 @Data
-public class DataDerivationResourceVo {
+public class DataDerivationResourceDataVo {
     /**
      * 资源id
      */
@@ -119,4 +118,14 @@ public class DataDerivationResourceVo {
     }
 
     private Long projectId;
+
+    private Long totalTime;
+
+    private String alignFeature;
+
+    private String initiateOrganResource;
+
+    private String providerOrganResource;
+
+    private String serverAddress;
 }
