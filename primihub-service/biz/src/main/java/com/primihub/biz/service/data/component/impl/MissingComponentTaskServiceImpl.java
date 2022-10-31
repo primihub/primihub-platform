@@ -57,6 +57,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
             Map<String, GrpcComponentDto> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+            log.info("exceptionEntityMap-1:{}",JSONObject.toJSONString(exceptionEntityMap));
             if (newest!=null && newest.size()!=0){
                 for (ModelDerivationDto modelDerivationDto : newest) {
                     ids.add(modelDerivationDto.getNewResourceId());
@@ -67,7 +68,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
 
                 log.info("newids:{}", ids);
             }
-            log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
+            log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(exceptionEntityMap));
             Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ids.stream().collect(Collectors.joining(";"))).build();
             Common.Params params = Common.Params.newBuilder()
@@ -98,15 +99,14 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
             }else {
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
-                log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
-                Iterator<Map.Entry<String, GrpcComponentDto>> iterator = exceptionEntityMap.entrySet().iterator();
+                log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
+                Iterator<String> keyi = exceptionEntityMap.keySet().iterator();
                 Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                 log.info("dtoMap:{}",JSONObject.toJSONString(dtoMap));
-                while (iterator.hasNext()){
-                    Map.Entry<String, GrpcComponentDto> next = iterator.next();
-                    String key = next.getKey();
+                while (keyi.hasNext()){
+                    String key = keyi.next();
                     log.info("key:{}",key);
-                    GrpcComponentDto value = next.getValue();
+                    GrpcComponentDto value = exceptionEntityMap.get(key);
                     log.info("value:{}",JSONObject.toJSONString(value));
                     if (dtoMap!=null && dtoMap.containsKey(key)){
                         derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,dtoMap.get(key)));
