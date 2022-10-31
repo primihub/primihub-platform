@@ -21,13 +21,13 @@
           <el-input
             v-if="descInputVisible"
             ref="descInput"
-            v-model="resource.resourceDes"
+            v-model="resource.resourceDesc"
             size="small"
             @keyup.enter.native="handleDescInputConfirm"
             @blur="handleDescInputConfirm"
           />
           <span v-else>
-            <span>{{ resource.resourceDes }}</span>
+            <span>{{ resource.resourceDesc }}</span>
             <i class="iconfont icon-edit edit-icon" @click="showDescInput" />
           </span>
         </el-descriptions-item>
@@ -50,13 +50,12 @@
     <div class="detail">
       <el-descriptions title="原始数据" :column="2" label-class-name="detail-title">
         <el-descriptions-item :label="`${resource.tag}特征`">{{ resource.alignFeature }}</el-descriptions-item>
-        <el-descriptions-item v-if="resource.tag === '数据对齐'" label="加密方式">{{ resource.encryption }}</el-descriptions-item>
         <el-descriptions-item label="我的数据">
           <el-link :underline="false" type="primary" @click="toResourceDetailPage(resource.initiateOrganResource)">{{ resource.initiateOrganResource }}</el-link>
         </el-descriptions-item>
         <el-descriptions-item label="参与方数据">
-          <el-link :underline="false" type="primary" @click="toResourceDetailPage(resource.providerOrganResource[0])">
-            {{ resource.providerOrganResource && resource.providerOrganResource[0] }}
+          <el-link :underline="false" type="primary" @click="toResourceDetailPage(resource.providerOrganResource)">
+            {{ resource.providerOrganResource && resource.providerOrganResource }}
           </el-link>
         </el-descriptions-item>
       </el-descriptions>
@@ -66,7 +65,7 @@
 
 <script>
 import { getToken } from '@/utils/auth'
-import { getResourceDetail, saveResource } from '@/api/resource'
+import { getDerivationResourceData, saveResource } from '@/api/resource'
 
 export default {
   data() {
@@ -93,10 +92,9 @@ export default {
   methods: {
     async fetchData() {
       this.loading = true
-      const res = await getResourceDetail(this.resourceId)
+      const res = await getDerivationResourceData({ resourceId: this.resourceId })
       if (res.code === 0) {
-        this.result = res.result
-        this.resource = this.result.resource
+        this.resource = res.result
         this.loading = false
       }
     },
@@ -141,7 +139,11 @@ export default {
       saveResource(params).then(res => {
         this.loading = true
         if (res.code === 0) {
-          this.toResourceDetail(res.result.resourceId)
+          this.loading = false
+          this.$message({
+            message: '修改成功',
+            type: 'success'
+          })
         } else {
           this.loading = false
           this.$message({

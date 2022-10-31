@@ -95,10 +95,14 @@ const resourceAuditStatusFilter = (status) => {
   return sourceMap[status]
 }
 const timeFilter = (time) => {
-  const hour = parseInt(time / 3600) < 10 ? '0' + parseInt(time / 3600) : parseInt(time / 3600)
-  const min = parseInt(time % 3600 / 60) < 10 ? '0' + parseInt(time % 3600 / 60) : parseInt(time % 3600 / 60)
-  const sec = parseInt(time % 3600 % 60) < 10 ? '0' + parseInt(time % 3600 % 60) : parseInt(time % 3600 % 60)
-  return hour + ':' + min + ':' + sec
+  if (!time) {
+    return '00:00:00'
+  } else {
+    const hour = parseInt(time / 3600) < 10 ? '0' + parseInt(time / 3600) : parseInt(time / 3600)
+    const min = parseInt(time % 3600 / 60) < 10 ? '0' + parseInt(time % 3600 / 60) : parseInt(time % 3600 / 60)
+    const sec = parseInt(time % 3600 % 60) < 10 ? '0' + parseInt(time % 3600 % 60) : parseInt(time % 3600 % 60)
+    return hour + ':' + min + ':' + sec
+  }
 }
 
 export default {
