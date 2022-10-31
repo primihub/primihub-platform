@@ -57,6 +57,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         log.info("ids:{}", ids);
         Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
         if (newest!=null && newest.size()!=0){
+            log.info("newset:{}",JSONObject.toJSONString(newest));
            ids = new ArrayList<>();
             for (ModelDerivationDto modelDerivationDto : newest) {
                 ids.add(modelDerivationDto.getNewResourceId());
@@ -66,7 +67,6 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             log.info("newids:{}", ids);
         }
         Map<String, String> map = new HashMap<>();
-        map.put("dataStr", JSONObject.toJSONString(ids));
         log.info(JSONObject.toJSONString(map));
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EXCEPTION_PAHT, freeMarkerConfigurer, map);
         log.info(freemarkerContent);

@@ -57,11 +57,12 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             log.info("ids:{}", ids);
             Map<String, MissingComponentTaskServiceImpl.ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
             if (newest!=null && newest.size()!=0){
+                log.info("newset:{}",JSONObject.toJSONString(newest));
                 ids = new ArrayList<>();
                 for (ModelDerivationDto modelDerivationDto : newest) {
                     ids.add(modelDerivationDto.getNewResourceId());
-                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getResourceId()));
-                    exceptionEntityMap.remove(modelDerivationDto.getResourceId());
+                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
+                    exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
                 }
                 log.info("newids:{}", ids);
             }
@@ -129,6 +130,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
             taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:"+e.getMessage());
             log.info("grpc Exception:{}", e.getMessage());
+            e.printStackTrace();
         }
         return BaseResultEntity.success();
     }
