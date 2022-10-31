@@ -62,6 +62,8 @@ public class ResourceController {
 
     @GetMapping("getDerivationResourceData")
     public BaseResultEntity getDerivationResourceData(DerivationResourceReq req){
+        if (req.getResourceId() == null || req.getResourceId() ==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         return dataResourceService.getDerivationResourceData(req);
     }
 
