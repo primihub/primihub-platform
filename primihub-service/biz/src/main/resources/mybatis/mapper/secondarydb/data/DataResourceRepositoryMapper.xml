@@ -306,8 +306,8 @@
     </select>
     <sql id="queryDerivationResourceListWhere">
         and dr.resource_source = 3
-        <if test="resourceId!=null and resourceId!=''">
-            and dr.resource_fusion_id = #{resourceId}
+        <if test="resourceId!=null and resourceId!=0">
+            and dr.resource_id = #{resourceId}
         </if>
         <if test="resourceName!=null and resourceName!=''">
             and dr.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
