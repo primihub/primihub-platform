@@ -59,9 +59,9 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         Map<String, GrpcComponentDto> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
         if (newest!=null && newest.size()!=0){
             log.info("newset:{}",JSONObject.toJSONString(newest));
+            ids = new ArrayList<>();
             for (ModelDerivationDto modelDerivationDto : newest) {
                 ids.add(modelDerivationDto.getNewResourceId());
-                ids.remove(modelDerivationDto.getOriginalResourceId());
                 exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
                 exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
             }
@@ -108,6 +108,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         String key = next.getKey();
                         GrpcComponentDto value = next.getValue();
+                        if (value==null)
+                            continue;
                         if (dtoMap!=null && dtoMap.containsKey(key)){
                             derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,dtoMap.get(key)));
                         }else {
