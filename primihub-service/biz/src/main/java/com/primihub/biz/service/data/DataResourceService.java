@@ -539,7 +539,7 @@ public class DataResourceService {
         if (StringUtils.isBlank(dataResource.getResourceFusionId())){
             dataResource.setResourceFusionId(UUID.randomUUID().toString());
         }
-        if (dataResource.getResourceSource() == 1){
+        if (dataResource.getResourceSource() !=2 ){
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
         }
         Map<String,Object> map = new HashMap<>();
@@ -677,11 +677,8 @@ public class DataResourceService {
         return BaseResultEntity.success(new PageDataEntity(count,req.getPageSize(),req.getPageNo(),dataDerivationResourceVos));
     }
 
-    public String getDataResourceUrl(Long resourceId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
-        if (dataResource==null)
-            return null;
-        return dataResource.getUrl();
+    public DataResource getDataResourceUrl(Long resourceId) {
+        return dataResourceRepository.queryDataResourceById(resourceId);
     }
 }
 

@@ -6,6 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
+import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
@@ -220,16 +221,16 @@ public class ResourceController {
 
     @RequestMapping("download")
     public void download(HttpServletResponse response, Long resourceId) throws Exception{
-        String url = dataResourceService.getDataResourceUrl(resourceId);
-        if (StringUtils.isBlank(url)){
+        DataResource dataResource = dataResourceService.getDataResourceUrl(resourceId);
+        if (dataResource == null || StringUtils.isBlank(dataResource.getUrl())){
             downloadTaskError(response,"无资源信息");
         }else {
-            File file = new File(url);
+            File file = new File(dataResource.getUrl());
             if (file.exists()){
                 try {
                     FileInputStream inputStream = new FileInputStream(file);
                     response.setHeader("content-Type","application/vnd.ms-excel");
-                    response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
+                    response.setHeader("content-disposition", "attachment; fileName=" + new String(dataResource.getResourceName().getBytes("UTF-8"),"iso-8859-1"));
                     ServletOutputStream outputStream = response.getOutputStream();
                     int len = 0;
                     byte[] data = new byte[1024];
