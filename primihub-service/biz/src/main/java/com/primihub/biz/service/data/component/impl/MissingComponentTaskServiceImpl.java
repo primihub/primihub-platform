@@ -98,6 +98,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
             }else {
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
+                log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Iterator<Map.Entry<String, GrpcComponentDto>> iterator = exceptionEntityMap.entrySet().iterator();
                 Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                 log.info("dtoMap:{}",JSONObject.toJSONString(dtoMap));
