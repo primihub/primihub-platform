@@ -40,7 +40,9 @@ def generate_new_dataset(meta_info):
     print(old_dataset_path)
     print("psi_path: {}, new_dataset_id {}, new_dataset_output_path {} psi_index {} old_dataset_path {}".format(
         psi_path, new_dataset_id, new_dataset_output_path, psi_index, old_dataset_path))
+    intersection_map = {}
     intersection_set = set()
+    intersection_list = list()
     with open(psi_path) as f:
         head = f.readline()
         for item in f:
@@ -48,16 +50,35 @@ def generate_new_dataset(meta_info):
             if not item:
                 continue
             intersection_set.add(item)
+            intersection_list.append(item)
+
     with open(old_dataset_path) as old_f, open(new_dataset_output_path, 'w') as new_f:
         f_csv = csv.reader(old_f)
         header = next(f_csv)
+        print(header)
         new_file_writer = csv.writer(new_f)
+        del header[psi_index]
         new_file_writer.writerow(header)
         for row in f_csv:
-            if row[0] not in intersection_set:
+            psi_key = row[psi_index]
+            if psi_key not in intersection_set:
                 continue
             else:
+                del row[psi_index]
+                if psi_key != intersection_list[0]:  #save to map
+                  intersection_map[psi_key] = row
+                  continue
                 new_file_writer.writerow(row)
+                del intersection_list[0]
+                while True:
+                  if len(intersection_list) == 0:
+                    break
+                  psi_key = intersection_list[0]
+                  if psi_key in intersection_map:
+                    new_file_writer.writerow(intersection_map[psi_key])
+                    del intersection_list[0]
+                  else:
+                    break
     register_new_dataset(host_address, "csv", new_dataset_output_path, new_dataset_id)
 
 def parse_dataset_param():
@@ -65,8 +86,8 @@ def parse_dataset_param():
     print(service_addr)
     detail = ph.context.Context.params_map["detail"]
     print(detail)
-    # detail = detail.replace("=", ":")
-    # detail = detail.replace(";", ",")
+    detail = detail.replace("=", ":")
+    detail = detail.replace(";", ",")
     print(detail)
     detail_dict = json.loads(detail)
     print(detail_dict)
