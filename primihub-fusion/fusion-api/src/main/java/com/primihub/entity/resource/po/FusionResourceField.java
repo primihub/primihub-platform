@@ -1,5 +1,6 @@
 package com.primihub.entity.resource.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
@@ -10,11 +11,13 @@ public class FusionResourceField {
     /**
      * 字段id
      */
+    @JsonIgnore
     private Long fieldId;
 
     /**
      * 资源id
      */
+    @JsonIgnore
     private Long resourceId;
 
     /**
@@ -55,16 +58,19 @@ public class FusionResourceField {
     /**
      * 是否删除
      */
+    @JsonIgnore
     private Integer isDel;
 
     /**
      * 创建时间
      */
+    @JsonIgnore
     private Date cTime;
 
     /**
      * 更新时间
      */
+    @JsonIgnore
     private Date uTime;
 
 

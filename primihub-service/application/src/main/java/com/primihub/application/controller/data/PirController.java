@@ -46,6 +46,10 @@ public class PirController {
             if(!TaskStateEnum.TASK_STATE_MAP.containsKey(req.getTaskState()))
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"taskState");
         }
+        if (req.getResourceName()!=null && req.getResourceName().contains("_")){
+            // Cancel mysql like _ Wildcard action
+            req.setResourceName(req.getResourceName().replace("_","\\_"));
+        }
         return pirService.getPirTaskList(req);
     }
 

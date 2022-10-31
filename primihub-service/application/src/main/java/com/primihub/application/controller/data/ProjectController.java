@@ -168,4 +168,11 @@ public class ProjectController {
         return dataProjectService.getResourceList(req);
     }
 
+    @GetMapping("getDerivationResourceList")
+    public BaseResultEntity getDerivationResourceList(Long projectId){
+        if (projectId==null || projectId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
+        return dataProjectService.getDerivationResourceList(projectId);
+    }
+
 }

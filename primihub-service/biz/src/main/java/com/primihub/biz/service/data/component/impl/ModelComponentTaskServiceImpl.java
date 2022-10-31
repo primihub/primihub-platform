@@ -9,6 +9,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataProject;
@@ -36,6 +37,7 @@ import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("modelComponentTaskServiceImpl")
@@ -87,12 +89,24 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             if (resourceDataList==null || resourceDataList.size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码2");
             taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET,resourceDataList.get(0).get("resourceId").toString());
+            taskReq.getFusionResourceList().add(resourceDataList.get(0));
         }
         return baseResultEntity;
     }
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
+        if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
+            Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
+            Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
+            while (iterator.hasNext()){
+                Map.Entry<String, String> next = iterator.next();
+                if (derivationMap.containsKey(next.getValue())){
+                    String newDataSetId = derivationMap.get(next.getValue()).getNewResourceId();
+                    taskReq.getFreemarkerMap().put(next.getKey(),newDataSetId);
+                }
+            }
+        }
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
         }else if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
@@ -136,16 +150,12 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-//                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
-//                    if (StringUtils.isNotBlank(taskReq.getDataModelTask().getPredictContent())){
-//                        log.info("zip -- modelId:{} -- taskId:{} -- start",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-//                        ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
-//                        log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-//                    }else {
-//                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-//                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
-//                    }
+                    if (FileUtil.isFileExists(outputPathDto.getModelFileName())){
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                    }else {
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                    }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());

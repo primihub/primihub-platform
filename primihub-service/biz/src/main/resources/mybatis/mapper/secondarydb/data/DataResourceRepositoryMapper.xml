@@ -52,6 +52,7 @@
     </select>
 
     <sql id="queryCondition">
+        and resource_source != 3
         <if test="resourceState!=null">
             and resource_state = #{resourceState}
         </if>
@@ -260,6 +261,108 @@
         <include refid="resourceColumns"></include>
         FROM
         data_resource where is_del = 0 and resource_fusion_id = #{resourceFusionId}
+    </select>
+
+    <select id="queryDerivationResourceList" resultType="com.primihub.biz.entity.data.vo.DataDerivationResourceVo">
+        SELECT
+            dr.resource_id as resourceId,
+            dr.resource_name as resourceName,
+            dr.resource_desc as resourceDesc,
+            dr.resource_auth_type as resourceAuthType,
+            dr.resource_source as resourceSource,
+            dr.resource_num as resourceNum,
+            dr.file_size as fileSize,
+            dr.file_suffix as fileSuffix,
+            dr.file_columns as fileColumns,
+            dr.file_rows as fileRows,
+            dr.file_handle_field as handleField,
+            dr.file_handle_status as fileHandleStatus,
+            dr.file_contains_y as fileContainsY,
+            dr.file_y_rows as fileYRows,
+            dr.file_y_ratio as fileYRatio,
+            dr.resource_fusion_id as resourceFusionId,
+            dr.public_organ_id as publicOrganId,
+            dr.resource_state as resourceState,
+            dr.resource_hash_code as resourceHashCode,
+            dr.user_id as userId,
+            dr.create_date as createDate,
+            dm.project_id as projectId,
+            dt.task_id as taskId,
+            dt.task_id_name as taskIdName,
+            (select GROUP_CONCAT(tag_name) from data_rt rt,data_resource_tag t where rt.tag_id = t.tag_id and rt.resource_id = dr.resource_id ) tag
+        FROM
+            data_resource dr,
+            data_mr mr,
+            data_model dm,
+            data_task dt
+        WHERE
+            dr.resource_fusion_id = mr.resource_id
+          and mr.task_id = dt.task_id
+          and dm.model_id = mr.model_id
+          and dr.is_del = 0
+        <include refid="queryDerivationResourceListWhere"/>
+        ORDER BY dr.resource_id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+    <sql id="queryDerivationResourceListWhere">
+        and dr.resource_source = 3
+        <if test="resourceId!=null and resourceId!=0">
+            and dr.resource_id = #{resourceId}
+        </if>
+        <if test="resourceName!=null and resourceName!=''">
+            and dr.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="tag!=null and tag!=''">
+            and dr.resource_id in
+            (
+            select DISTINCT rt.resource_id from data_resource_tag drt,data_rt rt
+            where drt.tag_id = rt.tag_id and drt.tag_name like CONCAT('%',#{tag,jdbcType=VARCHAR},'%')
+            )
+        </if>
+        <if test="taskIdName!=null and taskIdName!=''">
+            and dt.task_id_name like CONCAT('%',#{taskIdName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="projectId!=null and projectId!=''">
+            and mr.task_id in (select mt.task_id from data_model_task mt,data_model dm where mt.model_id = dm.model_id and dm.project_id = #{projectId})
+        </if>
+        <if test="startDate!=null and startDate!=''">
+            and dr.create_date &gt;= #{startDate}
+        </if>
+        <if test="endDate!=null and endDate!=''">
+            and dr.create_date &lt;= #{endDate}
+        </if>
+    </sql>
+    <select id="queryDataFileFieldById" resultType="com.primihub.biz.entity.data.po.DataFileField">
+        select
+            field_id as fieldId,
+            file_id as fileId,
+            resource_id as resourceId,
+            field_name as fieldName,
+            field_as as fieldAs,
+            field_type as fieldType,
+            field_desc as fieldDesc,
+            `relevance`,
+            `grouping`,
+            protection_status as protectionStatus,
+            create_date as createDate,
+            update_date as updateDate
+        from
+            data_file_field
+        where
+            field_id = #{id}
+    </select>
+    <select id="queryDerivationResourceListCount" resultType="java.lang.Integer">
+        SELECT
+         count(dr.resource_id)
+        FROM
+        data_resource dr,
+        data_mr mr,
+        data_task dt
+        WHERE
+        dr.resource_fusion_id = mr.resource_id
+        and mr.task_id = dt.task_id
+        and dr.is_del = 0
+        <include refid="queryDerivationResourceListWhere"/>
     </select>
 
 </mapper>

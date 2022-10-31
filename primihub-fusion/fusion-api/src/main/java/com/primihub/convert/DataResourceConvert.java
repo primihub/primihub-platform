@@ -53,6 +53,7 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceColumnCount(fusionResource.getResourceColumnCount());
         if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList().length>=0)
             fusionResourceVo.setResourceColumnNameList(new String(fusionResource.getResourceColumnNameList(),Charset.forName("UTF-8")));
+        fusionResourceVo.setFieldList(fieldList);
         fusionResourceVo.setResourceContainsY(fusionResource.getResourceContainsY());
         fusionResourceVo.setResourceYRowsCount(fusionResource.getResourceYRowsCount());
         fusionResourceVo.setResourceYRatio(fusionResource.getResourceYRatio());

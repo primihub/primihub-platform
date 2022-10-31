@@ -180,7 +180,6 @@
         select
             <include refid="Fusion_Resource_Field_Base_Column_List"/>
         from fusion_resource_field where resource_id = #{resourceId}
-        and protection_status = 1
     </select>
     <select id="selectFusionResourceFieldByIds" resultMap="FusionResourceFieldBaseResultMap">
         select
@@ -189,7 +188,6 @@
         <foreach collection="resourceIds" index="index" item="item" separator="," open="(" close=")" >
             #{item}
         </foreach>
-        and protection_status = 1
     </select>
     <select id="selectOrganResourcePage" resultType="com.primihub.entity.resource.po.FusionResource">
         select
@@ -238,6 +236,7 @@
     <sql id="fusionResourceCondition">
         where
         r.resource_state = 0
+        and r.resource_type != 3
         and go.group_id in
             <foreach collection="groupList" index="index" item="item" open="("
                      separator="," close=")">

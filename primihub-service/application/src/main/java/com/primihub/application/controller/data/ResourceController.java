@@ -1,17 +1,28 @@
 package com.primihub.application.controller.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
+import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
+import com.primihub.biz.entity.data.req.DerivationResourceReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataResourceService;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * 资源管理
@@ -42,6 +53,18 @@ public class ResourceController {
     public BaseResultEntity getDataResourceList(@RequestHeader("userId") Long userId,
                                                 DataResourceReq req){
         return dataResourceService.getDataResourceList(req,userId);
+    }
+
+    @GetMapping("getDerivationResourceList")
+    public BaseResultEntity getDerivationResourceList(DerivationResourceReq req){
+        return dataResourceService.getDerivationResourceList(req);
+    }
+
+    @GetMapping("getDerivationResourceData")
+    public BaseResultEntity getDerivationResourceData(DerivationResourceReq req){
+        if (req.getResourceId() == null || req.getResourceId() ==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        return dataResourceService.getDerivationResourceData(req);
     }
 
     /**
@@ -201,6 +224,43 @@ public class ResourceController {
     @RequestMapping("displayDatabaseSourceType")
     public BaseResultEntity displayDatabaseSourceType(){
         return dataResourceService.displayDatabaseSourceType();
+    }
+
+    @RequestMapping("download")
+    public void download(HttpServletResponse response, Long resourceId) throws Exception{
+        DataResource dataResource = dataResourceService.getDataResourceUrl(resourceId);
+        if (dataResource == null || StringUtils.isBlank(dataResource.getUrl())){
+            downloadTaskError(response,"无资源信息");
+        }else {
+            File file = new File(dataResource.getUrl());
+            if (file.exists()){
+                try {
+                    FileInputStream inputStream = new FileInputStream(file);
+                    response.setHeader("content-Type","application/vnd.ms-excel");
+                    response.setHeader("content-disposition", "attachment; fileName=" + new String((dataResource.getResourceName()+".csv").getBytes("UTF-8"),"iso-8859-1"));
+                    ServletOutputStream outputStream = response.getOutputStream();
+                    int len = 0;
+                    byte[] data = new byte[1024];
+                    while ((len = inputStream.read(data)) != -1) {
+                        outputStream.write(data, 0, len);
+                    }
+                    outputStream.close();
+                    inputStream.close();
+                }catch (Exception e) {
+                    downloadTaskError(response,"文件读取失败");
+                }
+            }else {
+                downloadTaskError(response,"无文件信息");
+            }
+        }
+
+    }
+
+    public void downloadTaskError(HttpServletResponse response,String message) throws IOException {
+        response.reset();
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+        response.getWriter().println(JSONObject.toJSONString(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message)));
     }
 
 }

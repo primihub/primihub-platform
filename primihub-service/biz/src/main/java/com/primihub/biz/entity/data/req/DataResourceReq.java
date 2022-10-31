@@ -55,4 +55,6 @@ public class DataResourceReq extends PageReq{
 
     private String userName;
 
+    private Integer derivation = 0;
+
 }
