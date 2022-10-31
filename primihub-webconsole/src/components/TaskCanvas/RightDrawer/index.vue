@@ -310,7 +310,7 @@ export default {
       console.log('watch newVal', newVal)
       if (newVal) {
         if (newVal.componentCode === 'dataSet') {
-          this.inputValue = this.nodeData.componentTypes[0].inputValue
+          this.inputValue = newVal.componentTypes[0].inputValue
           this.getDataSetNodeData()
         } else if (newVal.componentCode === 'model') {
           this.getDataSetComValue(this.graphData)
@@ -371,13 +371,27 @@ export default {
     getDataSetNodeData() {
       if (this.inputValue !== '') {
         this.inputValue = JSON.parse(this.inputValue)
-        const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
         const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
         this.initiateOrgan = initiateOrgan || this.initiateOrgan
+        const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
         if (providerOrgans.length > 0) {
           this.providerOrgans = providerOrgans
-          this.providerOrganId = this.providerOrgans[0].organId
+          this.providerOrganId = this.providerOrgans[0]?.organId
+          this.providerOrganName = this.providerOrgans[0]?.organName
+        } else {
+          this.resourceList = []
+          this.providerOrgans = []
+          this.providerOrganId = ''
+          this.providerOrganName = ''
         }
+      } else {
+        this.resourceList = []
+        this.providerOrgans = []
+        this.providerOrganId = ''
+        this.providerOrganName = ''
+        this.initiateOrgan.resourceId = ''
+        this.selectedResourceId = ''
+        this.inputValue = ''
       }
     },
     handleResourceHeaderChange(data) {
@@ -436,9 +450,6 @@ export default {
       } else {
         // is not first select
         if (this.providerOrgans.length > 0 && 'resourceId' in this.providerOrgans[0]) {
-          console.log(this.providerOrgans.length)
-          console.log('resourceId' in this.providerOrgans[0])
-          debugger
           this.resourceChanged = true
         }
         data.organName = this.providerOrganOptions.find(item => item.organId === this.providerOrganId).organName

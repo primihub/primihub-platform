@@ -96,7 +96,6 @@ export default {
     },
     async fetchData() {
       this.loading = true
-      this.resourceList = []
       const resourceId = Number(this.query.resourceId)
       if (resourceId !== '' && isNaN(resourceId)) {
         this.$message({

@@ -5,7 +5,6 @@
     v-bind="$attrs"
     :before-close="handleClose"
   >
-    {{ selectedData }}
     <el-radio-group v-if="data.length>0" v-model="radio">
       <el-radio v-for="item in data" :key="item.key" :label="item.val" />
     </el-radio-group>
