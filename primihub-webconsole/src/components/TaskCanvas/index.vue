@@ -1075,7 +1075,9 @@ export default {
         })
       }
       this.initGraphShape()
-      this.saveFn()
+      if (this.options.isEditable) {
+        this.saveFn()
+      }
     }
   }
 }
