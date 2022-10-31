@@ -60,8 +60,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
            ids = new ArrayList<>();
             for (ModelDerivationDto modelDerivationDto : newest) {
                 ids.add(modelDerivationDto.getNewResourceId());
-                exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getResourceId()));
-                exceptionEntityMap.remove(modelDerivationDto.getResourceId());
+                exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
+                exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
             }
             log.info("newids:{}", ids);
         }

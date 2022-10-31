@@ -52,21 +52,22 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         try {
-            Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
-            List<String> resourceIds = new ArrayList<>();
-            if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
-                for (ModelDerivationDto modelDerivationDto : taskReq.getNewest()) {
-                    resourceIds.add(modelDerivationDto.getNewResourceId());
-                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getOriginalResourceId()));
-                    exceptionEntityMap.remove(modelDerivationDto.getOriginalResourceId());
+            List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
+            List<ModelDerivationDto> newest = taskReq.getNewest();
+            log.info("ids:{}", ids);
+            Map<String, MissingComponentTaskServiceImpl.ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+            if (newest!=null && newest.size()!=0){
+                ids = new ArrayList<>();
+                for (ModelDerivationDto modelDerivationDto : newest) {
+                    ids.add(modelDerivationDto.getNewResourceId());
+                    exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getResourceId()));
+                    exceptionEntityMap.remove(modelDerivationDto.getResourceId());
                 }
-            }else {
-                resourceIds.addAll(exceptionEntityMap.keySet());
+                log.info("newids:{}", ids);
             }
-            log.info("resourceIds:{}",resourceIds);
             log.info("exceptionEntityMap:{}",JSONObject.toJSONString(exceptionEntityMap));
             Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
-            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
+            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ids.stream().collect(Collectors.joining(";"))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("ColumnInfo", columnInfoParamValue)
                     .putParamMap("Data_File", dataFileParamValue)
