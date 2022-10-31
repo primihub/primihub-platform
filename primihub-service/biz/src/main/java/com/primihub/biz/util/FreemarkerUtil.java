@@ -22,8 +22,7 @@ public class FreemarkerUtil {
             Template template = freeMarkerConfigurer.getConfiguration().getTemplate(ftlName);
             return FreeMarkerTemplateUtils.processTemplateIntoString(template,map);
         } catch (IOException | TemplateException e) {
-            log.info("{}:{}-{}:{}---创建模板失败:{}", DataConstant.PYTHON_GUEST_DATASET,map.get(DataConstant.PYTHON_GUEST_DATASET),
-                    DataConstant.PYTHON_LABEL_DATASET,map.get(DataConstant.PYTHON_LABEL_DATASET),e.getMessage());
+            log.info("创建模板失败:{}",e.getMessage());
         }
         return null;
     }

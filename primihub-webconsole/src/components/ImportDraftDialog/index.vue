@@ -75,6 +75,7 @@ export default {
         pageSize: this.pageSize
       }
       console.log('selectedDraft', this.selectedDraft)
+      this.loading = true
       getComponentDraftList(params).then(res => {
         if (res.result.length > 0) {
           this.noData = false
@@ -95,11 +96,16 @@ export default {
               return item
             })
           }
+          this.loading = false
         } else {
           this.noData = true
+          this.loading = false
         }
 
         console.log(this.data)
+      }).catch(err => {
+        console.log(err)
+        this.loading = false
       })
     },
     closeDialog() {

@@ -22,17 +22,22 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
+import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
+import com.primihub.biz.service.sys.SysEmailService;
+import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -73,6 +78,8 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private DataResourceRepository dataResourceRepository;
     @Autowired
+    private DataResourceService dataResourceService;
+    @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
     private DataPsiPrRepository dataPsiPrRepository;
@@ -94,6 +101,10 @@ public class DataAsyncService implements ApplicationContextAware {
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
+    @Autowired
+    private SysUserSecondarydbRepository sysUserSecondarydbRepository;
+    @Autowired
+    private SysEmailService sysEmailService;
 
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
@@ -119,41 +130,47 @@ public class DataAsyncService implements ApplicationContextAware {
             dataComponent.setTaskId(req.getDataModelTask().getTaskId());
             dataModelPrRepository.saveDataComponent(dataComponent);
         }
-        Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
-        for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
-            dataModelComponent.setModelId(req.getDataModelTask().getModelId());
-            dataModelComponent.setTaskId(req.getDataModelTask().getTaskId());
-            dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
-            dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
-            dataModelPrRepository.saveDataModelComponent(dataModelComponent);
-        }
-        // 重新组装json
-        req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
-        req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
-        req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTaskPrRepository.updateDataTask(req.getDataTask());
-        Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
-        req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-        dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-        for (DataComponent dataComponent : req.getDataComponents()) {
-            if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
-                break;
-            dataComponent.setStartTime(System.currentTimeMillis());
-            dataComponent.setComponentState(2);
+        try {
+            Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
+            for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
+                dataModelComponent.setModelId(req.getDataModelTask().getModelId());
+                dataModelComponent.setTaskId(req.getDataModelTask().getTaskId());
+                dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
+                dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
+                dataModelPrRepository.saveDataModelComponent(dataModelComponent);
+            }
+            // 重新组装json
+            req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
+            req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
+            req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+            dataTaskPrRepository.updateDataTask(req.getDataTask());
+            Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
             req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
             dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-            dataComponent.setComponentState(1);
-            executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
-            if(req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
-                dataComponent.setComponentState(3);
-            dataComponent.setEndTime(System.currentTimeMillis());
-            req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-            dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+            for (DataComponent dataComponent : req.getDataComponents()) {
+                if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+                    break;
+                dataComponent.setStartTime(System.currentTimeMillis());
+                dataComponent.setComponentState(2);
+                req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
+                dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+                dataComponent.setComponentState(1);
+                executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
+                if(req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+                    dataComponent.setComponentState(3);
+                dataComponent.setEndTime(System.currentTimeMillis());
+                req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
+                dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+            }
+        }catch (Exception e){
+            req.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            log.info(e.getMessage());
+            e.printStackTrace();
         }
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
-        if (req.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
             log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
             ShareModelVo vo = new ShareModelVo();
             vo.setDataModel(req.getDataModel());
@@ -161,8 +178,10 @@ public class DataAsyncService implements ApplicationContextAware {
             vo.setDataModelTask(req.getDataModelTask());
             vo.setDmrList(req.getDmrList());
             vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+//            vo.setDerivationList(req.getDerivationList());
             sendShareModelTask(vo);
         }
+        sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap){
@@ -198,6 +217,8 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
+        psiTask.setTaskState(2);
+        dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}",available);
         if (available==0){
             Date date=new Date();
@@ -242,14 +263,16 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
                         .build();
-                psiTask.setTaskState(2);
-                dataPsiPrRepository.updateDataPsiTask(psiTask);
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
+                psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState()!=4){
-                    psiTask.setTaskState(1);
-//                psiTaskOutputFileHandle(psiTask);
+                    if (FileUtil.isFileExists(psiTask.getFilePath())){
+                        psiTask.setTaskState(1);
+                    }else {
+                        psiTask.setTaskState(3);
+                    }
                 }
             } catch (Exception e) {
                 psiTask.setTaskState(3);
@@ -426,7 +449,8 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         log.info(resourceId);
         DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(UUID.randomUUID().toString());
+//        dataTask.setTaskIdName(UUID.randomUUID().toString());
+        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(dataReasoning.getReasoningName());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
@@ -494,4 +518,34 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
+    public void sendModelTaskMail(DataTask dataTask,Long projectId){
+        if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+            return;
+        SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(dataTask.getTaskUserId());
+        if (sysUser == null){
+            log.info("task_id:{} The task email was not sent. Reason for not sending : No user information",dataTask.getTaskIdName());
+            return;
+        }
+        if (!DataUtil.isEmail(sysUser.getUserAccount())){
+            log.info("task_id:{} The task email was not sent. Reason for not sending : The user account is not an email address",dataTask.getTaskIdName());
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("尊敬的【");
+        sb.append(sysUser.getUserName());
+        sb.append("】您在【");
+        sb.append(DateUtil.formatDate(dataTask.getCreateDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat()));
+        sb.append("】使用【");
+        sb.append(sysUser.getUserAccount());
+        sb.append("】创建的任务已失败，请前往原语Primihub隐私计算平台查看详情\n");
+        if (StringUtils.isNotBlank(dataTask.getTaskName())){
+            sb.append("任务名称：【").append(dataTask.getTaskName()).append("】\n");
+        }
+        sb.append("任务ID：【").append(dataTask.getTaskIdName()).append("】\n");
+        if (StringUtils.isNotBlank(baseConfiguration.getSystemDomainName())){
+            sb.append("<a href=\"").append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
+            sb.append("\">").append("点击查询任务详情").append("</a>");
+        }
+        sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
+    }
 }

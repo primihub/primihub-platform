@@ -1,19 +1,23 @@
 <template>
-  <el-table
-    :data="data"
-    border
-    v-bind="$attrs"
-    class="table-list"
-  >
-    <el-table-column align="center" label="序号" type="index" width="50" />
-    <el-table-column
-      v-for="(item,index) in tableHeader"
-      :key="index"
-      :prop="item"
-      :label="item"
-    />
+  <div>
+    <h3>数据资源预览</h3>
+    <el-table
+      :data="data"
+      border
+      v-bind="$attrs"
+      class="table-list"
+    >
+      <el-table-column align="center" label="序号" type="index" width="50" />
+      <el-table-column
+        v-for="(item,index) in tableHeader"
+        :key="index"
+        :prop="item"
+        :label="item"
+      />
 
-  </el-table>
+    </el-table>
+  </div>
+
 </template>
 
 <script>

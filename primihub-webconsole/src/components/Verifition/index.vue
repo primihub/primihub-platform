@@ -1,6 +1,6 @@
 <template>
   <div v-if="showBox" class="mask">
-    <div :class="mode=='pop'?'verifybox':''" :style="{'max-width':parseInt(imgSize.width)+30+'px'}">
+    <div :class="mode=='pop'?'verifybox':''" :style="{'width':parseInt(imgSize.width)+30+'px'}">
       <div v-if="mode=='pop'" class="verifybox-top">
         请完成安全验证
         <span v-if="showClose" class="verifybox-close" @click="closeBox">
@@ -102,7 +102,7 @@ export default {
     },
     closeBox() {
       this.clickShow = false
-      this.refresh()
+      // this.refresh()
     },
     show() {
       if (this.mode === 'pop') {

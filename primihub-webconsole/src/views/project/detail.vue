@@ -51,7 +51,10 @@
         </el-tab-pane>
         <el-tab-pane label="任务列表" name="modelTask">
           <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">新建任务</el-button>
-          <Model :is-creator="creator" :project-status="projectStatus" />
+          <ModelTaskList :is-creator="creator" :project-status="projectStatus" />
+        </el-tab-pane>
+        <el-tab-pane label="衍生数据" name="derivedData">
+          <DerivedDataTable v-if="tabName === 'derivedData'" max-height="480" :data="derivedDataResourceList" />
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -78,7 +81,7 @@
 
 <script>
 import { mapActions, mapGetters, mapMutations } from 'vuex'
-import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan } from '@/api/project'
+import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan, getDerivationResourceList } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
 import { deCodeEmoji } from '@/utils/emoji-regex'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
@@ -86,8 +89,9 @@ import ProviderOrganDialog from '@/components/ProviderOrganDialog'
 import ResourceApprovalDialog from '@/components/ResourceApprovalDialog'
 import ResourceTable from '@/components/ResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
-import Model from '@/components/Model'
+import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
+import DerivedDataTable from '@/components/DerivedDataTable'
 
 export default {
   components: {
@@ -95,9 +99,10 @@ export default {
     ProviderOrganDialog,
     ResourceTable,
     ResourcePreviewTable,
-    Model,
+    ModelTaskList,
     ProjectAudit,
-    ResourceApprovalDialog
+    ResourceApprovalDialog,
+    DerivedDataTable
   },
   data() {
     return {
@@ -116,6 +121,7 @@ export default {
       participationIdentity: '',
       selectedData: [],
       resourceList: [],
+      derivedDataResourceList: [],
       providerOrganDialogVisible: false,
       previewDialogVisible: false,
       dialogVisible: false,
@@ -156,6 +162,20 @@ export default {
     await this.fetchData()
   },
   methods: {
+    async getDerivationResourceList() {
+      this.loading = true
+      this.derivedDataResourceList = []
+      const params = {
+        projectId: this.id
+      }
+      const { code, result } = await getDerivationResourceList(params)
+      if (code === 0) {
+        if (result.length > 0) {
+          this.derivedDataResourceList = result
+        }
+      }
+      this.loading = false
+    },
     handleResourceApprovalDialogClose() {
       this.resourceApprovalDialogVisible = false
     },
@@ -190,6 +210,9 @@ export default {
     },
     handleTabClick() {
       // this.tabName = label
+      if (this.tabName === 'derivedData') {
+        this.getDerivationResourceList()
+      }
     },
     handleClick({ label = '' }) {
       this.differents = []

@@ -1,19 +1,37 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui'
+import App from './App'
+import store from './store'
+import router from './router'
 import { message } from '@/utils/resetMessage'
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
 import 'element-ui/lib/theme-chalk/index.css'
 import '@/styles/index.scss' // global css
-
-import App from './App'
-import store from './store'
-import router from './router'
-
 import '@/icons' // icon
 import '@/permission' // permission control
-// common filter
+import { getTrackingID } from '@/api/common'
 import filter from '@/filters'
+import VueGtag from 'vue-gtag'
+
+// common filter
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
+
+import defaultSettings from '@/settings'
+
+getTrackingID().then(res => {
+  try {
+    if (res.code === 0) {
+      const trackingID = res.result
+      if (trackingID !== '' && defaultSettings.googleAnalytics) {
+        Vue.use(VueGtag, {
+          config: { id: trackingID }
+        }, router)
+      }
+    }
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 // set ElementUI lang to zh
 Vue.use(ElementUI, {

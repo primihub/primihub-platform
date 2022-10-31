@@ -15,6 +15,11 @@ public interface DataResourcePrRepository {
      * @return
      */
     void saveResource(DataResource dataResource);
+    /**
+     * 添加db连接信息
+     * @param dataSource
+     */
+    void saveSource(DataSource dataSource);
 
     /**
      * 修改资源信息

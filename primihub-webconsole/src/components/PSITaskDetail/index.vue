@@ -67,38 +67,3 @@ export default {
   }
 }
 </script>
-<style lang="scss" scoped>
-::v-deep .el-table th{
-  background: #fafafa;
-}
-::v-deep .el-descriptions__body{
-  background-color: #fafafa;
-  padding: 10px 20px 10px 20px;
-}
-::v-deep  .el-descriptions{
-  margin-bottom:20px;
-}
-::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
-  padding-bottom: 5px;
-}
-::v-deep .el-descriptions-item__container{
-  align-items: center;
-  font-size: 12px;
-}
-::v-deep .el-descriptions__header{
-  margin-bottom: 10px;
-}
-::v-deep .el-dialog__body{
-  padding: 20px 20px 10px 20px;
-}
-::v-deep .el-button--mini, .el-button--mini.is-round{
-  padding: 0;
-}
-.result-name{
-  cursor: pointer;
-  font-size: 12px;
-  &:hover{
-    color: #1989fa;
-  }
-}
-</style>

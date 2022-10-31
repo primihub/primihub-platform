@@ -12,6 +12,7 @@
         "/oauth/github/render",
         "/oauth/github/callback",
         "/common/getValidatePublicKey",
+        "/common/getTrackingID",
         "/shareData/syncProject",
         "/shareData/syncModel"
     ],
@@ -31,6 +32,16 @@
     "resultUrlDirPrefix": "/data/result/",
     "runModelFileUrlDirPrefix": "/data/result/runModel/",
     "usefulToken": "excalibur_forever_ABCDEFGHIJKLMN",
+    "systemDomainName":"",
+    "mailProperties":{
+        "host":"",
+        "username":"",
+        "port":465,
+        "password":"",
+        "properties":{
+
+        }
+    },
     "authConfigs":{
         "github": {
             "redirectUrl":"",
@@ -85,68 +96,49 @@
             ]
         },
         {
-            "component_code": "features",
-            "component_name": "特征筛选",
+            "component_code": "dataAlign",
+            "component_name": "数据对齐",
             "is_show": 0,
             "is_mandatory": 1,
             "component_types": [
                 {
                     "is_show": 0,
                     "is_required": 0,
-                    "type_code": "features",
-                    "type_name": "特征筛选",
+                    "type_code": "dataAlign",
+                    "type_name": "数据对齐",
                     "input_type": "select",
                     "input_value": "",
                     "input_values": [
                         {
                             "key": "1",
-                            "val": "唯一值筛选"
+                            "val": "样本对齐"
                         },
                         {
                             "key": "2",
-                            "val": "缺失值比例筛选"
-                        },
-                        {
-                            "key": "3",
-                            "val": "IV值筛选"
-                        },
-                        {
-                            "key": "4",
-                            "val": "相关性筛选"
-                        },
-                        {
-                            "key": "5",
-                            "val": "用户自定义筛选"
+                            "val": "特征对齐"
                         }
                     ]
-                }
-            ]
-        },
-        {
-            "component_code": "sample",
-            "component_name": "样本抽样设计",
-            "is_show": 0,
-            "is_mandatory": 1,
-            "component_types": [
+                },
                 {
                     "is_show": 0,
                     "is_required": 0,
-                    "type_code": "sample",
-                    "type_name": "样本抽样设计",
-                    "input_type": "select",
+                    "type_code": "MultipleSelected",
+                    "type_name": "可多选特征",
+                    "input_type": "none",
                     "input_value": "",
+                    "input_values": []
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "encryption",
+                    "type_name": "加密方式",
+                    "input_type": "none",
+                    "input_value": "1",
                     "input_values": [
                         {
                             "key": "1",
-                            "val": "最大/最小样本"
-                        },
-                        {
-                            "key": "2",
-                            "val": "提出灰样本"
-                        },
-                        {
-                            "key": "3",
-                            "val": "处理样本不均衡和分层"
+                            "val": "MD5"
                         }
                     ]
                 }
@@ -154,7 +146,7 @@
         },
         {
             "component_code": "exception",
-            "component_name": "异常处理",
+            "component_name": "异常值处理",
             "is_show": 0,
             "is_mandatory": 1,
             "component_types": [
@@ -162,13 +154,58 @@
                     "is_show": 0,
                     "is_required": 0,
                     "type_code": "exception",
-                    "type_name": "异常处理",
+                    "type_name": "异常值处理",
                     "input_type": "select",
-                    "input_value": "",
+                    "input_value": "1",
                     "input_values": [
                         {
                             "key": "1",
-                            "val": "缺失值和异常值处理"
+                            "val": "异常值处理"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "component_code": "missing",
+            "component_name": "缺失值处理",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": [
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "missingValue",
+                    "type_name": "缺失值处理",
+                    "input_type": "select",
+                    "input_value": "1",
+                    "input_values": [
+                        {
+                            "key": "1",
+                            "val": "缺失值处理"
+                        }
+                    ]
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "selectFeatures",
+                    "type_name": "选择特征",
+                    "input_type": "none",
+                    "input_value": "",
+                    "input_values": []
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "exceptionType",
+                    "type_name": "缺失值处理",
+                    "input_type": "select",
+                    "input_value": "1",
+                    "input_values": [
+                        {
+                            "key": "1",
+                            "val": "平均值"
                         }
                     ]
                 }
@@ -248,7 +285,7 @@
                         },
                         {
                             "key": "3",
-                            "val": "横向LR"
+                            "val": "横向-LR"
                         }
                     ]
                 },
@@ -272,10 +309,10 @@
                 },
                 {
                     "is_show": 0,
-                    "is_required": 1,
+                    "is_required": 0,
                     "type_code": "arbiterOrgan",
                     "type_name": "可信第三方选择",
-                    "input_type": "label",
+                    "input_type": "button",
                     "input_value": "",
                     "input_values": []
                 }

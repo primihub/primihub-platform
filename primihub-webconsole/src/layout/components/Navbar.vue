@@ -3,8 +3,20 @@
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
 
     <breadcrumb class="breadcrumb-container" />
-
     <div class="right-menu">
+      <div class="feedback">
+        <el-popover
+          placement="bottom"
+          width="200"
+          trigger="click"
+        >
+          <div style="text-align: center;">
+            <img src="https://primihub.com/img/qrcode1.78d466ad.png" alt="" srcset="" width="175px">
+            <p>原语科技小助手</p>
+          </div>
+          <el-link slot="reference" type="primary">建议与反馈</el-link>
+        </el-popover>
+      </div>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
@@ -17,9 +29,6 @@
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
-          <!-- <router-link to="/setting/user">
-            <el-dropdown-item>用户管理</el-dropdown-item>
-          </router-link> -->
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;">退出登录</span>
           </el-dropdown-item>
@@ -191,6 +200,11 @@ p{
           font-size: 12px;
         }
       }
+    }
+
+    .feedback{
+      display: inline-block;
+      margin-right: 10px;
     }
   }
 }

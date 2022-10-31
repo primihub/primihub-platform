@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div v-loading="loading" class="app-container">
     <h2><span v-if="isEditPage">编辑</span><span v-else>新建</span>资源</h2>
     <el-form
       ref="dataForm"
@@ -79,10 +79,14 @@
           <div class="item-wrap-normal">
             <el-radio-group v-model="dataForm.resourceSource">
               <el-radio :label="1">文件上传</el-radio>
+              <el-radio v-if="showDatabaseRadio" :label="2">数据库导入</el-radio>
             </el-radio-group>
           </div>
           <template v-if="dataForm.resourceSource === 1">
             <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
+          </template>
+          <template v-if="dataForm.resourceSource === 2">
+            <DatabaseImport @success="handleImportSuccess" />
           </template>
         </template>
         <template v-else>
@@ -96,7 +100,6 @@
         element-loading-spinner="el-icon-loading"
       >
         <el-col v-if="fieldList.length > 0" :span="12">
-          <h3>字段信息</h3>
           <EditResourceTable
             border
             height="500"
@@ -106,7 +109,6 @@
           />
         </el-col>
         <el-col v-if="dataList.length >0" :span="12">
-          <h3>数据资源预览</h3>
           <ResourcePreviewTable :data="dataList" height="500" />
         </el-col>
       </el-row>
@@ -124,18 +126,20 @@
 </template>
 
 <script>
+import { saveResource, getResourceDetail, resourceFilePreview, displayDatabaseSourceType } from '@/api/resource'
 import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import Cascader from '@/components/Cascader'
-import { saveResource, getResourceDetail, resourceFilePreview } from '@/api/resource'
+import DatabaseImport from '@/components/DatabaseImport'
 
 export default {
   components: {
     Upload,
     EditResourceTable,
     ResourcePreviewTable,
-    Cascader
+    Cascader,
+    DatabaseImport
   },
   filters: {
     sourceFilter(source) {
@@ -212,7 +216,8 @@ export default {
         leaf: 'leaf',
         lazy: true
       },
-      authOrganList: []
+      authOrganList: [],
+      showDatabaseRadio: false
     }
   },
   async created() {
@@ -221,8 +226,21 @@ export default {
     if (this.isEditPage) {
       await this.getResourceDetail()
     }
+    await this.displayDatabaseSourceType()
   },
   methods: {
+    async displayDatabaseSourceType() {
+      const res = await displayDatabaseSourceType()
+      if (res.code === 0) {
+        this.showDatabaseRadio = res.result
+      }
+    },
+    handleImportSuccess(data) {
+      this.dataForm.dataSource = data.dataSource
+      this.fieldList = data.fieldList
+      this.dataForm.fieldList = this.formatParams()
+      this.dataList = data.dataList
+    },
     handleResourceChange(data) {
       this.fieldList = data
       this.dataForm.fieldList = this.formatParams()
@@ -287,9 +305,16 @@ export default {
     async submitForm() {
       this.$refs['dataForm'].validate(async(valid) => {
         if (valid) {
-          if (this.dataForm.fileId === -1) {
+          if (this.dataForm.resourceSource === '1' && this.dataForm.fileId === '') {
             this.$message({
               message: '请先上传文件',
+              type: 'warning'
+            })
+            this.loading = false
+            return
+          } else if (this.dataForm.fieldList.length < 1) {
+            this.$message({
+              message: '请先上传文件或导入数据',
               type: 'warning'
             })
             this.loading = false
@@ -301,13 +326,20 @@ export default {
             })
           }
           this.loading = true
+          console.log(this.dataForm)
           saveResource(this.dataForm).then(res => {
             this.loading = false
             if (res.code === 0) {
               this.toResourceDetail(res.result.resourceId)
             } else {
               this.loading = false
+              this.$message({
+                message: res.msg,
+                type: 'error'
+              })
             }
+          }).catch(err => {
+            console.log(err)
           })
         } else {
           this.loading = false

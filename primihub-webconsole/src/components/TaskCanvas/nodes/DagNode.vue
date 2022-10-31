@@ -2,14 +2,16 @@
   <div class="dag-container">
     <div :class="['dag-node', status]">
       <img :src="image.logo">
-      <span class="require">
-        <i v-if="isMandatory === 0"> * </i>
-      </span>
-      <span class="label">{{ label }}</span>
+      <div class="dag-main">
+        <span class="require">
+          <i v-if="isMandatory === 0"> * </i>
+        </span>
+        <span class="label">{{ label }}</span>
+      </div>
       <span class="status">
         <img v-show="status === 'success'" :src="image.success">
         <img v-show="status === 'failed'" :src="image.failed">
-        <img v-show="status === 'running'" :src="image.running">
+        <img v-show="status === 'running' " :src="image.running">
       </span>
     </div>
     <div v-if="showTime" class="time"><i class="icon el-icon-time" /><span class="time-text">耗时：{{ timeConsuming | timeFilter }}</span></div>
@@ -76,16 +78,22 @@ export default {
 }
 .dag-node {
   display: flex;
-  width: 181px;
-  height: 52px;
-  justify-content: flex-start;
-  padding: 15px 0 0 10px;
+  width: 100%;
+  height: 100%;
+  padding: 0 0 0 10px;
   background-color: #fff;
   border: 1px solid #c2c8d5;
   border-left: 4px solid #5F95FF;
   border-radius: 4px;
   box-shadow: 0 2px 5px 1px rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
+  align-items: center;
+}
+.dag-main{
+  width: calc(100% - 45px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 }
 .dag-node img {
   width: 15px;
@@ -102,7 +110,8 @@ export default {
   vertical-align: middle;
 }
 .dag-node .label {
-  width: 90px;
+  display: inline-block;
+  width: 100%;
   height: 20px;
   font-size: 14px;
   line-height: 20px;
@@ -147,7 +156,7 @@ export default {
 }
 .require{
   color: red;
-  margin: 0 5px 0 10px;
+  margin: 0 5px;
   font-size: 20px;
   height: 20px;
   vertical-align: middle;
@@ -159,7 +168,7 @@ export default {
   height: 20px;
   line-height: 20px;
   text-align: center;
-  left: 200px;
+  left: 220px;
   top: 16px;
   background-color: #fff;
   .icon{

@@ -9,6 +9,7 @@ import com.primihub.biz.entity.data.req.DataResourceReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.data.relational.core.sql.In;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -47,6 +48,29 @@ public class DataResourceConvert {
         po.setResourceNum(0);
         po.setDbId(0L);
         po.setUrl(sysFile.getFileUrl());
+        po.setPublicOrganId(req.getPublicOrganId());
+        po.setResourceState(0);
+        return po;
+    }
+
+    public static DataResource dataResourceReqConvertPo(DataResourceReq req, Long userId, Long organId){
+        DataResource po = new DataResource();
+        po.setResourceId(req.getResourceId());
+        po.setResourceName(req.getResourceName());
+        po.setResourceDesc(req.getResourceDesc());
+        po.setResourceAuthType(req.getResourceAuthType());
+        po.setResourceSource(req.getResourceSource());
+        po.setUserId(userId);
+        po.setOrganId(organId);
+        po.setFileId(0L);
+        po.setFileSize(0);
+        po.setFileSuffix("");
+        po.setFileColumns(0);
+        po.setFileRows(0);
+        po.setFileHandleStatus(0);
+        po.setResourceNum(0);
+        po.setDbId(0L);
+        po.setUrl("");
         po.setPublicOrganId(req.getPublicOrganId());
         po.setResourceState(0);
         return po;
@@ -120,6 +144,9 @@ public class DataResourceConvert {
         dataFileField.setFieldName(req.getFieldName());
         dataFileField.setFieldId(req.getFieldId());
         dataFileField.setFieldAs(req.getFieldAs());
+//        if (StringUtils.isNotBlank(req.getFieldType())){
+//            dataFileField.setFieldType(Integer.valueOf(req.getFieldType()));
+//        }
         if (fieldTypeEnum!=null)
             dataFileField.setFieldType(fieldTypeEnum.getCode());
         dataFileField.setFieldDesc(req.getFieldDesc());
@@ -230,5 +257,38 @@ public class DataResourceConvert {
         if (val==null)
             return defaultVal;
         return val.toString();
+    }
+
+    public static DataDerivationResourceDataVo dataDerivationResourcePoConvertDataVo(DataDerivationResourceVo dataDerivationResourceVo) {
+        DataDerivationResourceDataVo dataDerivationResourceDataVo = new DataDerivationResourceDataVo();
+        dataDerivationResourceDataVo.setResourceId(dataDerivationResourceVo.getResourceId());
+        dataDerivationResourceDataVo.setResourceName(dataDerivationResourceVo.getResourceName());
+        dataDerivationResourceDataVo.setResourceDesc(dataDerivationResourceVo.getResourceDesc());
+        dataDerivationResourceDataVo.setResourceAuthType(dataDerivationResourceVo.getResourceAuthType());
+        dataDerivationResourceDataVo.setResourceSource(dataDerivationResourceVo.getResourceSource());
+        dataDerivationResourceDataVo.setResourceNum(dataDerivationResourceVo.getResourceNum());
+        dataDerivationResourceDataVo.setFileId(dataDerivationResourceVo.getFileId());
+        dataDerivationResourceDataVo.setFileSize(dataDerivationResourceVo.getFileSize());
+        dataDerivationResourceDataVo.setFileSuffix(dataDerivationResourceVo.getFileSuffix());
+        dataDerivationResourceDataVo.setFileRows(dataDerivationResourceVo.getFileRows());
+        dataDerivationResourceDataVo.setFileColumns(dataDerivationResourceVo.getFileColumns());
+        dataDerivationResourceDataVo.setFileHandleStatus(dataDerivationResourceVo.getFileHandleStatus());
+        dataDerivationResourceDataVo.setFileContainsY(dataDerivationResourceVo.getFileContainsY());
+        dataDerivationResourceDataVo.setFileYRows(dataDerivationResourceVo.getFileYRows());
+        dataDerivationResourceDataVo.setFileYRatio(dataDerivationResourceVo.getFileYRatio());
+        dataDerivationResourceDataVo.setHandleField(dataDerivationResourceVo.getHandleField());
+        dataDerivationResourceDataVo.setFileHandleField(dataDerivationResourceVo.getFileHandleField());
+        dataDerivationResourceDataVo.setUserId(dataDerivationResourceVo.getUserId());
+        dataDerivationResourceDataVo.setUserName(dataDerivationResourceVo.getUserName());
+        dataDerivationResourceDataVo.setOrganId(dataDerivationResourceVo.getOrganId());
+        dataDerivationResourceDataVo.setOrganName(dataDerivationResourceVo.getOrganName());
+        dataDerivationResourceDataVo.setCreateDate(dataDerivationResourceVo.getCreateDate());
+        dataDerivationResourceDataVo.setResourceHashCode(dataDerivationResourceVo.getResourceHashCode());
+        dataDerivationResourceDataVo.setTaskId(dataDerivationResourceVo.getTaskId());
+        dataDerivationResourceDataVo.setTaskIdName(dataDerivationResourceVo.getTaskIdName());
+        dataDerivationResourceDataVo.setTag(dataDerivationResourceVo.getTag());
+        dataDerivationResourceDataVo.setProjectId(dataDerivationResourceVo.getProjectId());
+        return dataDerivationResourceDataVo;
+
     }
 }
