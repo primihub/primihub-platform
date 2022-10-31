@@ -107,9 +107,9 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         String key = next.getKey();
                         ExceptionEntity value = next.getValue();
                         if (dtoMap!=null && dtoMap.containsKey(key)){
-                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),dtoMap.get(key)));
+                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,dtoMap.get(key)));
                         }else {
-                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),key));
+                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,key));
                         }
                     }
                     taskReq.getDerivationList().addAll(derivationList);
