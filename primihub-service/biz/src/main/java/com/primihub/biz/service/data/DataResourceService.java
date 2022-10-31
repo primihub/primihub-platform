@@ -730,6 +730,9 @@ public class DataResourceService {
             }
 
         }
+        SysUser sysUser = sysUserService.getSysUserById(dataVo.getUserId());
+        if (sysUser!=null)
+            dataVo.setUserName(sysUser.getUserName());
         return BaseResultEntity.success(dataVo);
     }
 }
