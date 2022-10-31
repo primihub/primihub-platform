@@ -317,10 +317,10 @@ export default {
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
         } else if (newVal.componentCode === 'dataAlign') {
-          this.selectedDataAlignFeatures = this.resourceChanged ? null : this.nodeData.componentTypes[1]?.inputValue !== '' ? this.nodeData.componentTypes[1]?.inputValue : null
+          this.selectedDataAlignFeatures = this.nodeData.componentTypes[1]?.inputValue !== '' ? this.nodeData.componentTypes[1]?.inputValue : null
           this.selectedFeatures = this.selectedDataAlignFeatures
         } else if (newVal.componentCode === 'missing') {
-          this.selectedExceptionFeatures = this.resourceChanged ? null : newVal.componentTypes[1].inputValue !== '' ? newVal.componentTypes[1].inputValue : null
+          this.selectedExceptionFeatures = newVal.componentTypes[1].inputValue !== '' ? newVal.componentTypes[1].inputValue : null
           this.selectedFeatures = this.selectedExceptionFeatures
           console.log('watch selectedExceptionFeatures', this.selectedExceptionFeatures)
         } else {
