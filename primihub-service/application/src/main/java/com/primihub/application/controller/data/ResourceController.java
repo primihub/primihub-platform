@@ -237,7 +237,7 @@ public class ResourceController {
                 try {
                     FileInputStream inputStream = new FileInputStream(file);
                     response.setHeader("content-Type","application/vnd.ms-excel");
-                    response.setHeader("content-disposition", "attachment; fileName=" + new String(dataResource.getResourceName().getBytes("UTF-8"),"iso-8859-1"));
+                    response.setHeader("content-disposition", "attachment; fileName=" + new String((dataResource.getResourceName()+".csv").getBytes("UTF-8"),"iso-8859-1"));
                     ServletOutputStream outputStream = response.getOutputStream();
                     int len = 0;
                     byte[] data = new byte[1024];
