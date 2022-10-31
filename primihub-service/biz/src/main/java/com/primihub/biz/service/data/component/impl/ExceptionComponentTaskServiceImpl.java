@@ -53,7 +53,12 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
+        List<ModelDerivationDto> newest = taskReq.getNewest();
         log.info("ids:{}", ids);
+        if (newest!=null && newest.size()!=0){
+           ids = newest.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList());
+            log.info("newids:{}", ids);
+        }
         Map<String, String> map = new HashMap<>();
         map.put("dataStr", JSONObject.toJSONString(ids));
         log.info(JSONObject.toJSONString(map));

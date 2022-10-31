@@ -624,7 +624,7 @@ public class DataResourceService {
             DataResource derivationDataResource = new DataResource();
             derivationDataResource.setUrl(url);
             derivationDataResource.setResourceName(dataResource.getResourceName() + modelDerivationDto.getDerivationType());
-            derivationDataResource.setResourceAuthType(1);
+            derivationDataResource.setResourceAuthType(2);
             derivationDataResource.setResourceSource(3);
             derivationDataResource.setUserId(userId);
             derivationDataResource.setOrganId(0L);
