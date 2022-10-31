@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class DerivationResourceReq extends PageReq {
-    private String resourceId;
+    private Long resourceId;
 
     private String resourceName;
 

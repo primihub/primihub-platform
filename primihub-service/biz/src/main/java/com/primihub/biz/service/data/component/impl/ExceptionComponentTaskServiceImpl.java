@@ -55,8 +55,14 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
         List<ModelDerivationDto> newest = taskReq.getNewest();
         log.info("ids:{}", ids);
+        Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
         if (newest!=null && newest.size()!=0){
-           ids = newest.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList());
+           ids = new ArrayList<>();
+            for (ModelDerivationDto modelDerivationDto : newest) {
+                ids.add(modelDerivationDto.getNewResourceId());
+                exceptionEntityMap.put(modelDerivationDto.getNewResourceId(),exceptionEntityMap.get(modelDerivationDto.getResourceId()));
+                exceptionEntityMap.remove(modelDerivationDto.getResourceId());
+            }
             log.info("newids:{}", ids);
         }
         Map<String, String> map = new HashMap<>();
@@ -66,7 +72,6 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {
-                Map<String, ExceptionEntity> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
                 log.info("exceptionEntityMap:{}", JSONObject.toJSONString(exceptionEntityMap));
                 Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
                 Common.Params params = Common.Params.newBuilder()
