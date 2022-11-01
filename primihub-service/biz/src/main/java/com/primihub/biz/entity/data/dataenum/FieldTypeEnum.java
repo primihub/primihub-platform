@@ -1,12 +1,12 @@
 package com.primihub.biz.entity.data.dataenum;
 
 public enum FieldTypeEnum {
-    STRING(0,"string"),
-    INTEGER(1,"integer"),
-    DOUBLE(2,"double"),
-    LONG(3,"long"),
-    ENUM(4,"enum"),
-    BOOLEAN(5,"boolean"),
+    STRING(0,"String"),
+    INTEGER(1,"Integer"),
+    DOUBLE(2,"Double"),
+    LONG(3,"Long"),
+    ENUM(4,"Enum"),
+    BOOLEAN(5,"Boolean"),
     ;
 
     private Integer code;

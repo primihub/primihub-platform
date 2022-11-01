@@ -58,6 +58,8 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到项目资源信息");
             Set<String> resourceIds = dataProjectResources.stream().filter(dpr -> dpr.getAuditStatus() == 1).map(DataProjectResource::getResourceId).collect(Collectors.toSet());
             for (ModelProjectResourceVo mprv : resourceList) {
+                if (mprv.getDerivation() == 1)
+                    continue;
                 if (!resourceIds.contains(mprv.getResourceId()))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源["+mprv.getResourceName()+"]审核未通过或移除,不可使用");
             }
@@ -68,9 +70,10 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
             if (voList == null && voList.size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:无数据信息");
-            log.info("json:{}",JSONObject.toJSONString(voList));
+            taskReq.setFusionResourceList(voList);
+//            log.info("json:{}",JSONObject.toJSONString(voList));
             List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.parseInt(data.get("available").toString())==1).collect(Collectors.toList());
-            log.info("availableList - size :{}",availableList.size());
+//            log.info("availableList - size :{}",availableList.size());
             if (!availableList.isEmpty())
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
             String modelType = taskReq.getValueMap().get("modelType");
@@ -105,7 +108,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
             taskReq.getDmrList().add(dataModelResource);
         }
-        dataModelPrRepository.saveDataModelResource(taskReq.getDmrList());
+        dataModelPrRepository.saveDataModelResourceList(taskReq.getDmrList());
         return BaseResultEntity.success();
     }
 }

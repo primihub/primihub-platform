@@ -28,7 +28,6 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
-import com.primihub.biz.repository.primarydb.sys.SysUserPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
@@ -78,6 +77,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private OrganConfiguration organConfiguration;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private DataResourceService dataResourceService;
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
@@ -129,36 +130,42 @@ public class DataAsyncService implements ApplicationContextAware {
             dataComponent.setTaskId(req.getDataModelTask().getTaskId());
             dataModelPrRepository.saveDataComponent(dataComponent);
         }
-        Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
-        for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
-            dataModelComponent.setModelId(req.getDataModelTask().getModelId());
-            dataModelComponent.setTaskId(req.getDataModelTask().getTaskId());
-            dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
-            dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
-            dataModelPrRepository.saveDataModelComponent(dataModelComponent);
-        }
-        // 重新组装json
-        req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
-        req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
-        req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTaskPrRepository.updateDataTask(req.getDataTask());
-        Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
-        req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-        dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-        for (DataComponent dataComponent : req.getDataComponents()) {
-            if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
-                break;
-            dataComponent.setStartTime(System.currentTimeMillis());
-            dataComponent.setComponentState(2);
+        try {
+            Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
+            for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
+                dataModelComponent.setModelId(req.getDataModelTask().getModelId());
+                dataModelComponent.setTaskId(req.getDataModelTask().getTaskId());
+                dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
+                dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
+                dataModelPrRepository.saveDataModelComponent(dataModelComponent);
+            }
+            // 重新组装json
+            req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
+            req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
+            req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+            dataTaskPrRepository.updateDataTask(req.getDataTask());
+            Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
             req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
             dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-            dataComponent.setComponentState(1);
-            executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
-            if(req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
-                dataComponent.setComponentState(3);
-            dataComponent.setEndTime(System.currentTimeMillis());
-            req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-            dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+            for (DataComponent dataComponent : req.getDataComponents()) {
+                if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+                    break;
+                dataComponent.setStartTime(System.currentTimeMillis());
+                dataComponent.setComponentState(2);
+                req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
+                dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+                dataComponent.setComponentState(1);
+                executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
+                if(req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+                    dataComponent.setComponentState(3);
+                dataComponent.setEndTime(System.currentTimeMillis());
+                req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
+                dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+            }
+        }catch (Exception e){
+            req.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            log.info(e.getMessage());
+            e.printStackTrace();
         }
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(req.getDataTask());
@@ -171,11 +178,10 @@ public class DataAsyncService implements ApplicationContextAware {
             vo.setDataModelTask(req.getDataModelTask());
             vo.setDmrList(req.getDmrList());
             vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+//            vo.setDerivationList(req.getDerivationList());
             sendShareModelTask(vo);
         }
-
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
-
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap){

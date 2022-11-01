@@ -37,7 +37,7 @@
     </div>
     <div class="detail">
       <el-descriptions title="衍生数据详情" :column="2" label-class-name="detail-title">
-        <el-descriptions-item label="创建衍生数据累计时间">{{ resource.totalTime | timeFilter }}</el-descriptions-item>
+        <el-descriptions-item label="创建衍生数据累计时间">{{ (resource.totalTime) / 1000 | timeFilter }}</el-descriptions-item>
         <el-descriptions-item label="衍生数据样本量">{{ resource.fileRows }}</el-descriptions-item>
         <el-descriptions-item label="衍生数据特征维度">{{ resource.fileColumns }}</el-descriptions-item>
         <el-descriptions-item label="正例样本数量">{{ resource.fileYRows ? resource.fileYRows : '0' }}</el-descriptions-item>

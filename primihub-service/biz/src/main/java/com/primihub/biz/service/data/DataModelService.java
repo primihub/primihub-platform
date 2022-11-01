@@ -24,6 +24,7 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
@@ -58,6 +59,8 @@ public class DataModelService {
     private DataTaskRepository dataTaskRepository;
     @Autowired
     private DataAsyncService dataAsyncService;
+    @Autowired
+    private DataResourceRepository dataResourceRepository;
 
     public BaseResultEntity getDataModel(Long taskId) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
@@ -91,6 +94,23 @@ public class DataModelService {
                         if (map.get("organId")!=null){
                             modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString())?1:2);
                         }
+                    }else {
+                        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(modelResourceVo.getResourceId());
+                        if (dataResource!=null){
+                            modelResourceVo.setAvailable(0);
+                            modelResourceVo.setResourceName(dataResource.getResourceName());
+                            modelResourceVo.setOrganName(organConfiguration.getSysLocalOrganName());
+                            modelResourceVo.setOrganId(dataProject.getCreatedOrganId());
+                            modelResourceVo.setFileNum(dataResource.getFileRows());
+                            modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
+                            modelResourceVo.setPrimitiveParamNum(dataResource.getResourceNum());
+                            modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
+                            modelResourceVo.setResourceType(dataResource.getResourceSource());
+                            modelResourceVo.setServerAddress(dataProject.getServerAddress());
+                            modelResourceVo.setParticipationIdentity(1);
+                        }else {
+                            modelResourceVo.setResourceId(null);
+                        }
                     }
                 }
             }
@@ -107,7 +127,7 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-        map.put("modelResources",modelResourceVos);
+        map.put("modelResources",modelResourceVos.stream().filter(mr->mr.getResourceId()!=null).collect(Collectors.toList()));
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
             ParserConfig parserConfig = new ParserConfig();
@@ -504,7 +524,7 @@ public class DataModelService {
                 dataModelResource.setModelId(vo.getDataModel().getModelId());
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
-            dataModelPrRepository.saveDataModelResource(vo.getDmrList());
+            dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
 
         }
         return BaseResultEntity.success();

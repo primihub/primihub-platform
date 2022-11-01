@@ -1,5 +1,6 @@
 package com.primihub.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.convert.DataResourceConvert;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
@@ -50,7 +51,7 @@ public class ResourceService {
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
         Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
-        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getResourceId()),null,param.getGlobalId())).collect(Collectors.toList())));
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()),null,param.getGlobalId())).collect(Collectors.toList())));
     }
 
     public BaseResultEntity getDataResource(String resourceId,String globalId) {
@@ -188,8 +189,12 @@ public class ResourceService {
 
     public Set<String> getGroupInOrganIds(String globalId){
         List<Long> organInGroup = groupRepository.findOrganInGroup(globalId);
-        List<String> organIds = groupRepository.findOrganGlobalIdByGroupIdList(organInGroup);
-        organIds.add(globalId);
-        return new HashSet<>(organIds);
+        Set<String> organIdSet = new HashSet<>();
+        organIdSet.add(globalId);
+        if (!organInGroup.isEmpty()){
+            List<String> organIds = groupRepository.findOrganGlobalIdByGroupIdList(organInGroup);
+            organIdSet.addAll(organIds);
+        }
+        return organIdSet;
     }
 }
