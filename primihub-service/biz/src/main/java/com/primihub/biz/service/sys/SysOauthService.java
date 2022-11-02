@@ -108,7 +108,6 @@ public class SysOauthService {
             if (!base.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,source.getSourceName()+"自动注册失败,请联系管理员!");
             }
-            sysUser = (SysUser)base.getResult();
         }
         Date date=new Date();
         String dateStr= DateUtil.formatDate(date,DateUtil.DateStyle.TIME_FORMAT_SHORT.getFormat());
@@ -116,7 +115,7 @@ public class SysOauthService {
         String seqStr = String.format("%06d", seq);
         String authPublicKey=new StringBuilder().append(SysConstant.SYS_COMMON_AUTH_PUBLIC_KEY_PREFIX).append(dateStr).append(seqStr).toString();
         sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, authUuid);
-        String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, sysUser != null);
+        String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, true);
         log.info(url);
         return BaseResultEntity.success(url);
     }
