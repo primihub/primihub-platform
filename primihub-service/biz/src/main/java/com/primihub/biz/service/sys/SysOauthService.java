@@ -104,6 +104,7 @@ public class SysOauthService {
             param.setRegisterType(4);
             param.setUserName(authUser.getUsername());
             param.setAuthUuid(authUuid);
+            param.setRoleIdList(new Long[]{1000L});
             BaseResultEntity base = sysUserService.saveOrUpdateUser(param);
             if (!base.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,source.getSourceName()+"自动注册失败,请联系管理员!");
