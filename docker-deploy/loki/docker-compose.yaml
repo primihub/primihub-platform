@@ -1,0 +1,29 @@
+version: "3"
+
+services:
+  loki:
+    image: grafana/loki
+    container_name: loki
+    restart: always
+    environment:
+    - TZ=Asia/Shanghai
+    - LANG=zh_CN.UTF-8
+    ports:
+    - 3100:3100
+    networks:
+    - loki
+
+  grafana:
+    image: grafana/grafana:master
+    container_name: grafana
+    restart: always
+    environment:
+    - TZ=Asia/Shanghai
+    - LANG=zh_CN.UTF-8
+    ports:
+    - 3000:3000
+    networks:
+    - loki
+
+networks:
+  loki:
