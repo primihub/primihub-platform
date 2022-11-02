@@ -24,6 +24,7 @@ import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
+import com.primihub.biz.grpc.client.WorkPrivateGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
@@ -71,6 +72,8 @@ public class DataAsyncService implements ApplicationContextAware {
     }
     @Autowired
     private WorkGrpcClient workGrpcClient;
+    @Autowired
+    private WorkPrivateGrpcClient workPrivateGrpcClient;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -333,7 +336,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
                     .build();
-            reply = workGrpcClient.run(o -> o.submitTask(request));
+            reply = workPrivateGrpcClient.run(o -> o.submitTask(request));
             if (reply.getRetCode()==0){
                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));

@@ -19,8 +19,8 @@ public class GrpcConfiguration {
                 .build();
     }
 
-    @Bean(name="grpcDataSetClientChannel")
-    public Channel initGrpcDataSetClientChannel(BaseConfiguration baseConfiguration){
+    @Bean(name="grpcPrivateClientChannel")
+    public Channel initGrpcPrivateClientChannel(BaseConfiguration baseConfiguration){
         return ManagedChannelBuilder
                 .forAddress(baseConfiguration.getGrpcDataSetClientAddress(),baseConfiguration.getGrpcDataSetClientPort())
                 .usePlaintext()
