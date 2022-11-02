@@ -101,8 +101,6 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Iterator<String> keyi = exceptionEntityMap.keySet().iterator();
-                Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
-                log.info("dtoMap:{}",JSONObject.toJSONString(dtoMap));
                 while (keyi.hasNext()){
                     String key = keyi.next();
                     log.info("key:{}",key);
@@ -110,11 +108,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                     if (value==null)
                         continue;
                     log.info("value:{}",JSONObject.toJSONString(value));
-                    if (dtoMap!=null && dtoMap.containsKey(key)){
-                        derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,dtoMap.get(key)));
-                    }else {
-                        derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,key));
-                    }
+                    derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,value.getDataSetId()));
                     log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
                 }
                 // derivation resource datas

@@ -11,10 +11,12 @@ public class GrpcComponentDto {
 
     public GrpcComponentDto(Map<String, Integer> columns, String resourceId) {
         this.columns = columns;
+        this.dataSetId = resourceId;
         this.newDataSetId = resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
     }
 
     @JsonIgnore
     private Map<String, Integer> columns;
     private String newDataSetId;
+    private String dataSetId;
 }

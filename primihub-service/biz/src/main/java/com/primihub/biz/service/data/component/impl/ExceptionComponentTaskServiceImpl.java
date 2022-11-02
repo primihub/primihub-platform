@@ -103,18 +103,13 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 } else {
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, GrpcComponentDto>> iterator = exceptionEntityMap.entrySet().iterator();
-                    Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                     while (iterator.hasNext()) {
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         String key = next.getKey();
                         GrpcComponentDto value = next.getValue();
                         if (value==null)
                             continue;
-                        if (dtoMap!=null && dtoMap.containsKey(key)){
-                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,dtoMap.get(key)));
-                        }else {
-                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,key));
-                        }
+                        derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,value.getDataSetId()));
                     }
                     taskReq.getDerivationList().addAll(derivationList);
                     taskReq.setNewest(derivationList);
