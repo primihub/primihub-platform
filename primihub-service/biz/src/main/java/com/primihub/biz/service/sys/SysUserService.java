@@ -71,18 +71,21 @@ public class SysUserService {
 
 
     public BaseResultEntity login(LoginParam loginParam){
-        loginParam.setToken(loginParam.getTokenKey());
-        ResponseModel verification = captchaService.verification(loginParam);
-        if (!verification.isSuccess())
-            return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
         if(privateKey==null)
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(loginParam.getUserAccount());
+        Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
+        if(number >= SysConstant.SYS_USER_PASS_ERRER_NUM)
+            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
+        if (number>3){
+            loginParam.setToken(loginParam.getTokenKey());
+            ResponseModel verification = captchaService.verification(loginParam);
+            if (!verification.isSuccess())
+                return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
+        }
         if(sysUser==null||sysUser.getUserId()==null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
-        if(!sysUserPrimaryRedisRepository.loginVerification(sysUser.getUserId()))
-            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
         String userPassword;
         try {
             userPassword=CryptUtil.decryptRsaWithPrivateKey(loginParam.getUserPassword(),privateKey);
@@ -92,13 +95,13 @@ public class SysUserService {
         StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(userPassword);
         String signPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
         if(!signPassword.equals(sysUser.getUserPassword())){
-            Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
             log.info("user_id:{},number:{}",sysUser.getUserId(),number);
+            BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
             if (number>=3){
-                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT,"连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
-            }else {
-                return BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+                failure.setExtra("连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
             }
+            failure.setResult(number);
+            return failure;
         }
         return baseLogin(sysUser);
     }
@@ -169,11 +172,6 @@ public class SysUserService {
             sysUser.setIsDel(0);
             if (saveOrUpdateUserParam.getAuthUuid()!=null)
                 sysUser.setAuthUuid(saveOrUpdateUserParam.getAuthUuid());
-//            if(StringUtils.isNotBlank(saveOrUpdateUserParam.getAuthPublicKey())){
-//                String authUuid = sysCommonPrimaryRedisRepository.getKey(saveOrUpdateUserParam.getAuthPublicKey());
-//                if (StringUtils.isNotBlank(authUuid))
-//                    sysUser.setAuthUuid(authUuid);
-//            }
             sysUserPrimarydbRepository.insertSysUser(sysUser);
             userId=sysUser.getUserId();
         }else{
