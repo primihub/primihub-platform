@@ -606,7 +606,7 @@ public class DataResourceService {
     }
 
     public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList, Long userId) {
-        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getResourceId));
+        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
         Set<String> resourceIds = map.keySet();
         DataResource dataResource = null;
         for (String resourceId : resourceIds) {
