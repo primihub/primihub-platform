@@ -26,7 +26,7 @@
     </div>
 
     <div class="section">
-      <h3>模型资源</h3>
+      <h3>所用数据</h3>
       <el-table
         :data="modelResources"
         border
