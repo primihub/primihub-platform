@@ -37,13 +37,13 @@
                 name="password"
                 tabindex="2"
                 auto-complete="on"
-                @keyup.enter.native="checkParma"
+                @keyup.enter.native="handleLogin"
               />
               <span class="show-pwd" @click="showPwd">
                 <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
               </span>
             </el-form-item>
-            <el-button type="primary" style="width:100%;margin-bottom:10px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="checkParma">登录</el-button>
+            <el-button type="primary" style="width:100%;margin-bottom:10px;" :disabled="publicKeyData.publicKey === ''" @click.native.prevent="handleLogin">登录</el-button>
           </el-form>
           <div class="forgot">
             <el-link type="primary" @click.stop="toRegister">立即注册</el-link> |
@@ -67,6 +67,7 @@
 </template>
 
 <script>
+import { mapState } from 'vuex'
 import { getValidatePublicKey, getAuthList } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
 import Verify from '@/components/Verifition'
@@ -107,12 +108,20 @@ export default {
       authList: []
     }
   },
+  computed: {
+    ...mapState('user', ['showValidation'])
+  },
   watch: {
     $route: {
       handler: function(route) {
         this.redirect = route.query && route.query.redirect
       },
       immediate: true
+    },
+    showValidation(newVal) {
+      if (newVal) {
+        this.showValidationBox()
+      }
     }
   },
   async mounted() {
@@ -124,7 +133,7 @@ export default {
       const nonce = Math.floor(Math.random() * 1000 + 1)
       window.open(`${process.env.VUE_APP_BASE_API}/sys/oauth/${item.name}/render?timestamp=${timestamp}&nonce=${nonce}`)
     },
-    checkParma() {
+    showValidationBox() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.$refs.verify.show()
@@ -197,6 +206,7 @@ export default {
           const loginForm = { userAccount, userPassword, validateKeyName: publicKeyName, captchaVerification }
 
           this.$store.dispatch('user/login', loginForm).then(res => {
+            console.log('code', res)
             this.$router.push({ path: this.redirect || '/' })
           })
         } else {

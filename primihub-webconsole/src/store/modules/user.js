@@ -18,7 +18,8 @@ const getDefaultState = () => {
     userOrganName: '',
     token: getToken(),
     avatar: '',
-    organChange: false
+    organChange: false,
+    showValidation: false
   }
 }
 
@@ -55,8 +56,11 @@ const mutations = {
     state.avatar = avatar
   },
   SET_ORGAN_CHANGE: (state, organChange) => {
-    console.log('SET_ORGAN_CHANGE', organChange)
     state.organChange = organChange
+  },
+  SET_SHOW_VALIDATION: (state, showValidation) => {
+    console.log('SET_SHOW_VALIDATION', showValidation)
+    state.showValidation = showValidation
   }
 }
 
@@ -90,6 +94,10 @@ const actions = {
           commit('SET_PERMISSION', grantAuthRootList)
           setToken(token)
           resolve()
+        } else if ((code === 109 && result > 3)) {
+          commit('SET_SHOW_VALIDATION', true)
+        } else if (code === 121) {
+          commit('SET_SHOW_VALIDATION', true)
         }
       }).catch(error => {
         console.log(error)
