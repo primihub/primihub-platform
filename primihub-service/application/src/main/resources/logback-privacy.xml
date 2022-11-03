@@ -7,9 +7,15 @@
     <property name="maxHistory" value="15"/>
 
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>${normal-pattern}</pattern>
+<!--    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">-->
+<!--        <encoder>-->
+<!--            <pattern>${normal-pattern}</pattern>-->
+<!--        </encoder>-->
+<!--    </appender>-->
+    <!--控制台输出 -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <Pattern>datatime:%date{yyyy-MM-dd HH:mm:ss.SSS} level:%-5level[%thread]%logger{56}.%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -20,7 +26,7 @@
             <maxHistory>${maxHistory}</maxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>${normal-pattern}</Pattern>
+            <Pattern>datatime=%date{yyyy-MM-dd HH:mm:ss.SSS} level=%-5level[%thread]%logger{56}.%method:%L -%msg%n</Pattern>
         </encoder>
     </appender>
 
@@ -30,7 +36,8 @@
     <logger name="com.alibaba.nacos.common.remote.client" level="OFF" />
 
     <root level="${log_level}">
-        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="STDOUT" />
+        <!--<appender-ref ref="CONSOLE" />-->
         <appender-ref ref="FILE" />
     </root>
 </configuration>
