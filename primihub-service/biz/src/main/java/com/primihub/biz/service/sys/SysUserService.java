@@ -98,7 +98,7 @@ public class SysUserService {
             log.info("user_id:{},number:{}",sysUser.getUserId(),number);
             BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
             if (number>=3){
-                failure.setExtra("连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
+                failure.setMsg(failure.getMsg()+":连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
             }
             failure.setResult(number);
             return failure;
