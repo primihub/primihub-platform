@@ -62,12 +62,12 @@
       <Footer />
     </div>
 
-    <Verify ref="verify" @success="handleSuccess" />
+    <Verify ref="verify" @success="handleSuccess" @close="handleClose" />
   </div>
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapMutations } from 'vuex'
 import { getValidatePublicKey, getAuthList } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
 import Verify from '@/components/Verifition'
@@ -146,6 +146,9 @@ export default {
         this.handleLogin()
       }
     },
+    handleClose() {
+      this.SET_SHOW_VALIDATION(false)
+    },
     handleFail() {
       console.log('handleFail')
       this.$refs.verify.closeBox()
@@ -214,7 +217,8 @@ export default {
           return false
         }
       })
-    }
+    },
+    ...mapMutations('user', ['SET_SHOW_VALIDATION'])
   }
 }
 </script>

@@ -98,9 +98,12 @@ const actions = {
           commit('SET_SHOW_VALIDATION', true)
         } else if (code === 121) {
           commit('SET_SHOW_VALIDATION', true)
+        } else {
+          commit('SET_SHOW_VALIDATION', false)
         }
       }).catch(error => {
         console.log(error)
+        commit('SET_SHOW_VALIDATION', false)
         reject(error)
       })
     })
