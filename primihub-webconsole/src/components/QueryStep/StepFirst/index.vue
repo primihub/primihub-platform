@@ -14,8 +14,8 @@
             <OrganCascader v-model="cascaderValue" placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
           </el-form-item>
         </div>
-        <el-form-item label="检索ID" prop="pirParam">
-          <el-input v-model="form.pirParam" placeholder="请输入检索id" maxlength="50" show-word-limit />
+        <el-form-item label="关键词" prop="pirParam">
+          <el-input v-model="form.pirParam" placeholder="请输入关键词" maxlength="50" show-word-limit />
         </el-form-item>
         <el-button v-if="hasPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
       </div>
