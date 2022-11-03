@@ -27,6 +27,7 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     VERIFICATION_CODE(118,"验证码失败"),
     RESTRICT_LOGIN(119,"限制登录"),
     AUTH_LOGIN(120,"授权登录失败"),
+    FORCE_VALIDATION(121,"强制登录验证滑块"),
     DATA_SAVE_FAIL(1001,"添加失败"),
     DATA_EDIT_FAIL(1002,"编辑失败"),
     DATA_QUERY_NULL(1003,"数据为空"),

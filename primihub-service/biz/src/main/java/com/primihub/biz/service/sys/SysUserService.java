@@ -79,6 +79,8 @@ public class SysUserService {
         if(number >= SysConstant.SYS_USER_PASS_ERRER_NUM)
             return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
         if (number>3){
+            if (loginParam.getCaptchaVerification()==null || loginParam.getCaptchaVerification().trim().equals(""))
+                return BaseResultEntity.failure(BaseResultEnum.FORCE_VALIDATION);
             loginParam.setToken(loginParam.getTokenKey());
             ResponseModel verification = captchaService.verification(loginParam);
             if (!verification.isSuccess())
