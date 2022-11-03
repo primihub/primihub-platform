@@ -75,6 +75,8 @@ public class SysUserService {
         if(privateKey==null)
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(loginParam.getUserAccount());
+        if(sysUser==null||sysUser.getUserId()==null)
+            return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
         if(number >= SysConstant.SYS_USER_PASS_ERRER_NUM)
             return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
@@ -86,8 +88,6 @@ public class SysUserService {
             if (!verification.isSuccess())
                 return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
         }
-        if(sysUser==null||sysUser.getUserId()==null)
-            return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         String userPassword;
         try {
             userPassword=CryptUtil.decryptRsaWithPrivateKey(loginParam.getUserPassword(),privateKey);
