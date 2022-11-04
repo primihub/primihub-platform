@@ -77,12 +77,18 @@ public class SysUserService {
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(loginParam.getUserAccount());
         if(sysUser==null||sysUser.getUserId()==null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
-        Long number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
-        if(number >= SysConstant.SYS_USER_PASS_ERRER_NUM)
-            return BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
+        Long number = sysUserPrimaryRedisRepository.loginVerificationNumber(sysUser.getUserId());
+        if(number >= SysConstant.SYS_USER_PASS_ERRER_NUM){
+            BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
+            failure.setResult(number);
+            return failure;
+        }
         if (number>3){
-            if (loginParam.getCaptchaVerification()==null || loginParam.getCaptchaVerification().trim().equals(""))
-                return BaseResultEntity.failure(BaseResultEnum.FORCE_VALIDATION);
+            if (loginParam.getCaptchaVerification()==null || loginParam.getCaptchaVerification().trim().equals("")){
+                BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.FORCE_VALIDATION);
+                failure.setResult(number);
+                return failure;
+            }
             loginParam.setToken(loginParam.getTokenKey());
             ResponseModel verification = captchaService.verification(loginParam);
             if (!verification.isSuccess())
@@ -99,6 +105,7 @@ public class SysUserService {
         if(!signPassword.equals(sysUser.getUserPassword())){
             log.info("user_id:{},number:{}",sysUser.getUserId(),number);
             BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.PASSWORD_NOT_CORRECT);
+            number = sysUserPrimaryRedisRepository.loginErrorRecordNumber(sysUser.getUserId());
             if (number>=3){
                 failure.setMsg(failure.getMsg()+":连续错误6次，账号会被禁止登录。12小时后自动解除限制或通过忘记密码解除限制。");
             }

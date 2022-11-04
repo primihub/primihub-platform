@@ -101,14 +101,10 @@ public class SysUserPrimaryRedisRepository {
         stringRedisTemplate.delete(userKey);
     }
 
-    public boolean loginVerification(Long userId){
+    public Long loginVerificationNumber(Long userId){
         String userKey=RedisKeyConstant.SYS_USER_LOGIN_PASS_ERRER_KEY.replace("<user_id>",userId.toString());
         String userVal = stringRedisTemplate.opsForValue().get(userKey);
-        if (StringUtils.isBlank(userVal))
-            return true;
-        if (Long.parseLong(userVal) >= SysConstant.SYS_USER_PASS_ERRER_NUM)
-            return false;
-        return true;
+        return StringUtils.isBlank(userVal)?0L:Long.parseLong(userVal);
     }
 
 }

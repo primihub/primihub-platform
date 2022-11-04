@@ -301,7 +301,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam, Integer resourceRowsCount) {
+    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam) {
         Date date = new Date();
         try {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
@@ -309,14 +309,12 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskResultPath(sb.toString());
             PushTaskReply reply = null;
             log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis());
-            Common.ParamValue queryIndeiesParamValue = Common.ParamValue.newBuilder().setValueString(pirParam).build();
+            Common.ParamValue clientDataParamValue = Common.ParamValue.newBuilder().setIsArray(true).setValueString(pirParam).build();
             Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(resourceId).build();
-            Common.ParamValue databaseSizeParamValue = Common.ParamValue.newBuilder().setValueString(resourceRowsCount.toString()).build();
             Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
             Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("queryIndeies", queryIndeiesParamValue)
+                    .putParamMap("clientData", clientDataParamValue)
                     .putParamMap("serverData", serverDataParamValue)
-                    .putParamMap("databaseSize", databaseSizeParamValue)
                     .putParamMap("outputFullFilename", outputFullFilenameParamValue)
                     .build();
             Common.Task task = Common.Task.newBuilder()
