@@ -311,10 +311,12 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis());
             Common.ParamValue clientDataParamValue = Common.ParamValue.newBuilder().setIsArray(true).setValueString(pirParam).build();
             Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(resourceId).build();
+            Common.ParamValue pirTagParamValue = Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("clientData", clientDataParamValue)
                     .putParamMap("serverData", serverDataParamValue)
+                    .putParamMap("pirType", pirTagParamValue)
                     .putParamMap("outputFullFilename", outputFullFilenameParamValue)
                     .build();
             Common.Task task = Common.Task.newBuilder()
