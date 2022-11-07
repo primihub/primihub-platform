@@ -71,6 +71,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             if (voList == null && voList.size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:无数据信息");
             taskReq.setFusionResourceList(voList);
+            taskReq.setServerAddress(dataProjectResources.get(0).getServerAddress());
 //            log.info("json:{}",JSONObject.toJSONString(voList));
             List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.parseInt(data.get("available").toString())==1).collect(Collectors.toList());
 //            log.info("availableList - size :{}",availableList.size());

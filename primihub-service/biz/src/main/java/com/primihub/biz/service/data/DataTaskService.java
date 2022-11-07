@@ -390,5 +390,25 @@ public class DataTaskService {
         }
         return BaseResultEntity.success();
     }
+
+    public void updateTaskState(DataTask dataTask){
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
+        if (rawDataTask.getTaskState().equals(TaskStateEnum.CANCEL.getStateType())){
+            dataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
+        }else {
+            dataTaskPrRepository.updateDataTask(dataTask);
+        }
+    }
+
+    public BaseResultEntity cancelTask(Long taskId) {
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (rawDataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法取消,任务状态不是运行中");
+        rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
+        dataTaskPrRepository.updateDataTask(rawDataTask);
+        return BaseResultEntity.success(taskId);
+    }
 }
 

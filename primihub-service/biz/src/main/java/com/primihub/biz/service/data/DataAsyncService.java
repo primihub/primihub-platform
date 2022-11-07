@@ -24,7 +24,6 @@ import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
-import com.primihub.biz.grpc.client.WorkPrivateGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
@@ -73,15 +72,11 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
-    private WorkPrivateGrpcClient workPrivateGrpcClient;
-    @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
     private DataResourceRepository dataResourceRepository;
-    @Autowired
-    private DataResourceService dataResourceService;
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
@@ -100,6 +95,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
     private DataReasoningPrRepository dataReasoningPrRepository;
+    @Autowired
+    private DataTaskService dataTaskService;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
@@ -151,7 +148,8 @@ public class DataAsyncService implements ApplicationContextAware {
             req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
             dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
             for (DataComponent dataComponent : req.getDataComponents()) {
-                if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+                if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())
+                        || req.getDataTask().getTaskState().equals(TaskStateEnum.CANCEL.getStateType()))
                     break;
                 dataComponent.setStartTime(System.currentTimeMillis());
                 dataComponent.setComponentState(2);
@@ -171,7 +169,8 @@ public class DataAsyncService implements ApplicationContextAware {
             e.printStackTrace();
         }
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
-        dataTaskPrRepository.updateDataTask(req.getDataTask());
+        dataTaskService.updateTaskState(req.getDataTask());
+//        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
         if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
             log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
@@ -336,10 +335,10 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
                     .build();
-            reply = workPrivateGrpcClient.run(o -> o.submitTask(request));
+            reply = workGrpcClient.run(o -> o.submitTask(request));
             if (reply.getRetCode()==0){
                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
+//                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
                 if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("运行失败:无文件信息");
@@ -354,7 +353,8 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
         }
-        dataTaskPrRepository.updateDataTask(dataTask);
+        dataTaskService.updateTaskState(dataTask);
+//        dataTaskPrRepository.updateDataTask(dataTask);
     }
     public void sendShareModelTask(ShareModelVo shareModelVo){
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(),shareModelVo))).build());
@@ -517,7 +517,8 @@ public class DataAsyncService implements ApplicationContextAware {
             dataReasoning.setReasoningState(dataTask.getTaskState());
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
-        dataTaskPrRepository.updateDataTask(dataTask);
+        dataTaskService.updateTaskState(dataTask);
+//        dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
@@ -551,4 +552,6 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
     }
+
+
 }

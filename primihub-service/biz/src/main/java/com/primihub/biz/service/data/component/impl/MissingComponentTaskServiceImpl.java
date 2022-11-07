@@ -103,7 +103,6 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 Iterator<String> keyi = exceptionEntityMap.keySet().iterator();
                 while (keyi.hasNext()){
                     String key = keyi.next();
-                    log.info("key:{}",key);
                     GrpcComponentDto value = exceptionEntityMap.get(key);
                     if (value==null)
                         continue;
@@ -113,7 +112,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 }
                 // derivation resource datas
                 log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
-                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
+                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
                 log.info(JSONObject.toJSONString(derivationResource));
                 if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

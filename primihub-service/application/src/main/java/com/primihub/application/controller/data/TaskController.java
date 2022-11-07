@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,6 +54,14 @@ public class TaskController {
         return dataTaskService.getModelTaskList(modelId,req);
     }
 
+
+    @GetMapping("cancelTask")
+    public BaseResultEntity cancelPsiTask(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return  dataTaskService.cancelTask(taskId);
+    }
+
     @GetMapping("downloadTaskFile")
     public void downloadTaskFile(HttpServletResponse response, Long taskId,Long modelId) throws Exception {
         DataTask dataTask = dataTaskService.getDataTaskById(taskId,modelId);
@@ -62,6 +71,9 @@ public class TaskController {
             downloadDefaultTask(response,dataTask);
         }
     }
+
+
+
     public void downloadModelTask(HttpServletResponse response,DataTask dataTask) throws Exception {
         String taskResultContent = dataTask.getTaskResultContent();
         if (StringUtils.isNotBlank(taskResultContent)){

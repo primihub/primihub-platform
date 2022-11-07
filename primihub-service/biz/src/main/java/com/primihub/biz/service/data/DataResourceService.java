@@ -55,6 +55,8 @@ public class DataResourceService {
     @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
+    private FusionResourceService fusionResourceService;
+    @Autowired
     private SysFileSecondarydbRepository sysFileSecondarydbRepository;
     @Autowired
     private SysUserService sysUserService;
@@ -605,7 +607,7 @@ public class DataResourceService {
         return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
     }
 
-    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList, Long userId) {
+    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId, String serverAddress) {
         Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
         Set<String> resourceIds = map.keySet();
         DataResource dataResource = null;
@@ -616,6 +618,20 @@ public class DataResourceService {
         }
         if (dataResource == null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
+        BaseResultEntity result = fusionResourceService.getResourceListById(serverAddress, resourceIds.toArray(new String[resourceIds.size()]));
+        if (result.getCode()!=0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
+        List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
+        String resourceNames = "";
+        for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
+            String resourceId = resourceMap.get("resourceId").toString();
+            String resourceName = resourceMap.get("resourceName").toString();
+            if (dataResource.getResourceId().equals(resourceId)){
+                resourceNames = resourceName + resourceNames;
+            }else {
+                resourceNames += resourceName;
+            }
+        }
         List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
@@ -631,10 +647,14 @@ public class DataResourceService {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
             DataResource derivationDataResource = new DataResource();
             derivationDataResource.setUrl(url);
-            derivationDataResource.setResourceName(dataResource.getResourceName() + modelDerivationDto.getDerivationType());
+            derivationDataResource.setResourceName(resourceNames + modelDerivationDto.getDerivationType());
             derivationDataResource.setResourceAuthType(2);
             derivationDataResource.setResourceSource(3);
-            derivationDataResource.setUserId(userId);
+            if (userId==null || userId==0L){
+                derivationDataResource.setUserId(dataResource.getUserId());
+            }else {
+                derivationDataResource.setUserId(userId);
+            }
             derivationDataResource.setOrganId(0L);
             derivationDataResource.setFileId(0L);
             derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
