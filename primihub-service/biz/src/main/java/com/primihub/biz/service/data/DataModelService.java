@@ -165,10 +165,12 @@ public class DataModelService {
 //                Long taskId = dataMap.get("taskId")!=null?Long.valueOf(dataMap.get("taskId").toString()):null;
                 Integer taskState = dataMap.get("taskState")!=null?Integer.valueOf(dataMap.get("taskState").toString()):null;
                 String taskIdName = dataMap.get("taskIdName")!=null?dataMap.get("taskIdName").toString():null;
+                String taskName = dataMap.get("taskName")!=null?dataMap.get("taskName").toString():null;
                 Long taskStartTime = dataMap.get("taskStartTime")!=null?Long.valueOf(dataMap.get("taskStartTime").toString()):null;
                 Long taskEndTime = dataMap.get("taskEndTime")!=null?Long.valueOf(dataMap.get("taskEndTime").toString()):null;
 //                modelListVo.setLatestTaskId(taskId);
                 modelListVo.setLatestTaskIdName(taskIdName);
+                modelListVo.setLatestTaskName(taskName);
                 modelListVo.setLatestTaskStatus(taskState);
                 modelListVo.setLatestTaskStartTime(taskStartTime);
                 modelListVo.setLatestTaskEndTime(taskEndTime);
