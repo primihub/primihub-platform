@@ -265,7 +265,7 @@
 
     <select id="queryDerivationResourceList" resultType="com.primihub.biz.entity.data.vo.DataDerivationResourceVo">
         SELECT
-            dr.resource_id as resourceId,
+            dr.resource_id as id,
             dr.resource_name as resourceName,
             dr.resource_desc as resourceDesc,
             dr.resource_auth_type as resourceAuthType,
@@ -280,7 +280,7 @@
             dr.file_contains_y as fileContainsY,
             dr.file_y_rows as fileYRows,
             dr.file_y_ratio as fileYRatio,
-            dr.resource_fusion_id as fusionResourceId,
+            dr.resource_fusion_id as resourceId,
             dr.public_organ_id as publicOrganId,
             dr.resource_state as resourceState,
             dr.resource_hash_code as resourceHashCode,

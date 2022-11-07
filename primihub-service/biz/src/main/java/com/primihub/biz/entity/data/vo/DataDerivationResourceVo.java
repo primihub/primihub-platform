@@ -17,9 +17,9 @@ public class DataDerivationResourceVo {
     /**
      * 资源id
      */
-    private Long resourceId;
+    private Long id;
 
-    private String fusionResourceId;
+    private String resourceId;
     /**
      * 资源名称
      */
