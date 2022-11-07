@@ -396,7 +396,7 @@ public class DataTaskService {
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
         if (rawDataTask==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
-        if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION))
+        if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法取消,任务状态不是运行中");
         rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
         dataTaskPrRepository.updateDataTask(rawDataTask);
