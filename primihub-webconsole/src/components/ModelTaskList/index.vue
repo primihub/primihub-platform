@@ -21,7 +21,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          prop="taskName"
+          prop="latestTaskName"
           label="任务名称"
           min-width="100"
         />
