@@ -280,7 +280,7 @@
             dr.file_contains_y as fileContainsY,
             dr.file_y_rows as fileYRows,
             dr.file_y_ratio as fileYRatio,
-            dr.resource_fusion_id as resourceFusionId,
+            dr.resource_fusion_id as fusionResourceId,
             dr.public_organ_id as publicOrganId,
             dr.resource_state as resourceState,
             dr.resource_hash_code as resourceHashCode,
