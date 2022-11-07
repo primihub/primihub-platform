@@ -422,4 +422,23 @@ public class SysUserService {
         updatePassword(sysUser.getUserId(),forgetPasswordParam.getPassword());
         return BaseResultEntity.success();
     }
+
+    public BaseResultEntity changeUserAccount(SaveOrUpdateUserParam param) {
+        SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(param.getUserId());
+        if (sysUser==null)
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无用户信息");
+        if (sysUser.getUserAccount().equals(param.getUserAccount()))
+            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号名称无修改");
+        String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<account>", param.getUserAccount());
+        if (!sysCommonPrimaryRedisRepository.lock(accountKey))
+            return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW,"账号名称无法修改");
+        SysUser verificationUser = sysUserSecondarydbRepository.selectUserByUserAccount(param.getUserAccount());
+        if (verificationUser!=null){
+            sysCommonPrimaryRedisRepository.unlock(accountKey);
+            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号已存在无法变更");
+        }
+        sysUserPrimarydbRepository.updateUserAccount(param.getUserAccount(),sysUser.getUserId());
+        sysCommonPrimaryRedisRepository.unlock(accountKey);
+        return BaseResultEntity.success();
+    }
 }

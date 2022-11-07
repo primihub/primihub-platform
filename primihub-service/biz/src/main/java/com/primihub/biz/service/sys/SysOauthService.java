@@ -97,8 +97,12 @@ public class SysOauthService {
         if (sysUser == null){
             SaveOrUpdateUserParam param = new SaveOrUpdateUserParam();
             if (StringUtils.isNotBlank(authUser.getEmail())){
-                param.setUserAccount(authUser.getEmail());
-            }else {
+                SysUser accountUser = userSecondarydbRepository.selectUserByUserAccount(authUser.getEmail());
+                if (accountUser==null){
+                    param.setUserAccount(authUser.getEmail());
+                }
+            }
+            if (StringUtils.isBlank(param.getUserAccount())){
                 param.setUserAccount(String.valueOf(SnowflakeId.getInstance().nextId()));
             }
             param.setRegisterType(4);
