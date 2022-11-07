@@ -391,14 +391,6 @@ public class DataTaskService {
         return BaseResultEntity.success();
     }
 
-    public void updateTaskState(DataTask dataTask){
-        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
-        if (rawDataTask.getTaskState().equals(TaskStateEnum.CANCEL.getStateType())){
-            dataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
-        }else {
-            dataTaskPrRepository.updateDataTask(dataTask);
-        }
-    }
 
     public BaseResultEntity cancelTask(Long taskId) {
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);

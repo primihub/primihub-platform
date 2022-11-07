@@ -96,8 +96,6 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private DataReasoningPrRepository dataReasoningPrRepository;
     @Autowired
-    private DataTaskService dataTaskService;
-    @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
@@ -169,7 +167,7 @@ public class DataAsyncService implements ApplicationContextAware {
             e.printStackTrace();
         }
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
-        dataTaskService.updateTaskState(req.getDataTask());
+        updateTaskState(req.getDataTask());
 //        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
         if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
@@ -353,7 +351,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
         }
-        dataTaskService.updateTaskState(dataTask);
+        updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
     }
     public void sendShareModelTask(ShareModelVo shareModelVo){
@@ -385,62 +383,6 @@ public class DataAsyncService implements ApplicationContextAware {
         sendShareModelTask(vo);
     }
 
-
-    private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
-        if (freemarkerContent != null) {
-            try {
-                StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
-                ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
-                taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-                taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
-                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getPredictFileName()).build();
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
-                Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("predictFileName", predictFileNameParamValue)
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .build();
-                Common.Task task = Common.Task.newBuilder()
-                        .setType(Common.TaskType.ACTOR_TASK)
-                        .setParams(params)
-                        .setName("modelTask")
-                        .setLanguage(Common.Language.PYTHON)
-                        .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
-                        .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
-                        .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
-                PushTaskRequest request = PushTaskRequest.newBuilder()
-                        .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTask(task)
-                        .setSequenceNumber(11)
-                        .setClientProcessedUpTo(22)
-                        .build();
-                PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                log.info("grpc结果:{}", reply.toString());
-                if (reply.getRetCode()==0){
-                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
-                    if (org.apache.commons.lang.StringUtils.isNotBlank(taskReq.getDataModelTask().getPredictContent())){
-                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                        log.info("zip -- modelId:{} -- taskId:{} -- start",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-                        ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
-                        log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-                    }else {
-                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
-                    }
-                }else {
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
-                }
-            } catch (Exception e) {
-                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
-                log.info("grpc Exception:{}", e.getMessage());
-            }
-        }
-        return BaseResultEntity.success();
-    }
 
     @Async
     public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList){
@@ -517,7 +459,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataReasoning.setReasoningState(dataTask.getTaskState());
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
-        dataTaskService.updateTaskState(dataTask);
+        updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
@@ -551,6 +493,15 @@ public class DataAsyncService implements ApplicationContextAware {
             sb.append("\">").append("点击查询任务详情").append("</a>");
         }
         sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
+    }
+
+    public void updateTaskState(DataTask dataTask){
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(dataTask.getTaskId());
+        if (rawDataTask.getTaskState().equals(TaskStateEnum.CANCEL.getStateType())){
+            dataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
+        }else {
+            dataTaskPrRepository.updateDataTask(dataTask);
+        }
     }
 
 
