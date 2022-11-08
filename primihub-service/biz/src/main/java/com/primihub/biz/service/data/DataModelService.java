@@ -534,7 +534,6 @@ public class DataModelService {
                 DataModelResource dataModelResource = new DataModelResource(vo.getDataModel().getModelId());
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
                 dataModelResource.setResourceId(resourceId);
-                dataModelPrRepository.saveDataModelResource(dataModelResource);
                 vo.getDmrList().add(dataModelResource);
             }
             dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
