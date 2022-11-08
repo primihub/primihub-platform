@@ -529,7 +529,7 @@ public class DataModelService {
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
             dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
-            dataResourceService.saveDerivationResource(vo.getDerivationList(),null,vo.getServerAddress());
+            log.info(JSONObject.toJSONString(dataResourceService.saveDerivationResource(vo.getDerivationList(),null,vo.getServerAddress())));
         }
         return BaseResultEntity.success();
     }
