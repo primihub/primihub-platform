@@ -298,7 +298,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam, Integer resourceRowsCount) {
+    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam) {
         Date date = new Date();
         try {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
@@ -306,14 +306,14 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskResultPath(sb.toString());
             PushTaskReply reply = null;
             log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis());
-            Common.ParamValue queryIndeiesParamValue = Common.ParamValue.newBuilder().setValueString(pirParam).build();
+            Common.ParamValue clientDataParamValue = Common.ParamValue.newBuilder().setIsArray(true).setValueString(pirParam).build();
             Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(resourceId).build();
-            Common.ParamValue databaseSizeParamValue = Common.ParamValue.newBuilder().setValueString(resourceRowsCount.toString()).build();
+            Common.ParamValue pirTagParamValue = Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(sb.toString()).build();
             Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("queryIndeies", queryIndeiesParamValue)
+                    .putParamMap("clientData", clientDataParamValue)
                     .putParamMap("serverData", serverDataParamValue)
-                    .putParamMap("databaseSize", databaseSizeParamValue)
+                    .putParamMap("pirType", pirTagParamValue)
                     .putParamMap("outputFullFilename", outputFullFilenameParamValue)
                     .build();
             Common.Task task = Common.Task.newBuilder()
@@ -336,7 +336,7 @@ public class DataAsyncService implements ApplicationContextAware {
             reply = workGrpcClient.run(o -> o.submitTask(request));
             if (reply.getRetCode()==0){
                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
+//                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
                 if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("运行失败:无文件信息");
@@ -351,8 +351,10 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
         }
-        dataTaskPrRepository.updateDataTask(dataTask);
+        updateTaskState(dataTask);
+//        dataTaskPrRepository.updateDataTask(dataTask);
     }
+
     public void sendShareModelTask(ShareModelVo shareModelVo){
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(),shareModelVo))).build());
     }

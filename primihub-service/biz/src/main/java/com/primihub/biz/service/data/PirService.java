@@ -40,7 +40,6 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-
     public BaseResultEntity pirSubmitTask(String serverAddress,String resourceId, String pirParam) {
         BaseResultEntity dataResource = fusionResourceService.getDataResource(serverAddress, resourceId);
         if (dataResource.getCode()!=0)
@@ -49,10 +48,6 @@ public class PirService {
         int available = Integer.parseInt(pirDataResource.getOrDefault("available","1").toString());
         if (available == 1)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
-        Object resourceRowsCountObj = pirDataResource.get("resourceRowsCount");
-        if (resourceRowsCountObj==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源行数获取错误");
-        Integer resourceRowsCount = (Integer) resourceRowsCountObj - 1;
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
@@ -68,7 +63,7 @@ public class PirService {
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(resourceId);
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam,resourceRowsCount);
+        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);
