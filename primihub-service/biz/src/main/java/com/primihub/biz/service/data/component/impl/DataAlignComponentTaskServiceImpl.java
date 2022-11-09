@@ -42,8 +42,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
-    private OrganConfiguration organConfiguration;
-    @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
     private WorkGrpcClient workGrpcClient;
