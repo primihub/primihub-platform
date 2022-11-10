@@ -117,7 +117,7 @@ export default {
       const data = {
         fieldId,
         fieldName,
-        fieldType,
+        fieldType: this.fieldTypeList.find(item => item.value === fieldType)?.label,
         fieldDesc,
         relevance: relevance === true ? 1 : 0,
         grouping: grouping === true ? 1 : 0,
