@@ -140,6 +140,8 @@ service.interceptors.response.use(
           duration: 5000
         })
         return data
+      } else if (code === 121) {
+        return data
       } else {
         message({
           message: msg || '请求异常',
