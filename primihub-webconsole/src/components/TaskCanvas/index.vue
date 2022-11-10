@@ -492,6 +492,17 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
+      graph.on('node:contextmenu', ({ node }) => {
+        node.setData({
+          showDeleteButton: true
+        })
+      })
+      graph.on('node:removed', ({ node, index, options }) => {
+        this.deleteNode()
+      })
+      graph.on('node:delete', ({ node }) => {
+        console.log(node)
+      })
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
@@ -542,15 +553,8 @@ export default {
       })
       graph.bindKey('backspace', () => {
         const cells = graph.getSelectedCells()
+        this.deleteNode()
         if (cells.length) {
-          const currentCode = this.nodeData.componentCode
-          // remove duplicates
-          this.selectComponentList = [...new Set(this.selectComponentList)]
-          const index = this.selectComponentList.indexOf(currentCode)
-          if (index !== -1) {
-            this.selectComponentList.splice(index, 1)
-            this.$emit('selectComponents', this.selectComponentList)
-          }
           graph.removeCells(cells)
         }
         this.nodeData = this.startNode
@@ -563,6 +567,16 @@ export default {
           }
         })
       })
+    },
+    deleteNode() {
+      const currentCode = this.nodeData.componentCode
+      // remove duplicates
+      this.selectComponentList = [...new Set(this.selectComponentList)]
+      const index = this.selectComponentList.indexOf(currentCode)
+      if (index !== -1) {
+        this.selectComponentList.splice(index, 1)
+      }
+      this.$emit('selectComponents', this.selectComponentList)
     },
     initToolBarEvent() {
       // 画布不可编辑只可点击

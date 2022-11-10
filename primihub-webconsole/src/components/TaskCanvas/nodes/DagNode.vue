@@ -13,6 +13,12 @@
         <img v-show="status === 'running' " :src="image.running">
       </span>
     </div>
+    <div v-if="showDeleteButton" class="operation-drawer">
+      <div class="delete" @click="deleteNode">
+        <i class="icon el-icon-circle-close" />
+        <span>删除节点</span>
+      </div>
+    </div>
     <div v-if="showTime" class="time"><i class="icon el-icon-time" /><span class="time-text">耗时：{{ timeConsuming | timeFilter }}</span></div>
   </div>
 </template>
@@ -37,7 +43,8 @@ export default {
     isMandatory: 0, // 0必选 1非必选
     componentState: 0,
     timeConsuming: 0, // 组件耗时
-    showTime: false
+    showTime: false,
+    showDeleteButton: false
   }),
   computed: {
     status() {
@@ -56,14 +63,21 @@ export default {
     this.showTime = showTime
     // 监听数据改变事件
     node.on('change:data', ({ current }) => {
-      const { componentName, complete = false, isMandatory, componentState = 0, timeConsuming = 0, showTime } = current
+      const { componentName, complete = false, isMandatory, componentState = 0, timeConsuming = 0, showTime, showDeleteButton } = current
       this.label = componentName
       this.complete = complete
       this.isMandatory = isMandatory
       this.componentState = componentState
       this.timeConsuming = timeConsuming
       this.showTime = showTime
+      this.showDeleteButton = showDeleteButton
     })
+  },
+  methods: {
+    deleteNode() {
+      const node = this.getNode()
+      window.graph.removeNode(node)
+    }
   }
 
 }
@@ -73,6 +87,21 @@ export default {
 .dag-container {
   height: 100%;
   position: relative;
+}
+.operation-drawer{
+  position: absolute;
+  right: -60px;
+  top: 23px;
+  background: #fff;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  box-shadow: 0 2px 5px 1px rgba(0, 0, 0, 0.06);
+  .icon{
+    color: #F56C6C;
+    margin-right: 5px;
+  }
 }
 .dag-node {
   display: flex;
