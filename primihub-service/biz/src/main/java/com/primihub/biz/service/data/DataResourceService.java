@@ -622,14 +622,11 @@ public class DataResourceService {
         if (result.getCode()!=0)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
         List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
-        String resourceNames = "";
+        StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
         for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
             String resourceId = resourceMap.get("resourceId").toString();
-            String resourceName = resourceMap.get("resourceName").toString();
-            if (dataResource.getResourceId().equals(resourceId)){
-                resourceNames = resourceName + resourceNames;
-            }else {
-                resourceNames += resourceName;
+            if (!dataResource.getResourceId().equals(resourceId)){
+                resourceNames.append(resourceMap.get("resourceName").toString());
             }
         }
         List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
@@ -647,7 +644,7 @@ public class DataResourceService {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
             DataResource derivationDataResource = new DataResource();
             derivationDataResource.setUrl(url);
-            derivationDataResource.setResourceName(resourceNames + modelDerivationDto.getDerivationType());
+            derivationDataResource.setResourceName(resourceNames.toString() + modelDerivationDto.getDerivationType());
             derivationDataResource.setResourceAuthType(2);
             derivationDataResource.setResourceSource(3);
             if (userId==null || userId==0L){
