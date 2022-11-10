@@ -130,7 +130,7 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-        map.put("modelResources",modelResourceVos);
+        map.put("modelResources",modelResourceVos.stream().filter(r->r.getResourceType()!=3).collect(Collectors.toList()));
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
             ParserConfig parserConfig = new ParserConfig();
