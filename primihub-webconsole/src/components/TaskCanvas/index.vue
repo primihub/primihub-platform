@@ -500,9 +500,15 @@ export default {
       graph.on('node:removed', ({ node, index, options }) => {
         this.deleteNode()
       })
-      graph.on('node:delete', ({ node }) => {
-        console.log(node)
+      graph.on('blank:click', () => {
+        const nodes = this.graph.getNodes()
+        nodes.map(node => {
+          node.setData({
+            showDeleteButton: false
+          })
+        })
       })
+
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
