@@ -625,7 +625,7 @@ public class DataResourceService {
         StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
         for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
             String resourceId = resourceMap.get("resourceId").toString();
-            if (!dataResource.getResourceId().equals(resourceId)){
+            if (!dataResource.getResourceFusionId().equals(resourceId)){
                 resourceNames.append(resourceMap.get("resourceName").toString());
             }
         }
