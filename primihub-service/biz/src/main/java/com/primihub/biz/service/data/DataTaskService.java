@@ -16,7 +16,9 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.LokiDto;
 import com.primihub.biz.entity.data.dto.LokiResultContentDto;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.vo.DataTaskVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.config.LokiConfig;
@@ -502,5 +504,12 @@ public class DataTaskService {
     }
 
 
+    public BaseResultEntity getTaskList(DataTaskReq req) {
+        List<DataTaskVo> dataTaskVos = dataTaskRepository.selectDataTaskList(req);
+        if (dataTaskVos.size()==0)
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(),new ArrayList()));
+        Integer count = dataTaskRepository.selectDataTaskListCount(req);
+        return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
+    }
 }
 

@@ -8,6 +8,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.service.data.DataTaskService;
@@ -53,6 +54,11 @@ public class TaskController {
         if (modelId==null||modelId==0L)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
         return dataTaskService.getModelTaskList(modelId,req);
+    }
+
+    @RequestMapping("getTaskList")
+    public BaseResultEntity getTaskList(DataTaskReq req){
+        return dataTaskService.getTaskList(req);
     }
 
 
