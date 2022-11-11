@@ -13,6 +13,8 @@ import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.dto.LokiDto;
+import com.primihub.biz.entity.data.dto.LokiResultContentDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
@@ -39,6 +41,10 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,8 +85,6 @@ public class DataTaskService {
     private RestTemplate restTemplate;
     @Autowired
     private DataModelRepository dataModelRepository;
-    @Autowired
-    private DataModelPrRepository dataModelPrRepository;
 
     @Autowired
     private DataAsyncService dataAsyncService;
@@ -424,5 +428,79 @@ public class DataTaskService {
         }
         return BaseResultEntity.success(map);
     }
+
+    public File getLogFile(DataTask dataTask) {
+        String filePath = baseConfiguration.getRunModelFileUrlDirPrefix()+ dataTask.getTaskIdName() + File.separator + DataConstant.TASK_LOG_FILE_NAME;
+        log.info(filePath);
+        File file = new File(filePath);
+        if (!file.exists()){
+            generateLogFile(file,dataTask);
+        }
+        return file;
+    }
+
+    public void generateLogFile(File file,DataTask dataTask){
+        try {
+            List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime()/1000);
+            log.info("{}",lokiLogList.size());
+            if (lokiLogList==null || lokiLogList.isEmpty())
+                return;
+            boolean next = true;
+            Long nextTsNs = 0L;
+            Long ts = 0L;
+//            file.mkdir();
+            file.createNewFile();
+            FileOutputStream fos=new FileOutputStream(file);
+            OutputStreamWriter osw=new OutputStreamWriter(fos, "UTF-8");
+            BufferedWriter bw=new BufferedWriter(osw);
+            while (next){
+                for(String[] logInfo:lokiLogList){
+                    long logId = Long.parseLong(logInfo[0]);
+                    if (logId>nextTsNs){
+                        nextTsNs = logId;
+                        JSONObject jsonObject = JSONObject.parseObject(logInfo[1]);
+                        bw.write(jsonObject.get("log").toString());
+                        ts =  DateUtil.parseDate(jsonObject.get("time").toString(), DateUtil.DateStyle.UTC_DEFAULT.getFormat()).getTime();
+                    }
+                }
+                if (lokiLogList.size()==100){
+                    lokiLogList = getLokiLogList(dataTask.getTaskIdName(), ts/1000);
+                }else {
+                    next = false;
+                }
+            }
+            bw.close();
+            osw.close();
+            fos.close();
+        }catch (Exception e){
+            log.info(e.getMessage());
+        }
+    }
+
+    public List<String[]> getLokiLogList(String taskId,Long start){
+        LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
+        if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
+        ||StringUtils.isBlank(lokiConfig.getContainer()))
+            return null;
+        String query = "query={job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
+        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&"+query;
+        log.info(url);
+        LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
+        if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0)
+            return null;
+        List<String[]> logArray = new ArrayList<>();
+        List<LokiResultContentDto> result = lokiDto.getData().getResult();
+        for (LokiResultContentDto lokiResultContentDto : result) {
+            logArray.addAll(lokiResultContentDto.getValues());
+        }
+        return logArray;
+    }
+
+    public static void main(String[] args) {
+        Date date = DateUtil.parseDate("2022-11-11T07:17:47.01232241Z", DateUtil.DateStyle.UTC_DEFAULT.getFormat());
+        System.out.println(date.getTime());
+    }
+
+
 }
 

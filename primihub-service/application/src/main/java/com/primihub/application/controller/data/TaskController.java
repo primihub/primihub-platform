@@ -3,6 +3,7 @@ package com.primihub.application.controller.data;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataPsiTask;
@@ -67,6 +68,37 @@ public class TaskController {
         if (taskId==null||taskId==0L)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         return  dataTaskService.getTaskLogInfo(taskId);
+    }
+
+    @GetMapping("downloadTaskLog")
+    public void downloadTaskLog(HttpServletResponse response, Long taskId) throws Exception {
+        DataTask dataTask = dataTaskService.getDataTaskById(taskId,null);
+        if (dataTask==null){
+            downloadTaskError(response,"无任务信息");
+        }else {
+            if (dataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType())){
+                downloadTaskError(response,"任务运行中不可下载");
+                return;
+            }
+            File logFile = dataTaskService.getLogFile(dataTask);
+            if (logFile.exists()){
+                // 获得文件输入流
+                FileInputStream inputStream = new FileInputStream(logFile);
+                // 设置响应头、以附件形式打开文件
+                response.setContentType("text/x-log");
+                response.setHeader("content-disposition", "attachment; fileName=" + new String(dataTask.getTaskIdName().getBytes("UTF-8"),"iso-8859-1"));
+                ServletOutputStream outputStream = response.getOutputStream();
+                int len = 0;
+                byte[] data = new byte[1024];
+                while ((len = inputStream.read(data)) != -1) {
+                    outputStream.write(data, 0, len);
+                }
+                outputStream.close();
+                inputStream.close();
+            }else {
+                downloadTaskError(response,"无日志文件");
+            }
+        }
     }
 
     @GetMapping("downloadTaskFile")
