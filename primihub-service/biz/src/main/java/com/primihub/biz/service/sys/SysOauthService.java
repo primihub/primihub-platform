@@ -11,7 +11,7 @@ import com.primihub.biz.entity.sys.enumeration.OAuthSourceEnum;
 import com.primihub.biz.entity.sys.param.LoginParam;
 import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
 import com.primihub.biz.entity.sys.po.SysUser;
-import com.primihub.biz.entity.sys.vo.BaseAuthConfig;
+import com.primihub.biz.entity.sys.config.BaseAuthConfig;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.util.crypt.DateUtil;

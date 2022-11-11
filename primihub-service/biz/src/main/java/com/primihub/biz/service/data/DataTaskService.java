@@ -17,6 +17,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
+import com.primihub.biz.entity.sys.config.LokiConfig;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
@@ -401,6 +402,27 @@ public class DataTaskService {
         rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
         dataTaskPrRepository.updateDataTask(rawDataTask);
         return BaseResultEntity.success(taskId);
+    }
+
+    public BaseResultEntity getTaskLogInfo(Long taskId) {
+        LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
+        if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())
+                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"请检查loki配置信息");
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (rawDataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        Map<String, Object> map = new HashMap<>();
+        map.put("address",lokiConfig.getAddress());
+        map.put("job",lokiConfig.getJob());
+        map.put("container",lokiConfig.getContainer());
+        map.put("taskIdName", rawDataTask.getTaskIdName());
+        if (rawDataTask.getTaskStartTime()==null){
+            map.put("start",(System.currentTimeMillis()/1000));
+        }else {
+            map.put("start",(rawDataTask.getTaskStartTime()/1000));
+        }
+        return BaseResultEntity.success(map);
     }
 }
 

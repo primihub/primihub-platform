@@ -217,6 +217,13 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(psiTask.getTaskId());
+        dataTask.setTaskName(dataPsi.getResultName());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTaskPrRepository.saveDataTask(dataTask);
         psiTask.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}",available);
@@ -283,6 +290,8 @@ public class DataAsyncService implements ApplicationContextAware {
             psiTask.setTaskState(3);
         }
         dataPsiPrRepository.updateDataPsiTask(psiTask);
+        dataTask.setTaskState(psiTask.getTaskState());
+        updateTaskState(dataTask);
     }
     public void psiTaskOutputFileHandle(DataPsiTask task){
         if (task.getTaskState()!=1)
@@ -351,6 +360,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
         }
+        dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
     }

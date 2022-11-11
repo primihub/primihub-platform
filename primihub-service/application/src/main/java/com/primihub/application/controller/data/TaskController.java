@@ -62,6 +62,13 @@ public class TaskController {
         return  dataTaskService.cancelTask(taskId);
     }
 
+    @GetMapping("getTaskLogInfo")
+    public BaseResultEntity getTaskLogInfo(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return  dataTaskService.getTaskLogInfo(taskId);
+    }
+
     @GetMapping("downloadTaskFile")
     public void downloadTaskFile(HttpServletResponse response, Long taskId,Long modelId) throws Exception {
         DataTask dataTask = dataTaskService.getDataTaskById(taskId,modelId);

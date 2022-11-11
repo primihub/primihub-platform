@@ -42,4 +42,5 @@ public class DataConstant {
     public final static String TASK_EMAIL_SUBJECT ="[Primihub] Primihub Platform Task Notification!";
 
 
+
 }
