@@ -92,7 +92,7 @@ public class TaskController {
                 FileInputStream inputStream = new FileInputStream(logFile);
                 // 设置响应头、以附件形式打开文件
                 response.setContentType("text/x-log");
-                response.setHeader("content-disposition", "attachment; fileName=" + new String(dataTask.getTaskIdName().getBytes("UTF-8"),"iso-8859-1"));
+                response.setHeader("content-disposition", "attachment; fileName=" + new String((dataTask.getTaskIdName()+".log").getBytes("UTF-8"),"iso-8859-1"));
                 ServletOutputStream outputStream = response.getOutputStream();
                 int len = 0;
                 byte[] data = new byte[1024];
