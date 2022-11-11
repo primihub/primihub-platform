@@ -436,6 +436,9 @@ public class DataTaskService {
         log.info(filePath);
         File file = new File(filePath);
         if (!file.exists()){
+            File runFile = new File(baseConfiguration.getRunModelFileUrlDirPrefix()+ dataTask.getTaskIdName());
+            if (!runFile.exists())
+                runFile.mkdirs();
             generateLogFile(file,dataTask);
         }
         return file;
@@ -444,13 +447,12 @@ public class DataTaskService {
     public void generateLogFile(File file,DataTask dataTask){
         try {
             List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime()/1000);
-            log.info("{}",lokiLogList.size());
             if (lokiLogList==null || lokiLogList.isEmpty())
                 return;
+            log.info("{}",lokiLogList.size());
             boolean next = true;
             Long nextTsNs = 0L;
             Long ts = 0L;
-//            file.mkdir();
             file.createNewFile();
             FileOutputStream fos=new FileOutputStream(file);
             OutputStreamWriter osw=new OutputStreamWriter(fos, "UTF-8");
