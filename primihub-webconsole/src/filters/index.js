@@ -1,3 +1,12 @@
+const taskTypeFilter = (type) => {
+  const typeMap = {
+    1: '联合建模',
+    2: '安全求交',
+    3: '匿踪查询',
+    4: '联合预测'
+  }
+  return typeMap[type]
+}
 const authTypeFilter = (type) => {
   const typeMap = {
     1: '公开',
@@ -115,5 +124,6 @@ export default {
   authStatusFilter,
   projectAuditStatusFilter,
   resourceAuditStatusFilter,
-  timeFilter
+  timeFilter,
+  taskTypeFilter
 }

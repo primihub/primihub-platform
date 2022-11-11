@@ -103,8 +103,11 @@
         </el-tab-pane>
         <el-tab-pane v-if="task.isCooperation === 0 || (task.isCooperation === 1 && task.taskState === 1)" label="预览图" name="3">
           <div class="canvas-panel">
-            <TaskCanvas v-if="tabName === '3' && modelId" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
+            <TaskCanvas :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
+        </el-tab-pane>
+        <el-tab-pane label="日志" name="4">
+          <Log :task-state="task.taskState" />
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -117,12 +120,14 @@ import { getModelDetail } from '@/api/model'
 import { deleteTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
+import Log from '@/components/Log'
 
 export default {
   name: 'TaskDetail',
   components: {
     TaskModel,
-    TaskCanvas
+    TaskCanvas,
+    Log
   },
   filters: {
     taskStatusFilter(status) {
@@ -142,7 +147,7 @@ export default {
   data() {
     return {
       taskId: null,
-      tabName: '',
+      tabName: '4',
       listLoading: false,
       model: {},
       modelQuotas: [],
@@ -167,7 +172,9 @@ export default {
           position: 'right',
           buttons: ['zoomIn', 'zoomOut', 'reset']
         }
-      }
+      },
+      logType: '',
+      errorLog: []
     }
   },
   computed: {
@@ -190,7 +197,7 @@ export default {
   async created() {
     this.taskId = this.$route.params.id
     const routerFrom = this.$route.query.from
-    this.tabName = routerFrom === '0' ? '3' : '1'
+    this.tabName = routerFrom === '0' ? '3' : '4'
     await this.fetchData()
   },
   methods: {
@@ -287,7 +294,7 @@ export default {
     },
     restartTaskModel() {
       console.log('重启')
-      this.tabName = '3'
+      // this.tabName = '3'
       this.task.taskState = 2
       this.task.taskStartDate = this.task.taskEndDate
       this.task.taskEndDate = null
@@ -392,6 +399,10 @@ export default {
 }
 ::v-deep .el-table .disabled {
   color: #C0C4CC;
+}
+
+.log-panel{
+  height: 600px;
 }
 
 </style>
