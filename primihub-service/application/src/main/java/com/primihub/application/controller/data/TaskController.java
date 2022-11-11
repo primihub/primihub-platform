@@ -222,6 +222,6 @@ public class TaskController {
         response.reset();
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
-        response.getWriter().println(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message));
+        response.getWriter().println(JSONObject.toJSONString(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message)));
     }
 }

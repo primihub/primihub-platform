@@ -498,11 +498,6 @@ public class DataTaskService {
         return logArray;
     }
 
-    public static void main(String[] args) {
-        Date date = DateUtil.parseDate("2022-11-11T07:17:47.01232241Z", DateUtil.DateStyle.UTC_DEFAULT.getFormat());
-        System.out.println(date.getTime());
-    }
-
 
     public BaseResultEntity getTaskList(DataTaskReq req) {
         List<DataTaskVo> dataTaskVos = dataTaskRepository.selectDataTaskList(req);
