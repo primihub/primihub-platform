@@ -67,6 +67,14 @@ export function authRegister(data) {
     data
   })
 }
+export function changeUserAccount(data) {
+  return request({
+    url: '/sys/user/changeUserAccount',
+    method: 'POST',
+    showLoading: false,
+    data
+  })
+}
 export function getCaptcha(data) {
   return request({
     url: '/sys/captcha/get',
