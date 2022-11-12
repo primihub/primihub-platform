@@ -49,6 +49,11 @@
             "redirectUri": ""
         }
     },
+    "lokiConfig": {
+        "address":"",
+        "job":"primihub/application1",
+        "container":"application1"
+    },
     "model_components": [
         {
             "component_code": "start",

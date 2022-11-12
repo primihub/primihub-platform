@@ -555,11 +555,15 @@ public class DataResourceService {
         Map<String,Object> map = new HashMap<>();
 //        map.put("dbType",dataSource.getDbType());
 //        map.put("dbUrl",dataSource.getDbUrl());
-        map.put("username",dataSource.getDbUsername());
-        map.put("password", dataSource.getDbPassword());
         map.put("tableName", dataSource.getDbTableName());
-        map.put("dbName", dataSource.getDbName());
-        map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
+        if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
+            map.put("db_path",dataSource.getDbUrl());
+        }else {
+            map.put("username",dataSource.getDbUsername());
+            map.put("password", dataSource.getDbPassword());
+            map.put("dbName", dataSource.getDbName());
+            map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
+        }
         return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map));
     }
 
