@@ -6,40 +6,54 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.entity.data.req.DataSourceReq;
-import com.primihub.biz.service.data.db.impl.MySqlService;
+import com.primihub.biz.service.data.db.DataDBService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @Slf4j
-public class DataSourceService {
+public class DataSourceService implements ApplicationContextAware {
 
-    @Autowired
-    private MySqlService mySqlService;
+    private static ApplicationContext context;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        context=applicationContext;
+    }
 
     public BaseResultEntity healthConnection(DataSourceReq req) {
-        DataSource dataSource = DataSourceConvert.DataSourceReqConvertPo(req);
-        if (req.getDbType().equals(SourceEnum.mysql.getSourceType())){
-            return mySqlService.healthConnection(dataSource);
+        DataDBService dataDBService =getDBServiceImpl(req.getDbType());
+        if (dataDBService != null){
+            DataSource dataSource = DataSourceConvert.DataSourceReqConvertPo(req);
+            return dataDBService.healthConnection(dataSource);
         }
         return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
     }
 
     public BaseResultEntity dataSourceTableDetails(DataSourceReq req) {
-        DataSource dataSource = DataSourceConvert.DataSourceReqConvertPo(req);
-        if (req.getDbType().equals(SourceEnum.mysql.getSourceType())){
-            return mySqlService.dataSourceTableDetails(dataSource);
+        DataDBService dataDBService =getDBServiceImpl(req.getDbType());
+        if (dataDBService != null){
+            DataSource dataSource = DataSourceConvert.DataSourceReqConvertPo(req);
+            return dataDBService.dataSourceTableDetails(dataSource);
         }
         return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
     }
 
+    private DataDBService getDBServiceImpl(Integer dbType){
+        SourceEnum sourceEnum = SourceEnum.SOURCE_MAP.get(dbType);
+        if (sourceEnum!=null) {
+            return (DataDBService) context.getBean(sourceEnum.getSourceServiceClass());
+        }
+        return null;
+    }
+
     public BaseResultEntity tableDataStatistics(DataSource dataSource,boolean isY){
-        if (dataSource.getDbType().equals(SourceEnum.mysql.getSourceType())){
-            return mySqlService.tableDataStatistics(dataSource,isY);
+        DataDBService dataDBService =getDBServiceImpl(dataSource.getDbType());
+        if (dataDBService != null){
+            return dataDBService.tableDataStatistics(dataSource,isY);
         }
         return null;
     }
