@@ -108,7 +108,7 @@
           </div>
         </el-tab-pane>
         <el-tab-pane label="日志" name="4">
-          <Log :task-state="task.taskState" />
+          <Log v-if="tabName === '4' " :task-state="task.taskState" />
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -133,7 +133,7 @@ export default {
   data() {
     return {
       taskId: null,
-      tabName: '4',
+      tabName: '1',
       listLoading: false,
       model: {},
       modelQuotas: [],
@@ -183,7 +183,7 @@ export default {
   async created() {
     this.taskId = this.$route.params.id
     const routerFrom = this.$route.query.from
-    this.tabName = routerFrom === '0' ? '3' : '4'
+    this.tabName = routerFrom === '0' ? '3' : '1'
     await this.fetchData()
   },
   methods: {

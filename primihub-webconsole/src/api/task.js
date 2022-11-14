@@ -9,6 +9,22 @@ export function cancelTask(taskId) {
     }
   })
 }
+export function getTaskList(params) {
+  return request({
+    url: '/data/task/getTaskList',
+    method: 'get',
+    params
+  })
+}
+export function getTaskLogInfo(taskId) {
+  return request({
+    url: '/data/task/getTaskLogInfo',
+    method: 'get',
+    params: {
+      taskId
+    }
+  })
+}
 export function deleteTask1(taskId) {
   return request({
     url: '/data/task/deleteTask',
