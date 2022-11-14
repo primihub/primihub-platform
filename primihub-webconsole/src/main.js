@@ -12,6 +12,7 @@ import '@/permission' // permission control
 import { getTrackingID } from '@/api/common'
 import filter from '@/filters'
 import VueGtag from 'vue-gtag'
+import locale from 'element-ui/lib/locale/lang/zh-CN'
 
 // common filter
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
@@ -32,23 +33,14 @@ getTrackingID().then(res => {
     console.log(error)
   }
 })
-
-// set ElementUI lang to zh
-Vue.use(ElementUI, {
-  locale: {
-    el: {
-      // 整体覆盖
-      pagination: {
-        pagesize: '条/页',
-        total: `共 {total} 条记录`,
-        goto: '跳至',
-        pageClassifier: '页'
-      }
-    }
-  }
-})
-// if need english element-ui, you can set it like this
-// Vue.use(ElementUI, { locale })
+// set pagination global options
+locale.el.pagination = {
+  pagesize: '条/页',
+  total: `共 {total} 条记录`,
+  goto: '跳至',
+  pageClassifier: '页'
+}
+Vue.use(ElementUI, { locale })
 
 Vue.prototype.$message = message
 
