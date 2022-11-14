@@ -15,11 +15,11 @@
       <uploader-drop>
         <p class="upload-icon"><i class="el-icon-upload" /></p>
         <p class="upload-text"> 将文件拖到此处，或选择文件上传</p>
-        <uploader-btn ref="uploaderBtn" class="uploaderBtn" :attrs="attrs" :single="single">选择文件</uploader-btn>
+        <uploader-btn ref="uploaderBtn" class="uploaderBtn" :single="single">选择文件</uploader-btn>
       </uploader-drop>
       <uploader-list />
     </uploader>
-    <p class="upload-tip">
+    <p v-if="showTips" class="upload-tip">
       1.只能上传.csv文件，且不超过1MB <br>
       2.请确保上传的资源文件编码为UTF8
     </p>
@@ -37,8 +37,8 @@ Vue.use(uploader)
 // 切片大小
 const CHUNK_SIZE = 1 * 1024 * 1024
 // 可传文件类型集合
-const FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
-const FILE_SUFFIXS = ['csv']
+// const FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
+const FILE_SUFFIXS = ['csv', 'db3']
 
 export default {
   props: {
@@ -49,6 +49,14 @@ export default {
     single: {
       type: Boolean,
       default: false
+    },
+    showTips: {
+      type: Boolean,
+      default: false
+    },
+    fileSuffix: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -87,9 +95,9 @@ export default {
           }
         }
       },
-      attrs: {
-        accept: FILE_TYPES.join(',')
-      },
+      // attrs: {
+      //   accept: FILE_TYPES.join(',')
+      // },
 
       // 修改上传状态
       fileStatusTextObj: {
@@ -139,8 +147,7 @@ export default {
     onFileSuccess(rootFile, file, response, chunk) {
       const res = JSON.parse(response)
       if (res.code === 0) {
-        const fileId = res.result.sysFile.fileId
-        this.$emit('success', fileId)
+        this.$emit('success', res.result.sysFile)
         this.$message({
           message: '上传成功',
           type: 'success'
@@ -254,7 +261,7 @@ p{
   font-size: 14px;
 }
 .uploader {
-  width:500px;
+  width:660px;
   min-width: 300px;
   margin: 20px 0;
   font-size: 12px;
