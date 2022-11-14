@@ -1,15 +1,8 @@
 import request from '@/utils/request'
 
-export function getTaskList(params) {
+export function cancelTask(taskId) {
   return request({
-    url: '/data/task/getTaskList',
-    method: 'get',
-    params
-  })
-}
-export function getTaskLogInfo(taskId) {
-  return request({
-    url: '/data/task/getTaskLogInfo',
+    url: '/data/task/cancelTask',
     method: 'get',
     params: {
       taskId

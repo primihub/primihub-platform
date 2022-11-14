@@ -37,7 +37,6 @@ export const constantRoutes = [
     component: () => import('@/views/updatePwd'),
     hidden: true
   },
-
   {
     path: '/404',
     component: () => import('@/views/404'),

@@ -732,8 +732,22 @@ export default {
     getTaskModelComponent() {
       getTaskModelComponent({ taskId: this.taskId }).then(res => {
         const result = res.result.components
-        const nodes = this.graph.getNodes()
+        let nodes = this.graph.getNodes()
         const taskResult = []
+        if (res.result.taskState === 4 || res.result.taskState === 3) {
+          clearInterval(this.taskTimer)
+          nodes = nodes.filter(node => node.store.data.data.componentState === 2)
+          this.$notify.closeAll()
+          nodes.map(node => {
+            node.setData({
+              componentState: res.result.taskState,
+              timeConsuming: Math.ceil(0 / 1000)
+            })
+          })
+          this.$emit('complete')
+          this.modelStartRun = false
+          return
+        }
         result && result.forEach((item) => {
           const { componentCode, componentState, timeConsuming, componentName } = item
           const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
@@ -772,6 +786,23 @@ export default {
             })
             this.$notify({
               message: '运行失败',
+              type: 'error',
+              duration: 3000
+            })
+            this.$emit('complete')
+            this.modelStartRun = false
+            return
+          } else if (componentState === 4) {
+            clearInterval(this.taskTimer)
+            this.$notify.closeAll()
+            node.setData({
+              label: componentName,
+              componentCode,
+              componentState,
+              timeConsuming: timeConsuming / 1000
+            })
+            this.$notify({
+              message: '任务已取消',
               type: 'error',
               duration: 3000
             })

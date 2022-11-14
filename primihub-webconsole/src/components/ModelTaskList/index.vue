@@ -77,9 +77,10 @@
           fixed="right"
         >
           <template slot-scope="{row}">
-            <div>
-              <el-button v-if="hasCopyModelTaskPermission && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="copyTask(row)">复制</el-button>
-              <el-button v-if="hasModelRunPermission && row.latestTaskStatus === 3 && isCreator" :disabled="projectStatus === 2" type="text" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-button>
+            <div class="buttons">
+              <el-link v-if="hasCopyModelTaskPermission && isCreator" :disabled="projectStatus === 2" type="primary" size="mini" @click.stop="copyTask(row)">复制</el-link>
+              <el-link v-if="hasModelRunPermission && row.latestTaskStatus === 3 && isCreator" :disabled="projectStatus === 2" type="primary" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-link>
+              <el-link v-if="row.latestTaskStatus === 2 && isCreator" type="danger" @click.stop="cancelTaskModel(row.latestTaskId)">取消</el-link>
             </div>
           </template>
         </el-table-column>
@@ -91,37 +92,13 @@
 
 <script>
 import { getModelList, runTaskModel, getTaskModelComponent, restartTaskModel } from '@/api/model'
-import { deleteTask } from '@/api/task'
+import { deleteTask, cancelTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import { getToken } from '@/utils/auth'
 
 export default {
   components: {
     Pagination
-  },
-  filters: {
-    taskStatusFilter(status) {
-      // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
-      status = status || 0
-      const statusMap = {
-        0: '未开始',
-        1: '已完成',
-        2: '执行中',
-        3: '任务失败',
-        4: '取消'
-      }
-      return statusMap[status]
-    },
-    taskTypeFilter(status) {
-      // 任务类型 1、模型 2、PSI 3、PIR
-      status = status || 0
-      const statusMap = {
-        1: '模型',
-        2: 'PSI',
-        3: 'PIR'
-      }
-      return statusMap[status]
-    }
   },
   props: {
     isCreator: {
@@ -221,6 +198,17 @@ export default {
       }).catch(err => {
         this.listLoading = false
         console.log(err)
+      })
+    },
+    cancelTaskModel(taskId) {
+      cancelTask(taskId).then(res => {
+        if (res.code === 0) {
+          this.fetchData()
+          this.$message({
+            message: '取消成功',
+            type: 'success'
+          })
+        }
       })
     },
     deleteTask(taskId) {
@@ -391,5 +379,9 @@ export default {
   color: #F56C6C;
   font-size: 12px;
   line-height: 1.2;
+}
+.buttons{
+  display: flex;
+  justify-content: space-evenly;
 }
 </style>
