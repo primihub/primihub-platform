@@ -42,6 +42,7 @@ public class DataSourceService implements ApplicationContextAware {
         return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
     }
 
+
     private DataDBService getDBServiceImpl(Integer dbType){
         SourceEnum sourceEnum = SourceEnum.SOURCE_MAP.get(dbType);
         if (sourceEnum!=null) {
@@ -56,5 +57,12 @@ public class DataSourceService implements ApplicationContextAware {
             return dataDBService.tableDataStatistics(dataSource,isY);
         }
         return null;
+    }
+    public BaseResultEntity dataSourceTableDetails(DataSource dataSource) {
+        DataDBService dataDBService =getDBServiceImpl(dataSource.getDbType());
+        if (dataDBService != null){
+            return dataDBService.dataSourceTableDetails(dataSource);
+        }
+        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
     }
 }

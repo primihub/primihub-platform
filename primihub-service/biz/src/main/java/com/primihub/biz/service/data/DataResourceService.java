@@ -129,6 +129,7 @@ public class DataResourceService {
             }else if (req.getResourceSource() == 2){
                 dataSource  = DataSourceConvert.DataSourceReqConvertPo(req.getDataSource());
                 handleDataResourceFileResult = handleDataResourceSource(dataResource,fieldList,dataSource);
+                dataResource.setUrl(dataResource.getUrl());
             }
             if (handleDataResourceFileResult.getCode()!=0)
                 return handleDataResourceFileResult;
@@ -238,8 +239,18 @@ public class DataResourceService {
                 .collect(Collectors.toList());
         Map<String,Object> map = new HashMap<>();
         try {
-            List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), 0, DataConstant.READ_DATA_ROW);
-            map.put("dataList",csvData);
+            if (dataResource.getResourceSource() == 2){
+                DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                if (dataSource!=null){
+                    BaseResultEntity baseResultEntity = dataSourceService.dataSourceTableDetails(dataSource);
+                    if (baseResultEntity.getCode()==0){
+                        map.putAll((Map<String,Object>)baseResultEntity.getResult());
+                    }
+                }
+            }else {
+                List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), 0, DataConstant.READ_DATA_ROW);
+                map.put("dataList",csvData);
+            }
         }catch (Exception e){
             log.info("资源id:{}-文件读取失败：{}",dataResource.getResourceId(),e.getMessage());
             map.put("dataList",new ArrayList());
