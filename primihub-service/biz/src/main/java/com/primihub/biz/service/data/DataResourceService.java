@@ -129,7 +129,7 @@ public class DataResourceService {
             }else if (req.getResourceSource() == 2){
                 dataSource  = DataSourceConvert.DataSourceReqConvertPo(req.getDataSource());
                 handleDataResourceFileResult = handleDataResourceSource(dataResource,fieldList,dataSource);
-                dataResource.setUrl(dataResource.getUrl());
+                dataResource.setUrl(dataSource.getDbUrl());
             }
             if (handleDataResourceFileResult.getCode()!=0)
                 return handleDataResourceFileResult;
@@ -216,7 +216,13 @@ public class DataResourceService {
         }else {
             resourceSynGRPCDataSet(null,dataResource);
         }
-        resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
+        Long dbId = dataResource.getDbId();
+        if (dbId==null){
+            resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
+        }else {
+            DataSource dataSource = dataResourceRepository.queryDataSourceById(dbId);
+            resourceSynGRPCDataSet(dataSource,dataResource);
+        }
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
