@@ -215,7 +215,7 @@ public class DataResourceService {
             Long dbId = dataResource.getDbId();
             DataSource dataSource = dataResourceRepository.queryDataSourceById(dbId);
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
-            resourceSynGRPCDataSet(null,dataResource);
+            resourceSynGRPCDataSet(dataSource,dataResource);
         }else {
             resourceSynGRPCDataSet(null,dataResource);
         }
@@ -560,9 +560,6 @@ public class DataResourceService {
     }
 
     public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource){
-        if (StringUtils.isBlank(dataResource.getResourceFusionId())){
-            dataResource.setResourceFusionId(UUID.randomUUID().toString());
-        }
         if (dataResource.getResourceSource() !=2 ){
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
         }
