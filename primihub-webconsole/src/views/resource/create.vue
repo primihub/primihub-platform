@@ -333,10 +333,10 @@ export default {
               })
             }
           }).catch(err => {
+            this.loading = false
             console.log(err)
           })
         } else {
-          this.loading = false
           console.log('error submit!!')
           return false
         }
