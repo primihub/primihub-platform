@@ -1,3 +1,30 @@
+
+const taskTypeFilter = (status) => {
+  // 任务类型 1、模型 2、PSI 3、PIR
+  status = status || 0
+  const statusMap = {
+    1: '联合建模',
+    2: '安全求交',
+    3: '匿踪查询',
+    4: '联合预测'
+  }
+  return statusMap[status]
+}
+
+const taskStatusFilter = (status) => {
+  // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
+  status = status || 0
+  const statusMap = {
+    0: '未开始',
+    1: '已完成',
+    2: '执行中',
+    3: '任务失败',
+    4: '已取消',
+    5: '已删除'
+  }
+  return statusMap[status]
+}
+
 const authTypeFilter = (type) => {
   const typeMap = {
     1: '公开',
@@ -115,5 +142,7 @@ export default {
   authStatusFilter,
   projectAuditStatusFilter,
   resourceAuditStatusFilter,
-  timeFilter
+  timeFilter,
+  taskStatusFilter,
+  taskTypeFilter
 }

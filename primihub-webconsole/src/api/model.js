@@ -43,6 +43,7 @@ export function getModelDetail(params) {
   return request({
     url: '/data/model/getdatamodel',
     method: 'get',
+    showLoading: false,
     params
   })
 }

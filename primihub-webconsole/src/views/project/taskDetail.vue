@@ -19,7 +19,7 @@
           {{ task.taskStartDate?task.taskStartDate: '未开始' }}
         </el-descriptions-item>
         <el-descriptions-item label="结束时间">
-          {{ task.taskEndDate?task.taskEndDate: '未开始' }}
+          {{ task.taskEndDate?task.taskEndDate: '未结束' }}
         </el-descriptions-item>
         <el-descriptions-item label="耗时">
           {{ task.timeConsuming | timeFilter }}
@@ -37,7 +37,8 @@
       </el-descriptions>
       <div class="buttons">
         <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
-        <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
+        <el-button v-if="hasModelRunPermission && (task.taskState === 3 || task.taskState === 4)" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
+        <el-button v-if="task.taskState === 2" :disabled="project.status === 2" type="primary" @click="cancelTaskModel(task.taskId)">取消任务</el-button>
         <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5 && task.isCooperation === 0" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
       </div>
     </section>
@@ -114,7 +115,7 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { getModelDetail } from '@/api/model'
-import { deleteTask } from '@/api/task'
+import { deleteTask, cancelTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 
@@ -123,21 +124,6 @@ export default {
   components: {
     TaskModel,
     TaskCanvas
-  },
-  filters: {
-    taskStatusFilter(status) {
-      // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
-      status = status || 0
-      const statusMap = {
-        0: '未开始',
-        1: '已完成',
-        2: '执行中',
-        3: '任务失败',
-        4: '取消',
-        5: '已删除'
-      }
-      return statusMap[status]
-    }
   },
   data() {
     return {
@@ -292,6 +278,17 @@ export default {
       this.task.taskStartDate = this.task.taskEndDate
       this.task.taskEndDate = null
       this.restartRun = true
+    },
+    cancelTaskModel(taskId) {
+      cancelTask(taskId).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '取消成功',
+            type: 'success'
+          })
+          this.fetchData()
+        }
+      })
     }
   }
 }
