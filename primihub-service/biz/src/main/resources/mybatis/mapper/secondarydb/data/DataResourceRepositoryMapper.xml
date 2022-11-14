@@ -367,7 +367,7 @@
     <select id="queryDataSourceById" resultType="com.primihub.biz.entity.data.po.DataSource">
         select
             id,db_type dbType,db_driver dbDriver,db_url dbUrl,
-               db_name dbName,db_username dbUsername,db_password dbPassword
+               db_name dbName,db_table_name dbTableName,db_username dbUsername,db_password dbPassword
         from data_source where id = #{id}
     </select>
 

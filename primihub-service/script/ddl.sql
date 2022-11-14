@@ -29,6 +29,7 @@ CREATE TABLE `data_source` (
                                `db_driver` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '驱动类',
                                `db_url` varchar(500) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据源地址',
                                `db_name` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据库名称',
+                               `db_table_name` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据库名称',
                                `db_username` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '用户名',
                                `db_password` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '密码',
                                `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
