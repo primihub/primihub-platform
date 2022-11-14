@@ -221,6 +221,7 @@ public class DataResourceService {
             resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         }else {
             DataSource dataSource = dataResourceRepository.queryDataSourceById(dbId);
+            log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
             resourceSynGRPCDataSet(dataSource,dataResource);
         }
         Map<String,Object> map = new HashMap<>();
@@ -247,6 +248,7 @@ public class DataResourceService {
         try {
             if (dataResource.getResourceSource() == 2){
                 DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                log.info("{}-{}",dataResource.getDbId(),JSONObject.toJSONString(dataSource));
                 if (dataSource!=null){
                     BaseResultEntity baseResultEntity = dataSourceService.dataSourceTableDetails(dataSource);
                     if (baseResultEntity.getCode()==0){
