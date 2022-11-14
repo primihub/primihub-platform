@@ -212,17 +212,12 @@ public class DataResourceService {
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
         if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
-            resourceSynGRPCDataSet(null,dataResource);
-        }else {
-            resourceSynGRPCDataSet(null,dataResource);
-        }
-        Long dbId = dataResource.getDbId();
-        if (dbId==null){
-            resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
-        }else {
+            Long dbId = dataResource.getDbId();
             DataSource dataSource = dataResourceRepository.queryDataSourceById(dbId);
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
-            resourceSynGRPCDataSet(dataSource,dataResource);
+            resourceSynGRPCDataSet(null,dataResource);
+        }else {
+            resourceSynGRPCDataSet(null,dataResource);
         }
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
