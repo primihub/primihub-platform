@@ -31,7 +31,7 @@
       </el-form>
     </div>
     <div class="resource">
-      <DerivedDataTable :data="resourceList" />
+      <DerivedDataTable v-if="resourceList.length>0" :data="resourceList" />
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
 
