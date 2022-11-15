@@ -6,7 +6,7 @@
   >
     <div v-if="showBound" class="form-container">
       <p>已绑定手机</p>
-      <h2>17601079227</h2>
+      <h2>{{ $store.getters.userAccount }}</h2>
       <p>绑定手机可关联账号且可优先体验部分产品功能，建议您绑定。</p>
     </div>
     <el-form v-else ref="form" class="form-container" :model="formData" :rules="formRules" auto-complete="on" label-position="left">
@@ -40,7 +40,6 @@
     </el-form>
     <span v-if="showBound" slot="footer" class="dialog-footer">
       <el-button :loading="loading" type="primary" @click.native.prevent="changeBindPhone">更换手机号</el-button>
-      <el-button type="info" @click="unBindPhone">手机号解除绑定</el-button>
     </span>
     <span v-else slot="footer" class="dialog-footer">
       <el-button :loading="loading" type="primary" @click.native.prevent="handleSubmit">确定</el-button>
@@ -74,9 +73,7 @@ export default {
     return {
       formData: {
         userAccount: '',
-        verificationCode: '',
-        registerType: 3,
-        authPublicKey: 'AK20221104101259000001'
+        verificationCode: ''
       },
       formRules: {
         userAccount: [{ required: true, trigger: 'blur', validator: validateUserAccount }],
@@ -86,8 +83,15 @@ export default {
       loading: false,
       time: 60,
       timer: null,
-      showBound: this.isBound,
-      title: this.$attrs.title || '添加手机号'
+      showBound: this.isBound
+    }
+  },
+  computed: {
+    title: {
+      get() {
+        return this.isBound ? '更换手机号' : '添加手机号'
+      },
+      set() {}
     }
   },
   watch: {
@@ -97,9 +101,9 @@ export default {
       },
       immediate: true
     },
-    showBound(newVal, oldVal) {
-      console.log(oldVal)
-      this.title = newVal ? '' : this.title
+    isBound(newVal) {
+      this.showBound = newVal
+      this.title = newVal ? '更换手机号' : this.title
     }
   },
   mounted() {
@@ -108,20 +112,9 @@ export default {
   methods: {
     changeBindPhone() {
       this.title = '更换手机号'
+      this.formData.userAccount = ''
+      this.formData.verificationCode = ''
       this.showBound = false
-    },
-    unBindPhone() {
-      this.$confirm('解绑手机后，可能会影响部分新功能的体验，确认解除绑定么？', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        console.log('解除绑定成功')
-        this.formData.userAccount = ''
-        this.changeUserAccount()
-      }).catch(err => {
-        console.log(err)
-      })
     },
     sendVerificationCode() {
       if (this.formData.userAccount === '') {
@@ -131,9 +124,10 @@ export default {
         })
         return
       }
+      this.countDown()
       /*
       method:post
-      param: codeType 1 注册 2 忘记密码
+      param: codeType 1 注册 2 忘记密码 3 绑定手机号
       result:只有成功和状态码 状态码有以下：
       NOT_IN_THE_WHITE_LIST(113,"不在短信服务白名单中"),
       FIVE_MINUTES_LATER(114,"请在五分钟后重试"),
@@ -143,15 +137,15 @@ export default {
       VERIFICATION_CODE(118,"验证码失败"),
       */
       const params = {
-        codeType: 1,
+        codeType: 3,
         cellphone: this.formData.userAccount
       }
 
       sendVerificationCode(params).then(res => {
         if (res.code === 0) {
           this.sendCode = true
-          this.countDown()
         } else {
+          clearInterval(this.timer)
           return
         }
       })
@@ -182,14 +176,20 @@ export default {
         console.log(res)
         if (res.code === 0) {
           this.$message({
-            message: '添加成功',
+            message: this.isBound ? '更换成功' : '添加成功',
             type: 'success'
           })
+          this.showBound = true
+          clearInterval(this.timer)
+          this.$store.commit('user/SET_USER_ACCOUNT', this.formData.userAccount)
+          this.$store.commit('user/SET_REGISTER_TYPE', 4)
+          this.$emit('success')
         }
       })
     },
     handleClose() {
       this.$refs.form && this.$refs.form.resetFields()
+      clearInterval(this.timer)
       this.$emit('close')
     }
   }

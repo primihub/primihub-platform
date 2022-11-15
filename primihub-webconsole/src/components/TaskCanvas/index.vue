@@ -492,14 +492,6 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
-      graph.on('node:contextmenu', ({ node }) => {
-        node.setData({
-          showDeleteButton: true
-        })
-      })
-      graph.on('node:removed', ({ node, index, options }) => {
-        this.deleteNode()
-      })
       graph.on('blank:click', () => {
         const nodes = this.graph.getNodes()
         nodes.map(node => {
@@ -528,51 +520,60 @@ export default {
       })
 
       // 画布不可编辑只可点击
-      if (!this.options.isEditable) return
-      graph.on('node:mouseenter', FunctionExt.debounce(() => {
-        const ports = this.container.querySelectorAll(
-          '.x6-port-body'
-        )
-        this.showPorts(ports, true)
-      }),
-      500
-      )
-      graph.on('node:mouseleave', () => {
-        const ports = this.container.querySelectorAll(
-          '.x6-port-body'
-        )
-        this.showPorts(ports, false)
-      })
-
-      graph.on('node:collapse', ({ node, e }) => {
-        e.stopPropagation()
-        node.toggleCollapse()
-        const collapsed = node.isCollapsed()
-        const cells = node.getDescendants()
-        cells.forEach((n) => {
-          if (collapsed) {
-            n.hide()
-          } else {
-            n.show()
-          }
+      if (this.options.isEditable) {
+        graph.on('node:contextmenu', ({ node }) => {
+          node.setData({
+            showDeleteButton: true
+          })
         })
-      })
-      graph.bindKey('backspace', () => {
-        const cells = graph.getSelectedCells()
-        this.deleteNode()
-        if (cells.length) {
-          graph.removeCells(cells)
-        }
-        this.nodeData = this.startNode
-      })
-
-      graph.on('edge:connected', ({ edge }) => {
-        edge.attr({
-          line: {
-            strokeDasharray: ''
-          }
+        graph.on('node:removed', ({ node, index, options }) => {
+          this.deleteNode()
         })
-      })
+        graph.on('node:mouseenter', FunctionExt.debounce(() => {
+          const ports = this.container.querySelectorAll(
+            '.x6-port-body'
+          )
+          this.showPorts(ports, true)
+        }),
+        500
+        )
+        graph.on('node:mouseleave', () => {
+          const ports = this.container.querySelectorAll(
+            '.x6-port-body'
+          )
+          this.showPorts(ports, false)
+        })
+
+        graph.on('node:collapse', ({ node, e }) => {
+          e.stopPropagation()
+          node.toggleCollapse()
+          const collapsed = node.isCollapsed()
+          const cells = node.getDescendants()
+          cells.forEach((n) => {
+            if (collapsed) {
+              n.hide()
+            } else {
+              n.show()
+            }
+          })
+        })
+        graph.bindKey('backspace', () => {
+          const cells = graph.getSelectedCells()
+          this.deleteNode()
+          if (cells.length) {
+            graph.removeCells(cells)
+          }
+          this.nodeData = this.startNode
+        })
+
+        graph.on('edge:connected', ({ edge }) => {
+          edge.attr({
+            line: {
+              strokeDasharray: ''
+            }
+          })
+        })
+      }
     },
     deleteNode() {
       const currentCode = this.nodeData.componentCode

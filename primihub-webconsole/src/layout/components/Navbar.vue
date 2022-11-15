@@ -1,7 +1,6 @@
 <template>
   <div class="navbar">
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-
     <breadcrumb class="breadcrumb-container" />
     <div class="right-menu">
       <div class="feedback">
@@ -29,7 +28,7 @@
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
-          <el-dropdown-item divided @click.native="openAddPhoneDialog">{{ isBound? '更换手机号': '添加手机号' }}</el-dropdown-item>
+          <el-dropdown-item v-if="!isPhoneNum" divided @click.native="openAddPhoneDialog">{{ isBound ? '更换手机号': '添加手机号' }}</el-dropdown-item>
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;">退出登录</span>
           </el-dropdown-item>
@@ -47,7 +46,7 @@
       <UpdatePwdForm @submit="handleSubmit" />
     </el-dialog>
     <!-- add phone dialog -->
-    <BindPhoneDialog title="添加手机号" append-to-body :visible.sync="phoneDialogVisible" :is-bound="isBound" @close="handlePhoneDialogClose" />
+    <BindPhoneDialog append-to-body :visible.sync="phoneDialogVisible" :is-bound="isBound" @close="handlePhoneDialogClose" @success="handlePhoneBindSuccess" />
   </div>
 </template>
 
@@ -72,14 +71,18 @@ export default {
       userInfo: {},
       organName: '',
       dialogVisible: false,
-      phoneDialogVisible: false,
-      userAccount: '',
-      registerType: 0
+      phoneDialogVisible: false
     }
   },
   computed: {
-    isBound() {
-      return this.registerType === 4 && phonePattern.test(this.userAccount)
+    isPhoneNum() {
+      return phonePattern.test(this.userAccount)
+    },
+    isBound: {
+      set(val) {},
+      get() {
+        return this.registerType === 4 && this.isPhoneNum
+      }
     },
     ...mapState('user', ['organChange']),
     ...mapGetters([
@@ -87,7 +90,9 @@ export default {
       'avatar',
       'userOrganId',
       'userOrganName',
-      'userName'
+      'userName',
+      'userAccount',
+      'registerType'
     ])
   },
   watch: {
@@ -95,14 +100,15 @@ export default {
       if (newVal) {
         this.getInfo()
       }
+    },
+    userAccount(newVal) {
+      if (phonePattern.test(newVal)) {
+        this.isBound = true
+      }
     }
   },
   created() {
-    this.getInfo().then(res => {
-      this.userInfo = res
-      this.registerType = res.registerType
-      this.userAccount = res.userAccount
-    })
+    this.getInfo()
   },
   methods: {
     openAddPhoneDialog() {
@@ -111,8 +117,11 @@ export default {
     handlePhoneDialogClose() {
       this.phoneDialogVisible = false
     },
+    handlePhoneBindSuccess() {
+      this.isBound = true
+      this.phoneDialogVisible = false
+    },
     showUpdatePwd() {
-      console.log(this.dialogVisible)
       this.dialogVisible = true
     },
     handleSubmit(res) {
@@ -132,10 +141,6 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     ...mapActions('user', ['getInfo'])
-    // getUserInfo() {
-    //   this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    //   this.organName = this.userInfo.organIdListDesc
-    // }
   }
 }
 </script>

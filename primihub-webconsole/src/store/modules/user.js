@@ -19,16 +19,22 @@ const getDefaultState = () => {
     token: getToken(),
     avatar: '',
     organChange: false,
-    showValidation: false
+    showValidation: false,
+    registerType: 0
   }
 }
 
 const state = getDefaultState()
 
+const setUserInfo = () => {
+  localStorage.setItem(USER_INFO, JSON.stringify(state.userInfo))
+}
+
 const mutations = {
   SET_USER_INFO: (state, userInfo) => {
     Object.assign(state, userInfo)
-    localStorage.setItem(USER_INFO, JSON.stringify(userInfo))
+    state.userInfo = userInfo
+    setUserInfo()
   },
   SET_USER_ORGAN_ID: (state, organId) => {
     state.userOrganId = organId
@@ -58,8 +64,17 @@ const mutations = {
   SET_ORGAN_CHANGE: (state, organChange) => {
     state.organChange = organChange
   },
+  SET_USER_ACCOUNT: (state, userAccount) => {
+    state.userAccount = userAccount
+    state.userInfo.userAccount = state.userAccount
+    setUserInfo()
+  },
+  SET_REGISTER_TYPE: (state, registerType) => {
+    state.registerType = registerType
+    state.userInfo.registerType = state.registerType
+    setUserInfo()
+  },
   SET_SHOW_VALIDATION: (state, showValidation) => {
-    console.log('SET_SHOW_VALIDATION', showValidation)
     state.showValidation = showValidation
   }
 }
@@ -119,7 +134,6 @@ const actions = {
       resolve(userData)
     })
   },
-
   getPermission({ commit, state }) {
     return new Promise((resolve, reject) => {
       const permissionList = JSON.parse(localStorage.getItem(PER_KEY))
