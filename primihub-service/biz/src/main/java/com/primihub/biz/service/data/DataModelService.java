@@ -64,7 +64,7 @@ public class DataModelService {
     @Autowired
     private DataResourceService dataResourceService;
 
-    public BaseResultEntity getDataModel(Long taskId) {
+    public BaseResultEntity getDataModel(Long taskId,Long userId) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -131,6 +131,12 @@ public class DataModelService {
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
         map.put("modelResources",modelResourceVos.stream().filter(r->r.getResourceType()!=3).collect(Collectors.toList()));
+        map.put("oneself",true);
+        if (!baseConfiguration.getAdminUserIds().contains(userId)){
+            if (!userId.equals(task.getTaskUserId())){
+                map.put("oneself",false);
+            }
+        }
         ModelEvaluationDto modelEvaluationDto = null;
         if (StringUtils.isNotBlank(modelTask.getPredictContent())){
             ParserConfig parserConfig = new ParserConfig();
