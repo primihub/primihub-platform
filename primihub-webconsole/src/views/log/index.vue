@@ -81,7 +81,6 @@
       </el-table>
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
       <el-dialog
-        title="提示"
         width="1000px"
         :visible.sync="dialogVisible"
         :before-close="handleClose"
@@ -282,6 +281,8 @@ export default {
   justify-content: space-evenly;
 }
 .log-wrapper{
-  max-height: 400px;
+  max-height: 500px;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 </style>
