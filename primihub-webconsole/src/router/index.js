@@ -313,7 +313,7 @@ export const asyncRoutes = [
     alwaysShow: true, // 一直显示根路由
     children: [{
       path: 'index',
-      name: 'Log',
+      name: 'LogList',
       component: () => import('@/views/log/index'),
       meta: { title: '日志管理', breadcrumb: false }
 

@@ -78,7 +78,7 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'vuex'
+import { mapState } from 'vuex'
 
 export default {
   name: 'ResourceTable',
@@ -207,10 +207,7 @@ export default {
         return row.auditStatus === 0
       }
       return true
-    },
-    ...mapActions(
-      'user', ['getInfo']
-    )
+    }
   }
 
 }
