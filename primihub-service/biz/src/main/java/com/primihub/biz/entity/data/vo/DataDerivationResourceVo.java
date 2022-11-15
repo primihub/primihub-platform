@@ -102,7 +102,7 @@ public class DataDerivationResourceVo {
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date createDate;
 
-
+    private Integer resourceState;
     /**
      * 资源hash文件编码
      */
