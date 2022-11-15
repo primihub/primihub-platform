@@ -428,7 +428,7 @@ public class SysUserService {
         if (sysUser==null)
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无用户信息");
         if (sysUser.getUserAccount().equals(param.getUserAccount()))
-            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号名称无修改");
+            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"修改账号名称和当前账号名称没有变动");
         String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<account>", param.getUserAccount());
         if (!sysCommonPrimaryRedisRepository.lock(accountKey))
             return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW,"账号名称无法修改");
