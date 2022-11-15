@@ -1,6 +1,6 @@
 <template>
   <el-table
-    :data="data"
+    :data="resourceList"
     v-bind="$attrs"
     empty-text="暂无数据"
   >
@@ -66,10 +66,23 @@
         {{ row.fileContainsY ? '是' : '否' }}
       </template>
     </el-table-column>
+    <el-table-column
+      label="操作"
+      fixed="right"
+      width="160"
+      align="center"
+    >
+      <template slot-scope="{row}">
+        <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+        <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+      </template>
+    </el-table-column>
   </el-table>
 </template>
 
 <script>
+import { resourceStatusChange } from '@/api/resource'
+
 export default {
   name: '',
   props: {
@@ -93,6 +106,19 @@ export default {
       this.$router.push({
         name: 'DerivedDataResourceDetail',
         params: { id }
+      })
+    },
+    changeResourceStatus({ resourceId, resourceState }) {
+      resourceState = resourceState === 0 ? 1 : 0
+      resourceStatusChange({ resourceId, resourceState }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: resourceState === 0 ? '上线成功' : '下线成功',
+            type: 'success'
+          })
+          const posIndex = this.resourceList.findIndex(item => item.resourceId === resourceId)
+          this.resourceList[posIndex].resourceState = resourceState
+        }
       })
     }
   }
