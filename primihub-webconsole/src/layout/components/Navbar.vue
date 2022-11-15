@@ -28,7 +28,7 @@
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
-          <el-dropdown-item v-if="!isPhoneNum" divided @click.native="openAddPhoneDialog">{{ isBound ? '更换手机号': '添加手机号' }}</el-dropdown-item>
+          <el-dropdown-item v-if="registerType === 4" divided @click.native="openAddPhoneDialog">{{ isBound ? '更换手机号': '添加手机号' }}</el-dropdown-item>
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;">退出登录</span>
           </el-dropdown-item>
@@ -75,13 +75,10 @@ export default {
     }
   },
   computed: {
-    isPhoneNum() {
-      return phonePattern.test(this.userAccount)
-    },
     isBound: {
       set(val) {},
       get() {
-        return this.registerType === 4 && this.isPhoneNum
+        return this.registerType === 4 && phonePattern.test(this.userAccount)
       }
     },
     ...mapState('user', ['organChange']),
