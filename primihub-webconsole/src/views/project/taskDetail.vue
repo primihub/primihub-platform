@@ -12,7 +12,7 @@
           模型
         </el-descriptions-item>
         <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
-          <el-link v-if="task.isCooperation === 0" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
           <span v-else>{{ model.modelId }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="开始时间">
@@ -160,7 +160,8 @@ export default {
         }
       },
       logType: '',
-      errorLog: []
+      errorLog: [],
+      oneself: false
     }
   },
   computed: {
@@ -214,7 +215,8 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
+        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project, oneself } = response.result
+        this.oneself = oneself
         this.task = task
         this.project = project
         this.model = model
