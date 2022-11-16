@@ -26,42 +26,53 @@ public class GrpcConfiguration {
     @Bean(name="grpcClientChannel")
     public Channel initGrpcClientChannel(BaseConfiguration baseConfiguration) throws SSLException {
         BaseGrpcClientConfig grpcClient = baseConfiguration.getGrpcClient();
-        Channel channel = ManagedChannelBuilder
-                .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
-                .usePlaintext()
-                .build();
         if (grpcClient.isUseTls()){
             log.info("grpc Open tls");
             if (StringUtils.isBlank(grpcClient.getTrustCertFilePath()) || StringUtils.isBlank(grpcClient.getKeyCertChainFile()) || StringUtils.isBlank(grpcClient.getKeyFile())){
                 log.info("grpc tls : Certificate path open default general connection missing");
-                return channel;
+                return ManagedChannelBuilder
+                        .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .usePlaintext()
+                        .build();
             }
             File trustCertFile = new File(grpcClient.getTrustCertFilePath());
             File keyCertChainFile = new File(grpcClient.getKeyCertChainFile());
             File keyFile = new File(grpcClient.getKeyFile());
             if (!trustCertFile.exists()){
                 log.info("grpc tls : The certificate trustCertFile does not exist. open default general connection");
-                return channel;
+                return ManagedChannelBuilder
+                        .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .usePlaintext()
+                        .build();
             }
             if (!keyCertChainFile.exists()){
                 log.info("grpc tls : The certificate keyCertChainFile does not exist. open default general connection");
-                return channel;
+                return ManagedChannelBuilder
+                        .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .usePlaintext()
+                        .build();
             }
             if (!keyFile.exists()){
                 log.info("grpc tls : The certificate keyFile does not exist. open default general connection");
-                return channel;
+                return ManagedChannelBuilder
+                        .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .usePlaintext()
+                        .build();
             }
             SslContext sslContext = GrpcSslContexts.forClient()
                     .trustManager(trustCertFile)
                     .keyManager(keyCertChainFile,keyFile)
                     .build();
-            channel = NettyChannelBuilder
+            return NettyChannelBuilder
                     .forAddress(grpcClient.getGrpcClientAddress(),grpcClient.getGrpcClientPort())
                     .negotiationType(NegotiationType.TLS)
                     .sslContext(sslContext)
                     .build();
         }
-        return channel;
+        return ManagedChannelBuilder
+                .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                .usePlaintext()
+                .build();
     }
 
 }
