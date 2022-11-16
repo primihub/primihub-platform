@@ -12,7 +12,7 @@
           模型
         </el-descriptions-item>
         <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
-          <el-link v-if="task.isCooperation === 0" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
           <span v-else>{{ model.modelId }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="开始时间">
@@ -37,7 +37,7 @@
       </el-descriptions>
       <div class="buttons">
         <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
-        <el-button v-if="hasModelRunPermission && (task.taskState === 3 || task.taskState === 4)" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
+        <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
         <el-button v-if="task.taskState === 2" :disabled="project.status === 2" type="primary" @click="cancelTaskModel(task.taskId)">取消任务</el-button>
         <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5 && task.isCooperation === 0" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
       </div>
@@ -160,7 +160,8 @@ export default {
         }
       },
       logType: '',
-      errorLog: []
+      errorLog: [],
+      oneself: false
     }
   },
   computed: {
@@ -214,7 +215,8 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
+        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project, oneself } = response.result
+        this.oneself = oneself
         this.task = task
         this.project = project
         this.model = model
