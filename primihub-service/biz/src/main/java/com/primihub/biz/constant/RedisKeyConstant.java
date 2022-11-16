@@ -3,6 +3,7 @@ package com.primihub.biz.constant;
 public class RedisKeyConstant {
     public static final String SYS_USER_LOGIN_STATUS_HASH_KEY="sys_user:login_status_<user_id>";
     public static final String SYS_USER_LOGIN_TOKEN_STR_KEY="sys_user:login_token_<token>";
+    public static final String SYS_USER_CHANGE_ACCOUNT_KEY="sys_user:change_account_<account>";
     public static final String SYS_USER_LOGIN_PASS_ERRER_KEY="sys_user:login_pe_<user_id>";
     public static final String SYS_AUTH_BFS_LIST_STR_KEY="sys_auth:bfs_list";
     public static final String SCHEDULE_FUSION_COPY_KEY="schedule:fusion_copy_<date>_<piece>";

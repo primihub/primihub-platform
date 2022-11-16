@@ -167,10 +167,10 @@ public class SnowflakeId {
     }
 
     public static void main(String[] args) {
-        int i = 10_000_000;
+        int i = 1;
         long start = System.currentTimeMillis();
         for (int i1 = 0; i1 < i; i1++) {
-            SnowflakeId.getInstance().nextId();
+            System.out.println(SnowflakeId.getInstance().nextId());
         }
         System.out.println("耗时："+ (System.currentTimeMillis() - start));
     }

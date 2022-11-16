@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class DataServiceGrpcClient {
 
-    @Resource(name="grpcDataSetClientChannel")
+    @Resource(name="grpcClientChannel")
     private Channel channel;
 
     public <Result> Result run(Functional<DataServiceGrpc.DataServiceBlockingStub,Result> functional){
