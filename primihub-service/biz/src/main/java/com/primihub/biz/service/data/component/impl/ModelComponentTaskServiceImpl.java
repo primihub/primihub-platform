@@ -174,6 +174,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
             taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
             log.info("grpc Exception:{}", e.getMessage());
+            e.printStackTrace();
         }
         return BaseResultEntity.success();
     }
@@ -225,6 +226,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return BaseResultEntity.success();
@@ -290,6 +292,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return BaseResultEntity.success();
