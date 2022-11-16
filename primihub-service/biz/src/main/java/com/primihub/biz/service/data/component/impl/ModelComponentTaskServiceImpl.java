@@ -133,8 +133,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
             Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(128).build();
             Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(100).build();
-            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString("usecase_104_node_0;usecase_104_node_1;usecase_104_node_2").build();
-            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString("data/res_105_model.csv").build();
+            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
+            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("BatchSize", batchSizeParamValue)
                     .putParamMap("NumIters", numItersParamValue)
