@@ -123,7 +123,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     private BaseResultEntity mpclr(DataComponentReq req, ComponentTaskReq taskReq){
         try {
             Set<String> resourceIds = new HashSet<>();
-            if (taskReq.getNewest()!=null || taskReq.getNewest().size()!=0){
+            if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
                 resourceIds.addAll(taskReq.getNewest().stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toSet()));
             }else {
                 resourceIds.addAll(taskReq.getResourceList().stream().map(ModelProjectResourceVo::getResourceId).collect(Collectors.toSet()));
