@@ -102,6 +102,7 @@ export default {
     },
     closeBox() {
       this.clickShow = false
+      this.$emit('close')
       // this.refresh()
     },
     show() {

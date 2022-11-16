@@ -13,7 +13,7 @@
             v-model="query.successDate"
             size="small"
             clearable
-            type="date"
+            type="datetime"
             placeholder="请选择"
             value-format="yyyy-MM-dd HH:mm:ss"
           />

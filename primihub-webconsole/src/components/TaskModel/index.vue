@@ -5,7 +5,7 @@
       <el-descriptions>
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
-        <el-descriptions-item label="模型模版">V-XGBoost</el-descriptions-item>
+        <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
         <template v-if="type==='model'">
           <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
         </template>
@@ -26,7 +26,7 @@
     </div>
 
     <div class="section">
-      <h3>模型资源</h3>
+      <h3>所用数据</h3>
       <el-table
         :data="modelResources"
         border
@@ -98,6 +98,13 @@ export default {
         2: '测试样本集'
       }
       return typeMap[type]
+    },
+    modelTypeFilter(type) {
+      const statusMap = {
+        2: '纵向-XGBoost',
+        3: '横向-LR'
+      }
+      return statusMap[type]
     }
   },
   props: {

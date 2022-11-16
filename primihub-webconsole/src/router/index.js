@@ -37,7 +37,6 @@ export const constantRoutes = [
     component: () => import('@/views/updatePwd'),
     hidden: true
   },
-
   {
     path: '/404',
     component: () => import('@/views/404'),
@@ -306,10 +305,19 @@ export const asyncRoutes = [
     ]
   },
   {
-    path: 'http://118.190.39.100:30010/d/51j5zgnVk/logs-app?orgId=1&var-app=primihub-demo%2Fprimihubnode&var-search=',
+    path: '/log',
     component: Layout,
     name: 'Log',
-    meta: { title: '日志管理', icon: 'el-icon-warning-outline' }
+    redirect: '/log/index',
+    meta: { title: '日志管理', icon: 'el-icon-warning-outline' },
+    alwaysShow: true, // 一直显示根路由
+    children: [{
+      path: 'index',
+      name: 'LogList',
+      component: () => import('@/views/log/index'),
+      meta: { title: '日志管理', breadcrumb: false }
+
+    }]
   },
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

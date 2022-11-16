@@ -492,6 +492,15 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
+      graph.on('blank:click', () => {
+        const nodes = this.graph.getNodes()
+        nodes.map(node => {
+          node.setData({
+            showDeleteButton: false
+          })
+        })
+      })
+
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
@@ -511,58 +520,70 @@ export default {
       })
 
       // 画布不可编辑只可点击
-      if (!this.options.isEditable) return
-      graph.on('node:mouseenter', FunctionExt.debounce(() => {
-        const ports = this.container.querySelectorAll(
-          '.x6-port-body'
-        )
-        this.showPorts(ports, true)
-      }),
-      500
-      )
-      graph.on('node:mouseleave', () => {
-        const ports = this.container.querySelectorAll(
-          '.x6-port-body'
-        )
-        this.showPorts(ports, false)
-      })
-
-      graph.on('node:collapse', ({ node, e }) => {
-        e.stopPropagation()
-        node.toggleCollapse()
-        const collapsed = node.isCollapsed()
-        const cells = node.getDescendants()
-        cells.forEach((n) => {
-          if (collapsed) {
-            n.hide()
-          } else {
-            n.show()
-          }
+      if (this.options.isEditable) {
+        graph.on('node:contextmenu', ({ node }) => {
+          node.setData({
+            showDeleteButton: true
+          })
         })
-      })
-      graph.bindKey('backspace', () => {
-        const cells = graph.getSelectedCells()
-        if (cells.length) {
-          const currentCode = this.nodeData.componentCode
-          // remove duplicates
-          this.selectComponentList = [...new Set(this.selectComponentList)]
-          const index = this.selectComponentList.indexOf(currentCode)
-          if (index !== -1) {
-            this.selectComponentList.splice(index, 1)
-            this.$emit('selectComponents', this.selectComponentList)
-          }
-          graph.removeCells(cells)
-        }
-        this.nodeData = this.startNode
-      })
-
-      graph.on('edge:connected', ({ edge }) => {
-        edge.attr({
-          line: {
-            strokeDasharray: ''
-          }
+        graph.on('node:removed', ({ node, index, options }) => {
+          this.deleteNode()
         })
-      })
+        graph.on('node:mouseenter', FunctionExt.debounce(() => {
+          const ports = this.container.querySelectorAll(
+            '.x6-port-body'
+          )
+          this.showPorts(ports, true)
+        }),
+        500
+        )
+        graph.on('node:mouseleave', () => {
+          const ports = this.container.querySelectorAll(
+            '.x6-port-body'
+          )
+          this.showPorts(ports, false)
+        })
+
+        graph.on('node:collapse', ({ node, e }) => {
+          e.stopPropagation()
+          node.toggleCollapse()
+          const collapsed = node.isCollapsed()
+          const cells = node.getDescendants()
+          cells.forEach((n) => {
+            if (collapsed) {
+              n.hide()
+            } else {
+              n.show()
+            }
+          })
+        })
+        graph.bindKey('backspace', () => {
+          const cells = graph.getSelectedCells()
+          this.deleteNode()
+          if (cells.length) {
+            graph.removeCells(cells)
+          }
+          this.nodeData = this.startNode
+        })
+
+        graph.on('edge:connected', ({ edge }) => {
+          edge.attr({
+            line: {
+              strokeDasharray: ''
+            }
+          })
+        })
+      }
+    },
+    deleteNode() {
+      const currentCode = this.nodeData.componentCode
+      // remove duplicates
+      this.selectComponentList = [...new Set(this.selectComponentList)]
+      const index = this.selectComponentList.indexOf(currentCode)
+      if (index !== -1) {
+        this.selectComponentList.splice(index, 1)
+      }
+      this.$emit('selectComponents', this.selectComponentList)
     },
     initToolBarEvent() {
       // 画布不可编辑只可点击
@@ -712,8 +733,22 @@ export default {
     getTaskModelComponent() {
       getTaskModelComponent({ taskId: this.taskId }).then(res => {
         const result = res.result.components
-        const nodes = this.graph.getNodes()
+        let nodes = this.graph.getNodes()
         const taskResult = []
+        if (res.result.taskState === 4 || res.result.taskState === 3) {
+          clearInterval(this.taskTimer)
+          nodes = nodes.filter(node => node.store.data.data.componentState === 2)
+          this.$notify.closeAll()
+          nodes.map(node => {
+            node.setData({
+              componentState: res.result.taskState,
+              timeConsuming: Math.ceil(0 / 1000)
+            })
+          })
+          this.$emit('complete')
+          this.modelStartRun = false
+          return
+        }
         result && result.forEach((item) => {
           const { componentCode, componentState, timeConsuming, componentName } = item
           const node = nodes.find(item => item.store.data.data.componentCode === componentCode)
@@ -752,6 +787,23 @@ export default {
             })
             this.$notify({
               message: '运行失败',
+              type: 'error',
+              duration: 3000
+            })
+            this.$emit('complete')
+            this.modelStartRun = false
+            return
+          } else if (componentState === 4) {
+            clearInterval(this.taskTimer)
+            this.$notify.closeAll()
+            node.setData({
+              label: componentName,
+              componentCode,
+              componentState,
+              timeConsuming: timeConsuming / 1000
+            })
+            this.$notify({
+              message: '任务已取消',
               type: 'error',
               duration: 3000
             })
