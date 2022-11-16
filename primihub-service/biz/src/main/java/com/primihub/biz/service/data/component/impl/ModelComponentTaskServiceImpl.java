@@ -149,6 +149,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setCode("logistic_regression")
                     .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .addInputDatasets("Data_File")
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
