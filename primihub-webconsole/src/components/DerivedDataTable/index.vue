@@ -2,6 +2,7 @@
   <el-table
     :data="resourceList"
     v-bind="$attrs"
+    :row-class-name="tableRowDisabled"
     empty-text="暂无数据"
   >
     <el-table-column
@@ -108,18 +109,25 @@ export default {
         params: { id }
       })
     },
-    changeResourceStatus({ resourceId, resourceState }) {
+    changeResourceStatus({ id, resourceState }) {
       resourceState = resourceState === 0 ? 1 : 0
-      resourceStatusChange({ resourceId, resourceState }).then(res => {
+      resourceStatusChange({ resourceId: id, resourceState }).then(res => {
         if (res.code === 0) {
           this.$message({
             message: resourceState === 0 ? '上线成功' : '下线成功',
             type: 'success'
           })
-          const posIndex = this.resourceList.findIndex(item => item.resourceId === resourceId)
+          const posIndex = this.resourceList.findIndex(item => item.id === id)
           this.resourceList[posIndex].resourceState = resourceState
         }
       })
+    },
+    tableRowDisabled({ row }) {
+      if (row.resourceState === 1) {
+        return 'disabled'
+      } else {
+        return ''
+      }
     }
   }
 }
