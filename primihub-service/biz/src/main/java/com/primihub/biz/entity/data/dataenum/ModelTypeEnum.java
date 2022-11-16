@@ -5,7 +5,8 @@ import java.util.Map;
 
 public enum ModelTypeEnum {
     V_XGBOOST(2,"V-XGBoost",1),
-    TRANSVERSE_LR(3,"横向LR",1)
+    TRANSVERSE_LR(3,"横向LR",1),
+    MPC_LR(4,"MPC-LR",1)
     ;
     private Integer type;
     private String name;
