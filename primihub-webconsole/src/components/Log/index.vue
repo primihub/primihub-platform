@@ -49,7 +49,7 @@ export default {
   },
   methods: {
     socketInit() {
-      const protocol = process.env.NODE_ENV === 'development' ? 'ws' : 'wss'
+      const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
       const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
       this.ws.onopen = this.open
@@ -74,7 +74,6 @@ export default {
     getMessage: function(msg) {
       if (msg.data.length > 0) {
         const data = JSON.parse(msg.data).streams
-        console.log(data)
         const formatData = data.map(item => {
           const value = JSON.parse(item.values[0][1])
           if (value.log !== '\n') {
