@@ -3,16 +3,16 @@
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="数据ID">
-          <el-input v-model="query.resourceId" placeholder="请输入资源ID" />
+          <el-input v-model="query.resourceId" placeholder="请输入资源ID" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="资源名称">
-          <el-input v-model="query.resourceName" placeholder="请输入资源名称" />
+          <el-input v-model="query.resourceName" placeholder="请输入资源名称" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="任务ID">
-          <el-input v-model="query.taskIdName" placeholder="请输入任务ID" />
+          <el-input v-model="query.taskIdName" placeholder="请输入任务ID" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="衍生数据来源">
-          <el-input v-model="query.tag" placeholder="请输入衍生数据来源" />
+          <el-input v-model="query.tag" placeholder="请输入衍生数据来源" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="创建时间">
           <el-date-picker
@@ -22,6 +22,8 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
+            clearable
+            @change="handleClear"
           />
         </el-form-item>
         <el-form-item>
@@ -104,6 +106,7 @@ export default {
         })
         return
       }
+      // this.resourceList = []
       const createDate = this.query.createDate
       this.query.startDate = createDate && createDate[0]
       this.query.endDate = createDate && createDate[1]
@@ -122,14 +125,15 @@ export default {
         const { data, total, totalPage } = result
         this.total = total
         this.pageCount = totalPage
-        if (data.length > 0) {
-          this.resourceList = data
-        }
+        this.resourceList = data
       }
       this.loading = false
     },
-    handlePagination(data) {
+    async handlePagination(data) {
       this.pageNo = data.page
+      await this.fetchData()
+    },
+    handleClear() {
       this.fetchData()
     }
   }
