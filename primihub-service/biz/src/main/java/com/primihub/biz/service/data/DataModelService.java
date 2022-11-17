@@ -536,12 +536,15 @@ public class DataModelService {
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
             BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(vo.getDerivationList(), null, vo.getServerAddress());
-            List<String> resourceIds = (List<String>) derivationResource.getResult();
-            for (String resourceId : resourceIds) {
-                DataModelResource dataModelResource = new DataModelResource(vo.getDataModel().getModelId());
-                dataModelResource.setTaskId(vo.getDataTask().getTaskId());
-                dataModelResource.setResourceId(resourceId);
-                vo.getDmrList().add(dataModelResource);
+            log.info(JSONObject.toJSONString(derivationResource));
+            if (derivationResource.getCode()==0){
+                List<String> resourceIds = (List<String>) derivationResource.getResult();
+                for (String resourceId : resourceIds) {
+                    DataModelResource dataModelResource = new DataModelResource(vo.getDataModel().getModelId());
+                    dataModelResource.setTaskId(vo.getDataTask().getTaskId());
+                    dataModelResource.setResourceId(resourceId);
+                    vo.getDmrList().add(dataModelResource);
+                }
             }
             dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
         }
