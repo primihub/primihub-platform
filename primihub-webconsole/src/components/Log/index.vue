@@ -17,6 +17,7 @@
 
 <script>
 import { getTaskLogInfo } from '@/api/task'
+import { Progress } from 'element-ui'
 
 export default {
   name: 'Log',
@@ -49,7 +50,8 @@ export default {
   },
   methods: {
     socketInit() {
-      const url = `ws://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
+      const protocol = process.env.NODE_ENV === 'development' ? 'ws' : 'wss'
+      const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
       this.ws.onopen = this.open
       this.ws.onerror = this.error
