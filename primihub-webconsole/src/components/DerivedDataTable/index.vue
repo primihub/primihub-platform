@@ -1,7 +1,8 @@
 <template>
   <el-table
-    :data="data"
+    :data="resourceList"
     v-bind="$attrs"
+    :row-class-name="tableRowDisabled"
     empty-text="暂无数据"
   >
     <el-table-column
@@ -10,16 +11,17 @@
       min-width="100"
     >
       <template slot-scope="{row}">
-        <el-link :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
+        <el-link v-if="row.resourceState === 0" :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
+        <template v-else>{{ row.resourceName }}</template>
       </template>
     </el-table-column>
     <el-table-column
-      prop="resourceId"
+      prop="id"
       label="ID"
       align="center"
     >
       <template slot-scope="{row}">
-        {{ row.resourceId }}
+        {{ row.id }}
       </template>
     </el-table-column>
     <el-table-column
@@ -66,10 +68,23 @@
         {{ row.fileContainsY ? '是' : '否' }}
       </template>
     </el-table-column>
+    <el-table-column
+      label="操作"
+      fixed="right"
+      width="160"
+      align="center"
+    >
+      <template slot-scope="{row}">
+        <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+        <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+      </template>
+    </el-table-column>
   </el-table>
 </template>
 
 <script>
+import { resourceStatusChange } from '@/api/resource'
+
 export default {
   name: '',
   props: {
@@ -80,7 +95,12 @@ export default {
   },
   data() {
     return {
-      resourceList: this.data
+      // resourceList: this.data
+    }
+  },
+  computed: {
+    resourceList() {
+      return this.data
     }
   },
   methods: {
@@ -94,6 +114,26 @@ export default {
         name: 'DerivedDataResourceDetail',
         params: { id }
       })
+    },
+    changeResourceStatus({ id, resourceState }) {
+      resourceState = resourceState === 0 ? 1 : 0
+      resourceStatusChange({ resourceId: id, resourceState }).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: resourceState === 0 ? '上线成功' : '下线成功',
+            type: 'success'
+          })
+          const posIndex = this.resourceList.findIndex(item => item.id === id)
+          this.resourceList[posIndex].resourceState = resourceState
+        }
+      })
+    },
+    tableRowDisabled({ row }) {
+      if (row.resourceState === 1) {
+        return 'disabled'
+      } else {
+        return ''
+      }
     }
   }
 }
