@@ -11,16 +11,17 @@
       min-width="100"
     >
       <template slot-scope="{row}">
-        <el-link :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
+        <el-link v-if="row.resourceState === 0" :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
+        <template v-else>{{ row.resourceName }}</template>
       </template>
     </el-table-column>
     <el-table-column
-      prop="resourceId"
+      prop="id"
       label="ID"
       align="center"
     >
       <template slot-scope="{row}">
-        {{ row.resourceId }}
+        {{ row.id }}
       </template>
     </el-table-column>
     <el-table-column
@@ -94,7 +95,12 @@ export default {
   },
   data() {
     return {
-      resourceList: this.data
+      // resourceList: this.data
+    }
+  },
+  computed: {
+    resourceList() {
+      return this.data
     }
   },
   methods: {
