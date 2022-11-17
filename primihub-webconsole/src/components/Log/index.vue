@@ -48,7 +48,7 @@ export default {
   },
   methods: {
     socketInit() {
-      const url = `ws://192.168.99.16:31191/loki/api/v1/tail?start=${this.start}&query=${this.query}`
+      const url = `ws://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}`
       this.ws = new WebSocket(url)
       this.ws.onopen = this.open
       // 监听socket错误信息
@@ -103,8 +103,9 @@ export default {
       const taskId = this.taskId || this.$route.params.taskId
       const res = await getTaskLogInfo(taskId)
       if (res.code === 0) {
-        const { container, job, taskIdName, start } = res.result
+        const { container, job, taskIdName, start, address } = res.result
         this.start = start
+        this.address = address
         this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
       }
     },
