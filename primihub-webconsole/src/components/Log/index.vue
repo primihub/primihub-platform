@@ -12,6 +12,7 @@
       </template>
     </div>
   </div>
+
 </template>
 
 <script>
@@ -44,24 +45,20 @@ export default {
     this.socketInit()
   },
   destroyed() {
-    this.ws.close() // 离开路由之后断开websocket连接
+    this.ws.close()
   },
   methods: {
     socketInit() {
-      const url = `ws://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}`
+      const url = `ws://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
       this.ws.onopen = this.open
-      // 监听socket错误信息
       this.ws.onerror = this.error
-      // 监听socket消息
       this.ws.onmessage = this.getMessage
-      // 发送socket消息
       this.ws.onsend = this.send
       this.ws.onclose = this.close
     },
     open: function() {
       console.log('socket连接成功')
-      // this.send(JSON.stringify(this.listQuery))
     },
     error: function() {
       console.log('连接错误')
@@ -76,17 +73,22 @@ export default {
     getMessage: function(msg) {
       if (msg.data.length > 0) {
         const data = JSON.parse(msg.data).streams
+        console.log(data)
         const formatData = data.map(item => {
           const value = JSON.parse(item.values[0][1])
           if (value.log !== '\n') {
             value.log = value.time.split('T')[0] + ' ' + value.log
+            // filter ERROR log
+            if (value.log.indexOf('ERROR') !== -1) {
+              this.errorLog.push(value)
+            }
             return value
           }
         })
         this.logData = this.logData.concat(formatData)
+        console.log(this.logData)
         this.$nextTick(() => {
           this.scrollToTarget('scrollLog')
-          // document.getElementById('scrollLog').scrollIntoView({ behavior: 'smooth', block: 'end' })
         })
         if (this.logType === 'error') {
           this.errorLog = this.logData
@@ -115,8 +117,9 @@ export default {
     },
     showErrorLog() {
       this.logType = 'error'
+      this.query += `|="ERROR"`
       this.logData = []
-      this.query += `|="${this.logType}"`
+
       this.socketInit()
     }
   }
@@ -145,6 +148,7 @@ export default {
   overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
+  height: 500px;
   .item{
     display: inline-block;
     margin-bottom: 10px;
