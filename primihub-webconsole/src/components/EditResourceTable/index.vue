@@ -11,8 +11,8 @@
         <template slot-scope="{row}">
           <el-select v-model="row.fieldType" size="mini" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
             <el-option
-              v-for="(item,index) in fieldTypeList"
-              :key="index"
+              v-for="item in fieldTypeList"
+              :key="item.value"
               :label="item.label"
               :value="item.value"
             />
@@ -99,11 +99,14 @@ export default {
         value: 5,
         label: 'Boolean'
       }],
-      params: []
+      params: [],
+      fieldType: ''
     }
   },
   methods: {
     handleChange(row) {
+      row.fieldType = this.fieldTypeList.find(item => item.value === row.fieldType)?.label
+      this.data.fieldType = row.fieldType
       if (this.isEditPage) {
         this.updateDataResourceField(row)
         this.$emit('change', this.data)
@@ -117,7 +120,7 @@ export default {
       const data = {
         fieldId,
         fieldName,
-        fieldType: this.fieldTypeList.find(item => item.value === fieldType)?.label,
+        fieldType,
         fieldDesc,
         relevance: relevance === true ? 1 : 0,
         grouping: grouping === true ? 1 : 0,
