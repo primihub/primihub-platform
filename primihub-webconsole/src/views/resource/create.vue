@@ -87,7 +87,7 @@
           <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
         </el-form-item>
         <template v-if="showDatabaseRadio && dataForm.resourceSource === 2">
-          <SQLiteImport @success="handleImportSuccess" />
+          <SQLiteImport @success="handleImportSuccess" @change="handleImportChange" />
         </template>
       </template>
       <el-form-item v-else label="资源来源" prop="resourceSource">
@@ -241,6 +241,12 @@ export default {
       this.fieldList = data.fieldList
       this.dataForm.fieldList = this.formatParams()
       this.dataList = data.dataList
+    },
+    handleImportChange() {
+      this.fieldList = []
+      this.dataForm.fieldList = this.fieldList
+      this.dataList = []
+      console.log('change', this.fieldList)
     },
     handleResourceChange(data) {
       this.fieldList = data

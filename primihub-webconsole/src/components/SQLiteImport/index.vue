@@ -59,6 +59,8 @@ export default {
   methods: {
     handleUploadSuccess(data) {
       this.form.dbUrl = data.fileUrl
+      this.form.dbTableName = ''
+      this.tableNames = ''
       this.handleDBConnect()
     },
     async handleDbTableNameChange(val) {
@@ -80,23 +82,20 @@ export default {
       }
     },
     handleDBConnect() {
-      this.$refs.form.validate((valid) => {
-        if (valid) {
-          healthConnection(this.form).then(res => {
-            if (res.code === 0) {
-              this.tableNames = res.result.tableNames
-              this.tableNames = res.result.tableNames.map((tableName, index) => {
-                return {
-                  label: tableName,
-                  value: index
-                }
-              })
-              this.form.dbName = res.result.dbSource.dbName
+      healthConnection(this.form).then(res => {
+        if (res.code === 0) {
+          this.tableNames = res.result.tableNames
+          this.tableNames = res.result.tableNames.map((tableName, index) => {
+            return {
+              label: tableName,
+              value: index
             }
-          }).catch(error => {
-            console.log(error)
           })
+          this.form.dbName = res.result.dbSource.dbName
+          this.$emit('change')
         }
+      }).catch(error => {
+        console.log(error)
       })
     }
   }

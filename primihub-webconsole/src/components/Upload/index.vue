@@ -38,7 +38,7 @@ Vue.use(uploader)
 const CHUNK_SIZE = 1 * 1024 * 1024
 // 可传文件类型集合
 // const FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
-const FILE_SUFFIXS = ['csv', 'db3']
+const FILE_SUFFIXS = ['csv', ' sqlite', 'sqlite3', 'db', 'db3', 's3db', 'sl3']
 
 export default {
   props: {
