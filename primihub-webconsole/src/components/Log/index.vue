@@ -17,7 +17,6 @@
 
 <script>
 import { getTaskLogInfo } from '@/api/task'
-import { Progress } from 'element-ui'
 
 export default {
   name: 'Log',
