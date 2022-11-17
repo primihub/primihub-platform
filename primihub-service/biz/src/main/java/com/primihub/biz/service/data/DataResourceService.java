@@ -651,7 +651,12 @@ public class DataResourceService {
             if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
                 url = modelDerivationDto.getPath();
             }else {
-                url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                if (url.contains(".csv"))
+                    url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                if (url.contains(".db")){
+                    String[] split = url.split("\\.");
+                    url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
+                }
             }
             log.info(url);
             File file = new File(url);
