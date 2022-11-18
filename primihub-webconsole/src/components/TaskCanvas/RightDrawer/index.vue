@@ -330,7 +330,14 @@ export default {
       if (newVal) {
         if (newVal.componentCode === 'dataSet') {
           this.inputValue = newVal.componentTypes[0].inputValue
-          this.getDataSetNodeData()
+          if (this.inputValue !== '') {
+            this.getDataSetNodeData()
+          } else {
+            this.initiateOrgan.resourceId = ''
+            this.selectedProviderOrgans = []
+            this.providerOrganIds = null
+            this.selectedResourceId = ''
+          }
         } else if (newVal.componentCode === 'model') {
           this.getDataSetComValue(this.graphData)
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
@@ -361,7 +368,9 @@ export default {
       if (dataSetCom) {
         const dataSetComVal = dataSetCom.data.componentTypes[0].inputValue
         this.inputValue = dataSetComVal
-        this.getDataSetNodeData()
+        if (this.inputValue !== '') {
+          this.getDataSetNodeData()
+        }
       }
     },
     async openProviderOrganDialog() {
@@ -421,14 +430,15 @@ export default {
       this.$emit('change', this.nodeData)
     },
     getDataSetNodeData() {
-      if (this.inputValue !== '') {
-        this.inputValue = JSON.parse(this.inputValue)
-        const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
-        this.initiateOrgan = initiateOrgan || this.initiateOrgan
-        const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
-        if (providerOrgans.length > 0) {
-          this.selectedProviderOrgans = providerOrgans
-        }
+      this.inputValue = JSON.parse(this.inputValue)
+      const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
+      this.initiateOrgan = initiateOrgan || this.initiateOrgan
+      const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
+      if (providerOrgans.length > 0) {
+        this.selectedProviderOrgans = providerOrgans
+      } else {
+        this.$set(this.initiateOrgan, 'resourceId', '')
+        this.selectedProviderOrgans.splice(0)
       }
     },
     handleResourceHeaderChange(data) {
