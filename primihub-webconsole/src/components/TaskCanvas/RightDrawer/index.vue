@@ -433,11 +433,13 @@ export default {
       this.dialogVisible = false
     },
     handleDialogSubmit(data) {
-      console.log(data)
       // not selecting resource
       if (!data.resourceId) {
         this.dialogVisible = false
         return
+      }
+      if (data.fileHandleField.includes('id')) {
+        data.fileHandleField = data.fileHandleField.filter(v => v !== 'id')
       }
       if (this.participationIdentity === 1) {
         // is not first select

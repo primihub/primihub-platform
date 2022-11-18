@@ -80,7 +80,7 @@
 </template>
 
 <script>
-import { mapActions, mapGetters, mapMutations } from 'vuex'
+import { mapGetters, mapMutations } from 'vuex'
 import { getProjectDetail, approval, saveProject, closeProject, removeResource, removeOrgan, getDerivationResourceList } from '@/api/project'
 import { resourceFilePreview } from '@/api/resource'
 import { deCodeEmoji } from '@/utils/emoji-regex'
@@ -446,7 +446,6 @@ export default {
         query: { projectId: this.list.id }
       })
     },
-    ...mapActions('user', ['getInfo']),
     ...mapMutations('project', ['SET_STATUS'])
   }
 }
