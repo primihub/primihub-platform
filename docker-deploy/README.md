@@ -8,7 +8,10 @@
 * 系统支持`CentOS 7`和`Ubuntu 18.04+` (推荐使用`Ubuntu`)
 * `docker-compose` 版本大于2.2
 
-#### 执行deploy.sh脚本，完成部署
+#### 如果需要开启在页面上显示日志的功能，需要在启动前前安安装loki
+安装步骤请参考[这里](./loki/readme.md)
+
+#### 在loki安装完成后，执行deploy.sh脚本，完成部署
 ```bash
 bash deploy.sh
 ```
