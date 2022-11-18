@@ -81,19 +81,15 @@ export default {
             // filter ERROR log
             if (value.log.indexOf('ERROR') !== -1) {
               this.errorLog.push(value)
+              this.$emit('error', this.errorLog)
             }
             return value
           }
         })
         this.logData = this.logData.concat(formatData)
-        console.log(this.logData)
         this.$nextTick(() => {
           this.scrollToTarget('scrollLog')
         })
-        if (this.logType === 'error') {
-          this.errorLog = this.logData
-          this.$emit('error', this.logData)
-        }
       }
     },
     send: function(order) {
