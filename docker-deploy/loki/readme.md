@@ -8,7 +8,7 @@
 docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
 ```
 
-然后配置手机所有docker容器的日志，一定主要将下面的 `YOUR_IP` 替换成你机器的内网IP
+然后配置收集所有docker容器的日志，一定主要将下面的 `YOUR_IP` 替换成你机器的内网IP
 ```shell
 # vim /etc/docker/daemon.json  添加以下内容
 {
@@ -31,7 +31,7 @@ docker-compose up -d
 ```
 最后到上级目录启动项目
 
-## 配置Grafana
+## 配置Grafana（可选，可以复用已有的Grafana，或者可以不使用grafana，直接只用平台的日志显示功能）
 
 启动完成之后，配置 `Grafana`
 

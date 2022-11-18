@@ -4,9 +4,9 @@
 # First, install docker and docker-compose
 
 centos(){
-    iptables -F
-    systemctl stop firewalld
-    systemctl disable firewalld
+    # iptables -F
+    # systemctl stop firewalld
+    # systemctl disable firewalld
     setenforce 0
     sed -i s#SELINUX=enforcing#SELINUX=disabled#  /etc/selinux/config
     docker version
@@ -81,6 +81,18 @@ for i in `cat .env | cut -d '=' -f 2`
 do
     docker pull $i
 done
+
+# 替换 `nacos` 配置中的 `Loki` 地址
+
+LOKI_IP=`hostname -I | awk '{print $1}'`
+echo "请确认你的主机IP是否为：" $LOKI_IP
+
+sed -i "s/LOKI_IP/$LOKI_IP/g" data/initsql/others.sql
+
+if [ $? -eq 0 ];
+then
+    echo "修改 nacos 配置文件中的 LOKI_IP 成功"
+fi
 
 # Finally, start the application
 docker-compose up -d
