@@ -59,7 +59,6 @@
           </div>
         </div>
       </div>
-      <Footer />
     </div>
 
     <Verify ref="verify" @success="handleSuccess" @close="handleClose" />
@@ -71,14 +70,12 @@ import { mapState, mapMutations } from 'vuex'
 import { getValidatePublicKey, getAuthList } from '@/api/user'
 import JSEncrypt from 'jsencrypt'
 import Verify from '@/components/Verifition'
-import Footer from '@/components/Footer'
 import CompanyIntro from '@/components/CompanyIntro'
 
 export default {
   name: 'Login',
   components: {
     Verify,
-    Footer,
     CompanyIntro
   },
   data() {

@@ -7,7 +7,6 @@
       <div class="register-wrap">
         <RegisterForm :code-type="1" />
       </div>
-      <Footer />
     </div>
   </div>
 </template>
@@ -15,14 +14,12 @@
 <script>
 import Poster from '@/components/Poster'
 import RegisterForm from '@/components/RegisterForm'
-import Footer from '@/components/Footer'
 
 export default {
   name: 'Register',
   components: {
     RegisterForm,
-    Poster,
-    Footer
+    Poster
   },
   data() {
     return {
