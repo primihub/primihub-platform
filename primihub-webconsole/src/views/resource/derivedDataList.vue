@@ -12,7 +12,14 @@
           <el-input v-model="query.taskIdName" placeholder="请输入任务ID" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="衍生数据来源">
-          <el-input v-model="query.tag" placeholder="请输入衍生数据来源" clearable @clear="handleClear" />
+          <el-select v-model="query.tag" placeholder="请选择" clearable @clear="handleClear" @change="handleResourceSourceChange">
+            <el-option
+              v-for="item in resourceSourceList"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="创建时间">
           <el-date-picker
@@ -72,7 +79,17 @@ export default {
       resourceAuthType: 0,
       serverAddress: null,
       groupId: 0,
-      organId: 0
+      organId: 0,
+      resourceSourceList: [{
+        label: '数据对齐',
+        value: 1
+      }, {
+        label: '缺失值处理',
+        value: 2
+      }, {
+        label: '异常值处理',
+        value: 3
+      }]
     }
   },
   computed: {
@@ -94,6 +111,7 @@ export default {
       this.fetchData()
     },
     async search() {
+      this.pageNo = 1
       await this.fetchData()
     },
     async fetchData() {
@@ -135,6 +153,9 @@ export default {
     },
     handleClear() {
       this.fetchData()
+    },
+    handleResourceSourceChange(val) {
+      this.query.tag = this.resourceSourceList.filter(item => item.value === val)[0]?.label
     }
   }
 }
