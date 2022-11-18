@@ -1028,6 +1028,9 @@ export default {
         this.saveParams.param.modelComponents.push(startParams)
       }
 
+      // dataSet component in the second
+      this.checkOrder()
+
       this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
@@ -1048,6 +1051,15 @@ export default {
         })
       }
       this.isClear = false
+    },
+    checkOrder() {
+      const { modelComponents } = this.saveParams.param
+      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
+      const dataSetCom = modelComponents[dataSetIndex]
+      if (dataSetIndex !== 1 && dataSetIndex !== -1) {
+        this.saveParams.param.modelComponents.splice(dataSetIndex, 1)
+        this.saveParams.param.modelComponents.splice(1, 0, dataSetCom)
+      }
     },
     getProjectResourceData() {
       getProjectResourceData({ projectId: this.projectId }).then(res => {
