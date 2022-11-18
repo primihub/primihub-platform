@@ -66,9 +66,6 @@ export default {
     },
     close: function(e) {
       this.ws.close()
-      if (this.taskState === 2) {
-        this.socketInit()
-      }
       console.log('socket已经关闭', e)
     },
     getMessage: function(msg) {
@@ -78,11 +75,6 @@ export default {
           const value = JSON.parse(item.values[0][1])
           if (value.log !== '\n') {
             value.log = value.time.split('T')[0] + ' ' + value.log
-            // filter ERROR log
-            if (value.log.indexOf('ERROR') !== -1) {
-              this.errorLog.push(value)
-              this.$emit('error', this.errorLog)
-            }
             return value
           }
         })
@@ -90,14 +82,18 @@ export default {
         this.$nextTick(() => {
           this.scrollToTarget('scrollLog')
         })
+        this.filterErrorLog()
       }
+    },
+    filterErrorLog() {
+      this.errorLog = this.logData.filter(item => item.log.indexOf('ERROR') !== -1)
+      this.$emit('error', this.errorLog)
     },
     send: function(order) {
       console.log(order)
       this.ws.send(order)
     },
     async getTaskLogInfo() {
-      console.log(this.taskId)
       const taskId = this.taskId || this.$route.params.taskId
       const res = await getTaskLogInfo(taskId)
       if (res.code === 0) {
