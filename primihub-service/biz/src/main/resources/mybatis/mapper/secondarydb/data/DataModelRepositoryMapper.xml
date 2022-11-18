@@ -281,7 +281,7 @@
     </select>
     <select id="queryModelTask" resultType="java.util.Map">
         select
-        mt.model_id modelId,mt.task_id taskId,dt.task_state taskState,dt.task_id_name taskIdName,dt.task_start_time taskStartTime,dt.task_end_time taskEndTime
+        mt.model_id modelId,mt.task_id taskId,dt.task_state taskState,dt.task_name taskName,dt.task_id_name taskIdName,dt.task_start_time taskStartTime,dt.task_end_time taskEndTime
         from (
         select
         DISTINCT model_id,task_id

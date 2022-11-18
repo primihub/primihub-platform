@@ -1,4 +1,4 @@
-package com.primihub.biz.entity.sys.vo;
+package com.primihub.biz.entity.sys.config;
 
 import me.zhyd.oauth.config.AuthConfig;
 

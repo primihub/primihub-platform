@@ -55,6 +55,8 @@ public class DataResourceService {
     @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
+    private FusionResourceService fusionResourceService;
+    @Autowired
     private SysFileSecondarydbRepository sysFileSecondarydbRepository;
     @Autowired
     private SysUserService sysUserService;
@@ -127,6 +129,7 @@ public class DataResourceService {
             }else if (req.getResourceSource() == 2){
                 dataSource  = DataSourceConvert.DataSourceReqConvertPo(req.getDataSource());
                 handleDataResourceFileResult = handleDataResourceSource(dataResource,fieldList,dataSource);
+                dataResource.setUrl(dataSource.getDbUrl());
             }
             if (handleDataResourceFileResult.getCode()!=0)
                 return handleDataResourceFileResult;
@@ -209,11 +212,13 @@ public class DataResourceService {
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
         if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
-            resourceSynGRPCDataSet(null,dataResource);
+            Long dbId = dataResource.getDbId();
+            DataSource dataSource = dataResourceRepository.queryDataSourceById(dbId);
+            log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
+            resourceSynGRPCDataSet(dataSource,dataResource);
         }else {
             resourceSynGRPCDataSet(null,dataResource);
         }
-        resourceSynGRPCDataSet(dataResource.getFileSuffix(),StringUtils.isNotBlank(dataResource.getResourceFusionId())?dataResource.getResourceFusionId():dataResource.getFileId().toString(),dataResource.getUrl());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
@@ -236,8 +241,19 @@ public class DataResourceService {
                 .collect(Collectors.toList());
         Map<String,Object> map = new HashMap<>();
         try {
-            List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), 0, DataConstant.READ_DATA_ROW);
-            map.put("dataList",csvData);
+            if (dataResource.getResourceSource() == 2){
+                DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                log.info("{}-{}",dataResource.getDbId(),JSONObject.toJSONString(dataSource));
+                if (dataSource!=null){
+                    BaseResultEntity baseResultEntity = dataSourceService.dataSourceTableDetails(dataSource);
+                    if (baseResultEntity.getCode()==0){
+                        map.putAll((Map<String,Object>)baseResultEntity.getResult());
+                    }
+                }
+            }else {
+                List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), 0, DataConstant.READ_DATA_ROW);
+                map.put("dataList",csvData);
+            }
         }catch (Exception e){
             log.info("资源id:{}-文件读取失败：{}",dataResource.getResourceId(),e.getMessage());
             map.put("dataList",new ArrayList());
@@ -544,20 +560,21 @@ public class DataResourceService {
     }
 
     public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource){
-        if (StringUtils.isBlank(dataResource.getResourceFusionId())){
-            dataResource.setResourceFusionId(UUID.randomUUID().toString());
-        }
         if (dataResource.getResourceSource() !=2 ){
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
         }
         Map<String,Object> map = new HashMap<>();
 //        map.put("dbType",dataSource.getDbType());
 //        map.put("dbUrl",dataSource.getDbUrl());
-        map.put("username",dataSource.getDbUsername());
-        map.put("password", dataSource.getDbPassword());
         map.put("tableName", dataSource.getDbTableName());
-        map.put("dbName", dataSource.getDbName());
-        map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
+        if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
+            map.put("db_path",dataSource.getDbUrl());
+        }else {
+            map.put("username",dataSource.getDbUsername());
+            map.put("password", dataSource.getDbPassword());
+            map.put("dbName", dataSource.getDbName());
+            map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
+        }
         return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map));
     }
 
@@ -605,8 +622,8 @@ public class DataResourceService {
         return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
     }
 
-    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList, Long userId) {
-        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getResourceId));
+    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId, String serverAddress) {
+        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
         Set<String> resourceIds = map.keySet();
         DataResource dataResource = null;
         for (String resourceId : resourceIds) {
@@ -616,6 +633,17 @@ public class DataResourceService {
         }
         if (dataResource == null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
+        BaseResultEntity result = fusionResourceService.getResourceListById(serverAddress, resourceIds.toArray(new String[resourceIds.size()]));
+        if (result.getCode()!=0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
+        List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
+        StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
+        for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
+            String resourceId = resourceMap.get("resourceId").toString();
+            if (!dataResource.getResourceFusionId().equals(resourceId)){
+                resourceNames.append(resourceMap.get("resourceName").toString());
+            }
+        }
         List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
@@ -631,10 +659,14 @@ public class DataResourceService {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
             DataResource derivationDataResource = new DataResource();
             derivationDataResource.setUrl(url);
-            derivationDataResource.setResourceName(dataResource.getResourceName() + modelDerivationDto.getDerivationType());
+            derivationDataResource.setResourceName(resourceNames.toString() + modelDerivationDto.getDerivationType());
             derivationDataResource.setResourceAuthType(2);
             derivationDataResource.setResourceSource(3);
-            derivationDataResource.setUserId(userId);
+            if (userId==null || userId==0L){
+                derivationDataResource.setUserId(dataResource.getUserId());
+            }else {
+                derivationDataResource.setUserId(userId);
+            }
             derivationDataResource.setOrganId(0L);
             derivationDataResource.setFileId(0L);
             derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));

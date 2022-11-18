@@ -10,6 +10,7 @@ public enum VerificationCodeEnum {
 
     REGISTER(1,"注册"),
     FORGET_PASSWORD(2,"忘记密码"),
+    CHANGE_ACCOUNT(3,"变更账号"),
     ;
     private Integer code;
     private String description;
