@@ -49,7 +49,8 @@ export default {
   },
   methods: {
     socketInit() {
-      const url = `ws://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
+      const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
+      const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
       this.ws.onopen = this.open
       this.ws.onerror = this.error
@@ -73,7 +74,6 @@ export default {
     getMessage: function(msg) {
       if (msg.data.length > 0) {
         const data = JSON.parse(msg.data).streams
-        console.log(data)
         const formatData = data.map(item => {
           const value = JSON.parse(item.values[0][1])
           if (value.log !== '\n') {
@@ -81,19 +81,15 @@ export default {
             // filter ERROR log
             if (value.log.indexOf('ERROR') !== -1) {
               this.errorLog.push(value)
+              this.$emit('error', this.errorLog)
             }
             return value
           }
         })
         this.logData = this.logData.concat(formatData)
-        console.log(this.logData)
         this.$nextTick(() => {
           this.scrollToTarget('scrollLog')
         })
-        if (this.logType === 'error') {
-          this.errorLog = this.logData
-          this.$emit('error', this.logData)
-        }
       }
     },
     send: function(order) {
