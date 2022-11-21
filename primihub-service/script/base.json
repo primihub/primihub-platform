@@ -14,7 +14,8 @@
         "/common/getValidatePublicKey",
         "/common/getTrackingID",
         "/shareData/syncProject",
-        "/shareData/syncModel"
+        "/shareData/syncModel",
+        "/organ/getHomepage"
     ],
     "needSignUriList":[
 
