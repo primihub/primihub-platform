@@ -96,7 +96,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             log.info("grpc结果:{}", reply.toString());
             if(reply.getRetCode() == 2){
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
             }else {
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
@@ -116,7 +116,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 log.info(JSONObject.toJSONString(derivationResource));
                 if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:"+derivationResource.getMsg());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+derivationResource.getMsg());
                 }else {
                     List<String> resourceIdLst = (List<String>)derivationResource.getResult();
                     for (String resourceId : resourceIdLst) {
@@ -130,7 +130,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
             }
         } catch (Exception e) {
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-            taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:"+e.getMessage());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:"+e.getMessage());
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }

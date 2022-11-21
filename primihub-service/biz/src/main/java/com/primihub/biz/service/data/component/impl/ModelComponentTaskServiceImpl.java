@@ -165,15 +165,15 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
                 }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
             }
         } catch (Exception e) {
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-            taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+e.getMessage());
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }
@@ -217,15 +217,15 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
@@ -283,15 +283,15 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
