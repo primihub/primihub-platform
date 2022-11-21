@@ -14,4 +14,6 @@ public class SysLocalOrganInfo {
 
     private Map<String,SysOrganFusion> fusionMap;
     private List<SysOrganFusion> fusionList;
+
+    private Map<String,Object> homeMap;
 }

@@ -5,6 +5,7 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -37,6 +38,8 @@ public class SysOrganService {
     private RestTemplate restTemplate;
     @Autowired
     private SysCommonPrimaryRedisRepository sysCommonPrimaryRedisRepository;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     public BaseResultEntity getLocalOrganInfo(){
         String group=environment.getProperty("nacos.config.group");
@@ -147,4 +150,42 @@ public class SysOrganService {
        }
    }
 
+    public BaseResultEntity changeHomepage(Map<String, Object> homeMap) {
+        if(!sysCommonPrimaryRedisRepository.lock(SysConstant.SYS_LOCAL_ORGAN_INFO_LOCK))
+            return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW);
+        String group=environment.getProperty("nacos.config.group");
+        String serverAddr=environment.getProperty("nacos.config.server-addr");
+        String namespace=environment.getProperty("nacos.config.namespace");
+        ConfigService configService;
+        try {
+            Properties properties = new Properties();
+            properties.put("serverAddr",serverAddr);
+            properties.put("namespace",namespace);
+            configService= NacosFactory.createConfigService(properties);
+            String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
+            SysLocalOrganInfo sysLocalOrganInfo=JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
+            if(sysLocalOrganInfo.getHomeMap()==null){
+                sysLocalOrganInfo.setHomeMap(homeMap);
+            }else {
+                sysLocalOrganInfo.getHomeMap().putAll(homeMap);
+            }
+            log.info("send publish config");
+            configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
+            Map result=new HashMap();
+            result.put("sysLocalOrganInfo",sysLocalOrganInfo);
+            return BaseResultEntity.success(result);
+        } catch (NacosException e) {
+            log.info("changeLocalOrganInfo",e);
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
+        } finally {
+            sysCommonPrimaryRedisRepository.unlock(SysConstant.SYS_LOCAL_ORGAN_INFO_LOCK);
+        }
+    }
+
+    public BaseResultEntity getHomepage() {
+        if (organConfiguration.getSysLocalOrganInfo()==null){
+            return BaseResultEntity.success();
+        }
+        return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
+    }
 }
