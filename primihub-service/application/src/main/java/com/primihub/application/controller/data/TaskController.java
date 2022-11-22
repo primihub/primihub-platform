@@ -72,8 +72,10 @@ public class TaskController {
      * 用于创建连接
      */
     @GetMapping(value = "sseConnect/{taskId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter connect(@PathVariable String taskId) {
-        return dataTaskService.connectSseTask(taskId);
+    public SseEmitter connect(@PathVariable String taskId,Integer all) {
+        if (all==null)
+            all = 0;
+        return dataTaskService.connectSseTask(taskId,all);
     }
 
     /**

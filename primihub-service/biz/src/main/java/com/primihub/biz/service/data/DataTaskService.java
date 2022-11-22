@@ -517,7 +517,7 @@ public class DataTaskService {
         return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
     }
 
-    public SseEmitter connectSseTask(String taskId) {
+    public SseEmitter connectSseTask(String taskId,Integer all) {
         boolean isReal = true;
         DataTask dataTask = null;
         if (StringUtils.isBlank(taskId)){
@@ -543,8 +543,12 @@ public class DataTaskService {
                 sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
             }else {
                 try {
-                    String query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
-//                    String query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"}";
+                    String query = "";
+                    if (all == 1){
+                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"}";
+                    }else {
+                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
+                    }
                     String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime()/1000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
                     log.info(url);
                     webSocketService.connect(taskId,url);
