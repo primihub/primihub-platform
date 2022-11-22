@@ -41,7 +41,8 @@ public class SysWebSocketService {
                 public void run() {
                     if(webSocketClient.isClosed()){
                         log.error("{}:断线重连",key);
-                        webSocketClient.reconnect();
+                        sseEmitterService.sendMessage(key,"ws 连接断开,请刷新后重试!");
+                        this.cancel();
                     }
                 }
             },1000,5000);
