@@ -40,7 +40,8 @@ public class SysSseEmitterService {
     public void sendMessage(String key, String message) {
         if (CommStorageUtil.getSseEmitterMap().containsKey(key)) {
             try {
-                CommStorageUtil.getSseEmitterMap().get(key).send(message, MediaType.APPLICATION_JSON);
+//                CommStorageUtil.getSseEmitterMap().get(key).send(message, MediaType.APPLICATION_JSON);
+                CommStorageUtil.getSseEmitterMap().get(key).send(message);
 //                sseEmitterMap.get(key).send(message);
             } catch (IOException e) {
                 log.error("标识[{}]推送异常:{}", key, e.getMessage());
