@@ -15,10 +15,9 @@ import com.primihub.biz.service.data.DataTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -67,6 +66,25 @@ public class TaskController {
         if (taskId==null||taskId==0L)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         return  dataTaskService.cancelTask(taskId);
+    }
+
+    /**
+     * 用于创建连接
+     */
+    @GetMapping(value = "sseConnect/{taskId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter connect(@PathVariable String taskId) {
+        return dataTaskService.connectSseTask(taskId);
+    }
+
+    /**
+     * 关闭连接
+     */
+    @GetMapping("sseClose/{taskId}")
+    public BaseResultEntity close(@PathVariable("taskId") String taskId) {
+        if (StringUtils.isBlank(taskId))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        dataTaskService.removeSseTask(taskId);
+        return BaseResultEntity.success();
     }
 
     @GetMapping("getTaskLogInfo")
