@@ -43,18 +43,25 @@ public class ReadWebSocketClient extends WebSocketClient {
 
     @Override
     public void onMessage(String message) {
-        log.info("1[websocket][{}] 收到消息={}",taskId, message);
+        log.info("1[websocket][{}] 收到消息",taskId);
         if (sseEmitterService!=null){
             sseEmitterService.sendMessage(taskId,message);
+            log.info("1[websocket-sse][{}] 发送消息",taskId);
         }else {
-            log.info("{} - 无连接",taskId);
+            log.info("1[websocket][{}] - 无连接",taskId);
         }
 
     }
 
     @Override
     public void onMessage(ByteBuffer bytes) {
-        log.info("2[websocket][{}] 收到消息={}",taskId, getByteString(bytes));
+        log.info("2[websocket][{}] 收到消息",taskId);
+        if (sseEmitterService!=null){
+            sseEmitterService.sendMessage(taskId,getByteString(bytes));
+            log.info("2[websocket-sse][{}] 发送消息",taskId);
+        }else {
+            log.info("2[websocket][{}] - 无连接",taskId);
+        }
 
     }
 
