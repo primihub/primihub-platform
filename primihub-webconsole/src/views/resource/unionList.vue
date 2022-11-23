@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="机构">
-          <el-select v-model="query.organId" placeholder="请选择" @change="handleOrganCascaderChange">
+          <el-select v-model="query.organId" placeholder="请选择" clearable @change="handleOrganCascaderChange" @clear="handleClear">
             <el-option
               v-for="item in cascaderOptions"
               :key="item.value"
@@ -23,16 +23,16 @@
           </el-select>
         </el-form-item>
         <el-form-item label="数据资源ID">
-          <el-input v-model="query.resourceId" placeholder="请输入资源ID" />
+          <el-input v-model="query.resourceId" placeholder="请输入资源ID" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="名称">
-          <el-input v-model="query.resourceName" placeholder="请输入资源名称" />
+          <el-input v-model="query.resourceName" placeholder="请输入资源名称" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item label="关键词">
-          <TagsSelect :data="tags" :remote="false" @filter="searchResource" @change="handleTagChange" />
+          <TagsSelect :data="tags" :reset="isReset" :remote="false" @filter="searchResource" @change="handleTagChange" />
         </el-form-item>
         <el-form-item label="资源类型">
-          <el-select v-model="query.resourceSource" placeholder="请选择" clearable>
+          <el-select v-model="query.resourceSource" placeholder="请选择" clearable @clear="handleClear">
             <el-option
               v-for="item in resourceSourceList"
               :key="item.value"
@@ -43,6 +43,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
+          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -165,6 +166,9 @@ export default {
       resourceSourceList: [{
         label: '文件上传',
         value: 1
+      }, {
+        label: '数据库导入',
+        value: 2
       }],
       cascaderValue: [],
       resourceList: [],
@@ -177,7 +181,8 @@ export default {
       resourceAuthType: 0,
       serverAddress: null,
       groupId: 0,
-      organId: 0
+      organId: 0,
+      isReset: false
     }
   },
   computed: {
@@ -192,6 +197,21 @@ export default {
     }
   },
   methods: {
+    handleClear() {
+      this.fetchData()
+    },
+    reset() {
+      this.isReset = true
+      this.query.resourceId = ''
+      this.query.resourceName = ''
+      this.query.tagName = ''
+      this.query.userName = ''
+      this.query.resourceSource = ''
+      this.query.groupId = ''
+      this.query.organId = ''
+      this.pageNo = 1
+      this.fetchData()
+    },
     async search() {
       this.pageNo = 1
       if (!this.serverAddress) {
@@ -215,6 +235,7 @@ export default {
     handleTagChange(tagName) {
       this.query.tagName = tagName
       this.query.selectTag = 0
+      this.fetchData()
     },
     async handleServerAddressChange(value) {
       this.serverAddress = this.serverAddressList.filter(item => item.value === value)[0]?.label

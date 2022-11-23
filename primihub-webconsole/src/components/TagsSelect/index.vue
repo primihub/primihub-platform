@@ -7,6 +7,7 @@
     :remote="remote"
     :remote-method="handleFilter"
     @change="handleTagChange"
+    @clear="handleClear"
   >
     <el-option
       v-for="item in data"
@@ -48,6 +49,10 @@ export default {
     }
   },
   methods: {
+    handleClear() {
+      this.tagName = ''
+      this.$emit('change', this.tagName)
+    },
     handleTagChange(val) {
       this.tagName = this.data.filter(item => item.value === val)[0]?.label
       this.$emit('change', this.tagName)

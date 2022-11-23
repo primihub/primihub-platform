@@ -45,7 +45,7 @@ export default {
     this.socketInit()
   },
   destroyed() {
-    this.ws.close()
+    this.ws && this.ws.close()
   },
   methods: {
     socketInit() {
@@ -100,7 +100,11 @@ export default {
         const { container, job, taskIdName, start, address } = res.result
         this.start = start
         this.address = address
-        this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
+        if (job) {
+          this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
+        } else {
+          this.query = `{container_name="${container}"}|="${taskIdName}"`
+        }
       }
     },
     scrollToTarget(target, block = 'end') {
@@ -108,7 +112,7 @@ export default {
       element.scrollIntoView({ behavior: 'smooth', block })
     },
     showErrorLog() {
-      this.logType = 'error'
+      this.logType = 'ERROR'
       this.query += `|="ERROR"`
       this.logData = []
 

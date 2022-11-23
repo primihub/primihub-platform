@@ -8,7 +8,7 @@
     <el-table-column
       prop="resourceName"
       label="资源名称"
-      min-width="100"
+      min-width="140"
     >
       <template slot-scope="{row}">
         <el-link v-if="row.resourceState === 0" :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
@@ -26,7 +26,7 @@
     </el-table-column>
     <el-table-column
       label="资源信息"
-      min-width="110"
+      min-width="120"
     >
       <template slot-scope="{row}">
         <div class="info">
