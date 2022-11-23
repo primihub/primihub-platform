@@ -100,10 +100,10 @@ export default {
         const { container, job, taskIdName, start, address } = res.result
         this.start = start
         this.address = address
-        if (job) {
-          this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
-        } else {
+        if (job === 'false') {
           this.query = `{container_name="${container}"}|="${taskIdName}"`
+        } else {
+          this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
         }
       }
     },
