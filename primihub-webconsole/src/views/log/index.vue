@@ -73,7 +73,7 @@
         >
           <template slot-scope="{row}">
             <div class="buttons">
-              <el-link :disabled="row.status === 2" type="primary" @click="download(row.taskId)">下载</el-link>
+              <!-- <el-link :disabled="row.status === 2" type="primary" @click="download(row.taskId)">下载</el-link> -->
               <el-link type="primary" @click="openDialog(row.taskId)">查看</el-link>
             </div>
 
