@@ -478,6 +478,8 @@ public class DataAsyncService implements ApplicationContextAware {
     public void sendModelTaskMail(DataTask dataTask,Long projectId){
         if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
             return;
+        if (StringUtils.isBlank(baseConfiguration.getTaskEmailSubject()))
+            return;
         SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(dataTask.getTaskUserId());
         if (sysUser == null){
             log.info("task_id:{} The task email was not sent. Reason for not sending : No user information",dataTask.getTaskIdName());
@@ -503,7 +505,7 @@ public class DataAsyncService implements ApplicationContextAware {
             sb.append("<a href=\"").append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
             sb.append("\">").append("点击查询任务详情").append("</a>");
         }
-        sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
+        sysEmailService.send(sysUser.getUserAccount(),baseConfiguration.getTaskEmailSubject(),sb.toString());
     }
 
     public void updateTaskState(DataTask dataTask){

@@ -32,6 +32,7 @@ public class BaseConfiguration {
     private String runModelFileUrlDirPrefix;
     private List<ModelComponent> modelComponents;
     private String usefulToken;
+    private String taskEmailSubject;
     // resource
     private boolean displayDatabaseSourceType = false;
     // auth
