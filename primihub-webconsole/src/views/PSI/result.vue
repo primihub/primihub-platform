@@ -42,7 +42,7 @@ export default {
       active: 0,
       userId: 0,
       ownOrganId: 0,
-      ownOrganName: '原语科技',
+      ownOrganName: '',
       allDataPsiTask: [],
       tableDataB: [],
       otherOrganId: '',

@@ -3,19 +3,6 @@
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
     <breadcrumb class="breadcrumb-container" />
     <div class="right-menu">
-      <div class="feedback">
-        <el-popover
-          placement="bottom"
-          width="200"
-          trigger="click"
-        >
-          <div style="text-align: center;">
-            <img src="https://primihub.com/img/qrcode1.78d466ad.png" alt="" srcset="" width="175px">
-            <p>原语科技小助手</p>
-          </div>
-          <el-link slot="reference" type="primary">建议与反馈</el-link>
-        </el-popover>
-      </div>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->

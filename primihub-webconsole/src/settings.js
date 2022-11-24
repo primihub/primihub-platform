@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'PrimiHub Platform',
+  title: 'WeFlow Platform',
 
   /**
    * @type {boolean} true | false
