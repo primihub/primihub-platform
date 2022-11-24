@@ -496,7 +496,7 @@ public class DataAsyncService implements ApplicationContextAware {
         sb.append(DateUtil.formatDate(dataTask.getCreateDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat()));
         sb.append("】使用【");
         sb.append(sysUser.getUserAccount());
-        sb.append("】创建的任务已失败，请前往原语Primihub隐私计算平台查看详情\n");
+        sb.append("】创建的任务已失败\n");
         if (StringUtils.isNotBlank(dataTask.getTaskName())){
             sb.append("任务名称：【").append(dataTask.getTaskName()).append("】\n");
         }
