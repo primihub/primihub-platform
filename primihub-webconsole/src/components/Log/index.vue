@@ -4,7 +4,12 @@
     <div class="log-container">
       <template v-if="logData.length>0">
         <p v-for="(item,index) in logData" :id="(logData.length === index+1)?'scrollLog':''" :key="index" class="item">
-          {{ item.log }}
+          <span v-if="logValueType === 'object'">
+            {{ item.log }}
+          </span>
+          <span v-else>
+            {{ item }}
+          </span>
         </p>
       </template>
       <template v-else>
@@ -37,7 +42,8 @@ export default {
       query: '',
       start: '',
       errorLog: [],
-      logType: ''
+      logType: '',
+      logValueType: 'string'
     }
   },
   async mounted() {
@@ -45,7 +51,7 @@ export default {
     this.socketInit()
   },
   destroyed() {
-    this.ws.close()
+    this.ws && this.ws.close()
   },
   methods: {
     socketInit() {
@@ -72,10 +78,16 @@ export default {
       if (msg.data.length > 0) {
         const data = JSON.parse(msg.data).streams
         const formatData = data.map(item => {
-          const value = JSON.parse(item.values[0][1])
-          if (value.log !== '\n') {
-            value.log = value.time.split('T')[0] + ' ' + value.log
-            return value
+          this.logValueType = typeof item.values[0][1]
+          if (this.logValueType === 'object') {
+            const value = JSON.parse(item.values[0][1])
+            if (value.log !== '\n') {
+              value.log = value.time.split('T')[0] + ' ' + value.log
+              return value
+            }
+            return item.values
+          } else {
+            return item.values
           }
         })
         this.logData = this.logData.concat(formatData)
@@ -86,7 +98,11 @@ export default {
       }
     },
     filterErrorLog() {
-      this.errorLog = this.logData.filter(item => item.log.indexOf('ERROR') !== -1)
+      if (this.logValueType === 'string') {
+        this.errorLog = this.logData.filter(item => item[0][1].indexOf('ERROR') !== -1)
+      } else {
+        this.errorLog = this.logData.filter(item => item.log.indexOf('ERROR') !== -1)
+      }
       this.$emit('error', this.errorLog)
     },
     send: function(order) {
@@ -100,7 +116,11 @@ export default {
         const { container, job, taskIdName, start, address } = res.result
         this.start = start
         this.address = address
-        this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
+        if (job === 'false') {
+          this.query = `{container_name="${container}"}|="${taskIdName}"`
+        } else {
+          this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
+        }
       }
     },
     scrollToTarget(target, block = 'end') {
@@ -108,7 +128,7 @@ export default {
       element.scrollIntoView({ behavior: 'smooth', block })
     },
     showErrorLog() {
-      this.logType = 'error'
+      this.logType = 'ERROR'
       this.query += `|="ERROR"`
       this.logData = []
 
