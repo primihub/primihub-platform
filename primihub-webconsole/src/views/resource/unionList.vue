@@ -181,7 +181,8 @@ export default {
       resourceAuthType: 0,
       serverAddress: null,
       groupId: 0,
-      organId: 0
+      organId: 0,
+      isReset: false
     }
   },
   computed: {
@@ -254,7 +255,7 @@ export default {
     async fetchData() {
       this.loading = true
       this.resourceList = []
-      const { resourceId, resourceName, tagName, resourceAuthType, organId } = this.query
+      const { resourceId, resourceName, tagName, resourceAuthType, organId, resourceSource } = this.query
       const params = {
         serverAddress: this.serverAddress,
         pageNo: this.pageNo,
@@ -263,6 +264,7 @@ export default {
         resourceName,
         tagName,
         resourceAuthType,
+        resourceSource,
         organId
       }
       const { code, result } = await getResourceList(params)
