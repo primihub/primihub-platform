@@ -82,6 +82,7 @@ public class DataResourceService {
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceId",req.getResourceId());
         paramMap.put("resourceAuthType",req.getResourceAuthType());
+        paramMap.put("resourceSource",req.getResourceSource());
         paramMap.put("resourceName",req.getResourceName());
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
