@@ -3,7 +3,7 @@ import { getHomepage, changeHomepage } from '@/api/system'
 
 const { fixedHeader, sidebarLogo, title: defaultTitle } = defaultSettings
 
-const baseUrl = 'http://test1.primihub.com/'
+const baseUrl = '/'
 
 const formatImgUrl = (data) => {
   const prefix = '/data/upload/2'

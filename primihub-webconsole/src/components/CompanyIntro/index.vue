@@ -1,6 +1,6 @@
 <template>
   <div v-if="logo" class="intro">
-    <h1><img class="logo" :src="logo" alt="PrimiHub logo"></h1>
+    <h1><img class="logo" :src="logo" alt="logo"></h1>
     <div v-html="introduction" />
   </div>
 </template>
