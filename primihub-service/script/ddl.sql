@@ -130,6 +130,7 @@ CREATE TABLE `data_mr`  (
                             `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
                             `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
                             `task_id` bigint DEFAULT NULL COMMENT '任务ID',
+                            `take_part_type` tinyint(4) DEFAULT '0' COMMENT '参与类型 0使用数据 1衍生数据',
                             `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
                             `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
                             `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',

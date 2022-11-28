@@ -74,7 +74,8 @@
 
     <select id="queryModelResource" resultType="com.primihub.biz.entity.data.vo.ModelResourceVo">
         SELECT
-            resource_id as resourceId
+            resource_id as resourceId,
+            take_part_type as takePartType
         FROM
             data_mr
         WHERE

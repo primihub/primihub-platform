@@ -124,6 +124,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                         DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
                         dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
                         dataModelResource.setResourceId(resourceId);
+                        dataModelResource.setTakePartType(1);
                         dataModelPrRepository.saveDataModelResource(dataModelResource);
                         taskReq.getDmrList().add(dataModelResource);
                     }

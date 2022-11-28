@@ -73,7 +73,7 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
         DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
-        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId);
+        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId).stream().filter(v->v.getTakePartType()==0).collect(Collectors.toList());
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
             List<String> resourceId = modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toList());
@@ -130,7 +130,8 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-        map.put("modelResources",modelResourceVos.stream().filter(r->r.getResourceType()!=3).collect(Collectors.toList()));
+//        map.put("modelResources",modelResourceVos.stream().filter(r->r.getResourceType()!=3).collect(Collectors.toList()));
+        map.put("modelResources",modelResourceVos);
         map.put("oneself",true);
         if (!baseConfiguration.getAdminUserIds().contains(userId)){
             if (!userId.equals(task.getTaskUserId())){
