@@ -26,7 +26,7 @@
                 </p>
               </div>
               <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
-              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" @change="handleResourceHeaderChange" />
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
             </div>
           </template>
           <template v-else>
