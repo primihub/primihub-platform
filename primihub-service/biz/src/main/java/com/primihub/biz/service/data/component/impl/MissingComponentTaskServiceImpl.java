@@ -16,6 +16,7 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
+import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FreemarkerUtil;
 import java_worker.PushTaskReply;
@@ -44,6 +45,8 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
     private DataResourceService dataResourceService;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
+    @Autowired
+    private DataTaskMonitorService dataTaskMonitorService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -68,6 +71,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
 
                 log.info("newids:{}", ids);
             }
+            String jobId = String.valueOf(taskReq.getJob());
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(exceptionEntityMap));
             Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ids.stream().collect(Collectors.joining(";"))).build();
@@ -80,8 +84,8 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                     .setParams(params)
                     .setName("missing_val_processing")
                     .setLanguage(Common.Language.PROTO)
-                    .setCodeBytes(ByteString.copyFrom("missing_val_processing".getBytes(StandardCharsets.UTF_8)))
-                    .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom("missing_val_processing".getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("Data_File")
                     .build();
@@ -98,6 +102,7 @@ public class MissingComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
             }else {
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,ids.size(),null);
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Iterator<String> keyi = exceptionEntityMap.keySet().iterator();

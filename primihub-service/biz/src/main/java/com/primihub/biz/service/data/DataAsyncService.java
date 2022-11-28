@@ -103,6 +103,9 @@ public class DataAsyncService implements ApplicationContextAware {
     private SysUserSecondarydbRepository sysUserSecondarydbRepository;
     @Autowired
     private SysEmailService sysEmailService;
+    @Autowired
+    private DataTaskMonitorService dataTaskMonitorService;
+
 
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
@@ -257,8 +260,8 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setParams(params)
                         .setName("testTask")
                         .setLanguage(Common.Language.PROTO)
-                        .setCode("import sys;")
-                        .setJobId(ByteString.copyFrom(dataPsi.getId().toString().getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+                        .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTaskId(ByteString.copyFrom(psiTask.getId().toString().getBytes(StandardCharsets.UTF_8)))
                         .addInputDatasets("clientData")
                         .addInputDatasets("serverData")
@@ -272,6 +275,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .build();
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,psiTask.getFilePath());
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
                 psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState()!=4){
@@ -330,8 +334,8 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setParams(params)
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
-                    .setCode("import sys;")
-                    .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("serverData")
                     .build();
@@ -344,12 +348,13 @@ public class DataAsyncService implements ApplicationContextAware {
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
             if (reply.getRetCode()==0){
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,dataTask.getTaskResultPath());
+//                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
 //                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
-                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                    dataTask.setTaskErrorMsg("运行失败:无文件信息");
-                }
+//                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
+//                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+//                    dataTask.setTaskErrorMsg("运行失败:无文件信息");
+//                }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
@@ -441,7 +446,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .build();
@@ -456,6 +461,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
                     dataReasoning.setReleaseDate(new Date());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,null);
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }else {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());

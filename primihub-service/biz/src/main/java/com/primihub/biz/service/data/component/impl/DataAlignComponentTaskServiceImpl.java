@@ -18,6 +18,7 @@ import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
+import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
@@ -49,6 +50,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     private DataResourceService dataResourceService;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
+    @Autowired
+    private DataTaskMonitorService dataTaskMonitorService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -76,6 +79,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {
+                String jobId = String.valueOf(taskReq.getJob());
                 log.info("runAssemblyDatamap:{}", JSONObject.toJSONString(map));
                 Common.ParamValue detailParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(map)).build();
                 Common.Params params = Common.Params.newBuilder()
@@ -86,9 +90,9 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         .setParams(params)
                         .setName("runAssemblyData")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                        .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -103,6 +107,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
                 } else {
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,map.size(),null);
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, ModelEntity>> iterator = map.entrySet().iterator();
                     Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
@@ -227,7 +232,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setParams(params)
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
-                    .setCode("import sys;")
+                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                     .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("clientData")

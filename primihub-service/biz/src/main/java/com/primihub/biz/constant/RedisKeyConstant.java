@@ -11,4 +11,7 @@ public class RedisKeyConstant {
 
     // Port number key
     public final static String REQUEST_PORT_NUMBER = "model:port_number:<square>";
+
+    // task key
+    public final static String TASK_STATUS_KEY = "ts:<taskId>:<jobId>";
 }
