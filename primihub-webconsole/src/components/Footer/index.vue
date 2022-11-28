@@ -1,6 +1,6 @@
 <template>
   <div v-if="!$store.state.settings.isHideFooterVersion" class="footer">
-    <p>北京原语科技有限公司 V1.5.0</p>
+    <p>{{ $store.state.settings.footerText }}</p>
   </div>
 </template>
 

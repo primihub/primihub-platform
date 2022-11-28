@@ -310,7 +310,6 @@ export const asyncRoutes = [
     name: 'Log',
     redirect: '/log/index',
     meta: { title: '日志管理', icon: 'el-icon-warning-outline' },
-    alwaysShow: true, // 一直显示根路由
     children: [{
       path: 'index',
       name: 'LogList',

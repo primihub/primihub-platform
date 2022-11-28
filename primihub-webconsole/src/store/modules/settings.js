@@ -3,12 +3,12 @@ import { getHomepage, changeHomepage } from '@/api/system'
 
 const { fixedHeader, sidebarLogo, title: defaultTitle } = defaultSettings
 
-const baseUrl = '/'
+// const baseUrl = '/'
 
-const formatImgUrl = (data) => {
-  const prefix = '/data/upload/2'
-  return baseUrl + 'assets' + data.substring(prefix.length)
-}
+// const formatImgUrl = (data) => {
+//   const prefix = '/data/upload/2'
+//   return baseUrl + 'assets' + data.substring(prefix.length)
+// }
 
 const state = {
   fixedHeader: fixedHeader,
@@ -24,7 +24,8 @@ const state = {
   isHideFadeBack: true,
   isHideFooterVersion: true,
   showLogoTitle: 2, // 1: 添加 2:不添加
-  settingChanged: false
+  settingChanged: false,
+  footerText: ''
 }
 
 const mutations = {
@@ -34,30 +35,24 @@ const mutations = {
   SET_CHANGE_STATUS: (state, status) => {
     state.settingChanged = status
   },
+  SET_FOOTER_TEXT: (state, text) => {
+    state.footerText = text
+  },
   SET_TITLE: (state, title) => {
     title = title === '' ? defaultTitle : title
     state.title = title
     changePageTitle(title)
   },
   SET_LOGO_URL: (state, logoUrl) => {
-    if (logoUrl && logoUrl.indexOf(baseUrl) === -1) {
-      logoUrl = formatImgUrl(logoUrl)
-    }
     state.logoUrl = logoUrl
   },
   SET_LOGIN_LOGO_URL: (state, logoUrl) => {
-    if (logoUrl && logoUrl.indexOf(baseUrl) === -1) {
-      logoUrl = formatImgUrl(logoUrl)
-    }
     state.loginLogoUrl = logoUrl
   },
   SET_LOGO_TITLE: (state, title) => {
     state.logoTitle = title
   },
   SET_FAVICON: (state, favicon) => {
-    if (favicon && favicon.indexOf(baseUrl) === -1) {
-      favicon = formatImgUrl(favicon)
-    }
     state.favicon = favicon
     changePageFavicon(favicon)
   },
@@ -82,7 +77,7 @@ const actions = {
   async getHomepage({ commit }) {
     const res = await getHomepage()
     if (res.code === 0 && res.result) {
-      const { title = '', favicon, logoUrl, loginDescription, isHideFadeBack, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl } = res.result
+      const { title = '', favicon, logoUrl, loginDescription, isHideFadeBack, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl, footerText } = res.result
 
       commit('SET_CHANGE_STATUS', false)
       commit('SET_TITLE', title)
@@ -90,17 +85,18 @@ const actions = {
       commit('SET_LOGO_URL', !logoUrl ? state.logoUrl : logoUrl)
       commit('SET_LOGIN_LOGO_URL', !loginLogoUrl ? state.loginLogoUrl : loginLogoUrl)
       commit('SET_DESCRIPTION', loginDescription || state.loginDescription)
-      commit('SET_FADE_BACK_STATUS', isHideFadeBack || state.isHideFadeBack)
-      commit('SET_VERSION_STATUS', isHideFooterVersion || state.isHideFooterVersion)
+      commit('SET_FADE_BACK_STATUS', isHideFadeBack === undefined ? state.isHideFadeBack : isHideFadeBack)
+      commit('SET_VERSION_STATUS', isHideFooterVersion === undefined ? state.isHideFooterVersion : isHideFooterVersion)
       commit('SET_LOGO_TITLE', logoTitle)
-      commit('SET_SHOW_LOGO_STATUS', !showLogoTitle ? state.showLogoTitle : showLogoTitle)
+      commit('SET_SHOW_LOGO_STATUS', showLogoTitle === undefined ? state.showLogoTitle : showLogoTitle)
+      commit('SET_FOOTER_TEXT', footerText)
     }
   },
   changeHomepage({ commit }, data, type) {
     return new Promise((resolve, reject) => {
       changeHomepage(data).then(res => {
         if (res.code === 0) {
-          const { title, favicon, logoUrl, loginDescription, isHideFadeBack, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl } = data
+          const { title, favicon, logoUrl, loginDescription, isHideFadeBack, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl, footerText } = data
 
           commit('SET_CHANGE_STATUS', true)
           commit('SET_TITLE', title)
@@ -112,6 +108,7 @@ const actions = {
           commit('SET_VERSION_STATUS', isHideFooterVersion)
           commit('SET_LOGO_TITLE', logoTitle)
           commit('SET_SHOW_LOGO_STATUS', showLogoTitle)
+          commit('SET_FOOTER_TEXT', footerText)
 
           resolve()
         }
