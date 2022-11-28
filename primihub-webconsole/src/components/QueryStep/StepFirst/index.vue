@@ -108,6 +108,10 @@ export default {
       this.$refs.form.validate(valid => {
         if (valid) {
           this.listLoading = true
+          if (this.form.pirParam.indexOf('，') !== -1) {
+            this.$message.error('请输入英文,')
+            return
+          }
           pirSubmitTask({
             serverAddress: this.serverAddress,
             resourceId: this.selectResources[0].resourceId,
