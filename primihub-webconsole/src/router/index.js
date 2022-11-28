@@ -301,12 +301,6 @@ export const asyncRoutes = [
         name: 'CenterManage',
         component: () => import('@/views/setting/center'),
         meta: { title: '中心管理' }
-      },
-      {
-        path: 'ui',
-        name: 'UISetting',
-        component: () => import('@/views/setting/ui'),
-        meta: { title: '界面设置' }
       }
     ]
   },
