@@ -32,6 +32,7 @@ import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.service.sys.SysSseEmitterService;
 import com.primihub.biz.service.sys.SysWebSocketService;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.comm.CommStorageUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
@@ -531,6 +532,9 @@ public class DataTaskService {
             }else {
                 taskId = dataTask.getTaskIdName();
             }
+        }
+        if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
+            sseEmitterService.removeKey(taskId);
         }
         SseEmitter sseEmitter = sseEmitterService.connect(taskId);
         if (!isReal){

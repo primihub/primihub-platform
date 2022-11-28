@@ -24,7 +24,7 @@ public class SysSseEmitterService {
      */
     public SseEmitter connect(String key) {
         // 设置超时时间，0表示不过期。默认5分钟，超过时间未完成会抛出异常：AsyncRequestTimeoutException
-        SseEmitter sseEmitter = new SseEmitter(300000L);
+        SseEmitter sseEmitter = new SseEmitter(30L * 60L * 1000L);
         sseEmitter.onCompletion(completionCallBack(key));
         sseEmitter.onError(errorCallBack(key));
         sseEmitter.onTimeout(timeoutCallBack(key));
