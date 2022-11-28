@@ -41,6 +41,16 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="可见性">
+          <el-select v-model="query.resourceAuthType" placeholder="请选择" clearable>
+            <el-option
+              v-for="item in resourceAuthTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
           <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
@@ -161,7 +171,8 @@ export default {
         resourceSource: '',
         serverAddressValue: '',
         groupId: 0,
-        organId: ''
+        organId: '',
+        resourceAuthType: ''
       },
       resourceSourceList: [{
         label: '文件上传',
@@ -169,6 +180,16 @@ export default {
       }, {
         label: '数据库导入',
         value: 2
+      }],
+      resourceAuthTypeOptions: [{
+        label: '公开',
+        value: 1
+      }, {
+        label: '私有',
+        value: 2
+      }, {
+        label: '指定机构可见',
+        value: 3
       }],
       cascaderValue: [],
       resourceList: [],
@@ -202,13 +223,11 @@ export default {
     },
     reset() {
       this.isReset = true
-      this.query.resourceId = ''
-      this.query.resourceName = ''
-      this.query.tagName = ''
-      this.query.userName = ''
-      this.query.resourceSource = ''
-      this.query.groupId = ''
-      this.query.organId = ''
+      for (const key in this.query) {
+        if (key !== 'serverAddressValue') {
+          this.query[key] = ''
+        }
+      }
       this.pageNo = 1
       this.fetchData()
     },
