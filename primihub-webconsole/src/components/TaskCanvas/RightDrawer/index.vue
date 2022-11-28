@@ -7,7 +7,7 @@
             <p><i class="el-icon-office-building" /> <strong>发起方：</strong>{{ initiateOrgan.organName }}</p>
           </div>
           <el-button v-if="options.isEditable" type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
-          <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
+          <ResourceDec v-if="initiateOrgan.resourceId" :disabled="!options.isEditable" :data="initiateOrgan" @change="handleResourceHeaderChange" />
         </el-form-item>
         <el-form-item>
           <template v-if="providerOrganOptions.length>0">
@@ -26,7 +26,7 @@
                 </p>
               </div>
               <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
-              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" @change="handleResourceHeaderChange" />
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
             </div>
           </template>
           <template v-else>
@@ -36,7 +36,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'dataAlign'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -54,7 +54,7 @@
             <el-form-item />
           </el-col>
           <el-col :span="12">
-            <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+            <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
               <el-option
                 v-for="(v) in nodeData.componentTypes[2].inputValues"
                 :key="v.key"
@@ -67,7 +67,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'exception'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -79,7 +79,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'missing'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -98,7 +98,7 @@
               <el-form-item />
             </el-col>
             <el-col :span="12">
-              <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+              <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
                 <el-option
                   v-for="(v) in nodeData.componentTypes[2].inputValues"
                   :key="v.key"
@@ -145,18 +145,18 @@
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
-              <el-input v-model="item.inputValue" size="small" @change="handleChange" />
+              <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'textarea'">
-              <el-input v-model="item.inputValue" type="textarea" size="small" @change="handleChange" />
+              <el-input v-model="item.inputValue" :disabled="!options.isEditable" type="textarea" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'radio'">
               <el-radio-group v-model="item.inputValue" @change="handleChange">
-                <el-radio v-for="(r,index) in item.inputValues" :key="index" :label="r.key">{{ r.val }}</el-radio>
+                <el-radio v-for="(r,index) in item.inputValues" :key="index" :disabled="!options.isEditable" :label="r.key">{{ r.val }}</el-radio>
               </el-radio-group>
             </template>
             <template v-if="item.inputType === 'select'">
-              <el-select v-model="item.inputValue" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
+              <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
                   :key="index"
@@ -169,7 +169,6 @@
         </div>
       </template>
     </el-form>
-    <el-button v-if="options.showSaveButton" type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->

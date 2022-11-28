@@ -78,6 +78,14 @@
               </template>
             </el-table-column>
             <el-table-column
+              prop="resourceType"
+              label="数据类型"
+            >
+              <template slot-scope="{row}">
+                {{ row.resourceType === 3 ? '原始数据' : '原始数据' }}
+              </template>
+            </el-table-column>
+            <el-table-column
               prop="organName"
               label="上传机构"
             />
