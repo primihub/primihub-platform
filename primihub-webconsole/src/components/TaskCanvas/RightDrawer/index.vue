@@ -163,7 +163,6 @@
         </div>
       </template>
     </el-form>
-    <el-button v-if="options.showSaveButton" type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
