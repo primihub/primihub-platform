@@ -3,7 +3,7 @@
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="中心节点">
-          <el-select v-model="query.serverAddressValue" placeholder="请选择" clearable @change="handleServerAddressChange" @clear="handleClear">
+          <el-select v-model="query.serverAddressValue" placeholder="请选择" @change="handleServerAddressChange">
             <el-option
               v-for="item in serverAddressList"
               :key="item.value"

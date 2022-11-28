@@ -32,7 +32,8 @@ export default {
   border-bottom-left-radius: 10px;
   background: #1a69f9 url('../../assets/login-bg.png') left bottom no-repeat;
   p{
-    font-size: 14px;
+    font-size: 36px;
+    text-align: center;
   }
   .logo{
     width: 200px;

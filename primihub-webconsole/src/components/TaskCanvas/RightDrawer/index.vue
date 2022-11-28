@@ -3,25 +3,31 @@
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
-          <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
+          <div class="organ-header">
+            <p><i class="el-icon-office-building" /> <strong>发起方：</strong>{{ initiateOrgan.organName }}</p>
+          </div>
           <el-button v-if="options.isEditable" type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
           <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
         </el-form-item>
         <el-form-item>
           <template v-if="providerOrganOptions.length>0">
-            <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
-            <div v-if="options.isEditable" class="organ-select">
-              <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
-                <el-option
-                  v-for="(v,index) in providerOrganOptions"
-                  :key="index"
-                  :label="v.organName"
-                  :value="v.organId"
-                />
-              </el-select>
-              <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
+            <el-divider />
+            <div class="organ-header">
+              <span><i class="el-icon-office-building" /> <strong>协作方</strong></span>
+              <div class="operation-buttons">
+                <el-button icon="el-icon-plus" plain size="mini" @click="openProviderOrganDialog">添加协作方</el-button>
+              </div>
             </div>
-            <ResourceDec v-if="providerOrgans.length > 0" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
+            <div v-for="(organ,i) in selectedProviderOrgans" :key="i" class="organ">
+              <div class="organ-header">
+                <p>
+                  {{ organ.organName }}
+                  <i class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
+                </p>
+              </div>
+              <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" @change="handleResourceHeaderChange" />
+            </div>
           </template>
           <template v-else>
             <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
@@ -167,7 +173,7 @@
     <!-- add resource dialog -->
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加可信第三方" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
     <FeatureSelectDialog :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
@@ -272,7 +278,8 @@ export default {
         arbiterOrgan: [
           { required: true, trigger: 'change' }
         ]
-      }
+      },
+      selectedProviderOrgans: []
     }
   },
   computed: {
@@ -290,9 +297,18 @@ export default {
       }
     },
     featuresOptions() {
-      this.getDataSetComValue(this.graphData)
-      if (this.providerOrgans.length > 0 && this.providerOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
-        let intersection = this.providerOrgans.length > 0 && this.providerOrgans[0].fileHandleField.filter(v => this.initiateOrgan.fileHandleField.includes(v))
+      if (this.nodeData.componentCode === 'dataAlign' || this.nodeData.componentCode === 'missing') {
+        this.getDataSetComValue(this.graphData)
+      }
+      if (this.selectedProviderOrgans.length > 0 && this.selectedProviderOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
+        let fileHandleField = []
+        if (this.selectedProviderOrgans.length > 1) {
+          fileHandleField = this.selectedProviderOrgans[0].fileHandleField.concat(this.selectedProviderOrgans[1].fileHandleField)
+          fileHandleField = [...new Set(fileHandleField)]
+        } else {
+          fileHandleField = this.selectedProviderOrgans[0].fileHandleField
+        }
+        let intersection = fileHandleField.filter(v => this.initiateOrgan.fileHandleField.includes(v))
         intersection = intersection.map((val, key) => {
           return {
             key: key + '',
@@ -303,6 +319,9 @@ export default {
       } else {
         return []
       }
+    },
+    dialogTitle() {
+      return this.nodeData.componentCode === 'dataSet' ? '添加协作方' : this.nodeData.componentCode === 'model' ? '添加可信第三方' : ''
     }
   },
   watch: {
@@ -330,8 +349,6 @@ export default {
           this.selectedExceptionFeatures = newVal.componentTypes[1].inputValue !== '' ? newVal.componentTypes[1].inputValue : null
           this.selectedFeatures = this.selectedExceptionFeatures
           console.log('watch selectedExceptionFeatures', this.selectedExceptionFeatures)
-        } else {
-          this.inputValue = ''
         }
       }
     },
@@ -343,6 +360,9 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    filterData(organId) {
+      return this.selectedProviderOrgans.find(item => item.organId === organId)
+    },
     getDataSetComValue(value) {
       const dataSetCom = value.cells.find(item => item.componentCode === 'dataSet')
       if (dataSetCom) {
@@ -354,27 +374,59 @@ export default {
       }
     },
     async openProviderOrganDialog() {
-      if (this.initiateOrgan.organId && this.providerOrgans.length > 0) {
-        this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrgans[0].organId)
+      if (this.nodeData.componentCode === 'dataSet') {
+        if (this.selectedProviderOrgans.length === 2) {
+          this.$message({
+            message: '最多选择2个协作方',
+            type: 'error'
+          })
+          return
+        }
         this.providerOrganDialogVisible = true
+        this.organData = this.providerOrganOptions
       } else {
-        this.$message({
-          message: '请先选择数据集',
-          type: 'warning'
-        })
+        if (this.initiateOrgan.organId && this.selectedProviderOrgans.length > 0) {
+          const organs = this.selectedProviderOrgans.concat([this.initiateOrgan])
+          console.log('organs', organs)
+          this.organData = [...this.organs].filter(x => [...organs].every(y => y.organId !== x.organId))
+          // this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.selectedProviderOrgans[0].organId)
+          console.log(this.organData)
+          this.providerOrganDialogVisible = true
+        } else {
+          this.$message({
+            message: '请先选择数据集',
+            type: 'warning'
+          })
+        }
       }
     },
+    handleProviderRemove(index) {
+      this.providerOrganIds = null
+      const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
+      this.inputValue !== '' && this.inputValue.splice(posIndex, 1)
+      this.selectedProviderOrgans.splice(index, 1)
+      this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
+      this.handleChange()
+    },
     closeProviderOrganDialog(data) {
-      this.providerOrganIds = data
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      const posIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'arbiterOrgan')
-      this.providerOrganIds = data.organId
-      this.arbiterOrganName = data.organName
-      this.arbiterOrganId = data.organId
+      const { organId, organName } = data
+      this.providerOrganIds = organId
+      if (this.nodeData.componentCode === 'dataSet') {
+        this.selectedProviderOrgans.push({
+          organId,
+          organName
+        })
+        this.setInputValue(data)
+      } else {
+        const posIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'arbiterOrgan')
+        this.arbiterOrganName = data.organName
+        this.arbiterOrganId = data.organId
+        this.nodeData.componentTypes[posIndex].inputValue = data.organId
+      }
       this.providerOrganDialogVisible = false
-      this.nodeData.componentTypes[posIndex].inputValue = data.organId
       this.$emit('change', this.nodeData)
     },
     getDataSetNodeData() {
@@ -397,7 +449,6 @@ export default {
       this.participationIdentity = participationIdentity
       this.selectedOrganId = organId
       sessionStorage.setItem('organ', JSON.stringify({ organId: this.selectedOrganId, participationIdentity: this.participationIdentity }))
-      console.log(organId)
       if (this.selectedOrganId === '') {
         this.$message({
           message: '请先选择机构',
@@ -406,9 +457,8 @@ export default {
         return
       }
       if (this.inputValue) {
-        const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
+        const currentOrgan = this.inputValue.find(item => item.organId === organId)
         if (currentOrgan) {
-          console.log(this.inputValue)
           this.selectedResourceId = currentOrgan.resourceId
         } else {
           this.selectedResourceId = ''
@@ -446,12 +496,12 @@ export default {
         this.initiateOrgan = data
       } else {
         // is not first select
-        if (this.providerOrgans.length > 0 && 'resourceId' in this.providerOrgans[0]) {
+        if (this.selectedProviderOrgans.length > 0 && 'resourceId' in this.selectedProviderOrgans[0]) {
           this.resourceChanged = true
         }
-        data.organName = this.providerOrganOptions.find(item => item.organId === this.providerOrganId).organName
-        this.providerOrgans = []
-        this.providerOrgans = [data]
+        const posIndex = this.selectedProviderOrgans.findIndex(organ => organ.organId === data.organId)
+        data.organName = this.selectedProviderOrgans[posIndex].organName
+        this.selectedProviderOrgans[posIndex] = data
       }
       this.selectedResourceId = data.resourceId
       // set input value
@@ -466,15 +516,13 @@ export default {
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
-      const posIndex = this.inputValues.findIndex(item => item.participationIdentity === data.participationIdentity)
+      const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
       const currentData = data
-      console.log('currentData', currentData)
       if (posIndex !== -1) {
         this.inputValues.splice(posIndex, 1, currentData)
       } else {
         this.inputValues.push(currentData)
       }
-      console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
       this.handleChange()
     },
@@ -495,6 +543,7 @@ export default {
       if (res.code === 0) {
         this.organs = res.result
         this.providerOrganOptions = this.organs.filter(item => item.participationIdentity === 2)
+        this.providerOrgans = this.organs.filter(item => item.participationIdentity === 2)
         this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
       }
       this.listLoading = false
@@ -538,6 +587,11 @@ export default {
 p {
   margin-block-start: .2em;
   margin-block-end: .2em;
+}
+::v-deep .el-button--mini.is-circle{
+  padding: 3px;
+  width: 20px;
+  height: 20px;
 }
 ::v-deep .el-form-item__content{
   display: block;
@@ -604,5 +658,14 @@ p {
 }
 .feature-container{
   margin: 10px 0;
+}
+.organ-header{
+  display: flex;
+  justify-content: space-between;
+  line-height: 20px;
+  margin: 10px 0;
+}
+.icon-delete{
+  color: #F56C6C;
 }
 </style>
