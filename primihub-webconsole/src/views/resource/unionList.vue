@@ -41,16 +41,6 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="可见性">
-          <el-select v-model="query.resourceAuthType" placeholder="请选择" clearable>
-            <el-option
-              v-for="item in resourceAuthTypeOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
           <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
@@ -181,16 +171,6 @@ export default {
         label: '数据库导入',
         value: 2
       }],
-      resourceAuthTypeOptions: [{
-        label: '公开',
-        value: 1
-      }, {
-        label: '私有',
-        value: 2
-      }, {
-        label: '指定机构可见',
-        value: 3
-      }],
       cascaderValue: [],
       resourceList: [],
       total: 0,
@@ -274,7 +254,7 @@ export default {
     async fetchData() {
       this.loading = true
       this.resourceList = []
-      const { resourceId, resourceName, tagName, resourceAuthType, organId, resourceSource } = this.query
+      const { resourceId, resourceName, tagName, organId, resourceSource } = this.query
       const params = {
         serverAddress: this.serverAddress,
         pageNo: this.pageNo,
@@ -282,7 +262,6 @@ export default {
         resourceId,
         resourceName,
         tagName,
-        resourceAuthType,
         resourceSource,
         organId
       }
