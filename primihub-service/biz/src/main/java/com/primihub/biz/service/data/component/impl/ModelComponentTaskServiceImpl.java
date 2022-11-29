@@ -161,6 +161,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
+                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
@@ -209,6 +210,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
+                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
@@ -267,6 +269,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
+                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
