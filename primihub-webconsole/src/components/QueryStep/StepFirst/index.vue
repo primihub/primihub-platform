@@ -109,7 +109,10 @@ export default {
         if (valid) {
           this.listLoading = true
           if (this.form.pirParam.indexOf('，') !== -1) {
-            this.$message.error('请输入英文,')
+            this.$message.error('请使用英文,')
+            return
+          } else if (this.form.pirParam.indexOf('；') !== -1) {
+            this.$message.error('请使用英文;')
             return
           }
           pirSubmitTask({
