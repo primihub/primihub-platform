@@ -262,7 +262,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setLanguage(Common.Language.PROTO)
                         .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                         .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTaskId(ByteString.copyFrom(psiTask.getId().toString().getBytes(StandardCharsets.UTF_8)))
+                        .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .addInputDatasets("clientData")
                         .addInputDatasets("serverData")
                         .build();
@@ -450,7 +450,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
                         .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                        .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());

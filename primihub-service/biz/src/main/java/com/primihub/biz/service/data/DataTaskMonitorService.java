@@ -117,8 +117,9 @@ public class DataTaskMonitorService {
                 if (numberOfSuccessfulTasks<0){
                     return false;
                 }else {
-                    if (num == numberOfSuccessfulTasks)
+                    if (num == numberOfSuccessfulTasks){
                         return true;
+                    }
                 }
 
                 Thread.sleep(5000L);
@@ -155,31 +156,18 @@ public class DataTaskMonitorService {
 
 
     public void verifyWhetherTheTaskIsSuccessfulAgain(DataTask dataTask,String jobId, int num, String path){
-        if (StringUtils.isBlank(path)){
-            if(blockingAccessToTaskStatus(dataTask.getTaskIdName(), jobId, num, DataConstant.GRPC_SERVER_TIMEOUT,path)){
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            }else {
-                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-            }
-        }else {
+        blockingAccessToTaskStatus(dataTask.getTaskIdName(), jobId, num, DataConstant.GRPC_SERVER_TIMEOUT,path);
+        if (StringUtils.isNotBlank(path)){
             if (FileUtil.isFileExists(path)){
+                log.info("path:{} 存在",path);
                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
             }else {
-                if(blockingAccessToTaskStatus(dataTask.getTaskIdName(), jobId, num, DataConstant.GRPC_SERVER_TIMEOUT,path)){
-                    if (FileUtil.isFileExists(path))
-                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                }else {
-                    if (FileUtil.isFileExists(path))
-                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                }
-            }
-            if (FileUtil.isFileExists(path)){
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            }else {
+                log.info("path:{} 不存在",path);
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:无文件信息");
             }
         }
+
 
     }
 
