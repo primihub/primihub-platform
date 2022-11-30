@@ -144,7 +144,7 @@ public class TaskController {
         if (StringUtils.isNotBlank(taskResultContent)){
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
             boolean isCooperation = dataTask.getIsCooperation() == 1;
-            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelRunZipFilePath());
+            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelFileName());
             if (file.exists()){
                 // 获得文件输入流
                 FileInputStream inputStream = new FileInputStream(file);
