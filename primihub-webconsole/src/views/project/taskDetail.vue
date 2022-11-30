@@ -82,7 +82,7 @@
               label="数据类型"
             >
               <template slot-scope="{row}">
-                {{ row.resourceType === 3 ? '原始数据' : '原始数据' }}
+                {{ row.resourceType === 3 ? '衍生数据' : '原始数据' }}
               </template>
             </el-table-column>
             <el-table-column
