@@ -57,7 +57,7 @@ public class DataTaskMonitorService {
                 .usePlaintext()
                 .build();
         ClientContext context= ClientContext.newBuilder().setClientId(grpcClientPort.toString()).build();
-        NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel);
+        NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
         stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
             @Override
             public void onNext(NodeEventReply nodeEventReply) {
