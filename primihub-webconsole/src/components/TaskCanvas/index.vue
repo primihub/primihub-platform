@@ -1156,7 +1156,7 @@ export default {
   overflow: hidden;
   height: 100%;
   width: 100%;
-  min-width: 200px
+  min-width: 800px
 }
 .canvas-container{
   display: flex;
