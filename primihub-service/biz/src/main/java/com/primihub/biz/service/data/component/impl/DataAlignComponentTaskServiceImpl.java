@@ -205,6 +205,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
             if (serverIndex<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐协作方特征未查询到");
+            String jobId = String.valueOf(taskReq.getJob());
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
             ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex,serverData.getResourceId());
@@ -234,7 +235,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
-                    .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("clientData")
                     .addInputDatasets("serverData")
@@ -249,6 +250,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:"+reply);
+            dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getResourceList().size(),clientEntity.getPsiPath());
             if (!FileUtil.isFileExists(clientEntity.getPsiPath())){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI无文件信息");
             }
