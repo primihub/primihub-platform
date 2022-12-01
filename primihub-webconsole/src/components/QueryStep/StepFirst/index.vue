@@ -70,7 +70,7 @@ export default {
           { required: true, message: '请选择资源', trigger: 'blur' }
         ],
         pirParam: [
-          { required: true, message: '请输入关键词', trigger: 'blur' },
+          { required: true, message: '请输入关键词，多条件查询请使用英文;分隔。例：a;b;c', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
@@ -109,7 +109,7 @@ export default {
         if (valid) {
           this.listLoading = true
           if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1) {
-            this.$message.error('请使用英文;')
+            this.$message.error('多条件查询请使用英文;分隔')
             return
           }
           pirSubmitTask({
