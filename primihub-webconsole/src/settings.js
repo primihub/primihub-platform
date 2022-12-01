@@ -1,5 +1,5 @@
 module.exports = {
-  title: 'Platform',
+  title: 'PrimiHub Platform',
 
   /**
    * @type {string} html string
@@ -23,5 +23,12 @@ module.exports = {
    * @type {boolean} true | false
    * @description for google analytics
    */
-  googleAnalytics: true
+  googleAnalytics: true,
+  loginLogoUrl: '/images/logo-white.png', // login page logo
+  logoUrl: '/images/logo1.png', // navbar logo
+  logoTitle: '原语隐私计算平台', // navbar logo title
+  favicon: './favicon.ico', // browser icon
+  isHideFadeBack: true, // show or hide suggestions and feedback
+  isHideFooterVersion: true, // show or hide footer text
+  footerText: '北京原语科技有限公司 V1.5.5' // when show footer text
 }
