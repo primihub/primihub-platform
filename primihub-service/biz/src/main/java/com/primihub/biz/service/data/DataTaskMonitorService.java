@@ -117,7 +117,7 @@ public class DataTaskMonitorService {
                 if (numberOfSuccessfulTasks<0){
                     return false;
                 }else {
-                    if (num == numberOfSuccessfulTasks){
+                    if (num <= numberOfSuccessfulTasks){
                         return true;
                     }
                 }
