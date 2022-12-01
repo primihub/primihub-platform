@@ -42,4 +42,5 @@ public class DataConstant {
     public final static String TASK_EMAIL_SUBJECT ="[Primihub] Primihub Platform Task Notification!";
 
 
+    public final static String TASK_LOG_FILE_NAME = "taskLog.log";
 }

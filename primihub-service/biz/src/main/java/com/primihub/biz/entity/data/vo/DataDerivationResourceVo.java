@@ -17,7 +17,9 @@ public class DataDerivationResourceVo {
     /**
      * 资源id
      */
-    private Long resourceId;
+    private Long id;
+
+    private String resourceId;
     /**
      * 资源名称
      */
@@ -100,7 +102,7 @@ public class DataDerivationResourceVo {
    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone="GMT+8")
     private Date createDate;
 
-
+    private Integer resourceState;
     /**
      * 资源hash文件编码
      */

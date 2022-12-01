@@ -35,6 +35,7 @@ public class DateUtil {
 
 
         TIME_JAVA_DEFAULT("EEE MMM dd HH:mm:ss Z yyyy","0"),
+        UTC_DEFAULT("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","0"),
         ;
 
         private String format;

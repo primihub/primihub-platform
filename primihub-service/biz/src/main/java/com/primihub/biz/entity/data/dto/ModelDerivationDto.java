@@ -28,6 +28,9 @@ public class ModelDerivationDto {
         this.originalResourceId =originalResourceId;
     }
 
+    public ModelDerivationDto() {
+    }
+
     private String resourceId;
     private String originalResourceId;
     private String type;

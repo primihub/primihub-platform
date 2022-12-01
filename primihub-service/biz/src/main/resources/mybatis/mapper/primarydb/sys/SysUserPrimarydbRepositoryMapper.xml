@@ -39,5 +39,8 @@
     <update id="updateSysUserDelStatus">
         update sys_user set is_del=1 where user_id=#{userId}
     </update>
+    <update id="updateUserAccount">
+        update sys_user set user_account=#{userAccount} where user_id=#{userId}
+    </update>
 
 </mapper>
