@@ -34,6 +34,11 @@ public class DataModelResource {
      * 资源id
      */
     private String resourceId;
+
+    /**
+     * 参与类型 0使用数据 1衍生数据
+     */
+    private Integer takePartType = 0;
     /**
      * 任务ID
      */

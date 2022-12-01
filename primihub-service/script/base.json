@@ -14,11 +14,13 @@
         "/common/getValidatePublicKey",
         "/common/getTrackingID",
         "/shareData/syncProject",
-        "/shareData/syncModel"
+        "/shareData/syncModel",
+        "/organ/getHomepage"
     ],
     "needSignUriList":[
 
     ],
+    "taskEmailSubject": "[Primihub] Primihub Platform Task Notification!",
     "adminUserIds": [1],
     "defaultPassword":"123456",
     "defaultPasswordVector":"excalibur",

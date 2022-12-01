@@ -96,6 +96,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
+        if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.MPC_LR.getType())){
+            return mpclr(req,taskReq);
+        }
         if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
             Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
             Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
@@ -114,6 +117,66 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
         taskReq.getDataTask().setTaskErrorMsg("运行失败:无法进行任务执行");
+        return BaseResultEntity.success();
+    }
+
+    private BaseResultEntity mpclr(DataComponentReq req, ComponentTaskReq taskReq){
+        try {
+            Set<String> resourceIds = new HashSet<>();
+            if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
+                resourceIds.addAll(taskReq.getNewest().stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toSet()));
+            }else {
+                resourceIds.addAll(taskReq.getResourceList().stream().map(ModelProjectResourceVo::getResourceId).collect(Collectors.toSet()));
+            }
+            StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
+            ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
+            taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
+            Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(128).build();
+            Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(100).build();
+            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
+            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
+            Common.Params params = Common.Params.newBuilder()
+                    .putParamMap("BatchSize", batchSizeParamValue)
+                    .putParamMap("NumIters", numItersParamValue)
+                    .putParamMap("Data_File", dataFileParamValue)
+                    .putParamMap("modelName", modelNameeParamValue)
+                    .build();
+            Common.Task task = Common.Task.newBuilder()
+                    .setType(Common.TaskType.ACTOR_TASK)
+                    .setParams(params)
+                    .setName("logistic_regression")
+                    .setLanguage(Common.Language.PROTO)
+                    .setCode("logistic_regression")
+                    .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .addInputDatasets("Data_File")
+                    .build();
+            log.info("grpc Common.Task :\n{}", task.toString());
+            PushTaskRequest request = PushTaskRequest.newBuilder()
+                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                    .setTask(task)
+                    .setSequenceNumber(11)
+                    .setClientProcessedUpTo(22)
+                    .build();
+            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+            log.info("grpc结果:{}", reply.toString());
+            if (reply.getRetCode()==0){
+                if (FileUtil.isFileExists(outputPathDto.getModelFileName())){
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                }else {
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
+                }
+            }else {
+                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+            }
+        } catch (Exception e) {
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+e.getMessage());
+            log.info("grpc Exception:{}", e.getMessage());
+            e.printStackTrace();
+        }
         return BaseResultEntity.success();
     }
 
@@ -154,16 +217,17 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return BaseResultEntity.success();
@@ -219,16 +283,17 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("运行失败:无文件信息");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(e.getMessage());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
             }
         }
         return BaseResultEntity.success();

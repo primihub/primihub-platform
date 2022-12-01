@@ -99,7 +99,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode() == 2) {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
                 } else {
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, GrpcComponentDto>> iterator = exceptionEntityMap.entrySet().iterator();
@@ -119,13 +119,14 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     log.info(JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:" + derivationResource.getMsg());
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:" + derivationResource.getMsg());
                     } else {
                         List<String> resourceIds = (List<String>) derivationResource.getResult();
                         for (String resourceId : resourceIds) {
                             DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
                             dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
                             dataModelResource.setResourceId(resourceId);
+                            dataModelResource.setTakePartType(1);
                             dataModelPrRepository.saveDataModelResource(dataModelResource);
                             taskReq.getDmrList().add(dataModelResource);
                         }
@@ -133,7 +134,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:" + e.getMessage());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"处理组件:" + e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }

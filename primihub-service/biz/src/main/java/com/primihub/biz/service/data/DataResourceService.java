@@ -82,6 +82,7 @@ public class DataResourceService {
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceId",req.getResourceId());
         paramMap.put("resourceAuthType",req.getResourceAuthType());
+        paramMap.put("resourceSource",req.getResourceSource());
         paramMap.put("resourceName",req.getResourceName());
         paramMap.put("tag",req.getTag());
         paramMap.put("selectTag",req.getSelectTag());
@@ -651,7 +652,12 @@ public class DataResourceService {
             if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
                 url = modelDerivationDto.getPath();
             }else {
-                url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                if (url.contains(".csv"))
+                    url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                if (url.contains(".db")){
+                    String[] split = url.split("\\.");
+                    url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
+                }
             }
             log.info(url);
             File file = new File(url);
