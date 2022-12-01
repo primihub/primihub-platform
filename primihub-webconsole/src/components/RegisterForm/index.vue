@@ -7,37 +7,43 @@
       </h3>
     </div>
     <div class="form-container">
-      <el-select v-model="userAccountType" placeholder="请选择" class="select" @change="handleUserAccountChange">
-        <el-option
-          v-for="item in userAccountOptions"
-          :key="item.value"
-          :label="item.label"
-          :value="item.value"
-        />
-      </el-select>
 
       <el-form ref="form" :model="formData" :rules="formRules" auto-complete="on" label-position="left">
         <el-form-item prop="userAccount" class="user-account">
-          <div class="flex-end-row">
+          <el-row class="flex-between-row">
+            <el-col :span="6">
+              <el-select v-model="userAccountType" :size="size" placeholder="请选择" class="select" @change="handleUserAccountChange">
+                <el-option
+                  v-for="item in userAccountOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
+            </el-col>
+
             <el-col :span="18">
               <el-input
                 ref="userAccount"
                 v-model="formData.userAccount"
+                :size="size"
                 :placeholder="userAccountText"
                 name="userAccount"
                 type="text"
                 tabindex="1"
               />
             </el-col>
-          </div>
 
+          </el-row>
         </el-form-item>
+
         <el-form-item prop="verificationCode">
           <el-row class="flex-between-row">
             <el-col :span="16">
               <el-input
                 ref="verificationCode"
                 v-model="formData.verificationCode"
+                :size="size"
                 placeholder="请输入验证码"
                 name="verificationCode"
                 type="text"
@@ -45,7 +51,7 @@
               />
             </el-col>
             <el-col :span="8">
-              <el-button type="primary" class="code-button" plain :disabled="sendCode" @click="sendVerificationCode">
+              <el-button :size="size" type="primary" class="code-button" plain :disabled="sendCode" @click="sendVerificationCode">
                 <span v-if="!sendCode">获取验证码</span>
                 <span v-else>{{ time }}s后重新获取</span>
               </el-button>
@@ -56,6 +62,7 @@
           <el-input
             ref="userName"
             v-model="formData.userName"
+            :size="size"
             placeholder="请输入昵称"
             name="nickName"
             type="text"
@@ -68,6 +75,7 @@
             :key="passwordType"
             ref="password"
             v-model="formData.password"
+            :size="size"
             :type="passwordType"
             :placeholder="pwdText"
             name="password"
@@ -88,6 +96,7 @@
             :key="passwordAgainType"
             ref="passwordAgain"
             v-model="formData.passwordAgain"
+            :size="size"
             :type="passwordAgainType"
             :placeholder="pwdAgainText"
             name="passwordAgain"
@@ -99,7 +108,7 @@
             <svg-icon :icon-class="passwordAgainType === 'password' ? 'eye' : 'eye-open'" />
           </span>
         </el-form-item>
-        <el-button :loading="loading" type="primary" class="register-button" @click.native.prevent="handleSubmit">
+        <el-button :size="size" :loading="loading" type="primary" class="register-button" @click.native.prevent="handleSubmit">
           <span v-if="codeType===1">注册</span>
           <span v-if="codeType===2">提交</span>
         </el-button>
@@ -108,7 +117,7 @@
         <span>已有账号？<el-button type="text" @click="toLogin">去登录</el-button></span>
       </div>
       <div v-if="codeType===2" class="tips">
-        <span><el-button type="text" @click="toLogin">返回登录</el-button></span>
+        <span><el-button :size="size" type="text" @click="toLogin">返回登录</el-button></span>
       </div>
     </div>
   </div>
@@ -130,6 +139,10 @@ export default {
     codeType: {
       type: Number,
       default: 1
+    },
+    size: {
+      type: String,
+      default: 'small'
     }
   },
   data() {
@@ -498,7 +511,6 @@ export default {
 .code-button{
   font-size: 12px;
   width: 96%;
-  padding: 12px 0;
   text-align: center;
   float: right;
 }
@@ -506,11 +518,8 @@ export default {
   width: 100%;
 }
 .select{
-  position: absolute;
-  width: 24%;
-  left: 0;
-  right: 0;
-  z-index: 10;
+  width: 96%;
+  float: left;
 }
 .register-button{
   width: 100%;
