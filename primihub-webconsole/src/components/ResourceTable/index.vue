@@ -20,7 +20,7 @@
       width="40"
     />
     <el-table-column
-      label="资源 / Id"
+      label="资源名称 / Id"
       min-width="120"
     >
       <template slot-scope="{row}">
