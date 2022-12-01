@@ -36,6 +36,11 @@
         </template>
       </el-table-column>
       <el-table-column
+        v-if="hasResourceDesc"
+        prop="resourceDesc"
+        label="资源描述"
+      />
+      <el-table-column
         v-if="showStatus"
         prop="auditStatus"
         label="审核状态"
@@ -80,6 +85,11 @@ export default {
     return {
       currentRow: null,
       radioSelect: null
+    }
+  },
+  computed: {
+    hasResourceDesc() {
+      return this.data[0] && Object.keys(this.data[0]).includes('resourceDesc')
     }
   },
   watch: {

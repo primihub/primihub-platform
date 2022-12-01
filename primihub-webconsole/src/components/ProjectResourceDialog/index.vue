@@ -5,7 +5,19 @@
     v-bind="$attrs"
   >
     <search-input class="input-with-search" :search-name="resourceName" @click="searchResource" @change="handleSearchNameChange" />
-    <ResourceTable v-loading="listLoading" :server-address="serverAddress" :show-buttons="false" :show-status="false" :multiple="true" :organ-id="organId" :selected-data="selectedData" row-key="resourceId" :data="resourceList" @change="handleChange" />
+    <ResourceTable
+      v-if="resourceList"
+      v-loading="listLoading"
+      :server-address="serverAddress"
+      :show-buttons="false"
+      :show-status="false"
+      :multiple="true"
+      :organ-id="organId"
+      :selected-data="selectedData"
+      row-key="resourceId"
+      :data="resourceList"
+      @change="handleChange"
+    />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :page-count="pageCount" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
