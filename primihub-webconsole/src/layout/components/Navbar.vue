@@ -1,7 +1,6 @@
 <template>
   <div class="navbar">
     <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-
     <breadcrumb class="breadcrumb-container" />
     <div class="right-menu">
       <div class="feedback">
@@ -29,6 +28,7 @@
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
+          <el-dropdown-item v-if="registerType === 4" divided @click.native="openAddPhoneDialog">{{ isBound ? '更换手机号': '添加手机号' }}</el-dropdown-item>
           <el-dropdown-item divided @click.native="logout">
             <span style="display:block;">退出登录</span>
           </el-dropdown-item>
@@ -45,6 +45,8 @@
     >
       <UpdatePwdForm @submit="handleSubmit" />
     </el-dialog>
+    <!-- add phone dialog -->
+    <BindPhoneDialog append-to-body :visible.sync="phoneDialogVisible" :is-bound="isBound" @close="handlePhoneDialogClose" @success="handlePhoneBindSuccess" />
   </div>
 </template>
 
@@ -53,27 +55,41 @@ import { mapGetters, mapState, mapActions } from 'vuex'
 import Breadcrumb from '@/components/Breadcrumb'
 import Hamburger from '@/components/Hamburger'
 import UpdatePwdForm from '@/components/UpdatePwdForm'
+import BindPhoneDialog from '@/components/BindPhoneDialog'
+
+const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
+
 export default {
   components: {
     Breadcrumb,
     Hamburger,
-    UpdatePwdForm
+    UpdatePwdForm,
+    BindPhoneDialog
   },
   data() {
     return {
       userInfo: {},
       organName: '',
-      dialogVisible: false
+      dialogVisible: false,
+      phoneDialogVisible: false
     }
   },
   computed: {
+    isBound: {
+      set(val) {},
+      get() {
+        return this.registerType === 4 && phonePattern.test(this.userAccount)
+      }
+    },
     ...mapState('user', ['organChange']),
     ...mapGetters([
       'sidebar',
       'avatar',
       'userOrganId',
       'userOrganName',
-      'userName'
+      'userName',
+      'userAccount',
+      'registerType'
     ])
   },
   watch: {
@@ -81,14 +97,28 @@ export default {
       if (newVal) {
         this.getInfo()
       }
+    },
+    userAccount(newVal) {
+      if (phonePattern.test(newVal)) {
+        this.isBound = true
+      }
     }
   },
   created() {
     this.getInfo()
   },
   methods: {
+    openAddPhoneDialog() {
+      this.phoneDialogVisible = true
+    },
+    handlePhoneDialogClose() {
+      this.phoneDialogVisible = false
+    },
+    handlePhoneBindSuccess() {
+      this.isBound = true
+      this.phoneDialogVisible = false
+    },
     showUpdatePwd() {
-      console.log(this.dialogVisible)
       this.dialogVisible = true
     },
     handleSubmit(res) {
@@ -108,10 +138,6 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     ...mapActions('user', ['getInfo'])
-    // getUserInfo() {
-    //   this.userInfo = JSON.parse(localStorage.getItem('userInfo'))
-    //   this.organName = this.userInfo.organIdListDesc
-    // }
   }
 }
 </script>

@@ -150,8 +150,24 @@ public class UserController {
             if (!sysUserService.validateVerificationCode(VerificationCodeEnum.FORGET_PASSWORD.getCode(), forgetPasswordParam.getUserAccount(), forgetPasswordParam.getVerificationCode()))
                 return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
         }
-
         return sysUserService.forgetPassword(forgetPasswordParam);
+    }
+    @RequestMapping("changeUserAccount")
+    public BaseResultEntity changeUserAccount(SaveOrUpdateUserParam param,@RequestHeader("userId") Long userId){
+        if (userId == null || userId<=0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+//        if (param.getRegisterType() != 2 || param.getRegisterType() != 3)
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"registerType");
+        if (param.getUserAccount()==null || param.getUserAccount().trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"UserAccount");
+        if (param.getVerificationCode()==null || param.getVerificationCode().trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"verificationCode");
+        if (StringUtils.isBlank(interiorCode) || !param.getVerificationCode().equals(interiorCode) ) {
+            if (!sysUserService.validateVerificationCode(VerificationCodeEnum.CHANGE_ACCOUNT.getCode(), param.getUserAccount(), param.getVerificationCode()))
+                return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
+        }
+        param.setUserId(userId);
+        return sysUserService.changeUserAccount(param);
     }
 
 }

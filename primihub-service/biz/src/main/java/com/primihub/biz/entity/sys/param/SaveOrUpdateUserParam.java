@@ -33,7 +33,7 @@ public class SaveOrUpdateUserParam {
      */
     private String passwordAgain;
     /**
-     * 注册类型1：管理员创建 2：邮箱 3：手机
+     * 注册类型1：管理员创建 2：邮箱 3：手机 4: 第三方注册
      */
     private Integer registerType;
     /**

@@ -12,14 +12,14 @@
           模型
         </el-descriptions-item>
         <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
-          <el-link v-if="task.isCooperation === 0" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
           <span v-else>{{ model.modelId }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="开始时间">
           {{ task.taskStartDate?task.taskStartDate: '未开始' }}
         </el-descriptions-item>
         <el-descriptions-item label="结束时间">
-          {{ task.taskEndDate?task.taskEndDate: '未开始' }}
+          {{ task.taskEndDate?task.taskEndDate: '未结束' }}
         </el-descriptions-item>
         <el-descriptions-item label="耗时">
           {{ task.timeConsuming | timeFilter }}
@@ -38,6 +38,7 @@
       <div class="buttons">
         <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
         <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
+        <el-button v-if="task.taskState === 2" :disabled="project.status === 2" type="primary" @click="cancelTaskModel(task.taskId)">取消任务</el-button>
         <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5 && task.isCooperation === 0" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
       </div>
     </section>
@@ -103,8 +104,11 @@
         </el-tab-pane>
         <el-tab-pane v-if="task.isCooperation === 0 || (task.isCooperation === 1 && task.taskState === 1)" label="预览图" name="3">
           <div class="canvas-panel">
-            <TaskCanvas v-if="tabName === '3' && modelId" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
+            <TaskCanvas :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
+        </el-tab-pane>
+        <el-tab-pane label="日志" name="4">
+          <Log v-if="tabName === '4' " :task-state="task.taskState" />
         </el-tab-pane>
       </el-tabs>
     </section>
@@ -114,35 +118,22 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { getModelDetail } from '@/api/model'
-import { deleteTask } from '@/api/task'
+import { deleteTask, cancelTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
+import Log from '@/components/Log'
 
 export default {
   name: 'TaskDetail',
   components: {
     TaskModel,
-    TaskCanvas
-  },
-  filters: {
-    taskStatusFilter(status) {
-      // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
-      status = status || 0
-      const statusMap = {
-        0: '未开始',
-        1: '已完成',
-        2: '执行中',
-        3: '任务失败',
-        4: '取消',
-        5: '已删除'
-      }
-      return statusMap[status]
-    }
+    TaskCanvas,
+    Log
   },
   data() {
     return {
       taskId: null,
-      tabName: '',
+      tabName: '1',
       listLoading: false,
       model: {},
       modelQuotas: [],
@@ -167,7 +158,10 @@ export default {
           position: 'right',
           buttons: ['zoomIn', 'zoomOut', 'reset']
         }
-      }
+      },
+      logType: '',
+      errorLog: [],
+      oneself: false
     }
   },
   computed: {
@@ -221,14 +215,14 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
+        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project, oneself } = response.result
+        this.oneself = oneself
         this.task = task
         this.project = project
         this.model = model
         this.modelId = model.modelId ? model.modelId : this.$route.query.modelId
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
-        const modelResources = response.result.modelResources.filter(item => item.resourceType !== 3)
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
         if (this.task.isCooperation === 1) {
           // provider organ only view own resource data
@@ -288,11 +282,22 @@ export default {
     },
     restartTaskModel() {
       console.log('重启')
-      this.tabName = '3'
+      // this.tabName = '3'
       this.task.taskState = 2
       this.task.taskStartDate = this.task.taskEndDate
       this.task.taskEndDate = null
       this.restartRun = true
+    },
+    cancelTaskModel(taskId) {
+      cancelTask(taskId).then(res => {
+        if (res.code === 0) {
+          this.$message({
+            message: '取消成功',
+            type: 'success'
+          })
+          this.fetchData()
+        }
+      })
     }
   }
 }
@@ -393,6 +398,10 @@ export default {
 }
 ::v-deep .el-table .disabled {
   color: #C0C4CC;
+}
+
+.log-panel{
+  height: 600px;
 }
 
 </style>

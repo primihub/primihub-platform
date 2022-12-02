@@ -27,6 +27,7 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     VERIFICATION_CODE(118,"验证码失败"),
     RESTRICT_LOGIN(119,"限制登录"),
     AUTH_LOGIN(120,"授权登录失败"),
+    FORCE_VALIDATION(121,"强制登录验证滑块"),
     DATA_SAVE_FAIL(1001,"添加失败"),
     DATA_EDIT_FAIL(1002,"编辑失败"),
     DATA_QUERY_NULL(1003,"数据为空"),
@@ -37,7 +38,8 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     DATA_RUN_SQL_CHECK_FAIL(1008,"SQL校验失败"),
     DATA_RUN_FILE_CHECK_FAIL(1009,"文件解析失败"),
     DATA_DOWNLOAD_TASK_ERROR_FAIL(1010,"文件下载失败"),
-    DATA_DB_FAIL(1011,"数据库失败")
+    DATA_DB_FAIL(1011,"数据库失败"),
+    DATA_LOG_FAIL(1012,"查询日志失败")
     ;
     private Integer returnCode;
     private String message;

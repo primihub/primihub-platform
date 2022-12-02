@@ -99,37 +99,34 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode() == 2) {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败");
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
                 } else {
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, GrpcComponentDto>> iterator = exceptionEntityMap.entrySet().iterator();
-                    Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
                     while (iterator.hasNext()) {
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         String key = next.getKey();
                         GrpcComponentDto value = next.getValue();
                         if (value==null)
                             continue;
-                        if (dtoMap!=null && dtoMap.containsKey(key)){
-                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,dtoMap.get(key)));
-                        }else {
-                            derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,key));
-                        }
+                        derivationList.add(new ModelDerivationDto(key, "abnormal", "异常值处理", value.getNewDataSetId(),null,value.getDataSetId()));
                     }
                     taskReq.getDerivationList().addAll(derivationList);
                     taskReq.setNewest(derivationList);
                     // derivation resource datas
-                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
+                    log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
+                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
                     log.info(JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg("异常值处理组件处理失败:" + derivationResource.getMsg());
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:" + derivationResource.getMsg());
                     } else {
                         List<String> resourceIds = (List<String>) derivationResource.getResult();
                         for (String resourceId : resourceIds) {
                             DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
                             dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
                             dataModelResource.setResourceId(resourceId);
+                            dataModelResource.setTakePartType(1);
                             dataModelPrRepository.saveDataModelResource(dataModelResource);
                             taskReq.getDmrList().add(dataModelResource);
                         }
@@ -137,7 +134,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg("异常值处理组件:" + e.getMessage());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"处理组件:" + e.getMessage());
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }

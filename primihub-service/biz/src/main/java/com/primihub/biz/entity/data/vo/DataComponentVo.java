@@ -32,6 +32,8 @@ public class DataComponentVo {
     public Long getTimeConsuming(){
         if ((startTime!=null&&startTime!=0L)&&(endTime!=null&&endTime!=0L)){
             return endTime-startTime;// j815
+        }else if (startTime!=null&&startTime!=0L){
+            return System.currentTimeMillis()-startTime;
         }
         return 0L;
     }

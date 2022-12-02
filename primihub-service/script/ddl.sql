@@ -29,6 +29,7 @@ CREATE TABLE `data_source` (
                                `db_driver` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '驱动类',
                                `db_url` varchar(500) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据源地址',
                                `db_name` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据库名称',
+                               `db_table_name` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据库名称',
                                `db_username` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '用户名',
                                `db_password` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '密码',
                                `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
@@ -129,6 +130,7 @@ CREATE TABLE `data_mr`  (
                             `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
                             `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
                             `task_id` bigint DEFAULT NULL COMMENT '任务ID',
+                            `take_part_type` tinyint(4) DEFAULT '0' COMMENT '参与类型 0使用数据 1衍生数据',
                             `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
                             `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
                             `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',
@@ -511,7 +513,7 @@ INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_aut
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1059, '匿踪查询任务', 'PIRTask', 2, 1016, 1016, '1016,1059', ' ', 'own', 2, 2, 1, 0, 0, '2022-09-21 08:47:42.129', '2022-09-21 09:36:39.176');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1060, '衍生数据资源', 'DerivedDataList', 2, 1022, 1022, '1022,1060', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 18:33:03.000', '2022-10-30 18:33:08.000');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1061, '衍生数据资源详情', 'DerivedDataResourceDetail', 2, 1060, 1022, '1022,1060,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 10:34:38.945', '2022-10-30 10:34:38.945');
-
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1062, '日志列表', 'LogList', 2, 1058, 1058, '1058,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-11-14 13:44:39.353', '2022-11-14 13:44:39.353');
 DROP TABLE IF EXISTS `sys_ra`;
 CREATE TABLE `sys_ra`  (
                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
@@ -623,6 +625,8 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1097, 1, 1061, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1098, 1000, 1060, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1099, 1000, 1061, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1100, 1, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1101, 1000, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (

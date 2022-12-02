@@ -14,19 +14,19 @@
         "/common/getValidatePublicKey",
         "/common/getTrackingID",
         "/shareData/syncProject",
-        "/shareData/syncModel"
+        "/shareData/syncModel",
+        "/organ/getHomepage"
     ],
     "needSignUriList":[
 
     ],
+    "taskEmailSubject": "[Primihub] Primihub Platform Task Notification!",
     "adminUserIds": [1],
     "defaultPassword":"123456",
     "defaultPasswordVector":"excalibur",
     "primihubOfficalService": "http://127.0.0.1:8000",
     "grpcClientAddress": "192.168.99.20",
     "grpcClientPort": 50050,
-    "grpcDataSetClientAddress": "192.168.99.20",
-    "grpcDataSetClientPort": 50051,
     "grpcServerPort": 9090,
     "uploadUrlDirPrefix": "/data/upload/",
     "resultUrlDirPrefix": "/data/result/",
@@ -50,6 +50,11 @@
             "clientSecret": "",
             "redirectUri": ""
         }
+    },
+    "lokiConfig": {
+        "address":"",
+        "job":"primihub/application1",
+        "container":"application1"
     },
     "model_components": [
         {

@@ -189,20 +189,23 @@ export default {
       resource: null,
       loading: false,
       fieldTypeList: [{
+        value: 0,
+        label: 'String'
+      }, {
         value: 1,
         label: 'Integer'
       }, {
         value: 2,
-        label: 'Long'
+        label: 'Double'
       }, {
         value: 3,
-        label: 'Double'
+        label: 'Long'
       }, {
         value: 4,
         label: 'Enum'
       }, {
         value: 5,
-        label: 'String'
+        label: 'Boolean'
       }],
       dataList: [], // resource preview
       fieldList: [], // resource field info
@@ -265,7 +268,7 @@ export default {
         fieldList.push({
           fieldId,
           fieldName,
-          fieldType: this.fieldTypeList.filter(item => item.value === fieldType)[0]?.label.toLowerCase() || fieldType,
+          fieldType: this.fieldTypeList.find(item => item.value === fieldType)?.label,
           fieldDesc,
           relevance: relevance === true ? 1 : 0,
           grouping: grouping === true ? 1 : 0,

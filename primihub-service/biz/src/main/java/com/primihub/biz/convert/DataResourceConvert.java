@@ -261,7 +261,7 @@ public class DataResourceConvert {
 
     public static DataDerivationResourceDataVo dataDerivationResourcePoConvertDataVo(DataDerivationResourceVo dataDerivationResourceVo) {
         DataDerivationResourceDataVo dataDerivationResourceDataVo = new DataDerivationResourceDataVo();
-        dataDerivationResourceDataVo.setResourceId(dataDerivationResourceVo.getResourceId());
+        dataDerivationResourceDataVo.setResourceId(dataDerivationResourceVo.getId());
         dataDerivationResourceDataVo.setResourceName(dataDerivationResourceVo.getResourceName());
         dataDerivationResourceDataVo.setResourceDesc(dataDerivationResourceVo.getResourceDesc());
         dataDerivationResourceDataVo.setResourceAuthType(dataDerivationResourceVo.getResourceAuthType());

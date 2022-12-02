@@ -10,7 +10,7 @@
       min-width="100"
     >
       <template slot-scope="{row}">
-        <el-link :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link>
+        <el-link :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
       </template>
     </el-table-column>
     <el-table-column

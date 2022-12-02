@@ -11,10 +11,11 @@ import com.primihub.biz.entity.sys.enumeration.OAuthSourceEnum;
 import com.primihub.biz.entity.sys.param.LoginParam;
 import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
 import com.primihub.biz.entity.sys.po.SysUser;
-import com.primihub.biz.entity.sys.vo.BaseAuthConfig;
+import com.primihub.biz.entity.sys.config.BaseAuthConfig;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import me.zhyd.oauth.enums.AuthResponseStatus;
 import me.zhyd.oauth.model.AuthCallback;
@@ -66,6 +67,8 @@ public class SysOauthService {
 
     public Set<String> getOauthList() {
         Set<String> set= new HashSet<>();
+        if (baseConfiguration.getAuthConfigs()==null || baseConfiguration.getAuthConfigs().isEmpty())
+            return set;
         Iterator<Map.Entry<String, BaseAuthConfig>> iterator = baseConfiguration.getAuthConfigs().entrySet().iterator();
         while (iterator.hasNext()){
             Map.Entry<String, BaseAuthConfig> next = iterator.next();
@@ -91,15 +94,33 @@ public class SysOauthService {
         String authUuid =  authUser.getSource() + authUser.getUuid();
         log.info(authUuid);
         SysUser sysUser = userSecondarydbRepository.selectUserByAuthUuid(authUuid);
+        if (sysUser == null){
+            SaveOrUpdateUserParam param = new SaveOrUpdateUserParam();
+            if (StringUtils.isNotBlank(authUser.getEmail())){
+                SysUser accountUser = userSecondarydbRepository.selectUserByUserAccount(authUser.getEmail());
+                if (accountUser==null){
+                    param.setUserAccount(authUser.getEmail());
+                }
+            }
+            if (StringUtils.isBlank(param.getUserAccount())){
+                param.setUserAccount(String.valueOf(SnowflakeId.getInstance().nextId()));
+            }
+            param.setRegisterType(4);
+            param.setUserName(authUser.getUsername());
+            param.setAuthUuid(authUuid);
+            param.setRoleIdList(new Long[]{1000L});
+            BaseResultEntity base = sysUserService.saveOrUpdateUser(param);
+            if (!base.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,source.getSourceName()+"自动注册失败,请联系管理员!");
+            }
+        }
         Date date=new Date();
         String dateStr= DateUtil.formatDate(date,DateUtil.DateStyle.TIME_FORMAT_SHORT.getFormat());
         Long seq=sysCommonPrimaryRedisRepository.getCurrentSecondIncr(dateStr);
         String seqStr = String.format("%06d", seq);
         String authPublicKey=new StringBuilder().append(SysConstant.SYS_COMMON_AUTH_PUBLIC_KEY_PREFIX).append(dateStr).append(seqStr).toString();
-        authUser.setToken(null);
-        authUser.setRawUserInfo(null);
-        sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, JSONObject.toJSONString(authUser));
-        String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, sysUser != null);
+        sysCommonPrimaryRedisRepository.setAuthUserKey(authPublicKey, authUuid);
+        String url = String.format(baseAuthConfig.getRedirectUrl(), authPublicKey, true);
         log.info(url);
         return BaseResultEntity.success(url);
     }
@@ -109,24 +130,8 @@ public class SysOauthService {
         ResponseModel verification = captchaService.verification(loginParam);
         if (!verification.isSuccess())
             return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
-        String authUserJson = sysCommonPrimaryRedisRepository.getKey(loginParam.getAuthPublicKey());
-        String authUuid = null;
-        log.info(authUserJson);
-        try {
-            if (StringUtils.isBlank(authUserJson)){
-                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息过期,请重新授权");
-            }
-            AuthUser authUser = JSONObject.parseObject(authUserJson, AuthUser.class);
-            if (authUser==null){
-                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息异常 null");
-            }
-            if (StringUtils.isBlank(authUser.getSource()) || StringUtils.isBlank(authUser.getUuid()))
-                return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息来源或唯一标识为空");
-            authUuid = authUser.getSource()+authUser.getUuid();
-        }catch (Exception e){
-            log.info(e.getMessage());
-            return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"授权失败");
-        }
+        String authUuid = sysCommonPrimaryRedisRepository.getKey(loginParam.getAuthPublicKey());
+        log.info(authUuid);
         SysUser sysUser = userSecondarydbRepository.selectUserByAuthUuid(authUuid);
         if (sysUser == null)
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);

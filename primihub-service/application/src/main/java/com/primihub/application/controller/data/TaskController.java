@@ -3,19 +3,21 @@ package com.primihub.application.controller.data;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.service.data.DataTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -53,6 +55,78 @@ public class TaskController {
         return dataTaskService.getModelTaskList(modelId,req);
     }
 
+    @RequestMapping("getTaskList")
+    public BaseResultEntity getTaskList(DataTaskReq req){
+        return dataTaskService.getTaskList(req);
+    }
+
+
+    @GetMapping("cancelTask")
+    public BaseResultEntity cancelPsiTask(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return  dataTaskService.cancelTask(taskId);
+    }
+
+    /**
+     * 用于创建连接
+     */
+    @GetMapping(value = "sseConnect/{taskId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter connect(@PathVariable String taskId,Integer all) {
+        if (all==null)
+            all = 0;
+        return dataTaskService.connectSseTask(taskId,all);
+    }
+
+    /**
+     * 关闭连接
+     */
+    @GetMapping("sseClose/{taskId}")
+    public BaseResultEntity close(@PathVariable("taskId") String taskId) {
+        if (StringUtils.isBlank(taskId))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        dataTaskService.removeSseTask(taskId);
+        return BaseResultEntity.success();
+    }
+
+    @GetMapping("getTaskLogInfo")
+    public BaseResultEntity getTaskLogInfo(Long taskId){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        return  dataTaskService.getTaskLogInfo(taskId);
+    }
+
+    @GetMapping("downloadTaskLog")
+    public void downloadTaskLog(HttpServletResponse response, Long taskId) throws Exception {
+        DataTask dataTask = dataTaskService.getDataTaskById(taskId,null);
+        if (dataTask==null){
+            downloadTaskError(response,"无任务信息");
+        }else {
+            if (dataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType())){
+                downloadTaskError(response,"任务运行中不可下载");
+                return;
+            }
+            File logFile = dataTaskService.getLogFile(dataTask);
+            if (logFile.exists()){
+                // 获得文件输入流
+                FileInputStream inputStream = new FileInputStream(logFile);
+                // 设置响应头、以附件形式打开文件
+                response.setContentType("text/x-log");
+                response.setHeader("content-disposition", "attachment; fileName=" + new String((dataTask.getTaskIdName()+".log").getBytes("UTF-8"),"iso-8859-1"));
+                ServletOutputStream outputStream = response.getOutputStream();
+                int len = 0;
+                byte[] data = new byte[1024];
+                while ((len = inputStream.read(data)) != -1) {
+                    outputStream.write(data, 0, len);
+                }
+                outputStream.close();
+                inputStream.close();
+            }else {
+                downloadTaskError(response,"无日志文件");
+            }
+        }
+    }
+
     @GetMapping("downloadTaskFile")
     public void downloadTaskFile(HttpServletResponse response, Long taskId,Long modelId) throws Exception {
         DataTask dataTask = dataTaskService.getDataTaskById(taskId,modelId);
@@ -62,12 +136,15 @@ public class TaskController {
             downloadDefaultTask(response,dataTask);
         }
     }
+
+
+
     public void downloadModelTask(HttpServletResponse response,DataTask dataTask) throws Exception {
         String taskResultContent = dataTask.getTaskResultContent();
         if (StringUtils.isNotBlank(taskResultContent)){
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
             boolean isCooperation = dataTask.getIsCooperation() == 1;
-            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelRunZipFilePath());
+            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelFileName());
             if (file.exists()){
                 // 获得文件输入流
                 FileInputStream inputStream = new FileInputStream(file);
@@ -165,6 +242,6 @@ public class TaskController {
         response.reset();
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
-        response.getWriter().println(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message));
+        response.getWriter().println(JSONObject.toJSONString(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message)));
     }
 }
