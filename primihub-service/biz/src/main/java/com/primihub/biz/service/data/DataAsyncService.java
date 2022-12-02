@@ -465,7 +465,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
                     dataReasoning.setReleaseDate(new Date());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,null);
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",1,null);
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }else {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
