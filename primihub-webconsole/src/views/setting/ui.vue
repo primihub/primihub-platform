@@ -1,5 +1,6 @@
 <template>
   <div v-loading="loading" class="container">
+    {{ logoTitle }}
     <div class="detail">
       <el-descriptions :column="1" label-class-name="detail-title">
         <el-descriptions-item label="页面标题">
@@ -106,6 +107,7 @@ export default {
   async created() {
     await this.getHomepage()
     this.logoText = this.logoTitle
+    console.log(this.logoText)
     this.theFooterText = this.footerText
     this.params = {
       title: this.title,

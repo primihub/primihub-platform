@@ -1,9 +1,9 @@
 import defaultSettings from '@/settings'
 import { getHomepage, changeHomepage } from '@/api/system'
 
-const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, logoTitle } = defaultSettings
+const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, logoTitle: defaultLogoTitle } = defaultSettings
 
-const baseUrl = '/'
+const baseUrl = 'http://test1.primihub.com/'
 
 const formatImgUrl = (data) => {
   const prefix = '/data/upload/2'
@@ -20,7 +20,7 @@ const state = {
   favicon,
   loginLogoUrl,
   logoUrl: defaultLogoUrl,
-  logoTitle,
+  logoTitle: '',
   loginDescription: '',
   title,
   logo: '',
@@ -91,7 +91,7 @@ const actions = {
       commit('SET_DESCRIPTION', loginDescription || state.loginDescription)
       commit('SET_FADE_BACK_STATUS', isHideFadeBack === undefined ? state.isHideFadeBack : isHideFadeBack)
       commit('SET_VERSION_STATUS', isHideFooterVersion === undefined ? state.isHideFooterVersion : isHideFooterVersion)
-      commit('SET_LOGO_TITLE', logoTitle || state.logoTitle)
+      commit('SET_LOGO_TITLE', logoTitle)
       commit('SET_SHOW_LOGO_STATUS', showLogoTitle === undefined ? state.showLogoTitle : showLogoTitle)
       commit('SET_FOOTER_TEXT', footerText || state.footerText)
     }
