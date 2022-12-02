@@ -217,6 +217,9 @@ export default {
       }, 5000)
     }
   },
+  destroyed() {
+    clearInterval(this.timer)
+  },
   methods: {
     toTaskPage() {
       this.$router.push({
