@@ -5,6 +5,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.VerificationCodeEnum;
 import com.primihub.biz.entity.sys.param.*;
 import com.primihub.biz.service.sys.SysUserService;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -167,6 +168,16 @@ public class UserController {
                 return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
         }
         param.setUserId(userId);
+        return sysUserService.changeUserAccount(param);
+    }
+
+    @RequestMapping("relieveUserAccount")
+    public BaseResultEntity relieveUserAccount(@RequestHeader("userId") Long userId){
+        if (userId == null || userId<=0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        SaveOrUpdateUserParam param = new SaveOrUpdateUserParam();
+        param.setUserId(userId);
+        param.setUserAccount(String.valueOf(SnowflakeId.getInstance().nextId()));
         return sysUserService.changeUserAccount(param);
     }
 
