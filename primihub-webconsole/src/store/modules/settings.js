@@ -1,9 +1,9 @@
 import defaultSettings from '@/settings'
 import { getHomepage, changeHomepage } from '@/api/system'
 
-const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, logoTitle: defaultLogoTitle } = defaultSettings
+const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl } = defaultSettings
 
-const baseUrl = 'http://test1.primihub.com/'
+const baseUrl = '/'
 
 const formatImgUrl = (data) => {
   const prefix = '/data/upload/2'

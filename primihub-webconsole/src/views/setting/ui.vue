@@ -1,6 +1,5 @@
 <template>
   <div v-loading="loading" class="container">
-    {{ logoTitle }}
     <div class="detail">
       <el-descriptions :column="1" label-class-name="detail-title">
         <el-descriptions-item label="页面标题">
