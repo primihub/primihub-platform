@@ -75,7 +75,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         Map<String, String> freemarkerMap = new HashMap<>();
         freemarkerMap.put(DataConstant.PYTHON_LABEL_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
         freemarkerMap.put(DataConstant.PYTHON_GUEST_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_DATA_ALIGN_PAHT, freeMarkerConfigurer, freemarkerMap);
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_DATA_ALIGN_PATH, freeMarkerConfigurer, freemarkerMap);
         log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {

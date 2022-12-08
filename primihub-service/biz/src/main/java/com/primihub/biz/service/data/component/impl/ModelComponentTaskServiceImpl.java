@@ -181,7 +181,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     }
 
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
@@ -234,7 +234,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         Long[] portNumber = getPortNumber();
         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
