@@ -1,38 +1,61 @@
-package com.primihub.biz.util.sqlite;
+package com.primihub.biz.util.dbclient;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
+
 import java.sql.*;
 
-public class SqliteHelper {
+@Slf4j
+public class HiveHelper {
 
     private Connection connection;
     private Statement statement;
     private ResultSet resultSet;
-    private String dbFilePath;
+    private String dbUrl;
 
     /**
      * 构造函数
-     * @param dbFilePath sqlite db 文件路径
+     * @param dbUrl sqlite db 文件路径
      * @throws ClassNotFoundException
      * @throws SQLException
      */
-    public SqliteHelper(String dbFilePath) throws ClassNotFoundException, SQLException {
-        this.dbFilePath = dbFilePath;
-        connection = getConnection(dbFilePath);
+    public HiveHelper(String dbUrl,String userName,String password) throws ClassNotFoundException, SQLException {
+        this.dbUrl = dbUrl;
+        if (StringUtils.isBlank(userName) || StringUtils.isBlank(password)){
+            connection = getConnection(dbUrl);
+        }else {
+            connection = getConnection(dbUrl,userName,password);
+        }
     }
 
     /**
      * 获取数据库连接
-     * @param dbFilePath db文件路径
+     * @param dbUrl db文件路径
      * @return 数据库连接
      * @throws ClassNotFoundException
      * @throws SQLException
      */
-    public Connection getConnection(String dbFilePath) throws ClassNotFoundException, SQLException {
+    public Connection getConnection(String dbUrl) throws ClassNotFoundException, SQLException {
         Connection conn = null;
         // 1、加载驱动
-        Class.forName("org.sqlite.JDBC");
+        Class.forName("org.apache.hive.jdbc.HiveDriver");
         // 2、建立连接
-        // 注意：此处有巨坑，如果后面的 dbFilePath 路径太深或者名称太长，则建立连接会失败
-        conn = DriverManager.getConnection("jdbc:sqlite:" + dbFilePath);
+        conn = DriverManager.getConnection(dbUrl);
+        return conn;
+    }
+
+    /**
+     * 获取数据库连接
+     * @param dbUrl db文件路径
+     * @return 数据库连接
+     * @throws ClassNotFoundException
+     * @throws SQLException
+     */
+    public Connection getConnection(String dbUrl,String userName,String password) throws ClassNotFoundException, SQLException {
+        Connection conn = null;
+        // 1、加载驱动
+        Class.forName("org.apache.hive.jdbc.HiveDriver");
+        // 2、建立连接
+        conn = DriverManager.getConnection(dbUrl,userName,password);
         return conn;
     }
 
@@ -49,7 +72,7 @@ public class SqliteHelper {
     }
 
     private Connection getConnection() throws ClassNotFoundException, SQLException {
-        if (null == connection) connection = getConnection(dbFilePath);
+        if (null == connection) connection = getConnection(dbUrl);
         return connection;
     }
 
@@ -63,6 +86,10 @@ public class SqliteHelper {
      */
     public void destroyed() {
         try {
+            if (null != resultSet){
+                resultSet.close();
+                resultSet = null;
+            }
             if (null != connection) {
                 connection.close();
                 connection = null;
@@ -72,13 +99,8 @@ public class SqliteHelper {
                 statement.close();
                 statement = null;
             }
-
-            if (null != resultSet){
-                resultSet.close();
-                resultSet = null;
-            }
         } catch (SQLException e) {
-            System.out.println("Sqlite数据库关闭时异常 "+ e);
+            log.info("hive数据库[{}]关闭时异常{} ",this.dbUrl,e);
         }
     }
 
