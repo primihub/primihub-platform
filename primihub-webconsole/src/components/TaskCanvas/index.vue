@@ -326,6 +326,7 @@ export default {
         container: this.container,
         width: this.width,
         height: height,
+        minWidth: 200,
         snapline: true,
         scroller: {
           enabled: true,
@@ -492,15 +493,6 @@ export default {
     // 画布事件初始化
     initEvent() {
       const { graph } = this
-      graph.on('blank:click', () => {
-        const nodes = this.graph.getNodes()
-        nodes.map(node => {
-          node.setData({
-            showDeleteButton: false
-          })
-        })
-      })
-
       graph.on('node:click', async({ node }) => {
         this.nodeData = node.store.data.data
       })
@@ -521,6 +513,30 @@ export default {
 
       // 画布不可编辑只可点击
       if (this.options.isEditable) {
+        graph.on('blank:click', () => {
+          const nodes = this.graph.getNodes()
+          nodes.map(node => {
+            node.setData({
+              showDeleteButton: false
+            })
+          })
+
+          const edges = this.graph.getEdges()
+          edges.map(edge => {
+            edge.removeTools()
+          })
+        })
+        // add edge delete button
+        graph.on('cell:contextmenu', ({ edge }) => {
+          edge?.addTools([
+            {
+              name: 'button-remove',
+              args: {
+                distance: '15%'
+              }
+            }
+          ])
+        })
         graph.on('node:contextmenu', ({ node }) => {
           node.setData({
             showDeleteButton: true
