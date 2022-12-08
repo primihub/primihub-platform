@@ -183,7 +183,7 @@ public class TestService {
                 .setParams(params)
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
-                .setCode("import sys;")
+                .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                 .setJobId(ByteString.copyFrom("2".getBytes(StandardCharsets.UTF_8)))
                 .setTaskId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                 .build();
@@ -192,6 +192,7 @@ public class TestService {
                 .setTask(task)
                 .setSequenceNumber(11)
                 .setClientProcessedUpTo(22)
+//                .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
         log.info("grpc结果:"+reply);
