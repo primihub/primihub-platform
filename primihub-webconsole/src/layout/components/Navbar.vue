@@ -172,7 +172,7 @@ export default {
   color: #838790;
   width: 100%;
   .logo{
-    padding: 10px 20px;
+    padding: 5px 20px;
     height: 100%;
     flex: 1;
     h1.logo-title{
