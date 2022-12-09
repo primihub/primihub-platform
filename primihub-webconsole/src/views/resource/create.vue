@@ -79,15 +79,15 @@
           <div class="item-wrap-normal">
             <el-radio-group v-model="dataForm.resourceSource" @change="handleRadioChange">
               <el-radio :label="1">文件上传</el-radio>
-              <el-radio v-if="showDatabaseRadio" :label="2">SQLite</el-radio>
+              <el-radio v-if="showDatabaseRadio" :label="2">数据库导入</el-radio>
             </el-radio-group>
           </div>
         </el-form-item>
         <el-form-item v-if="dataForm.resourceSource === 1">
-          <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
+          <upload :max-size="fileMaxSize" :show-tips="true" :single="true" @success="handleUploadSuccess" />
         </el-form-item>
         <template v-if="showDatabaseRadio && dataForm.resourceSource === 2">
-          <SQLiteImport @success="handleImportSuccess" @change="handleImportChange" />
+          <DatabaseImport @success="handleImportSuccess" @change="handleImportChange" />
         </template>
       </template>
       <el-form-item v-else label="资源来源" prop="resourceSource">
@@ -133,7 +133,7 @@ import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import Cascader from '@/components/Cascader'
-import SQLiteImport from '@/components/SQLiteImport'
+import DatabaseImport from '@/components/DatabaseImport'
 
 export default {
   components: {
@@ -141,7 +141,7 @@ export default {
     EditResourceTable,
     ResourcePreviewTable,
     Cascader,
-    SQLiteImport
+    DatabaseImport
   },
   data() {
     return {
