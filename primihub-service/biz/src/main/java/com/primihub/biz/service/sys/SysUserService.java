@@ -460,6 +460,8 @@ public class SysUserService {
         }
         sysUserPrimarydbRepository.updateUserAccount(account,sysUser.getUserId());
         sysCommonPrimaryRedisRepository.unlock(accountKey);
-        return BaseResultEntity.success();
+        Map<String,Object> map = new HashMap<>();
+        map.put("user", sysUserSecondarydbRepository.selectSysUserByUserId(userId));
+        return BaseResultEntity.success(map);
     }
 }
