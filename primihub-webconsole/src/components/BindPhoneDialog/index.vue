@@ -120,12 +120,20 @@ export default {
       this.showBound = false
     },
     unBindPhone() {
-      relieveUserAccount({ userId: this.userId }).then(res => {
-        if (res.code === 0) {
-          this.$message.success('手机号解除绑定成功')
-          this.$store.commit('user/SET_USER_ACCOUNT', res.result)
-          this.handleClose()
-        }
+      this.$confirm('解绑手机后，可能会影响部分新功能的体验，确认解除绑定么？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        relieveUserAccount({ userId: this.userId }).then(res => {
+          if (res.code === 0) {
+            this.$message.success('手机号解除绑定成功')
+            this.$store.commit('user/SET_USER_ACCOUNT', res.result)
+            this.handleClose()
+          }
+        })
+      }).catch(err => {
+        console.log(err)
       })
     },
     sendVerificationCode() {
