@@ -5,8 +5,6 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Map;
-
 
 public abstract class DataDBService {
 

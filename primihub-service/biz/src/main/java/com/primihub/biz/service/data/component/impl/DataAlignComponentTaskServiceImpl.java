@@ -42,8 +42,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
-    private OrganConfiguration organConfiguration;
-    @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
     private WorkGrpcClient workGrpcClient;
@@ -121,7 +119,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDerivationList().addAll(derivationList);
                     taskReq.setNewest(derivationList);
                     // derivation resource datas
-                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
+                    log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
+                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
                     log.info(JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

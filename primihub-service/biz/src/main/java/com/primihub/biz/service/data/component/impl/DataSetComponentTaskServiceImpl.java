@@ -21,10 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -71,6 +68,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             if (voList == null && voList.size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:无数据信息");
             taskReq.setFusionResourceList(voList);
+            taskReq.setServerAddress(dataProjectResources.get(0).getServerAddress());
 //            log.info("json:{}",JSONObject.toJSONString(voList));
             List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.parseInt(data.get("available").toString())==1).collect(Collectors.toList());
 //            log.info("availableList - size :{}",availableList.size());
@@ -92,7 +90,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         List<ModelProjectResourceVo> resourceList = JSONObject.parseArray(req.getComponentValues().get(0).getVal(), ModelProjectResourceVo.class);
-        taskReq.setResourceList(resourceList);
+        Map<String, String> resourceMap = taskReq.getFusionResourceList().stream().collect(Collectors.toMap(d -> d.get("resourceId").toString(), d -> d.get("resourceColumnNameList").toString()));
         for (ModelProjectResourceVo modelProjectResourceVo : resourceList) {
             if (modelProjectResourceVo.getParticipationIdentity()==1){
                 taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_DATASET,modelProjectResourceVo.getResourceId());
@@ -107,7 +105,14 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
             dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
             taskReq.getDmrList().add(dataModelResource);
+            if (resourceMap.containsKey(modelProjectResourceVo.getResourceId())){
+                String columnNames = resourceMap.get(modelProjectResourceVo.getResourceId());
+                if (StringUtils.isNotBlank(columnNames)){
+                    modelProjectResourceVo.setFileHandleField(Arrays.asList(columnNames.split(",")));
+                }
+            }
         }
+        taskReq.setResourceList(resourceList);
         dataModelPrRepository.saveDataModelResourceList(taskReq.getDmrList());
         return BaseResultEntity.success();
     }
