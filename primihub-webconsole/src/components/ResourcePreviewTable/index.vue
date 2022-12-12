@@ -13,7 +13,11 @@
         :key="index"
         :prop="item"
         :label="item"
-      />
+      >
+        <template slot-scope="{row}">
+          {{ row[item] }}
+        </template>
+      </el-table-column>
 
     </el-table>
   </div>
@@ -42,6 +46,9 @@ export default {
       }
       return data
     }
+  },
+  created() {
+    console.log(this.data)
   }
 }
 </script>
