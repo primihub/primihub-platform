@@ -14,7 +14,7 @@
             <el-divider />
             <div class="organ-header">
               <span><i class="el-icon-office-building" /> <strong>协作方</strong></span>
-              <div class="operation-buttons">
+              <div v-if="options.isEditable" class="operation-buttons">
                 <el-button icon="el-icon-plus" plain size="mini" @click="openProviderOrganDialog">添加协作方</el-button>
               </div>
             </div>
@@ -22,10 +22,10 @@
               <div class="organ-header">
                 <p>
                   {{ organ.organName }}
-                  <i class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
+                  <i v-if="options.isEditable" class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
                 </p>
               </div>
-              <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
+              <el-button v-if="options.isEditable" class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
               <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" :disabled="!options.isEditable" @change="handleResourceHeaderChange" />
             </div>
           </template>
@@ -77,13 +77,13 @@
           </el-select>
           <div v-for="(item,index) in exceptionItems" :key="index" :gutter="20" style="display: flex; justify-content: space-between;margin-top: 10px">
             <div style="margin-right: 10px; min-width: 135px;">
-              <el-button @click="openFeaturesDialog(nodeData.componentCode,index)">选择特征: ({{ item.selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
+              <el-button :disabled="!options.isEditable" @click="openFeaturesDialog(nodeData.componentCode,index)">选择特征: ({{ item.selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
               <div class="feature-container">
                 <el-tag v-if="item.selectedExceptionFeatures" type="primary" size="mini">{{ item.selectedExceptionFeatures }}</el-tag>
               </div>
             </div>
             <div>
-              <el-select v-model="item.exceptionType" class="block exception-type" @change="handleChange('exception')">
+              <el-select v-model="item.exceptionType" :disabled="!options.isEditable" class="block exception-type" @change="handleChange('exception')">
                 <el-option
                   v-for="(v) in nodeData.componentTypes[2].inputValues"
                   :key="v.key"
@@ -93,7 +93,7 @@
               </el-select>
             </div>
             <div style="margin: 0 10px;">
-              <i v-if="exceptionItems.length > 1" class="el-icon-delete icon-delete" @click="removeFilling(index)" />
+              <i v-if="exceptionItems.length > 1 && options.isEditable" class="el-icon-delete icon-delete" @click="removeFilling(index)" />
             </div>
           </div>
           <el-button v-if="options.isEditable" style="margin-top: 20px;" type="primary" @click="addFilling">添加填充策略</el-button>
@@ -357,6 +357,7 @@ export default {
     immediate: true
   },
   async created() {
+    console.log('isEditable', this.options.isEditable)
     this.projectId = Number(this.$route.query.projectId) || Number(this.$route.params.id)
     await this.getProjectResourceOrgan()
   },
