@@ -128,7 +128,7 @@ export default {
         relieveUserAccount({ userId: this.userId }).then(res => {
           if (res.code === 0) {
             this.$message.success('手机号解除绑定成功')
-            this.$store.commit('user/SET_USER_ACCOUNT', res.result)
+            this.$store.commit('user/SET_USER_ACCOUNT', res.result.user.userAccount)
             this.handleClose()
           }
         })
