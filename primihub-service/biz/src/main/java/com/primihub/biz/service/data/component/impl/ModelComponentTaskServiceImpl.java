@@ -135,8 +135,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
             ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
             taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-            Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(128).build();
-            Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(100).build();
+            int batchSize = taskReq.getValueMap().containsKey("batchSize")?Integer.parseInt(taskReq.getValueMap().get("batchSize")):128;
+            Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(batchSize).build();
+            int numlters = taskReq.getValueMap().containsKey("numlters")?Integer.parseInt(taskReq.getValueMap().get("numlters")):100;
+            Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(numlters).build();
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
             Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
             Common.Params params = Common.Params.newBuilder()

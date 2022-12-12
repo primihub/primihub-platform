@@ -168,51 +168,76 @@
                             "val": "异常值处理"
                         }
                     ]
+                },
+                {
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"selectFeatures",
+                    "type_name":"选择特征",
+                    "input_type":"none",
+                    "input_value":"",
+                    "input_values":[]
+                },
+                {
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"exceptionType",
+                    "type_name":"缺失值处理",
+                    "input_type":"select",
+                    "input_value":"1",
+                    "input_values":[
+                        {
+                            "key":"1",
+                            "val":"平均值"
+                        },
+                        {
+                            "key":"2",
+                            "val":"最大值"
+                        },
+                        {
+                            "key":"3",
+                            "val":"最小值"
+                        }
+                    ]
                 }
             ]
         },
         {
-            "component_code": "missing",
-            "component_name": "缺失值处理",
+            "component_code": "featuresPoints",
+            "component_name": "特征分箱并计算IV值",
             "is_show": 0,
             "is_mandatory": 1,
             "component_types": [
                 {
                     "is_show": 0,
                     "is_required": 0,
-                    "type_code": "missingValue",
-                    "type_name": "缺失值处理",
+                    "type_code": "featuresPoints",
+                    "type_name": "特征分箱并计算IV值",
                     "input_type": "select",
-                    "input_value": "1",
+                    "input_value": "",
                     "input_values": [
                         {
                             "key": "1",
-                            "val": "缺失值处理"
+                            "val": "等频"
+                        },
+                        {
+                            "key": "2",
+                            "val": "等宽"
+                        },
+                        {
+                            "key": "3",
+                            "val": "卡方"
                         }
                     ]
                 },
                 {
                     "is_show": 0,
                     "is_required": 0,
-                    "type_code": "selectFeatures",
-                    "type_name": "选择特征",
-                    "input_type": "none",
+                    "type_code": "featuresPointsNum",
+                    "type_name": "特征分箱并计算IV值",
+                    "input_type": "number",
                     "input_value": "",
                     "input_values": []
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "exceptionType",
-                    "type_name": "缺失值处理",
-                    "input_type": "select",
-                    "input_value": "1",
-                    "input_values": [
-                        {
-                            "key": "1",
-                            "val": "平均值"
-                        }
-                    ]
                 }
             ]
         },
@@ -291,6 +316,10 @@
                         {
                             "key": "3",
                             "val": "横向-LR"
+                        },
+                        {
+                            "key": "4",
+                            "val": "MPC-LR"
                         }
                     ]
                 },
@@ -320,6 +349,42 @@
                     "input_type": "button",
                     "input_value": "",
                     "input_values": []
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "batchSize",
+                    "type_name": "Params.BatchSize",
+                    "input_type": "number",
+                    "input_value": 128,
+                    "input_values": [
+                        {
+                            "key": "min",
+                            "val": 128
+                        },
+                        {
+                            "key": "max",
+                            "val": 1024
+                        }
+                    ]
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "numlters",
+                    "type_name": "Params.Numlters",
+                    "input_type": "number",
+                    "input_value": "",
+                    "input_values": [
+                        {
+                            "key": "min",
+                            "val": 5
+                        },
+                        {
+                            "key": "max",
+                            "val": 5000
+                        }
+                    ]
                 }
             ]
         },
