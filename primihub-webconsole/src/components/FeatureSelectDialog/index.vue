@@ -6,7 +6,7 @@
     :before-close="handleClose"
   >
     <el-radio-group v-if="data.length>0" v-model="radio">
-      <el-radio v-for="item in data" :key="item.key" :label="item.val" />
+      <el-radio v-for="item in data" :key="item.key" :disabled="hasSelectedFeatures.includes(item.val)" :label="item.val" />
     </el-radio-group>
     <NoData v-else />
     <span slot="footer" class="dialog-footer">
@@ -26,6 +26,11 @@ export default {
     NoData
   },
   props: {
+    hasSelectedFeatures: {
+      type: Array,
+      require: false,
+      default: () => []
+    },
     data: {
       type: Array,
       default: () => []
@@ -51,6 +56,9 @@ export default {
         this.radio = ''
       }
     }
+  },
+  created() {
+    console.log('hasSelectedFeatures', this.hasSelectedFeatures)
   },
   methods: {
     handleClose() {

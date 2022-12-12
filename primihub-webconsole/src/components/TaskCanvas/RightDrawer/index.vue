@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable, 'disabled':!options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
@@ -26,7 +26,7 @@
                 </p>
               </div>
               <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
-              <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" @change="handleResourceHeaderChange" />
             </div>
           </template>
           <template v-else>
@@ -36,7 +36,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'dataAlign'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -54,7 +54,7 @@
             <el-form-item />
           </el-col>
           <el-col :span="12">
-            <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+            <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
               <el-option
                 v-for="(v) in nodeData.componentTypes[2].inputValues"
                 :key="v.key"
@@ -67,7 +67,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'exception'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -75,30 +75,15 @@
               :value="v.key"
             />
           </el-select>
-        </el-form-item>
-      </template>
-      <template v-else-if="nodeData.componentCode === 'missing'">
-        <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
-            <el-option
-              v-for="(v,index) in nodeData.componentTypes[0].inputValues"
-              :key="index"
-              :label="v.val"
-              :value="v.key"
-            />
-          </el-select>
-        </el-form-item>
-        <template v-if="nodeData.componentTypes[0].inputValue === '1'">
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
+          <div v-for="(item,index) in exceptionItems" :key="index" :gutter="20" style="display: flex; justify-content: space-between;margin-top: 10px">
+            <div style="margin-right: 10px; min-width: 135px;">
+              <el-button @click="openFeaturesDialog(nodeData.componentCode,index)">选择特征: ({{ item.selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
               <div class="feature-container">
-                <el-tag v-if="selectedExceptionFeatures" type="primary" size="mini">{{ selectedExceptionFeatures }}</el-tag>
+                <el-tag v-if="item.selectedExceptionFeatures" type="primary" size="mini">{{ item.selectedExceptionFeatures }}</el-tag>
               </div>
-              <el-form-item />
-            </el-col>
-            <el-col :span="12">
-              <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+            </div>
+            <div>
+              <el-select v-model="item.exceptionType" class="block exception-type" @change="handleChange('exception')">
                 <el-option
                   v-for="(v) in nodeData.componentTypes[2].inputValues"
                   :key="v.key"
@@ -106,9 +91,13 @@
                   :value="v.key"
                 />
               </el-select>
-            </el-col>
-          </el-row>
-        </template>
+            </div>
+            <div style="margin: 0 10px;">
+              <i v-if="exceptionItems.length > 1" class="el-icon-delete icon-delete" @click="removeFilling(index)" />
+            </div>
+          </div>
+          <el-button v-if="options.isEditable" style="margin-top: 20px;" type="primary" @click="addFilling">添加填充策略</el-button>
+        </el-form-item>
       </template>
       <template v-else-if="nodeData.componentCode === 'featuresPoints'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
@@ -174,7 +163,7 @@
     <!-- add provider organ dialog -->
     <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
-    <FeatureSelectDialog :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
+    <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :has-selected-features="hasSelectedFeatures" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
 </template>
 
@@ -234,14 +223,18 @@ export default {
         inputValues: [],
         typeName: ''
       },
-      missingData: [
-
+      exceptionItems: [ // filling items
+        {
+          selectedExceptionFeatures: '',
+          exceptionType: ''
+        }
       ],
       selectedFeaturesCode: '',
-      selectedFeaturesIndex: '',
+      selectedFeaturesIndex: '', //  exception component feature select index
       selectedDataAlignFeatures: null,
       selectedExceptionFeatures: null,
       selectedFeatures: null,
+      selectedFeatureIndex: -1,
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
@@ -282,6 +275,14 @@ export default {
     }
   },
   computed: {
+    // has selected features collection, A feature can perform only one operation
+    hasSelectedFeatures() {
+      return this.exceptionItems.map((item, index) => {
+        if (item.selectedExceptionFeatures !== '' && this.selectedFeaturesIndex !== index) {
+          return item.selectedExceptionFeatures
+        }
+      })
+    },
     isDataSelect() {
       return this.nodeData && this.nodeData.componentCode === 'dataSet'
     },
@@ -296,7 +297,7 @@ export default {
       }
     },
     featuresOptions() {
-      if (this.nodeData.componentCode === 'dataAlign' || this.nodeData.componentCode === 'missing') {
+      if (this.nodeData.componentCode === 'dataAlign' || this.nodeData.componentCode === 'exception') {
         this.getDataSetComValue(this.graphData)
       }
       if (this.selectedProviderOrgans.length > 0 && this.selectedProviderOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
@@ -344,10 +345,11 @@ export default {
         } else if (newVal.componentCode === 'dataAlign') {
           this.selectedDataAlignFeatures = this.nodeData.componentTypes[1]?.inputValue !== '' ? this.nodeData.componentTypes[1]?.inputValue : null
           this.selectedFeatures = this.selectedDataAlignFeatures
-        } else if (newVal.componentCode === 'missing') {
-          this.selectedExceptionFeatures = newVal.componentTypes[1].inputValue !== '' ? newVal.componentTypes[1].inputValue : null
-          this.selectedFeatures = this.selectedExceptionFeatures
-          console.log('watch selectedExceptionFeatures', this.selectedExceptionFeatures)
+        } else if (newVal.componentCode === 'exception') {
+          this.exceptionItems = newVal.componentTypes[1].inputValue !== '' ? JSON.parse(newVal.componentTypes[1].inputValue) : [{
+            selectedExceptionFeatures: '',
+            exceptionType: ''
+          }]
         }
       }
     },
@@ -359,6 +361,19 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    // 添加填充策略
+    addFilling() {
+      this.exceptionItems.push({
+        selectedExceptionFeatures: '',
+        exceptionType: ''
+      })
+      this.handleChange('exception')
+    },
+    removeFilling(index) {
+      this.exceptionItems.splice(index, 1)
+      this.selectedFeatures = ''
+      this.handleChange('exception')
+    },
     filterData(organId) {
       return this.selectedProviderOrgans.find(item => item.organId === organId)
     },
@@ -466,7 +481,10 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
-    handleChange() {
+    handleChange(name) {
+      if (name === 'exception') {
+        this.nodeData.componentTypes[1].inputValue = JSON.stringify(this.exceptionItems)
+      }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -550,30 +568,27 @@ export default {
     save() {
       this.$emit('save')
     },
-    openFeaturesDialog(code) {
+    openFeaturesDialog(code, index) {
       this.selectedFeaturesCode = code
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedFeatures = this.selectedDataAlignFeatures
       } else if (this.selectedFeaturesCode === 'exception') {
-        this.selectedFeatures = this.selectedExceptionFeatures
+        this.selectedFeaturesIndex = index
+        this.selectedFeatures = this.exceptionItems[this.selectedFeaturesIndex].selectedExceptionFeatures
       }
       this.featuresDialogVisible = true
     },
     handleFeatureDialogSubmit(data) {
-      console.log(data)
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedDataAlignFeatures = data
         this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
         this.selectedFeatures = this.selectedDataAlignFeatures
-      } else if (this.selectedFeaturesCode === 'missing') {
-        this.selectedExceptionFeatures = data
-        this.nodeData.componentTypes[1].inputValue = this.selectedExceptionFeatures
-        this.selectedFeatures = this.selectedExceptionFeatures
-        console.log(this.selectedExceptionFeatures)
+      } else if (this.selectedFeaturesCode === 'exception') {
+        this.exceptionItems[this.selectedFeaturesIndex].selectedExceptionFeatures = data
+        this.nodeData.componentTypes[1].inputValue = JSON.stringify(this.exceptionItems)
       }
-      console.log(this.nodeData)
       this.featuresDialogVisible = false
-      this.handleChange()
+      this.handleChange(this.selectedFeaturesCode)
     },
     handleFeatureDialogClose() {
       this.featuresDialogVisible = false
@@ -586,6 +601,13 @@ export default {
 p {
   margin-block-start: .2em;
   margin-block-end: .2em;
+}
+::v-deep .el-button{
+  padding: 12px 15px;
+  line-height: 1!important;
+}
+::v-deep .el-select .el-input__inner{
+  padding: 12px 10px!important;
 }
 ::v-deep .el-button--mini.is-circle{
   padding: 3px;
@@ -655,9 +677,6 @@ p {
   width: 100%;
   display: block;
 }
-.feature-container{
-  margin: 10px 0;
-}
 .organ-header{
   display: flex;
   justify-content: space-between;
@@ -667,4 +686,5 @@ p {
 .icon-delete{
   color: #F56C6C;
 }
+
 </style>
