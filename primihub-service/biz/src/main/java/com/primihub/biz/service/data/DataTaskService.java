@@ -13,10 +13,15 @@ import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
+import com.primihub.biz.entity.data.dto.LokiDto;
+import com.primihub.biz.entity.data.dto.LokiResultContentDto;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.vo.DataTaskVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
+import com.primihub.biz.entity.sys.config.LokiConfig;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
@@ -24,8 +29,12 @@ import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.data.DataResourceSecondaryRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.service.sys.SysSseEmitterService;
+import com.primihub.biz.service.sys.SysWebSocketService;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.comm.CommStorageUtil;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +45,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.Resource;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,8 +94,9 @@ public class DataTaskService {
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
-    private DataModelPrRepository dataModelPrRepository;
-
+    private SysSseEmitterService sseEmitterService;
+    @Autowired
+    private SysWebSocketService webSocketService;
     @Autowired
     private DataAsyncService dataAsyncService;
 
@@ -389,6 +405,168 @@ public class DataTaskService {
             dataTaskPrRepository.deleteDataTask(taskId);
         }
         return BaseResultEntity.success();
+    }
+
+
+    public BaseResultEntity cancelTask(Long taskId) {
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (rawDataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType()))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法取消,任务状态不是运行中");
+        rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
+        dataTaskPrRepository.updateDataTask(rawDataTask);
+        return BaseResultEntity.success(taskId);
+    }
+
+    public BaseResultEntity getTaskLogInfo(Long taskId) {
+        LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
+        if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())
+                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"请检查loki配置信息");
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (rawDataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        Map<String, Object> map = new HashMap<>();
+        map.put("address",lokiConfig.getAddress());
+        map.put("job",lokiConfig.getJob());
+        map.put("container",lokiConfig.getContainer());
+        map.put("taskIdName", rawDataTask.getTaskIdName());
+        if (rawDataTask.getTaskStartTime()==null){
+            map.put("start",(System.currentTimeMillis()/1000));
+        }else {
+            map.put("start",(rawDataTask.getTaskStartTime()/1000));
+        }
+        return BaseResultEntity.success(map);
+    }
+
+    public File getLogFile(DataTask dataTask) {
+        String filePath = baseConfiguration.getRunModelFileUrlDirPrefix()+ dataTask.getTaskIdName() + File.separator + DataConstant.TASK_LOG_FILE_NAME;
+        log.info(filePath);
+        File file = new File(filePath);
+        if (!file.exists()){
+            File runFile = new File(baseConfiguration.getRunModelFileUrlDirPrefix()+ dataTask.getTaskIdName());
+            if (!runFile.exists())
+                runFile.mkdirs();
+            generateLogFile(file,dataTask);
+        }
+        return file;
+    }
+
+    public void generateLogFile(File file,DataTask dataTask){
+        try {
+            List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime()/1000);
+            if (lokiLogList==null || lokiLogList.isEmpty())
+                return;
+            log.info("{}",lokiLogList.size());
+            boolean next = true;
+            Long nextTsNs = 0L;
+            Long ts = 0L;
+            file.createNewFile();
+            FileOutputStream fos=new FileOutputStream(file);
+            OutputStreamWriter osw=new OutputStreamWriter(fos, "UTF-8");
+            BufferedWriter bw=new BufferedWriter(osw);
+            while (next){
+                for(String[] logInfo:lokiLogList){
+                    long logId = Long.parseLong(logInfo[0]);
+                    if (logId>nextTsNs){
+                        nextTsNs = logId;
+                        JSONObject jsonObject = JSONObject.parseObject(logInfo[1]);
+                        bw.write(jsonObject.get("log").toString());
+                        ts =  DateUtil.parseDate(jsonObject.get("time").toString(), DateUtil.DateStyle.UTC_DEFAULT.getFormat()).getTime();
+                    }
+                }
+                if (lokiLogList.size()==100){
+                    lokiLogList = getLokiLogList(dataTask.getTaskIdName(), ts/1000);
+                }else {
+                    next = false;
+                }
+            }
+            bw.close();
+            osw.close();
+            fos.close();
+        }catch (Exception e){
+            log.info(e.getMessage());
+        }
+    }
+
+    public List<String[]> getLokiLogList(String taskId,Long start){
+        LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
+        if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
+        ||StringUtils.isBlank(lokiConfig.getContainer()))
+            return null;
+        String query = "query={job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
+        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&"+query;
+        log.info(url);
+        LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
+        if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0)
+            return null;
+        List<String[]> logArray = new ArrayList<>();
+        List<LokiResultContentDto> result = lokiDto.getData().getResult();
+        for (LokiResultContentDto lokiResultContentDto : result) {
+            logArray.addAll(lokiResultContentDto.getValues());
+        }
+        return logArray;
+    }
+
+
+    public BaseResultEntity getTaskList(DataTaskReq req) {
+        List<DataTaskVo> dataTaskVos = dataTaskRepository.selectDataTaskList(req);
+        if (dataTaskVos.size()==0)
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(),new ArrayList()));
+        Integer count = dataTaskRepository.selectDataTaskListCount(req);
+        return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
+    }
+
+    public SseEmitter connectSseTask(String taskId,Integer all) {
+        boolean isReal = true;
+        DataTask dataTask = null;
+        if (StringUtils.isBlank(taskId)){
+            taskId = SnowflakeId.getInstance().toString();
+            isReal = false;
+        }else {
+            dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            if (dataTask==null){
+                taskId = String.valueOf(SnowflakeId.getInstance().nextId());
+                isReal = false;
+            }else {
+                taskId = dataTask.getTaskIdName();
+            }
+        }
+        if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
+            sseEmitterService.removeKey(taskId);
+        }
+        SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        if (!isReal){
+            sseEmitterService.sendMessage(taskId,"未查询到任务信息");
+        }else {
+            // 创建web
+            LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
+            if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
+                    ||StringUtils.isBlank(lokiConfig.getContainer())){
+                sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
+            }else {
+                try {
+                    String query = "";
+                    if (all == 1){
+                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"}";
+                    }else {
+                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
+                    }
+                    String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime()/1000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
+                    log.info(url);
+                    webSocketService.connect(taskId,url);
+                }catch (Exception e){
+                    log.info(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sseEmitter;
+    }
+
+    public void removeSseTask(String taskId) {
+        sseEmitterService.removeKey(taskId);
     }
 }
 

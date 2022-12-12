@@ -6,6 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
+import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataResourceFieldReq;
@@ -114,20 +115,22 @@ public class ResourceController {
             if (req.getResourceSource() == 2){
                 if (req.getDataSource() == null)
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSource");
-                if (req.getDataSource().getDbType()==null || req.getDataSource().getDbType()<=0)
-                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Type");
-                if (StringUtils.isBlank(req.getDataSource().getDbDriver()))
-                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Driver");
                 if (StringUtils.isBlank(req.getDataSource().getDbUrl()))
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Url");
-                if (StringUtils.isBlank(req.getDataSource().getDbUsername()))
-                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Username");
-                if (StringUtils.isBlank(req.getDataSource().getDbPassword()))
-                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Password");
                 if (StringUtils.isBlank(req.getDataSource().getDbName()))
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"DbName");
                 if (StringUtils.isBlank(req.getDataSource().getDbTableName()))
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"DbTableName");
+                if (req.getDataSource().getDbType()==null || req.getDataSource().getDbType()<=0)
+                    return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Type");
+                if (SourceEnum.SOURCE_MAP.get(req.getDataSource().getDbType()) == SourceEnum.mysql){
+                    if (StringUtils.isBlank(req.getDataSource().getDbDriver()))
+                        return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Driver");
+                    if (StringUtils.isBlank(req.getDataSource().getDbUsername()))
+                        return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Username");
+                    if (StringUtils.isBlank(req.getDataSource().getDbPassword()))
+                        return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Password");
+                }
             }
             if (req.getFieldList()==null || req.getFieldList().size()==0)
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldList");

@@ -12,16 +12,9 @@ import java.util.Map;
 public class ShareModelVo {
 
 
-    public ShareModelVo(String projectId, String serverAddress) {
-        this.projectId = projectId;
-        this.serverAddress = serverAddress;
-    }
     public ShareModelVo(DataProject project) {
         this.projectId = project.getProjectId();
         this.serverAddress = project.getServerAddress();
-    }
-    public ShareModelVo(DataModel dataModel) {
-        this.dataModel = dataModel;
     }
 
     public ShareModelVo() {
@@ -36,7 +29,7 @@ public class ShareModelVo {
     private Long timestamp;
     private Integer nonce;
     private List<String> shareOrganId;
-//    private List<ModelDerivationDto> derivationList;
+    private List<ModelDerivationDto> derivationList;
 
     public void init(DataProject project){
         this.projectId = project.getProjectId();

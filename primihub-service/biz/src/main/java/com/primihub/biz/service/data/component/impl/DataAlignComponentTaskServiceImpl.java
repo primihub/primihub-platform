@@ -42,8 +42,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
-    private OrganConfiguration organConfiguration;
-    @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
     private WorkGrpcClient workGrpcClient;
@@ -121,7 +119,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDerivationList().addAll(derivationList);
                     taskReq.setNewest(derivationList);
                     // derivation resource datas
-                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
+                    log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
+                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
                     log.info(JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -132,6 +131,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                             DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
                             dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
                             dataModelResource.setResourceId(resourceId);
+                            dataModelResource.setTakePartType(1);
                             dataModelPrRepository.saveDataModelResource(dataModelResource);
                             taskReq.getDmrList().add(dataModelResource);
                         }

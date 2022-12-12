@@ -36,11 +36,14 @@ public class ModelController {
      * @return
      */
     @GetMapping("getdatamodel")
-    public BaseResultEntity getDataModel(Long taskId){
+    public BaseResultEntity getDataModel(@RequestHeader("userId") Long userId,Long taskId){
         if (taskId==null||taskId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
-        return dataModelService.getDataModel(taskId);
+        if (userId==null||userId==0L){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
+        return dataModelService.getDataModel(taskId,userId);
     }
 
     /**

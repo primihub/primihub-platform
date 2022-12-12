@@ -16,6 +16,7 @@ public class ModelListVo {
     private Integer resourceNum;
     private Long latestTaskId;
     private String latestTaskIdName;
+    private String latestTaskName;
     //最近一次任务状态
     private Integer latestTaskStatus;
     /**

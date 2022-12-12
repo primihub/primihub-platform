@@ -53,6 +53,8 @@ public class ModelResourceVo {
 
     private Integer available;
 
+    private Integer takePartType;
+
     @JsonIgnore
     private String url;
 }

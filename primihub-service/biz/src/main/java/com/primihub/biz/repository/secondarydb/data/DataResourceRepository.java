@@ -32,6 +32,8 @@ public interface DataResourceRepository {
 
     DataResource queryDataResourceById(Long resourceId);
 
+    DataSource queryDataSourceById(Long id);
+
     DataResource queryDataResourceByResourceFusionId(String resourceFusionId);
 
     List<DataDerivationResourceVo> queryDerivationResourceList(DerivationResourceReq req);
