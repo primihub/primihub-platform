@@ -21,6 +21,7 @@ import com.primihub.biz.entity.data.req.DataComponentRelationReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
+import com.primihub.biz.entity.data.vo.ModelVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
@@ -404,14 +405,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList){
-        String resourceId = "";
-        for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
-            if (dataReasoningResource.getParticipationIdentity() == 1){
-                resourceId = dataReasoningResource.getResourceId();
-            }
-        }
-        log.info(resourceId);
+    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, Long modelId){
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
@@ -424,61 +418,71 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setRunTaskId(dataTask.getTaskId());
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        Map<String,String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_LABEL_DATASET,resourceId);
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
-        if (freemarkerContent != null) {
-            try {
-                log.info(freemarkerContent);
-                DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
-                log.info(modelTask.toString());
-                log.info(modelTask.getTaskResultContent());
-                ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
-                log.info(modelOutputPathDto.toString());
-                StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
-                dataTask.setTaskResultPath(filePath.toString());
-                log.info(dataTask.getTaskResultPath());
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
-                Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
-                Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("predictFileName", predictFileNameeParamValue)
-                        .build();
-                Common.Task task = Common.Task.newBuilder()
-                        .setType(Common.TaskType.ACTOR_TASK)
-                        .setParams(params)
-                        .setName("modelTask")
-                        .setLanguage(Common.Language.PYTHON)
-                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
-                        .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
-                PushTaskRequest request = PushTaskRequest.newBuilder()
-                        .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTask(task)
-                        .setSequenceNumber(11)
-                        .setClientProcessedUpTo(22)
-                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
-                        .build();
-                PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                log.info("grpc结果:{}", reply.toString());
-                if (reply.getRetCode()==0){
-                    dataReasoning.setReleaseDate(new Date());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",1,null);
-                    dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                }else {
+        Map<Integer, List<DataReasoningResource>> listMap = dataReasoningResourceList.stream().collect(Collectors.groupingBy(DataReasoningResource::getParticipationIdentity));
+        ModelVo modelVo = dataModelRepository.queryModelById(modelId);
+        if (listMap.size()==2 && DataConstant.INFER_TYPE.contains(modelVo.getModelType())){
+            Map<String,String> map = new HashMap<>();
+            map.put(DataConstant.PYTHON_LABEL_DATASET,listMap.get(1).get(0).getResourceId());
+            map.put(DataConstant.PYTHON_GUEST_DATASET,listMap.get(2).get(0).getResourceId());
+            String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
+            if (freemarkerContent != null) {
+                try {
+                    log.info(freemarkerContent);
+                    DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+                    log.info(modelTask.toString());
+                    log.info(modelTask.getTaskResultContent());
+                    ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
+                    log.info(modelOutputPathDto.toString());
+                    StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
+                    dataTask.setTaskResultPath(filePath.toString());
+                    log.info(dataTask.getTaskResultPath());
+                    Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
+                    Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
+                    Common.Params params = Common.Params.newBuilder()
+                            .putParamMap("modelFileName", modelFileNameParamValue)
+                            .putParamMap("predictFileName", predictFileNameeParamValue)
+                            .build();
+                    Common.Task task = Common.Task.newBuilder()
+                            .setType(Common.TaskType.ACTOR_TASK)
+                            .setParams(params)
+                            .setName("modelTask")
+                            .setLanguage(Common.Language.PYTHON)
+                            .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                            .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                            .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                            .build();
+                    log.info("grpc Common.Task :\n{}", task.toString());
+                    PushTaskRequest request = PushTaskRequest.newBuilder()
+                            .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                            .setTask(task)
+                            .setSequenceNumber(11)
+                            .setClientProcessedUpTo(22)
+                            .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
+                            .build();
+                    PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+                    log.info("grpc结果:{}", reply.toString());
+                    if (reply.getRetCode()==0){
+                        dataReasoning.setReleaseDate(new Date());
+                        dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",1,null);
+                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                    }else {
+                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                        dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                    }
+                } catch (Exception e) {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                    dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                    dataTask.setTaskErrorMsg(e.getMessage());
+                    log.info("grpc Exception:{}", e.getMessage());
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg(e.getMessage());
-                log.info("grpc Exception:{}", e.getMessage());
-                e.printStackTrace();
+                dataReasoning.setReasoningState(dataTask.getTaskState());
             }
+        }else {
+            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+            dataTask.setTaskErrorMsg("无法运行,缺少资源或暂不支持该模型类型");
             dataReasoning.setReasoningState(dataTask.getTaskState());
         }
+
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
