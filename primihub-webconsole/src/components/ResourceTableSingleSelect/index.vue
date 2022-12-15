@@ -7,10 +7,11 @@
       :data="data"
       v-bind="$attrs"
       highlight-current-row
+      :row-class-name="tableRowClassName"
     >
       <el-table-column label="选择" width="55">
         <template slot-scope="{row}">
-          <el-radio v-model="radioSelect" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
+          <el-radio v-model="radioSelect" :disabled="row.auditStatus !== 1" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
           <!-- <el-radio v-model="radioSelect" :label="row.resourceId" :disabled="row.auditStatus !== 1" @change="handleRadioChange(row)"><i /></el-radio> -->
         </template>
       </el-table-column>
@@ -92,6 +93,13 @@ export default {
     }
   },
   methods: {
+    tableRowClassName({ row }) {
+      if (row.auditStatus !== 1) {
+        return 'row-disabled'
+      } else {
+        return ''
+      }
+    },
     handleRadioChange(row) {
       this.currentRow = row
       this.setCurrent(row.resourceId)
@@ -111,6 +119,8 @@ export default {
 ::v-deep .el-button{
   margin: 2px 5px;
 }
-
+::v-deep .el-table tr.row-disabled{
+  color: #999;
+}
 </style>
 

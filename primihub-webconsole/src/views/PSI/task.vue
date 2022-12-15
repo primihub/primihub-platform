@@ -64,7 +64,7 @@
         <div class="inner-con">
           <el-form ref="form" :model="formData" :rules="rules" label-width="140px">
             <el-form-item label="求交结果名称" prop="resultName">
-              <el-input v-model="resultName" placeholder="请输入内容" />
+              <el-input v-model="formData.resultName" placeholder="请输入内容" />
             </el-form-item>
             <el-row>
               <el-col :span="8">

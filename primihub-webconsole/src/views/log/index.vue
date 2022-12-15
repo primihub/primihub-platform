@@ -11,11 +11,12 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
+            @change="handleClear"
           />
 
         </el-form-item>
         <el-form-item>
-          <el-select v-model="query.taskType" placeholder="请选择任务类型" size="small" clearable @clear="handleClear('taskType')">
+          <el-select v-model="query.taskType" placeholder="请选择任务类型" size="small" clearable @clear="handleClear">
             <el-option
               v-for="item in taskTypeOptions"
               :key="item.value"
@@ -25,10 +26,10 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-input v-model="query.taskName" size="small" placeholder="请输入任务名称" clearable @clear="handleClear('taskName')" />
+          <el-input v-model="query.taskName" size="small" placeholder="请输入任务名称" clearable @clear="handleClear" />
         </el-form-item>
         <el-form-item>
-          <el-input v-model="query.taskId" size="small" placeholder="请输入任务ID" clearable @clear="handleClear('taskId')" />
+          <el-input v-model="query.taskId" size="small" placeholder="请输入任务ID" clearable @clear="handleClear" />
         </el-form-item>
 
         <el-form-item>
@@ -72,7 +73,7 @@
         >
           <template slot-scope="{row}">
             <div class="buttons">
-              <el-link :disabled="row.status === 2" type="primary" @click="download(row.taskId)">下载</el-link>
+              <!-- <el-link :disabled="row.status === 2" type="primary" @click="download(row.taskId)">下载</el-link> -->
               <el-link type="primary" @click="openDialog(row.taskId)">查看</el-link>
             </div>
 
@@ -149,13 +150,6 @@ export default {
   methods: {
     search() {
       this.pageNo = 1
-      // if (this.query.modelId !== '' && isNaN(this.query.modelId)) {
-      //   this.$message({
-      //     message: '模型id为数字',
-      //     type: 'warning'
-      //   })
-      //   return
-      // }
       this.fetchData()
     },
     reset() {
@@ -168,8 +162,8 @@ export default {
       this.fetchData()
     },
     handleClear(name) {
-      console.log('清空', name)
-      this.query[name] = ''
+      // console.log('清空', name)
+      // this.query[name] = ''
       this.fetchData()
     },
     toModelDetail(row) {
@@ -192,8 +186,8 @@ export default {
         taskType,
         taskId,
         taskName,
-        start: time !== '' ? new Date(time[0]).getTime() : '',
-        end: time !== '' ? new Date(time[1]).getTime() : '',
+        start: time ? new Date(time[0]).getTime() : '',
+        end: time ? new Date(time[1]).getTime() : '',
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
@@ -279,10 +273,5 @@ export default {
 .buttons{
   display: flex;
   justify-content: space-evenly;
-}
-.log-wrapper{
-  max-height: 500px;
-  overflow-y: scroll;
-  overflow-x: hidden;
 }
 </style>

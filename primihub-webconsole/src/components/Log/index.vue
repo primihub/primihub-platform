@@ -4,7 +4,12 @@
     <div class="log-container">
       <template v-if="logData.length>0">
         <p v-for="(item,index) in logData" :id="(logData.length === index+1)?'scrollLog':''" :key="index" class="item">
-          {{ item.log }}
+          <span v-if="logValueType === 'object'">
+            {{ item.log }}
+          </span>
+          <span v-else>
+            {{ item }}
+          </span>
         </p>
       </template>
       <template v-else>
@@ -12,6 +17,7 @@
       </template>
     </div>
   </div>
+
 </template>
 
 <script>
@@ -36,7 +42,8 @@ export default {
       query: '',
       start: '',
       errorLog: [],
-      logType: ''
+      logType: '',
+      logValueType: 'string'
     }
   },
   async mounted() {
@@ -44,68 +51,76 @@ export default {
     this.socketInit()
   },
   destroyed() {
-    this.ws.close() // 离开路由之后断开websocket连接
+    this.ws && this.ws.close()
   },
   methods: {
     socketInit() {
-      const url = `ws://192.168.99.16:31191/loki/api/v1/tail?start=${this.start}&query=${this.query}`
+      const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
+      const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
       this.ws.onopen = this.open
-      // 监听socket错误信息
       this.ws.onerror = this.error
-      // 监听socket消息
       this.ws.onmessage = this.getMessage
-      // 发送socket消息
       this.ws.onsend = this.send
       this.ws.onclose = this.close
     },
     open: function() {
       console.log('socket连接成功')
-      // this.send(JSON.stringify(this.listQuery))
     },
     error: function() {
       console.log('连接错误')
     },
     close: function(e) {
       this.ws.close()
-      if (this.taskState === 2) {
-        this.socketInit()
-      }
       console.log('socket已经关闭', e)
     },
     getMessage: function(msg) {
       if (msg.data.length > 0) {
         const data = JSON.parse(msg.data).streams
         const formatData = data.map(item => {
-          const value = JSON.parse(item.values[0][1])
-          if (value.log !== '\n') {
-            value.log = value.time.split('T')[0] + ' ' + value.log
-            return value
+          this.logValueType = typeof item.values[0][1]
+          if (this.logValueType === 'object') {
+            const value = JSON.parse(item.values[0][1])
+            if (value.log !== '\n') {
+              value.log = value.time.split('T')[0] + ' ' + value.log
+              return value
+            }
+            return item.values
+          } else {
+            return item.values
           }
         })
         this.logData = this.logData.concat(formatData)
         this.$nextTick(() => {
           this.scrollToTarget('scrollLog')
-          // document.getElementById('scrollLog').scrollIntoView({ behavior: 'smooth', block: 'end' })
         })
-        if (this.logType === 'error') {
-          this.errorLog = this.logData
-          this.$emit('error', this.logData)
-        }
+        this.filterErrorLog()
       }
+    },
+    filterErrorLog() {
+      if (this.logValueType === 'string') {
+        this.errorLog = this.logData.filter(item => item[0][1].indexOf('ERROR') !== -1)
+      } else {
+        this.errorLog = this.logData.filter(item => item.log.indexOf('ERROR') !== -1)
+      }
+      this.$emit('error', this.errorLog)
     },
     send: function(order) {
       console.log(order)
       this.ws.send(order)
     },
     async getTaskLogInfo() {
-      console.log(this.taskId)
       const taskId = this.taskId || this.$route.params.taskId
       const res = await getTaskLogInfo(taskId)
       if (res.code === 0) {
-        const { container, job, taskIdName, start } = res.result
+        const { container, job, taskIdName, start, address } = res.result
         this.start = start
-        this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
+        this.address = address
+        if (job === 'false') {
+          this.query = `{container_name="${container}"}|="${taskIdName}"`
+        } else {
+          this.query = `{job ="${job}", container="${container}"}|="${taskIdName}"`
+        }
       }
     },
     scrollToTarget(target, block = 'end') {
@@ -113,9 +128,10 @@ export default {
       element.scrollIntoView({ behavior: 'smooth', block })
     },
     showErrorLog() {
-      this.logType = 'error'
+      this.logType = 'ERROR'
+      this.query += `|="ERROR"`
       this.logData = []
-      this.query += `|="${this.logType}"`
+
       this.socketInit()
     }
   }
@@ -144,6 +160,7 @@ export default {
   overflow-y: scroll;
   overflow-x: hidden;
   width: 100%;
+  height: 500px;
   .item{
     display: inline-block;
     margin-bottom: 10px;

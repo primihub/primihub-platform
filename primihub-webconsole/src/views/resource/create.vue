@@ -268,7 +268,7 @@ export default {
         fieldList.push({
           fieldId,
           fieldName,
-          fieldType: this.fieldTypeList.find(item => item.value === fieldType)?.label,
+          fieldType,
           fieldDesc,
           relevance: relevance === true ? 1 : 0,
           grouping: grouping === true ? 1 : 0,

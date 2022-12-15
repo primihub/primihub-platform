@@ -150,6 +150,9 @@ export default {
       resourceSourceList: [{
         label: '文件上传',
         value: 1
+      }, {
+        label: '数据库导入',
+        value: 2
       }],
       resourceList: [],
       currentPage: 1,
