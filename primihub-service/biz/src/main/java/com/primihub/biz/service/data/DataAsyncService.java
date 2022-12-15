@@ -424,7 +424,7 @@ public class DataAsyncService implements ApplicationContextAware {
             Map<String,String> map = new HashMap<>();
             map.put(DataConstant.PYTHON_LABEL_DATASET,listMap.get(1).get(0).getResourceId());
             map.put(DataConstant.PYTHON_GUEST_DATASET,listMap.get(2).get(0).getResourceId());
-            String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
+            String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelVo.getModelType()==2?DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH:DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
             if (freemarkerContent != null) {
                 try {
                     log.info(freemarkerContent);
