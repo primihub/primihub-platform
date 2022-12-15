@@ -62,6 +62,11 @@ export default {
       radioSelect: null
     }
   },
+  watch: {
+    selectedData(newVal) {
+      this.setCurrent(newVal)
+    }
+  },
   methods: {
     handleRadioChange(row) {
       this.currentRow = row
