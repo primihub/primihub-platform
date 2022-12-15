@@ -6,7 +6,7 @@ ADD . /opt/
 
 RUN mvn clean install -Dmaven.test.skip=true
 
-FROM java:8-jre
+FROM openjdk:8-jre-alpine
 
 COPY --from=build /opt/fusion-api/target/*-SNAPSHOT.jar /applications/fusion.jar
 
