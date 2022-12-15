@@ -306,7 +306,8 @@ export const asyncRoutes = [
         path: 'ui',
         name: 'UISetting',
         component: () => import('@/views/setting/ui'),
-        meta: { title: '界面设置' }
+        meta: { title: '界面设置' },
+        hidden: true
       }
     ]
   },
