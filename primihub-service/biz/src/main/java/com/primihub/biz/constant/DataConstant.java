@@ -38,8 +38,6 @@ public class DataConstant {
     public final static Long[] GUEST_PORT_RANGE = new Long[]{20000L,30000L};
     public final static Long[] HOST_PORT_RANGE = new Long[]{40000L,50000L};
 
-    // email
-    public final static String TASK_EMAIL_SUBJECT ="[Primihub] Primihub Platform Task Notification!";
 
 
     public final static String TASK_LOG_FILE_NAME = "taskLog.log";

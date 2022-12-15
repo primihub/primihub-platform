@@ -5,6 +5,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
 import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.po.DataProject;
@@ -79,6 +80,10 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 Set<Object> resourceColumnNameList = voList.stream().map(data -> data.get("resourceColumnNameList")).collect(Collectors.toSet());
                 if (resourceColumnNameList.contains(null) || resourceColumnNameList.size()!=1)
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源特征量不一致,不可使用");
+            }
+            if(ModelTypeEnum.MPC_LR.getType().equals(modelType)){
+                if (voList.size()<3)
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型需要三个数据集");
             }
         }catch (Exception e){
             log.info("modelId:{} Failed to convert JSON :{}",taskReq.getDataModel().getModelId(),e.getMessage());

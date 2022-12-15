@@ -14,15 +14,15 @@
     </insert>
 
     <insert id="saveDataModelResourceList" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelResource">
-        insert into data_mr (model_id,resource_id,task_id,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
+        insert into data_mr (model_id,resource_id,task_id,take_part_type,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
         values
         <foreach collection="list" index="index" item="item" separator=",">
-            (#{item.modelId},#{item.resourceId},#{item.taskId},#{item.alignmentNum},#{item.primitiveParamNum},#{item.modelParamNum},0,now(),now())
+            (#{item.modelId},#{item.resourceId},#{item.taskId},#{item.takePartType},#{item.alignmentNum},#{item.primitiveParamNum},#{item.modelParamNum},0,now(),now())
         </foreach>
     </insert>
     <insert id="saveDataModelResource" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelResource">
-        insert into data_mr (model_id,resource_id,task_id,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
-        values (#{modelId},#{resourceId},#{taskId},#{alignmentNum},#{primitiveParamNum},#{modelParamNum},0,now(),now())
+        insert into data_mr (model_id,resource_id,task_id,take_part_type,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
+        values (#{modelId},#{resourceId},#{taskId},#{takePartType},#{alignmentNum},#{primitiveParamNum},#{modelParamNum},0,now(),now())
     </insert>
 
     <insert id="saveDataModelQuota" keyProperty="quota_id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelQuota">

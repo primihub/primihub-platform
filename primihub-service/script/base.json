@@ -14,21 +14,30 @@
         "/common/getValidatePublicKey",
         "/common/getTrackingID",
         "/shareData/syncProject",
-        "/shareData/syncModel"
+        "/shareData/syncModel",
+        "/organ/getHomepage"
     ],
     "needSignUriList":[
 
     ],
+    "taskEmailSubject": "[Primihub] Primihub Platform Task Notification!",
     "adminUserIds": [1],
     "defaultPassword":"123456",
     "defaultPasswordVector":"excalibur",
     "primihubOfficalService": "http://127.0.0.1:8000",
-    "grpcClientAddress": "192.168.99.20",
-    "grpcClientPort": 50050,
+    "grpcClient":{
+        "grpcClientAddress":"192.168.99.20",
+        "grpcClientPort":50050,
+        "grpcServerPorts":[],
+        "useTls":false,
+        "trustCertFilePath":"/ca.crt",
+        "keyCertChainFile":"/client.crt",
+        "keyFile":"/client8.key"
+    },
     "grpcServerPort": 9090,
     "uploadUrlDirPrefix": "/data/upload/",
     "resultUrlDirPrefix": "/data/result/",
-    "runModelFileUrlDirPrefix": "/data/result/runModel/",
+    "runModelFileUrlDirPrefix": "/data/result/runTask/",
     "usefulToken": "excalibur_forever_ABCDEFGHIJKLMN",
     "systemDomainName":"",
     "mailProperties":{
@@ -54,279 +63,297 @@
         "job":"primihub/application1",
         "container":"application1"
     },
-    "model_components": [
+    "model_components":[
         {
-            "component_code": "start",
-            "component_name": "开始",
-            "is_show": 0,
-            "is_mandatory": 0,
-            "component_types": [
+            "component_code":"start",
+            "component_name":"开始",
+            "is_show":0,
+            "is_mandatory":0,
+            "component_types":[
                 {
-                    "is_show": 0,
-                    "is_required": 1,
-                    "type_code": "taskName",
-                    "type_name": "任务名称",
-                    "input_type": "text",
-                    "input_value": "",
-                    "input_values": []
+                    "is_show":0,
+                    "is_required":1,
+                    "type_code":"taskName",
+                    "type_name":"任务名称",
+                    "input_type":"text",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
                 },
                 {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "taskDesc",
-                    "type_name": "任务描述",
-                    "input_type": "textarea",
-                    "input_value": "",
-                    "input_values": []
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"taskDesc",
+                    "type_name":"任务描述",
+                    "input_type":"textarea",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
                 }
             ]
         },
         {
-            "component_code": "dataSet",
-            "component_name": "选择数据集",
-            "is_show": 0,
-            "is_mandatory": 0,
-            "component_types": [
+            "component_code":"dataSet",
+            "component_name":"选择数据集",
+            "is_show":0,
+            "is_mandatory":0,
+            "component_types":[
                 {
-                    "is_show": 0,
-                    "is_required": 1,
-                    "type_code": "selectData",
-                    "type_name": "选择数据",
-                    "input_type": "none",
-                    "input_value": "",
-                    "input_values": []
+                    "is_show":0,
+                    "is_required":1,
+                    "type_code":"selectData",
+                    "type_name":"选择数据",
+                    "input_type":"none",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
                 }
             ]
         },
         {
-            "component_code": "dataAlign",
-            "component_name": "数据对齐",
-            "is_show": 0,
-            "is_mandatory": 1,
-            "component_types": [
+            "component_code":"dataAlign",
+            "component_name":"数据对齐",
+            "is_show":0,
+            "is_mandatory":1,
+            "component_types":[
                 {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "dataAlign",
-                    "type_name": "数据对齐",
-                    "input_type": "select",
-                    "input_value": "",
-                    "input_values": [
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"dataAlign",
+                    "type_name":"数据对齐",
+                    "input_type":"select",
+                    "input_value":"",
+                    "input_values":[
                         {
-                            "key": "1",
-                            "val": "样本对齐"
+                            "key":"1",
+                            "val":"样本对齐"
                         },
                         {
-                            "key": "2",
-                            "val": "特征对齐"
+                            "key":"2",
+                            "val":"特征对齐"
                         }
                     ]
                 },
                 {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "MultipleSelected",
-                    "type_name": "可多选特征",
-                    "input_type": "none",
-                    "input_value": "",
-                    "input_values": []
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"MultipleSelected",
+                    "type_name":"可多选特征",
+                    "input_type":"none",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
                 },
                 {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "encryption",
-                    "type_name": "加密方式",
-                    "input_type": "none",
-                    "input_value": "1",
-                    "input_values": [
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"encryption",
+                    "type_name":"加密方式",
+                    "input_type":"none",
+                    "input_value":"1",
+                    "input_values":[
                         {
-                            "key": "1",
-                            "val": "MD5"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "component_code": "exception",
-            "component_name": "异常值处理",
-            "is_show": 0,
-            "is_mandatory": 1,
-            "component_types": [
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "exception",
-                    "type_name": "异常值处理",
-                    "input_type": "select",
-                    "input_value": "1",
-                    "input_values": [
-                        {
-                            "key": "1",
-                            "val": "异常值处理"
+                            "key":"1",
+                            "val":"MD5"
                         }
                     ]
                 }
             ]
         },
         {
-            "component_code": "missing",
-            "component_name": "缺失值处理",
-            "is_show": 0,
-            "is_mandatory": 1,
-            "component_types": [
+            "component_code":"exception",
+            "component_name":"异常值处理",
+            "is_show":0,
+            "is_mandatory":1,
+            "component_types":[
                 {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "missingValue",
-                    "type_name": "缺失值处理",
-                    "input_type": "select",
-                    "input_value": "1",
-                    "input_values": [
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"exception",
+                    "type_name":"异常值处理",
+                    "input_type":"select",
+                    "input_value":"1",
+                    "input_values":[
                         {
-                            "key": "1",
-                            "val": "缺失值处理"
-                        }
-                    ]
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "selectFeatures",
-                    "type_name": "选择特征",
-                    "input_type": "none",
-                    "input_value": "",
-                    "input_values": []
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "exceptionType",
-                    "type_name": "缺失值处理",
-                    "input_type": "select",
-                    "input_value": "1",
-                    "input_values": [
-                        {
-                            "key": "1",
-                            "val": "平均值"
+                            "key":"1",
+                            "val":"异常值处理"
                         }
                     ]
                 }
             ]
         },
         {
-            "component_code": "featureCoding",
-            "component_name": "特征编码",
-            "is_show": 0,
-            "is_mandatory": 1,
-            "component_types": [
+            "component_code":"missing",
+            "component_name":"缺失值处理",
+            "is_show":0,
+            "is_mandatory":1,
+            "component_types":[
                 {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "featureCoding",
-                    "type_name": "特征编码",
-                    "input_type": "select",
-                    "input_value": "",
-                    "input_values": [
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"missingValue",
+                    "type_name":"缺失值处理",
+                    "input_type":"select",
+                    "input_value":"1",
+                    "input_values":[
                         {
-                            "key": "1",
-                            "val": "标签编码"
-                        },
+                            "key":"1",
+                            "val":"缺失值处理"
+                        }
+                    ]
+                },
+                {
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"selectFeatures",
+                    "type_name":"选择特征",
+                    "input_type":"none",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
+                },
+                {
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"exceptionType",
+                    "type_name":"缺失值处理",
+                    "input_type":"select",
+                    "input_value":"1",
+                    "input_values":[
                         {
-                            "key": "2",
-                            "val": "哈希编码"
-                        },
-                        {
-                            "key": "3",
-                            "val": "独热编码"
-                        },
-                        {
-                            "key": "4",
-                            "val": "计数编码"
-                        },
-                        {
-                            "key": "5",
-                            "val": "直方图编码"
-                        },
-                        {
-                            "key": "6",
-                            "val": "WOE编码"
-                        },
-                        {
-                            "key": "7",
-                            "val": "目标编码"
-                        },
-                        {
-                            "key": "8",
-                            "val": "平均编码"
-                        },
-                        {
-                            "key": "9",
-                            "val": "模型编码"
+                            "key":"1",
+                            "val":"平均值"
                         }
                     ]
                 }
             ]
         },
         {
-            "component_code": "model",
-            "component_name": "模型选择",
-            "is_show": 0,
-            "is_mandatory": 0,
-            "component_types": [
+            "component_code":"featureCoding",
+            "component_name":"特征编码",
+            "is_show":0,
+            "is_mandatory":1,
+            "component_types":[
                 {
-                    "is_show": 0,
-                    "is_required": 1,
-                    "type_code": "modelType",
-                    "type_name": "模型选择",
-                    "input_type": "select",
-                    "input_value": "",
-                    "input_values": [
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"featureCoding",
+                    "type_name":"特征编码",
+                    "input_type":"select",
+                    "input_value":"",
+                    "input_values":[
                         {
-                            "key": "2",
-                            "val": "纵向-XGBoost"
+                            "key":"1",
+                            "val":"标签编码"
                         },
                         {
-                            "key": "3",
-                            "val": "横向-LR"
+                            "key":"2",
+                            "val":"哈希编码"
+                        },
+                        {
+                            "key":"3",
+                            "val":"独热编码"
+                        },
+                        {
+                            "key":"4",
+                            "val":"计数编码"
+                        },
+                        {
+                            "key":"5",
+                            "val":"直方图编码"
+                        },
+                        {
+                            "key":"6",
+                            "val":"WOE编码"
+                        },
+                        {
+                            "key":"7",
+                            "val":"目标编码"
+                        },
+                        {
+                            "key":"8",
+                            "val":"平均编码"
+                        },
+                        {
+                            "key":"9",
+                            "val":"模型编码"
                         }
                     ]
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 1,
-                    "type_code": "modelName",
-                    "type_name": "模型名称",
-                    "input_type": "text",
-                    "input_value": "",
-                    "input_values": []
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "modelDesc",
-                    "type_name": "模型描述",
-                    "input_type": "textarea",
-                    "input_value": "",
-                    "input_values": []
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "arbiterOrgan",
-                    "type_name": "可信第三方选择",
-                    "input_type": "button",
-                    "input_value": "",
-                    "input_values": []
                 }
             ]
         },
         {
-            "component_code": "assessment",
-            "component_name": "评估模型",
-            "is_show": 0,
-            "is_mandatory": 1,
-            "component_types": []
+            "component_code":"model",
+            "component_name":"模型选择",
+            "is_show":0,
+            "is_mandatory":0,
+            "component_types":[
+                {
+                    "is_show":0,
+                    "is_required":1,
+                    "type_code":"modelType",
+                    "type_name":"模型选择",
+                    "input_type":"select",
+                    "input_value":"",
+                    "input_values":[
+                        {
+                            "key":"2",
+                            "val":"纵向-XGBoost"
+                        },
+                        {
+                            "key":"3",
+                            "val":"横向-LR"
+                        }
+                    ]
+                },
+                {
+                    "is_show":0,
+                    "is_required":1,
+                    "type_code":"modelName",
+                    "type_name":"模型名称",
+                    "input_type":"text",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
+                },
+                {
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"modelDesc",
+                    "type_name":"模型描述",
+                    "input_type":"textarea",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
+                },
+                {
+                    "is_show":0,
+                    "is_required":0,
+                    "type_code":"arbiterOrgan",
+                    "type_name":"可信第三方选择",
+                    "input_type":"button",
+                    "input_value":"",
+                    "input_values":[
+
+                    ]
+                }
+            ]
+        },
+        {
+            "component_code":"assessment",
+            "component_name":"评估模型",
+            "is_show":0,
+            "is_mandatory":1,
+            "component_types":[
+
+            ]
         }
     ]
 }

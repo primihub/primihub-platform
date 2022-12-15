@@ -478,6 +478,8 @@ public class DataAsyncService implements ApplicationContextAware {
     public void sendModelTaskMail(DataTask dataTask,Long projectId){
         if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
             return;
+        if (StringUtils.isBlank(baseConfiguration.getTaskEmailSubject()))
+            return;
         SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(dataTask.getTaskUserId());
         if (sysUser == null){
             log.info("task_id:{} The task email was not sent. Reason for not sending : No user information",dataTask.getTaskIdName());
@@ -494,7 +496,7 @@ public class DataAsyncService implements ApplicationContextAware {
         sb.append(DateUtil.formatDate(dataTask.getCreateDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat()));
         sb.append("】使用【");
         sb.append(sysUser.getUserAccount());
-        sb.append("】创建的任务已失败，请前往原语Primihub隐私计算平台查看详情\n");
+        sb.append("】创建的任务已失败\n");
         if (StringUtils.isNotBlank(dataTask.getTaskName())){
             sb.append("任务名称：【").append(dataTask.getTaskName()).append("】\n");
         }
@@ -503,7 +505,7 @@ public class DataAsyncService implements ApplicationContextAware {
             sb.append("<a href=\"").append(baseConfiguration.getSystemDomainName()).append("/#/project/detail/").append(projectId).append("/task/").append(dataTask.getTaskId());
             sb.append("\">").append("点击查询任务详情").append("</a>");
         }
-        sysEmailService.send(sysUser.getUserAccount(),DataConstant.TASK_EMAIL_SUBJECT,sb.toString());
+        sysEmailService.send(sysUser.getUserAccount(),baseConfiguration.getTaskEmailSubject(),sb.toString());
     }
 
     public void updateTaskState(DataTask dataTask){

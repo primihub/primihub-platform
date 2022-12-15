@@ -62,6 +62,9 @@
         <if test="resourceAuthType!=null and resourceAuthType!=0">
             and resource_auth_type = #{resourceAuthType}
         </if>
+        <if test="resourceSource!=null">
+            and resource_source = #{resourceSource}
+        </if>
         <if test="resourceName!=null and resourceName!=''">
             and resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
         </if>

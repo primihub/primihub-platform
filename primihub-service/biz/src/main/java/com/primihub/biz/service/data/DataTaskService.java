@@ -29,8 +29,12 @@ import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.data.DataResourceSecondaryRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.service.sys.SysSseEmitterService;
+import com.primihub.biz.service.sys.SysWebSocketService;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.comm.CommStorageUtil;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +45,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.Resource;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -87,7 +93,10 @@ public class DataTaskService {
     private RestTemplate restTemplate;
     @Autowired
     private DataModelRepository dataModelRepository;
-
+    @Autowired
+    private SysSseEmitterService sseEmitterService;
+    @Autowired
+    private SysWebSocketService webSocketService;
     @Autowired
     private DataAsyncService dataAsyncService;
 
@@ -507,6 +516,57 @@ public class DataTaskService {
             return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(),new ArrayList()));
         Integer count = dataTaskRepository.selectDataTaskListCount(req);
         return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
+    }
+
+    public SseEmitter connectSseTask(String taskId,Integer all) {
+        boolean isReal = true;
+        DataTask dataTask = null;
+        if (StringUtils.isBlank(taskId)){
+            taskId = SnowflakeId.getInstance().toString();
+            isReal = false;
+        }else {
+            dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            if (dataTask==null){
+                taskId = String.valueOf(SnowflakeId.getInstance().nextId());
+                isReal = false;
+            }else {
+                taskId = dataTask.getTaskIdName();
+            }
+        }
+        if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
+            sseEmitterService.removeKey(taskId);
+        }
+        SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        if (!isReal){
+            sseEmitterService.sendMessage(taskId,"未查询到任务信息");
+        }else {
+            // 创建web
+            LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
+            if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
+                    ||StringUtils.isBlank(lokiConfig.getContainer())){
+                sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
+            }else {
+                try {
+                    String query = "";
+                    if (all == 1){
+                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"}";
+                    }else {
+                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
+                    }
+                    String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime()/1000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
+                    log.info(url);
+                    webSocketService.connect(taskId,url);
+                }catch (Exception e){
+                    log.info(e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        }
+        return sseEmitter;
+    }
+
+    public void removeSseTask(String taskId) {
+        sseEmitterService.removeKey(taskId);
     }
 }
 
