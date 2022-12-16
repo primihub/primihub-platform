@@ -53,6 +53,19 @@ public class TemplatesConfig {
                         }
                     }
                 });
+                configService.removeListener(freemarkerPythonPath, group, new Listener() {
+                    @Override
+                    public Executor getExecutor() {
+                        return null;
+                    }
+
+                    @Override
+                    public void receiveConfigInfo(String config) {
+                        log.info(" nacos remove freemarkerPython:{}",freemarkerPythonPath);
+                        log.debug(" nacos remove freemarkerPython:{} data:{}",freemarkerPythonPath,config);
+                        TemplatesHelper.getTemplatesMap().remove(freemarkerPythonPath);
+                    }
+                });
             }
 
         }catch (Exception e){
