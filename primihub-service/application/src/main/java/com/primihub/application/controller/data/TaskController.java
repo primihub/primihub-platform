@@ -161,7 +161,7 @@ public class TaskController {
                 outputStream.close();
                 inputStream.close();
             }else {
-                file = new File(modelOutputPathDto.getModelFileName());
+                file = new File(modelOutputPathDto.getModelFileName()+".host");
                 if (file.exists()){
                     FileInputStream inputStream = new FileInputStream(file);
                     response.setHeader("content-Type","application/vnd.ms-excel");
