@@ -537,7 +537,7 @@ public class DataProjectService {
         paramMap.put("pageSize",req.getPageSize());
         paramMap.put("resourceName",req.getResourceName());
         paramMap.put("resourceState",0);
-        paramMap.put("fileHandleField",rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
+//        paramMap.put("fileHandleField",rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
         if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
@@ -546,7 +546,7 @@ public class DataProjectService {
             Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
         }else {
-            req.setColumnStr(rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
+//            req.setColumnStr(rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
             log.info(JSONObject.toJSONString(req));
             return fusionResourceService.getOrganResourceList(req);
         }

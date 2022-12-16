@@ -44,9 +44,10 @@ def generate_new_dataset(meta_info):
     intersection_set = set()
     intersection_list = list()
     with open(psi_path) as f:
-        head = f.readline()
-        for item in f:
-            item = item.strip()
+        f_csv = csv.reader(f)
+        header = next(f_csv)
+        for items in f_csv:
+            item = items[0].strip()
             if not item:
                 continue
             intersection_set.add(item)

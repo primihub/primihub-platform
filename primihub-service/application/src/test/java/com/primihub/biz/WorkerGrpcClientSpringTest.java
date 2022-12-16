@@ -31,7 +31,7 @@ public class WorkerGrpcClientSpringTest {
                 .setParams(params)
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
-                .setCode("import sys;")
+                .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                 .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                 .setTaskId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                 .build();
