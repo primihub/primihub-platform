@@ -6,19 +6,59 @@ option java_multiple_files = true;
 package primihub.rpc;
 
 import "common.proto";
+import "psi.proto";
+import "pir.proto";
 
 message PushTaskRequest {
   bytes intended_worker_id = 1;
   Task task = 2;
   int64 sequence_number = 3;
   int64 client_processed_up_to = 4;
+  bytes submit_client_id = 5;
 }
+
 
 message PushTaskReply {
   int32 ret_code = 1;  // 0: success  1: doing  2: error
   bytes job_id = 2;
 }
 
+message ExecuteTaskRequest {
+  oneof algorithm_request {
+    PsiRequest psi_request = 1;
+    PirRequest pir_request = 2;
+  }
+
+  Params params = 3;
+}
+
+message ExecuteTaskResponse {
+  oneof algorithm_response {
+    PsiResponse psi_response = 1;
+    PirResponse pir_response = 2;
+  }
+}
+
+message TaskRequest {
+  enum StorageType {
+    MEMORY = 0;
+    FILE = 1;
+  }
+  string job_id = 1;
+  string task_id = 2;
+  StorageType storage_type= 3;
+  string storage_info = 4;
+  repeated bytes data = 5;
+}
+
+message TaskResponse {
+  retcode ret_code = 1;
+  repeated bytes data = 2;
+}
+
 service VMNode {
   rpc SubmitTask(PushTaskRequest) returns (PushTaskReply);
+  rpc ExecuteTask(ExecuteTaskRequest) returns (ExecuteTaskResponse);
+  rpc Send(stream TaskRequest) returns (TaskResponse);
 }
+

@@ -23,6 +23,7 @@ import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.tool.PlatformHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
 import com.primihub.biz.util.crypt.SignUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
@@ -429,7 +430,7 @@ public class SysUserService {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无用户信息");
         if (sysUser.getUserAccount().equals(param.getUserAccount()))
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"修改账号名称和当前账号名称没有变动");
-        String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<account>", param.getUserAccount());
+        String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<userId>", param.getUserId().toString());
         if (!sysCommonPrimaryRedisRepository.lock(accountKey))
             return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW,"账号修改中");
         SysUser verificationUser = sysUserSecondarydbRepository.selectUserByUserAccount(param.getUserAccount());
@@ -438,6 +439,26 @@ public class SysUserService {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号已存在无法变更");
         }
         sysUserPrimarydbRepository.updateUserAccount(param.getUserAccount(),sysUser.getUserId());
+        sysCommonPrimaryRedisRepository.unlock(accountKey);
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity relieveUserAccount(Long userId) {
+        SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(userId);
+        if (sysUser==null)
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无用户信息");
+        if (sysUser.getRegisterType() != 4)
+            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号来源不可解除");
+        String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<userId>", userId.toString());
+        if (!sysCommonPrimaryRedisRepository.lock(accountKey))
+            return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW,"账号修改中");
+        String account = String.valueOf(SnowflakeId.getInstance().nextId());
+        SysUser verificationUser = sysUserSecondarydbRepository.selectUserByUserAccount(account);
+        if (verificationUser!=null){
+            sysCommonPrimaryRedisRepository.unlock(accountKey);
+            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号已存在无法变更");
+        }
+        sysUserPrimarydbRepository.updateUserAccount(account,sysUser.getUserId());
         sysCommonPrimaryRedisRepository.unlock(accountKey);
         return BaseResultEntity.success();
     }
