@@ -437,10 +437,14 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskResultPath(filePath.toString());
                     log.info(dataTask.getTaskResultPath());
                     Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
-                    Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
+                    Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
+                    Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getHostLookupTable()).build();
+                    Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getGuestLookupTable()).build();
                     Common.Params params = Common.Params.newBuilder()
                             .putParamMap("modelFileName", modelFileNameParamValue)
-                            .putParamMap("predictFileName", predictFileNameeParamValue)
+                            .putParamMap("predictFileName", predictFileNameParamValue)
+                            .putParamMap("hostLookupTable", hostLookupTableParamValue)
+                            .putParamMap("guestLookupTable", guestLookupTableParamValue)
                             .build();
                     Common.Task task = Common.Task.newBuilder()
                             .setType(Common.TaskType.ACTOR_TASK)
