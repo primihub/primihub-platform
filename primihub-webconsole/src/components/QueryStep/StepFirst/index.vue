@@ -17,6 +17,9 @@
         <el-form-item label="关键词" prop="pirParam">
           <el-input v-model="form.pirParam" placeholder="请输入关键词" maxlength="50" show-word-limit />
         </el-form-item>
+        <el-form-item>
+          <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用;分隔。例: a;b;c</p>
+        </el-form-item>
         <el-button v-if="hasPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
       </div>
       <ProjectResourceDialog
@@ -70,7 +73,7 @@ export default {
           { required: true, message: '请选择资源', trigger: 'blur' }
         ],
         pirParam: [
-          { required: true, message: '请输入关键词，多条件查询请使用英文;分隔。例：a;b;c', trigger: 'blur' },
+          { required: true, message: '请输入关键词', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
