@@ -141,21 +141,29 @@ export default {
       this.treeLoading = true
       const res = await getAuthTree()
       this.treeLoading = false
-      this.roleData = res.result.sysAuthRootList
+      this.roleData = this.removeHideRole(res.result.sysAuthRootList)
     },
     async getRoleTree() {
       const res = await getRoleTree({ roleId: this.form.roleId })
       if (res.code === 0) {
         const { roleAuthRootList, sysRole } = res.result
-        this.roleData = roleAuthRootList
+        this.roleData = this.removeHideRole(roleAuthRootList)
         this.form.roleName = sysRole.roleName
         this.getDefaultChecked(this.roleData)
       }
+    },
+    removeHideRole(data) {
+      return data.map(item => {
+        const index = item.children.findIndex(c => c.isShow === 0)
+        item.children.splice(index, 1)
+        return item
+      })
     },
     // 获取默认展示权限节点
     getDefaultChecked(data) {
       for (const key in data) {
         const item = data[key]
+        console.log(item)
         if (item.isGrant) {
           this.defaultCheckedKeys.push(item.authId)
         }

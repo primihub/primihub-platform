@@ -5,7 +5,7 @@
       ref="dataForm"
       :model="dataForm"
       :rules="dataRules"
-      label-width="100px"
+      label-width="120px"
       class="demo-dataForm"
     >
       <el-form-item label="资源名称" prop="resourceName">
@@ -74,24 +74,26 @@
           </template>
         </div>
       </el-form-item>
-      <el-form-item label="资源来源" prop="resourceSource">
-        <template v-if="!isEditPage">
+      <template v-if="!isEditPage">
+        <el-form-item label="资源来源" prop="resourceSource">
           <div class="item-wrap-normal">
-            <el-radio-group v-model="dataForm.resourceSource">
+            <el-radio-group v-model="dataForm.resourceSource" @change="handleRadioChange">
               <el-radio :label="1">文件上传</el-radio>
               <el-radio v-if="showDatabaseRadio" :label="2">数据库导入</el-radio>
             </el-radio-group>
           </div>
-          <template v-if="dataForm.resourceSource === 1">
-            <upload :max-size="fileMaxSize" :single="true" @success="handleUploadSuccess" />
-          </template>
-          <template v-if="dataForm.resourceSource === 2">
-            <DatabaseImport @success="handleImportSuccess" />
-          </template>
+        </el-form-item>
+        <el-form-item v-if="dataForm.resourceSource === 1">
+          <upload :max-size="fileMaxSize" :show-tips="true" :single="true" @success="handleUploadSuccess" />
+        </el-form-item>
+        <template v-if="showDatabaseRadio && dataForm.resourceSource === 2">
+          <DatabaseImport @success="handleImportSuccess" @change="handleImportChange" />
         </template>
-        <template v-else>
+      </template>
+      <el-form-item v-else label="资源来源" prop="resourceSource">
+        <div class="item-wrap-normal">
           <span>{{ dataForm.resourceSource | sourceFilter }}</span>
-        </template>
+        </div>
       </el-form-item>
       <el-row
         :gutter="20"
@@ -140,15 +142,6 @@ export default {
     ResourcePreviewTable,
     Cascader,
     DatabaseImport
-  },
-  filters: {
-    sourceFilter(source) {
-      const sourceMap = {
-        1: '文件上传',
-        2: '数据库'
-      }
-      return sourceMap[source]
-    }
   },
   data() {
     return {
@@ -238,17 +231,28 @@ export default {
         this.showDatabaseRadio = res.result
       }
     },
+    handleRadioChange() {
+      this.dataForm.fieldList = []
+      this.fieldList = []
+      this.dataList = []
+    },
     handleImportSuccess(data) {
       this.dataForm.dataSource = data.dataSource
       this.fieldList = data.fieldList
       this.dataForm.fieldList = this.formatParams()
       this.dataList = data.dataList
     },
+    handleImportChange() {
+      this.fieldList = []
+      this.dataForm.fieldList = this.fieldList
+      this.dataList = []
+      console.log('change', this.fieldList)
+    },
     handleResourceChange(data) {
       this.fieldList = data
       this.dataForm.fieldList = this.formatParams()
     },
-    handleUploadSuccess(fileId) {
+    handleUploadSuccess({ fileId }) {
       this.dataForm.fileId = fileId
       this.resourceFilePreview()
     },
@@ -308,14 +312,7 @@ export default {
     async submitForm() {
       this.$refs['dataForm'].validate(async(valid) => {
         if (valid) {
-          if (this.dataForm.resourceSource === '1' && this.dataForm.fileId === '') {
-            this.$message({
-              message: '请先上传文件',
-              type: 'warning'
-            })
-            this.loading = false
-            return
-          } else if (this.dataForm.fieldList.length < 1) {
+          if (this.dataForm.fieldList.length < 1) {
             this.$message({
               message: '请先上传文件或导入数据',
               type: 'warning'
@@ -342,10 +339,10 @@ export default {
               })
             }
           }).catch(err => {
+            this.loading = false
             console.log(err)
           })
         } else {
-          this.loading = false
           console.log('error submit!!')
           return false
         }

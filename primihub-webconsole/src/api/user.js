@@ -71,7 +71,13 @@ export function changeUserAccount(data) {
   return request({
     url: '/sys/user/changeUserAccount',
     method: 'POST',
-    showLoading: false,
+    data
+  })
+}
+export function relieveUserAccount(data) {
+  return request({
+    url: '/sys/user/relieveUserAccount',
+    method: 'POST',
     data
   })
 }

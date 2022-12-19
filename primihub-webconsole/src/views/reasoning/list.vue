@@ -130,13 +130,19 @@ export default {
       timer: null
     }
   },
-  created() {
-    this.fetchData()
+  async created() {
+    await this.fetchData()
+    console.log(this.searchList)
     if (this.searchList.length > 0) {
-      this.timer = window.setInterval(() => {
-        setTimeout(this.fetchData(), 0)
-      }, 5000)
+      this.timer = window.setInterval(async() => {
+        setTimeout(await this.fetchData(), 0)
+      }, 3000)
+    } else {
+      clearInterval(this.timer)
     }
+  },
+  destroyed() {
+    clearInterval(this.timer)
   },
   methods: {
     toTaskPage() {
@@ -171,9 +177,8 @@ export default {
         path: `/project/detail/${row.projectId}/task/${row.taskId}`
       })
     },
-    fetchData() {
+    async fetchData() {
       this.listLoading = true
-      this.dataList = []
       const { id, reasoningName, reasoningState } = this.query
       const params = {
         id,
@@ -182,24 +187,13 @@ export default {
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
-      console.log('fetchData', params)
-      getReasoningList(params).then((response) => {
-        console.log('response.data', response.result)
-        const { result } = response
-        this.dataList = result.data
-        this.total = result.total
-        this.pageCount = result.totalPage
-        // filter the running task
-        this.searchList = this.dataList.filter(item => item.taskState === 2)
-        // No tasks are running
-        if (this.searchList.length === 0) {
-          this.startInterval = false
-          clearInterval(this.timer)
-        }
-        this.listLoading = false
-      }).catch(() => {
-        this.listLoading = false
-      })
+      const { result } = await getReasoningList(params)
+      this.dataList = result.data
+      this.total = result.total
+      this.pageCount = result.totalPage
+      // filter the running task
+      this.searchList = this.dataList.filter(item => item.reasoningState === 2)
+      this.listLoading = false
     },
     handlePagination(data) {
       this.pageNo = data.page

@@ -1,7 +1,7 @@
 <template>
   <div class="navbar">
     <div class="logo">
-      <img v-if="sidebarLogo && logoUrl !== ''" :style="{'width': showLogoTitle === 2 ? '100px': '30px' }" :src="logoUrl" class="sidebar-logo">
+      <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
       <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
     </div>
     <div class="right-menu">
@@ -172,17 +172,18 @@ export default {
   color: #838790;
   width: 100%;
   .logo{
-    width: 300px;
-    padding: 0 20px;
+    padding: 5px 20px;
+    height: 100%;
+    flex: 1;
     h1.logo-title{
       color: #fff;
       font-size: 16px;
-      margin: 0;
+      margin: 0 5px;
       display: inline-block;
       vertical-align: middle;
     }
     img{
-      height: 80%;
+      max-height: 100%;
       vertical-align: middle;
     }
   }
