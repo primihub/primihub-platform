@@ -674,6 +674,7 @@ p {
 .organ-header{
   display: flex;
   justify-content: space-between;
+  align-items: center;
   line-height: 20px;
   margin: 10px 0;
 }

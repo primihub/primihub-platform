@@ -153,7 +153,8 @@ export default {
       drawerOptions: {
         showSaveButton: this.options.showSaveButton,
         isEditable: this.options.isEditable
-      }
+      },
+      needSave: true
     }
   },
   computed: {
@@ -163,7 +164,6 @@ export default {
   },
   watch: {
     async restartRun(newVal) {
-      console.log('restartRun', newVal)
       if (newVal) {
         await this.restartTaskModel()
       }
@@ -494,6 +494,7 @@ export default {
     initEvent() {
       const { graph } = this
       graph.on('node:click', async({ node }) => {
+        this.needSave = true
         this.nodeData = node.store.data.data
       })
       graph.on('node:change:data', ({ node }) => {
@@ -513,21 +514,9 @@ export default {
 
       // 画布不可编辑只可点击
       if (this.options.isEditable) {
-        graph.on('blank:click', () => {
-          const nodes = this.graph.getNodes()
-          nodes.map(node => {
-            node.setData({
-              showDeleteButton: false
-            })
-          })
-
-          const edges = this.graph.getEdges()
-          edges.map(edge => {
-            edge.removeTools()
-          })
-        })
         // add edge delete button
         graph.on('cell:contextmenu', ({ edge }) => {
+          this.needSave = false
           edge?.addTools([
             {
               name: 'button-remove',
@@ -537,28 +526,39 @@ export default {
             }
           ])
         })
+        graph.on('cell:mouseleave', ({ edge }) => {
+          this.needSave = false
+          edge?.removeTools([
+            {
+              name: 'button-remove'
+            }
+          ])
+          this.needSave = true
+        })
         graph.on('node:contextmenu', ({ node }) => {
+          this.needSave = false
           node.setData({
             showDeleteButton: true
           })
         })
-        graph.on('node:removed', ({ node, index, options }) => {
+        graph.on('node:mouseleave', ({ node }) => {
+          this.needSave = false
+          node.setData({
+            showDeleteButton: false
+          })
+          this.needSave = true
+        })
+        graph.on('node:removed', () => {
+          this.needSave = true
           this.deleteNode()
         })
-        graph.on('node:mouseenter', FunctionExt.debounce(() => {
-          const ports = this.container.querySelectorAll(
-            '.x6-port-body'
-          )
-          this.showPorts(ports, true)
-        }),
-        500
-        )
-        graph.on('node:mouseleave', () => {
-          const ports = this.container.querySelectorAll(
-            '.x6-port-body'
-          )
-          this.showPorts(ports, false)
+        graph.on('cell:removed', () => {
+          this.needSave = true
         })
+        graph.on('node:mouseenter', FunctionExt.debounce(() => {
+          const ports = this.container.querySelectorAll('.x6-port-body')
+          this.showPorts(ports, true)
+        }), 500)
 
         graph.on('node:collapse', ({ node, e }) => {
           e.stopPropagation()
@@ -583,6 +583,7 @@ export default {
         })
 
         graph.on('edge:connected', ({ edge }) => {
+          this.needSave = true
           edge.attr({
             line: {
               strokeDasharray: ''
@@ -605,11 +606,12 @@ export default {
       // 画布不可编辑只可点击
       if (!this.options.isEditable) return
       const { history } = this.graph
-      history.on('change', () => {
+      history.on('change', (args) => {
+        console.log(args)
         this.canUndo = history.canUndo()
         this.canRedo = history.canRedo()
         // model is running or destroyed, don't save the model history
-        if (!this.modelStartRun && !this.destroyed) {
+        if (!this.modelStartRun && !this.destroyed && this.needSave) {
           this.saveFn()
         }
       })
