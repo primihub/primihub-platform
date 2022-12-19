@@ -15,6 +15,8 @@ public class ResourcePrimaryDruidDataSourceWrapper extends DruidDataSource imple
     private String driverClassName;
     @NacosValue(value="${spring.datasource.druid.resourcePrimary.connection-properties}",autoRefreshed = true)
     private String connectionProperties;
+    @NacosValue(value="${spring.datasource.druid.resourcePrimary.filter.config.enabled}",autoRefreshed = true)
+    private Boolean filterConfigEnabled = false;
 
 //    private String passwordCallbackClassName;
 
@@ -70,6 +72,9 @@ public class ResourcePrimaryDruidDataSourceWrapper extends DruidDataSource imple
         super.setMaxPoolPreparedStatementPerConnectionSize(maxPoolPreparedStatementPerConnectionSize);
         super.setConnectionProperties(connectionProperties);
         super.setDbType(dbType);
+        if (filterConfigEnabled){
+            super.addFilters("config");
+        }
 //        super.setPasswordCallbackClassName(passwordCallbackClassName);
     }
 
