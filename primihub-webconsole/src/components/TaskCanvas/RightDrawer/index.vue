@@ -446,9 +446,6 @@ export default {
       const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
       if (providerOrgans.length > 0) {
         this.selectedProviderOrgans = providerOrgans
-      } else {
-        this.$set(this.initiateOrgan, 'resourceId', '')
-        this.selectedProviderOrgans.splice(0)
       }
     },
     handleResourceHeaderChange(data) {
