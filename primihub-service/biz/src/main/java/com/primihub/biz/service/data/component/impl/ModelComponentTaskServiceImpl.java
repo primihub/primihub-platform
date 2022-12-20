@@ -244,7 +244,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName()+".host");
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();
@@ -319,7 +319,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName()+".host");
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();
