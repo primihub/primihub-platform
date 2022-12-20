@@ -32,6 +32,8 @@ public class GrpcConfiguration {
                 log.info("grpc tls : Certificate path open default general connection missing");
                 return ManagedChannelBuilder
                         .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .maxInboundMetadataSize(Integer.MAX_VALUE)
                         .usePlaintext()
                         .build();
             }
@@ -42,6 +44,8 @@ public class GrpcConfiguration {
                 log.info("grpc tls : The certificate trustCertFile does not exist. open default general connection");
                 return ManagedChannelBuilder
                         .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .maxInboundMetadataSize(Integer.MAX_VALUE)
                         .usePlaintext()
                         .build();
             }
@@ -49,6 +53,8 @@ public class GrpcConfiguration {
                 log.info("grpc tls : The certificate keyCertChainFile does not exist. open default general connection");
                 return ManagedChannelBuilder
                         .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .maxInboundMetadataSize(Integer.MAX_VALUE)
                         .usePlaintext()
                         .build();
             }
@@ -56,6 +62,8 @@ public class GrpcConfiguration {
                 log.info("grpc tls : The certificate keyFile does not exist. open default general connection");
                 return ManagedChannelBuilder
                         .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                        .maxInboundMessageSize(Integer.MAX_VALUE)
+                        .maxInboundMetadataSize(Integer.MAX_VALUE)
                         .usePlaintext()
                         .build();
             }
@@ -65,6 +73,8 @@ public class GrpcConfiguration {
                     .build();
             return NettyChannelBuilder
                     .forAddress(grpcClient.getGrpcClientAddress(),grpcClient.getGrpcClientPort())
+                    .maxInboundMessageSize(Integer.MAX_VALUE)
+                    .maxInboundMetadataSize(Integer.MAX_VALUE)
                     .negotiationType(NegotiationType.TLS)
                     .sslContext(sslContext)
                     .build();
