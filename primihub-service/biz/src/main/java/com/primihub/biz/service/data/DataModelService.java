@@ -138,18 +138,19 @@ public class DataModelService {
                 map.put("oneself",false);
             }
         }
-        ModelEvaluationDto modelEvaluationDto = null;
-        if (StringUtils.isNotBlank(modelTask.getPredictContent())){
-            ParserConfig parserConfig = new ParserConfig();
-            parserConfig.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
-            modelEvaluationDto = JSONObject.parseObject(modelTask.getPredictContent(), ModelEvaluationDto.class,parserConfig);
-        }
-        if (modelEvaluationDto==null||modelEvaluationDto.getTrain()==null){
+        if (StringUtils.isBlank(modelTask.getPredictContent())){
             map.put("anotherQuotas",new HashMap());
         }else {
-            map.put("anotherQuotas",modelEvaluationDto.getTrain());
+            map.put("anotherQuotas",JSONObject.parseObject(modelTask.getPredictContent()));
         }
         return BaseResultEntity.success(map);
+    }
+
+    public static void main(String[] args) {
+        String s = "{\"train_acc\": 0.26, \"train_auc\": 0.26, \"train_ks\": 0.0}";
+        Map<String,Object> map = new HashMap<>();
+        map.put("asdfs",JSONObject.parseObject(s));
+        log.info(JSONObject.toJSONString(map));
     }
 
     public BaseResultEntity getDataModelList(PageReq req, String projectName, String modelName, Integer taskStatus,Long projectId) {

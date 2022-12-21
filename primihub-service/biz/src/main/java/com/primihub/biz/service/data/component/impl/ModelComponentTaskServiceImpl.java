@@ -251,6 +251,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         if (files!=null){
                             for (File file : files) {
                                 if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
                                     taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                     taskReq.getDataTask().setTaskErrorMsg("");
                                     break;
@@ -326,6 +327,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         if (files!=null){
                             for (File file : files) {
                                 if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
                                     taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                     taskReq.getDataTask().setTaskErrorMsg("");
                                     break;
