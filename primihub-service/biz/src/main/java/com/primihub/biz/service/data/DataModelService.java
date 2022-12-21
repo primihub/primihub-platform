@@ -145,14 +145,7 @@ public class DataModelService {
         }
         return BaseResultEntity.success(map);
     }
-
-    public static void main(String[] args) {
-        String s = "{\"train_acc\": 0.26, \"train_auc\": 0.26, \"train_ks\": 0.0}";
-        Map<String,Object> map = new HashMap<>();
-        map.put("asdfs",JSONObject.parseObject(s));
-        log.info(JSONObject.toJSONString(map));
-    }
-
+    
     public BaseResultEntity getDataModelList(PageReq req, String projectName, String modelName, Integer taskStatus,Long projectId) {
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("pageSize",req.getPageSize());

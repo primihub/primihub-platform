@@ -58,19 +58,17 @@ def generate_new_dataset(meta_info):
         header = next(f_csv)
         print(header)
         new_file_writer = csv.writer(new_f)
-        del header[psi_index]
         new_file_writer.writerow(header)
         for row in f_csv:
             psi_key = row[psi_index]
             if psi_key not in intersection_set:
                 continue
             else:
-                del row[psi_index]
                 if psi_key != intersection_list[0]:  #save to map
                   intersection_map[psi_key] = row
-                  continue
-                new_file_writer.writerow(row)
-                del intersection_list[0]
+                else:
+                  new_file_writer.writerow(row)
+                  del intersection_list[0]
                 while True:
                   if len(intersection_list) == 0:
                     break
