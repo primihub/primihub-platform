@@ -20,7 +20,7 @@
         width="55"
       />
       <el-table-column
-        label="资源 / Id"
+        label="资源名称 / Id"
       >
         <template slot-scope="{row}">
           <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>

@@ -3,7 +3,7 @@
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="中心节点">
-          <el-select v-model="query.serverAddressValue" placeholder="请选择" clearable @change="handleServerAddressChange" @clear="handleClear">
+          <el-select v-model="query.serverAddressValue" placeholder="请选择" @change="handleServerAddressChange">
             <el-option
               v-for="item in serverAddressList"
               :key="item.value"
@@ -63,7 +63,7 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="资源 / Id"
+          label="资源名称 / Id"
           min-width="160"
         >
           <template slot-scope="{row}">
@@ -161,7 +161,8 @@ export default {
         resourceSource: '',
         serverAddressValue: '',
         groupId: 0,
-        organId: ''
+        organId: '',
+        resourceAuthType: ''
       },
       resourceSourceList: [{
         label: '文件上传',
@@ -202,13 +203,11 @@ export default {
     },
     reset() {
       this.isReset = true
-      this.query.resourceId = ''
-      this.query.resourceName = ''
-      this.query.tagName = ''
-      this.query.userName = ''
-      this.query.resourceSource = ''
-      this.query.groupId = ''
-      this.query.organId = ''
+      for (const key in this.query) {
+        if (key !== 'serverAddressValue') {
+          this.query[key] = ''
+        }
+      }
       this.pageNo = 1
       this.fetchData()
     },
@@ -255,7 +254,7 @@ export default {
     async fetchData() {
       this.loading = true
       this.resourceList = []
-      const { resourceId, resourceName, tagName, resourceAuthType, organId, resourceSource } = this.query
+      const { resourceId, resourceName, tagName, organId, resourceSource } = this.query
       const params = {
         serverAddress: this.serverAddress,
         pageNo: this.pageNo,
@@ -263,7 +262,6 @@ export default {
         resourceId,
         resourceName,
         tagName,
-        resourceAuthType,
         resourceSource,
         organId
       }

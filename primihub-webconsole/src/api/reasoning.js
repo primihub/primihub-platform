@@ -4,14 +4,16 @@ export function getReasoningList(params) {
   return request({
     url: '/data/reasoning/getReasoningList',
     method: 'get',
-    params
+    params,
+    showLoading: false
   })
 }
 export function getReasoning(params) {
   return request({
     url: '/data/reasoning/getReasoning',
     method: 'get',
-    params
+    params,
+    showLoading: false
   })
 }
 

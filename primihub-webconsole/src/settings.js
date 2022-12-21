@@ -1,11 +1,11 @@
 module.exports = {
-  title: 'Platform',
+  title: 'PrimiHub Platform',
 
   /**
    * @type {string} html string
    * @description Whether change company introduction eg. <p style="font-size: 36px; text-align:center">...</p>
    */
-  introduction: '<p>PrimiHub是基于多方安全计算、联邦学习、同态加密等主流隐私计算技术自主研发的分布式隐私计算平台。</p><p>平台涵盖隐私安全求交、联合建模、联合推理、联合统计、匿踪查询、数据资源管理、算法容器管理等能力，致力打造适配全业务场景且安全高效的隐私计算平台。</p>',
+  introduction: '',
 
   /**
    * @type {boolean} true | false
@@ -23,5 +23,12 @@ module.exports = {
    * @type {boolean} true | false
    * @description for google analytics
    */
-  googleAnalytics: true
+  googleAnalytics: true,
+  loginLogoUrl: '/images/logo-white.png', // login page logo
+  logoUrl: '/images/logo1.png', // navbar logo
+  logoTitle: '原语隐私计算平台', // navbar logo title
+  favicon: '', // browser icon
+  isHideFadeBack: true, // show or hide suggestions and feedback
+  isHideFooterVersion: true, // show or hide footer text
+  footerText: '北京原语科技有限公司 V1.5.5' // when show footer text
 }

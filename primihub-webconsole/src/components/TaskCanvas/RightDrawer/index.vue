@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable, 'disabled':!options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
@@ -14,7 +14,7 @@
             <el-divider />
             <div class="organ-header">
               <span><i class="el-icon-office-building" /> <strong>协作方</strong></span>
-              <div class="operation-buttons">
+              <div v-if="options.isEditable" class="operation-buttons">
                 <el-button icon="el-icon-plus" plain size="mini" @click="openProviderOrganDialog">添加协作方</el-button>
               </div>
             </div>
@@ -22,11 +22,11 @@
               <div class="organ-header">
                 <p>
                   {{ organ.organName }}
-                  <i class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
+                  <i v-if="options.isEditable" class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
                 </p>
               </div>
-              <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
-              <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
+              <el-button v-if="options.isEditable" class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" :disabled="!options.isEditable" @change="handleResourceHeaderChange" />
             </div>
           </template>
           <template v-else>
@@ -67,7 +67,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'exception'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -137,7 +137,7 @@
             <el-form-item v-if="showArbiterOrgan" :label="item.typeName" :prop="item.typeCode">
               <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
               <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
-              <el-button type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
+              <el-button v-if="options.isEditable" type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
             </el-form-item>
           </template>
           <el-form-item v-else :label="item.typeName" :prop="item.typeCode">
@@ -174,7 +174,7 @@
     <!-- add provider organ dialog -->
     <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
-    <FeatureSelectDialog :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
+    <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :has-selected-features="hasSelectedFeatures" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
 </template>
 
@@ -234,14 +234,18 @@ export default {
         inputValues: [],
         typeName: ''
       },
-      missingData: [
-
+      exceptionItems: [ // filling items
+        {
+          selectedExceptionFeatures: '',
+          exceptionType: ''
+        }
       ],
       selectedFeaturesCode: '',
-      selectedFeaturesIndex: '',
+      selectedFeaturesIndex: '', //  exception component feature select index
       selectedDataAlignFeatures: null,
       selectedExceptionFeatures: null,
       selectedFeatures: null,
+      selectedFeatureIndex: -1,
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
@@ -282,6 +286,14 @@ export default {
     }
   },
   computed: {
+    // has selected features collection, A feature can perform only one operation
+    hasSelectedFeatures() {
+      return this.exceptionItems.map((item, index) => {
+        if (item.selectedExceptionFeatures !== '' && this.selectedFeaturesIndex !== index) {
+          return item.selectedExceptionFeatures
+        }
+      })
+    },
     isDataSelect() {
       return this.nodeData && this.nodeData.componentCode === 'dataSet'
     },
@@ -355,6 +367,7 @@ export default {
     immediate: true
   },
   async created() {
+    console.log('isEditable', this.options.isEditable)
     this.projectId = Number(this.$route.query.projectId) || Number(this.$route.params.id)
     await this.getProjectResourceOrgan()
   },
@@ -388,8 +401,6 @@ export default {
           const organs = this.selectedProviderOrgans.concat([this.initiateOrgan])
           console.log('organs', organs)
           this.organData = [...this.organs].filter(x => [...organs].every(y => y.organId !== x.organId))
-          // this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.selectedProviderOrgans[0].organId)
-          console.log(this.organData)
           this.providerOrganDialogVisible = true
         } else {
           this.$message({
@@ -435,9 +446,6 @@ export default {
       const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
       if (providerOrgans.length > 0) {
         this.selectedProviderOrgans = providerOrgans
-      } else {
-        this.$set(this.initiateOrgan, 'resourceId', '')
-        this.selectedProviderOrgans.splice(0)
       }
     },
     handleResourceHeaderChange(data) {
@@ -466,7 +474,10 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
-    handleChange() {
+    handleChange(name) {
+      if (name === 'exception') {
+        this.nodeData.componentTypes[1].inputValue = JSON.stringify(this.exceptionItems)
+      }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -550,7 +561,7 @@ export default {
     save() {
       this.$emit('save')
     },
-    openFeaturesDialog(code) {
+    openFeaturesDialog(code, index) {
       this.selectedFeaturesCode = code
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedFeatures = this.selectedDataAlignFeatures
@@ -560,7 +571,6 @@ export default {
       this.featuresDialogVisible = true
     },
     handleFeatureDialogSubmit(data) {
-      console.log(data)
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedDataAlignFeatures = data
         this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
@@ -571,7 +581,6 @@ export default {
         this.selectedFeatures = this.selectedExceptionFeatures
         console.log(this.selectedExceptionFeatures)
       }
-      console.log(this.nodeData)
       this.featuresDialogVisible = false
       this.handleChange()
     },
@@ -586,6 +595,13 @@ export default {
 p {
   margin-block-start: .2em;
   margin-block-end: .2em;
+}
+::v-deep .el-button{
+  padding: 12px 15px;
+  line-height: 1!important;
+}
+::v-deep .el-select .el-input__inner{
+  padding: 12px 10px!important;
 }
 ::v-deep .el-button--mini.is-circle{
   padding: 3px;
@@ -655,16 +671,15 @@ p {
   width: 100%;
   display: block;
 }
-.feature-container{
-  margin: 10px 0;
-}
 .organ-header{
   display: flex;
   justify-content: space-between;
+  align-items: center;
   line-height: 20px;
   margin: 10px 0;
 }
 .icon-delete{
   color: #F56C6C;
 }
+
 </style>

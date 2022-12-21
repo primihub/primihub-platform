@@ -43,14 +43,25 @@ export default {
   data() {
     return {
       id: '',
-      dataList: [],
-      timer: null
+      dataList: {},
+      timer: null,
+      reasoningState: ''
     }
   },
   async mounted() {
     this.id = this.$route.params.id
     await this.fetchData()
-    console.log(this.$route)
+    console.log(this.reasoningState)
+    if (this.reasoningState === 2) {
+      this.timer = window.setInterval(async() => {
+        setTimeout(await this.fetchData(), 0)
+      }, 2000)
+    } else {
+      clearInterval(this.timer)
+    }
+  },
+  destroyed() {
+    clearInterval(this.timer)
   },
   methods: {
     async download() {
@@ -65,13 +76,8 @@ export default {
       const res = await getReasoning({ id: this.id })
       if (res.code === 0) {
         this.dataList = res.result
-        if (this.dataList.reasoningState === 2) {
-          this.timer = window.setInterval(() => {
-            setTimeout(this.fetchData(), 0)
-          }, 1000)
-        } else {
-          clearInterval(this.timer)
-        }
+        this.reasoningState = this.dataList.reasoningState
+        this.listLoading = false
       }
     }
   }

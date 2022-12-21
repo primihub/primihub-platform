@@ -49,7 +49,7 @@
     </div>
     <div class="detail">
       <el-descriptions title="原始数据" :column="2" label-class-name="detail-title">
-        <el-descriptions-item :label="`${resource.tag}特征`">{{ resource.alignFeature }}</el-descriptions-item>
+        <el-descriptions-item :label="`${resource.tag}特征`">{{ alignFeature }}</el-descriptions-item>
         <el-descriptions-item label="我的数据">
           <el-link :underline="false" type="primary" @click="toResourceDetailPage(resource.initiateOrganResource)">{{ resource.initiateOrganResource }}</el-link>
         </el-descriptions-item>
@@ -80,7 +80,8 @@ export default {
       resourceId: this.$route.params.id,
       inputVisible: false,
       descInputVisible: false,
-      inputValue: ''
+      inputValue: '',
+      alignFeature: ''
     }
   },
   async created() {
@@ -95,6 +96,12 @@ export default {
       const res = await getDerivationResourceData({ resourceId: this.resourceId })
       if (res.code === 0) {
         this.resource = res.result
+        const alignFeature = this.resource.alignFeature && JSON.parse(this.resource.alignFeature)
+        if (alignFeature && alignFeature.length > 0) {
+          this.alignFeature = alignFeature.map(item => item.selectedExceptionFeatures)?.join()
+        } else {
+          this.alignFeature = alignFeature === '' ? 'ID' : alignFeature
+        }
         this.loading = false
       }
     },

@@ -39,17 +39,18 @@
       </el-form-item>
     </el-form>
     <span v-if="showBound" slot="footer" class="dialog-footer">
-      <el-button :loading="loading" type="primary" @click.native.prevent="changeBindPhone">更换手机号</el-button>
+      <el-button type="primary" @click.native.prevent="changeBindPhone">更换手机号</el-button>
+      <el-button type="info" @click.native.prevent="unBindPhone">手机号解除绑定</el-button>
     </span>
     <span v-else slot="footer" class="dialog-footer">
-      <el-button :loading="loading" type="primary" @click.native.prevent="handleSubmit">确定</el-button>
+      <el-button type="primary" @click.native.prevent="handleSubmit">确定</el-button>
       <el-button @click="handleClose">取 消</el-button>
     </span>
   </el-dialog>
 </template>
 
 <script>
-import { sendVerificationCode, changeUserAccount } from '@/api/user'
+import { sendVerificationCode, changeUserAccount, relieveUserAccount } from '@/api/user'
 const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
 
 export default {
@@ -80,10 +81,10 @@ export default {
         verificationCode: [{ required: true, message: '请输入验证码' }]
       },
       sendCode: false,
-      loading: false,
       time: 60,
       timer: null,
-      showBound: this.isBound
+      showBound: this.isBound,
+      userId: ''
     }
   },
   computed: {
@@ -107,7 +108,9 @@ export default {
     }
   },
   mounted() {
-
+    this.$store.dispatch('user/getInfo').then(data => {
+      this.userId = data.userId
+    })
   },
   methods: {
     changeBindPhone() {
@@ -115,6 +118,23 @@ export default {
       this.formData.userAccount = ''
       this.formData.verificationCode = ''
       this.showBound = false
+    },
+    unBindPhone() {
+      this.$confirm('解绑手机后，可能会影响部分新功能的体验，确认解除绑定么？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        relieveUserAccount({ userId: this.userId }).then(res => {
+          if (res.code === 0) {
+            this.$message.success('手机号解除绑定成功')
+            this.$store.commit('user/SET_USER_ACCOUNT', res.result.user.userAccount)
+            this.handleClose()
+          }
+        })
+      }).catch(err => {
+        console.log(err)
+      })
     },
     sendVerificationCode() {
       if (this.formData.userAccount === '') {
@@ -188,6 +208,9 @@ export default {
       })
     },
     handleClose() {
+      this.formData.userAccount = ''
+      this.formData.verificationCode = ''
+      this.showBound = this.isBound
       this.$refs.form && this.$refs.form.resetFields()
       clearInterval(this.timer)
       this.$emit('close')
