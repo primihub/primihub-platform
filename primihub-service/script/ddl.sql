@@ -514,6 +514,7 @@ INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_aut
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1060, '衍生数据资源', 'DerivedDataList', 2, 1022, 1022, '1022,1060', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 18:33:03.000', '2022-10-30 18:33:08.000');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1061, '衍生数据资源详情', 'DerivedDataResourceDetail', 2, 1060, 1022, '1022,1060,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 10:34:38.945', '2022-10-30 10:34:38.945');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1062, '日志列表', 'LogList', 2, 1058, 1058, '1058,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-11-14 13:44:39.353', '2022-11-14 13:44:39.353');
+
 DROP TABLE IF EXISTS `sys_ra`;
 CREATE TABLE `sys_ra`  (
                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',

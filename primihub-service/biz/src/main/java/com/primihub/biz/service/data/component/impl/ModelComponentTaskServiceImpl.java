@@ -20,6 +20,7 @@ import com.primihub.biz.entity.data.req.DataFResourceReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.FusionResourceService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
@@ -35,6 +36,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
@@ -55,6 +57,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     private FusionResourceService fusionResourceService;
     @Autowired
     private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataTaskMonitorService dataTaskMonitorService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -128,11 +132,24 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }else {
                 resourceIds.addAll(taskReq.getResourceList().stream().map(ModelProjectResourceVo::getResourceId).collect(Collectors.toSet()));
             }
+            String jobId = String.valueOf(taskReq.getJob());
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
             ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
             taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-            Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(128).build();
-            Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(100).build();
+            int batchSize = 128;
+            int numlters = 5;
+            try {
+                if (taskReq.getValueMap().containsKey("batchSize")){
+                    batchSize = Integer.parseInt(taskReq.getValueMap().get("batchSize"));
+                }
+                if (taskReq.getValueMap().containsKey("numlters")){
+                    numlters = Integer.parseInt(taskReq.getValueMap().get("numlters"));
+                }
+            }catch (Exception e){
+                log.info(e.getMessage());
+            }
+            Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(batchSize).build();
+            Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(numlters).build();
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(resourceIds.stream().collect(Collectors.joining(";"))).build();
             Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
             Common.Params params = Common.Params.newBuilder()
@@ -146,8 +163,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setParams(params)
                     .setName("logistic_regression")
                     .setLanguage(Common.Language.PROTO)
-                    .setCode("logistic_regression")
-                    .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom("logistic_regression".getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("Data_File")
                     .build();
@@ -157,15 +174,27 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
+                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
-                if (FileUtil.isFileExists(outputPathDto.getModelFileName())){
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,resourceIds.size(),outputPathDto.getModelFileName());
+                File sourceFile = new File(baseSb.toString());
+                if (sourceFile.isDirectory()){
+                    File[] files = sourceFile.listFiles();
+                    if (files!=null){
+                        for (File file : files) {
+                            if (file.getName().contains("modelFileName")){
+                                taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                taskReq.getDataTask().setTaskErrorMsg("");
+                                break;
+                            }
+                        }
+                    }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                 }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -181,9 +210,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     }
 
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
+                String jobId = String.valueOf(taskReq.getJob());
                 StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
                 ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
                 taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
@@ -199,8 +229,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                        .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
                         .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
@@ -209,15 +239,27 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
+                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    if (FileUtil.isFileExists(outputPathDto.getModelFileName())){
-                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName());
+                    File sourceFile = new File(baseSb.toString());
+                    if (sourceFile.isDirectory()){
+                        File[] files = sourceFile.listFiles();
+                        if (files!=null){
+                            for (File file : files) {
+                                if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                    taskReq.getDataTask().setTaskErrorMsg("");
+                                    break;
+                                }
+                            }
+                        }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -237,9 +279,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         Long[] portNumber = getPortNumber();
         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PAHT, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
+                String jobId = String.valueOf(taskReq.getJob());
                 StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
                 ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
                 taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
@@ -261,8 +304,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                        .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
                         .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
@@ -271,19 +314,27 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
+                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
-                    if (StringUtils.isNotBlank(taskReq.getDataModelTask().getPredictContent())){
-                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                        log.info("zip -- modelId:{} -- taskId:{} -- start",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
-                        ZipUtils.pathFileTOZipFile(outputPathDto.getTaskPath(),outputPathDto.getModelRunZipFilePath(),new HashSet<String>(){{add("guestLookupTable");add("indicatorFileName.json");}});
-                        log.info("zip -- modelId:{} -- taskId:{} -- end",taskReq.getDataModel().getModelId(),taskReq.getDataTask().getTaskIdName());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName());
+                    File sourceFile = new File(baseSb.toString());
+                    if (sourceFile.isDirectory()){
+                        File[] files = sourceFile.listFiles();
+                        if (files!=null){
+                            for (File file : files) {
+                                if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                    taskReq.getDataTask().setTaskErrorMsg("");
+                                    break;
+                                }
+                            }
+                        }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无文件信息");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

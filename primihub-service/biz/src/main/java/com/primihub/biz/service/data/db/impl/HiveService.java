@@ -7,8 +7,11 @@ import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.db.DataDBService;
+import com.primihub.biz.util.DataUtil;
+import com.primihub.biz.util.dbclient.HiveHelper;
 import com.primihub.biz.util.dbclient.SqliteHelper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,56 +19,61 @@ import java.sql.ResultSet;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
 @Slf4j
 @Service
-public class SqliteService extends DataDBService {
+public class HiveService extends DataDBService {
 
-    protected static final String QUERY_TABLES_SQL = "select name from sqlite_master where type='table' order by name";
-    protected static final String QUERY_DETAILS_SQL = "select * from <tableName> limit 0,50";
+    protected static final String QUERY_TABLES_SQL = "show tables in <dataBaseName>";
+    protected static final String QUERY_DETAILS_SQL = "SELECT * FROM <tableName> LIMIT 50";
     protected static final String QUERY_COUNT_SQL = "select count(*) total from <tableName>";
     protected static final String QUERY_COUNT_Y_SQL = "select count(*) ytotal from <tableName>";
 
     @Autowired
     private DataResourceService dataResourceService;
+
     @Override
     public BaseResultEntity healthConnection(DataSource dbSource) {
-        dbSource.setDbName("main");
+        String url = dbSource.getDbUrl();
+        String dataBaseName = DataUtil.getJDBCData(url).get("database");
+        if (StringUtils.isBlank(dataBaseName))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
+        dbSource.setDbName(dataBaseName);
         return dataSourceTables(dbSource);
     }
 
     @Override
     public BaseResultEntity dataSourceTables(DataSource dbSource) {
-        SqliteHelper sqliteHelper = null;
+        HiveHelper hiveHelper = null;
         ResultSet resultSet = null;
         try {
-            sqliteHelper = new SqliteHelper(dbSource.getDbUrl());
-            resultSet = sqliteHelper.executeQuery(QUERY_TABLES_SQL);
+            hiveHelper = new HiveHelper(dbSource.getDbUrl(),dbSource.getDbUsername(),dbSource.getDbPassword());
+            resultSet = hiveHelper.executeQuery(QUERY_TABLES_SQL.replace("<dataBaseName>",dbSource.getDbName()));
             List<Object> tableNameList = new ArrayList<>();
             while (resultSet.next()){
-                tableNameList.add(resultSet.getString("name"));
+                tableNameList.add(resultSet.getString("tab_name"));
             }
             Map<String,Object> map = new HashMap<>();
             map.put("dbSource",dbSource);
             map.put("tableNames",tableNameList);
             return BaseResultEntity.success(map);
         }catch (Exception e){
+            e.printStackTrace();
             log.info("url:{}-------e:{}",dbSource.getDbUrl(),e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"连接失败,请检查数据源地址是否正确");
         }finally {
-            if (sqliteHelper!=null){
-                sqliteHelper.destroyed();
+            if (hiveHelper!=null){
+                hiveHelper.destroyed();
             }
         }
     }
 
     @Override
     public BaseResultEntity dataSourceTableDetails(DataSource dbSource) {
-        SqliteHelper sqliteHelper = null;
+        HiveHelper hiveHelper = null;
         ResultSet resultSet = null;
         try {
-            sqliteHelper = new SqliteHelper(dbSource.getDbUrl());
-            resultSet = sqliteHelper.executeQuery(QUERY_DETAILS_SQL.replace("<tableName>",dbSource.getDbTableName()));
+            hiveHelper = new HiveHelper(dbSource.getDbUrl(),dbSource.getDbUsername(),dbSource.getDbPassword());
+            resultSet = hiveHelper.executeQuery(QUERY_DETAILS_SQL.replace("<tableName>",dbSource.getDbTableName()));
             List<Map<String, Object>> details = new ArrayList<>();
             while (resultSet.next()){
                 Map<String, Object> map = new HashMap<>();
@@ -86,25 +94,25 @@ public class SqliteService extends DataDBService {
             log.info("url:{}-------e:{}",dbSource.getDbUrl(),e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"连接失败,请检查数据源地址是否正确");
         }finally {
-            if (sqliteHelper!=null){
-                sqliteHelper.destroyed();
+            if (hiveHelper!=null){
+                hiveHelper.destroyed();
             }
         }
     }
 
     @Override
     public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY) {
-        SqliteHelper sqliteHelper = null;
+        HiveHelper hiveHelper = null;
         ResultSet resultSet = null;
         try {
-            sqliteHelper = new SqliteHelper(dataSource.getDbUrl());
-            resultSet = sqliteHelper.executeQuery(QUERY_COUNT_SQL.replace("<tableName>",dataSource.getDbTableName()));
+            hiveHelper = new HiveHelper(dataSource.getDbUrl(),dataSource.getDbUsername(),dataSource.getDbPassword());
+            resultSet = hiveHelper.executeQuery(QUERY_COUNT_SQL.replace("<tableName>",dataSource.getDbTableName()));
             Map<String, Object> map = new HashMap<>();
             while (resultSet.next()){
                 map.put("total",resultSet.getString("total"));
             }
             if (isY){
-                resultSet = sqliteHelper.executeQuery(QUERY_COUNT_Y_SQL.replace("<tableName>",dataSource.getDbTableName()));
+                resultSet = hiveHelper.executeQuery(QUERY_COUNT_Y_SQL.replace("<tableName>",dataSource.getDbTableName()));
                 while (resultSet.next()){
                     map.put("ytotal",resultSet.getString("ytotal"));
                 }
@@ -114,8 +122,8 @@ public class SqliteService extends DataDBService {
             log.info("url:{}-------e:{}",dataSource.getDbUrl(),e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"连接失败,请检查数据源地址是否正确");
         }finally {
-            if (sqliteHelper!=null){
-                sqliteHelper.destroyed();
+            if (hiveHelper!=null){
+                hiveHelper.destroyed();
             }
         }
     }

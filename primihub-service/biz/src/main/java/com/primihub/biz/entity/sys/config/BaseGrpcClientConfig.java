@@ -6,8 +6,10 @@ import lombok.Data;
 public class BaseGrpcClientConfig {
     private String grpcClientAddress;
     private Integer grpcClientPort;
+    private Integer[] grpcServerPorts;
     private boolean useTls = false;
     private String trustCertFilePath;
     private String keyCertChainFile;
     private String keyFile;
+
 }

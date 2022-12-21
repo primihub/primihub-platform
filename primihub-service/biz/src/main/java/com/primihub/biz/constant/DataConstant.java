@@ -1,5 +1,7 @@
 package com.primihub.biz.constant;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class DataConstant {
@@ -7,11 +9,20 @@ public class DataConstant {
     public final static String MATCHES="[a-zA-Z]+";
     public final static String FIELD_NAME_AS="field_";
     // Template address
-    public final static String FREEMARKER_PYTHON_EN_PAHT= "disxgb_en.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_LR_PAHT= "homo_lr.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT= "homo_lr_infer.ftl";
-    public final static String FREEMARKER_PYTHON_EXCEPTION_PAHT= "exception.ftl";
-    public final static String FREEMARKER_PYTHON_DATA_ALIGN_PAHT= "data_align.ftl";
+    public final static String FREEMARKER_PYTHON_EN_PATH= "hetero_xgb.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH= "hetero_xgb_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_PATH= "homo_lr.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_INFER_PATH= "homo_lr_infer.ftl";
+    public final static String FREEMARKER_PYTHON_EXCEPTION_PATH= "exception.ftl";
+    public final static String FREEMARKER_PYTHON_DATA_ALIGN_PATH= "data_align.ftl";
+    public final static String[] FREEMARKER_PYTHON_PATHS = new String[]{
+            FREEMARKER_PYTHON_EN_PATH,
+            FREEMARKER_PYTHON_HOMO_LR_PATH,
+            FREEMARKER_PYTHON_HOMO_LR_INFER_PATH,
+            FREEMARKER_PYTHON_EXCEPTION_PATH,
+            FREEMARKER_PYTHON_DATA_ALIGN_PATH,
+            FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH
+    };
     // python dataset host、guest
     public final static String PYTHON_LABEL_DATASET = "label_dataset";
     public final static String PYTHON_GUEST_DATASET = "guest_dataset";
@@ -38,7 +49,10 @@ public class DataConstant {
     public final static Long[] GUEST_PORT_RANGE = new Long[]{20000L,30000L};
     public final static Long[] HOST_PORT_RANGE = new Long[]{40000L,50000L};
 
-
+    public final static Long GRPC_SERVER_TIMEOUT = 24L * 60L * 60L * 1000L;
+    public final static Long GRPC_FILE_TIMEOUT = 5L * 60L * 1000L;
 
     public final static String TASK_LOG_FILE_NAME = "taskLog.log";
+
+    public final static List<Integer> INFER_TYPE = Arrays.asList(2,3);
 }
