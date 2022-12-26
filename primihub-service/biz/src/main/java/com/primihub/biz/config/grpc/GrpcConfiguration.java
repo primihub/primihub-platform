@@ -81,6 +81,8 @@ public class GrpcConfiguration {
         }
         return ManagedChannelBuilder
                 .forAddress(grpcClient.getGrpcClientAddress(), grpcClient.getGrpcClientPort())
+                .maxInboundMessageSize(Integer.MAX_VALUE)
+                .maxInboundMetadataSize(Integer.MAX_VALUE)
                 .usePlaintext()
                 .build();
     }
