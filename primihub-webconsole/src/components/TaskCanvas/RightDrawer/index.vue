@@ -1,27 +1,33 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable, 'disabled':!options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
-          <p class="organ"><i class="el-icon-office-building" /> <span>发起方：</span> {{ initiateOrgan.organName }}</p>
+          <div class="organ-header">
+            <p><i class="el-icon-office-building" /> <strong>发起方：</strong>{{ initiateOrgan.organName }}</p>
+          </div>
           <el-button v-if="options.isEditable" type="primary" size="small" plain @click="openDialog(initiateOrgan.organId, 1)">选择资源</el-button>
-          <ResourceDec v-if="initiateOrgan.resourceId" :data="initiateOrgan" @change="handleResourceHeaderChange" />
+          <ResourceDec v-if="initiateOrgan.resourceId" :disabled="!options.isEditable" :data="initiateOrgan" @change="handleResourceHeaderChange" />
         </el-form-item>
         <el-form-item>
           <template v-if="providerOrganOptions.length>0">
-            <span class="organ"><i class="el-icon-office-building" /> <span>协作方：</span> {{ providerOrganName }}</span>
-            <div v-if="options.isEditable" class="organ-select">
-              <el-select v-model="providerOrganId" placeholder="请选择" size="small" @change="handleProviderOrganChange">
-                <el-option
-                  v-for="(v,index) in providerOrganOptions"
-                  :key="index"
-                  :label="v.organName"
-                  :value="v.organId"
-                />
-              </el-select>
-              <el-button type="primary" size="small" plain @click="openDialog(providerOrganId,2)">选择资源</el-button>
+            <el-divider />
+            <div class="organ-header">
+              <span><i class="el-icon-office-building" /> <strong>协作方</strong></span>
+              <div v-if="options.isEditable" class="operation-buttons">
+                <el-button icon="el-icon-plus" plain size="mini" @click="openProviderOrganDialog">添加协作方</el-button>
+              </div>
             </div>
-            <ResourceDec v-if="providerOrgans.length > 0" :data="providerOrgans[0]" @change="handleResourceHeaderChange" />
+            <div v-for="(organ,i) in selectedProviderOrgans" :key="i" class="organ">
+              <div class="organ-header">
+                <p>
+                  {{ organ.organName }}
+                  <i v-if="options.isEditable" class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
+                </p>
+              </div>
+              <el-button v-if="options.isEditable" class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" :disabled="!options.isEditable" @change="handleResourceHeaderChange" />
+            </div>
           </template>
           <template v-else>
             <i class="el-icon-office-building" /> <span>暂无审核通过的协作方 </span>
@@ -30,7 +36,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'dataAlign'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -48,7 +54,7 @@
             <el-form-item />
           </el-col>
           <el-col :span="12">
-            <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+            <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
               <el-option
                 v-for="(v) in nodeData.componentTypes[2].inputValues"
                 :key="v.key"
@@ -73,7 +79,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'missing'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -92,7 +98,7 @@
               <el-form-item />
             </el-col>
             <el-col :span="12">
-              <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+              <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
                 <el-option
                   v-for="(v) in nodeData.componentTypes[2].inputValues"
                   :key="v.key"
@@ -131,7 +137,7 @@
             <el-form-item v-if="showArbiterOrgan" :label="item.typeName" :prop="item.typeCode">
               <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
               <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
-              <el-button type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
+              <el-button v-if="options.isEditable" type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
             </el-form-item>
           </template>
           <el-form-item v-else :label="item.typeName" :prop="item.typeCode">
@@ -139,18 +145,18 @@
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
-              <el-input v-model="item.inputValue" size="small" @change="handleChange" />
+              <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'textarea'">
-              <el-input v-model="item.inputValue" type="textarea" size="small" @change="handleChange" />
+              <el-input v-model="item.inputValue" :disabled="!options.isEditable" type="textarea" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'radio'">
               <el-radio-group v-model="item.inputValue" @change="handleChange">
-                <el-radio v-for="(r,index) in item.inputValues" :key="index" :label="r.key">{{ r.val }}</el-radio>
+                <el-radio v-for="(r,index) in item.inputValues" :key="index" :disabled="!options.isEditable" :label="r.key">{{ r.val }}</el-radio>
               </el-radio-group>
             </template>
             <template v-if="item.inputType === 'select'">
-              <el-select v-model="item.inputValue" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
+              <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
                   :key="index"
@@ -163,13 +169,12 @@
         </div>
       </template>
     </el-form>
-    <el-button v-if="options.showSaveButton" type="primary" @click="save">保存</el-button>
     <!-- add resource dialog -->
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加可信第三方" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
-    <FeatureSelectDialog :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
+    <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :has-selected-features="hasSelectedFeatures" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
 </template>
 
@@ -229,14 +234,18 @@ export default {
         inputValues: [],
         typeName: ''
       },
-      missingData: [
-
+      exceptionItems: [ // filling items
+        {
+          selectedExceptionFeatures: '',
+          exceptionType: ''
+        }
       ],
       selectedFeaturesCode: '',
-      selectedFeaturesIndex: '',
+      selectedFeaturesIndex: '', //  exception component feature select index
       selectedDataAlignFeatures: null,
       selectedExceptionFeatures: null,
       selectedFeatures: null,
+      selectedFeatureIndex: -1,
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
@@ -272,10 +281,19 @@ export default {
         arbiterOrgan: [
           { required: true, trigger: 'change' }
         ]
-      }
+      },
+      selectedProviderOrgans: []
     }
   },
   computed: {
+    // has selected features collection, A feature can perform only one operation
+    hasSelectedFeatures() {
+      return this.exceptionItems.map((item, index) => {
+        if (item.selectedExceptionFeatures !== '' && this.selectedFeaturesIndex !== index) {
+          return item.selectedExceptionFeatures
+        }
+      })
+    },
     isDataSelect() {
       return this.nodeData && this.nodeData.componentCode === 'dataSet'
     },
@@ -290,9 +308,18 @@ export default {
       }
     },
     featuresOptions() {
-      this.getDataSetComValue(this.graphData)
-      if (this.providerOrgans.length > 0 && this.providerOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
-        let intersection = this.providerOrgans.length > 0 && this.providerOrgans[0].fileHandleField.filter(v => this.initiateOrgan.fileHandleField.includes(v))
+      if (this.nodeData.componentCode === 'dataAlign' || this.nodeData.componentCode === 'missing') {
+        this.getDataSetComValue(this.graphData)
+      }
+      if (this.selectedProviderOrgans.length > 0 && this.selectedProviderOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
+        let fileHandleField = []
+        if (this.selectedProviderOrgans.length > 1) {
+          fileHandleField = this.selectedProviderOrgans[0].fileHandleField.concat(this.selectedProviderOrgans[1].fileHandleField)
+          fileHandleField = [...new Set(fileHandleField)]
+        } else {
+          fileHandleField = this.selectedProviderOrgans[0].fileHandleField
+        }
+        let intersection = fileHandleField.filter(v => this.initiateOrgan.fileHandleField.includes(v))
         intersection = intersection.map((val, key) => {
           return {
             key: key + '',
@@ -303,6 +330,9 @@ export default {
       } else {
         return []
       }
+    },
+    dialogTitle() {
+      return this.nodeData.componentCode === 'dataSet' ? '添加协作方' : this.nodeData.componentCode === 'model' ? '添加可信第三方' : ''
     }
   },
   watch: {
@@ -311,7 +341,14 @@ export default {
       if (newVal) {
         if (newVal.componentCode === 'dataSet') {
           this.inputValue = newVal.componentTypes[0].inputValue
-          this.getDataSetNodeData()
+          if (this.inputValue !== '') {
+            this.getDataSetNodeData()
+          } else {
+            this.initiateOrgan.resourceId = ''
+            this.selectedProviderOrgans = []
+            this.providerOrganIds = null
+            this.selectedResourceId = ''
+          }
         } else if (newVal.componentCode === 'model') {
           this.getDataSetComValue(this.graphData)
           this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
@@ -323,8 +360,6 @@ export default {
           this.selectedExceptionFeatures = newVal.componentTypes[1].inputValue !== '' ? newVal.componentTypes[1].inputValue : null
           this.selectedFeatures = this.selectedExceptionFeatures
           console.log('watch selectedExceptionFeatures', this.selectedExceptionFeatures)
-        } else {
-          this.inputValue = ''
         }
       }
     },
@@ -332,66 +367,85 @@ export default {
     immediate: true
   },
   async created() {
+    console.log('isEditable', this.options.isEditable)
     this.projectId = Number(this.$route.query.projectId) || Number(this.$route.params.id)
     await this.getProjectResourceOrgan()
   },
   methods: {
+    filterData(organId) {
+      return this.selectedProviderOrgans.find(item => item.organId === organId)
+    },
     getDataSetComValue(value) {
       const dataSetCom = value.cells.find(item => item.componentCode === 'dataSet')
       if (dataSetCom) {
         const dataSetComVal = dataSetCom.data.componentTypes[0].inputValue
         this.inputValue = dataSetComVal
-        this.getDataSetNodeData()
+        if (this.inputValue !== '') {
+          this.getDataSetNodeData()
+        }
       }
     },
     async openProviderOrganDialog() {
-      if (this.initiateOrgan.organId && this.providerOrgans.length > 0) {
-        this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.providerOrgans[0].organId)
+      if (this.nodeData.componentCode === 'dataSet') {
+        if (this.selectedProviderOrgans.length === 2) {
+          this.$message({
+            message: '最多选择2个协作方',
+            type: 'error'
+          })
+          return
+        }
         this.providerOrganDialogVisible = true
+        this.organData = this.providerOrganOptions
       } else {
-        this.$message({
-          message: '请先选择数据集',
-          type: 'warning'
-        })
+        if (this.initiateOrgan.organId && this.selectedProviderOrgans.length > 0) {
+          const organs = this.selectedProviderOrgans.concat([this.initiateOrgan])
+          console.log('organs', organs)
+          this.organData = [...this.organs].filter(x => [...organs].every(y => y.organId !== x.organId))
+          this.providerOrganDialogVisible = true
+        } else {
+          this.$message({
+            message: '请先选择数据集',
+            type: 'warning'
+          })
+        }
       }
     },
+    handleProviderRemove(index) {
+      this.providerOrganIds = null
+      const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
+      this.inputValue !== '' && this.inputValue.splice(posIndex, 1)
+      this.selectedProviderOrgans.splice(index, 1)
+      this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
+      this.handleChange()
+    },
     closeProviderOrganDialog(data) {
-      this.providerOrganIds = data
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      const posIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'arbiterOrgan')
-      this.providerOrganIds = data.organId
-      this.arbiterOrganName = data.organName
-      this.arbiterOrganId = data.organId
+      const { organId, organName } = data
+      this.providerOrganIds = organId
+      if (this.nodeData.componentCode === 'dataSet') {
+        this.selectedProviderOrgans.push({
+          organId,
+          organName
+        })
+        this.setInputValue(data)
+      } else {
+        const posIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'arbiterOrgan')
+        this.arbiterOrganName = data.organName
+        this.arbiterOrganId = data.organId
+        this.nodeData.componentTypes[posIndex].inputValue = data.organId
+      }
       this.providerOrganDialogVisible = false
-      this.nodeData.componentTypes[posIndex].inputValue = data.organId
       this.$emit('change', this.nodeData)
     },
     getDataSetNodeData() {
-      if (this.inputValue !== '') {
-        this.inputValue = JSON.parse(this.inputValue)
-        const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
-        this.initiateOrgan = initiateOrgan || this.initiateOrgan
-        const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
-        if (providerOrgans.length > 0) {
-          this.providerOrgans = providerOrgans
-          this.providerOrganId = this.providerOrgans[0]?.organId
-          this.providerOrganName = this.providerOrgans[0]?.organName
-        } else {
-          this.resourceList = []
-          this.providerOrgans = []
-          this.providerOrganId = ''
-          this.providerOrganName = ''
-        }
-      } else {
-        this.resourceList = []
-        this.providerOrgans = []
-        this.providerOrganId = ''
-        this.providerOrganName = ''
-        this.initiateOrgan.resourceId = ''
-        this.selectedResourceId = ''
-        this.inputValue = ''
+      this.inputValue = JSON.parse(this.inputValue)
+      const initiateOrgan = this.inputValue.find(item => item.participationIdentity === 1)
+      this.initiateOrgan = initiateOrgan || this.initiateOrgan
+      const providerOrgans = this.inputValue.filter(item => item.participationIdentity === 2)
+      if (providerOrgans.length > 0) {
+        this.selectedProviderOrgans = providerOrgans
       }
     },
     handleResourceHeaderChange(data) {
@@ -402,7 +456,6 @@ export default {
       this.participationIdentity = participationIdentity
       this.selectedOrganId = organId
       sessionStorage.setItem('organ', JSON.stringify({ organId: this.selectedOrganId, participationIdentity: this.participationIdentity }))
-      console.log(organId)
       if (this.selectedOrganId === '') {
         this.$message({
           message: '请先选择机构',
@@ -411,9 +464,8 @@ export default {
         return
       }
       if (this.inputValue) {
-        const currentOrgan = this.inputValue.filter(item => item.organId === organId)[0]
+        const currentOrgan = this.inputValue.find(item => item.organId === organId)
         if (currentOrgan) {
-          console.log(this.inputValue)
           this.selectedResourceId = currentOrgan.resourceId
         } else {
           this.selectedResourceId = ''
@@ -422,7 +474,10 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
-    handleChange() {
+    handleChange(name) {
+      if (name === 'exception') {
+        this.nodeData.componentTypes[1].inputValue = JSON.stringify(this.exceptionItems)
+      }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -451,12 +506,12 @@ export default {
         this.initiateOrgan = data
       } else {
         // is not first select
-        if (this.providerOrgans.length > 0 && 'resourceId' in this.providerOrgans[0]) {
+        if (this.selectedProviderOrgans.length > 0 && 'resourceId' in this.selectedProviderOrgans[0]) {
           this.resourceChanged = true
         }
-        data.organName = this.providerOrganOptions.find(item => item.organId === this.providerOrganId).organName
-        this.providerOrgans = []
-        this.providerOrgans = [data]
+        const posIndex = this.selectedProviderOrgans.findIndex(organ => organ.organId === data.organId)
+        data.organName = this.selectedProviderOrgans[posIndex].organName
+        this.selectedProviderOrgans[posIndex] = data
       }
       this.selectedResourceId = data.resourceId
       // set input value
@@ -471,15 +526,13 @@ export default {
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
-      const posIndex = this.inputValues.findIndex(item => item.participationIdentity === data.participationIdentity)
+      const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
       const currentData = data
-      console.log('currentData', currentData)
       if (posIndex !== -1) {
         this.inputValues.splice(posIndex, 1, currentData)
       } else {
         this.inputValues.push(currentData)
       }
-      console.log('inputValues', this.inputValues)
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
       this.handleChange()
     },
@@ -500,6 +553,7 @@ export default {
       if (res.code === 0) {
         this.organs = res.result
         this.providerOrganOptions = this.organs.filter(item => item.participationIdentity === 2)
+        this.providerOrgans = this.organs.filter(item => item.participationIdentity === 2)
         this.initiateOrgan = this.organs.filter(item => item.participationIdentity === 1)[0]
       }
       this.listLoading = false
@@ -507,7 +561,7 @@ export default {
     save() {
       this.$emit('save')
     },
-    openFeaturesDialog(code) {
+    openFeaturesDialog(code, index) {
       this.selectedFeaturesCode = code
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedFeatures = this.selectedDataAlignFeatures
@@ -517,7 +571,6 @@ export default {
       this.featuresDialogVisible = true
     },
     handleFeatureDialogSubmit(data) {
-      console.log(data)
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedDataAlignFeatures = data
         this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
@@ -528,7 +581,6 @@ export default {
         this.selectedFeatures = this.selectedExceptionFeatures
         console.log(this.selectedExceptionFeatures)
       }
-      console.log(this.nodeData)
       this.featuresDialogVisible = false
       this.handleChange()
     },
@@ -543,6 +595,18 @@ export default {
 p {
   margin-block-start: .2em;
   margin-block-end: .2em;
+}
+::v-deep .el-button{
+  padding: 12px 15px;
+  line-height: 1!important;
+}
+::v-deep .el-select .el-input__inner{
+  padding: 12px 10px!important;
+}
+::v-deep .el-button--mini.is-circle{
+  padding: 3px;
+  width: 20px;
+  height: 20px;
 }
 ::v-deep .el-form-item__content{
   display: block;
@@ -607,7 +671,15 @@ p {
   width: 100%;
   display: block;
 }
-.feature-container{
+.organ-header{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  line-height: 20px;
   margin: 10px 0;
 }
+.icon-delete{
+  color: #F56C6C;
+}
+
 </style>

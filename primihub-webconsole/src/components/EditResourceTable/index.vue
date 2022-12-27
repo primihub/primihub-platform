@@ -11,8 +11,8 @@
         <template slot-scope="{row}">
           <el-select v-model="row.fieldType" size="mini" placeholder="请选择" :disabled="!isEditable" @change="handleChange(row)">
             <el-option
-              v-for="(item,index) in fieldTypeList"
-              :key="index"
+              v-for="item in fieldTypeList"
+              :key="item.value"
               :label="item.label"
               :value="item.value"
             />
@@ -22,22 +22,6 @@
       <el-table-column label="关联键" prop="relevance" align="center" width="60">
         <template slot-scope="{row}">
           <el-checkbox v-model="row.relevance" :disabled="!isEditable" @change="handleChange(row)" />
-        </template>
-      </el-table-column>
-      <el-table-column label="分组键" prop="grouping" align="center" width="60">
-        <template slot-scope="{row}">
-          <el-checkbox v-model="row.grouping" :disabled="!isEditable" @change="handleChange(row)" />
-        </template>
-      </el-table-column>
-      <el-table-column label="保护开关" prop="protectionStatus" align="center" width="80">
-        <template slot-scope="{row}">
-          <el-switch
-            v-model="row.protectionStatus"
-            :disabled="!isEditable"
-            active-color="#13ce66"
-            inactive-color="#ccc"
-            @change="handleChange(row)"
-          />
         </template>
       </el-table-column>
       <el-table-column align="center" label="描述" prop="fieldDesc">
@@ -99,11 +83,13 @@ export default {
         value: 5,
         label: 'Boolean'
       }],
-      params: []
+      params: [],
+      fieldType: ''
     }
   },
   methods: {
     handleChange(row) {
+      this.data.fieldType = row.fieldType
       if (this.isEditPage) {
         this.updateDataResourceField(row)
         this.$emit('change', this.data)
@@ -113,15 +99,13 @@ export default {
       }
     },
     updateDataResourceField(row) {
-      const { fieldId, fieldName, fieldType, fieldDesc = '', relevance, grouping, protectionStatus } = row
+      const { fieldId, fieldName, fieldType, fieldDesc = '', relevance } = row
       const data = {
         fieldId,
         fieldName,
-        fieldType: this.fieldTypeList.find(item => item.value === fieldType)?.label,
+        fieldType,
         fieldDesc,
-        relevance: relevance === true ? 1 : 0,
-        grouping: grouping === true ? 1 : 0,
-        protectionStatus: protectionStatus === true ? 1 : 0
+        relevance: relevance === true ? 1 : 0
       }
       updateDataResourceField(data).then(res => {
         if (res.code === 0) {

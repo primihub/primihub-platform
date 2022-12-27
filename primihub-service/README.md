@@ -68,11 +68,9 @@ to this path,you can execute next command:
 or you can execute "ddl.sql" in your mysql management manually.
 
 ## Compile and Package
-if your environment in linux,you should run this command:
+You should run this command:
 
-    mvn clean install -Dmaven.test.skip=true -Dasciidoctor.skip=true -Dos.detected.classifier=linux-x86_64
-
-and when your environment in windows or mac ,you should change the param "-Dos.detected.classifier" to "windows-x86_64" or "osx-x86_64".
+    mvn clean install -Dmaven.test.skip=true -Dasciidoctor.skip=true
 
 As long as the finished infos show up, the project have been compiled and packaged successfully.
 

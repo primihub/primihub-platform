@@ -78,6 +78,14 @@
               </template>
             </el-table-column>
             <el-table-column
+              prop="resourceType"
+              label="数据类型"
+            >
+              <template slot-scope="{row}">
+                {{ row.resourceType === 3 ? '衍生数据' : '原始数据' }}
+              </template>
+            </el-table-column>
+            <el-table-column
               prop="organName"
               label="上传机构"
             />
@@ -104,7 +112,7 @@
         </el-tab-pane>
         <el-tab-pane v-if="task.isCooperation === 0 || (task.isCooperation === 1 && task.taskState === 1)" label="预览图" name="3">
           <div class="canvas-panel">
-            <TaskCanvas :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
+            <TaskCanvas v-if="tabName === '3' || restartRun" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
         </el-tab-pane>
         <el-tab-pane label="日志" name="4">
@@ -184,12 +192,11 @@ export default {
   async created() {
     this.taskId = this.$route.params.id
     const routerFrom = this.$route.query.from
-    this.tabName = routerFrom === '0' ? '3' : '1'
     await this.fetchData()
+    this.tabName = routerFrom === '0' ? '3' : this.task.taskState === 2 ? '3' : '1'
   },
   methods: {
     tableRowClassName({ row }) {
-      console.log(row.available)
       if (row.available === 1) {
         return 'disabled'
       } else {
@@ -282,7 +289,7 @@ export default {
     },
     restartTaskModel() {
       console.log('重启')
-      // this.tabName = '3'
+      this.tabName = '3'
       this.task.taskState = 2
       this.task.taskStartDate = this.task.taskEndDate
       this.task.taskEndDate = null

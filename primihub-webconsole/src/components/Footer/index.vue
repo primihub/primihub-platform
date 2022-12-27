@@ -1,8 +1,17 @@
 <template>
-  <div class="footer">
-    <p>北京原语科技有限公司 V1.5.0</p>
+  <div v-if="!$store.state.settings.isHideFooterVersion" class="footer">
+    <p>{{ $store.state.settings.footerText }}</p>
   </div>
 </template>
+
+<script>
+export default {
+  name: 'PageFooter',
+  async created() {
+    await this.$store.dispatch('settings/getHomepage')
+  }
+}
+</script>
 
 <style lang="scss" scoped>
 .footer{

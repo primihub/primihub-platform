@@ -13,7 +13,7 @@
     </el-descriptions-item> -->
     <el-descriptions-item label="选择标签列Y">
       <el-radio-group v-model="data.calculationField" @change="handleCheckedChange">
-        <el-radio v-for="(item,index) in data.fileHandleField" :key="index" :label="item">{{ item }}</el-radio>
+        <el-radio v-for="(item,index) in data.fileHandleField" :key="index" :disabled="disabled" :label="item">{{ item }}</el-radio>
       </el-radio-group>
     </el-descriptions-item>
   </el-descriptions>
@@ -25,6 +25,10 @@ export default {
     data: {
       type: Object,
       default: () => {}
+    },
+    disabled: {
+      type: Boolean,
+      default: true
     }
   },
   data() {

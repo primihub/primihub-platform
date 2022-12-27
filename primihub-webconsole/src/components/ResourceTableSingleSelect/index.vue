@@ -7,15 +7,16 @@
       :data="data"
       v-bind="$attrs"
       highlight-current-row
+      :row-class-name="tableRowClassName"
     >
       <el-table-column label="选择" width="55">
         <template slot-scope="{row}">
-          <el-radio v-model="radioSelect" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
+          <el-radio v-model="radioSelect" :disabled="row.auditStatus !== undefined && row.auditStatus !== 1" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
           <!-- <el-radio v-model="radioSelect" :label="row.resourceId" :disabled="row.auditStatus !== 1" @change="handleRadioChange(row)"><i /></el-radio> -->
         </template>
       </el-table-column>
       <el-table-column
-        label="资源 / Id"
+        label="资源名称 / Id"
         min-width="120"
       >
         <template slot-scope="{row}">
@@ -34,6 +35,11 @@
           正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
         </template>
       </el-table-column>
+      <el-table-column
+        v-if="hasResourceDesc"
+        prop="resourceDesc"
+        label="资源描述"
+      />
       <el-table-column
         v-if="showStatus"
         prop="auditStatus"
@@ -81,6 +87,11 @@ export default {
       radioSelect: null
     }
   },
+  computed: {
+    hasResourceDesc() {
+      return this.data[0] && Object.keys(this.data[0]).includes('resourceDesc')
+    }
+  },
   watch: {
     selectedData(newVal) {
       this.setCurrent(newVal)
@@ -92,6 +103,13 @@ export default {
     }
   },
   methods: {
+    tableRowClassName({ row }) {
+      if (row.auditStatus !== undefined && row.auditStatus !== 1) {
+        return 'row-disabled'
+      } else {
+        return ''
+      }
+    },
     handleRadioChange(row) {
       this.currentRow = row
       this.setCurrent(row.resourceId)
@@ -111,6 +129,8 @@ export default {
 ::v-deep .el-button{
   margin: 2px 5px;
 }
-
+::v-deep .el-table tr.row-disabled{
+  color: #999;
+}
 </style>
 

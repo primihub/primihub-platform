@@ -301,6 +301,13 @@ export const asyncRoutes = [
         name: 'CenterManage',
         component: () => import('@/views/setting/center'),
         meta: { title: '中心管理' }
+      },
+      {
+        path: 'ui',
+        name: 'UISetting',
+        component: () => import('@/views/setting/ui'),
+        meta: { title: '界面设置' },
+        hidden: true
       }
     ]
   },
@@ -310,7 +317,6 @@ export const asyncRoutes = [
     name: 'Log',
     redirect: '/log/index',
     meta: { title: '日志管理', icon: 'el-icon-warning-outline' },
-    alwaysShow: true, // 一直显示根路由
     children: [{
       path: 'index',
       name: 'LogList',

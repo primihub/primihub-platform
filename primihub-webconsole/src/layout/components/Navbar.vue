@@ -1,9 +1,11 @@
 <template>
   <div class="navbar">
-    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-    <breadcrumb class="breadcrumb-container" />
+    <div class="logo">
+      <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
+      <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
+    </div>
     <div class="right-menu">
-      <div class="feedback">
+      <div v-if="!isHideFadeBack" class="feedback">
         <el-popover
           placement="bottom"
           width="200"
@@ -52,8 +54,6 @@
 
 <script>
 import { mapGetters, mapState, mapActions } from 'vuex'
-import Breadcrumb from '@/components/Breadcrumb'
-import Hamburger from '@/components/Hamburger'
 import UpdatePwdForm from '@/components/UpdatePwdForm'
 import BindPhoneDialog from '@/components/BindPhoneDialog'
 
@@ -61,8 +61,6 @@ const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
 
 export default {
   components: {
-    Breadcrumb,
-    Hamburger,
     UpdatePwdForm,
     BindPhoneDialog
   },
@@ -82,6 +80,14 @@ export default {
       }
     },
     ...mapState('user', ['organChange']),
+    ...mapState('settings', [
+      'logoUrl',
+      'sidebarLogo',
+      'isHideFadeBack',
+      'logoTitle',
+      'showLogoTitle',
+      'settingChanged'
+    ]),
     ...mapGetters([
       'sidebar',
       'avatar',
@@ -102,10 +108,18 @@ export default {
       if (phonePattern.test(newVal)) {
         this.isBound = true
       }
+    },
+    async settingChanged(newVal) {
+      if (newVal) {
+        await this.getHomepage()
+      }
     }
   },
   created() {
     this.getInfo()
+    this.$nextTick(async() => {
+      await this.getHomepage()
+    })
   },
   methods: {
     openAddPhoneDialog() {
@@ -137,38 +151,41 @@ export default {
       // location.reload()
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
-    ...mapActions('user', ['getInfo'])
+    ...mapActions('user', ['getInfo']),
+    ...mapActions('settings', ['getHomepage'])
   }
 }
 </script>
 
 <style lang="scss" scoped>
-p{
-  margin-block-start: 0;
-    margin-block-end: 0;
+::v-deep .el-icon--right{
+  color: #fff;
 }
 .navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   height: 50px;
   overflow: hidden;
-  top: 0;
-  background: #fff;
+  background: #3e4555;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
-
-  .hamburger-container {
-    line-height: 46px;
+  color: #838790;
+  width: 100%;
+  .logo{
+    padding: 5px 20px;
     height: 100%;
-    float: left;
-    cursor: pointer;
-    transition: background .3s;
-    -webkit-tap-highlight-color:transparent;
-
-    &:hover {
-      background: rgba(0, 0, 0, .025)
+    flex: 1;
+    h1.logo-title{
+      color: #fff;
+      font-size: 16px;
+      margin: 0 5px;
+      display: inline-block;
+      vertical-align: middle;
     }
-  }
-
-  .breadcrumb-container {
-    float: left;
+    img{
+      max-height: 100%;
+      vertical-align: middle;
+    }
   }
 
   .right-menu {
@@ -209,6 +226,10 @@ p{
           line-height: 1;
           margin: 0 3px;
           vertical-align: middle;
+
+          p{
+            color: #fff;
+          }
         }
         .user-avatar {
           cursor: pointer;

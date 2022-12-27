@@ -20,7 +20,7 @@
       width="40"
     />
     <el-table-column
-      label="资源 / Id"
+      label="资源名称 / Id"
       min-width="120"
     >
       <template slot-scope="{row}">
@@ -40,6 +40,11 @@
         正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
       </template>
     </el-table-column>
+    <el-table-column
+      v-if="hasResourceDesc"
+      prop="resourceDesc"
+      label="资源描述"
+    />
     <el-table-column
       v-if="showStatus"
       prop="auditStatus"
@@ -132,6 +137,9 @@ export default {
     }
   },
   computed: {
+    hasResourceDesc() {
+      return this.data[0] && Object.keys(this.data[0]).includes('resourceDesc')
+    },
     ...mapState('project', ['status'])
   },
   watch: {
