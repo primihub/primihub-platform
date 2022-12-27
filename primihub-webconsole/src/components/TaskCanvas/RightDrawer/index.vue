@@ -34,7 +34,7 @@
           </template>
         </el-form-item>
       </template>
-      <template v-else-if="nodeData.componentCode === 'dataAlign'">
+      <template v-else-if="nodeData.componentCode === 'dataAlign' && nodeData.componentTypes[0].inputValue === '2'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
           <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
             <el-option
@@ -45,7 +45,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-row v-if="nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
+        <el-row v-if="nodeData.componentCode === 'dataAlign' && nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
           <el-col :span="12">
             <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
             <div class="feature-container">
@@ -77,13 +77,13 @@
           </el-select>
           <div v-for="(item,index) in exceptionItems" :key="index" :gutter="20" style="display: flex; justify-content: space-between;margin-top: 10px">
             <div style="margin-right: 10px; min-width: 135px;">
-              <el-button @click="openFeaturesDialog(nodeData.componentCode,index)">选择特征: ({{ item.selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
+              <el-button :disabled="!options.isEditable" @click="openFeaturesDialog(nodeData.componentCode,index)">选择特征: ({{ item.selectedExceptionFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
               <div class="feature-container">
                 <el-tag v-if="item.selectedExceptionFeatures" type="primary" size="mini">{{ item.selectedExceptionFeatures }}</el-tag>
               </div>
             </div>
             <div>
-              <el-select v-model="item.exceptionType" class="block exception-type" @change="handleChange('exception')">
+              <el-select v-model="item.exceptionType" :disabled="!options.isEditable" class="block exception-type" @change="handleChange('exception')">
                 <el-option
                   v-for="(v) in nodeData.componentTypes[2].inputValues"
                   :key="v.key"
@@ -112,7 +112,6 @@
                 />
               </el-select>
             </el-col>
-
             <el-col :span="12">
               <el-input-number v-model="nodeData.componentTypes[1].inputValue" controls-position="right" :min="1" :max="100" /> 箱
             </el-col>
@@ -129,22 +128,21 @@
               <el-button type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
             </el-form-item>
           </template>
-          <el-form-item v-else :label="item.typeName" :prop="item.typeCode">
+          <el-form-item v-else :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">
+              <p>{{ item.typeName }}</p>
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
+              <p>{{ item.typeName }}</p>
               <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'textarea'">
+              <p>{{ item.typeName }}</p>
               <el-input v-model="item.inputValue" :disabled="!options.isEditable" type="textarea" size="small" @change="handleChange" />
             </template>
-            <template v-if="item.inputType === 'radio'">
-              <el-radio-group v-model="item.inputValue" @change="handleChange">
-                <el-radio v-for="(r,index) in item.inputValues" :key="index" :disabled="!options.isEditable" :label="r.key">{{ r.val }}</el-radio>
-              </el-radio-group>
-            </template>
             <template v-if="item.inputType === 'select'">
+              <p>{{ item.typeName }}</p>
               <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
@@ -154,8 +152,17 @@
                 />
               </el-select>
             </template>
+            <!-- MPC-lr -->
+            <el-row v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'">
+              <el-col v-if="item.inputType === 'number'" :span="12">
+                <p>{{ item.typeName }}</p>
+                <el-input-number v-model="item.inputValue" controls-position="right" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" />
+              </el-col>
+            </el-row>
           </el-form-item>
         </div>
+        <!-- MPC-lr -->
+        <el-button v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'" @click="resetModelParams">重置参数</el-button>
       </template>
     </el-form>
     <!-- add resource dialog -->
@@ -373,6 +380,21 @@ export default {
       this.exceptionItems.splice(index, 1)
       this.selectedFeatures = ''
       this.handleChange('exception')
+    },
+    resetModelParams() {
+      this.nodeData.componentTypes.map(item => {
+        if (item.typeCode === 'batchSize' || item.typeCode === 'numlters') {
+          item.inputValue = ''
+        }
+      })
+    },
+    filterNumber(data, name) {
+      const filterData = data.find(item => item.key === name)
+      if (filterData) {
+        return Number(filterData.val)
+      } else {
+        return 1
+      }
     },
     filterData(organId) {
       return this.selectedProviderOrgans.find(item => item.organId === organId)
