@@ -77,7 +77,7 @@ public class DataTaskMonitorService {
 
             @Override
             public void onError(Throwable throwable) {
-                log.info("on Error:{}-{}:{}",grpcClientAddress,serverPort,throwable);
+                log.info("on Error:{}-{}",grpcClientAddress,serverPort);
                 initGrpcServerChannel(serverPort);
             }
 
