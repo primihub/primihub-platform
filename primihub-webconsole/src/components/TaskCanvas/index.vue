@@ -565,8 +565,7 @@ export default {
             this.$notify.closeAll()
             this.$notify({
               message: '删除成功',
-              type: 'success',
-              duration: 0
+              type: 'success'
             })
           }
         })
