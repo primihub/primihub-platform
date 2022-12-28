@@ -26,7 +26,7 @@
                 </p>
               </div>
               <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
-              <ResourceDec v-if="filterData(organ.organId).resourceId" :data="organ" @change="handleResourceHeaderChange" />
+              <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
             </div>
           </template>
           <template v-else>
@@ -156,7 +156,7 @@
             <el-row v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'">
               <el-col v-if="item.inputType === 'number'" :span="12">
                 <p>{{ item.typeName }}</p>
-                <el-input-number v-model="item.inputValue" controls-position="right" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" />
+                <el-input-number v-model="item.inputValue" controls-position="right" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" @change="handleChange" />
               </el-col>
             </el-row>
           </el-form-item>
@@ -387,6 +387,7 @@ export default {
           item.inputValue = ''
         }
       })
+      this.handleChange()
     },
     filterNumber(data, name) {
       const filterData = data.find(item => item.key === name)
@@ -701,6 +702,7 @@ p {
 }
 .organ-header{
   display: flex;
+  align-items: center;
   justify-content: space-between;
   line-height: 20px;
   margin: 10px 0;

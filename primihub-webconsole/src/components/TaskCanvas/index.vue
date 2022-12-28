@@ -170,7 +170,6 @@ export default {
     },
     async componentsDetail(newVal) {
       if (newVal) {
-        console.log('componentsDetail', newVal)
         this.graph.clearCells()
         this.nodeData = this.startNode
         this.graphData.cells = []
@@ -291,6 +290,12 @@ export default {
       cells[posIndex].data = data
       this.graph.fromJSON(cells)
       this.saveFn()
+      this.$notify.closeAll()
+      this.$notify({
+        message: '保存成功',
+        type: 'success',
+        duration: '1000'
+      })
     },
     async init() {
       Graph.registerNode(
@@ -554,6 +559,16 @@ export default {
         })
         graph.on('cell:removed', () => {
           this.needSave = true
+          // this.nodeData = this.startNode
+          if (!this.destroyed) {
+            this.saveFn()
+            this.$notify.closeAll()
+            this.$notify({
+              message: '删除成功',
+              type: 'success',
+              duration: 0
+            })
+          }
         })
         graph.on('node:mouseenter', FunctionExt.debounce(() => {
           const ports = this.container.querySelectorAll('.x6-port-body')
@@ -574,12 +589,7 @@ export default {
           })
         })
         graph.bindKey('backspace', () => {
-          const cells = graph.getSelectedCells()
           this.deleteNode()
-          if (cells.length) {
-            graph.removeCells(cells)
-          }
-          this.nodeData = this.startNode
         })
 
         graph.on('edge:connected', ({ edge }) => {
@@ -593,6 +603,10 @@ export default {
       }
     },
     deleteNode() {
+      const cells = this.graph.getSelectedCells()
+      if (cells.length) {
+        this.graph.removeCells(cells)
+      }
       const currentCode = this.nodeData.componentCode
       // remove duplicates
       this.selectComponentList = [...new Set(this.selectComponentList)]
@@ -601,13 +615,13 @@ export default {
         this.selectComponentList.splice(index, 1)
       }
       this.$emit('selectComponents', this.selectComponentList)
+      this.nodeData = this.startNode
     },
     initToolBarEvent() {
       // 画布不可编辑只可点击
       if (!this.options.isEditable) return
       const { history } = this.graph
       history.on('change', (args) => {
-        console.log(args)
         this.canUndo = history.canUndo()
         this.canRedo = history.canRedo()
         // model is running or destroyed, don't save the model history
@@ -1056,12 +1070,6 @@ export default {
         if (this.isCopy) {
           this.$route.query.modelId = this.currentModelId
         }
-        this.$notify.closeAll()
-        this.$notify({
-          message: '保存成功',
-          type: 'success',
-          duration: '1000'
-        })
       } else {
         this.$message({
           message: res.msg,
