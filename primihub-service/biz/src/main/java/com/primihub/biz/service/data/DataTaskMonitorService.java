@@ -146,7 +146,7 @@ public class DataTaskMonitorService {
             return 0;
         List<String> range = primaryStringRedisTemplate.opsForList().range(key, 0L, count);
         Map<String, Long> statusMap = range.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-        if (statusMap.containsKey("FAILED"))
+        if (statusMap.containsKey("FAILED") || statusMap.containsKey("FAIL"))
             return -1;
         if (statusMap.containsKey("SUCCESS")){
             return statusMap.get("SUCCESS").intValue();
