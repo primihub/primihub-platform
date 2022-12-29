@@ -118,17 +118,22 @@ export const asyncRoutes = [
     component: Layout,
     name: 'PrivateSearch',
     redirect: '/privateSearch/list',
+    meta: { title: '匿踪查询', icon: 'el-icon-search' },
     children: [{
       path: 'list',
       name: 'PrivateSearchList',
       component: () => import('@/views/privateSearch/index'),
-      meta: { title: '匿踪查询', icon: 'el-icon-search' }
+      meta: { title: '匿踪查询', breadcrumb: false }
     }, {
       path: 'task',
       name: 'PIRTask',
       hidden: true,
       component: () => import('@/views/privateSearch/task'),
-      meta: { title: '匿踪查询' }
+      meta: {
+        title: '匿踪查询任务',
+        activeMenu: '/privateSearch/list',
+        parent: { name: 'PrivateSearchList' }
+      }
     }]
   },
   {
