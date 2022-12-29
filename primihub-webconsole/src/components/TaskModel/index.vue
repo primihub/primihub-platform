@@ -84,6 +84,40 @@
         <el-descriptions-item label="⑦ MEDIAN ABSOLUTE ERROR">{{ anotherQuotas.medianAbsoluteError }}</el-descriptions-item>
       </el-descriptions>
     </div>
+    <div class="section">
+      <h3>模型评估分数</h3>
+      <el-table
+        :data="modelQuotas"
+        style="width: 100%"
+      >
+        <el-table-column
+          prop="modelType"
+          label="模型"
+        />
+        <el-table-column
+          prop="quotaType"
+          label="数据集"
+        />
+        <!-- <el-table-column
+          prop="percent"
+          label="占比"
+        /> -->
+        <el-table-column
+          prop="train_auc"
+          label="AUC"
+        />
+        <el-table-column
+          prop="train_acc"
+          label="ACC"
+        />
+        <el-table-column
+          prop="train_ks"
+          label="KS"
+        />
+      </el-table>
+
+    </div>
+
   </div>
 </template>
 
@@ -102,7 +136,8 @@ export default {
     modelTypeFilter(type) {
       const statusMap = {
         2: '纵向-XGBoost',
-        3: '横向-LR'
+        3: '横向-LR',
+        4: 'MPC_LR'
       }
       return statusMap[type]
     }
@@ -174,11 +209,22 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelQuotas, modelResources, modelComponent, anotherQuotas, task, project } = response.result
+        const { model, modelResources, modelComponent, anotherQuotas, task, project } = response.result
         this.task = task
         this.model = model
         this.anotherQuotas = anotherQuotas
-        this.modelQuotas = modelQuotas
+        // format model score list
+        for (let i = 0; i < 2; i++) {
+          const modelType = model.modelType === 3 ? '横向-LR' : model.modelType === 4 ? 'MPC_LR' : '纵向-XGBoost'
+          this.modelQuotas.push({
+            modelType,
+            quotaType: i === 0 ? '测试集' : '评估集',
+            train_acc: anotherQuotas.train_acc,
+            train_auc: anotherQuotas.train_auc,
+            train_ks: anotherQuotas.train_ks
+          })
+        }
+        console.log(this.modelQuotas)
         this.modelResources = modelResources.filter(item => item.resourceType !== 3)
         this.modelComponent = modelComponent
         this.projectId = project.id
