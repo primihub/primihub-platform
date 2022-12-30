@@ -294,7 +294,7 @@ export default {
       this.$notify({
         message: '保存成功',
         type: 'success',
-        duration: '1000'
+        duration: 1000
       })
     },
     async init() {
@@ -559,13 +559,13 @@ export default {
         })
         graph.on('cell:removed', () => {
           this.needSave = true
-          // this.nodeData = this.startNode
           if (!this.destroyed) {
             this.saveFn()
             this.$notify.closeAll()
             this.$notify({
               message: '删除成功',
-              type: 'success'
+              type: 'success',
+              duration: 1000
             })
           }
         })
