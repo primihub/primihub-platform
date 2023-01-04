@@ -111,10 +111,10 @@ public class DataAsyncService implements ApplicationContextAware {
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
         log.info("execute : {}",baenName);
-        ComponentTaskService taskService = (ComponentTaskService)context.getBean(baenName);
-        if (taskService==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"组件无实现方法");
         try {
+            ComponentTaskService taskService = (ComponentTaskService)context.getBean(baenName);
+            if (taskService==null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"组件无实现方法");
             return isCheck?taskService.check(req,taskReq):taskService.runTask(req,taskReq);
         }catch (Exception e){
             log.info("ComponentCode:{} -- e:{}",req.getComponentCode(),e.getMessage());

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.util.Properties;
+
 public class PrimaryDruidDataSourceWrapper extends DruidDataSource implements InitializingBean {
     @NacosValue(value="${spring.datasource.druid.primary.url}",autoRefreshed = true)
     private String url;
@@ -18,6 +20,8 @@ public class PrimaryDruidDataSourceWrapper extends DruidDataSource implements In
     private String driverClassName;
     @NacosValue(value="${spring.datasource.druid.primary.connection-properties}",autoRefreshed = true)
     private String connectionProperties;
+    @NacosValue(value="${spring.datasource.druid.primary.filter.config.enabled}",autoRefreshed = true)
+    private Boolean filterConfigEnabled = false;
 
 //    private String passwordCallbackClassName;
 
@@ -73,6 +77,9 @@ public class PrimaryDruidDataSourceWrapper extends DruidDataSource implements In
         super.setMaxPoolPreparedStatementPerConnectionSize(maxPoolPreparedStatementPerConnectionSize);
         super.setConnectionProperties(connectionProperties);
         super.setDbType(dbType);
+        if (filterConfigEnabled){
+            super.addFilters("config");
+        }
 //        super.setPasswordCallbackClassName(passwordCallbackClassName);
     }
 

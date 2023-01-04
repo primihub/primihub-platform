@@ -138,20 +138,14 @@ public class DataModelService {
                 map.put("oneself",false);
             }
         }
-        ModelEvaluationDto modelEvaluationDto = null;
-        if (StringUtils.isNotBlank(modelTask.getPredictContent())){
-            ParserConfig parserConfig = new ParserConfig();
-            parserConfig.propertyNamingStrategy = PropertyNamingStrategy.SnakeCase;
-            modelEvaluationDto = JSONObject.parseObject(modelTask.getPredictContent(), ModelEvaluationDto.class,parserConfig);
-        }
-        if (modelEvaluationDto==null||modelEvaluationDto.getTrain()==null){
+        if (StringUtils.isBlank(modelTask.getPredictContent())){
             map.put("anotherQuotas",new HashMap());
         }else {
-            map.put("anotherQuotas",modelEvaluationDto.getTrain());
+            map.put("anotherQuotas",JSONObject.parseObject(modelTask.getPredictContent()));
         }
         return BaseResultEntity.success(map);
     }
-
+    
     public BaseResultEntity getDataModelList(PageReq req, String projectName, String modelName, Integer taskStatus,Long projectId) {
         Map<String,Object> paramMap = new HashMap<>();
         paramMap.put("pageSize",req.getPageSize());

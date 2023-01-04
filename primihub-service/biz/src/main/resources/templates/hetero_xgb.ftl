@@ -9,12 +9,14 @@ from scipy.stats import ks_2samp
 from sklearn.metrics import roc_auc_score
 import logging
 import pickle
+import json
 from typing import (
     List,
     Optional,
     Union,
     TypeVar,
 )
+from multiprocessing import Process, Pool
 import pandas
 import pyarrow
 from scipy.stats import ks_2samp
@@ -755,6 +757,19 @@ def evaluate_ks_and_roc_auc(y_real, y_proba):
     return ks.statistic, roc_auc
 
 
+def sum_job(tmp_group, encrypted, pub, paillier_add_actors):
+    if encrypted:
+        tmp_sum = tmp_group._aggregate_on(PallierSum,
+                                          on=['g', 'h'],
+                                          ignore_nulls=True,
+                                          pub_key=pub,
+                                          add_actors=paillier_add_actors)
+    else:
+        tmp_group = tmp_group.sum(on=['g', 'h'])
+
+    return tmp_sum.to_pandas()
+
+
 class XGB_GUEST_EN:
 
     def __init__(
@@ -799,6 +814,19 @@ class XGB_GUEST_EN:
         self.tree_structure = {}
         self.encrypted = is_encrypted
         self.chops = 20
+
+    def sum_job(self, tmp_group):
+        if self.encrypted:
+            tmp_sum = tmp_group._aggregate_on(
+                PallierSum,
+                on=['g', 'h'],
+                ignore_nulls=True,
+                pub_key=self.pub,
+                add_actors=self.paillier_add_actors)
+        else:
+            tmp_group = tmp_group.sum(on=['g', 'h'])
+
+        return tmp_sum.to_pandas()
 
     def sums_of_encrypted_ghs_with_ray(self,
                                        X_guest,
@@ -875,6 +903,29 @@ class XGB_GUEST_EN:
             tmp_group = buckets_x_guest.groupby(tmp_col)
             #     groups.append(tmp_group)
 
+            #     # sum_que.put(tmp_sum.to_pandas())
+
+            # pool = Pool(7)
+            # tasks = []
+
+            # for i in range(len(groups)):
+            #     # tmp_task = pool.apply_async(func=self.sum_job, args=(groups[i],))
+            #     tmp_task = pool.apply_async(func=sum_job,
+            #                                 args=(
+            #                                     groups[i],
+            #                                     self.encrypted,
+            #                                     self.pub,
+            #                                     self.paillier_add_actors,
+            #                                 ))
+
+            #     tasks.append(tmp_task)
+
+            # pool.close()
+            # pool.join()
+
+            # for tmp_task in tasks:
+            #     print(tmp_task.get())
+
             # if self.encrypted:
             #     groupsums = [
             #         GroupSum.remote(tmp_group, self.pub, paillier_add_actors)
@@ -892,8 +943,8 @@ class XGB_GUEST_EN:
             #         tmp_group.sum(on=['g', 'h']).to_pandas() for tmp_group in groups
             #     ]
 
-            # for key, val in zip(cols, res):
-            #     total_left_ghs[key] = val
+            # for key, tmp_task in zip(cols, tasks):
+            #     total_left_ghs[key] = tmp_task.get()
 
             if self.encrypted:
                 tmp_sum = tmp_group._aggregate_on(
@@ -1872,8 +1923,11 @@ def xgb_host_logic(cry_pri="paillier"):
     # save pred_y to file
     # preds = pd.DataFrame({'prob': current_pred, "binary_pred": train_pred})
     # preds.to_csv(predict_file_path, index=False, sep='\t')
-    with open(indicator_file_path, 'wb') as filePath:
-        pickle.dump(trainMetrics, filePath)
+    trainMetricsBuff = json.dumps(trainMetrics)
+    with open(indicator_file_path, 'w') as filePath:
+        filePath.write(trainMetricsBuff)
+
+        # pickle.dump(trainMetrics, filePath)
 
     proxy_server.StopRecvLoop()
     # host_log.close()

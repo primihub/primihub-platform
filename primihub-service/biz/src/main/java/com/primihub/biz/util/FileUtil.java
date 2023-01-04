@@ -165,8 +165,10 @@ public class FileUtil {
 
     public static List<LinkedHashMap<String, Object>> getCsvData(String filePath,Integer pageNo, Integer pageSize){
         List<LinkedHashMap<String, Object>> dataList = new ArrayList<>();
-        try(Stream<String> curStream= Files.lines(Paths.get(filePath), Charset.forName(charset(new File(filePath))))) {
-            List<String> list=curStream.skip(pageNo).limit(pageSize+1).collect(Collectors.toList());
+//        try(Stream<String> curStream= Files.lines(Paths.get(filePath), Charset.forName(charset(new File(filePath))))) {
+        try{
+//            List<String> list=curStream.skip(pageNo).limit(pageSize+1).collect(Collectors.toList());
+            List<String> list = getFileContent(filePath, pageSize + 1);
             if (list.size()==0)
                 return dataList;
             String[] fields = list.get(0).split(",");
@@ -177,7 +179,7 @@ public class FileUtil {
                 if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length)))
                     dataList.add(readValues(data,fields));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.info("getCsvData",e);
         }
         return dataList;
