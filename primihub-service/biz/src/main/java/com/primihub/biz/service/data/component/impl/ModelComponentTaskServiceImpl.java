@@ -104,6 +104,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             return mpclr(req,taskReq);
         }
         if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
+            log.info("newest:{}",JSONObject.toJSONString(taskReq.getNewest()));
             Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
             Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
             while (iterator.hasNext()){
@@ -113,6 +114,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     taskReq.getFreemarkerMap().put(next.getKey(),newDataSetId);
                 }
             }
+            log.info("freemarkerMap:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
         }
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
