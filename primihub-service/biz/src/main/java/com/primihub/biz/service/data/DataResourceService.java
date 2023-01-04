@@ -537,6 +537,8 @@ public class DataResourceService {
 
 
     public Integer getResourceFileYRow(List<String> fileContent){
+        if (fileContent.size()<=0)
+            return -1;
         String field = fileContent.get(0);
         if (StringUtils.isBlank(field))
             return -1;
