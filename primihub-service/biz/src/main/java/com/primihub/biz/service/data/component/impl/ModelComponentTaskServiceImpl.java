@@ -104,6 +104,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             return mpclr(req,taskReq);
         }
         if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
+            log.info("newest:{}",JSONObject.toJSONString(taskReq.getNewest()));
+            log.info("freemarkerMap1:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
             Map<String, ModelDerivationDto> derivationMap = taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
             Iterator<Map.Entry<String, String>> iterator = taskReq.getFreemarkerMap().entrySet().iterator();
             while (iterator.hasNext()){
@@ -113,6 +115,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     taskReq.getFreemarkerMap().put(next.getKey(),newDataSetId);
                 }
             }
+            log.info("freemarkerMap2:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
         }
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
@@ -244,13 +247,14 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName()+".host");
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();
                         if (files!=null){
                             for (File file : files) {
                                 if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
                                     taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                     taskReq.getDataTask().setTaskErrorMsg("");
                                     break;
@@ -319,13 +323,14 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName()+".host");
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();
                         if (files!=null){
                             for (File file : files) {
                                 if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
                                     taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                     taskReq.getDataTask().setTaskErrorMsg("");
                                     break;

@@ -537,6 +537,8 @@ public class DataResourceService {
 
 
     public Integer getResourceFileYRow(List<String> fileContent){
+        if (fileContent.size()<=0)
+            return -1;
         String field = fileContent.get(0);
         if (StringUtils.isBlank(field))
             return -1;
@@ -676,7 +678,7 @@ public class DataResourceService {
             derivationDataResource.setOrganId(0L);
             derivationDataResource.setFileId(0L);
             derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
-            derivationDataResource.setFileSuffix(".csv");
+            derivationDataResource.setFileSuffix("csv");
             derivationDataResource.setFileColumns(0);
             derivationDataResource.setFileRows(0);
             derivationDataResource.setFileHandleStatus(0);
