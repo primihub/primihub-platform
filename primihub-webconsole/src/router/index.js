@@ -15,34 +15,40 @@ export const constantRoutes = [
   {
     path: '/login',
     component: () => import('@/views/login/index'),
-    hidden: true
+    hidden: true,
+    meta: { title: '登录页' }
   },
   {
     path: '/auth',
     component: () => import('@/views/auth/index'),
-    hidden: true
+    hidden: true,
+    meta: { title: '授权页' }
   },
   {
     path: '/register',
     component: () => import('@/views/register/index'),
-    hidden: true
+    hidden: true,
+    meta: { title: '注册页' }
   },
   {
     path: '/forgotPwd',
     component: () => import('@/views/forgotPwd'),
-    hidden: true
+    hidden: true,
+    meta: { title: '忘记密码' }
   },
   {
     path: '/updatePwd',
     component: () => import('@/views/updatePwd'),
-    hidden: true
+    hidden: true,
+    name: '更新密码',
+    meta: { title: '更新密码' }
   },
   {
     path: '/404',
     component: () => import('@/views/404'),
-    hidden: true
+    hidden: true,
+    meta: { title: 'not found' }
   },
-
   {
     path: '/',
     component: Layout,
@@ -112,17 +118,22 @@ export const asyncRoutes = [
     component: Layout,
     name: 'PrivateSearch',
     redirect: '/privateSearch/list',
+    meta: { title: '匿踪查询', icon: 'el-icon-search' },
     children: [{
       path: 'list',
       name: 'PrivateSearchList',
       component: () => import('@/views/privateSearch/index'),
-      meta: { title: '匿踪查询', icon: 'el-icon-search' }
+      meta: { title: '匿踪查询', breadcrumb: false }
     }, {
       path: 'task',
       name: 'PIRTask',
       hidden: true,
       component: () => import('@/views/privateSearch/task'),
-      meta: { title: '匿踪查询' }
+      meta: {
+        title: '匿踪查询任务',
+        activeMenu: '/privateSearch/list',
+        parent: { name: 'PrivateSearchList' }
+      }
     }]
   },
   {
