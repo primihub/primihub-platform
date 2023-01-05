@@ -4,13 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.config.test.TestYamlConfiguration;
-import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
-import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
-import com.primihub.biz.entity.base.BaseJsonParam;
-import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.*;
 import com.primihub.biz.repository.primaryredis.sys.SysAuthPrimaryRedisRepository;
 import com.primihub.biz.service.test.TestService;
+import com.primihub.biz.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -101,6 +101,18 @@ public class TestController {
     public BaseResultEntity formatResources(String tag){
         testService.formatResources(tag);
         return BaseResultEntity.success();
+    }
+
+    @RequestMapping("/testFile")
+    public BaseResultEntity testFile(String filePath,Integer severalLines){
+        if (StringUtils.isBlank(filePath))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
+        List<String> fileContentData = FileUtil.getFileContentData(filePath, severalLines);
+        log.info("{}",fileContentData.size());
+        for (int i = 0; i < 50; i++) {
+            log.info("{}",fileContentData.get(i));
+        }
+        return BaseResultEntity.success(fileContentData.size());
     }
 
 
