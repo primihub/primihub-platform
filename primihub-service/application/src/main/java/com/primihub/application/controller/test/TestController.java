@@ -5,7 +5,9 @@ import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.config.test.TestYamlConfiguration;
 import com.primihub.biz.entity.base.*;
+import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.repository.primaryredis.sys.SysAuthPrimaryRedisRepository;
+import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.test.TestService;
 import com.primihub.biz.util.FileUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +38,8 @@ public class TestController {
     private SysAuthPrimaryRedisRepository sysAuthPrimaryRedisRepository;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private DataResourceService dataResourceService;
 
     @RequestMapping("/testPublish")
     public BaseResultEntity testPublish(){
@@ -104,15 +109,18 @@ public class TestController {
     }
 
     @RequestMapping("/testFile")
-    public BaseResultEntity testFile(String filePath,Integer severalLines){
+    public BaseResultEntity testFile(String filePath,Integer severalLines) throws Exception {
         if (StringUtils.isBlank(filePath))
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
-        List<String> fileContentData = FileUtil.getFileContentData(filePath, severalLines);
-        log.info("{}",fileContentData.size());
-        for (int i = 0; i < 50; i++) {
-            log.info("{}",fileContentData.get(i));
-        }
-        return BaseResultEntity.success(fileContentData.size());
+        ResourceFileData resourceFileData = dataResourceService.getResourceFileData(filePath);
+        return BaseResultEntity.success(resourceFileData);
+    }
+
+    @RequestMapping("/testFileMd5")
+    public BaseResultEntity testFileMd5(String filePath){
+        if (StringUtils.isBlank(filePath))
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
+        return BaseResultEntity.success(FileUtil.md5HashCode(new File(filePath)));
     }
 
 
