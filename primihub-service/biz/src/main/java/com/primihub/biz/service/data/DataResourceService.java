@@ -10,6 +10,7 @@ import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.convert.DataSourceConvert;
 import com.primihub.biz.entity.base.*;
+import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
@@ -40,7 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
+import java.io.*;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
@@ -471,23 +472,22 @@ public class DataResourceService {
         return copyVolist;
     }
 
-    public BaseResultEntity handleDataResourceFile(DataResource dataResource,String url){
+    public BaseResultEntity handleDataResourceFile(DataResource dataResource,String url) throws Exception {
         File file = new File(url);
         if (file.exists()) {
-            dataResource.setFileRows(FileUtil.getFileLineNumber(url)-1);
-            List<String> fileContent = FileUtil.getFileContent(url, null);
-            if (fileContent.size() > 0) {
-                dataResource.setFileHandleField(fileContent.get(0));
-                dataResource.setFileColumns(dataResource.getFileHandleField().split(",").length);
+            ResourceFileData resourceFileData = getResourceFileData(url);
+            dataResource.setFileRows(resourceFileData.getFileContentSize());
+            if (dataResource.getFileRows() > 0) {
+                dataResource.setFileHandleField(resourceFileData.getField());
+                dataResource.setFileColumns(resourceFileData.getFieldSize());
             } else {
                 dataResource.setFileHandleField("");
                 dataResource.setFileColumns(0);
             }
-            Integer resourceFileYRow = getResourceFileYRow(fileContent);
-            if (resourceFileYRow>0){
+            if (resourceFileData.getResourceFileYRow()>0){
                 dataResource.setFileContainsY(1);
-                dataResource.setFileYRows(resourceFileYRow);
-                BigDecimal yRowRatio = new BigDecimal(resourceFileYRow).divide(new BigDecimal(dataResource.getFileRows()),6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
+                dataResource.setFileYRows(resourceFileData.getResourceFileYRow());
+                BigDecimal yRowRatio = new BigDecimal(resourceFileData.getResourceFileYRow()).divide(new BigDecimal(dataResource.getFileRows()),6, BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100));
                 dataResource.setFileYRatio(yRowRatio);
             }
             try {
@@ -533,6 +533,44 @@ public class DataResourceService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"数据库url hash出错");
         }
         return BaseResultEntity.success();
+    }
+
+    public ResourceFileData getResourceFileData(String filePath) throws Exception {
+        ResourceFileData resourceFileData = new ResourceFileData();
+        File file = new File(filePath);
+        if (!file.exists()){
+            log.info("{}-不存在",filePath);
+            return resourceFileData;
+        }
+        boolean header = true;
+        int yIndex = 0;
+        String charsetName = FileUtil.charset(file);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath),charsetName));
+        String str;
+        while((str = bufferedReader.readLine())!=null) {
+            if (header){
+                resourceFileData.setField(str);
+                header = false;
+                yIndex = resourceFileData.getYIndex();
+                continue;
+            }
+            if (resourceFileData.isFileContainsY()){
+                if (StringUtils.isNotBlank(str)){
+                    String[] rowValSplit = str.split(",");
+                    if (resourceFileData.getFieldSize() == rowValSplit.length){
+                        if (StringUtils.isNotBlank(rowValSplit[yIndex])&&!"0".equals(rowValSplit[yIndex])){
+                            resourceFileData.addFileYRowSzie();
+                        }
+                    }
+                }
+            }else {
+                resourceFileData.setFileContentSize( FileUtil.getFileLineNumber(filePath)-1);
+                break;
+            }
+            resourceFileData.addContentSzie();
+        }
+        bufferedReader.close();
+        return resourceFileData;
     }
 
 
@@ -626,84 +664,89 @@ public class DataResourceService {
     }
 
     public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId, String serverAddress) {
-        Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
-        Set<String> resourceIds = map.keySet();
-        DataResource dataResource = null;
-        for (String resourceId : resourceIds) {
-            dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
-            if (dataResource!=null)
-                break;
-        }
-        if (dataResource == null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
-        BaseResultEntity result = fusionResourceService.getResourceListById(serverAddress, resourceIds.toArray(new String[resourceIds.size()]));
-        if (result.getCode()!=0)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
-        List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
-        StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
-        for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
-            String resourceId = resourceMap.get("resourceId").toString();
-            if (!dataResource.getResourceFusionId().equals(resourceId)){
-                resourceNames.append(resourceMap.get("resourceName").toString());
+        try {
+            Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
+            Set<String> resourceIds = map.keySet();
+            DataResource dataResource = null;
+            for (String resourceId : resourceIds) {
+                dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+                if (dataResource!=null)
+                    break;
             }
-        }
-        List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
-            String url = dataResource.getUrl();
-            if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
-                url = modelDerivationDto.getPath();
-            }else {
-                if (url.contains(".csv"))
-                    url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
-                if (url.contains(".db")){
-                    String[] split = url.split("\\.");
-                    url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
+            if (dataResource == null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
+            BaseResultEntity result = fusionResourceService.getResourceListById(serverAddress, resourceIds.toArray(new String[resourceIds.size()]));
+            if (result.getCode()!=0)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
+            List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
+            StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
+            for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
+                String resourceId = resourceMap.get("resourceId").toString();
+                if (!dataResource.getResourceFusionId().equals(resourceId)){
+                    resourceNames.append(resourceMap.get("resourceName").toString());
                 }
             }
-            log.info(url);
-            File file = new File(url);
-            if (!file.exists())
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
-            DataResource derivationDataResource = new DataResource();
-            derivationDataResource.setUrl(url);
-            derivationDataResource.setResourceName(resourceNames.toString() + modelDerivationDto.getDerivationType());
-            derivationDataResource.setResourceAuthType(2);
-            derivationDataResource.setResourceSource(3);
-            if (userId==null || userId==0L){
-                derivationDataResource.setUserId(dataResource.getUserId());
-            }else {
-                derivationDataResource.setUserId(userId);
+            List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
+                String url = dataResource.getUrl();
+                if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
+                    url = modelDerivationDto.getPath();
+                }else {
+                    if (url.contains(".csv"))
+                        url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                    if (url.contains(".db")){
+                        String[] split = url.split("\\.");
+                        url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
+                    }
+                }
+                log.info(url);
+                File file = new File(url);
+                if (!file.exists())
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
+                DataResource derivationDataResource = new DataResource();
+                derivationDataResource.setUrl(url);
+                derivationDataResource.setResourceName(resourceNames.toString() + modelDerivationDto.getDerivationType());
+                derivationDataResource.setResourceAuthType(2);
+                derivationDataResource.setResourceSource(3);
+                if (userId==null || userId==0L){
+                    derivationDataResource.setUserId(dataResource.getUserId());
+                }else {
+                    derivationDataResource.setUserId(userId);
+                }
+                derivationDataResource.setOrganId(0L);
+                derivationDataResource.setFileId(0L);
+                derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
+                derivationDataResource.setFileSuffix("csv");
+                derivationDataResource.setFileColumns(0);
+                derivationDataResource.setFileRows(0);
+                derivationDataResource.setFileHandleStatus(0);
+                derivationDataResource.setResourceNum(0);
+                derivationDataResource.setDbId(0L);
+                derivationDataResource.setResourceState(0);
+                BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
+                if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+                    return baseResultEntity;
+                derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
+                dataResourcePrRepository.saveResource(derivationDataResource);
+                List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
+                for (DataFileField dataFileField : dataFileFields) {
+                    dataFileField.setFileId(null);
+                    dataFileField.setResourceId(derivationDataResource.getResourceId());
+                }
+                dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
+                DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
+                dataResourcePrRepository.saveResourceTag(dataResourceTag);
+                dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
+                if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
+                    singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+                }
             }
-            derivationDataResource.setOrganId(0L);
-            derivationDataResource.setFileId(0L);
-            derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
-            derivationDataResource.setFileSuffix("csv");
-            derivationDataResource.setFileColumns(0);
-            derivationDataResource.setFileRows(0);
-            derivationDataResource.setFileHandleStatus(0);
-            derivationDataResource.setResourceNum(0);
-            derivationDataResource.setDbId(0L);
-            derivationDataResource.setResourceState(0);
-            BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
-            if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
-                return baseResultEntity;
-            derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
-            dataResourcePrRepository.saveResource(derivationDataResource);
-            List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
-            for (DataFileField dataFileField : dataFileFields) {
-                dataFileField.setFileId(null);
-                dataFileField.setResourceId(derivationDataResource.getResourceId());
-            }
-            dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
-            DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
-            dataResourcePrRepository.saveResourceTag(dataResourceTag);
-            dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
-            }
+            return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
+        }catch (Exception e){
+            log.info("衍生数据异常:{}",e.getMessage());
+            return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据异常:"+e.getMessage());
         }
-        return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
     }
 
     public BaseResultEntity getDerivationResourceList(DerivationResourceReq req) {
