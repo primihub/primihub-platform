@@ -185,14 +185,14 @@ export const asyncRoutes = [
         name: 'ResourceUpload',
         hidden: true,
         component: () => import('@/views/resource/create'),
-        meta: { title: '新建资源' }
+        meta: { title: '新建资源', activeMenu: '/resource/list' }
       },
       {
         path: 'edit/:id',
         name: 'ResourceEdit',
         hidden: true,
         component: () => import('@/views/resource/create'),
-        meta: { title: '编辑资源' }
+        meta: { title: '编辑资源', activeMenu: '/resource/list' }
       },
       {
         path: 'detail/:id',
