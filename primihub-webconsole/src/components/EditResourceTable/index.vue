@@ -19,11 +19,6 @@
           </el-select>
         </template>
       </el-table-column>
-      <el-table-column label="关联键" prop="relevance" align="center" width="60">
-        <template slot-scope="{row}">
-          <el-checkbox v-model="row.relevance" :disabled="!isEditable" @change="handleChange(row)" />
-        </template>
-      </el-table-column>
       <el-table-column align="center" label="描述" prop="fieldDesc">
         <template slot-scope="{row}">
           <el-input
@@ -82,14 +77,13 @@ export default {
       }, {
         value: 5,
         label: 'Boolean'
-      }],
-      params: [],
-      fieldType: ''
+      }]
     }
   },
   methods: {
     handleChange(row) {
-      this.data.fieldType = row.fieldType
+      const fieldType = typeof row.fieldType === 'number' ? this.fieldTypeList.find(item => item.value === row.fieldType)?.label : row.fieldType
+      row.fieldType = fieldType
       if (this.isEditPage) {
         this.updateDataResourceField(row)
         this.$emit('change', this.data)
@@ -99,13 +93,12 @@ export default {
       }
     },
     updateDataResourceField(row) {
-      const { fieldId, fieldName, fieldType, fieldDesc = '', relevance } = row
+      const { fieldId, fieldName, fieldType, fieldDesc = '' } = row
       const data = {
         fieldId,
         fieldName,
         fieldType,
-        fieldDesc,
-        relevance: relevance === true ? 1 : 0
+        fieldDesc
       }
       updateDataResourceField(data).then(res => {
         if (res.code === 0) {
