@@ -286,6 +286,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
+        }else {
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:创建模板失败null");
         }
         return BaseResultEntity.success();
     }
@@ -365,6 +368,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
+        }else {
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:创建模板失败null");
         }
         return BaseResultEntity.success();
     }
