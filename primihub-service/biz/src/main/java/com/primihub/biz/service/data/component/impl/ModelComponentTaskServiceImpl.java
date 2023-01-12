@@ -211,8 +211,13 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return BaseResultEntity.success();
     }
-
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
+        taskReq.getFreemarkerMap().put("feature_names","None");
+        if (StringUtils.isNotBlank(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD))){
+            String field = taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD);
+            String[] fields = field.split(",");
+            taskReq.getFreemarkerMap().put("feature_names",JSONObject.toJSONString(fields));
+        }
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
