@@ -5,16 +5,10 @@
     <el-descriptions-item label="特征量">{{ data.resourceColumnCount || data.fileColumns }}</el-descriptions-item>
     <el-descriptions-item label="样本量">{{ data.resourceRowsCount || data.fileRows }}</el-descriptions-item>
     <el-descriptions-item label="是否包含Y值">{{ data.resourceContainsY === 1? '是': '否' }}</el-descriptions-item>
-    <!-- <el-descriptions-item label="选择特征">
-      <el-checkbox v-model="checkAll" :indeterminate="isIndeterminate" @change="handleCheckAllChange">全选</el-checkbox>
-      <el-checkbox-group v-model="data.calculationField" @change="handleCheckedChange">
+    <el-descriptions-item label="选择特征">
+      <el-checkbox-group v-model="calculationField" @change="handleCheckedChange">
         <el-checkbox v-for="(item,index) in data.fileHandleField" :key="index" :label="item" />
       </el-checkbox-group>
-    </el-descriptions-item> -->
-    <el-descriptions-item label="选择标签列Y">
-      <el-radio-group v-model="data.calculationField" @change="handleCheckedChange">
-        <el-radio v-for="(item,index) in data.fileHandleField" :key="index" :disabled="disabled" :label="item">{{ item }}</el-radio>
-      </el-radio-group>
     </el-descriptions-item>
   </el-descriptions>
 </template>
@@ -33,41 +27,12 @@ export default {
   },
   data() {
     return {
-      calculationField: this.data.calculationField,
-      checkAll: false,
-      isIndeterminate: false
+      calculationField: this.data.calculationField ? this.data.calculationField : []
     }
   },
-  // watch: {
-  //   data(val) {
-  //     if (!val.calculationField) {
-  //       this.data.calculationField = this.data.fileHandleField[0]
-  //     }
-  //   }
-  // },
-  created() {
-    // this.init()
-  },
   methods: {
-    init() {
-      if (!this.data.calculationField) {
-        this.data.calculationField = this.data.fileHandleField[0]
-      }
-    },
-    // handleCheckAllChange(val) {
-    //   this.data.calculationField = val ? this.data.fileHandleField : []
-    //   this.isIndeterminate = false
-    //   this.$emit('change', this.data)
-    // },
-    // handleCheckedChange(value) {
-    //   console.log(value)
-    //   const checkedCount = value.length
-    //   this.checkAll = checkedCount === this.data.fileHandleField.length
-    //   this.isIndeterminate = checkedCount > 0 && checkedCount < this.data.fileHandleField.length
-    //   this.$emit('change', this.data)
-    // },
     handleCheckedChange(value) {
-      this.data.calculationField = value
+      this.data.calculationField = this.calculationField
       this.$emit('change', this.data)
     }
   }
