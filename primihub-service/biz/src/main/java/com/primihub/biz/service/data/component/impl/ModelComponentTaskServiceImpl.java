@@ -216,8 +216,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         if (StringUtils.isNotBlank(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD))){
             String field = taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD);
             log.info("field:{}",field);
-            String[] fields = field.split(",");
-            taskReq.getFreemarkerMap().put("feature_names",JSONObject.toJSONString(fields));
+            taskReq.getFreemarkerMap().put("feature_names",field);
         }
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
