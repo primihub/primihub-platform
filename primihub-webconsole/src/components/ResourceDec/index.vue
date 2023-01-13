@@ -7,7 +7,7 @@
     <el-descriptions-item label="是否包含Y值">{{ data.resourceContainsY === 1? '是': '否' }}</el-descriptions-item>
     <el-descriptions-item label="选择特征">
       <el-checkbox-group v-model="calculationField" @change="handleCheckedChange">
-        <el-checkbox v-for="(item,index) in data.fileHandleField" :key="index" :label="item" />
+        <el-checkbox v-for="(item,index) in data.fileHandleField" :key="index" :disabled="item === 'y'" :label="item" />
       </el-checkbox-group>
     </el-descriptions-item>
   </el-descriptions>
@@ -29,6 +29,17 @@ export default {
     return {
       calculationField: this.data.calculationField ? this.data.calculationField : []
     }
+  },
+  watch: {
+    data(newVal) {
+      console.log(newVal)
+      if (newVal) {
+        this.calculationField = []
+      }
+    }
+  },
+  created() {
+    console.log(this.data.calculationField)
   },
   methods: {
     handleCheckedChange(value) {
