@@ -96,16 +96,17 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         List<ModelProjectResourceVo> resourceList = JSONObject.parseArray(req.getComponentValues().get(0).getVal(), ModelProjectResourceVo.class);
         Map<String, String> resourceMap = taskReq.getFusionResourceList().stream().collect(Collectors.toMap(d -> d.get("resourceId").toString(), d -> d.get("resourceColumnNameList").toString()));
-        for (ModelProjectResourceVo modelProjectResourceVo : resourceList) {
+        for (int i = 0; i < resourceList.size(); i++) {
+            ModelProjectResourceVo modelProjectResourceVo = resourceList.get(i);
             if (modelProjectResourceVo.getParticipationIdentity()==1){
                 taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_DATASET,modelProjectResourceVo.getResourceId());
-                String fileNaame = StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"Class":modelProjectResourceVo.getCalculationField();
-                taskReq.getFreemarkerMap().put(DataConstant.PYTHON_CALCULATION_FIELD,fileNaame);
-                taskReq.getDataModel().setYValueColumn(fileNaame);
+//                taskReq.getDataModel().setYValueColumn(fileNaame);
                 dataModelPrRepository.updateDataModel(taskReq.getDataModel());
             }else {
                 taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_DATASET , modelProjectResourceVo.getResourceId());
             }
+            String fileNaame = StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"None":modelProjectResourceVo.getCalculationField();
+            taskReq.getFreemarkerMap().put(DataConstant.PYTHON_CALCULATION_FIELD+i,fileNaame);
             DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
             dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
             dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());
