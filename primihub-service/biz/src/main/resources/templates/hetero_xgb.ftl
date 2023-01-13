@@ -1961,8 +1961,8 @@ config = {
     'min_child_weight': 5,
     'sample_type': "random",
     'feature_sample': True,
-    'host_columns': None,
-    'guest_columns': ${feature_names}
+    'host_columns': ${label_field0},
+    'guest_columns': ${label_field1}
 }
 
 
