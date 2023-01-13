@@ -4,39 +4,18 @@
       <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
       <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
     </div>
-    <div class="right-menu">
-      <div v-if="!isHideFadeBack" class="feedback">
-        <el-popover
-          placement="bottom"
-          width="200"
-          trigger="click"
-        >
-          <div style="text-align: center;">
-            <img src="https://primihub.com/img/qrcode1.78d466ad.png" alt="" srcset="" width="175px">
-            <p>原语科技小助手</p>
-          </div>
-          <el-link slot="reference" type="primary">建议与反馈</el-link>
-        </el-popover>
-      </div>
-      <el-button type="primary" size="small" style="margin-right: 10px;" @click="toApplicationPage">应用市场</el-button>
-      <el-dropdown class="avatar-container" trigger="click">
-        <div class="avatar-wrapper">
-          <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
-          <img src="/images/avatar.png" class="user-avatar">
-          <div class="user-info">
-            <p>{{ userOrganName }}</p>
-            <p>{{ userName }}</p>
-          </div>
-          <i class="el-icon-arrow-down el-icon--right" />
+    <div class="middle-container">
+      <span @click="toPage('/')">首页</span>
+      <span @click="toPage('/applicationIndex')">应用市场</span>
+    </div>
+    <div class="right-menu avatar-container">
+      <div class="avatar-wrapper">
+        <img src="/images/avatar.png" class="user-avatar">
+        <div class="user-info">
+          <p>{{ userOrganName }}</p>
+          <p>{{ userName }}</p>
         </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
-          <el-dropdown-item v-if="registerType === 4" divided @click.native="openAddPhoneDialog">{{ isBound ? '更换手机号': '添加手机号' }}</el-dropdown-item>
-          <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">退出登录</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      </div>
     </div>
     <el-dialog
       class="dialog"
@@ -123,10 +102,8 @@ export default {
     })
   },
   methods: {
-    toApplicationPage() {
-      this.$router.push({
-        path: '/applicationIndex'
-      })
+    toPage(path) {
+      this.$router.push(path)
     },
     openAddPhoneDialog() {
       this.phoneDialogVisible = true
@@ -169,7 +146,6 @@ export default {
 }
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   height: 50px;
   overflow: hidden;
@@ -177,10 +153,18 @@ export default {
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
   color: #838790;
   width: 100%;
+  .middle-container{
+    flex: 1;
+    color: #fff;
+    span{
+      margin: 0 10px;
+      display: inline-block;
+      cursor: pointer;
+    }
+  }
   .logo{
     padding: 5px 20px;
     height: 100%;
-    flex: 1;
     h1.logo-title{
       color: #fff;
       font-size: 16px;
@@ -193,35 +177,7 @@ export default {
       vertical-align: middle;
     }
   }
-
-  .right-menu {
-    float: right;
-    height: 100%;
-    line-height: 50px;
-
-    &:focus {
-      outline: none;
-    }
-
-    .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
-      height: 100%;
-      font-size: 18px;
-      color: #5a5e66;
-      vertical-align: text-bottom;
-
-      &.hover-effect {
-        cursor: pointer;
-        transition: background .3s;
-
-        &:hover {
-          background: rgba(0, 0, 0, .025)
-        }
-      }
-    }
-
-    .avatar-container {
+  .avatar-container {
       margin-right: 30px;
       cursor: pointer;
 
@@ -251,6 +207,32 @@ export default {
           right: -20px;
           top: 25px;
           font-size: 12px;
+        }
+      }
+    }
+  .right-menu {
+    float: right;
+    height: 100%;
+    line-height: 50px;
+
+    &:focus {
+      outline: none;
+    }
+
+    .right-menu-item {
+      display: inline-block;
+      padding: 0 8px;
+      height: 100%;
+      font-size: 18px;
+      color: #5a5e66;
+      vertical-align: text-bottom;
+
+      &.hover-effect {
+        cursor: pointer;
+        transition: background .3s;
+
+        &:hover {
+          background: rgba(0, 0, 0, .025)
         }
       }
     }
