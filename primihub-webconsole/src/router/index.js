@@ -50,6 +50,27 @@ export const constantRoutes = [
     meta: { title: 'not found' }
   },
   {
+    path: '/applicationIndex',
+    name: 'applicationIndex',
+    hidden: true,
+    component: () => import('@/views/applicationMarket'),
+    meta: { title: '应用市场' }
+  },
+  {
+    path: '/applicationIndex/detail/:name',
+    name: 'ApplicationDetail',
+    hidden: true,
+    component: () => import('@/views/applicationMarket/detail'),
+    meta: { title: '应用详情' }
+  },
+  {
+    path: '/applicationIndex/application/:name',
+    name: 'Application',
+    hidden: true,
+    component: () => import('@/views/applicationMarket/application'),
+    meta: { title: '应用页' }
+  },
+  {
     path: '/',
     component: Layout,
     redirect: '/project/list'
