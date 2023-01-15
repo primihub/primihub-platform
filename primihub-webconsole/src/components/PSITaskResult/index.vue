@@ -210,22 +210,6 @@ export default {
   background: #fafafa;
   font-size: 14px;
 }
-::v-deep .el-descriptions__body{
-  background-color: #fafafa;
-  padding: 10px 20px 10px 20px;
-}
-::v-deep  .el-descriptions{
-  margin-bottom:20px;
-}
-::v-deep .el-descriptions-item__container{
-  align-items: center;
-}
-::v-deep .el-descriptions__header{
-  margin-bottom: 10px;
-}
-::v-deep .el-dialog__body{
-  padding: 20px 20px 10px 20px;
-}
 .result-id{
   line-height: 17px!important;
 }
