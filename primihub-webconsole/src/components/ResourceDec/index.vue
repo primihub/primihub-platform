@@ -31,17 +31,22 @@ export default {
     }
   },
   watch: {
-    data(newVal) {
-      console.log(newVal)
+    'data.resourceId'(newVal) {
       if (newVal) {
         this.calculationField = []
+        this.addY()
       }
     }
   },
   created() {
-    console.log(this.data.calculationField)
+    this.addY()
   },
   methods: {
+    addY() {
+      if (this.data.fileHandleField.includes('y') && !this.calculationField.includes('y')) {
+        this.calculationField.push('y')
+      }
+    },
     handleCheckedChange(value) {
       this.data.calculationField = this.calculationField
       this.$emit('change', this.data)

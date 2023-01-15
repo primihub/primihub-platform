@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import xor from 'lodash/xor'
 import { Graph, FunctionExt, Shape } from '@antv/x6'
 import '@antv/x6-vue-shape'
 import DagNodeComponent from './nodes/DagNode.vue'
@@ -653,6 +654,12 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      // LR select features must be same
+      if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) {
+        this.$message.error('选择特征需一致')
+        this.modelRunValidated = false
+        return
+      }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
       if (line.output.cell !== dataSetCom.frontComponentId) {
