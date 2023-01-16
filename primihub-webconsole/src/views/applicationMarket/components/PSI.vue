@@ -131,8 +131,8 @@
       top="5vh"
       width="700px"
     >
-      <div v-loading="loading">
-        <PSI-task-detail :show-download="false" element-loading-text="查询中" :data="taskData" />
+      <div v-loading="loading" element-loading-text="查询中">
+        <PSI-task-detail :show-download="false" :data="taskData" />
 
         <h3>运算结果</h3>
         <div style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
