@@ -31,7 +31,7 @@
           <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
         </el-descriptions>
         <h3>运算结果</h3>
-        <div style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
+        <div v-if="dataList.reasoningState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
           <table>
             <tbody>
               <tr>
@@ -52,6 +52,7 @@
 <script>
 import { saveReasoning, getReasoning } from '@/api/reasoning'
 import StatusIcon from '@/components/StatusIcon'
+import { parseTime } from '@/utils/index'
 
 export default {
   name: 'ModelInferenceTask',
@@ -102,7 +103,7 @@ export default {
       const res = await getReasoning({ id: this.reasoningId })
       if (res.code === 0) {
         this.dataList = res.result
-        console.log(this.dataList)
+        this.dataList.releaseDate = parseTime(new Date().getTime())
         this.reasoningState = this.dataList.reasoningState
         setTimeout(() => {
           this.dataList.reasoningState = 1
