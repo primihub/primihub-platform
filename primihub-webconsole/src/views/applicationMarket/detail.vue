@@ -50,13 +50,6 @@ export default {
     this.loading = false
   },
   methods: {
-    // init() {
-    //   this.appName = this.$route.params.name || ''
-    //   const currentApplication = this.data.find(item => item.appName === this.appName)
-    //   this.description = currentApplication?.description
-    //   this.appTitle = currentApplication?.appTitle
-    //   this.detailImg = require(`../../assets/${currentApplication.detailImg}`)
-    // },
     toApplication() {
       this.$router.push({
         name: 'Application',
