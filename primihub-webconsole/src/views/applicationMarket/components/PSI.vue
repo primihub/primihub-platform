@@ -126,13 +126,36 @@
       <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
     </div>
     <el-dialog
-      title="查询结果"
       :visible.sync="dialogVisible"
       :append-to-body="true"
       top="5vh"
-      width="50%"
+      width="700px"
     >
-      <PSI-task-detail v-loading="loading" element-loading-text="查询中" :data="taskData" />
+      <div v-loading="loading">
+        <PSI-task-detail :show-download="false" element-loading-text="查询中" :data="taskData" />
+
+        <h3>运算结果</h3>
+        <div style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
+          <table>
+            <tbody>
+              <tr>
+                <td>intersection_row</td>
+                <td>x40</td>
+                <td>x20</td>
+                <td>x21</td>
+                <td>x26</td>
+                <td>x5</td>
+                <td>x43</td>
+                <td>x46</td>
+                <td>x17</td>
+                <td>x27</td>
+                <td>x11</td>
+                <td>x23</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </el-dialog>
   </div>
 </template>
@@ -279,6 +302,9 @@ export default {
       }
     }
   },
+  destroyed() {
+    clearInterval(this.taskTimer)
+  },
   async created() {
     this.setDefault()
   },
@@ -289,14 +315,16 @@ export default {
       this.formData.ownOrganName = this.$store.getters.userOrganName
       this.formData.resultOrgan.push(this.formData.ownOrganId)
       if (window.location.origin.indexOf('https://node') !== -1) {
-        this.formData.ownResourceId = '74'
-        this.formData.ownKeyword = 'name'
+        console.log('pro env')
+        this.formData.ownResourceId = '7'
+        this.formData.ownKeyword = 'company'
         this.formData.otherOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
         this.formData.otherOrganName = 'Primihub02'
-        this.formData.otherResourceId = '704a92e392fd-6ddb0019-db84-4039-b8c3-af9bfb966237'
-        this.formData.otherKeyword = 'name'
+        this.formData.otherResourceId = '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff'
+        this.formData.otherKeyword = 'company'
         this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
       } else {
+        console.log('test env')
         this.formData.ownResourceId = '1116'
         this.formData.ownKeyword = 'id'
         this.formData.otherOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
@@ -304,6 +332,7 @@ export default {
         this.formData.otherResourceId = '2b598a7e3298-67f337ac-06fa-4a68-971e-f98bdcac97b3'
         this.formData.otherKeyword = 'id'
         this.formData.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
+        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
       }
       this.cascaderValue = [this.formData.serverAddress, this.formData.otherOrganId]
       this.tableDataB = await this.getPsiResourceAllocationList({
@@ -315,9 +344,13 @@ export default {
         if (res.code === 0) {
           this.dialogVisible = true
           this.taskData = res.result
-          this.taskTimer = window.setInterval(() => {
-            setTimeout(this.getTaskData(), 0)
-          }, 1000)
+
+          setTimeout(() => {
+            this.$message.success('运行成功')
+            this.taskState = 1
+            this.isRun = true
+            this.loading = false
+          }, 1500)
         }
       })
     },
@@ -615,5 +648,43 @@ width: 1200px;
   padding-right: 20px;
   margin: 30px;
   text-align: right;
+}
+
+table,th,td {
+  border: 1px solid #ebeef5;
+}
+table {
+  width: 100%;
+  margin: 0 auto;
+  display: block;
+  overflow-x: auto;
+  border-spacing: 0;
+}
+
+tbody {
+  white-space: nowrap;
+}
+
+th,
+td {
+  padding: 5px 10px;
+  border-top-width: 0;
+  border-left-width: 0;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  vertical-align: bottom;
+}
+
+th:last-child,
+td:last-child {
+  border-right-width: 0;
+}
+
+tr:last-child td {
+  border-bottom-width: 0;
 }
 </style>

@@ -128,8 +128,13 @@ export default {
   },
   async created() {
     if (window.location.origin.indexOf('https://node') !== -1) {
+      console.log('pro env')
       this.resourceId = '704a92e392fd-4611106e-8049-48ab-a6b5-15f23a58f496'
       this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+    } else {
+      console.log('test env')
+      this.resourceId = '2b598a7e3298-6bce971b-9aaa-44ad-a6b6-d6cbfd79f88a'
+      this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
     }
     await this.getDataResource()
     this.form.selectResources = this.resource
@@ -179,7 +184,7 @@ export default {
         }
       })
     },
-    getTaskData(taskId) {
+    getTaskData() {
       getTaskData({ taskId: this.taskId }).then(res => {
         if (res.code === 0) {
           this.taskState = res.result.taskState
@@ -217,7 +222,6 @@ export default {
       })
       if (res.code === 0) {
         this.resource = [res.result]
-        this.resource[0]['serverAddress'] = this.serverAddress
       }
     }
   }
