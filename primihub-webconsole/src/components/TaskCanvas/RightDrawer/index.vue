@@ -562,7 +562,7 @@ export default {
     },
     setInputValue(data) {
       // set default feature value
-      data.calculationField = data.calculationField ? data.calculationField : ''
+      data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }

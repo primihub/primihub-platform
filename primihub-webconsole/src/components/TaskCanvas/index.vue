@@ -654,8 +654,16 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
-      // LR select features must be same
-      if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) {
+      // LR features must select
+      if (initiateResource.calculationField.length === 1) { // has Y
+        this.$message.error('请选择发起方数据特征')
+        this.modelRunValidated = false
+        return
+      } else if (providerResource.calculationField.length === 1) { // has Y
+        this.$message.error('请选择协作方数据特征')
+        this.modelRunValidated = false
+        return
+      } else if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) { // LR select features must be same
         this.$message.error('选择特征需一致')
         this.modelRunValidated = false
         return
@@ -704,12 +712,13 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
-      } else if (modelName === '') {
+      } else if (!modelSelectCom || modelName === '') {
         this.$message({
           message: `运行失败：请输入模型名称`,
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,
