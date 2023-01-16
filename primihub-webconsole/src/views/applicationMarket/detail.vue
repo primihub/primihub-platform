@@ -7,7 +7,7 @@
         <h2>{{ appTitle }}</h2>
         <div style="margin: 30px; padding: 0 50px;">
           <div class="img-container">
-            <img max-width="100%" :src="detailImg" alt="" srcset="">
+            <img :src="detailImg" alt="" srcset="">
           </div>
           <p>{{ appDescription }}</p>
         </div>
@@ -83,7 +83,7 @@ export default {
   padding: 0 20px 20px 20px;
   section{
     background-color: #fff;
-    width: 1400px;
+    max-width: 1400px;
     margin: 20px auto;
     padding: 30px 30px 70px;
   }
@@ -92,6 +92,9 @@ export default {
   .img-container{
     text-align: center;
     background: #fff;
+    img{
+      max-width: 100%;
+    }
   }
   p{
     font-size: 20px;
@@ -102,7 +105,7 @@ export default {
 }
 .application-con{
   background-color: #fff;
-  width: 1200px;
+  max-width: 1200px;
   padding: 30px;
   margin: 20px auto;
 }

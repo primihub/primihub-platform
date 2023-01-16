@@ -43,3 +43,11 @@ export function deleteTask(taskId) {
   })
 }
 
+export function getTaskData(params) {
+  return request({
+    url: '/data/task/getTaskData',
+    method: 'get',
+    showLoading: false,
+    params
+  })
+}

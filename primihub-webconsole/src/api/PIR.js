@@ -15,12 +15,4 @@ export function pirSubmitTask(params) {
     params
   })
 }
-export function getTaskData(params) {
-  return request({
-    url: '/data/task/getTaskData',
-    method: 'get',
-    showLoading: false,
-    params
-  })
-}
 

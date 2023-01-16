@@ -67,3 +67,22 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+::v-deep .el-descriptions__body{
+  background-color: #fafafa;
+  padding: 10px 20px 10px 20px;
+}
+::v-deep  .el-descriptions{
+  margin-bottom:20px;
+}
+::v-deep .el-descriptions-item__container{
+  align-items: center;
+}
+::v-deep .el-descriptions__header{
+  margin-bottom: 10px;
+}
+::v-deep .el-dialog__body{
+  padding: 10px 20px 0px 20px;
+}
+</style>

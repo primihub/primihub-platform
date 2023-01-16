@@ -1,5 +1,5 @@
 <template>
-  <div v-if="resource.length>0">
+  <div v-if="resource.length>0" v-loading="loading" element-loading-text="查询中">
     <div class="search-area">
       <el-steps :active="active" finish-status="success" align-center>
         <el-step title="查询条件" />
@@ -93,14 +93,19 @@
 
 <script>
 import { pirSubmitTask } from '@/api/PIR'
+import { getTaskData } from '@/api/task'
 import { getDataResource } from '@/api/fusionResource'
 
 export default {
   data() {
     return {
+      loading: false,
+      taskTimer: null,
+      taskState: '',
+      taskId: 0,
       active: 0,
       dialogVisible: false,
-      resourceId: '2b598a7e3298-a94cc5a8-f3c0-4d46-916d-2f56f7f9d297',
+      resourceId: '2b598a7e3298-6bce971b-9aaa-44ad-a6b6-d6cbfd79f88a',
       serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
       resource: [],
       pirParam: '',
@@ -125,23 +130,29 @@ export default {
     await this.getDataResource()
     this.form.selectResources = this.resource
   },
+  destroyed() {
+    clearInterval(this.taskTimer)
+  },
   methods: {
     next() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          this.listLoading = true
           if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1) {
             this.$message.error('多条件查询请使用英文;分隔')
             return
           }
+          this.loading = true
           pirSubmitTask({
             serverAddress: this.serverAddress,
             resourceId: this.resource[0].resourceId,
             pirParam: this.form.pirParam
           }).then(res => {
             if (res.code === 0) {
-              this.listLoading = false
               this.taskId = res.result.taskId
+              // 任务运行中，轮询任务状态
+              this.taskTimer = window.setInterval(() => {
+                setTimeout(this.getTaskData(), 0)
+              }, 1500)
             } else {
               this.$emit('error', {
                 taskId: this.taskId,
@@ -151,17 +162,34 @@ export default {
                 message: res.msg,
                 type: 'error'
               })
-              this.listLoading = false
+              this.loading = false
             }
-            this.active = 1
-            this.dialogVisible = true
           }).catch(err => {
             console.log(err)
-            this.listLoading = false
+            this.loading = false
           })
         } else {
           console.log('error submit!!')
           return false
+        }
+      })
+    },
+    getTaskData(taskId) {
+      getTaskData({ taskId: this.taskId }).then(res => {
+        if (res.code === 0) {
+          this.taskState = res.result.taskState
+          if (this.taskState === 3) {
+            this.loading = false
+            clearInterval(this.taskTimer)
+            this.active = 1
+            this.dialogVisible = true
+            this.fail = true
+          } else if (this.taskState !== 2) {
+            this.loading = false
+            clearInterval(this.taskTimer)
+            this.active = 1
+            this.dialogVisible = true
+          }
         }
       })
     },
