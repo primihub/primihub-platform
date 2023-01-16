@@ -11,14 +11,14 @@ public class DataUtil {
 
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+){0,4}@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+){0,4}$";
 
-    public static Map<String,String> getJDBCData(String url){
-        Map<String,String> map = new HashMap<>();
+    public static Map<String,Object> getJDBCData(String url){
+        Map<String,Object> map = new HashMap<>();
         Pattern namePattern = Pattern.compile(JDBC_PATTERN);
         Matcher dateMatcher = namePattern.matcher(url);
         while (dateMatcher.find()) {
             map.put("type",dateMatcher.group("type"));
             map.put("host",dateMatcher.group("host"));
-            map.put("port",dateMatcher.group("port"));
+            map.put("port",Integer.valueOf(dateMatcher.group("port")));
             map.put("database",dateMatcher.group("database"));
         }
         return map;
