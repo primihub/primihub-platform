@@ -1,74 +1,48 @@
 <template>
-  <div v-loading="loading" class="container">
-    <el-form ref="form" :model="form" :rules="rules" class="form-container">
-      <el-form-item label="推理使用模型" prop="modelName">
-        <el-input v-model="form.modelName" disabled class="model-name" placeholder="请选择模型" clearable @focus="openModelDialog" />
-      </el-form-item>
-      <el-form-item>
-        <p><strong class="required">*</strong>发起方：<span>{{ createdOrgan }}</span></p>
-        <ResourceTable v-if="selectedResource[createdOrganId]" :show-buttons="false" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" />
-      </el-form-item>
-      <el-form-item>
-        <p><strong class="required">*</strong>参与方：<span>{{ providerOrganName }}</span></p>
-        <ResourceTable v-if="selectedResource" :show-buttons="false" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[providerOrganId]" />
-      </el-form-item>
-      <el-form-item label="推理服务名称" prop="reasoningName">
-        <el-input
-          v-model="form.reasoningName"
-          placeholder="请输入推理服务名称"
-          maxlength="20"
-          show-word-limit
-          disabled
-        />
-      </el-form-item>
-      <el-form-item label="推理服务描述" prop="reasoningDesc">
-        <el-input
-          v-model="form.reasoningDesc"
-          disabled
-          type="textarea"
-          placeholder="请输入推理服务描述，限100字"
-          maxlength="100"
-          show-word-limit
-        />
-      </el-form-item>
-      <el-form-item class="form-footer">
-        <el-button type="primary" @click="onSubmit">开始运算</el-button>
-      </el-form-item>
-    </el-form>
+  <div v-loading="loading" class="form-container">
+    <el-steps :active="active" finish-status="success" align-center>
+      <el-step title="查询条件" />
+      <el-step title="查询结果" />
+    </el-steps>
+    <div class="task-container">
+      <el-descriptions :column="1" :colon="false">
+        <el-descriptions-item><i class="icon el-icon-success" />发起方： {{ createdOrgan }}</el-descriptions-item>
+        <el-descriptions-item><i class="icon el-icon-success" /> 参与方： {{ providerOrganName }}</el-descriptions-item>
+        <el-descriptions-item><i class="icon el-icon-success" /> 推理使用模型： <el-tag type="primary">{{ modelName }}</el-tag></el-descriptions-item>
+        <el-descriptions-item><i class="icon el-icon-success" /> 推理服务名称：{{ reasoningName }}</el-descriptions-item>
+      </el-descriptions>
+      <div class="buttons">
+        <el-button class="submit-button" type="primary" @click="onSubmit">开始运算</el-button>
+      </div>
+    </div>
 
-    <!-- model select dialog -->
-    <ModelSelectDialog :visible="dialogVisible" @submit="handleModelSubmit" @close="handleClose" />
-    <!-- add resource dialog -->
-    <ResourceDialog
-      ref="dialogRef"
-      top="10px"
-      width="800px"
-      title="选择资源"
-      :show-status="false"
-      :selected-data="selectedResourceId"
-      :table-data="resourceList"
-      :visible="resourceDialogVisible"
-      :pagination-options="paginationOptions"
-      @close="handleResourceDialogCancel"
-      @submit="handleResourceDialogSubmit"
-      @pagination="handlePagination"
-    />
     <el-dialog
-      title="运算结果"
       :visible="visible"
+      width="740px"
+      class="dialog"
       :before-close="closeDialog"
     >
       <div class="desc-container">
-        <el-descriptions :column="2">
+        <el-descriptions title="运算数据信息" :column="2">
           <el-descriptions-item label="推理服务名称">{{ dataList.reasoningName }}</el-descriptions-item>
-          <el-descriptions-item label="推理服务描述">{{ dataList.reasoningDesc }}</el-descriptions-item>
           <el-descriptions-item label="推理服务ID">{{ dataList.reasoningId }}</el-descriptions-item>
           <el-descriptions-item label="类型">{{ dataList.reasoningType }}方推理</el-descriptions-item>
           <el-descriptions-item label="上线时间">{{ dataList.releaseDate }}</el-descriptions-item>
           <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
         </el-descriptions>
-        <div class="buttons">
-          <el-button v-if="dataList.reasoningState === 1" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
+        <h3>运算结果</h3>
+        <div style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
+          <table>
+            <tbody>
+              <tr>
+                <td>pred_y</td>
+                <td>0.719003345484603</td>
+                <td>0.738941730799224</td>
+                <td>0.43052668344885</td>
+                <td>0.43052668344885</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </el-dialog>
@@ -76,22 +50,12 @@
 </template>
 
 <script>
-import { getResourceList } from '@/api/project'
 import { saveReasoning, getReasoning } from '@/api/reasoning'
-import { getModelTaskSuccessList } from '@/api/model'
-import { getTaskData } from '@/api/task'
-import ModelSelectDialog from '@/components/ModelSelectDialog'
-import ResourceTable from '@/components/ResourceTable'
-import ResourceDialog from '@/components/ResourceDialog'
-import { getToken } from '@/utils/auth'
 import StatusIcon from '@/components/StatusIcon'
 
 export default {
   name: 'ModelInferenceTask',
   components: {
-    ResourceTable,
-    ResourceDialog,
-    ModelSelectDialog,
     StatusIcon
   },
   filters: {
@@ -110,61 +74,20 @@ export default {
   },
   data() {
     return {
+      active: 0,
       taskState: '',
       taskTimer: null,
       reasoningId: '',
       dataList: {},
       visible: false,
       loading: false,
-      dialogVisible: false,
-      resourceDialogVisible: false,
-      selectedResourceId: '',
-      resourceList: [],
       taskId: 0,
       selectedOrganId: '',
       createdOrgan: '',
       createdOrganId: '',
       providerOrganId: '',
       providerOrganName: '',
-      providerOrgans: [{
-        organId: '',
-        userOrganName: ''
-      }],
-      form: {
-        modelName: '',
-        taskId: '',
-        resourceId: '',
-        resourceList: [],
-        reasoningName: '',
-        reasoningDesc: '',
-        createdResourceId: '',
-        providerResourceId: ''
-      },
-      serverAddress: '',
-      participationIdentity: 1,
-      selectedResource: [], // 选中
-      rules: {
-        modelName: [
-          { required: true, message: '请选择模型' }
-        ],
-        reasoningName: [
-          { required: true, message: '请输入推理服务名称' }
-        ],
-        reasoningDesc: [
-          { required: true, message: '请输入推理服务描述，限100字' }
-        ],
-        resourceId: [
-          { required: true }
-        ]
-      },
-      pageSize: 100,
-      pageNo: 1,
-      paginationOptions: {
-        pageSize: 5,
-        pageNo: 1,
-        total: 0,
-        pageCount: 0
-      }
+      serverAddress: ''
     }
   },
   async created() {
@@ -174,67 +97,44 @@ export default {
     closeDialog() {
       this.visible = false
     },
-    async download() {
-      const taskId = this.dataList.runTaskId || ''
-      const timestamp = new Date().getTime()
-      const nonce = Math.floor(Math.random() * 1000 + 1)
-      const token = getToken()
-      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
-    },
     async getReasoning() {
+      this.loading = true
       const res = await getReasoning({ id: this.reasoningId })
       if (res.code === 0) {
         this.dataList = res.result
+        console.log(this.dataList)
         this.reasoningState = this.dataList.reasoningState
-        if (this.reasoningState === 2) {
-          this.taskTimer = window.setInterval(() => {
-            setTimeout(this.getTaskData(), 0)
-          }, 1000)
-        }
+        setTimeout(() => {
+          this.dataList.reasoningState = 1
+          this.loading = false
+        }, 1500)
       }
     },
-    getTaskData() {
-      getTaskData({ taskId: this.reasoningId }).then(res => {
-        if (res.code === 0) {
-          this.taskState = res.result.taskState
-          if (this.taskState === 3) {
-            clearInterval(this.taskTimer)
-            this.fail = true
-            this.$message.error(res.result.taskErrorMsg)
-          } else if (this.taskState !== 2) {
-            this.taskData.taskState = this.taskState
-            clearInterval(this.taskTimer)
-          }
-          this.dataList.reasoningState = this.taskState
-        }
-        this.loading = false
-      }).catch(err => {
-        console.log(err)
-        this.loading = false
-      })
-    },
     async setDefault() {
-      await this.getModelTaskSuccessList()
-      this.loading = true
-      const createdOrganList = await this.getResourceList(this.createdOrganId)
-      this.selectedResource[this.createdOrganId] = [this.resourceList[0]]
-      this.form.createdResourceId = this.resourceList[0].resourceId
-      this.providerOrganId = this.providerOrgans[0].organId
-      this.providerOrganName = this.providerOrgans[0].organName
-      const providerOrganList = await this.getResourceList(this.providerOrganId)
-      this.selectedResource[this.providerOrganId] = [this.resourceList[0]]
-      this.form.providerResourceId = this.resourceList[0].resourceId
-      Promise.all([createdOrganList, providerOrganList]).then(() => {
-        this.loading = false
-      })
-      this.form.reasoningName = '隐私计算反欺诈应用'
-      this.form.reasoningDesc = '隐私计算反欺诈应用'
-    },
-    async getModelTaskSuccessList() {
-      this.listLoading = true
-      const res = await getModelTaskSuccessList()
-      if (res.code === 0) {
-        this.handleModelSubmit(res.result.data[0])
+      this.createdOrganId = this.$store.getters.userOrganId
+      this.providerOrganName = '互联网公司B'
+      this.createdOrgan = '电信运营商A'
+      this.modelName = 'XGB'
+      this.reasoningName = '隐私计算反欺诈应用'
+      this.reasoningDesc = '隐私计算反欺诈应用'
+      if (window.location.origin.indexOf('https://node') !== -1) {
+        console.log('pro env')
+        this.taskId = 1706
+        this.providerOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
+        this.projectId = 409
+        this.modelId = 1185
+        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
+        this.createdResourceId = 'ece67278c395-4501b886-9d9c-4f90-afa9-488b0f4dc90d'
+        this.providerResourceId = '2b598a7e3298-7fecfced-0e44-4212-920f-e1efc14e43df'
+      } else {
+        console.log('test env')
+        this.taskId = 1706
+        this.providerOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
+        this.projectId = 409
+        this.modelId = 1185
+        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
+        this.createdResourceId = 'ece67278c395-4501b886-9d9c-4f90-afa9-488b0f4dc90d'
+        this.providerResourceId = '2b598a7e3298-7fecfced-0e44-4212-920f-e1efc14e43df'
       }
     },
     reset() {
@@ -248,126 +148,60 @@ export default {
       this.selectedResource = []
       this.$refs.form.resetFields()
     },
-    handleRemove(organId, participationIdentity) {
-      this.selectedResource[organId].splice(0)
-      if (participationIdentity === 1) {
-        this.form.createdResourceId = ''
-      } else if (participationIdentity === 2) {
-        this.form.providerResourceId = ''
-      }
-    },
     async onSubmit() {
-      const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
-      console.log(createdResourceId)
-      if (createdResourceId === '' || providerResourceId === '') {
-        this.$message({
-          message: createdResourceId === '' ? '请输入发起方方资源' : '请输入参与方资源',
-          type: 'warning'
-        })
-        return
-      }
-      this.form.resourceList = [
+      this.active = 1
+      this.resourceList = [
         {
           participationIdentity: 1,
-          resourceId: createdResourceId
+          resourceId: this.createdResourceId
         }, {
           participationIdentity: 2,
-          resourceId: providerResourceId
+          resourceId: this.providerResourceId
         }
       ]
 
-      this.$refs['form'].validate(async valid => {
-        if (valid) {
-          const { code, result } = await saveReasoning({
-            taskId,
-            resourceList: this.form.resourceList,
-            reasoningName,
-            reasoningDesc
-          })
-          if (code === 0) {
-            this.reasoningId = result.id
-            this.visible = true
-            this.getReasoning()
-          }
-        }
+      const { code, result } = await saveReasoning({
+        taskId: this.taskId,
+        resourceList: this.resourceList,
+        reasoningName: this.reasoningName,
+        reasoningDesc: this.reasoningDesc
       })
-    },
-    async handleResourceSelect(organId, participationIdentity) {
-      this.selectedOrganId = organId
-      this.participationIdentity = participationIdentity
-      await this.getResourceList()
+      if (code === 0) {
+        this.reasoningId = result.id
+        this.visible = true
+        this.getReasoning()
+        this.active = 2
+      }
     },
     handleClose() {
       this.dialogVisible = false
     },
     openModelDialog() {
       this.dialogVisible = true
-    },
-    async handleModelSubmit(data) {
-      console.log(data)
-      if (data) {
-        this.form.taskId = data.taskId
-        this.providerOrgans = data.providerOrgans
-        this.createdOrgan = data.createdOrgan
-        this.createdOrganId = data.createdOrganId
-        this.projectId = data.projectId
-        this.form.modelName = data.modelName
-        this.modelId = data.modelId
-        this.serverAddress = data.serverAddress
-      }
-      console.log()
-      this.dialogVisible = false
-    },
-    handleResourceDialogCancel() {
-      this.selectedResourceId = ''
-      this.resourceDialogVisible = false
-    },
-    handleResourceDialogSubmit(data) {
-      console.log('handleResourceDialogSubmit', data)
-      if (data.resourceId) {
-        this.selectedResource[this.selectedOrganId] = [data]
-        if (this.participationIdentity === 1) {
-          this.form.createdResourceId = data.resourceId
-        } else {
-          this.form.providerResourceId = data.resourceId
-        }
-      }
-
-      this.resourceDialogVisible = false
-    },
-    async handlePagination(pageNo) {
-      this.paginationOptions.pageNo = pageNo
-      await this.getResourceList()
-    },
-    async getResourceList(organId) {
-      console.log(organId)
-      this.resourceList = []
-
-      const res = await getResourceList({
-        modelId: this.modelId,
-        serverAddress: this.serverAddress,
-        organId,
-        pageSize: this.paginationOptions.pageSize,
-        pageNo: this.paginationOptions.pageNo })
-      if (res.code === 0) {
-        this.resourceList = res.result.data
-        this.paginationOptions.pageCount = res.result.totalPage
-        this.paginationOptions.total = res.result.total
-      }
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.container{
-  background: #fff;
-  padding: 30px 0;
-  height: 100%;
-  .form-container{
-    width: 700px;
-    margin: 0 auto;
-  }
+::v-deep .el-descriptions-item__content{
+  font-size: 16px;
+}
+.dialog ::v-deep .el-descriptions-item__content{
+  font-size: 14px;
+}
+
+.form-container{
+  padding-top: 40px;
+}
+.icon{
+  color: #67C23A;
+  display: inline-block;
+  margin-right: 10px;
+}
+.task-container{
+  width: 300px;
+  margin: 0 auto;
 }
 .select-button{
   width: 100%;
@@ -384,6 +218,54 @@ export default {
 }
 .buttons{
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
+  margin-top: 40px;
+}
+table,th,td {
+  border: 1px solid #ebeef5;
+}
+
+table {
+  width: 100%;
+  margin: 0 auto;
+  display: block;
+  overflow-x: auto;
+  border-spacing: 0;
+}
+
+tbody {
+  white-space: nowrap;
+}
+
+th,
+td {
+  padding: 5px 10px;
+  border-top-width: 0;
+  border-left-width: 0;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  vertical-align: bottom;
+}
+
+th:last-child,
+td:last-child {
+  border-right-width: 0;
+}
+
+tr:last-child td {
+  border-bottom-width: 0;
+}
+
+.dialog ::v-deep .el-descriptions__body{
+  background-color: #fafafa;
+  padding: 10px 20px 10px 20px;
+}
+.dialog h3{
+  font-size: 16px;
+  color: #303133;
 }
 </style>

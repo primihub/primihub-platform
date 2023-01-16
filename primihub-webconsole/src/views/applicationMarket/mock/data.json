@@ -18,9 +18,9 @@
   "readNumber": 39,
   "detailImg": "psi-app.png"
 },{
-  "applicationId": 5,
+  "applicationId": 3,
   "appName": "reasoning",
-  "appTitle": "来访用户实时画像应用",
+  "appTitle": "隐私计算反欺诈应用",
   "organName": "机构A",
   "createTime": "2022-12-29 10:00",
   "description": "通过隐私计算使用同态加密、秘密分享等多方安全计算技术，融合银行+三方数据进行“原始数据严格保护，数据价值充分利用”的数据能力加持，进行“不暴露用户信息”的信息传递，助力反欺诈风控。",
