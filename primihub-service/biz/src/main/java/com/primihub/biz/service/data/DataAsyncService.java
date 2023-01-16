@@ -108,6 +108,7 @@ public class DataAsyncService implements ApplicationContextAware {
     private DataTaskMonitorService dataTaskMonitorService;
 
 
+
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
         log.info("execute : {}",baenName);
@@ -448,11 +449,13 @@ public class DataAsyncService implements ApplicationContextAware {
                 String freemarkerContent = "";
                 if (modelType.getVal().equals("2")){
                     map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
+                    map.put("size","2");
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
                 }else{
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),1);
                 }
-                grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
             }
         }
 
@@ -533,7 +536,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
 
-    public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType){
+    public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType,int size){
         try {
             log.info(freemarkerContent);
             DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
@@ -569,7 +572,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setName("modelTask")
                     .setLanguage(Common.Language.PYTHON)
                     .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                    .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
@@ -581,13 +584,14 @@ public class DataAsyncService implements ApplicationContextAware {
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
-            if (reply.getRetCode()==0){
-                dataReasoning.setReleaseDate(new Date());
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            }else {
-                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
-            }
+//            if (reply.getRetCode()==0){
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",size,dataTask.getTaskResultPath());
+//                dataReasoning.setReleaseDate(new Date());
+//                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+//            }else {
+//                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+//                dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+//            }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
