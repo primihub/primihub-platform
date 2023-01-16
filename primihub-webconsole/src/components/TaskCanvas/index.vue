@@ -654,12 +654,13 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      const fileContainsY = providerResource.fileHandleField.includes('y')
       // LR features must select
       if (initiateResource.calculationField.length === 1) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
-      } else if (providerResource.calculationField.length === 1) { // has Y
+      } else if (fileContainsY && providerResource.calculationField.length === 1 || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
         this.$message.error('请选择协作方数据特征')
         this.modelRunValidated = false
         return

@@ -34,12 +34,16 @@ export default {
     'data.resourceId'(newVal) {
       if (newVal) {
         this.calculationField = this.data.fileHandleField
-        this.addY()
+        if (this.data.fileHandleField.includes('y')) {
+          this.addY()
+        }
       }
     }
   },
   created() {
-    this.addY()
+    if (this.data.fileHandleField.includes('y')) {
+      this.addY()
+    }
   },
   methods: {
     addY() {
