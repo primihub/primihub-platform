@@ -33,7 +33,7 @@ export default {
   watch: {
     'data.resourceId'(newVal) {
       if (newVal) {
-        this.calculationField = []
+        this.calculationField = this.data.fileHandleField
         this.addY()
       }
     }
