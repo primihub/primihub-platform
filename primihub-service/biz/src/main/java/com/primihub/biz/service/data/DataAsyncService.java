@@ -449,7 +449,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 String freemarkerContent = "";
                 if (modelType.getVal().equals("2")){
                     map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
-                    map.put("size","2");
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
                     grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
                 }else{
