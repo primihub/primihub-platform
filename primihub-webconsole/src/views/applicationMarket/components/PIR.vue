@@ -127,8 +127,13 @@ export default {
     }
   },
   async created() {
+    if (window.location.origin.indexOf('https://node') !== -1) {
+      this.resourceId = '704a92e392fd-4611106e-8049-48ab-a6b5-15f23a58f496'
+      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+    }
     await this.getDataResource()
     this.form.selectResources = this.resource
+    console.log(window.location.origin)
   },
   destroyed() {
     clearInterval(this.taskTimer)

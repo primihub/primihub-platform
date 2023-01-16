@@ -284,17 +284,28 @@ export default {
   },
   methods: {
     async setDefault() {
+      console.log(window.location.origin.indexOf('https://test'))
       this.formData.ownOrganId = this.$store.getters.userOrganId
       this.formData.ownOrganName = this.$store.getters.userOrganName
       this.formData.resultOrgan.push(this.formData.ownOrganId)
-      this.formData.ownResourceId = '1116'
-      this.formData.ownKeyword = 'id'
-      this.formData.otherOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
-      this.formData.otherOrganName = '机构B'
-      this.formData.otherResourceId = '2b598a7e3298-67f337ac-06fa-4a68-971e-f98bdcac97b3'
-      this.formData.otherKeyword = 'id'
-      this.formData.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-      this.cascaderValue = ['http://fusion.primihub.svc.cluster.local:8080/', '2cad8338-2e8c-4768-904d-2b598a7e3298']
+      if (window.location.origin.indexOf('https://node') !== -1) {
+        this.formData.ownResourceId = '74'
+        this.formData.ownKeyword = 'name'
+        this.formData.otherOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
+        this.formData.otherOrganName = 'Primihub02'
+        this.formData.otherResourceId = '704a92e392fd-6ddb0019-db84-4039-b8c3-af9bfb966237'
+        this.formData.otherKeyword = 'name'
+        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+      } else {
+        this.formData.ownResourceId = '1116'
+        this.formData.ownKeyword = 'id'
+        this.formData.otherOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
+        this.formData.otherOrganName = '机构B'
+        this.formData.otherResourceId = '2b598a7e3298-67f337ac-06fa-4a68-971e-f98bdcac97b3'
+        this.formData.otherKeyword = 'id'
+        this.formData.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
+      }
+      this.cascaderValue = [this.formData.serverAddress, this.formData.otherOrganId]
       this.tableDataB = await this.getPsiResourceAllocationList({
         organId: this.formData.otherOrganId
       })

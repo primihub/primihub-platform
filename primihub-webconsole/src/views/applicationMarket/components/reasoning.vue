@@ -304,7 +304,6 @@ export default {
       this.dialogVisible = true
     },
     async handleModelSubmit(data) {
-      console.log(data)
       if (data) {
         this.form.taskId = data.taskId
         this.providerOrgans = data.providerOrgans
@@ -315,7 +314,6 @@ export default {
         this.modelId = data.modelId
         this.serverAddress = data.serverAddress
       }
-      console.log()
       this.dialogVisible = false
     },
     handleResourceDialogCancel() {
