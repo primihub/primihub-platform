@@ -18,7 +18,7 @@
           <el-link slot="reference" type="primary">建议与反馈</el-link>
         </el-popover>
       </div>
-      <el-button type="primary" size="small" style="margin-right: 10px;" @click="toApplicationPage">应用市场</el-button>
+      <el-button v-if="!isHideAppMarket" type="primary" size="small" style="margin-right: 10px;" @click="toApplicationPage">应用市场</el-button>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
@@ -85,6 +85,7 @@ export default {
       'logoUrl',
       'sidebarLogo',
       'isHideFadeBack',
+      'isHideAppMarket',
       'logoTitle',
       'showLogoTitle',
       'settingChanged'

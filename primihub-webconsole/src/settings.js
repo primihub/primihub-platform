@@ -29,6 +29,7 @@ module.exports = {
   logoTitle: '原语隐私计算平台', // navbar logo title
   favicon: '', // browser icon
   isHideFadeBack: true, // show or hide suggestions and feedback
+  isHideAppMarket: true, // show or hide application market
   isHideFooterVersion: true, // show or hide footer text
   footerText: '北京原语科技有限公司 V1.5.5' // when show footer text
 }
