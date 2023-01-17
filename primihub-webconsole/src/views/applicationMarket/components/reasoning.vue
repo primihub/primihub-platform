@@ -105,6 +105,7 @@ export default {
         this.dataList = res.result
         this.dataList.releaseDate = parseTime(new Date().getTime())
         this.reasoningState = this.dataList.reasoningState
+        this.dataList.reasoningState = 2
         setTimeout(() => {
           this.dataList.reasoningState = 1
           this.loading = false
@@ -118,15 +119,33 @@ export default {
       this.modelName = 'XGB'
       this.reasoningName = '隐私计算反欺诈应用'
       this.reasoningDesc = '隐私计算反欺诈应用'
-      if (window.location.origin.indexOf('https://node') !== -1) {
-        console.log('pro env')
-        this.taskId = 243
+      if (window.location.origin.indexOf('https://node1') !== -1) {
+        console.log('pro env node1')
+        this.taskId = 299
         this.providerOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
-        this.projectId = 34
-        this.modelId = 126
+        this.projectId = 51
+        this.modelId = 161
         this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-        this.createdResourceId = 'ea5fd5f5f9f0-0b5e1f19-db7c-4d95-87d8-2489ace4f643'
-        this.providerResourceId = '704a92e392fd-28d5144f-686e-48e3-9a5a-251165a2ad72'
+        this.createdResourceId = 'ea5fd5f5f9f0-00bccdeb-d400-4498-b609-8985e84effd6'
+        this.providerResourceId = '704a92e392fd-c49f9170-9d6c-4c4e-bf21-eadafdb5bb2c'
+      } else if (window.location.origin.indexOf('https://node2') !== -1) {
+        console.log('pro env node2')
+        this.taskId = 90
+        this.providerOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
+        this.projectId = 51
+        this.modelId = 71
+        this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        this.createdResourceId = '704a92e392fd-383fd8fa-4fb8-4a46-b4b3-dfffa69ef10f'
+        this.providerResourceId = 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
+      } else if (window.location.origin.indexOf('https://node3') !== -1) {
+        console.log('pro env node3')
+        this.taskId = 28
+        this.providerOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
+        this.projectId = 22
+        this.modelId = 7
+        this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        this.createdResourceId = '794e41ba0e63-f7f15a33-435a-4518-bf6c-706dcc229927'
+        this.providerResourceId = 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
       } else {
         console.log('test env')
         this.taskId = 1706

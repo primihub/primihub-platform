@@ -314,7 +314,7 @@ export default {
       this.formData.ownOrganId = this.$store.getters.userOrganId
       this.formData.ownOrganName = this.$store.getters.userOrganName
       this.formData.resultOrgan.push(this.formData.ownOrganId)
-      if (window.location.origin.indexOf('https://node') !== -1) {
+      if (window.location.origin.indexOf('https://node1') !== -1) {
         console.log('pro env')
         this.formData.ownResourceId = '7'
         this.formData.ownKeyword = 'company'
@@ -322,6 +322,24 @@ export default {
         this.formData.otherOrganName = 'Primihub02'
         this.formData.otherResourceId = '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff'
         this.formData.otherKeyword = 'company'
+        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+      } else if (window.location.origin.indexOf('https://node2') !== -1) {
+        console.log('pro env')
+        this.formData.ownResourceId = '11'
+        this.formData.ownKeyword = 'company'
+        this.formData.otherOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
+        this.formData.otherOrganName = '机构A'
+        this.formData.otherResourceId = 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69'
+        this.formData.otherKeyword = 'company'
+        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+      } else if (window.location.origin.indexOf('https://node3') !== -1) {
+        console.log('pro env')
+        this.formData.ownResourceId = '3'
+        this.formData.ownKeyword = 'name'
+        this.formData.otherOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
+        this.formData.otherOrganName = '机构A'
+        this.formData.otherResourceId = 'ea5fd5f5f9f0-e6af73fe-70dc-4daa-aec4-91ef044fc9f5'
+        this.formData.otherKeyword = 'name'
         this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
       } else {
         console.log('test env')

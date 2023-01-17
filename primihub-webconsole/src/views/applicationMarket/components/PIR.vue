@@ -112,7 +112,7 @@ export default {
       fail: false,
       form: {
         resourceName: '',
-        pirParam: '姓名',
+        pirParam: '199&test',
         selectResources: []
       },
       rules: {
@@ -127,9 +127,17 @@ export default {
     }
   },
   async created() {
-    if (window.location.origin.indexOf('https://node') !== -1) {
+    if (window.location.origin.indexOf('https://node1') !== -1) {
       console.log('pro env')
-      this.resourceId = '704a92e392fd-bd2fb234-ddd4-4a7b-b9bb-2394e33eb749'
+      this.resourceId = '704a92e392fd-073cb4ac-1deb-4046-a68e-452ed168cea1'
+      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+    } else if (window.location.origin.indexOf('https://node2') !== -1) {
+      console.log('pro env node2')
+      this.resourceId = 'ea5fd5f5f9f0-e9e30b69-6b5c-495b-8a36-5e378432187b'
+      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+    } else if (window.location.origin.indexOf('https://node3') !== -1) {
+      console.log('pro env node3')
+      this.resourceId = 'ea5fd5f5f9f0-e9e30b69-6b5c-495b-8a36-5e378432187b'
       this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
     } else {
       console.log('test env')
