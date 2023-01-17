@@ -1969,7 +1969,7 @@ config = {
 @ph.context.function(
     role='host',
     protocol='xgboost',
-    datasets=['train_hetero_xgb_host'
+    datasets=['${label_dataset}'
              ],  # ['train_hetero_xgb_host'],  #, 'test_hetero_xgb_host'],
     port='8000',
     task_type="classification")
@@ -2182,7 +2182,7 @@ def xgb_host_logic(cry_pri="paillier"):
     role='guest',
     protocol='xgboost',
     datasets=[
-        'train_hetero_xgb_guest'  #'five_thous_guest'
+        '${guest_dataset}'  #'five_thous_guest'
     ],  #['train_hetero_xgb_guest'],  #, 'test_hetero_xgb_guest'],
     port='9000',
     task_type="classification")
