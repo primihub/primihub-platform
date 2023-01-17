@@ -120,13 +120,13 @@ export default {
       this.reasoningDesc = '隐私计算反欺诈应用'
       if (window.location.origin.indexOf('https://node') !== -1) {
         console.log('pro env')
-        this.taskId = 1706
+        this.taskId = 243
         this.providerOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
-        this.projectId = 409
-        this.modelId = 1185
-        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-        this.createdResourceId = 'ece67278c395-4501b886-9d9c-4f90-afa9-488b0f4dc90d'
-        this.providerResourceId = '2b598a7e3298-7fecfced-0e44-4212-920f-e1efc14e43df'
+        this.projectId = 34
+        this.modelId = 126
+        this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        this.createdResourceId = 'ea5fd5f5f9f0-0b5e1f19-db7c-4d95-87d8-2489ace4f643'
+        this.providerResourceId = '704a92e392fd-28d5144f-686e-48e3-9a5a-251165a2ad72'
       } else {
         console.log('test env')
         this.taskId = 1706
