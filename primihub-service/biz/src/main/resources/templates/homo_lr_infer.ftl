@@ -54,7 +54,7 @@ class ModelInfer:
         pd.DataFrame(preds).to_csv(self.out, index=False)
         return preds
 
-infer_data = ['test_homo_lr']
+infer_data = ['${label_dataset}']
 
 def run_infer(party_name):
     logging.info("Start machine learning inferring.")
