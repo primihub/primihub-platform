@@ -27,7 +27,8 @@ export function getPsiResourceAllocationList(params) {
   return request({
     url: '/data/psi/getPsiResourceAllocationList',
     method: 'get',
-    params
+    params,
+    showLoading: false
   })
 }
 export function getPsiTaskList(params) {

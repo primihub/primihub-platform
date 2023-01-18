@@ -16,7 +16,7 @@
       <el-descriptions-item label="输出内容">{{ data.outputContent=== 0? '交集': '差集' }}</el-descriptions-item>
       <el-descriptions-item label="输出格式">{{ data.outputFormat === '0'? '资源文件(csv)': '' }}</el-descriptions-item>
       <el-descriptions-item label="输出资源路径">{{ data.outputFilePathType === 0? '自动生成': '' }}</el-descriptions-item>
-      <el-descriptions-item v-if="data.taskState === 1" :label="`${data.resultOrganName}`"><el-button type="text" size="mini" @click="downloadPsiTask">{{ data.resultName }}.csv <i class="el-icon-download" /></el-button></el-descriptions-item>
+      <el-descriptions-item v-if="data.taskState === 1 && showDownload" :label="`${data.resultOrganName}`"><el-button type="text" size="mini" @click="downloadPsiTask">{{ data.resultName }}.csv <i class="el-icon-download" /></el-button></el-descriptions-item>
       <el-descriptions-item label="实现协议">{{ data.tag === 0? 'ECDH': 'KKRT' }}</el-descriptions-item>
       <el-descriptions-item label="关键键有重复值时">{{ data.outputNoRepeat === 1? '去重': '不去重' }}</el-descriptions-item>
       <el-descriptions-item v-if="data.remarks !== '' " label="备注">{{ data.remarks }}</el-descriptions-item>
@@ -29,8 +29,6 @@ import { getToken } from '@/utils/auth'
 
 export default {
   name: 'PSITaskDetail',
-  components: {
-  },
   filters: {
     // 运行状态 0未运行 1完成 2运行中 3失败 默认0
     taskStateFilter(state) {
@@ -44,6 +42,10 @@ export default {
     }
   },
   props: {
+    showDownload: {
+      type: Boolean,
+      default: true
+    },
     data: {
       type: Object,
       required: true,
@@ -67,3 +69,22 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+::v-deep .el-descriptions__body{
+  background-color: #fafafa;
+  padding: 10px 20px 10px 20px;
+}
+::v-deep  .el-descriptions{
+  margin-bottom:20px;
+}
+::v-deep .el-descriptions-item__container{
+  align-items: center;
+}
+::v-deep .el-descriptions__header{
+  margin-bottom: 10px;
+}
+::v-deep .el-dialog__body{
+  padding: 10px 20px 0px 20px;
+}
+</style>

@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import xor from 'lodash/xor'
 import { Graph, FunctionExt, Shape } from '@antv/x6'
 import '@antv/x6-vue-shape'
 import DagNodeComponent from './nodes/DagNode.vue'
@@ -653,6 +654,21 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      const fileContainsY = providerResource.fileHandleField.includes('y')
+      // LR features must select
+      if (initiateResource.calculationField.length === 1) { // has Y
+        this.$message.error('请选择发起方数据特征')
+        this.modelRunValidated = false
+        return
+      } else if (fileContainsY && providerResource.calculationField.length === 1 || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
+        this.$message.error('请选择协作方数据特征')
+        this.modelRunValidated = false
+        return
+      } else if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) { // LR select features must be same
+        this.$message.error('选择特征需一致')
+        this.modelRunValidated = false
+        return
+      }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
       if (line.output.cell !== dataSetCom.frontComponentId) {
@@ -697,12 +713,13 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
-      } else if (modelName === '') {
+      } else if (!modelSelectCom || modelName === '') {
         this.$message({
           message: `运行失败：请输入模型名称`,
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,

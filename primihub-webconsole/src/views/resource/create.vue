@@ -246,7 +246,6 @@ export default {
       this.fieldList = []
       this.dataForm.fieldList = this.fieldList
       this.dataList = []
-      console.log('change', this.fieldList)
     },
     handleResourceChange(data) {
       this.fieldList = data
@@ -268,15 +267,12 @@ export default {
     formatParams() {
       const fieldList = []
       this.fieldList && this.fieldList.forEach(item => {
-        const { fieldId, fieldName, fieldType, fieldDesc = '', relevance, grouping, protectionStatus } = item
+        const { fieldId, fieldName, fieldType, fieldDesc = '' } = item
         fieldList.push({
           fieldId,
           fieldName,
           fieldType,
-          fieldDesc,
-          relevance: relevance === true ? 1 : 0,
-          grouping: grouping === true ? 1 : 0,
-          protectionStatus: protectionStatus === true ? 1 : 0
+          fieldDesc
         })
       })
       return fieldList

@@ -33,6 +33,9 @@
         <el-descriptions-item label="隐藏建议与反馈">
           <el-switch v-model="isHideFadeBack" @change="handleFadeBackChange" />
         </el-descriptions-item>
+        <el-descriptions-item label="隐藏应用市场">
+          <el-switch v-model="isHideAppMarket" @change="handleAppMarketChange" />
+        </el-descriptions-item>
         <el-descriptions-item label="隐藏底部版本号" :content-style="{'flex-direction': 'column'}">
           <el-switch v-model="isHideFooterVersion" @change="handleVersionChange" />
           <div v-if="!isHideFooterVersion" class="logo-title">
@@ -73,8 +76,6 @@ export default {
       'loginLogoUrl',
       'logoUrl',
       'loginDescription',
-      'isHideFadeBack',
-      'isHideFooterVersion',
       'logoTitle',
       'footerText'
     ]),
@@ -97,6 +98,14 @@ export default {
     isHideFadeBack: {
       get() {
         return this.$store.state.settings.isHideFadeBack
+      },
+      set(val) {
+        return val
+      }
+    },
+    isHideAppMarket: {
+      get() {
+        return this.$store.state.settings.isHideAppMarket
       },
       set(val) {
         return val
@@ -134,6 +143,10 @@ export default {
     handleFadeBackChange(val) {
       this.params.isHideFadeBack = val
       this.changeSettings({ state: 'isHideFadeBack', mutation: 'SET_FADE_BACK_STATUS', value: val })
+    },
+    handleAppMarketChange(val) {
+      this.params.isHideAppMarket = val
+      this.changeSettings({ state: 'isHideAppMarket', mutation: 'SET_APP_MARKET_STATUS', value: val })
     },
     handleLogoTitleClear() {
       this.logoText = ''
