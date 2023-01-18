@@ -113,7 +113,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     if (value==null)
                         continue;
                     log.info("value:{}",JSONObject.toJSONString(value));
-                    derivationList.add(new ModelDerivationDto(key,"missing","缺失值处理",value.getNewDataSetId(),null,value.getDataSetId()));
+                    derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
                     log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
                 }
                 taskReq.getDerivationList().addAll(derivationList);

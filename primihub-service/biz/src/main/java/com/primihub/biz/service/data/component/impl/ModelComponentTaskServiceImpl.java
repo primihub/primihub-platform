@@ -117,6 +117,12 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             log.info("freemarkerMap2:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
         }
+        taskReq.getFreemarkerMap().put("feature_names","None");
+        if (StringUtils.isNotBlank(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD))){
+            String field = taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD);
+            log.info("field:{}",field);
+            taskReq.getFreemarkerMap().put("feature_names",field);
+        }
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
         }else if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
@@ -194,6 +200,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                                 break;
                             }
                         }
+                    }else {
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -211,7 +220,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return BaseResultEntity.success();
     }
-
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
@@ -260,6 +268,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                                     break;
                                 }
                             }
+                        }else {
+                            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -275,6 +286,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
+        }else {
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:创建模板失败null");
         }
         return BaseResultEntity.success();
     }
@@ -336,6 +350,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                                     break;
                                 }
                             }
+                        }else {
+                            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -351,6 +368,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
+        }else {
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:创建模板失败null");
         }
         return BaseResultEntity.success();
     }
