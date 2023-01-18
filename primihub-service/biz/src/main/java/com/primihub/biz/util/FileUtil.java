@@ -9,10 +9,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -185,18 +182,6 @@ public class FileUtil {
         return dataList;
     }
 
-    public static void main(String[] args) throws Exception {
-//        System.out.println(FileUtil.getCsvData("E://x.csv",0,50));
-//        File file = new File("/Users/zhongziqian/Downloads/7a1ff80f-9e00-48f1-9a46-338fdc5f3aa9.csv");
-        long start = System.currentTimeMillis();
-        File file = new File("/Users/zhongziqian/Downloads/c0e309f0-0924-4b8d-84e1-947a1617aafc.csv");
-        System.out.println(hashFile(file));
-        long end1 = System.currentTimeMillis();
-        System.out.println(end1 - start);
-        System.out.println(md5HashCode(file));
-        long end2 = System.currentTimeMillis();
-        System.out.println(end2 - start);
-    }
 
     public static LinkedHashMap<String,Object> readValues(String[] values, String[] headers){
         LinkedHashMap<String,Object> map = new LinkedHashMap<>();
@@ -273,13 +258,41 @@ public class FileUtil {
         }
     }
 
-//    public static void main(String[] args) {
-//        List<String> fileContent = getFileContent("d:/data/upload/1/2022042912/28cc1fce-2487-47e8-9f59-4ca56aa487d1.csv", 1);
-//        fileContent.addAll(getFileContent("d:/data/upload/1/2022042718/28efe5c0-ec48-491a-8722-47b4fea62746.csv", 1));
-//        fileContent.addAll(getFileContent("C:\\Users\\17801\\Downloads\\server1.csv", 1));
-//        fileContent.addAll(getFileContent("C:\\Users\\17801\\Downloads\\liwehua.txt", 1));
-//        for (String s : fileContent) {
-//            System.out.println(s);
-//        }
-//    }
+
+    public static List<String> getFileContentData(String filePath,Integer severalLines){
+        List<String> list = new ArrayList<>();
+        try {
+            File file = new File(filePath);
+            if (!file.exists()){
+                log.info("{}-不存在",filePath);
+                return list;
+            }
+            Scanner sc = new Scanner(file);
+            while (sc.hasNext()) {
+                list.add(sc.nextLine());
+                if (severalLines!=null&&severalLines>0){
+                    if (list.size()==severalLines)
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            log.info("{}-IOException: {}",filePath,e.getMessage());
+        }
+        return list;
+    }
+
+
+
+    public static void main(String[] args) throws Exception {
+//        System.out.println(FileUtil.getCsvData("E://x.csv",0,50));
+//        File file = new File("/Users/zhongziqian/Downloads/7a1ff80f-9e00-48f1-9a46-338fdc5f3aa9.csv");
+        long start = System.currentTimeMillis();
+        File file = new File("/Users/zhongziqian/Downloads/c0e309f0-0924-4b8d-84e1-947a1617aafc.csv");
+        System.out.println(hashFile(file));
+        long end1 = System.currentTimeMillis();
+        System.out.println(end1 - start);
+        System.out.println(md5HashCode(file));
+        long end2 = System.currentTimeMillis();
+        System.out.println(end2 - start);
+    }
 }

@@ -34,7 +34,7 @@ public class HiveService extends DataDBService {
     @Override
     public BaseResultEntity healthConnection(DataSource dbSource) {
         String url = dbSource.getDbUrl();
-        String dataBaseName = DataUtil.getJDBCData(url).get("database");
+        String dataBaseName = (String) DataUtil.getJDBCData(url).get("database");
         if (StringUtils.isBlank(dataBaseName))
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
         dbSource.setDbName(dataBaseName);

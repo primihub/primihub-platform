@@ -5,9 +5,9 @@ from sklearn import metrics
 from primihub.primitive.opt_paillier_c2py_warpper import *
 import pandas as pd
 import numpy as np
+import random
 from scipy.stats import ks_2samp
 from sklearn.metrics import roc_auc_score
-import logging
 import pickle
 import json
 from typing import (
@@ -19,8 +19,6 @@ from typing import (
 from multiprocessing import Process, Pool
 import pandas
 import pyarrow
-from scipy.stats import ks_2samp
-from sklearn.metrics import roc_auc_score
 
 from ray.data.block import KeyFn, _validate_key_fn
 from primihub.primitive.opt_paillier_c2py_warpper import *
@@ -45,6 +43,9 @@ from ray.data._internal.null_aggregate import (_null_wrap_init,
                                                _null_wrap_merge,
                                                _null_wrap_accumulate_block,
                                                _null_wrap_finalize)
+
+from primihub.utils.logger_util import FLFileHandler, FLConsoleHandler, FORMAT
+
 # import matplotlib.pyplot as plt
 T = TypeVar("T", contravariant=True)
 U = TypeVar("U", covariant=True)
@@ -66,6 +67,66 @@ LOG_FORMAT = "[%(asctime)s][%(filename)s:%(lineno)d][%(levelname)s] %(message)s"
 DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
 logging.basicConfig(level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT)
 logger = logging.getLogger("proxy")
+
+# ray.init(address='ray://172.21.3.108:10001')
+console_handler = FLConsoleHandler(jb_id=1,
+                                   task_id=1,
+                                   log_level='info',
+                                   format=FORMAT)
+fl_console_log = console_handler.set_format()
+
+file_handler = FLFileHandler(jb_id=1,
+                             task_id=1,
+                             log_file='fl_log_info.txt',
+                             log_level='INFO',
+                             format=FORMAT)
+fl_file_log = file_handler.set_format()
+
+# ray.init("ray://172.21.3.108:10001")
+
+
+def goss_sample(df_g, top_rate=0.2, other_rate=0.2):
+    df_g_cp = abs(df_g.copy())
+    g_arr = df_g_cp['g'].values
+    if top_rate < 0 or top_rate > 100:
+        raise ValueError("The ratio should be between 0 and 100.")
+    elif top_rate > 0 and top_rate < 1:
+        top_rate *= 100
+
+    top_rate = int(top_rate)
+    top_clip = np.percentile(g_arr, 100 - top_rate)
+    top_ids = df_g_cp[df_g_cp['g'] >= top_clip].index.tolist()
+    other_ids = df_g_cp[df_g_cp['g'] < top_clip].index.tolist()
+
+    assert other_rate > 0 and other_rate <= 1.0
+    other_num = int(len(other_ids) * other_rate)
+
+    low_ids = random.sample(other_ids, other_num)
+
+    return top_ids, low_ids
+
+
+def random_sample(df_g, top_rate=0.2, other_rate=0.2):
+    all_ids = df_g.index.tolist()
+    sample_rate = top_rate + other_rate
+
+    assert sample_rate > 0 and sample_rate <= 1.0
+    sample_num = int(len(all_ids) * sample_rate)
+
+    sample_ids = random.sample(all_ids, sample_num)
+
+    return sample_ids
+
+
+def col_sample(feature_list, sample_ratio=0.3, threshold=30):
+    if len(feature_list) < threshold:
+        return feature_list
+
+    sample_num = int(len(feature_list) * sample_ratio)
+
+    sample_features = random.sample(feature_list, sample_num)
+
+    return sample_features
 
 
 def search_best_splits(X: pd.DataFrame,
@@ -130,12 +191,14 @@ def search_best_splits(X: pd.DataFrame,
             tmp_splits = split_points[item][1:]
 
         tmp_col = X[item]
-        # print("+++++++++")
-        # print(tmp_splits, tmp_splits[0])
+
         if len(tmp_splits) < 1:
-            print("current item ", item, split_points)
+            fl_console_log.info(
+                "current item is {} and split_point is {}".format(
+                    item, split_points))
+            # print("current item ", item, split_points)
             continue
-        # print("-------", type(tmp_splits), tmp_splits.shape, split_points)
+
         tmp_splits[0] = tmp_splits[0] - eps
         tmp_splits[-1] = tmp_splits[-1] + eps
 
@@ -186,7 +249,10 @@ def search_best_splits(X: pd.DataFrame,
 def opt_paillier_decrypt_crt(pub, prv, cipher_text):
 
     if not isinstance(cipher_text, Opt_paillier_ciphertext):
-        print(f"{cipher_text} should be type of Opt_paillier_ciphertext()")
+        fl_console_log.error(
+            "The input should be type of Opt_paillier_ciphertext but {}".format(
+                type(cipher_text)))
+        # print(f"{cipher_text} should be type of Opt_paillier_ciphertext()")
         return
 
     decrypt_text = opt_paillier_c2py.opt_paillier_decrypt_crt_warpper(
@@ -197,6 +263,31 @@ def opt_paillier_decrypt_crt(pub, prv, cipher_text):
     return decrypt_text_num
 
 
+@ray.remote
+def map(obj, f):
+    return f(obj)
+
+
+@ray.remote
+def batch_paillier_sum(items, pub_key, limit_size=50):
+    if isinstance(items, pd.Series):
+        items = items.values
+
+    n = len(items)
+
+    if n < limit_size:
+        return functools.reduce(lambda x, y: opt_paillier_add(pub_key, x, y),
+                                items)
+
+    mid = int(n / 2)
+    left = items[:mid]
+    right = items[mid:]
+
+    left_sum = batch_paillier_sum.remote(left, pub_key)
+    right_sum = batch_paillier_sum.remote(right, pub_key)
+    return opt_paillier_add(pub_key, ray.get(left_sum), ray.get(right_sum))
+
+
 def atom_paillier_sum(items, pub_key, add_actors, limit=15):
     # less 'limit' will create more parallels
     # nums = items * limit
@@ -205,21 +296,12 @@ def atom_paillier_sum(items, pub_key, add_actors, limit=15):
     if len(items) < limit:
         return functools.reduce(lambda x, y: opt_paillier_add(pub_key, x, y),
                                 items)
-    N = int(len(items) / limit)
-    items_list = []
-    inter_results = []
-    for i in range(N):
-        tmp_val = items[i * limit:(i + 1) * limit]
-        # tmp_add_actor = self.add_actors[i]
-        if i == (N - 1):
-            tmp_val = items[i * limit:]
-        items_list.append(tmp_val)
+
+    items_list = [items[x:x + limit] for x in range(0, len(items), limit)]
+
     inter_results = list(
         add_actors.map(lambda a, v: a.add.remote(v), items_list))
-    #     tmp_g_left, tmp_g_right, tmp_h_left,tmp_h_right  = list(
-    #         self.pools.map(lambda a, v: a.pai_add.remote(v), [G_left_g, G_right_g, H_left_h, H_right_h]))
-    # # inter_results = [ActorAdd.remote(self.pub, items[i*N:(i+1)*N]).add.remote() for i in range(nums)]
-    # final_result = ray.get(inter_results)
+
     final_result = functools.reduce(
         lambda x, y: opt_paillier_add(pub_key, x, y), inter_results)
     return final_result
@@ -227,8 +309,13 @@ def atom_paillier_sum(items, pub_key, add_actors, limit=15):
 
 class MyPandasBlockAccessor(PandasBlockAccessor):
 
-    def sum(self, on: KeyFn, ignore_nulls: bool, encrypted: bool, pub_key: None,
-            add_actors) -> Optional[U]:
+    def sum(self,
+            on: KeyFn,
+            ignore_nulls: bool,
+            encrypted: bool,
+            pub_key: None,
+            add_actors,
+            limit=30) -> Optional[U]:
         pd = lazy_import_pandas()
         if on is not None and not isinstance(on, str):
             raise ValueError(
@@ -237,7 +324,7 @@ class MyPandasBlockAccessor(PandasBlockAccessor):
         if self.num_rows() == 0:
             return None
         col = self._table[on]
-        print("=====", self._table, col)
+        # print("=====", self._table, col)
         # if col.isnull().all():
         #     # Short-circuit on an all-null column, returning None. This is required for
         #     # sum() since it will otherwise return 0 when summing on an all-null column,
@@ -246,7 +333,8 @@ class MyPandasBlockAccessor(PandasBlockAccessor):
         if not encrypted:
             val = col.sum(skipna=ignore_nulls)
         else:
-            val = atom_paillier_sum(col, pub_key, add_actors)
+            val = atom_paillier_sum(col, pub_key, add_actors, limit=limit)
+            # val = ray.get(batch_paillier_sum.remote(col, pub_key))
             # tmp_val = {}
             # for tmp_col in on:
             #     tmp_val[tmp_col] = atom_paillier_sum(col[tmp_col], pub_key, add_actors)
@@ -356,35 +444,6 @@ class ActorAdd(object):
         return tmp_sum
 
 
-# def atom_paillier_sum(items, pub_key, add_actors, limit=3):
-#     nums = items * limit
-#     if len(items) < nums:
-#         return functools.reduce(lambda x, y: opt_paillier_add(pub_key, x, y),
-#                                 items)
-#     N = int(len(items) / nums)
-#     items_list = []
-
-#     inter_results = []
-#     for i in range(nums):
-#         tmp_val = items[i * N:(i + 1) * N]
-#         # tmp_add_actor = self.add_actors[i]
-#         if i == (nums - 1):
-#             tmp_val = items[i * N:]
-#         items_list.append(tmp_val)
-
-#     inter_results = list(
-#         add_actors.map(lambda a, v: a.add.remote(v), items_list))
-
-#     #     tmp_g_left, tmp_g_right, tmp_h_left,tmp_h_right  = list(
-#     #         self.pools.map(lambda a, v: a.pai_add.remote(v), [G_left_g, G_right_g, H_left_h, H_right_h]))
-#     # # inter_results = [ActorAdd.remote(self.pub, items[i*N:(i+1)*N]).add.remote() for i in range(nums)]
-#     # final_result = ray.get(inter_results)
-#     final_result = functools.reduce(
-#         lambda x, y: opt_paillier_add(pub_key, x, y), inter_results)
-
-#     return final_result
-
-
 @ray.remote
 class PallierAdd(object):
 
@@ -414,10 +473,6 @@ class PallierAdd(object):
             inter_results = list(
                 self.add_actors.map(lambda a, v: a.add.remote(v), items_list))
 
-            #     tmp_g_left, tmp_g_right, tmp_h_left,tmp_h_right  = list(
-            #         self.pools.map(lambda a, v: a.pai_add.remote(v), [G_left_g, G_right_g, H_left_h, H_right_h]))
-            # # inter_results = [ActorAdd.remote(self.pub, items[i*N:(i+1)*N]).add.remote() for i in range(nums)]
-            # final_result = ray.get(inter_results)
             final_result = functools.reduce(
                 lambda x, y: opt_paillier_add(self.pub, x, y), inter_results)
             # final_results = ActorAdd.remote(self.pub, ray.get(inter_results)).add.remote()
@@ -477,29 +532,12 @@ class MapGH(object):
             G_left_g = self.g[flag].tolist()
             # G_right_g = self.g[(1 - flag).astype('bool')].tolist()
             H_left_h = self.h[flag].tolist()
-            # H_right_h = self.h[(1 - flag).astype('bool')].tolist()
-            # print("++++++++++", len(G_left_g), len(G_right_g), len(H_left_h),
-            #       len(H_right_h))
 
-            print("++++++++++", len(G_left_g), len(H_left_h))
-
-            # tmp_g_left, tmp_g_right, tmp_h_left, tmp_h_right = list(
-            #     self.pools.map(lambda a, v: a.pai_add.remote(v),
-            #                    [G_left_g, G_right_g, H_left_h, H_right_h]))
+            # print("++++++++++", len(G_left_g), len(H_left_h))
 
             tmp_g_left, tmp_h_left = list(
                 self.pools.map(lambda a, v: a.pai_add.remote(v),
                                [G_left_g, H_left_h]))
-            # tmp_g_left, tmp_g_right, tmp_h_left,tmp_h_right = list(ray.get([self.pools.pai_add.remote(tmp_li, nums) for tmp_li in [G_left_g, G_right_g, H_left_h, H_right_h]]))
-
-            # tmp_g_left = functools.reduce(
-            #     lambda x, y: opt_paillier_add(self.pub, x, y), G_left_g)
-            # tmp_g_right = functools.reduce(
-            #     lambda x, y: opt_paillier_add(self.pub, x, y), G_right_g)
-            # tmp_h_left = functools.reduce(
-            #     lambda x, y: opt_paillier_add(self.pub, x, y), H_left_h)
-            # tmp_h_right = functools.reduce(
-            #     lambda x, y: opt_paillier_add(self.pub, x, y), H_right_h)
 
             G_lefts.append(tmp_g_left)
 
@@ -555,21 +593,51 @@ class ReduceGH(object):
 
 
 @ray.remote
+def groupby_sum(group_col, pub, on_cols, add_actors):
+    df_list = []
+    for tmp_col in group_col:
+        tmp_sum = tmp_col._aggregate_on(
+            PallierSum,
+            on=on_cols,
+            #   on=['g', 'h'],
+            ignore_nulls=True,
+            pub_key=pub,
+            add_actors=add_actors).to_pandas()
+
+        tmp_count = tmp_col.count().to_pandas()
+        tmp_df = pd.merge(tmp_sum, tmp_count)
+        df_list.append(tmp_df)
+
+    return df_list
+
+
+@ray.remote
 class GroupPool:
 
-    def __init__(self, add_actors, pub) -> None:
+    def __init__(self, add_actors, pub, on_cols) -> None:
         self.add_actors = add_actors
         self.pub = pub
-        pass
+        self.on_cols = on_cols
 
     def groupby(self, group_col):
-        tmp_sum = group_col._aggregate_on(PallierSum,
-                                          on=['g', 'h'],
-                                          ignore_nulls=True,
-                                          pub_key=self.pub,
-                                          add_actors=self.add_actors)
+        df_list = []
+        for tmp_col in group_col:
+            tmp_sum = tmp_col._aggregate_on(
+                PallierSum,
+                on=self.on_cols,
+                #   on=['g', 'h'],
+                ignore_nulls=True,
+                pub_key=self.pub,
+                add_actors=self.add_actors).to_pandas()
 
-        return tmp_sum.to_pandas()
+            tmp_count = tmp_col.count().to_pandas()
+            tmp_df = pd.merge(tmp_sum, tmp_count)
+
+            df_list.append(tmp_df)
+
+        # return tmp_sum.to_pandas()
+        # return pd.merge(tmp_sum, tmp_count)
+        return df_list
 
 
 @ray.remote
@@ -618,10 +686,6 @@ def phe_add(enc1, enc2):
     return enc1 + enc2
 
 
-# def opt_paillier_add(pub, x, y):
-#     return opt_paillier_add(pub, x, y)
-
-
 class ClientChannelProxy:
 
     def __init__(self, host, port, dest_role="NotSetYet"):
@@ -639,8 +703,11 @@ class ClientChannelProxy:
         msg = {"v": pickle.dumps(val), "tag": tag}
         self.chann_.send(msg)
         _ = self.chann_.recv()
-        logger.debug("Send value with tag '{}' to {} finish".format(
+        fl_console_log.debug("Send value with tag '{}' to {} finish".format(
             tag, self.dest_role))
+
+        # logger.debug("Send value with tag '{}' to {} finish".format(
+        #     tag, self.dest_role))
 
     # Send val and it's tag to server side, client begin the send action
     # in a thread when the the method reutrn but not ensure that server
@@ -673,12 +740,14 @@ class ServerChannelProxy:
     def StartRecvLoop(self):
 
         def recv_loop():
-            logger.info("Start recv loop.")
+            fl_console_log.info("Start recv loop.")
+            # logger.info("Start recv loop.")
             while (not self.stop_signal_):
                 try:
                     msg = self.chann_.recv(block=False)
                 except Exception as e:
-                    logger.error(e)
+                    fl_console_log.error(e)
+                    # logger.error(e)
                     break
 
                 if msg is None:
@@ -687,15 +756,20 @@ class ServerChannelProxy:
                 key = msg["tag"]
                 value = msg["v"]
                 if self.recv_cache_.get(key, None) is not None:
-                    logger.warn(
+                    fl_console_log.warn(
                         "Hash entry for tag '{}' is not empty, replace old value"
                         .format(key))
+                    # logger.warn(
+                    #     "Hash entry for tag '{}' is not empty, replace old value"
+                    #     .format(key))
                     del self.recv_cache_[key]
 
-                logger.debug("Recv msg with tag '{}'.".format(key))
+                fl_console_log.debug("Recv msg with tag '{}'.".format(key))
+                # logger.debug("Recv msg with tag '{}'.".format(key))
                 self.recv_cache_[key] = value
                 self.chann_.send("ok")
-            logger.info("Recv loop stops.")
+            fl_console_log.info("Recv loop stops.")
+            # logger.info("Recv loop stops.")
 
         self.recv_loop_fut_ = self.executor_.submit(recv_loop)
 
@@ -703,18 +777,18 @@ class ServerChannelProxy:
     def StopRecvLoop(self):
         self.stop_signal_ = True
         self.recv_loop_fut_.result()
-        logger.info("Recv loop already exit, clean cached value.")
+        fl_console_log.info("Recv loop already exit, clean cached value.")
+        # logger.info("Recv loop already exit, clean cached value.")
         key_list = list(self.recv_cache_.keys())
         for key in key_list:
             del self.recv_cache_[key]
-            logger.warn(
+            fl_console_log.warn(
                 "Remove value with tag '{}', not used until now.".format(key))
-        # del self.recv_cache_
-        logger.info("Release system resource!")
+            # logger.warn(
+            #     "Remove value with tag '{}', not used until now.".format(key))
+        # logger.info("Release system resource!")
+        fl_console_log.info("Release system resource!")
         self.chann_.socket.close()
-        # self.chann_.term()
-        # self.chann_.context.destroy()
-        # self.chann_.socket.destroy()
 
     # Get value from cache, and the check will repeat at most 'retries' times,
     # and sleep 0.3s after each check to avoid check all the time.
@@ -725,11 +799,13 @@ class ServerChannelProxy:
             end = time.time()
             if val is not None:
                 del self.recv_cache_[tag]
-                logger.debug("Get val with tag '{}' finish.".format(tag))
+                fl_console_log.debug(
+                    "Get val with tag '{}' finish.".format(tag))
+                # logger.debug("Get val with tag '{}' finish.".format(tag))
                 return pickle.loads(val)
 
             if (end - start) > max_time:
-                logger.warn(
+                fl_console_log.warn(
                     "Can't get value for tag '{}', timeout.".format(tag))
                 break
 
@@ -789,7 +865,9 @@ class XGB_GUEST_EN:
             #  channel=None,
             sid=0,
             record=0,
-            is_encrypted=None):
+            is_encrypted=None,
+            sample_ratio=0.3,
+            batch_size=8):
         # self.channel = channel
         self.proxy_server = proxy_server
         self.proxy_client_host = proxy_client_host
@@ -814,6 +892,8 @@ class XGB_GUEST_EN:
         self.tree_structure = {}
         self.encrypted = is_encrypted
         self.chops = 20
+        self.feature_ratio = sample_ratio
+        self.batch_size = batch_size
 
     def sum_job(self, tmp_group):
         if self.encrypted:
@@ -840,9 +920,20 @@ class XGB_GUEST_EN:
         if bins is None:
             bins = max(int(np.ceil(np.log(n) / np.log(4))), 2)
 
-        X_guest['g'] = encrypted_ghs['g']
-        X_guest['h'] = encrypted_ghs['h']
-        cols = X_guest.columns.difference(['g', 'h'])
+        if self.encrypted:
+
+            if self.merge_gh:
+                X_guest['g'] = encrypted_ghs['g']
+                cols = X_guest.columns.difference(['g', 'h'])
+            else:
+                X_guest['g'] = encrypted_ghs['g']
+                X_guest['h'] = encrypted_ghs['h']
+                cols = X_guest.columns.difference(['g', 'h'])
+
+        else:
+            X_guest['g'] = encrypted_ghs['g']
+            X_guest['h'] = encrypted_ghs['h']
+            cols = X_guest.columns.difference(['g', 'h'])
 
         set_items = X_guest[cols].apply(np.unique, axis=0)
         X_guest_max0 = X_guest[cols].max(axis=0) + 0.005
@@ -879,87 +970,65 @@ class XGB_GUEST_EN:
         buckets_x_guest = ray_x_guest.map_batches(hist_bin_transform,
                                                   batch_format="pandas")
 
-        # add 'g' and 'h' to bucket guest
-        # buckets_x_guest = buckets_x_guest.add_column(
-        #     "g", lambda df: encrypted_ghs['g'])
-
-        # buckets_x_guest = buckets_x_guest.add_column(
-        #     "h", lambda df: encrypted_ghs['h'])
-
-        print("current x-guset and buckets_x_guest", X_guest,
-              buckets_x_guest.to_pandas(), encrypted_ghs,
-              buckets_x_guest.to_pandas().shape, encrypted_ghs.shape)
+        # print("current x-guset and buckets_x_guest", X_guest,
+        #       buckets_x_guest.to_pandas(), encrypted_ghs,
+        #       buckets_x_guest.to_pandas().shape, encrypted_ghs.shape)
 
         total_left_ghs = {}
-        # paillier_add_actors = ActorPool(
-        #     [ActorAdd.remote(self.pub) for _ in range(add_actor_num)])
-
-        # grouppools = ActorPool([
-        #     GroupPool.remote(paillier_add_actors, self.pub) for _ in range(20)
-        # ])
 
         groups = []
+        batch_size = 5
+        internal_groups = []
         for tmp_col in cols:
-            tmp_group = buckets_x_guest.groupby(tmp_col)
-            #     groups.append(tmp_group)
-
-            #     # sum_que.put(tmp_sum.to_pandas())
-
-            # pool = Pool(7)
-            # tasks = []
-
-            # for i in range(len(groups)):
-            #     # tmp_task = pool.apply_async(func=self.sum_job, args=(groups[i],))
-            #     tmp_task = pool.apply_async(func=sum_job,
-            #                                 args=(
-            #                                     groups[i],
-            #                                     self.encrypted,
-            #                                     self.pub,
-            #                                     self.paillier_add_actors,
-            #                                 ))
-
-            #     tasks.append(tmp_task)
-
-            # pool.close()
-            # pool.join()
-
-            # for tmp_task in tasks:
-            #     print(tmp_task.get())
-
-            # if self.encrypted:
-            #     groupsums = [
-            #         GroupSum.remote(tmp_group, self.pub, paillier_add_actors)
-            #         for tmp_group in groups
-            #     ]
-
-            #     [tmp_groupsum.groupsum.remote() for tmp_groupsum in groupsums]
-
-            #     res = ray.get(
-            #         [tmp_groupsum.getsum.remote() for tmp_groupsum in groupsums])
-
-            #     # res = list(grouppools.map(lambda a, v: a.groupby.remote(v), groups))
-            # else:
-            #     res = [
-            #         tmp_group.sum(on=['g', 'h']).to_pandas() for tmp_group in groups
-            #     ]
-
-            # for key, tmp_task in zip(cols, tasks):
-            #     total_left_ghs[key] = tmp_task.get()
-
-            if self.encrypted:
-                tmp_sum = tmp_group._aggregate_on(
-                    PallierSum,
-                    on=['g', 'h'],
-                    ignore_nulls=True,
-                    pub_key=self.pub,
-                    add_actors=self.paillier_add_actors)
+            # print("=====tmp_col======", tmp_col)
+            if self.merge_gh:
+                tmp_group = buckets_x_guest.select_columns(
+                    cols=[tmp_col, "g"]).groupby(tmp_col)
             else:
-                tmp_sum = tmp_group.sum(on=['g', 'h'])
-            # total_left_ghs[tmp_col] = tmp_sum.to_pandas().sort_values(
-            #     by=tmp_col, ascending=True)
-            total_left_ghs[tmp_col] = tmp_sum.to_pandas()
+                tmp_group = buckets_x_guest.select_columns(
+                    cols=[tmp_col, "g", "h"]).groupby(tmp_col)
 
-        print("current total_left_ghs: ", total_left_ghs)
+            internal_groups.append(tmp_group)
+
+        # each_bin = int(len(internal_groups) / self.batch_size)
+
+        groups = [
+            internal_groups[x:x + self.batch_size]
+            for x in range(0, len(internal_groups), self.batch_size)
+        ]
+
+        print("==============", cols, groups, len(groups))
+
+        if self.encrypted:
+            internal_res = list(
+                self.grouppools.map(lambda a, v: a.groupby.remote(v), groups))
+
+            # if self.merge_gh:
+            #     internal_res = ray.get(
+            #         groupby_sum.remote(group_col=groups,
+            #                            pub=self.pub,
+            #                            on_cols=['g'],
+            #                            add_actors=self.grouppools))
+            # else:
+            #     internal_res = ray.get(
+            #         groupby_sum.remote(group_col=groups,
+            #                            pub=self.pub,
+            #                            on_cols=['g', 'h'],
+            #                            add_actors=self.grouppools))
+
+            res = []
+            for tmp_res in internal_res:
+                res += tmp_res
+
+        else:
+            res = [
+                tmp_group.sum(on=['g', 'h']).to_pandas()
+                for tmp_group in internal_groups
+            ]
+
+        for key, tmp_task in zip(cols, res):
+            # total_left_ghs[key] = tmp_task.get()
+            total_left_ghs[key] = tmp_task
 
         return total_left_ghs
 
@@ -1020,7 +1089,7 @@ class XGB_GUEST_EN:
 
         # calculate sums of encrypted 'g' and 'h'
         #TODO: only calculate the right ids and left ids
-        if ray_group:
+        if config['ray_group']:
             encrypte_gh_sums = self.sums_of_encrypted_ghs_with_ray(
                 X_guest, encrypted_ghs)
         else:
@@ -1029,7 +1098,8 @@ class XGB_GUEST_EN:
         self.proxy_client_host.Remote(encrypte_gh_sums, 'encrypte_gh_sums')
         best_cut = self.proxy_server.Get('best_cut')
 
-        logging.info("current best cut: {}".format(best_cut))
+        # logging.info("current best cut: {}".format(best_cut))
+        fl_console_log.info("current best cut: {}".format(best_cut))
 
         host_best = best_cut['host_best']
         guest_best = best_cut['guest_best']
@@ -1078,7 +1148,9 @@ class XGB_GUEST_EN:
                     }, 'ids_w')
                 # updata guest lookup table
                 self.lookup_table[self.guest_record] = [best_var, best_cut]
-                print("guest look_up table:", self.lookup_table)
+                fl_console_log.info("guest look_up table is {}".format(
+                    self.lookup_table))
+                # print("guest look_up table:", self.lookup_table)
 
                 # self.guest_record += 1
                 self.guest_record += 1
@@ -1123,10 +1195,16 @@ class XGB_GUEST_EN:
     def fit(self, X_guest, lookup_table_sum):
         for t in range(self.n_estimators):
             self.record = 0
+            sample_ids = self.proxy_server.Get('sample_ids')
+            if sample_ids is None:
+                current_x = X_guest.copy()
+            else:
+                current_x = X_guest.iloc[sample_ids].copy()
             # gh_host = xgb_guest.channel.recv()
             gh_en = self.proxy_server.Get('gh_en')
+            # print("gh_en: ", gh_en)
             self.tree_structure[t + 1] = self.guest_tree_construct(
-                X_guest.copy(), gh_en, 0)
+                current_x, gh_en, 0)
 
             # stat construct boosting trees
 
@@ -1204,7 +1282,11 @@ class XGB_HOST_EN:
             random_seed=112,
             sid=0,
             record=0,
-            encrypted=None):
+            encrypted=None,
+            top_ratio=0.2,
+            other_ratio=0.2,
+            sample_type='goss',
+            limit_size=20000):
 
         # self.channel = channel
         self.proxy_server = proxy_server
@@ -1228,10 +1310,16 @@ class XGB_HOST_EN:
         self.lookup_table_sum = {}
         self.host_record = 0
         self.guest_record = 0
-        self.ratio = 10**5
+        self.ratio = 10**8
+        self.const = 2
+        self.g_ratio = 10**8
         self.encrypted = encrypted
         self.global_transfer_time = 0
         self.gloabl_construct_time = 0
+        self.top_ratio = top_ratio
+        self.other_ratio = other_ratio
+        self.sample_type = sample_type
+        self.limit_size = limit_size
 
     def _grad(self, y_hat, Y):
 
@@ -1264,7 +1352,7 @@ class XGB_HOST_EN:
         h = plain_gh['h'].values
 
         # best_gain = None
-        best_gain = 0
+        best_gain = 0.001
         best_cut = None
         best_var = None
         G_left_best, G_right_best, H_left_best, H_right_best = None, None, None, None
@@ -1312,24 +1400,59 @@ class XGB_HOST_EN:
             #     for _ in range(decryption_pools)
             # ])
             for key, val in gh_sums_dict.items():
-                m, n = val.shape
-                tmp_var = [key] * m
-                tmp_cut = val[key].values.tolist()
-                for col in sum_col:
+                if self.merge_gh:
+                    m = len(val)
+                    col = "sum(g)"
+                    tmp_var = [key] * m
+                    tmp_cut = val[key].values.tolist()
                     val[col] = [
                         opt_paillier_decrypt_crt(self.pub, self.prv, item)
                         for item in val[col]
                     ]
-                val = val.sort_values(by=key, ascending=True)
+                    val = val.sort_values(by=key, ascending=True)
+                    val['g'] = val['sum(g)'] // self.ratio
+                    val['h'] = val['sum(g)'] - val['g'] * self.ratio
+                    val['g'] = val['g'] / 10**4 - self.const * val['count()']
+                    val['h'] = val['h'] / 10**4
 
-                cumsum_val = val.cumsum() / self.ratio
-                tmp_g_lefts = cumsum_val['sum(g)']
-                tmp_h_lefts = cumsum_val['sum(h)']
+                    tmp_g_lefts = val['g'].cumsum()
+                    tmp_h_lefts = val['h'].cumsum()
 
-                G_lefts += tmp_g_lefts.values.tolist()
-                H_lefts += tmp_h_lefts.values.tolist()
-                vars += tmp_var
-                cuts += tmp_cut
+                    # val['sum(h)'] = val['sum(g)'] % (self.ratio * self.ratio)
+                    # val['sum(g)'] = val['sum(g)'] // (self.ratio * self.ratio)
+
+                    # # substract const
+                    # val['sum(g)'] = val[
+                    #     'sum(g)'] / self.ratio - self.const * val['count()']
+                    # val['sum(h)'] = val['sum(h)'] / self.ratio
+                    # tmp_g_lefts = val['sum(g)'].cumsum(
+                    # )  #/ self.ratio - self.const * val['count']
+                    # tmp_h_lefts = val['sum(h)'].cumsum()  #/ self.ratio
+
+                    G_lefts += tmp_g_lefts.values.tolist()
+                    H_lefts += tmp_h_lefts.values.tolist()
+                    vars += tmp_var
+                    cuts += tmp_cut
+
+                else:
+                    m, n = val.shape
+                    tmp_var = [key] * m
+                    tmp_cut = val[key].values.tolist()
+                    for col in sum_col:
+                        val[col] = [
+                            opt_paillier_decrypt_crt(self.pub, self.prv, item)
+                            for item in val[col]
+                        ]
+                    val = val.sort_values(by=key, ascending=True)
+
+                    cumsum_val = val.cumsum() / self.ratio
+                    tmp_g_lefts = cumsum_val['sum(g)']
+                    tmp_h_lefts = cumsum_val['sum(h)']
+
+                    G_lefts += tmp_g_lefts.values.tolist()
+                    H_lefts += tmp_h_lefts.values.tolist()
+                    vars += tmp_var
+                    cuts += tmp_cut
 
                 # encrypted_sums = val[sum_col]
                 # m, n = encrypted_sums.shape
@@ -1363,7 +1486,7 @@ class XGB_HOST_EN:
             'var': vars,
             'cut': cuts
         })
-        print("current gh_sums and plain_gh_sums: ", gh_sums, plain_gh_sums)
+        # print("current gh_sums and plain_gh_sums: ", gh_sums, plain_gh_sums)
 
         gh_sums['G_right'] = plain_gh_sums['g'] - gh_sums['G_left']
         gh_sums['H_right'] = plain_gh_sums['h'] - gh_sums['H_left']
@@ -1411,7 +1534,7 @@ class XGB_HOST_EN:
         return gh_sums
 
     def guest_best_cut(self, guest_gh_sums):
-        best_gain = 0
+        best_gain = 0.001
         if guest_gh_sums.empty:
             return None
         guest_gh_sums['gain'] = guest_gh_sums['G_left'] ** 2 / (guest_gh_sums['H_left'] + self.reg_lambda) + \
@@ -1420,10 +1543,11 @@ class XGB_HOST_EN:
                 guest_gh_sums['H_left'] + guest_gh_sums['H_right'] + + self.reg_lambda)
 
         guest_gh_sums['gain'] = guest_gh_sums['gain'] / 2 - self.gamma
-        print("guest_gh_sums: ", guest_gh_sums)
+        # print("guest_gh_sums: ", guest_gh_sums)
 
         max_row = guest_gh_sums['gain'].idxmax()
-        print("max_row: ", max_row)
+        fl_console_log.info("max_row: {}".format(max_row))
+        # print("max_row: ", max_row)
         max_item = guest_gh_sums.iloc[max_row, :]
 
         max_gain = max_item['gain']
@@ -1439,7 +1563,7 @@ class XGB_HOST_EN:
                             current_depth,
                             plain_gh=pd.DataFrame(columns=['g', 'h'])):
         m, n = X_host.shape
-        print("current_depth: ", current_depth, m)
+        # print("current_depth: ", current_depth, m)
 
         if (self.min_child_sample and
                 m < self.min_child_sample) or current_depth > self.max_depth:
@@ -1458,7 +1582,7 @@ class XGB_HOST_EN:
         )  # the item contains {'G_left', 'G_right', 'H_left', 'H_right', 'var', 'cut'}
 
         # decrypted the 'guest_gh_sums' with paillier
-        if ray_group:
+        if config['ray_group']:
             dec_guest_gh_sums = self.gh_sums_decrypted_with_ray(
                 guest_gh_sums, plain_gh_sums=plain_gh_sums)
         else:
@@ -1475,10 +1599,15 @@ class XGB_HOST_EN:
                 'guest_best': guest_best
             }, 'best_cut')
 
-        logging.info(
+        fl_console_log.info(
             "current depth: {}, host best var: {} and guest best var: {}".
             format(current_depth, host_best, guest_best))
-        print("host and guest best", host_best, guest_best)
+
+        # logging.info(
+        #     "current depth: {}, host best var: {} and guest best var: {}".
+        #     format(current_depth, host_best, guest_best))
+        fl_console_log.info("Best host is {} and best guest is {}".format(
+            host_best, guest_best))
         host_best_gain = None
         guest_best_gain = None
 
@@ -1544,10 +1673,8 @@ class XGB_HOST_EN:
                 self.host_record += 1
 
             tree_structure = {(role, record): {}}
-
-            logging.info("current role: {}, current record: {}".format(
+            fl_console_log.info("current role: {}, current record: {}".format(
                 role, record))
-            print("role, record: ", role, record)
 
             X_host_left = X_host.loc[id_left]
             plain_gh_left = plain_gh.loc[id_left]
@@ -1631,7 +1758,8 @@ class XGB_HOST_EN:
 
         start = time.time()
         for t in range(self.n_estimators):
-            print("Begin to trian tree: ", t + 1)
+            fl_console_log.info("Begin to trian tree {}".format(t + 1))
+            # print("Begin to trian tree: ", t + 1)
             f_t = pd.Series([0] * Y.shape[0])
 
             # host cal gradients and hessians with its own label
@@ -1639,65 +1767,151 @@ class XGB_HOST_EN:
                 'g': self._grad(y_hat, Y.flatten()),
                 'h': self._hess(y_hat, Y.flatten())
             })
+            if self.sample_type == 'goss' and len(X_host) > self.limit_size:
+                top_ids, low_ids = goss_sample(gh,
+                                               top_rate=self.top_ratio,
+                                               other_rate=self.other_ratio)
+
+                amply_rate = (1 - self.top_ratio) / self.other_ratio
+
+                # amplify the selected smaller gradients
+                gh['g'][low_ids] *= amply_rate
+
+                sample_ids = top_ids + low_ids
+
+            elif self.sample_type == 'random' and len(X_host) > self.limit_size:
+                sample_ids = random_sample(gh,
+                                           top_rate=self.top_ratio,
+                                           other_rate=self.other_ratio)
+
+                # TODO: Amplify the sample gradients
+                # X_host = X_host.iloc[sample_ids].copy()
+                # Y = Y[sample_ids]
+                # ghs = ghs.iloc[sample_ids].copy()
+
+            else:
+                sample_ids = None
+
+            self.proxy_client_guest.Remote(sample_ids, "sample_ids")
+            if sample_ids is not None:
+                # select from 'X_host', Y and ghs
+                # print("sample_ids: ", sample_ids)
+                current_x = X_host.iloc[sample_ids].copy()
+                # current_y = Y[sample_ids]
+                current_ghs = gh.iloc[sample_ids].copy()
+                current_y_hat = y_hat[sample_ids]
+                current_f_t = f_t.iloc[sample_ids].copy()
+            else:
+                current_x = X_host.copy()
+                # current_y = Y.copy()
+                current_ghs = gh.copy()
+                current_y_hat = y_hat.copy()
+                current_f_t = f_t.copy()
+
+            # else:
+            #     sample_ids
+            #     raise ValueError("The {self.sample_type} was not defined!")
 
             # convert gradients and hessians to ints and encrypted with paillier
             # ratio = 10**3
             # gh_large = (gh * ratio).astype('int')
             if self.encrypted:
-                flat_gh = gh.values.flatten()
-                flat_gh *= self.ratio
+                if self.merge_gh:
+                    # cp_gh = gh.copy()
+                    cp_gh = current_ghs.copy()
+                    cp_gh['g'] = cp_gh['g'] + self.const
+                    cp_gh = np.round(cp_gh, 4)
+                    cp_gh = (cp_gh * 10**4).astype('int')
+                    # cp_gh = cp_gh * self.ratio
+                    # make 'g' positive
+                    # gh['g'] = gh['g'] + self.const
+                    # gh *= self.ratio
+                    # cp_gh_int = (cp_gh * self.ratio).astype('int')
 
-                flat_gh = flat_gh.astype('int')
+                    merge_gh = (cp_gh['g'] * self.ratio + cp_gh['h'])
+                    # print("merge_gh: ", merge_gh.values)
+                    start_enc = time.time()
+                    enc_merge_gh = list(
+                        paillier_encryptor.map(lambda a, v: a.pai_enc.remote(v),
+                                               merge_gh.values.tolist()))
 
-                start_enc = time.time()
-                enc_flat_gh = list(
-                    paillier_encryptor.map(lambda a, v: a.pai_enc.remote(v),
-                                           flat_gh.tolist()))
+                    enc_gh_df = pd.DataFrame({
+                        'g': enc_merge_gh,
+                        'id': cp_gh.index.tolist()
+                    })
+                    # cp_gh['g'] = enc_merge_gh
+                    # enc_gh_df = cp_gh['g']
+                    enc_gh_df.set_index('id', inplace=True)
+                    # print("enc_gh_df: ", enc_gh_df)
+                    end_enc = time.time()
 
-                end_enc = time.time()
+                    # merge_gh = (gh['g'] * self.g_ratio +
+                    #             gh['h']).values.atype('int')
+                    # enc_gh_df = pd.DataFrame({'merge_gh': merge_gh})
 
-                enc_gh = np.array(enc_flat_gh).reshape((-1, 2))
-                enc_gh_df = pd.DataFrame(enc_gh, columns=['g', 'h'])
+                else:
+                    # flat_gh = gh.values.flatten()
+                    flat_gh = current_ghs.values.flatten()
+                    flat_gh *= self.ratio
+
+                    flat_gh = flat_gh.astype('int')
+
+                    start_enc = time.time()
+                    enc_flat_gh = list(
+                        paillier_encryptor.map(lambda a, v: a.pai_enc.remote(v),
+                                               flat_gh.tolist()))
+
+                    end_enc = time.time()
+
+                    enc_gh = np.array(enc_flat_gh).reshape((-1, 2))
+                    # enc_gh_df = pd.DataFrame(enc_gh, )
+                    enc_gh_df = pd.DataFrame(enc_gh, columns=['g', 'h'])
+                    enc_gh_df['id'] = current_ghs.index.tolist()
+                    enc_gh_df.set_index('id', inplace=True)
 
                 # send all encrypted gradients and hessians to 'guest'
                 self.proxy_client_guest.Remote(enc_gh_df, "gh_en")
 
                 end_send_gh = time.time()
-                print("Time for encryption and transfer: ",
-                      (end_enc - start_enc), (end_send_gh - end_enc))
-                print("Encrypt finish.")
+                fl_console_log.info(
+                    "The encrypted time is {} and the transfer time is {}".
+                    format((end_enc - start_enc), (end_send_gh - end_enc)))
+                # print("Time for encryption and transfer: ",
+                #       (end_enc - start_enc), (end_send_gh - end_enc))
+                fl_console_log.info("Encrypt finish.")
+                # print("Encrypt finish.")
 
             else:
-                self.proxy_client_guest.Remote(gh, "gh_en")
+                self.proxy_client_guest.Remote(current_ghs, "gh_en")
 
-            # start construct boosting trees
-            # lp = LineProfiler(xgb_host.host_tree_construct)
-            # lp.run(
-            #     "xgb_host.tree_structure[t + 1] = xgb_host.host_tree_construct(X_host.copy(), f_t, 0, gh)"
-            # )
-            # lp.print_stats()
-
+            # self.tree_structure[t + 1] = self.host_tree_construct(
+            #     X_host.copy(), f_t, 0, gh)
             self.tree_structure[t + 1] = self.host_tree_construct(
-                X_host.copy(), f_t, 0, gh)
+                current_x.copy(), current_f_t, 0, current_ghs)
             # y_hat = y_hat + xgb_host.learning_rate * f_t
 
             end_build_tree = time.time()
 
             lookup_table_sum[t + 1] = self.lookup_table
-            y_hat = y_hat + self.learning_rate * f_t
+            # y_hat = y_hat + self.learning_rate * f_t
+            if sample_ids is None:
+                y_hat = y_hat + self.learning_rate * current_f_t
 
-            logger.info("Finish to trian tree {}.".format(t + 1))
+            else:
+                y_hat[sample_ids] = y_hat[
+                    sample_ids] + self.learning_rate * current_f_t
+
+            # current_y_hat = current_y_hat + self.learning_rate * current_f_t
+            fl_console_log.info("Finish to trian tree {}.".format(t + 1))
+
+            # logger.info("Finish to trian tree {}.".format(t + 1))
 
             current_loss = self.log_loss(Y, 1 / (1 + np.exp(-y_hat)))
+            # current_loss = self.log_loss(current_y,
+            #                              1 / (1 + np.exp(-current_y_hat)))
             train_losses.append(current_loss)
 
-            print("train_losses ", train_losses)
-        ks, auc = evaluate_ks_and_roc_auc(y_real=Y, y_proba=y_hat)
-        self.ks = ks
-        self.auc = auc
-        train_acc = metrics.accuracy_score((y_hat >= 0.5).astype('int'), Y)
-        # acc = sum((y_hat >= 0.5).astype(int) == Y) / len(y_hat)
-        self.acc = train_acc
+            fl_console_log.info("train_losses are {}.".format(train_losses))
 
     def predict_raw(self, X: pd.DataFrame, lookup):
         X = X.reset_index(drop='True')
@@ -1733,33 +1947,23 @@ class XGB_HOST_EN:
         return metrics.log_loss(actual, predict_prob)
 
 
-def get_logger(name):
-    LOG_FORMAT = "[%(asctime)s][%(filename)s:%(lineno)d][%(levelname)s] %(message)s"
-    DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
-    logging.basicConfig(level=logging.DEBUG,
-                        format=LOG_FORMAT,
-                        datefmt=DATE_FORMAT)
-    logger = logging.getLogger(name)
-    return logger
-
-
-logger = get_logger("hetero_xgb")
-
 ph.context.Context.func_params_map = {
     "xgb_host_logic": ("paillier",),
     "xgb_guest_logic": ("paillier",)
 }
 
-# Number of tree to fit.
-num_tree = 5
-# the depth of each tree
-max_depth = 5
-# whether encrypted or not
-is_encrypted = True
-
-ray_group = True
-
-min_child_weight = 5
+config = {
+    'num_tree': 5,
+    'max_depth': 5,
+    'is_encrypted': True,
+    'merge_gh': True,
+    'ray_group': True,
+    'min_child_weight': 5,
+    'sample_type': "random",
+    'feature_sample': True,
+    'host_columns': ${label_field0},
+    'guest_columns': ${label_field1}
+}
 
 
 @ph.context.function(
@@ -1770,52 +1974,90 @@ min_child_weight = 5
     port='8000',
     task_type="classification")
 def xgb_host_logic(cry_pri="paillier"):
+
+    items = list(range(100))
+    map_func = lambda i: i * 2
+    output = ray.get([map.remote(i, map_func) for i in items])
+    # fl_console_log.info("start xgb host logic...")
     logger.info("start xgb host logic...")
+    fl_file_log.debug("xgb host logic file")
+    fl_file_log.info("xgb host logic file")
+    # ray.init(address='ray://172.21.3.16:10001')
 
     role_node_map = ph.context.Context.get_role_node_map()
     node_addr_map = ph.context.Context.get_node_addr_map()
     dataset_map = ph.context.Context.dataset_map
+    taskId = ph.context.Context.params_map['taskid']
+    jobId = ph.context.Context.params_map['jobid']
 
-    logger.debug("dataset_map {}".format(dataset_map))
+    host_log_console = FLConsoleHandler(jb_id=jobId,
+                                        task_id=taskId,
+                                        log_level='info',
+                                        format=FORMAT)
+    fl_console_log = host_log_console.set_format()
 
-    logger.debug("role_nodeid_map {}".format(role_node_map))
+    # logger.debug("dataset_map {}".format(dataset_map))
+    fl_console_log.debug("dataset_map {}".format(dataset_map))
 
-    logger.debug("node_addr_map {}".format(node_addr_map))
+    # logger.debug("role_nodeid_map {}".format(role_node_map))
+    fl_console_log.debug("role_nodeid_map {}".format(role_node_map))
 
+    # logger.debug("node_addr_map {}".format(no de_addr_map))
+    fl_console_log.debug("node_addr_map {}".format(node_addr_map))
     data_key = list(dataset_map.keys())[0]
 
     eva_type = ph.context.Context.params_map.get("taskType", None)
     if eva_type is None:
-        logger.warn(
+        fl_console_log.warn(
             "taskType is not specified, set to default value 'regression'.")
+        # logger.warn(
+        #     "taskType is not specified, set to default value 'regression'.")
         eva_type = "regression"
 
     eva_type = eva_type.lower()
     if eva_type != "classification" and eva_type != "regression":
-        logger.error(
+        fl_console_log.error(
             "Invalid value of taskType, possible value is 'regression', 'classification'."
         )
+        # logger.error(
+        #     "Invalid value of taskType, possible value is 'regression', 'classification'."
+        # )
         return
 
-    logger.info("Current task type is {}.".format(eva_type))
+    fl_console_log.info("Current task type is {}.".format(eva_type))
+
+    # logger.info("Current task type is {}.".format(eva_type))
 
     # 读取注册数据
     data = ph.dataset.read(dataset_key=data_key).df_data
+
+    host_cols = config['host_columns']
+    if host_cols is None:
+        fl_console_log.info("select all columns")
+    else:
+        data = data[host_cols]
     # data = ph.dataset.read(dataset_key='train_hetero_xgb_host').df_data
-    # data = pd.read_csv(
-    #     '/primihub/data/FL/hetero_xgb/train/epsilon_normalized.t.host',
-    #     header=0)
+    # data = pd.read_csv('/home/xusong/data/epsilon_normalized.t.host', header=0)
+
+    # # samples-50000, cols-450
+    # data = data.iloc[:50000, 550:]
     # data = data.iloc[:, 550:]
 
     # y = data.pop('Class').values
 
-    print("host data: ", data)
+    # print("host data: ", data)
 
     if len(role_node_map["host"]) != 1:
-        logger.error("Current node of host party: {}".format(
+        fl_console_log.error("Current node of host party: {}".format(
             role_node_map["host"]))
-        logger.error("In hetero XGB, only dataset of host party has label, "
-                     "so host party must have one, make sure it.")
+
+        fl_console_log.error(
+            "In hetero XGB, only dataset of host party has label, "
+            "so host party must have one, make sure it.")
+        # logger.error("Current node of host party: {}".format(
+        #     role_node_map["host"]))
+        # logger.error("In hetero XGB, only dataset of host party has label, "
+        #              "so host party must have one, make sure it.")
         return
 
     host_nodes = role_node_map["host"]
@@ -1838,30 +2080,24 @@ def xgb_host_logic(cry_pri="paillier"):
     lookup_table_sum = {}
 
     # if is_encrypted:
-    xgb_host = XGB_HOST_EN(n_estimators=num_tree,
-                           max_depth=max_depth,
+    xgb_host = XGB_HOST_EN(n_estimators=config['num_tree'],
+                           max_depth=config['max_depth'],
                            reg_lambda=1,
                            sid=0,
-                           min_child_weight=min_child_weight,
+                           min_child_weight=config['min_child_weight'],
                            objective='logistic',
                            proxy_server=proxy_server,
                            proxy_client_guest=proxy_client_guest,
-                           encrypted=is_encrypted)
-    # channel.recv()
-    # xgb_host.channel.send(xgb_host.pub)
+                           encrypted=config['is_encrypted'])
+    xgb_host.merge_gh = config['merge_gh']
+    xgb_host.fl_console_log = fl_console_log
+
     proxy_client_guest.Remote(xgb_host.pub, "xgb_pub")
-    # proxy_client_guest.Remote(public_k, "xgb_pub")
-    # print(xgb_host.channel.recv())
-    # y_hat = np.array([0.5] * Y.shape[0])
-    # ray.init()
-    # pai_actor = PaillierActor(xgb_host.prv, xgb_host.pub)
+    xgb_host.sample_type = config['sample_type']
+
     paillier_encryptor = ActorPool(
-        [PaillierActor.remote(xgb_host.prv, xgb_host.pub) for _ in range(10)])
-    # actor1, actor2, actor3 = PaillierActor.remote(xgb_host.prv, xgb_host.pub
-    #                                       ), PaillierActor.remote(xgb_host.prv, xgb_host.pub
-    #                                                               ), PaillierActor.remote(xgb_host.prv, xgb_host.pub
-    #                                                               )
-    # pools = ActorPool([actor1, actor2, actor3])
+        [PaillierActor.remote(xgb_host.prv, xgb_host.pub) for _ in range(20)])
+
     xgb_host.lookup_table = {}
     start = time.time()
     xgb_host.fit(X_host, Y, paillier_encryptor, lookup_table_sum)
@@ -1877,17 +2113,24 @@ def xgb_host_logic(cry_pri="paillier"):
     # lp.print_stats()
 
     end = time.time()
-    # logger.info("lasting time for xgb %s".format(end-start))
-    print("train time for xgboost: ", (end - start))
+
+    fl_console_log.info("train time for is {}".format(end - start))
+
+    # print("train time for xgboost: ", (end - start))
+    y_hat = xgb_host.predict_prob(X_host, lookup=lookup_table_sum)
+
+    ks, auc = evaluate_ks_and_roc_auc(y_real=Y, y_proba=y_hat)
+    xgb_host.ks = ks
+    xgb_host.auc = auc
+    train_acc = metrics.accuracy_score((y_hat >= 0.5).astype('int'), Y)
+    # acc = sum((y_hat >= 0.5).astype(int) == Y) / len(y_hat)
+    xgb_host.acc = train_acc
+    fpr, tpr, threshold = metrics.roc_curve(Y, y_hat)
+    xgb_host.fpr = fpr.tolist()
+    xgb_host.tpr = tpr.tolist()
 
     model_file_path = ph.context.Context.get_model_file_path()
     lookup_file_path = ph.context.Context.get_host_lookup_file_path()
-
-    # print("host structure: ", xgb_host.tree_structure)
-
-    # train_pred = xgb_host.predict(X_host.copy(), lookup_table_sum)
-    # train_acc = metrics.accuracy_score(train_pred, Y)
-    # print("train_acc: ", train_acc)
 
     # save host-part model
     model_file_path = ph.context.Context.get_model_file_path() + ".host"
@@ -1908,8 +2151,10 @@ def xgb_host_logic(cry_pri="paillier"):
 
     trainMetrics = {
         "train_acc": xgb_host.acc,
-        "train_auc": xgb_host.acc,
-        "train_ks": xgb_host.ks
+        "train_auc": xgb_host.auc,
+        "train_ks": xgb_host.ks,
+        "train_fpr": xgb_host.fpr,
+        "train_tpr": xgb_host.tpr
     }
 
     # save results to png
@@ -1943,47 +2188,70 @@ def xgb_host_logic(cry_pri="paillier"):
     task_type="classification")
 def xgb_guest_logic(cry_pri="paillier"):
     # def xgb_guest_logic(cry_pri="plaintext"):
-    print("start xgb guest logic...")
+    # fl_console_log.info("start xgb guest logic...")
+
     # ios = IOService()
     role_node_map = ph.context.Context.get_role_node_map()
     node_addr_map = ph.context.Context.get_node_addr_map()
     dataset_map = ph.context.Context.dataset_map
+    taskId = ph.context.Context.params_map['taskid']
+    jobId = ph.context.Context.params_map['jobid']
 
-    logger.debug("dataset_map {}".format(dataset_map))
+    guest_log_console = FLConsoleHandler(jb_id=jobId,
+                                         task_id=taskId,
+                                         log_level='info',
+                                         format=FORMAT)
+    fl_console_log = guest_log_console.set_format()
+    fl_console_log.debug("dataset_map {}".format(dataset_map))
 
-    logger.debug("role_nodeid_map {}".format(role_node_map))
+    # logger.debug("dataset_map {}".format(dataset_map))
+    fl_console_log.debug("role_nodeid_map {}".format(role_node_map))
 
-    logger.debug("node_addr_map {}".format(node_addr_map))
+    # logger.debug("role_nodeid_map {}".format(role_node_map))
+    fl_console_log.debug("node_addr_map {}".format(node_addr_map))
+
+    # logger.debug("node_addr_map {}".format(node_addr_map))
 
     data_key = list(dataset_map.keys())[0]
 
     eva_type = ph.context.Context.params_map.get("taskType", None)
     if eva_type is None:
-        logger.warn(
+        fl_console_log.warn(
             "taskType is not specified, set to default value 'regression'.")
+        # logger.warn(
+        #     "taskType is not specified, set to default value 'regression'.")
         eva_type = "regression"
 
     eva_type = eva_type.lower()
     if eva_type != "classification" and eva_type != "regression":
-        logger.error(
+        fl_console_log.error(
             "Invalid value of taskType, possible value is 'regression', 'classification'."
         )
+        # logger.error(
+        #     "Invalid value of taskType, possible value is 'regression', 'classification'."
+        # )
         return
 
-    logger.info("Current task type is {}.".format(eva_type))
+    fl_console_log.info("Current task type is {}.".format(eva_type))
 
     if len(role_node_map["host"]) != 1:
-        logger.error("Current node of host party: {}".format(
+        fl_console_log.error("Current node of host party: {}".format(
             role_node_map["host"]))
-        logger.error("In hetero XGB, only dataset of host party has label,"
-                     "so host party must have one, make sure it.")
+        # logger.error("Current node of host party: {}".format(
+        #     role_node_map["host"]))
+        fl_console_log.error(
+            "In hetero XGB, only dataset of host party has label,"
+            "so host party must have one, make sure it.")
+        # logger.error("In hetero XGB, only dataset of host party has label,"
+        #              "so host party must have one, make sure it.")
         return
 
     guest_nodes = role_node_map["guest"]
     guest_port = node_addr_map[guest_nodes[0]].split(":")[1]
     proxy_server = ServerChannelProxy(guest_port)
     proxy_server.StartRecvLoop()
-    logger.debug("Create server proxy for guest, port {}.".format(guest_port))
+    fl_console_log.debug(
+        "Create server proxy for guest, port {}.".format(guest_port))
 
     host_nodes = role_node_map["host"]
     host_ip, host_port = node_addr_map[host_nodes[0]].split(":")
@@ -1991,41 +2259,72 @@ def xgb_guest_logic(cry_pri="paillier"):
     proxy_client_host = ClientChannelProxy(host_ip, host_port, "host")
     data = ph.dataset.read(dataset_key=data_key).df_data
 
+    guest_cols = config['guest_columns']
+    if guest_cols is None:
+        fl_console_log.info("select all columns")
+    else:
+        fl_console_log.info("select  columns are {}".format(guest_cols))
+        data = data[guest_cols]
+    # data = ph.dataset.read(dataset_key='train_hetero_xgb_guest').df_data
+    # data = pd.read_csv('/home/xusong/data/epsilon_normalized.t.guest', header=0)
+
+    # # samples-50000, cols-450
+    # data = data.iloc[:50000, :450]
+    # data = data.iloc[:, :450]
+
     if 'id' in data.columns:
         data.pop('id')
-    # data = ph.dataset.read(dataset_key='train_hetero_xgb_guest').df_data
-    # data = pd.read_csv(
-    #     '/primihub/data/FL/hetero_xgb/train/epsilon_normalized.t.guest',
-    #     header=0)
-    # data = data.iloc[:, :10]
-
     X_guest = data
     # guest_log = open('/app/guest_log', 'w+')
-
     # if is_encrypted:
-    xgb_guest = XGB_GUEST_EN(n_estimators=num_tree,
-                             max_depth=max_depth,
+    xgb_guest = XGB_GUEST_EN(n_estimators=config['num_tree'],
+                             max_depth=config['max_depth'],
                              reg_lambda=1,
-                             min_child_weight=min_child_weight,
+                             min_child_weight=config['min_child_weight'],
                              objective='logistic',
                              sid=1,
                              proxy_server=proxy_server,
                              proxy_client_host=proxy_client_host,
-                             is_encrypted=is_encrypted)  # noqa
+                             is_encrypted=config['is_encrypted'],
+                             sample_ratio=0.3)  # noqa
 
-    # channel.send(b'guest ready')
-    # pub = xgb_guest.channel.recv()
+    if config['feature_sample']:
+        guest_cols = X_guest.columns.tolist()
+        selected_features = col_sample(guest_cols,
+                                       sample_ratio=xgb_guest.feature_ratio)
+        X_guest = X_guest[selected_features]
+
     pub = proxy_server.Get('xgb_pub')
     xgb_guest.pub = pub
+    xgb_guest.merge_gh = config['merge_gh']
+    xgb_guest.batch_size = 10
 
     add_actor_num = 20
     paillier_add_actors = ActorPool(
         [ActorAdd.remote(xgb_guest.pub) for _ in range(add_actor_num)])
+
+    # ray.init(address='ray://172.21.3.16:10001')
+
+    if xgb_guest.merge_gh:
+        grouppools = ActorPool([
+            GroupPool.remote(paillier_add_actors, xgb_guest.pub, on_cols=['g'])
+            for _ in range(10)
+        ])
+    else:
+        grouppools = ActorPool([
+            GroupPool.remote(paillier_add_actors,
+                             xgb_guest.pub,
+                             on_cols=['g', 'h']) for _ in range(10)
+        ])
     xgb_guest.paillier_add_actors = paillier_add_actors
+    xgb_guest.grouppools = grouppools
+
+    # cli1 = ray.init("ray://172.21.3.126:10001", allow_multiple=True)
 
     # xgb_guest.channel.send(b'recved pub')
     lookup_table_sum = {}
     xgb_guest.lookup_table = {}
+    # xgb_guest.cli1 = cli1
 
     xgb_guest.fit(X_guest, lookup_table_sum)
 
@@ -2048,13 +2347,7 @@ def xgb_guest_logic(cry_pri="paillier"):
     with open(lookup_file_path, 'wb') as guestTable:
         pickle.dump(lookup_table_sum, guestTable)
 
-    # xgb_guest.predict(X_guest.copy(), lookup_table_sum)
-
-    # validate for test
-    # test_guest = ph.dataset.read(dataset_key='test_hetero_xgb_guest').df_data
-    # print("test_guest: ", test_guest.shape)
-    # xgb_guest.predict(test_guest, lookup_table_sum)
-    # xgb_guest.predict(X_guest.copy(), lookup_table_sum)
+    xgb_guest.predict(X_guest.copy(), lookup_table_sum)
 
     # xgb_guest.predict(X_guest)
     proxy_server.StopRecvLoop()
