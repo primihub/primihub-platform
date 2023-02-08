@@ -67,10 +67,10 @@ public class SysAsyncService {
             log.info("没有机构信息请重新生成");
             return;
         }
-        if (sysLocalOrganInfo.getAddressInfo()!=null && sysLocalOrganInfo.getAddressInfo().getIp()!=null && sysLocalOrganInfo.getAddressInfo().getIp().equals(addressInfoEntity.getIp())){
-            log.info("ip 一致不需要更改");
-            return;
-        }
+//        if (sysLocalOrganInfo.getAddressInfo()!=null && sysLocalOrganInfo.getAddressInfo().getIp()!=null && sysLocalOrganInfo.getAddressInfo().getIp().equals(addressInfoEntity.getIp())){
+//            log.info("ip 一致不需要更改");
+//            return;
+//        }
 
         if(sysLocalOrganInfo.getFusionMap()==null){
             log.info("没有中心节点map信息");
