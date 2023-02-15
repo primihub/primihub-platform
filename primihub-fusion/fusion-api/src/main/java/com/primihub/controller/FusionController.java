@@ -2,9 +2,11 @@ package com.primihub.controller;
 
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
+import com.primihub.entity.fusion.param.FusionOrganExtendsParam;
 import com.primihub.entity.fusion.param.RegisterConnectionParam;
 import com.primihub.service.FusionService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -50,6 +52,22 @@ public class FusionController {
         if(globalIdArray==null||globalIdArray.length==0)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalIdArray");
         return fusionService.findOrganByGlobalId(globalIdArray);
+    }
+
+    @RequestMapping("changeOrganExtends")
+    public BaseResultEntity changeOrganExtends(FusionOrganExtendsParam param){
+        if (StringUtils.isEmpty(param.getIp()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ip");
+        if (StringUtils.isEmpty(param.getLat()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"lat");
+        if (StringUtils.isEmpty(param.getLon()))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"lon");
+        return fusionService.changeOrganExtends(param);
+    }
+
+    @RequestMapping("getOrganExtendsList")
+    public BaseResultEntity getOrganExtendsList(){
+        return fusionService.getOrganExtendsList();
     }
 
 }

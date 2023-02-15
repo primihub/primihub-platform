@@ -158,7 +158,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
     @Data
     public class ModelEntity {
-        public ModelEntity(String psiPath, int index,String resourceId) {
+        public ModelEntity(String psiPath, List<Integer> index,String resourceId) {
             this.newDataSetId= resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
             this.psiPath = psiPath + newDataSetId +".csv";
             this.index = index;
@@ -168,7 +168,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         private String newDataSetId;
         private String psiPath;
         private String outputPath;
-        private int index;
+        private List<Integer> index;
     }
 
     public BaseResultEntity runPsi(DataComponentReq req,ComponentTaskReq taskReq){
@@ -189,21 +189,22 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             String dataAlign = componentVals.get("dataAlign");
             if (StringUtils.isBlank(dataAlign))
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择为空");
-            int clientIndex = 0;
-            int serverIndex = 0;
+            List<Integer> clientIndex;
+            List<Integer> serverIndex;
             if ("1".equals(dataAlign)){
-                clientIndex = clientData.getFileHandleField().indexOf("id");
-                serverIndex = serverData.getFileHandleField().indexOf("id");
+                clientIndex = clientData.getFileHandleField().stream().map(c->c.indexOf("id")).filter(i->i!=-1).collect(Collectors.toList());
+                serverIndex = serverData.getFileHandleField().stream().map(s->s.indexOf("id")).filter(i->i!=-1).collect(Collectors.toList());
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
-                clientIndex = clientData.getFileHandleField().indexOf(multipleSelected);
-                serverIndex = serverData.getFileHandleField().indexOf(multipleSelected);
+                String[] multipleSelecteds = multipleSelected.split(",");
+                clientIndex = Arrays.stream(multipleSelecteds).map(clientData.getFileHandleField()::indexOf).filter(i -> i != -1).collect(Collectors.toList());
+                serverIndex = Arrays.stream(multipleSelecteds).map(serverData.getFileHandleField()::indexOf).filter(i -> i != -1).collect(Collectors.toList());
             }
-            if (clientIndex<0)
+            if (clientIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
-            if (serverIndex<0)
+            if (serverIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐协作方特征未查询到");
             String jobId = String.valueOf(taskReq.getJob());
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
@@ -214,8 +215,12 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(0).build();
             Common.ParamValue syncResultToServerParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-            Common.ParamValue clientIndexParamValue=Common.ParamValue.newBuilder().setValueInt32(clientIndex).build();
-            Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setValueInt32(serverIndex).build();
+            Common.int32_array.Builder clientFieldsBuilder = Common.int32_array.newBuilder();
+            clientIndex.forEach(clientFieldsBuilder::addValueInt32Array);
+            Common.ParamValue clientIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(clientFieldsBuilder.build()).build();
+            Common.int32_array.Builder serverFieldsBuilder = Common.int32_array.newBuilder();
+            serverIndex.forEach(serverFieldsBuilder::addValueInt32Array);
+            Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(serverFieldsBuilder.build()).build();
             Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(clientEntity.getPsiPath()).build();
             Common.ParamValue serverOutputFullFilnameParamValue=Common.ParamValue.newBuilder().setValueString(serverEntity.getPsiPath()).build();
             Common.Params params=Common.Params.newBuilder()

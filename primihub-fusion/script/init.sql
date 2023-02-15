@@ -144,3 +144,22 @@ CREATE TABLE `fusion_organ_resource_auth`  (
                                                INDEX `resource_id_ix`(`resource_id`) USING BTREE,
                                                INDEX `organ_id_ix`(`organ_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Table structure for fusion_organ_extends
+-- ----------------------------
+
+DROP TABLE IF EXISTS `fusion_organ_extends`;
+CREATE TABLE `fusion_organ_extends` (
+                                        `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                        `global_id` bigint NOT NULL COMMENT '机构id',
+                                        `ip` varchar(255) NOT NULL COMMENT '机构ip地址',
+                                        `lat` decimal(18,14) DEFAULT NULL COMMENT '纬度',
+                                        `lon` decimal(18,14) DEFAULT NULL COMMENT '经度',
+                                        `country` varchar(255) DEFAULT NULL COMMENT '区域',
+                                        `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
+                                        `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                        `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+                                        PRIMARY KEY (`id`),
+                                        INDEX `global_id_ix`(`global_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;

@@ -25,6 +25,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
@@ -73,11 +74,17 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             }
             String jobId = String.valueOf(taskReq.getJob());
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(exceptionEntityMap));
+            String replaceType = taskReq.getValueMap().get("replaceType");
+            if (StringUtils.isEmpty(replaceType)){
+                replaceType = "MAX";
+            }
             Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ids.stream().collect(Collectors.joining(";"))).build();
+            Common.ParamValue replaceTypeParamValue = Common.ParamValue.newBuilder().setValueString(replaceType).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("ColumnInfo", columnInfoParamValue)
                     .putParamMap("Data_File", dataFileParamValue)
+                    .putParamMap("Replace_Type", replaceTypeParamValue)
                     .build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
