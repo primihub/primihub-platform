@@ -57,6 +57,7 @@ public class DataPsiService {
             paramMap.put("offset",req.getOffset());
             paramMap.put("pageSize",req.getPageSize());
             paramMap.put("resourceName",resourceName);
+            paramMap.put("resourceState",0);
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

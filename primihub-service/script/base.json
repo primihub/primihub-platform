@@ -183,6 +183,26 @@
                             "val": "异常值处理"
                         }
                     ]
+                },
+                {
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "replaceType",
+                    "type_name": "替换类型",
+                    "input_type": "select",
+                    "input_value": "1",
+                    "input_values": [
+                        {
+                            "key": "MAX",
+                            "val": "MAX"
+                        },{
+                            "key": "MIN",
+                            "val": "MIN"
+                        },{
+                            "key": "AVG",
+                            "val": "AVG"
+                        }
+                    ]
                 }
             ]
         },
