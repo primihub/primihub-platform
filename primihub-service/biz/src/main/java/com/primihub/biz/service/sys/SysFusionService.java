@@ -1,6 +1,7 @@
 package com.primihub.biz.service.sys;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
@@ -13,6 +14,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
+import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -26,10 +28,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -41,6 +40,8 @@ public class SysFusionService {
     private Environment environment;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private SysAsyncService sysAsyncService;
 
     public BaseResultEntity healthConnection(String serverAddress){
         try{
@@ -108,6 +109,7 @@ public class SysFusionService {
 
         try {
             configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
+            sysAsyncService.changeExtends();
         } catch (NacosException e) {
             log.info("nacos-publish",e);
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
@@ -342,4 +344,32 @@ public class SysFusionService {
         return BaseResultEntity.success(result);
     }
 
+
+    public BaseResultEntity getOrganExtendsList(String serverAddress) {
+        SysLocalOrganInfo sysLocalOrganInfo;
+        try {
+            sysLocalOrganInfo = getSysLocalOrganInfo();
+        } catch (NacosException e) {
+            log.info("nacos-get",e);
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
+        }
+        String fusionMsg="查询成功";
+        Map result=new HashMap();
+        try{
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap map = new LinkedMultiValueMap<>();
+            map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
+            map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+            BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/getOrganExtendsList",request, BaseResultEntity.class);
+            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+                fusionMsg=resultEntity.getMsg();
+            result.put("dataList",resultEntity.getResult());
+        }catch (Exception e){
+            fusionMsg=e.getMessage();
+        }
+        result.put("fusionMsg",fusionMsg);
+        return BaseResultEntity.success(result);
+    }
 }

@@ -6,9 +6,16 @@
         insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,is_del)
         values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{isDel})
     </insert>
+    <insert id="insertFusionOrganExtends" useGeneratedKeys="true" keyProperty="id">
+        insert into fusion_organ_extends(global_id, ip, lat, lon, country, is_del)
+        values (#{globalId},#{ip},#{lat},#{lon},#{country},0)
+    </insert>
 
     <update id="updateFusionOrganSpeByGlobalId">
         update fusion_organ set global_name=#{globalName},gateway_address=#{gatewayAddress} where global_id=#{globalId}
+    </update>
+    <update id="updateFusionOrganExtends">
+        update fusion_0rgan_extends set ip=#{ip},lat=#{lat},lon=#{lon},country=#{country} where id=#{id}
     </update>
 
     <select id="getFusionOrganByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrgan">
@@ -30,6 +37,25 @@
                  separator="," close=")">
             #{item}
         </foreach>
+    </select>
+    <select id="getFusionOrganExtendsByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrganExtends">
+        select
+               id, global_id globalId, ip, lat, lon, country
+        from
+            fusion_organ_extends where global_id = #{globalId}
+    </select>
+    <select id="getFusionOrganExtends" resultType="com.primihub.entity.fusion.vo.OrganExtendsVo">
+        SELECT
+            o.global_id globalId,
+            o.global_name globalName,
+            e.lat,
+            e.lon,
+            e.country
+        FROM
+            fusion_organ o,
+            fusion_organ_extends e
+        WHERE
+            o.id = e.global_id
     </select>
 
 </mapper>
