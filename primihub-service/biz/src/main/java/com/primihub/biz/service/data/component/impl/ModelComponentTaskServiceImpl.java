@@ -231,8 +231,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
                 Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getPredictFileName()).build();
                 Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getModelFileName()).build();
+                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(outputPathDto.getIndicatorFileName()).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("predictFileName", predictFileNameParamValue)
+                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
                         .putParamMap("modelFileName", modelFileNameParamValue)
                         .build();
                 Common.Task task = Common.Task.newBuilder()
