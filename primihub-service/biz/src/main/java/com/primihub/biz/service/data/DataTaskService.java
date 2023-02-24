@@ -307,7 +307,9 @@ public class DataTaskService {
                     }
                 }
             }
+            log.info("开始向调度方进行项目同步");
             spreadDispatchlData(CommonConstant.PROJECT_SYNC_API_URL,shareProjectVo);
+            log.info("结束向调度方进行项目同步");
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
 //            dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
@@ -362,6 +364,7 @@ public class DataTaskService {
         if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
             return;
         String gatewayAddress = baseConfiguration.getDispatchUrl();
+        log.info("DispatchUrl{}",gatewayAddress);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
@@ -372,6 +375,7 @@ public class DataTaskService {
         }catch (Exception e){
             log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
         }
+        log.info("出去");
     }
 
     public BaseResultEntity getModelTaskList(Long modelId,PageReq req) {
