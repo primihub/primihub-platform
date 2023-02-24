@@ -307,6 +307,7 @@ public class DataTaskService {
                     }
                 }
             }
+            spreadDispatchlData(CommonConstant.PROJECT_SYNC_API_URL,shareProjectVo);
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
 //            dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
@@ -353,6 +354,23 @@ public class DataTaskService {
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }
             }
+            spreadDispatchlData(CommonConstant.MODEL_SYNC_API_URL,shareModelVo);
+        }
+    }
+
+    private void spreadDispatchlData(String url,Object shareVo){
+        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+            return;
+        String gatewayAddress = baseConfiguration.getDispatchUrl();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+        try {
+            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+        }catch (Exception e){
+            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
         }
     }
 

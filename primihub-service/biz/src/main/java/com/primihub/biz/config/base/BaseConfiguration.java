@@ -43,4 +43,6 @@ public class BaseConfiguration {
     private String systemDomainName;
     // loki
     private LokiConfig lokiConfig;
+    // dispatch url
+    private String dispatchUrl;
 }
