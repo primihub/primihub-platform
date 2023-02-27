@@ -165,6 +165,14 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataComponent.setEndTime(System.currentTimeMillis());
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
                 dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+                ShareModelVo vo = new ShareModelVo();
+                vo.setDataModel(req.getDataModel());
+                vo.setDataTask(req.getDataTask());
+                vo.setDataModelTask(req.getDataModelTask());
+                vo.setDmrList(req.getDmrList());
+                vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+                vo.setDerivationList(req.getDerivationList());
+                sendShareModelTask(vo);
             }
         }catch (Exception e){
             req.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -175,17 +183,6 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(req.getDataTask());
 //        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
-        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
-            log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
-            ShareModelVo vo = new ShareModelVo();
-            vo.setDataModel(req.getDataModel());
-            vo.setDataTask(req.getDataTask());
-            vo.setDataModelTask(req.getDataModelTask());
-            vo.setDmrList(req.getDmrList());
-            vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
-            vo.setDerivationList(req.getDerivationList());
-            sendShareModelTask(vo);
-        }
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
     }
 

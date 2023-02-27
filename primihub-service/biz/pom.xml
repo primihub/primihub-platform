@@ -12,7 +12,8 @@
     <artifactId>biz</artifactId>
 
     <properties>
-        <os.detected.classifier>windows-x86_64</os.detected.classifier>
+<!--        <os.detected.classifier>windows-x86_64</os.detected.classifier>-->
+        <os.detected.classifier>osx-x86_64</os.detected.classifier>
     </properties>
 
     <dependencies>
