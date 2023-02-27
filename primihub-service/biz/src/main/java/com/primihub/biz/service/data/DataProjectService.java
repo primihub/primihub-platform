@@ -2,9 +2,11 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.CommonConstant;
+import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.convert.DataResourceConvert;
@@ -62,6 +64,8 @@ public class DataProjectService {
     private DataResourceRepository dataResourceRepository;
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
@@ -364,7 +368,27 @@ public class DataProjectService {
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).size());
             dataProjectPrRepository.updateDataProject(dataProject);
         }
+        spreadDispatchlData(CommonConstant.PROJECT_SYNC_API_URL,vo);
         return BaseResultEntity.success();
+    }
+
+
+    private void spreadDispatchlData(String url,Object shareVo){
+        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+            return;
+        String gatewayAddress = baseConfiguration.getDispatchUrl();
+        log.info("DispatchUrl{}",gatewayAddress);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+        try {
+            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+        }catch (Exception e){
+            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+        }
+        log.info("出去");
     }
 
     public BaseResultEntity getListStatistics() {
