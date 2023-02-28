@@ -117,6 +117,7 @@ public class DataProjectService {
                             DataProjectResource dataProjectResource = new DataProjectResource(UUID.randomUUID().toString(), dataProjectOrgan.getProjectId(), sysLocalOrganInfo.getOrganId(), dataProjectOrgan.getOrganId(), dataProjectOrgan.getParticipationIdentity(), req.getServerAddress());
                             dataProjectResource.setResourceId(resourceId);
 //                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+                            log.info("resourceId:{}--subOrganId:{}",resourceId,subOrganId);
                             if (resourceId.contains(subOrganId)){
                                 dataProjectResource.setAuditStatus(1);
                                 dataProjectResource.setAuditOpinion("项目发起者自动同意");
