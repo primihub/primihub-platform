@@ -182,6 +182,14 @@ public class DataAsyncService implements ApplicationContextAware {
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         updateTaskState(req.getDataTask());
 //        dataTaskPrRepository.updateDataTask(req.getDataTask());
+        ShareModelVo vo = new ShareModelVo();
+        vo.setDataModel(req.getDataModel());
+        vo.setDataTask(req.getDataTask());
+        vo.setDataModelTask(req.getDataModelTask());
+        vo.setDmrList(req.getDmrList());
+        vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+        vo.setDerivationList(req.getDerivationList());
+        sendShareModelTask(vo);
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
     }
