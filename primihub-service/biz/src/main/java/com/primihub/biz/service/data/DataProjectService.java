@@ -115,10 +115,10 @@ public class DataProjectService {
                         if (!existenceResourceIds.contains(resourceId)){
                             DataProjectResource dataProjectResource = new DataProjectResource(UUID.randomUUID().toString(), dataProjectOrgan.getProjectId(), sysLocalOrganInfo.getOrganId(), dataProjectOrgan.getOrganId(), dataProjectOrgan.getParticipationIdentity(), req.getServerAddress());
                             dataProjectResource.setResourceId(resourceId);
-//                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
                                 dataProjectResource.setAuditStatus(1);
                                 dataProjectResource.setAuditOpinion("项目发起者自动同意");
-//                            }
+                            }
                             dataProjectPrRepository.saveDataProjectResource(dataProjectResource);
                             dataProject.setResourceNum(dataProject.getResourceNum()+1);
                         }
