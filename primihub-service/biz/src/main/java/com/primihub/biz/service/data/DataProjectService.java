@@ -102,20 +102,22 @@ public class DataProjectService {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"添加发起者或协作者重复");
                 if (dataProjectOrgan ==null){
                     dataProjectOrgan = new DataProjectOrgan(UUID.randomUUID().toString(),req.getProjectId(),projectOrgan.getOrganId(),sysLocalOrganInfo.getOrganId(),projectOrgan.getParticipationIdentity(),req.getServerAddress());
-//                    if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+                    if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
                         dataProjectOrgan.setAuditStatus(1);
                         dataProjectOrgan.setAuditOpinion("项目发起者自动同意");
-//                    }
+                    }
                     dataProjectPrRepository.saveDataProjcetOrgan(dataProjectOrgan);
                 }
                 Set<String> existenceResourceIds = dataProjectRepository.selectProjectResourceByProjectId(req.getProjectId()).stream().map(DataProjectResource::getResourceId).collect(Collectors.toSet());
                 List<String> resourceIds = projectOrgan.getResourceIds();
                 if (resourceIds!=null&&!resourceIds.isEmpty()){
+                    String subOrganId = projectOrgan.getOrganId().substring(24, 36);
                     for (String resourceId : resourceIds) {
                         if (!existenceResourceIds.contains(resourceId)){
                             DataProjectResource dataProjectResource = new DataProjectResource(UUID.randomUUID().toString(), dataProjectOrgan.getProjectId(), sysLocalOrganInfo.getOrganId(), dataProjectOrgan.getOrganId(), dataProjectOrgan.getParticipationIdentity(), req.getServerAddress());
                             dataProjectResource.setResourceId(resourceId);
-                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+//                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+                            if (resourceId.contains(subOrganId)){
                                 dataProjectResource.setAuditStatus(1);
                                 dataProjectResource.setAuditOpinion("项目发起者自动同意");
                             }
