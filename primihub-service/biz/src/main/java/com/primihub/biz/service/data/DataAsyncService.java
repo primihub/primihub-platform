@@ -170,7 +170,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 vo.setDataTask(req.getDataTask());
                 vo.setDataModelTask(req.getDataModelTask());
                 vo.setDmrList(req.getDmrList());
-                vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+//                vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
                 vo.setDerivationList(req.getDerivationList());
                 sendShareModelTask(vo);
             }
