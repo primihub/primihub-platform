@@ -2,8 +2,11 @@ package com.primihub.biz.config.database;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.nacos.api.config.annotation.NacosValue;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.InitializingBean;
 
+
+@Slf4j
 public class ResourcePrimaryDruidDataSourceWrapper extends DruidDataSource implements InitializingBean {
     @NacosValue(value="${spring.datasource.druid.resourcePrimary.url}",autoRefreshed = true)
     private String url;
@@ -72,6 +75,7 @@ public class ResourcePrimaryDruidDataSourceWrapper extends DruidDataSource imple
         super.setMaxPoolPreparedStatementPerConnectionSize(maxPoolPreparedStatementPerConnectionSize);
         super.setConnectionProperties(connectionProperties);
         super.setDbType(dbType);
+        log.info("filterConfigEnabled ---  {}",filterConfigEnabled);
         if (filterConfigEnabled){
             super.addFilters("config");
         }
