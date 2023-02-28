@@ -95,7 +95,9 @@ public class DataProjectService {
         }
         if (req.getProjectOrgans()!=null){
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(req.getProjectId());
-            String subOrganId = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse("");
+            List<DataProjectOrgan> collect = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).collect(Collectors.toList());
+            log.info(JSONObject.toJSONString(collect));
+            String subOrganId = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).get();
             Map<String, DataProjectOrgan> organMap = dataProjectOrgans.stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
             for (DataProjectOrganReq projectOrgan : req.getProjectOrgans()) {
                 DataProjectOrgan dataProjectOrgan = organMap.get(projectOrgan.getOrganId());
