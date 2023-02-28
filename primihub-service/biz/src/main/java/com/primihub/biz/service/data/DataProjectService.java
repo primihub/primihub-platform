@@ -95,6 +95,7 @@ public class DataProjectService {
         }
         if (req.getProjectOrgans()!=null){
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(req.getProjectId());
+            String subOrganId = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse("");
             Map<String, DataProjectOrgan> organMap = dataProjectOrgans.stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
             for (DataProjectOrganReq projectOrgan : req.getProjectOrgans()) {
                 DataProjectOrgan dataProjectOrgan = organMap.get(projectOrgan.getOrganId());
@@ -111,7 +112,6 @@ public class DataProjectService {
                 Set<String> existenceResourceIds = dataProjectRepository.selectProjectResourceByProjectId(req.getProjectId()).stream().map(DataProjectResource::getResourceId).collect(Collectors.toSet());
                 List<String> resourceIds = projectOrgan.getResourceIds();
                 if (resourceIds!=null&&!resourceIds.isEmpty()){
-                    String subOrganId = projectOrgan.getOrganId().substring(24, 36);
                     for (String resourceId : resourceIds) {
                         if (!existenceResourceIds.contains(resourceId)){
                             DataProjectResource dataProjectResource = new DataProjectResource(UUID.randomUUID().toString(), dataProjectOrgan.getProjectId(), sysLocalOrganInfo.getOrganId(), dataProjectOrgan.getOrganId(), dataProjectOrgan.getParticipationIdentity(), req.getServerAddress());
