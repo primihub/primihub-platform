@@ -15,13 +15,17 @@ public class DataConstant {
     public final static String FREEMARKER_PYTHON_HOMO_LR_INFER_PATH= "homo_lr_infer.ftl";
     public final static String FREEMARKER_PYTHON_EXCEPTION_PATH= "exception.ftl";
     public final static String FREEMARKER_PYTHON_DATA_ALIGN_PATH= "data_align.ftl";
+    public final static String FREEMARKER_PYTHON_HETER_LR_INFER_PATH= "heter_lr_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HETERO_LR_PATH= "hetero_lr.ftl";
     public final static String[] FREEMARKER_PYTHON_PATHS = new String[]{
             FREEMARKER_PYTHON_EN_PATH,
             FREEMARKER_PYTHON_HOMO_LR_PATH,
             FREEMARKER_PYTHON_HOMO_LR_INFER_PATH,
             FREEMARKER_PYTHON_EXCEPTION_PATH,
             FREEMARKER_PYTHON_DATA_ALIGN_PATH,
-            FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH
+            FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH,
+            FREEMARKER_PYTHON_HETER_LR_INFER_PATH,
+            FREEMARKER_PYTHON_HETERO_LR_PATH
     };
     // python dataset host、guest
     public final static String PYTHON_LABEL_DATASET = "label_dataset";

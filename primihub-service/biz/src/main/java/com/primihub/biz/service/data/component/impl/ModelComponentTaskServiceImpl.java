@@ -123,10 +123,11 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             log.info("field:{}",field);
             taskReq.getFreemarkerMap().put("feature_names",field);
         }
-        if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.V_XGBOOST.getType())){
+        Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
+        if (modelType.equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
-        }else if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
-            return lr(req,taskReq);
+        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.equals(ModelTypeEnum.HETERO_LR.getType())){
+            return lr(req,taskReq,ModelTypeEnum.MODEL_TYPE_MAP.get(modelType));
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
         taskReq.getDataTask().setTaskErrorMsg("运行失败:无法进行任务执行");
@@ -220,8 +221,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return BaseResultEntity.success();
     }
-    private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+    private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
@@ -376,6 +377,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return BaseResultEntity.success();
     }
+
+
 
     public Long[] getPortNumber(){
         Long[] port = new Long[2];
