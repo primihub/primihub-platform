@@ -1,11 +1,9 @@
 name: Build and push Docker images
 on:
-  push:
-    branches:
-      - develop
   pull_request:
     branches:
       - main
+      - develop
 
 env:
   REGISTRY: docker.io
