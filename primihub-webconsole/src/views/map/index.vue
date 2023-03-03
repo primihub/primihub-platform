@@ -83,7 +83,6 @@ export default {
 
           const map = this.map;
 
-          //   map.on('load', () => {
           // Add a new source from our GeoJSON data and
           // set the 'cluster' option to true. GL-JS will
           // add the point_count property to your source data.
@@ -208,7 +207,6 @@ export default {
           map.on("mouseleave", "clusters", () => {
             map.getCanvas().style.cursor = "";
           });
-          // });
         });
       });
     },
