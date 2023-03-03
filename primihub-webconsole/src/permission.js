@@ -20,7 +20,6 @@ router.beforeEach(async(to, from, next) => {
 
   // determine whether the user has logged in
   const hasToken = getToken()
-
   if (to.matched.length === 0 && flag !== 0) { // 如果未匹配到路由
     console.log('未匹配到路由', to.path)
     Message({
