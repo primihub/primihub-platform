@@ -60,7 +60,7 @@ jobs:
         context: ./primihub-fusion
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: |
+        tags: 
           ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:latest
           # ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -71,7 +71,7 @@ jobs:
         context: ./primihub-service
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: |
+        tags: 
           ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:latest
           # ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
@@ -82,7 +82,7 @@ jobs:
         context: ./primihub-webconsole
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: |
+        tags: 
           ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:latest
           # ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
