@@ -12,6 +12,7 @@ import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
 import com.primihub.biz.entity.data.vo.DataPsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.util.FileUtil;
@@ -40,6 +41,8 @@ public class DataPsiService {
     private FusionResourceService fusionResourceService;
     @Autowired
     private DataAsyncService dataAsyncService;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
     private OrganConfiguration organConfiguration;
 
@@ -208,6 +211,16 @@ public class DataPsiService {
         task.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(task);
 //        psiAsyncService.psiGrpcRun(task,dataPsi);
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity syncPsi(DataPsiTask psiTask, DataPsi dataPsi,DataTask dataTask) {
+        psiTask.setId(null);
+        dataPsi.setId(null);
+        dataTask.setTaskId(null);
+        dataPsiPrRepository.saveDataPsi(dataPsi);
+        dataPsiPrRepository.saveDataPsiTask(psiTask);
+        dataTaskPrRepository.saveDataTask(dataTask);
         return BaseResultEntity.success();
     }
 }

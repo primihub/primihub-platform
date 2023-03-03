@@ -590,5 +590,11 @@ public class DataTaskService {
     public void removeSseTask(String taskId) {
         sseEmitterService.removeKey(taskId);
     }
+
+    public BaseResultEntity saveDataTask(DataTask dataTask) {
+        dataTask.setTaskId(null);
+        dataTaskPrRepository.saveDataTask(dataTask);
+        return BaseResultEntity.success();
+    }
 }
 
