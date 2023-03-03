@@ -62,7 +62,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         tags: |
           ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:latest
-          ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:${{ steps.meta.outputs.tags }}
+          # ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Build and push platform images
@@ -73,7 +73,7 @@ jobs:
         platforms: linux/amd64,linux/arm64
         tags: |
           ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:latest
-          ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:${{ steps.meta.outputs.tags }}
+          # ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
     - name: Build and push web images
@@ -84,5 +84,5 @@ jobs:
         platforms: linux/amd64,linux/arm64
         tags: |
           ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:latest
-          ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:${{ steps.meta.outputs.tags }}
+          # ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
