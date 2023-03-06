@@ -12,6 +12,7 @@ public class FusionOrgan {
     private String pinCodeMd;
     private String gatewayAddress;
     private Date registerTime;
+    private Integer dispatch;
     private Integer isDel;
     private Date cTime;
     private Date uTime;

@@ -30,6 +30,7 @@ public class FusionService {
         fusionOrgan.setPinCodeMd(SignUtil.getMD5ValueUpperCaseByDefaultEncode(registerConnectionParam.getPinCode()));
         fusionOrgan.setGatewayAddress(registerConnectionParam.getGatewayAddress());
         fusionOrgan.setRegisterTime(new Date());
+        fusionOrgan.setDispatch(registerConnectionParam.getDispatch());
         fusionOrgan.setIsDel(0);
         fusionRepository.insertFusionOrgan(fusionOrgan);
         return BaseResultEntity.success();

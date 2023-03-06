@@ -8,4 +8,5 @@ public class RegisterConnectionParam {
     private String globalName;
     private String pinCode;
     private String gatewayAddress;
+    private Integer dispatch = 0;
 }
