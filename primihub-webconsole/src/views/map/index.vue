@@ -4,10 +4,10 @@
   </div>
 </template>
 <script>
-// mapboxgl地图
+// import mapboxgl
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-// mapboxgl汉化
+// mapboxgl language
 import MapboxLanguage from "@mapbox/mapbox-gl-language";
 
 import { getOrgInfo, getCoordinates } from "@/api/map";
@@ -37,10 +37,8 @@ export default {
 
       this.map.addControl(new MapboxLanguage({ defaultLanguage: "zh-Hans" }));
 
-      //   导航控件
       const nav = new mapboxgl.NavigationControl();
       this.map.addControl(nav, "top-right");
-      //   全屏控件
       this.map.addControl(new mapboxgl.FullscreenControl());
       this.map.on('load', () => {
         this.getData()
@@ -65,7 +63,6 @@ export default {
           try {
             dataList.forEach((item) => {
               const lonlat = [item.lon, item.lat];
-              // new mapboxgl.Marker().setLngLat(lonlat).addTo(this.map);
               geoJson.features.push({
                 type: "Feature",
                 geometry: {
@@ -90,7 +87,6 @@ export default {
             type: "geojson",
             // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
             // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-            // data: 'https://docs.mapbox.com/mapbox-gl-js/assets/earthquakes.geojson',
             data: geoJson,
             cluster: true,
             clusterMaxZoom: 14, // Max zoom to cluster points on
@@ -128,18 +124,6 @@ export default {
             },
           });
 
-          // map.addLayer({
-          //   id: "unclustered-point",
-          //   type: "circle",
-          //   source: "earthquakes",
-          //   filter: ["!", ["has", "point_count"]],
-          //   paint: {
-          //     "circle-color": "#11b4da",
-          //     "circle-radius": 4,
-          //     "circle-stroke-width": 1,
-          //     "circle-stroke-color": "#fff",
-          //   },
-          // });
           const imgUrl = require('@/assets/icon-fill.png')
           map.loadImage(imgUrl,(err,image)=>{
             if(err) throw error;
@@ -152,7 +136,6 @@ export default {
                'layout': {
                   'icon-image': 'store-icon',
                   'icon-size': 0.12,
-                  // get the title name from the source's "title" property
                   'text-field': ['get', 'title'],
                   'text-offset': [0, 1.25],
                   'text-anchor': 'top'
@@ -194,11 +177,6 @@ export default {
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
               coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
             }
-            // 弹框
-            // new mapboxgl.Popup()
-            //   .setLngLat(coordinates)
-            //   .setHTML(`magnitude: ${mag}<br>Was there a tsunami?: ${tsunami}`)
-            //   .addTo(map);
           });
 
           map.on("mouseenter", "clusters", () => {
