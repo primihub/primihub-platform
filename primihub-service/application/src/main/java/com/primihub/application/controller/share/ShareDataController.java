@@ -5,6 +5,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
@@ -13,6 +14,7 @@ import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.service.data.DataPsiService;
 import com.primihub.biz.service.data.DataTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,6 +57,18 @@ public class ShareDataController {
     @RequestMapping("syncPir")
     public BaseResultEntity syncPir(@RequestBody DataTask dataTask){
         return dataTaskService.saveDataTask(dataTask);
+    }
+
+
+
+    @GetMapping("dispatchRunTaskModel")
+    public BaseResultEntity dispatchRunTaskModel(@RequestBody ComponentTaskReq taskReq){
+        return dataModelService.dispatchRunTaskModel(taskReq);
+    }
+
+    @GetMapping("dispatchRestartTaskModel")
+    public BaseResultEntity dispatchRestartTaskModel(String taskId) {
+        return dataModelService.dispatchRestartTaskModel(taskId);
     }
 
 }

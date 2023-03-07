@@ -107,6 +107,7 @@ public class ModelController {
         return dataModelService.runTaskModel(modelId,userId);
     }
 
+
     /**
      * 重启模型
      * @param taskId
@@ -175,6 +176,7 @@ public class ModelController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"draftId");
         return dataModelService.deleteComponentDraft(draftId,userId);
     }
+
 
 
 
