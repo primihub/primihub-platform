@@ -35,6 +35,9 @@ public class  ComponentTaskReq {
         this.dataTask = new DataTask();
     }
 
+    public ComponentTaskReq() {
+    }
+
     public DataModelAndComponentReq getModelComponentReq(){
         if (modelComponentReq!=null)
             return modelComponentReq;

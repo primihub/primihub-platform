@@ -7,6 +7,7 @@ import com.alibaba.fastjson.parser.ParserConfig;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.convert.DataTaskConvert;
@@ -31,8 +32,15 @@ import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -49,6 +57,8 @@ public class DataModelService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private DataProjectService dataProjectService;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -352,8 +362,6 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
         if (StringUtils.isBlank(dataModel.getModelName()))
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
-//        if (dataModel.getTrainType()==null)
-//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
         Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
             add(modelId);
         }});
@@ -382,7 +390,6 @@ public class DataModelService {
         }
         dataModelPrRepository.updateDataModel(taskReq.getDataModel());
         DataTask dataTask = taskReq.getDataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
@@ -390,17 +397,48 @@ public class DataModelService {
         dataTask.setTaskUserId(userId);
         dataTask.setCreateDate(new Date());
         dataTaskPrRepository.saveDataTask(dataTask);
-//        taskReq.setDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();
         modelTask.setTaskId(dataTask.getTaskId());
         modelTask.setModelId(dataModel.getModelId());
         dataModelPrRepository.saveDataModelTask(modelTask);
         taskReq.setDataModelTask(modelTask);
-        dataAsyncService.runModelTask(taskReq);
+        return distributeModelTasks(taskReq);
+    }
+
+    private BaseResultEntity distributeModelTasks(ComponentTaskReq taskReq){
+        Long projectId = taskReq.getDataModel().getProjectId();
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
+        DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(dop -> dop.getParticipationIdentity() == 1).findFirst().orElse(null);
+        if (dataProjectOrgan==null){
+            log.info("下发失败");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,发起机构为null");
+        }
+        Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
+            add(dataProjectOrgan.getOrganId());
+        }}, dataProjectOrgan.getServerAddress());
+        if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
+            Map map = organListMap.get(dataProjectOrgan.getOrganId());
+            String gatewayAddress = map.get("gatewayAddress").toString();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(taskReq, headers);
+            log.info(CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress.toString()));
+            try {
+                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+            }catch (Exception e){
+                log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+            }
+            log.info("出去");
+        }else {
+            log.info("下发失败");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,中心节点未获取到机构信息");
+        }
         Map<String,Object> returnMap = new HashMap<>();
-        returnMap.put("modelId",modelId);
-        returnMap.put("taskId",dataTask.getTaskId());
+        returnMap.put("modelId",taskReq.getDataModel().getModelId());
+        returnMap.put("taskId",taskReq.getDataTask().getTaskId());
         return BaseResultEntity.success(returnMap);
+
     }
 
     public BaseResultEntity restartTaskModel(Long taskId) {
@@ -433,12 +471,45 @@ public class DataModelService {
         dataModelPrRepository.deleteDataModelResource(dataModel.getModelId());
         dataModelPrRepository.deleteDataComponent(dataModel.getModelId());
         dataModelPrRepository.deleteDataModelComponent(dataModel.getModelId());
-        dataAsyncService.runModelTask(taskReq);
+        return distributeRestartTaskModel(dataModel,dataTask);
+    }
+
+
+    public BaseResultEntity distributeRestartTaskModel(DataModel dataModel,DataTask dataTask){
+        try{
+            Long projectId = dataModel.getProjectId();
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
+            DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(dop -> dop.getParticipationIdentity() == 1).findFirst().orElse(null);
+            if (dataProjectOrgan==null){
+                log.info("下发失败");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,发起机构为null");
+            }
+            Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
+                add(dataProjectOrgan.getOrganId());
+            }}, dataProjectOrgan.getServerAddress());
+            if (organListMap.containsKey(dataProjectOrgan.getOrganId())) {
+                Map mapo = organListMap.get(dataProjectOrgan.getOrganId());
+                String gatewayAddress = mapo.get("gatewayAddress").toString();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                MultiValueMap map = new LinkedMultiValueMap<>();
+                map.put("taskId", new ArrayList() {{
+                    add(dataTask.getTaskIdName());
+                }});
+                HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+                BaseResultEntity resultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RESTART_TASK_MODEL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                log.info("baseResultEntity code:{} msg:{}", resultEntity.getCode(), resultEntity.getMsg());
+            }
+        }catch (Exception e){
+           log.info(e.getMessage());
+        }
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",dataModel.getModelId());
         returnMap.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(returnMap);
     }
+
+
 
     public BaseResultEntity getTaskModelComponent(Long taskId) {
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
