@@ -146,8 +146,8 @@ public class FusionResourceService {
     public BaseResultEntity syncResourceUse(String serverAddress,String organId,String resourceId,String projectId,Integer auditStatus){
         log.info("进入");
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
