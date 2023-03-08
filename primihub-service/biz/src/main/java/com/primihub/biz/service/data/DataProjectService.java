@@ -326,13 +326,14 @@ public class DataProjectService {
             if (project!=null){
                 DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, project.getProjectId());
                 if (dataProject==null){
-                    if (!organConfiguration.getSysLocalOrganId().equals(dataProject.getCreatedOrganId())){
                         vo.getProject().setStatus(0);
-                    }
                     dataProjectPrRepository.saveDataProject(vo.getProject());
                 }else {
                     project.setId(dataProject.getId());
                     if(dataProject.getStatus()!=null&&dataProject.getStatus()!=2) {
+                        dataProject.setStatus(null);
+                    }
+                    if (!organConfiguration.getSysLocalOrganId().equals(dataProject.getCreatedOrganId())){
                         dataProject.setStatus(null);
                     }
                     dataProjectPrRepository.updateDataProject(vo.getProject());
