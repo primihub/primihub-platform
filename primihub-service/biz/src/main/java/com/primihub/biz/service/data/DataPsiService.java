@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.convert.DataPsiConvert;
 import com.primihub.biz.convert.DataResourceConvert;
