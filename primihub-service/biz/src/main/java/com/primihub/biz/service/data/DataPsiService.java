@@ -171,10 +171,10 @@ public class DataPsiService {
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         if (dataPsi==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到PSI信息");
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
         Map<String, Object> otherDataResource = null;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
-            DataResource otherResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+            DataResource otherResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
             otherDataResource = new LinkedHashMap<>();
             otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
             otherDataResource.put("resourceName",otherResource.getResourceName());
