@@ -11,6 +11,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
@@ -95,5 +96,10 @@ public class PirService {
             }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataPirTaskVos));
+    }
+
+    public BaseResultEntity runPir(DataPirTaskSyncReq taskReq) {
+        dataAsyncService.pirGrpcTask(taskReq.getDataTask(),taskReq.getDataPirTask().getResourceId(),taskReq.getDataPirTask().getRetrievalId(),taskReq.getDataPirTask());
+        return BaseResultEntity.success();
     }
 }

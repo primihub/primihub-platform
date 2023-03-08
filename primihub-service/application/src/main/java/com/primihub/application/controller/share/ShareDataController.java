@@ -10,10 +10,7 @@ import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
-import com.primihub.biz.service.data.DataModelService;
-import com.primihub.biz.service.data.DataProjectService;
-import com.primihub.biz.service.data.DataPsiService;
-import com.primihub.biz.service.data.DataTaskService;
+import com.primihub.biz.service.data.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,6 +27,8 @@ public class ShareDataController {
     private DataModelService dataModelService;
     @Autowired
     private DataPsiService dataPsiService;
+    @Autowired
+    private PirService pirService;
     @Autowired
     private DataTaskService dataTaskService;
 
@@ -56,9 +55,14 @@ public class ShareDataController {
         return dataPsiService.syncPsi(req.getPsiTask(),req.getDataPsi(),req.getDataTask());
     }
 
-    @GetMapping("dispatchRunPsi")
+    @RequestMapping("dispatchRunPsi")
     public BaseResultEntity dispatchRunPsi(@RequestBody DataPsiTaskSyncReq taskReq){
         return dataPsiService.runPsi(taskReq.getPsiTask(),taskReq.getDataPsi(),taskReq.getDataTask());
+    }
+
+    @RequestMapping("dispatchRunPir")
+    public BaseResultEntity dispatchRunPir(@RequestBody DataPirTaskSyncReq taskReq){
+        return pirService.runPir(taskReq);
     }
 
     @RequestMapping("syncPir")
@@ -70,12 +74,12 @@ public class ShareDataController {
 
 
 
-    @GetMapping("dispatchRunTaskModel")
+    @RequestMapping("dispatchRunTaskModel")
     public BaseResultEntity dispatchRunTaskModel(@RequestBody ComponentTaskReq taskReq){
         return dataModelService.dispatchRunTaskModel(taskReq);
     }
 
-    @GetMapping("dispatchRestartTaskModel")
+    @RequestMapping("dispatchRestartTaskModel")
     public BaseResultEntity dispatchRestartTaskModel(String taskId) {
         return dataModelService.dispatchRestartTaskModel(taskId);
     }
