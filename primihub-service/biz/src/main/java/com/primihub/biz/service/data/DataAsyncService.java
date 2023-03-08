@@ -241,6 +241,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}",available);
         if (available==0){
+            spreadDispatchlData(CommonConstant.PSI_SYNC_API_URL,new DataPsiTaskSyncReq(psiTask,dataPsi,dataTask));
             Date date=new Date();
             StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
             psiTask.setFilePath(sb.toString());
@@ -334,6 +335,7 @@ public class DataAsyncService implements ApplicationContextAware {
     public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam,DataPirTask dataPirTask) {
         Date date = new Date();
         try {
+            spreadDispatchlData(CommonConstant.PIR_SYNC_API_URL,new DataPirTaskSyncReq(dataTask,dataPirTask));
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
