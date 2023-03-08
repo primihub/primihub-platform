@@ -95,9 +95,9 @@ public class DataProjectService {
         }
         if (req.getProjectOrgans()!=null){
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(req.getProjectId());
-            String subOrganId = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse(null);
-            if (subOrganId == null)
-                subOrganId = req.getProjectOrgans().stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse(null);
+//            String subOrganId = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse(null);
+//            if (subOrganId == null)
+//                subOrganId = req.getProjectOrgans().stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse(null);
             Map<String, DataProjectOrgan> organMap = dataProjectOrgans.stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
             for (DataProjectOrganReq projectOrgan : req.getProjectOrgans()) {
                 DataProjectOrgan dataProjectOrgan = organMap.get(projectOrgan.getOrganId());
@@ -118,9 +118,9 @@ public class DataProjectService {
                         if (!existenceResourceIds.contains(resourceId)){
                             DataProjectResource dataProjectResource = new DataProjectResource(UUID.randomUUID().toString(), dataProjectOrgan.getProjectId(), sysLocalOrganInfo.getOrganId(), dataProjectOrgan.getOrganId(), dataProjectOrgan.getParticipationIdentity(), req.getServerAddress());
                             dataProjectResource.setResourceId(resourceId);
-//                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
-                            log.info("resourceId:{}--subOrganId:{}",resourceId,subOrganId);
-                            if (resourceId.contains(subOrganId)){
+                            if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+//                            log.info("resourceId:{}--subOrganId:{}",resourceId,subOrganId);
+//                            if (resourceId.contains(subOrganId)){
                                 dataProjectResource.setAuditStatus(1);
                                 dataProjectResource.setAuditOpinion("项目发起者自动同意");
                             }
