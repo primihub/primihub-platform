@@ -333,9 +333,6 @@ public class DataProjectService {
                     if(dataProject.getStatus()!=null&&dataProject.getStatus()!=2) {
                         dataProject.setStatus(null);
                     }
-                    if (!organConfiguration.getSysLocalOrganId().equals(dataProject.getCreatedOrganId())){
-                        dataProject.setStatus(null);
-                    }
                     dataProjectPrRepository.updateDataProject(vo.getProject());
                 }
             }
@@ -372,6 +369,9 @@ public class DataProjectService {
             }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).size());
+            if (organConfiguration.getSysLocalOrganId().equals(dataProject.getCreatedOrganId())){
+                dataProject.setStatus(null);
+            }
             dataProjectPrRepository.updateDataProject(dataProject);
         }
         return BaseResultEntity.success();
