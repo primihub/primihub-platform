@@ -1,7 +1,9 @@
 <template>
   <section class="app-main">
-    <hamburger :is-active="$store.getters.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
-    <breadcrumb class="breadcrumb-container" />
+    <template v-if="!routePath">
+      <hamburger :is-active="$store.getters.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
+      <breadcrumb class="breadcrumb-container" />
+    </template>
     <transition name="fade-transform" mode="out-in">
       <router-view :key="key" />
     </transition>
@@ -21,6 +23,13 @@ export default {
   computed: {
     key() {
       return this.$route.path
+    },
+    routePath(){
+      let path = this.$store.state.watchRouter.currentPath;
+      if(path.search('/map/index') > -1){
+        return true;
+      }
+      return false
     }
   },
   methods: {

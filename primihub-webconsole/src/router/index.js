@@ -75,19 +75,21 @@ export const constantRoutes = [
     component: Layout,
     name: 'Map',
     hidden: true,
-    redirect:'/map/index',
+    redirect: '/map/index',
     meta:{title:"地图"},
-    children:[{
-      path:"index",
-      name:"mapIndex",
-      component:()=> import('@/views/map/index'),
-      meta:{title:'地图', breadcrumb: false}
-    }]
+    children:[
+      {
+        path: 'index',
+        name: 'mapIndex',
+        meta: {  title: '地图', breadcrumb: false },
+        component:()=> import('@/views/map/index')
+      }
+    ]
   },
   {
     path: '/',
     component: Layout,
-    redirect: '/project/list'
+    redirect: '/map/index'
   }
 ]
 
