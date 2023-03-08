@@ -219,7 +219,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi){
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,DataTask dataTask){
         DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
         String resourceId,resourceColumnNameList;
         int available;
@@ -237,13 +237,6 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
-        DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(psiTask.getTaskId());
-        dataTask.setTaskName(dataPsi.getResultName());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTaskPrRepository.saveDataTask(dataTask);
         psiTask.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}",available);
@@ -338,7 +331,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam) {
+    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam,DataPirTask dataPirTask) {
         Date date = new Date();
         try {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
@@ -397,7 +390,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
-        spreadDispatchlData(CommonConstant.PIR_SYNC_API_URL,dataTask);
+        spreadDispatchlData(CommonConstant.PIR_SYNC_API_URL,new DataPirTaskSyncReq(dataTask,dataPirTask));
     }
 
     public void sendShareModelTask(ShareModelVo shareModelVo){

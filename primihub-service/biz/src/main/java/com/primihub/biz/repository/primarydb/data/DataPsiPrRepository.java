@@ -11,6 +11,7 @@ public interface DataPsiPrRepository {
     void saveDataPsiTask(DataPsiTask dataPsiTask);
 
     void updateDataPsiTask(DataPsiTask dataPsiTask);
+    void updateDataPsiTaskByTaskId(DataPsiTask dataPsiTask);
 
     void delPsiTask(Long taskId);
 
