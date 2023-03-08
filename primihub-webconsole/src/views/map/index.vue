@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div ref="mapBox" style="width: 100%; height: calc(100vh - 125px)"></div>
+    <div ref="mapBox" style="width: 100%; height: calc(100vh - 75px); margin-top: 5px"></div>
   </div>
 </template>
 <script>

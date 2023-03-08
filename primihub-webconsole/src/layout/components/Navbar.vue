@@ -3,8 +3,8 @@
     <div class="logo">
       <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
       <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
-      <div class="secondary-title" @click="toMap">
-        分布式隐私计算服务网络
+      <div class="secondary-title" @click="toPath">
+        {{ routePath ? '首页' : '分布式隐私计算服务网络' }}
       </div>
     </div>
     <div class="right-menu">
@@ -101,7 +101,14 @@ export default {
       'userName',
       'userAccount',
       'registerType'
-    ])
+    ]),
+    routePath(){
+      let path = this.$store.state.watchRouter.currentPath;
+      if(path.search('/map/index') > -1){
+        return true;
+      }
+      return false
+    }
   },
   watch: {
     organChange(newVal) {
@@ -163,8 +170,13 @@ export default {
     },
     ...mapActions('user', ['getInfo']),
     ...mapActions('settings', ['getHomepage']),
-    toMap(){
-      this.$router.push('/map/index')
+    toPath(){
+      if(this.routePath){
+        this.$router.push('/project/list')
+      }else{
+
+        this.$router.push('/map/index')
+      }
     }
   }
 }
