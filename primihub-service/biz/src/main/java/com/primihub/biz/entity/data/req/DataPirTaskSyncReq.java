@@ -8,6 +8,8 @@ import lombok.Data;
 public class DataPirTaskSyncReq {
     private DataTask dataTask;
     private DataPirTask dataPirTask;
+    private Long timestamp;
+    private Integer nonce;
 
     public DataPirTaskSyncReq() {
     }
@@ -15,5 +17,11 @@ public class DataPirTaskSyncReq {
     public DataPirTaskSyncReq(DataTask dataTask, DataPirTask dataPirTask) {
         this.dataTask = dataTask;
         this.dataPirTask = dataPirTask;
+        supplement();
+    }
+
+    public void supplement(){
+        this.timestamp = System.currentTimeMillis();
+        this.nonce = (int)Math.random()*100;
     }
 }
