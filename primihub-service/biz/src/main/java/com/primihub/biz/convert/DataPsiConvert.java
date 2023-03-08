@@ -20,7 +20,7 @@ public class DataPsiConvert {
     public static DataPsi DataPsiReqConvertPo(DataPsiReq req){
         DataPsi dataPsi = new DataPsi();
         dataPsi.setOwnOrganId(req.getOwnOrganId());
-        dataPsi.setOwnResourceId(req.getOwnResourceId().toString());
+        dataPsi.setOwnResourceId(req.getOwnResourceId());
         dataPsi.setOwnKeyword(req.getOwnKeyword());
         dataPsi.setOtherOrganId(req.getOtherOrganId());
         dataPsi.setOtherResourceId(req.getOtherResourceId());
