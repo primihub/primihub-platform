@@ -369,6 +369,7 @@ public class DataProjectService {
             }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).size());
+            log.info("SysLocalOrganId:{} --- CreatedOrganId:{}",organConfiguration.getSysLocalOrganId(),dataProject.getCreatedOrganId());
             if (organConfiguration.getSysLocalOrganId().equals(dataProject.getCreatedOrganId())){
                 dataProject.setStatus(null);
             }
