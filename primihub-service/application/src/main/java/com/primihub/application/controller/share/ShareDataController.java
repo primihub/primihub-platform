@@ -3,6 +3,7 @@ package com.primihub.application.controller.share;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
@@ -51,8 +52,8 @@ public class ShareDataController {
         return dataPsiService.syncPsi(req.getPsiTask(),req.getDataPsi(),req.getDataTask());
     }
     @RequestMapping("syncPir")
-    public BaseResultEntity syncPir(@RequestBody DataTask dataTask){
-        return dataTaskService.saveDataTask(dataTask);
+    public BaseResultEntity syncPir(@RequestBody DataPirTaskSyncReq req){
+        return dataTaskService.saveDataTask(req);
     }
 
 }

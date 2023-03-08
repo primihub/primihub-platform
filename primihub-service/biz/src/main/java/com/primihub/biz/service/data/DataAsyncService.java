@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
@@ -45,6 +46,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -210,7 +214,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
     @Async
     public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi){
-        DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+        DataResource ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
         String resourceId,resourceColumnNameList;
         int available;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
@@ -312,6 +316,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         dataTask.setTaskState(psiTask.getTaskState());
         updateTaskState(dataTask);
+//        spreadDispatchlData(CommonConstant.PSI_SYNC_API_URL,new DataPsiTaskSyncReq(psiTask,dataPsi,dataTask));
     }
     public void psiTaskOutputFileHandle(DataPsiTask task){
         if (task.getTaskState()!=1)
@@ -386,6 +391,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
+//        spreadDispatchlData(CommonConstant.PIR_SYNC_API_URL,dataTask);
     }
 
     public void sendShareModelTask(ShareModelVo shareModelVo){
@@ -617,6 +623,23 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         dataReasoning.setReasoningState(dataTask.getTaskState());
     }
+
+//    private void spreadDispatchlData(String url,Object shareVo){
+//        if (org.apache.commons.lang.StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+//            return;
+//        String gatewayAddress = baseConfiguration.getDispatchUrl();
+//        log.info("DispatchUrl{}",gatewayAddress);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+//        try {
+//            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+//            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+//        }catch (Exception e){
+//            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+//        }
+//        log.info("出去");
+//    }
 
 
 }

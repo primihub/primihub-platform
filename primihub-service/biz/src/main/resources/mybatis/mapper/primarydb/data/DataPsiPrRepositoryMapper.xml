@@ -24,6 +24,18 @@
         </set>
         where id = #{id}
     </update>
+    <update id="updateDataPsiTaskByTaskId" parameterType="com.primihub.biz.entity.data.po.DataPsiTask">
+        update data_psi_task
+        <set>
+            <if test="taskState!=null">task_state = #{taskState},</if>
+            <if test="ascription!=null">ascription = #{ascription},</if>
+            <if test="filePath!=null">file_path = #{filePath},</if>
+            <if test="fileRows!=null">file_rows = #{fileRows},</if>
+            <if test="fileContent!=null">file_content = #{fileContent},</if>
+            update_date = now()
+        </set>
+        where task_id = #{taskId}
+    </update>
     <delete id="delPsiTask">
         delete from data_psi_task where id = #{taskId}
     </delete>

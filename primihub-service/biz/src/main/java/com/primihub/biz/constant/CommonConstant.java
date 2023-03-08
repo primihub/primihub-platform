@@ -13,4 +13,10 @@ public class CommonConstant {
     // sync run model api
     public static final String DISPATCH_RUN_TASK_MODEL = "<address>/share/shareData/dispatchRunTaskModel";
     public static final String DISPATCH_RESTART_TASK_MODEL = "<address>/share/shareData/dispatchRestartTaskModel";
+    public static final String DISPATCH_RUN_PSI = "<address>/share/shareData/dispatchRunPsi";
+    public static final String DISPATCH_RUN_PIR = "<address>/share/shareData/dispatchRunPir";
+
+
+    public static final String PSI_SYNC_API_URL = "<address>/share/shareData/syncPsi";
+    public static final String PIR_SYNC_API_URL = "<address>/share/shareData/syncPir";
 }
