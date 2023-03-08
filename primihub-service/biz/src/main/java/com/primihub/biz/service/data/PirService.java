@@ -99,6 +99,9 @@ public class PirService {
     }
 
     public BaseResultEntity runPir(DataPirTaskSyncReq taskReq) {
+        dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
+        taskReq.getDataPirTask().setTaskId(taskReq.getDataTask().getTaskId());
+        dataTaskPrRepository.saveDataPirTask(taskReq.getDataPirTask());
         dataAsyncService.pirGrpcTask(taskReq.getDataTask(),taskReq.getDataPirTask().getResourceId(),taskReq.getDataPirTask().getRetrievalId(),taskReq.getDataPirTask());
         return BaseResultEntity.success();
     }
