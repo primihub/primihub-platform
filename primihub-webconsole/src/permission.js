@@ -12,12 +12,15 @@ const whiteList = ['/register', '/login', '/forgotPwd', '/auth'] // no redirect 
 let flag = 0
 
 router.beforeEach(async(to, from, next) => {
+
   // start progress bar
   NProgress.start()
-
+  
+  await store.dispatch('watchRouter/getPath',to.path);
+  
   // set page title
   document.title = getPageTitle(to.meta.title)
-
+ 
   // determine whether the user has logged in
   const hasToken = getToken()
   if (to.matched.length === 0 && flag !== 0) { // 如果未匹配到路由
@@ -37,6 +40,7 @@ router.beforeEach(async(to, from, next) => {
     } else {
       if (flag === 0) { // 刷新后空白问题
         try {
+         
           const permissionList = await store.dispatch('user/getPermission')
           await store.dispatch('permission/generateRoutes', permissionList)
           flag++
