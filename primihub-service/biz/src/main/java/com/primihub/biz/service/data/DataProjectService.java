@@ -77,6 +77,7 @@ public class DataProjectService {
             // Available by default
             dataProject.setStatus(1);
             updateProjectProviderOrganName(req.getProjectOrgans(),dataProject);
+            log.info(JSONObject.toJSONString(dataProject));
             dataProjectPrRepository.saveDataProject(dataProject);
             req.setProjectId(dataProject.getProjectId());
         }else {
@@ -131,6 +132,7 @@ public class DataProjectService {
                 }
             }
         }
+        log.info(JSONObject.toJSONString(dataProject));
         dataProjectPrRepository.updateDataProject(dataProject);
         sendTask(new ShareProjectVo(dataProject));
         Map<String,String> map = new HashMap<>();
