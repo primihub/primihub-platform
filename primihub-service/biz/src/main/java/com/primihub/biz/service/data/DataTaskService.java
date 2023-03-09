@@ -326,8 +326,8 @@ public class DataTaskService {
             return;
         }
         if (shareModelVo.getDataModel()!=null&&shareModelVo.getDataModel().getProjectId()!=null&&shareModelVo.getDataModel().getProjectId()!=0L){
-//            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(shareModelVo.getDataModel().getProjectId(), null);
-            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareModelVo.getProjectId());
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(shareModelVo.getDataModel().getProjectId(), null);
+//            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareModelVo.getProjectId());
             if (dataProject==null){
                 log.info("spread modelUUID:{},no project data",shareModelVo.getDataModel().getModelUUID());
                 return;
