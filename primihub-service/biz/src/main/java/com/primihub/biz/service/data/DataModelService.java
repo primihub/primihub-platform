@@ -416,7 +416,8 @@ public class DataModelService {
             dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
             dataModelPrRepository.saveDataModelComponent(dataModelComponent);
         }
-
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataModel.getProjectId(), null);
+        taskReq.setProjectId(dataProject.getProjectId());
         return distributeModelTasks(taskReq);
     }
 
