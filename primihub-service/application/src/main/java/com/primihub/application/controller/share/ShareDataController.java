@@ -1,6 +1,7 @@
 package com.primihub.application.controller.share;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
@@ -11,6 +12,7 @@ import com.primihub.biz.service.data.DataModelService;
 import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.service.data.DataPsiService;
 import com.primihub.biz.service.data.DataTaskService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("shareData")
 @RestController
+@Slf4j
 public class ShareDataController {
 
     @Autowired
@@ -44,6 +47,7 @@ public class ShareDataController {
      */
     @RequestMapping("syncModel")
     public BaseResultEntity syncModel(@RequestBody ShareModelVo vo){
+        log.info("syncModel - :{}",JSONObject.toJSONString(vo));
         return dataModelService.syncModel(vo);
     }
 
