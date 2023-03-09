@@ -318,7 +318,6 @@
             dt.task_type = 1
           AND dt.task_state in(1,5)
           AND dmt.is_del = 0
-          AND dt.is_cooperation = 0
           <include refid="modeltasksuccess"></include>
         ORDER BY dt.task_id desc
         LIMIT #{offset},#{pageSize}
