@@ -617,6 +617,8 @@ public class DataModelService {
             log.info(JSONObject.toJSONString(derivationResource));
             if (derivationResource.getCode()==0){
                 List<String> resourceIds = (List<String>) derivationResource.getResult();
+                if (vo.getDmrList()==null)
+                    vo.setDmrList(new ArrayList());
                 for (String resourceId : resourceIds) {
                     DataModelResource dataModelResource = new DataModelResource(vo.getDataModel().getModelId());
                     dataModelResource.setTaskId(vo.getDataTask().getTaskId());
