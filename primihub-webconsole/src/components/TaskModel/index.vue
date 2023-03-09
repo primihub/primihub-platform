@@ -11,7 +11,7 @@
         </template>
         <el-descriptions-item label="模型ID">{{ model.modelId }}</el-descriptions-item>
         <template v-if="type==='model'">
-          <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
+          <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '协作方' : '发起方' }}</el-descriptions-item>
         </template>
         <template v-if="model.yvalueColumn">
           <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>

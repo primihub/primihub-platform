@@ -53,7 +53,7 @@
         <el-descriptions-item label="我的数据">
           <el-link :underline="false" type="primary" @click="toResourceDetailPage(resource.initiateOrganResource)">{{ resource.initiateOrganResource }}</el-link>
         </el-descriptions-item>
-        <el-descriptions-item label="参与方数据">
+        <el-descriptions-item label="协作方数据">
           <el-link :underline="false" type="primary" @click="toResourceDetailPage(resource.providerOrganResource)">
             {{ resource.providerOrganResource && resource.providerOrganResource }}
           </el-link>

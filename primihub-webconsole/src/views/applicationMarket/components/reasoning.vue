@@ -7,7 +7,7 @@
     <div class="task-container">
       <el-descriptions :column="1" :colon="false">
         <el-descriptions-item><i class="icon el-icon-success" />发起方： {{ createdOrgan }}</el-descriptions-item>
-        <el-descriptions-item><i class="icon el-icon-success" /> 参与方： {{ providerOrganName }}</el-descriptions-item>
+        <el-descriptions-item><i class="icon el-icon-success" /> 协作方： {{ providerOrganName }}</el-descriptions-item>
         <el-descriptions-item><i class="icon el-icon-success" /> 推理使用模型： <el-tag type="primary">{{ modelName }}</el-tag></el-descriptions-item>
         <el-descriptions-item><i class="icon el-icon-success" /> 推理服务名称：{{ reasoningName }}</el-descriptions-item>
       </el-descriptions>
