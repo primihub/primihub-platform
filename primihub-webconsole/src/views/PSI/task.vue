@@ -10,8 +10,8 @@
           <el-form ref="form" :model="formData" :rules="rules" label-width="70px">
             <div class="header">
               <div class="organ-container">
-                <div class="organ"><span>使用方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
-                <div class="organ"><span>加持方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
+                <div class="organ"><span>发起方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
+                <div class="organ"><span>协作方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
               </div>
               <div class="line">
                 <div class="line-icon">交</div>
@@ -322,16 +322,16 @@ export default {
         message = '请选择求交机构'
         enable = false
       } else if (ownResourceId === '') {
-        message = '请选择使用方资源'
+        message = '请选择发起方资源'
         enable = false
       } else if (otherResourceId === '') {
-        message = '请选择加持方资源'
+        message = '请选择协作方资源'
         enable = false
       } else if (otherKeyword === '') {
-        message = '请选择加持方关联键'
+        message = '请选择协作方关联键'
         enable = false
       } else if (ownKeyword === '') {
-        message = '请选择使用方关联键'
+        message = '请选择发起方关联键'
         enable = false
       }
       if (!enable) {
@@ -352,7 +352,7 @@ export default {
       } else {
         if (this.formData.serverAddress === '') {
           this.$message({
-            message: '请选择加持方',
+            message: '请选择协作方',
             type: 'warning'
           })
           this.tableDataB = []
