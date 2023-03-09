@@ -564,7 +564,7 @@ public class DataAsyncService implements ApplicationContextAware {
     public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType,int size){
         try {
             log.info(freemarkerContent);
-            DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+            DataTask modelTask = dataTaskRepository.selectDataTaskByTaskIdName(dataReasoning.getTaskId().toString());
             log.info(modelTask.toString());
             log.info(modelTask.getTaskResultContent());
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
