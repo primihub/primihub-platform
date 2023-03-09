@@ -362,6 +362,7 @@ public class DataTaskService {
     }
 
     private void spreadDispatchlData(String url,Object shareVo){
+        log.info("DispatchUrl{}",baseConfiguration.getDispatchUrl());
         if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
             return;
         String gatewayAddress = baseConfiguration.getDispatchUrl();
