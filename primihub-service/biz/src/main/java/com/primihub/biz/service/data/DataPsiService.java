@@ -106,6 +106,8 @@ public class DataPsiService {
         }
         DataPsi dataPsi = DataPsiConvert.DataPsiReqConvertPo(req);
         dataPsi.setUserId(userId);
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(req.getOwnResourceId()));
+        dataPsi.setOwnResourceId(dataResource.getResourceFusionId());
         dataPsiPrRepository.saveDataPsi(dataPsi);
         DataPsiTask task = new DataPsiTask();
         task.setPsiId(dataPsi.getId());
