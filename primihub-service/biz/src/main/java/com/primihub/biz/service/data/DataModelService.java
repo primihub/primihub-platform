@@ -628,7 +628,8 @@ public class DataModelService {
                     vo.getDmrList().add(dataModelResource);
                 }
             }
-            dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
+            if (!vo.getDmrList().isEmpty())
+                dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
         }
         return BaseResultEntity.success();
     }
