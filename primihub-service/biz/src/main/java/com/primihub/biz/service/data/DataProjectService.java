@@ -542,25 +542,29 @@ public class DataProjectService {
         List<DataResource> dataResourcesList = dataResourceRepository.queryDataResourceByResourceIds(null, modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toSet()));
         if (dataResourcesList.isEmpty())
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无资源信息");
-        Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("organId",req.getOrganId());
-        paramMap.put("offset",req.getOffset());
-        paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("resourceName",req.getResourceName());
-        paramMap.put("resourceState",0);
+//        Map<String,Object> paramMap = new HashMap<>();
+//        paramMap.put("organId",req.getOrganId());
+//        paramMap.put("offset",req.getOffset());
+//        paramMap.put("pageSize",req.getPageSize());
+//        paramMap.put("resourceName",req.getResourceName());
+//        paramMap.put("resourceState",0);
 //        paramMap.put("fileHandleField",rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
-        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
-            List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
-            if (dataResources.size()==0){
-                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
-            }
-            Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
-            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
-        }else {
+//        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
+//            List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
+//            if (dataResources.size()==0){
+//                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+//            }
+//            Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
+//            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
+//        }else {
 //            req.setColumnStr(rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
             log.info(JSONObject.toJSONString(req));
-            return fusionResourceService.getOrganResourceList(req);
-        }
+        DataFResourceReq req1 = new DataFResourceReq();
+        req1.setServerAddress(req.getServerAddress());
+        req1.setResourceName(req.getResourceName());
+        req1.setOrganId(req.getOrganId());
+        return fusionResourceService.getResourceList(req1);
+//        }
     }
 
     public String rmFileHandleFieldY(String fileHandleField){
