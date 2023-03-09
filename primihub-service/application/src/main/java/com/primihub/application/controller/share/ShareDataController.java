@@ -9,6 +9,7 @@ import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
+import com.primihub.biz.entity.data.req.DataReasoningTaskSyncReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.service.data.*;
@@ -34,6 +35,8 @@ public class ShareDataController {
     private PirService pirService;
     @Autowired
     private DataTaskService dataTaskService;
+    @Autowired
+    private DataReasoningService dataReasoningService;
 
     /**
      * 创建编辑项目接口
@@ -89,6 +92,12 @@ public class ShareDataController {
     @RequestMapping("dispatchRestartTaskModel")
     public BaseResultEntity dispatchRestartTaskModel(String taskId) {
         return dataModelService.dispatchRestartTaskModel(taskId);
+    }
+
+
+    @RequestMapping("dispatchRunReasoning")
+    public BaseResultEntity dispatchRunReasoning(@RequestBody DataReasoningTaskSyncReq taskReq){
+        return dataReasoningService.dispatchRunReasoning(taskReq);
     }
 
 }

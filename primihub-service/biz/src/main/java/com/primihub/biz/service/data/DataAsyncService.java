@@ -434,7 +434,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
+    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask,DataTask dataTask){
         String labelDataset = "";
         String guestDataset = "";
         for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
@@ -445,18 +445,11 @@ public class DataAsyncService implements ApplicationContextAware {
             }
         }
         log.info("{}-{}",labelDataset,guestDataset);
-        DataTask dataTask = new DataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
-        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(dataReasoning.getReasoningName());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskUserId(dataReasoning.getUserId());
-        dataTaskPrRepository.saveDataTask(dataTask);
-        dataReasoning.setRunTaskId(dataTask.getTaskId());
+
+        dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,new DataReasoningTaskSyncReq(dataReasoning,null,null,dataTask));
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
@@ -492,6 +485,8 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,new DataReasoningTaskSyncReq(dataReasoning,null,null,dataTask));
+
     }
 
     public void sendModelTaskMail(DataTask dataTask,Long projectId){

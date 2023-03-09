@@ -10,12 +10,15 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataReasoningReq;
 import com.primihub.biz.entity.data.req.DataReasoningResourceReq;
+import com.primihub.biz.entity.data.req.DataReasoningTaskSyncReq;
 import com.primihub.biz.entity.data.req.ReasoningListReq;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataReasoningRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +41,8 @@ public class DataReasoningService {
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataTaskRepository dataTaskRepository;
     @Autowired
     private DataAsyncService dataAsyncService;
 
@@ -64,11 +69,21 @@ public class DataReasoningService {
         if (dataProjectResources.isEmpty()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源信息");
         }
+        DataTask dataTask1 = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+        dataReasoning.setTaskId(Long.valueOf(dataTask1.getTaskIdName()));
         dataReasoningPrRepository.saveDataReasoning(dataReasoning);
         Map<String, String> resourceMap = dataProjectResources.stream().collect(Collectors.toMap(DataProjectResource::getResourceId, DataProjectResource::getServerAddress,(key1, key2) -> key2));
         List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId(), resourceMap.get(r.getResourceId()))).collect(Collectors.toList());
         dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
-        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList,modelTask);
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
+        dataTask.setTaskName(dataReasoning.getReasoningName());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskUserId(dataReasoning.getUserId());
+        dataTaskPrRepository.saveDataTask(dataTask);
+        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList,modelTask,dataTask);
         Map<String,Object> map = new HashMap<>();
         map.put("id",dataReasoning.getId());
         map.put("reasoningId",dataReasoning.getReasoningId());
@@ -80,5 +95,16 @@ public class DataReasoningService {
         if (dataReasoning==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据");
         return BaseResultEntity.success(DataReasoningConvert.dataReasoningConvertVo(dataReasoning));
+    }
+
+    public BaseResultEntity dispatchRunReasoning(DataReasoningTaskSyncReq taskReq) {
+        dataReasoningPrRepository.saveDataReasoning(taskReq.getDataReasoning());
+        for (DataReasoningResource dataReasoningResource : taskReq.getDataReasoningResourceList()) {
+            dataReasoningResource.setReasoningId(taskReq.getDataReasoning().getId());
+        }
+        dataReasoningPrRepository.saveDataReasoningResources(taskReq.getDataReasoningResourceList());
+        dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
+        dataAsyncService.runReasoning(taskReq.getDataReasoning(),taskReq.getDataReasoningResourceList(),taskReq.getModelTask(), taskReq.getDataTask());
+        return BaseResultEntity.success();
     }
 }
