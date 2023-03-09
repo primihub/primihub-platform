@@ -61,6 +61,7 @@ public class ShareDataController {
     }
     @RequestMapping("syncReasoning")
     public BaseResultEntity syncReasoning(@RequestBody DataReasoningTaskSyncReq req){
+        log.info("syncReasoning - :{}",JSONObject.toJSONString(req));
         return dataReasoningService.syncReasoning(req);
     }
 
