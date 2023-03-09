@@ -97,6 +97,7 @@ public class ShareDataController {
 
     @RequestMapping("dispatchRunReasoning")
     public BaseResultEntity dispatchRunReasoning(@RequestBody DataReasoningTaskSyncReq taskReq){
+        log.info(JSONObject.toJSONString(taskReq));
         return dataReasoningService.dispatchRunReasoning(taskReq);
     }
 
