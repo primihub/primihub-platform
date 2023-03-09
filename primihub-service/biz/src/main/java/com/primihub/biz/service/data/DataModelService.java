@@ -631,7 +631,7 @@ public class DataModelService {
                 for (Map<String, String> map : maps) {
                     if ("1".equals(map.get("participationIdentity"))){
                         modelTaskSuccessVo.setCreatedOrgan(map.get("organName"));
-                        modelTaskSuccessVo.setCreatedOrganId(map.get("organName"));
+                        modelTaskSuccessVo.setCreatedOrganId(map.get("organId"));
                         maps.remove(map);
                         break;
                     }
