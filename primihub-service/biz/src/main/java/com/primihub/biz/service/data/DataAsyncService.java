@@ -291,7 +291,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
-                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
+                        .setSubmitClientId(ByteString.copyFrom(dataTaskMonitorService.getClientId().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
@@ -366,7 +366,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
+                    .setSubmitClientId(ByteString.copyFrom(dataTaskMonitorService.getClientId().getBytes(StandardCharsets.UTF_8)))
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info(reply.toString());

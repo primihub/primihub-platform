@@ -36,7 +36,11 @@ public class DataTaskMonitorService {
     private BaseConfiguration baseConfiguration;
     @Resource(name="primaryStringRedisTemplate")
     private StringRedisTemplate primaryStringRedisTemplate;
+    private String clientId;
 
+    public String getClientId() {
+        return clientId;
+    }
     @PostConstruct
     public void init(){
         log.info("open server node event");
@@ -57,7 +61,8 @@ public class DataTaskMonitorService {
                 .forAddress(grpcClientAddress,serverPort)
                 .usePlaintext()
                 .build();
-        ClientContext context= ClientContext.newBuilder().setClientId(String.valueOf(SnowflakeId.getInstance().nextId())).build();
+        clientId = String.valueOf(SnowflakeId.getInstance().nextId());
+        ClientContext context= ClientContext.newBuilder().setClientId(clientId).build();
         NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
         stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
             @Override
