@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -172,21 +173,17 @@ public class DataPsiService {
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         if (dataPsi==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到PSI信息");
-        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
-        Map<String, Object> otherDataResource = null;
-        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
-            DataResource otherResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
-            otherDataResource = new LinkedHashMap<>();
-            otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
-            otherDataResource.put("resourceName",otherResource.getResourceName());
-        }else {
-            BaseResultEntity baseResult = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
-            if (baseResult.getCode()==0){
-                otherDataResource = (LinkedHashMap)baseResult.getResult();
-            }
-        }
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,dataResource,otherDataResource,sysLocalOrganInfo));
+        String[] resourceIds = new String[]{dataPsi.getOwnResourceId(),dataPsi.getOtherResourceId()};
+        BaseResultEntity baseResult = fusionResourceService.getResourceListById(dataPsi.getServerAddress(), resourceIds);
+        if (baseResult.getCode()!=0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"查询中心节点资源失败");
+        if (baseResult.getResult()==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"查询中心节点资源无数据");
+        List<LinkedHashMap<String, Object>> mapList = (List<LinkedHashMap<String, Object>>)baseResult.getResult();
+        if (mapList.size()!=2)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"查询中心节点资源数据数量异常");
+        Map<String, LinkedHashMap<String, Object>> resourceMap = mapList.stream().collect(Collectors.toMap(map -> map.get("resourceId").toString(), Function.identity()));
+        return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,resourceMap.get(dataPsi.getOwnResourceId()),resourceMap.get(dataPsi.getOtherResourceId())));
     }
 
     public DataPsiTask selectPsiTaskById(Long taskId){

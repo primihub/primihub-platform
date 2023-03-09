@@ -87,4 +87,40 @@ public class DataPsiConvert {
         dataPsiVo.setTaskState(task.getTaskState());
         return dataPsiVo;
     }
+    public static DataPsiVo DataPsiConvertVo(DataPsiTask task, DataPsi dataPsi, Map<String, Object> ownDataResource, Map<String, Object> otherDataResource) {
+        DataPsiVo dataPsiVo = new DataPsiVo();
+        dataPsiVo.setId(task.getId());
+        dataPsiVo.setOwnOrganId(dataPsi.getOwnOrganId());
+        dataPsiVo.setOwnOrganName(ownDataResource==null?"":ownDataResource.get("organName")==null?"":ownDataResource.get("organName").toString());
+        dataPsiVo.setOwnResourceId(dataPsi.getOwnResourceId());
+        dataPsiVo.setOwnResourceName(ownDataResource==null?"":ownDataResource.get("resourceName")==null?"":ownDataResource.get("resourceName").toString());
+        dataPsiVo.setOwnKeyword(dataPsi.getOwnKeyword());
+        dataPsiVo.setOtherOrganId(dataPsi.getOtherOrganId());
+        dataPsiVo.setOtherOrganName(otherDataResource==null?"":otherDataResource.get("organName")==null?"":otherDataResource.get("organName").toString());
+        dataPsiVo.setOtherResourceId(dataPsi.getOtherResourceId());
+        dataPsiVo.setOtherResourceName(otherDataResource==null?"":otherDataResource.get("resourceName")==null?"":otherDataResource.get("resourceName").toString());
+        dataPsiVo.setOtherKeyword(dataPsi.getOtherKeyword());
+        dataPsiVo.setOutputFilePathType(dataPsi.getOutputFilePathType());
+        dataPsiVo.setOutputNoRepeat(dataPsi.getOutputNoRepeat());
+        dataPsiVo.setTag(dataPsi.getTag());
+        dataPsiVo.setResultName(dataPsi.getResultName());
+        dataPsiVo.setOutputContent(dataPsi.getOutputContent());
+        dataPsiVo.setOutputFormat(dataPsi.getOutputFormat());
+        dataPsiVo.setResultOrganIds(dataPsi.getResultOrganIds());
+        dataPsiVo.setResultOrganName(dataPsi.getResultOrganIds());
+        if (StringUtils.isNotBlank(dataPsi.getResultOrganIds())){
+            String[] organIds = dataPsi.getResultOrganIds().split(",");
+            if (organIds.length==2){
+                dataPsiVo.setResultOrganName(dataPsiVo.getOwnOrganName()+","+dataPsiVo.getOtherOrganName());
+            }else {
+                dataPsiVo.setResultOrganName(dataPsiVo.getOwnOrganName());
+            }
+        }
+        dataPsiVo.setRemarks(dataPsi.getRemarks());
+        dataPsiVo.setCreateDate(task.getCreateDate());
+        dataPsiVo.setTaskId(task.getId());
+        dataPsiVo.setTaskIdName(task.getTaskId());
+        dataPsiVo.setTaskState(task.getTaskState());
+        return dataPsiVo;
+    }
 }
