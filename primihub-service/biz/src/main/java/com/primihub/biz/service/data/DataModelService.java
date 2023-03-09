@@ -417,6 +417,7 @@ public class DataModelService {
             add(dataProjectOrgan.getOrganId());
         }}, dataProjectOrgan.getServerAddress());
         if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
+            taskReq.supplement();
             Map map = organListMap.get(dataProjectOrgan.getOrganId());
             String gatewayAddress = map.get("gatewayAddress").toString();
             HttpHeaders headers = new HttpHeaders();

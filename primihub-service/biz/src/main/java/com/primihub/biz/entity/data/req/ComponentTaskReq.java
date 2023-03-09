@@ -55,4 +55,10 @@ public class  ComponentTaskReq {
         job++;
         return job;
     }
+    private Long timestamp;
+    private Integer nonce;
+    public void supplement(){
+        this.timestamp = System.currentTimeMillis();
+        this.nonce = (int)Math.random()*100;
+    }
 }
