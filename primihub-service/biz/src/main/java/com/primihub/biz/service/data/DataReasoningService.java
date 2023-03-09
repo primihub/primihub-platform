@@ -91,12 +91,16 @@ public class DataReasoningService {
         dataTask.setTaskUserId(dataReasoning.getUserId());
         dataTaskPrRepository.saveDataTask(dataTask);
 //        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList,modelTask,dataTask);
-        DataProjectResource dataProjectResource = dataProjectResources.stream().filter(r -> r.getParticipationIdentity().toString().equals("1")).findFirst().get();
+        DataReasoningResource dataReasoningResource = dataReasoningResourceList.stream().filter(r -> r.getParticipationIdentity().toString().equals("1")).findFirst().get();
+        Map<String,Map> resourceListMap = dataProjectService.getResourceListMap(new ArrayList() {{
+            add(dataReasoningResource.getResourceId());
+        }}, dataProjectResources.get(0).getServerAddress());
+        String organId = resourceListMap.get(dataReasoningResource.getResourceId()).get("organId").toString();
         Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
-            add(dataProjectResource.getOrganId());
-        }}, dataProjectResource.getServerAddress());
-        if (organListMap.containsKey(dataProjectResource.getOrganId())){
-            Map map = organListMap.get(dataProjectResource.getOrganId());
+            add(organId);
+        }}, dataProjectResources.get(0).getServerAddress());
+        if (organListMap.containsKey(organId)){
+            Map map = organListMap.get(organId);
             String gatewayAddress = map.get("gatewayAddress").toString();
 
             HttpHeaders headers = new HttpHeaders();
