@@ -627,6 +627,15 @@ public class DataModelService {
                 modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
             }
             if(taskResource.containsKey(modelTaskSuccessVo.getTaskId())){
+                List<Map<String, String>> maps = taskResource.get(modelTaskSuccessVo.getTaskId());
+                for (Map<String, String> map : maps) {
+                    if ("1".equals(map.get("participationIdentity"))){
+                        modelTaskSuccessVo.setCreatedOrgan(map.get("organName"));
+                        modelTaskSuccessVo.setCreatedOrganId(map.get("organName"));
+                        maps.remove(map);
+                        break;
+                    }
+                }
                 modelTaskSuccessVo.setProviderOrgans(taskResource.get(modelTaskSuccessVo.getTaskId()));
             }
         }
@@ -649,6 +658,7 @@ public class DataModelService {
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
                                     put("organName",modelProjectResourceVo.getOrganName());
+                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity());
                                 }
                             });
                         }
