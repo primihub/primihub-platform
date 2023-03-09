@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -36,6 +37,9 @@ public class DataTaskMonitorService {
     private BaseConfiguration baseConfiguration;
     @Resource(name="primaryStringRedisTemplate")
     private StringRedisTemplate primaryStringRedisTemplate;
+    @Autowired
+    private OrganConfiguration organConfiguration;
+
     private String clientId;
 
     public String getClientId() {
@@ -61,7 +65,7 @@ public class DataTaskMonitorService {
                 .forAddress(grpcClientAddress,serverPort)
                 .usePlaintext()
                 .build();
-        clientId = String.valueOf(SnowflakeId.getInstance().nextId());
+        clientId = organConfiguration.getSysLocalOrganId();
         ClientContext context= ClientContext.newBuilder().setClientId(clientId).build();
         NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
         stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
