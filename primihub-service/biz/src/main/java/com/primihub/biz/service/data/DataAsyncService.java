@@ -494,9 +494,7 @@ public class DataAsyncService implements ApplicationContextAware {
         log.info(JSONObject.toJSONString(dataReasoning));
         log.info(JSONObject.toJSONString(dataTask));
         log.info(JSONObject.toJSONString(dataReasoningTaskSyncReq));
-
         spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskSyncReq);
-
     }
 
     public void sendModelTaskMail(DataTask dataTask,Long projectId){

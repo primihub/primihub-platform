@@ -103,7 +103,7 @@ public class DataReasoningService {
             dataReasoningResource.setReasoningId(taskReq.getDataReasoning().getId());
         }
         dataReasoningPrRepository.saveDataReasoningResources(taskReq.getDataReasoningResourceList());
-        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+        taskReq.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
         dataAsyncService.runReasoning(taskReq.getDataReasoning(),taskReq.getDataReasoningResourceList(),taskReq.getModelTask(), taskReq.getDataTask());
         return BaseResultEntity.success();
