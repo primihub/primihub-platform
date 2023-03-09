@@ -18,6 +18,7 @@ public class DataReasoningTaskSyncReq {
     private Integer nonce;
 
     public DataReasoningTaskSyncReq() {
+        supplement();
     }
 
     public DataReasoningTaskSyncReq(DataReasoning dataReasoning, List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask, DataTask dataTask) {
@@ -25,7 +26,6 @@ public class DataReasoningTaskSyncReq {
         this.dataReasoning = dataReasoning;
         this.dataReasoningResourceList = dataReasoningResourceList;
         this.modelTask = modelTask;
-        this.dataTask = dataTask;
         supplement();
     }
 
