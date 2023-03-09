@@ -344,6 +344,8 @@ public class DataModelService {
     public BaseResultEntity dispatchRunTaskModel(ComponentTaskReq taskReq){
         DataModel dataModel = taskReq.getDataModel();
         DataModel dm = dataModelRepository.queryDataModelByUUID(dataModel.getModelUUID());
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, taskReq.getProjectId());
+        dataModel.setProjectId(dataProject.getId());
         if (dm==null){
             dataModelPrRepository.saveDataModel(dataModel);
         }else {
