@@ -666,7 +666,7 @@ public class DataModelService {
                         break;
                     }
                 }
-                modelTaskSuccessVo.setProviderOrgans(taskResource.get(modelTaskSuccessVo.getTaskId()));
+                modelTaskSuccessVo.setProviderOrgans(maps);
             }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
@@ -688,7 +688,7 @@ public class DataModelService {
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
                                     put("organName",modelProjectResourceVo.getOrganName());
-                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity());
+                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity().toString());
                                 }
                             });
                         }
