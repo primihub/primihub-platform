@@ -629,7 +629,6 @@ public class DataModelService {
             if(taskResource.containsKey(modelTaskSuccessVo.getTaskId())){
                 List<Map<String, String>> maps = taskResource.get(modelTaskSuccessVo.getTaskId());
                 for (Map<String, String> map : maps) {
-                    log.info(JSONObject.toJSONString(map));
                     if ("1".equals(map.get("participationIdentity"))){
                         modelTaskSuccessVo.setCreatedOrgan(map.get("organName"));
                         modelTaskSuccessVo.setCreatedOrganId(map.get("organId"));
@@ -659,7 +658,7 @@ public class DataModelService {
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
                                     put("organName",modelProjectResourceVo.getOrganName());
-                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity());
+                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity().toString());
                                 }
                             });
                         }
