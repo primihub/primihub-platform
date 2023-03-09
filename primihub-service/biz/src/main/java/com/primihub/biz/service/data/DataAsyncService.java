@@ -103,6 +103,8 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private DataReasoningPrRepository dataReasoningPrRepository;
     @Autowired
+    private DataReasoningRepository dataReasoningRepository;
+    @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
@@ -449,7 +451,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,new DataReasoningTaskSyncReq(dataReasoning,null,null,dataTask));
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,new DataReasoningTaskSyncReq(dataReasoningRepository.selectDataReasoninById(dataReasoning.getId()),null,null,dataTaskRepository.selectDataTaskByTaskIdName(dataTask.getTaskIdName())));
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
@@ -485,8 +487,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,new DataReasoningTaskSyncReq(dataReasoning,null,null,dataTask));
-
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,new DataReasoningTaskSyncReq(dataReasoningRepository.selectDataReasoninById(dataReasoning.getId()),null,null,dataTaskRepository.selectDataTaskByTaskIdName(dataTask.getTaskIdName())));
     }
 
     public void sendModelTaskMail(DataTask dataTask,Long projectId){
