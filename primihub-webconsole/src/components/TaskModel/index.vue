@@ -72,7 +72,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div class="section">
+    <div v-if="Object.keys(anotherQuotas).length > 0" class="section">
       <h3>模型评估指标</h3>
       <el-descriptions class="quotas" :column="1" border :label-style="{'width':'300px'}">
         <el-descriptions-item label="① ROOT MEAN SQUARED ERROR">{{ anotherQuotas.rootMeanSquaredError }}</el-descriptions-item>
@@ -165,7 +165,7 @@ export default {
       modelId: 0,
       modelComponent: [],
       lineChartData: [],
-      anotherQuotas: [],
+      anotherQuotas: null,
       taskState: null,
       projectId: 0,
       task: {}
