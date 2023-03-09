@@ -72,7 +72,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div v-if="Object.keys(anotherQuotas).length > 0" class="section">
+    <!-- <div v-if="Object.keys(anotherQuotas).length > 0" class="section">
       <h3>模型评估指标</h3>
       <el-descriptions class="quotas" :column="1" border :label-style="{'width':'300px'}">
         <el-descriptions-item label="① ROOT MEAN SQUARED ERROR">{{ anotherQuotas.rootMeanSquaredError }}</el-descriptions-item>
@@ -83,7 +83,7 @@
         <el-descriptions-item label="⑥ MEAN ABSOLUTE ERROR">{{ anotherQuotas.meanAbsoluteError }}</el-descriptions-item>
         <el-descriptions-item label="⑦ MEDIAN ABSOLUTE ERROR">{{ anotherQuotas.medianAbsoluteError }}</el-descriptions-item>
       </el-descriptions>
-    </div>
+    </div> -->
     <div class="section">
       <h3>模型评估分数</h3>
       <el-table
