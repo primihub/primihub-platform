@@ -400,8 +400,23 @@ public class DataModelService {
         DataModelTask modelTask = new DataModelTask();
         modelTask.setTaskId(dataTask.getTaskId());
         modelTask.setModelId(dataModel.getModelId());
+        modelTask.setComponentJson(JSONObject.toJSONString(taskReq.getDataComponents()));
         dataModelPrRepository.saveDataModelTask(modelTask);
         taskReq.setDataModelTask(modelTask);
+        for (DataComponent dataComponent : taskReq.getDataComponents()) {
+            dataComponent.setModelId(modelTask.getModelId());
+            dataComponent.setTaskId(modelTask.getTaskId());
+            dataModelPrRepository.saveDataComponent(dataComponent);
+        }
+        Map<String, DataComponent> dataComponentMap = taskReq.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
+        for (DataModelComponent dataModelComponent : taskReq.getDataModelComponents()) {
+            dataModelComponent.setModelId(modelTask.getModelId());
+            dataModelComponent.setTaskId(modelTask.getTaskId());
+            dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
+            dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
+            dataModelPrRepository.saveDataModelComponent(dataModelComponent);
+        }
+
         return distributeModelTasks(taskReq);
     }
 
