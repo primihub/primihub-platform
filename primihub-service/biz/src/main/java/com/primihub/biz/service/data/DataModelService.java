@@ -569,8 +569,8 @@ public class DataModelService {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataTask");
             if (StringUtils.isBlank(vo.getDataModel().getModelUUID()))
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelUUID");
-            if (vo.getDmrList()==null||vo.getDmrList().isEmpty())
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dmrList");
+//            if (vo.getDmrList()==null||vo.getDmrList().isEmpty())
+//                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dmrList");
         }
         DataModel dataModel = this.dataModelRepository.queryDataModelByUUID(vo.getDataModel().getModelUUID());
         if (dataModel==null){
@@ -613,10 +613,6 @@ public class DataModelService {
             vo.getDataModelTask().setTaskId(vo.getDataTask().getTaskId());
             vo.getDataModelTask().setModelId(vo.getDataModel().getModelId());
             dataModelPrRepository.saveDataModelTask(vo.getDataModelTask());
-            for (DataModelResource dataModelResource : vo.getDmrList()) {
-                dataModelResource.setModelId(vo.getDataModel().getModelId());
-                dataModelResource.setTaskId(vo.getDataTask().getTaskId());
-            }
             BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(vo.getDerivationList(), null, vo.getServerAddress());
             log.info(JSONObject.toJSONString(derivationResource));
             if (derivationResource.getCode()==0){
@@ -628,7 +624,13 @@ public class DataModelService {
                     vo.getDmrList().add(dataModelResource);
                 }
             }
-            dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
+            if (vo.getDmrList()!=null || !vo.getDmrList().isEmpty()){
+                for (DataModelResource dataModelResource : vo.getDmrList()) {
+                    dataModelResource.setModelId(vo.getDataModel().getModelId());
+                    dataModelResource.setTaskId(vo.getDataTask().getTaskId());
+                }
+                dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
+            }
         }
         return BaseResultEntity.success();
     }
