@@ -228,8 +228,11 @@ public class DataPsiService {
     }
 
     public BaseResultEntity runPsi(DataPsiTask psiTask, DataPsi dataPsi,DataTask dataTask){
+        log.info("进入保存");
         syncPsi(psiTask,dataPsi,dataTask);
+        log.info("结束保存");
         dataAsyncService.psiGrpcRun(psiTask,dataPsi,dataTask);
+        log.info("结束运行");
         return BaseResultEntity.success();
     }
 
