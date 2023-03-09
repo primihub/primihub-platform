@@ -142,6 +142,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataComponent.setTaskId(req.getDataModelTask().getTaskId());
             dataModelPrRepository.saveDataComponent(dataComponent);
         }
+        List<String> organIds = req.getFusionResourceList().stream().map(k -> k.get("organId").toString()).collect(Collectors.toList());
         try {
             Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
             for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
@@ -179,7 +180,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 vo.setDataTask(req.getDataTask());
                 vo.setDataModelTask(req.getDataModelTask());
                 vo.setDmrList(req.getDmrList());
-//                vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+                vo.setShareOrganId(organIds);
                 vo.setDerivationList(req.getDerivationList());
                 log.info("进入同步数据中");
                 sendShareModelTask(vo);
@@ -199,7 +200,7 @@ public class DataAsyncService implements ApplicationContextAware {
         vo.setDataTask(req.getDataTask());
         vo.setDataModelTask(req.getDataModelTask());
         vo.setDmrList(req.getDmrList());
-        vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+        vo.setShareOrganId(organIds);
         vo.setDerivationList(req.getDerivationList());
         sendShareModelTask(vo);
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
