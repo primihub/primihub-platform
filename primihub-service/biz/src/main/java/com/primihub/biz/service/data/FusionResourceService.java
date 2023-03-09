@@ -34,8 +34,8 @@ public class FusionResourceService {
 
     public BaseResultEntity getResourceList(DataFResourceReq req) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(req.getServerAddress()))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(req.getServerAddress()))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -60,8 +60,8 @@ public class FusionResourceService {
 
     public BaseResultEntity getOrganResourceList(OrganResourceReq req) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(req.getServerAddress()))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(req.getServerAddress()))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -85,8 +85,8 @@ public class FusionResourceService {
 
     public BaseResultEntity getDataResource(String serverAddress,String resourceId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -105,8 +105,8 @@ public class FusionResourceService {
 
     public BaseResultEntity getResourceListById(String serverAddress,String[] resourceIds) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -126,8 +126,8 @@ public class FusionResourceService {
 
     public BaseResultEntity getResourceTagList(String serverAddress) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -146,8 +146,8 @@ public class FusionResourceService {
     public BaseResultEntity syncResourceUse(String serverAddress,String organId,String resourceId,String projectId,Integer auditStatus){
         log.info("进入");
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
+//        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+//            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
