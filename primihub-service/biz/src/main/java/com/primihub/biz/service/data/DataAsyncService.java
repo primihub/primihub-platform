@@ -450,7 +450,9 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         DataReasoningTaskSyncReq dataReasoningTaskSyncReq = new DataReasoningTaskSyncReq();
+        log.info(JSONObject.toJSONString(dataReasoning));
         dataReasoningTaskSyncReq.setDataReasoning(dataReasoning);
+        log.info(JSONObject.toJSONString(dataTask));
         dataReasoningTaskSyncReq.setDataTask(dataTask);
         log.info(JSONObject.toJSONString(dataReasoningTaskSyncReq));
         spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskSyncReq);
@@ -489,7 +491,10 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        log.info(JSONObject.toJSONString(dataReasoning));
+        log.info(JSONObject.toJSONString(dataTask));
         log.info(JSONObject.toJSONString(dataReasoningTaskSyncReq));
+
         spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskSyncReq);
 
     }
