@@ -633,6 +633,7 @@ public class DataAsyncService implements ApplicationContextAware {
             return;
         String gatewayAddress = baseConfiguration.getDispatchUrl();
         log.info("DispatchUrl{}",gatewayAddress);
+        log.info("shareVo{}",JSONObject.toJSONString(shareVo));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
