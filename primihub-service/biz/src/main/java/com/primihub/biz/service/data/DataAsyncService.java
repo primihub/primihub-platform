@@ -233,6 +233,8 @@ public class DataAsyncService implements ApplicationContextAware {
             available = otherDataResource.getResourceState();
         }else {
             BaseResultEntity dataResource = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            log.info("{} - {}",dataPsi.getServerAddress(),dataPsi.getOtherResourceId());
+            log.info(JSONObject.toJSONString(dataResource));
             if (dataResource.getCode()!=0)
                 return;
             Map<String, Object> otherDataResource = (LinkedHashMap)dataResource.getResult();
