@@ -657,8 +657,6 @@ public class DataModelService {
             if(taskResource.containsKey(modelTaskSuccessVo.getTaskId())){
                 List<Map<String, String>> maps = taskResource.get(modelTaskSuccessVo.getTaskId());
                 for (Map<String, String> map : maps) {
-                    log.info(JSONObject.toJSONString(map));
-                    log.info("{}","1".equals(map.get("participationIdentity")));
                     if ("1".equals(map.get("participationIdentity"))){
                         modelTaskSuccessVo.setCreatedOrgan(map.get("organName"));
                         modelTaskSuccessVo.setCreatedOrganId(map.get("organId"));

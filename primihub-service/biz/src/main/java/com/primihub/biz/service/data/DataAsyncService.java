@@ -425,7 +425,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
+    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask,DataTask dataTask){
         String labelDataset = "";
         String guestDataset = "";
         for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
@@ -436,16 +436,8 @@ public class DataAsyncService implements ApplicationContextAware {
             }
         }
         log.info("{}-{}",labelDataset,guestDataset);
-        DataTask dataTask = new DataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
-        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(dataReasoning.getReasoningName());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskUserId(dataReasoning.getUserId());
-        dataTaskPrRepository.saveDataTask(dataTask);
-        dataReasoning.setRunTaskId(dataTask.getTaskId());
+
+        dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
@@ -602,6 +594,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
+                    .setSubmitClientId(ByteString.copyFrom(dataTaskMonitorService.getClientId().getBytes(StandardCharsets.UTF_8)))
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());

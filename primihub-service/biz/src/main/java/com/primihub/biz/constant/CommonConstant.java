@@ -15,6 +15,7 @@ public class CommonConstant {
     public static final String DISPATCH_RESTART_TASK_MODEL = "<address>/share/shareData/dispatchRestartTaskModel";
     public static final String DISPATCH_RUN_PSI = "<address>/share/shareData/dispatchRunPsi";
     public static final String DISPATCH_RUN_PIR = "<address>/share/shareData/dispatchRunPir";
+    public static final String DISPATCH_RUN_REASONING = "<address>/share/shareData/dispatchRunReasoning";
 
 
     public static final String PSI_SYNC_API_URL = "<address>/share/shareData/syncPsi";

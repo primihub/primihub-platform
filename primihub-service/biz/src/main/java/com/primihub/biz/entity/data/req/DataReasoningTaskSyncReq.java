@@ -1,0 +1,33 @@
+package com.primihub.biz.entity.data.req;
+
+import com.primihub.biz.entity.data.po.*;
+import lombok.Data;
+
+import java.util.List;
+
+@Data
+public class DataReasoningTaskSyncReq {
+    private DataReasoning dataReasoning;
+    private List<DataReasoningResource> dataReasoningResourceList;
+    private DataModelTask modelTask;
+    private DataTask dataTask;
+    private Long timestamp;
+    private Integer nonce;
+
+    public DataReasoningTaskSyncReq() {
+    }
+
+    public DataReasoningTaskSyncReq(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask,DataTask dataTask) {
+        this.dataTask = dataTask;
+        this.dataReasoning = dataReasoning;
+        this.dataReasoningResourceList = dataReasoningResourceList;
+        this.modelTask = modelTask;
+        this.dataTask = dataTask;
+        supplement();
+    }
+
+    public void supplement(){
+        this.timestamp = System.currentTimeMillis();
+        this.nonce = (int)Math.random()*100;
+    }
+}

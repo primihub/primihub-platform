@@ -6,12 +6,10 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
+import com.primihub.biz.entity.data.req.DataReasoningTaskSyncReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
-import com.primihub.biz.service.data.DataModelService;
-import com.primihub.biz.service.data.DataProjectService;
-import com.primihub.biz.service.data.DataPsiService;
-import com.primihub.biz.service.data.DataTaskService;
+import com.primihub.biz.service.data.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +29,8 @@ public class ShareDataController {
     private DataPsiService dataPsiService;
     @Autowired
     private DataTaskService dataTaskService;
+    @Autowired
+    private DataReasoningService dataReasoningService;
 
     /**
      * 创建编辑项目接口
@@ -58,6 +58,10 @@ public class ShareDataController {
     @RequestMapping("syncPir")
     public BaseResultEntity syncPir(@RequestBody DataPirTaskSyncReq req){
         return dataTaskService.saveDataTask(req);
+    }
+    @RequestMapping("syncReasoning")
+    public BaseResultEntity syncReasoning(@RequestBody DataReasoningTaskSyncReq req){
+        return dataReasoningService.syncReasoning(req);
     }
 
 }
