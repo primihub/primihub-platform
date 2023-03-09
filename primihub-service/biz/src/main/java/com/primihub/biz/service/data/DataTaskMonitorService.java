@@ -6,6 +6,7 @@ import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
@@ -56,7 +57,7 @@ public class DataTaskMonitorService {
                 .forAddress(grpcClientAddress,serverPort)
                 .usePlaintext()
                 .build();
-        ClientContext context= ClientContext.newBuilder().setClientId(grpcClientPort.toString()).build();
+        ClientContext context= ClientContext.newBuilder().setClientId(String.valueOf(SnowflakeId.getInstance().nextId())).build();
         NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
         stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
             @Override
