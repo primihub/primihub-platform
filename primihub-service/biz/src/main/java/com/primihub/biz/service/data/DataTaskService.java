@@ -404,8 +404,13 @@ public class DataTaskService {
             List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
             taskId = dataModelTasks.stream().mapToLong(DataModelTask::getTaskId).max().orElse(0);
         }
-        if (taskId!=null&&taskId!=0L)
-            return dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (taskId!=null&&taskId!=0L){
+            DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+            if (dataTask==null)
+                dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId.toString());
+            return dataTask;
+        }
+
         return null;
     }
 
