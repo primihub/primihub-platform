@@ -206,6 +206,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
             if (serverIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐协作方特征未查询到");
+            log.info("clientIndex:{} - clientData.getFileHandleField:{}",JSONObject.toJSONString(clientIndex),JSONObject.toJSONString(clientData.getFileHandleField()));
+            log.info("serverIndex:{} - serverIndex.getFileHandleField:{}",JSONObject.toJSONString(serverIndex),JSONObject.toJSONString(serverData.getFileHandleField()));
             String jobId = String.valueOf(taskReq.getJob());
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
