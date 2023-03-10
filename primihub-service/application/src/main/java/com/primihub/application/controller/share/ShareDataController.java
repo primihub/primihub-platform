@@ -59,6 +59,7 @@ public class ShareDataController {
     public BaseResultEntity syncPir(@RequestBody DataPirTaskSyncReq req){
         return dataTaskService.saveDataTask(req);
     }
+
     @RequestMapping("syncReasoning")
     public BaseResultEntity syncReasoning(@RequestBody DataReasoningTaskSyncReq req){
         log.info("syncReasoning - :{}",JSONObject.toJSONString(req));

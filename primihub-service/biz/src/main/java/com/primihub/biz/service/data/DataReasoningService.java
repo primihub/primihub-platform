@@ -133,13 +133,17 @@ public class DataReasoningService {
 
     public BaseResultEntity syncReasoning(DataReasoningTaskSyncReq req) {
         DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninByIdS(req.getDataReasoning().getReasoningId());
+        log.info("{}",dataReasoning);
         if (dataReasoning!=null){
             req.getDataReasoning().setId(dataReasoning.getId());
+            log.info("{}",dataReasoning);
             dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         }
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(req.getDataTask().getTaskIdName());
+        log.info("{}",dataTask);
         if (dataTask!=null){
             req.getDataTask().setTaskId(dataTask.getTaskId());
+            log.info("{}",dataTask);
             dataTaskPrRepository.updateDataTask(dataTask);
         }
         return BaseResultEntity.success();
