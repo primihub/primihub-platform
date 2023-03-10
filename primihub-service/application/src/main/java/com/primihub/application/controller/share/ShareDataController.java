@@ -53,6 +53,7 @@ public class ShareDataController {
 
     @RequestMapping("syncPsi")
     public BaseResultEntity syncPsi(@RequestBody DataPsiTaskSyncReq req){
+        log.info("syncModel - :{}",JSONObject.toJSONString(req));
         return dataPsiService.syncPsi(req.getPsiTask(),req.getDataPsi(),req.getDataTask());
     }
     @RequestMapping("syncPir")
