@@ -136,11 +136,22 @@ public class DataReasoningService {
         if (dataReasoning!=null){
             req.getDataReasoning().setId(dataReasoning.getId());
             dataReasoningPrRepository.updateDataReasoning(req.getDataReasoning());
+        }else {
+            req.getDataReasoning().setId(null);
+            dataReasoningPrRepository.saveDataReasoning(req.getDataReasoning());
+            List<DataReasoningResource> dataReasoningResourceList = req.getDataReasoningResourceList();
+            for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
+                dataReasoningResource.setReasoningId(req.getDataReasoning().getId());
+            }
+            dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
         }
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(req.getDataTask().getTaskIdName());
         if (dataTask!=null){
             req.getDataTask().setTaskId(dataTask.getTaskId());
             dataTaskPrRepository.updateDataTask(req.getDataTask());
+        }else {
+            req.getDataTask().setTaskId(null);
+            dataTaskPrRepository.saveDataTask(dataTask);
         }
         return BaseResultEntity.success();
     }
