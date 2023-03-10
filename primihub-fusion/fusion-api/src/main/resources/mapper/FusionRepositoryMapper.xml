@@ -15,7 +15,7 @@
         update fusion_organ set global_name=#{globalName},gateway_address=#{gatewayAddress} where global_id=#{globalId}
     </update>
     <update id="updateFusionOrganExtends">
-        update fusion_0rgan_extends set ip=#{ip},lat=#{lat},lon=#{lon},country=#{country} where id=#{id}
+        update fusion_organ_extends set ip=#{ip},lat=#{lat},lon=#{lon},country=#{country} where id=#{id}
     </update>
 
     <select id="getFusionOrganByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrgan">
