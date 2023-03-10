@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.convert.DataReasoningConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -106,7 +107,9 @@ public class DataReasoningService {
         taskReq.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
         DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninById(taskReq.getDataReasoning().getId());
+        log.info(JSONObject.toJSONString(dataReasoning));
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskReq.getDataTask().getTaskIdName());
+        log.info(JSONObject.toJSONString(dataTask));
         dataAsyncService.runReasoning(dataReasoning,taskReq.getDataReasoningResourceList(),taskReq.getModelTask(), dataTask);
         return BaseResultEntity.success();
     }
