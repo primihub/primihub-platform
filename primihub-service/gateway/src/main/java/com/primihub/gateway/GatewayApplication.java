@@ -2,6 +2,7 @@ package com.primihub.gateway;
 
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
+import com.primihub.biz.config.base.JsonSerializerManage;
 import com.primihub.biz.config.base.NodeDataConfig;
 import com.primihub.biz.config.grpc.GrpcServerConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
@@ -34,7 +35,8 @@ import org.springframework.context.annotation.FilterType;
                         SysUserService.class,
                         SysOauthService.class,
                         SysSseEmitterService.class,
-                        SysWebSocketService.class
+                        SysWebSocketService.class,
+                        JsonSerializerManage.class
                 }),
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = {"com.primihub.biz.service.data.*","com.primihub.biz.service.schedule.*","com.primihub.biz.service.test.*","com.primihub.biz.config.captcha.*"})
     }
