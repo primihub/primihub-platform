@@ -192,8 +192,14 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             List<Integer> clientIndex;
             List<Integer> serverIndex;
             if ("1".equals(dataAlign)){
-                clientIndex = clientData.getFileHandleField().stream().map(c->c.indexOf("id")).filter(i->i!=-1).collect(Collectors.toList());
-                serverIndex = serverData.getFileHandleField().stream().map(s->s.indexOf("id")).filter(i->i!=-1).collect(Collectors.toList());
+                clientIndex = new ArrayList<>();
+                int indexClient = clientData.getFileHandleField().indexOf("id");
+                if (indexClient!=-1)
+                    clientIndex.add(indexClient);
+                serverIndex = new ArrayList<>();
+                int indexServer = serverData.getFileHandleField().indexOf("id");
+                if (indexServer!=-1)
+                    serverIndex.add(indexServer);
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected))
