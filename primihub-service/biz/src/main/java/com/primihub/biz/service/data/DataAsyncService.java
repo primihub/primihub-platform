@@ -449,13 +449,11 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        DataReasoningTaskSyncReq dataReasoningTaskSyncReq = new DataReasoningTaskSyncReq();
-        log.info(JSONObject.toJSONString(dataReasoning));
-        dataReasoningTaskSyncReq.setDataReasoning(dataReasoning);
-        log.info(JSONObject.toJSONString(dataTask));
-        dataReasoningTaskSyncReq.setDataTask(dataTask);
-        log.info(JSONObject.toJSONString(dataReasoningTaskSyncReq));
-        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskSyncReq);
+        DataReasoningTaskReq dataReasoningTaskReq = new DataReasoningTaskReq();
+        dataReasoningTaskReq.setDataReasoning(dataReasoning);
+        dataReasoningTaskReq.setDataTask(dataTask);
+        log.info(JSONObject.toJSONString(dataReasoningTaskReq));
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskReq);
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
@@ -493,8 +491,8 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         log.info(JSONObject.toJSONString(dataReasoning));
         log.info(JSONObject.toJSONString(dataTask));
-        log.info(JSONObject.toJSONString(dataReasoningTaskSyncReq));
-        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskSyncReq);
+        log.info(JSONObject.toJSONString(dataReasoningTaskReq));
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskReq);
     }
 
     public void sendModelTaskMail(DataTask dataTask,Long projectId){
