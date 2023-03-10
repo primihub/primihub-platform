@@ -449,9 +449,10 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        DataReasoningTaskReq dataReasoningTaskReq = new DataReasoningTaskReq();
+        DataReasoningTaskSyncReq dataReasoningTaskReq = new DataReasoningTaskSyncReq();
         dataReasoningTaskReq.setDataReasoning(dataReasoning);
         dataReasoningTaskReq.setDataTask(dataTask);
+        dataReasoningTaskReq.setDataReasoningResourceList(dataReasoningResourceList);
         log.info(JSONObject.toJSONString(dataReasoningTaskReq));
         spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskReq);
         Map<String,String> map = new HashMap<>();
