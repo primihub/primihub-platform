@@ -448,8 +448,6 @@ public class DataAsyncService implements ApplicationContextAware {
 
         dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
-        log.info("{} - json:{}",dataReasoning,JSONObject.toJSONString(dataReasoning));
-        log.info("{} - json:{}",dataTask,JSONObject.toJSONString(dataTask));
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         DataReasoningTaskReq dataReasoningTaskReq = new DataReasoningTaskReq();
         dataReasoningTaskReq.setDataReasoning(dataReasoning);
@@ -491,9 +489,6 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        log.info(JSONObject.toJSONString(dataReasoning));
-        log.info(JSONObject.toJSONString(dataTask));
-        log.info(JSONObject.toJSONString(dataReasoningTaskReq));
         spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskReq);
     }
 
@@ -641,7 +636,7 @@ public class DataAsyncService implements ApplicationContextAware {
             return;
         String gatewayAddress = baseConfiguration.getDispatchUrl();
         log.info("DispatchUrl{}",gatewayAddress);
-        log.info("shareVo:{}",JSONObject.toJSONString(shareVo));
+//        log.info("shareVo:{}",JSONObject.toJSONString(shareVo));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);

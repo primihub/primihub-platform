@@ -107,9 +107,7 @@ public class DataReasoningService {
         taskReq.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
         DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninById(taskReq.getDataReasoning().getId());
-        log.info("{} - json:{}",dataReasoning,JSONObject.toJSONString(dataReasoning));
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskReq.getDataTask().getTaskIdName());
-        log.info("{} - json:{}",dataTask,JSONObject.toJSONString(dataTask));
         dataAsyncService.runReasoning(dataReasoning,taskReq.getDataReasoningResourceList(),taskReq.getModelTask(), dataTask);
         return BaseResultEntity.success();
     }
