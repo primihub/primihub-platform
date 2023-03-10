@@ -151,7 +151,7 @@ public class DataReasoningService {
             dataTaskPrRepository.updateDataTask(req.getDataTask());
         }else {
             req.getDataTask().setTaskId(null);
-            dataTaskPrRepository.saveDataTask(dataTask);
+            dataTaskPrRepository.saveDataTask(req.getDataTask());
         }
         return BaseResultEntity.success();
     }
