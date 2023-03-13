@@ -24,6 +24,8 @@ export default {
     PIR: () => import('./components/PIR.vue'),
     PSI: () => import('./components/PSI.vue'),
     reasoning: () => import('./components/reasoning.vue'),
+    ADPrediction: () => import('./components/ADPrediction.vue'),
+    UserPortrait: () => import('./components/UserPortrait.vue'),
     TopBanner
   },
   data() {

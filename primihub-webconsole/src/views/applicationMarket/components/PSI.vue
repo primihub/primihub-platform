@@ -366,7 +366,7 @@ export default {
           setTimeout(() => {
             this.$message.success('运行成功')
             this.taskState = 1
-            this.isRun = true
+            this.isRun = false
             this.loading = false
           }, 1500)
         }
