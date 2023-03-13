@@ -92,7 +92,7 @@
 </template>
 
 <script>
-import { pirSubmitTask } from '@/api/PIR'
+// import { pirSubmitTask } from '@/api/PIR'
 import { getTaskData } from '@/api/task'
 import { getDataResource } from '@/api/fusionResource'
 
@@ -112,7 +112,7 @@ export default {
       fail: false,
       form: {
         resourceName: '',
-        pirParam: '199&test',
+        pirParam: '',
         selectResources: []
       },
       rules: {
@@ -146,7 +146,6 @@ export default {
     }
     await this.getDataResource()
     this.form.selectResources = this.resource
-    console.log(window.location.origin)
   },
   destroyed() {
     clearInterval(this.taskTimer)
@@ -160,32 +159,37 @@ export default {
             return
           }
           this.loading = true
-          pirSubmitTask({
-            serverAddress: this.serverAddress,
-            resourceId: this.resource[0].resourceId,
-            pirParam: this.form.pirParam
-          }).then(res => {
-            if (res.code === 0) {
-              this.taskId = res.result.taskId
-              // 任务运行中，轮询任务状态
-              this.taskTimer = window.setInterval(() => {
-                setTimeout(this.getTaskData(), 0)
-              }, 1500)
-            } else {
-              this.$emit('error', {
-                taskId: this.taskId,
-                pirParam: this.form.pirParam
-              })
-              this.$message({
-                message: res.msg,
-                type: 'error'
-              })
-              this.loading = false
-            }
-          }).catch(err => {
-            console.log(err)
+          this.fail = true
+          setTimeout(() => {
             this.loading = false
-          })
+            this.dialogVisible = true
+          }, 1000)
+          // pirSubmitTask({
+          //   serverAddress: this.serverAddress,
+          //   resourceId: this.resource[0].resourceId,
+          //   pirParam: this.form.pirParam
+          // }).then(res => {
+          //   if (res.code === 0) {
+          //     this.taskId = res.result.taskId
+          //     // 任务运行中，轮询任务状态
+          //     this.taskTimer = window.setInterval(() => {
+          //       setTimeout(this.getTaskData(), 0)
+          //     }, 1500)
+          //   } else {
+          //     this.$emit('error', {
+          //       taskId: this.taskId,
+          //       pirParam: this.form.pirParam
+          //     })
+          //     this.$message({
+          //       message: res.msg,
+          //       type: 'error'
+          //     })
+          //     this.loading = false
+          //   }
+          // }).catch(err => {
+          //   console.log(err)
+          //   this.loading = false
+          // })
         } else {
           console.log('error submit!!')
           return false
