@@ -1,0 +1,219 @@
+<template>
+  <el-row v-loading="loading" type="flex" justify="center" element-loading-text="加载中">
+    <el-col :span="12">
+      <div class="user-container">
+        <div v-for="(item,index) in data" :key="item.key" class="item" :class="`item${index}`">
+          <p class="item-title">{{ item.label }}</p>
+          <ul v-if="item.options" style="display:inline-block;">
+            <li v-for="v in item.options" :key="v.key">{{ v.label }}: {{ v.value }}%</li>
+          </ul>
+          <p v-else class="detail">{{ item.value }}</p>
+        </div>
+      </div>
+    </el-col>
+    <el-col :span="12">
+      <el-form ref="form" :rules="rules" class="form-container" :model="form" label-width="80px" size="small">
+        <el-form-item label="性别占比" prop="gender">
+          <el-select v-model="form.gender" style="width:100%;" placeholder="请选择">
+            <el-option v-for="(item,index) in filterData('gender')" :key="index" :label="item.label" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="年龄" prop="age">
+          <el-input v-model.number="form.age" placeholder="请输入年龄" />
+        </el-form-item>
+        <el-form-item label="岗位" prop="jobPosition">
+          <el-select v-model="form.jobPosition" style="width:100%;" placeholder="请选择">
+            <el-option v-for="(item,index) in filterData('jobPosition')" :key="index" :label="item.label" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所在行业" prop="industry">
+          <el-select v-model="form.industry" style="width:100%;" placeholder="请选择">
+            <el-option v-for="(item,index) in filterData('industry')" :key="index" :label="item.label" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所在城市" prop="city">
+          <el-select v-model="form.city" style="width:100%;" placeholder="请选择">
+            <el-option v-for="(item,index) in filterData('city')" :key="index" :label="item.label" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="隐私计算熟悉度" prop="familiarity">
+          <el-select v-model="form.familiarity" style="width:100%;" placeholder="请选择">
+            <el-option v-for="(item,index) in filterData('familiarity')" :key="index" :label="item.label" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="来访目的" prop="visitPurposes">
+          <el-select v-model="form.visitPurposes" style="width:100%;" placeholder="请选择">
+            <el-option v-for="(item,index) in filterData('visitPurposes')" :key="index" :label="item.label" :value="item.key" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">匿名提交</el-button>
+          <el-button @click="onReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-col>
+  </el-row>
+</template>
+
+<script>
+import data from '../mock/user.json'
+
+export default {
+  data() {
+    return {
+      loading: false,
+      data,
+      form: {
+        gender: '',
+        age: '',
+        industry: '',
+        jobPosition: '',
+        familiarity: '',
+        visitPurposes: ''
+      },
+      rules: {
+        age: [{ required: true, message: '请输入年龄' }, { type: 'number', message: '年龄必须为数字' }],
+        gender: [{ required: true, message: '请选择性别' }],
+        industry: [{ required: true, message: '请选择所在行业' }],
+        familiarity: [{ required: true, message: '请选择隐私计算熟悉度' }],
+        city: [{ required: true, message: '请选择所在城市' }],
+        jobPosition: [{ required: true, message: '请选择行业' }],
+        visitPurposes: [{ required: true, message: '请选择来访目的' }]
+      }
+    }
+  },
+  methods: {
+    onSubmit() {
+      this.$refs.form.validate((valid) => {
+        if (valid) {
+          console.log(this.form)
+          this.setValue()
+        }
+      })
+    },
+    setValue() {
+      this.loading = true
+      const listData = JSON.parse(JSON.stringify(this.data))
+      for (const key in this.form) {
+        const val = this.form[key]
+        const posIndex = listData.findIndex(v => v.key === key)
+        const options = listData[posIndex].options
+        if (posIndex) {
+          if (options) {
+            const index = options.findIndex(item => item.key === val)
+            if (index !== -1) {
+              const value = options[index].value
+              options[index].value = (Math.floor((value + 0.01) * 100) / 100)
+              if (index !== 0) {
+                const firstVal = options[0].value
+                options[0].value = (Math.floor((firstVal - 0.01) * 100) / 100)
+              } else {
+                const lastVal = options[options.length - 1].value
+                options[options.length - 1].value = (Math.floor((lastVal - 0.01) * 100) / 100)
+              }
+            }
+          } else {
+            listData[posIndex].value = val
+          }
+        } else {
+          listData[posIndex].value = val
+        }
+      }
+      setTimeout(() => {
+        this.loading = false
+        this.$message.success('提交成功')
+        this.data = listData
+      }, 1000)
+    },
+    onReset() {
+      for (const key in this.form) {
+        this.form[key] = ''
+      }
+    },
+    filterData(name) {
+      return data.find(item => item.key === name).options
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+::v-deep .el-form-item__label{
+  line-height: 1.5;
+}
+ul{
+  margin-block-start: 10px;
+  margin-block-end: 10px;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+  padding-inline-start: 0px;
+  margin-left: 10px;
+}
+.form-container{
+  padding: 60px;
+}
+.user-container{
+  margin-top: 30px;
+  width: 100%;
+  height: 400px;
+  position: relative;
+  background: url('../../../assets/userImage.png') left center no-repeat;
+  background-size: contain;
+  display: flex;
+  justify-content: center;
+  li{
+    list-style: none;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+  .detail{
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+  }
+  .item-title{
+    background-color: #15adf5;
+    color: #fff;
+    border-radius: 16px;
+    padding: 3px 10px;
+    text-align: center;
+    font-size: 15px;
+    margin: 0 auto;
+  }
+  .item{
+    position: absolute;
+    // width: 120px;
+    &0{
+      left: 20px;
+      top: 50px;
+    }
+    &1{
+      left: 140px;
+      top: -10px;
+    }
+    &2{
+      left: 300px;
+      top: 0px;
+    }
+    &3{
+      left: 0px;
+      top: 120px;
+    }
+    &4{
+      left: 320px;
+      top: 170px;
+      .item-title{
+        width: 130px;
+      }
+    }
+    &5{
+      left: 80px;
+      top: 300px;
+    }
+     &6{
+      left: 220px;
+      top: 320px;
+    }
+  }
+}
+</style>

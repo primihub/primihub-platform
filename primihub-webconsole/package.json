@@ -19,7 +19,7 @@
     "axios": "0.18.1",
     "core-js": "3.6.5",
     "crypto-js": "^4.1.1",
-    "echarts": "4.2.1",
+    "echarts": "^5.4.1",
     "element-ui": "2.15.7",
     "emoji-regex": "^10.2.1",
     "js-cookie": "2.2.0",
