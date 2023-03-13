@@ -454,10 +454,13 @@ public class DataAsyncService implements ApplicationContextAware {
                 Long[] portNumber = getPortNumber();
                 map.put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
                 map.put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
+                map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
                 String freemarkerContent = "";
                 if (modelType.getVal().equals("2")){
-                    map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
+                }else if(modelType.getVal().equals("5")){
+                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETER_LR_INFER_PATH, freeMarkerConfigurer, map);
                     grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
                 }else{
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
