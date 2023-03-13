@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable, 'disabled':!options.isEditable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'disabled':!options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
@@ -14,7 +14,7 @@
             <el-divider />
             <div class="organ-header">
               <span><i class="el-icon-office-building" /> <strong>协作方</strong></span>
-              <div class="operation-buttons">
+              <div v-if="options.isEditable" class="operation-buttons">
                 <el-button icon="el-icon-plus" plain size="mini" @click="openProviderOrganDialog">添加协作方</el-button>
               </div>
             </div>
@@ -25,7 +25,7 @@
                   <i class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
                 </p>
               </div>
-              <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
+              <el-button v-if="options.isEditable" class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
               <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
             </div>
           </template>
@@ -110,6 +110,59 @@
           </el-row>
         </template>
       </template>
+      <template v-else-if="nodeData.componentCode === 'model'">
+        <div v-for="(item,n) in nodeData.componentTypes" :key="n">
+          <template v-if="item.inputType === 'select' && (!item.parentValue || item.parentValue === '')">
+            <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
+            <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleModelChange">
+              <el-option
+                v-for="(v,index) in item.inputValues"
+                :key="index"
+                :label="v.val"
+                :value="v.key"
+              />
+            </el-select>
+          </template>
+          <template v-if="item.inputType === 'text' && (!item.parentValue || item.parentValue === '')">
+            <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
+            <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="small" @change="handleChange" />
+          </template>
+          <template v-else-if="item.inputType === 'textarea'">
+            <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
+            <el-input v-model="item.inputValue" :disabled="!options.isEditable" type="textarea" size="small" @change="handleChange" />
+          </template>
+          <!-- Params part -->
+          <el-row v-else-if="item.parentValue && item.parentValue === nodeData.componentTypes[0].inputValue">
+            <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
+            <el-col v-if="item.inputType === 'number'" :span="12">
+              <el-input-number v-model="item.inputValue" size="mini" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" :step="1" step-strictly @change="handleChange" />
+            </el-col>
+            <el-radio-group v-if="item.inputType === 'radio'" v-model="item.inputValue" @change="handleChange">
+              <el-radio v-for="(radio,index) in item.inputValues" :key="index" :label="radio.key" />
+            </el-radio-group>
+            <el-col v-if="item.inputType === 'text'" :span="12">
+              <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="mini" @change="handleChange" />
+            </el-col>
+            <el-col v-if="item.inputType === 'select'" :span="12">
+              <el-select v-model="item.inputValue" size="mini" class="block" placeholder="请选择" @change="handleChange">
+                <el-option
+                  v-for="(v,index) in item.inputValues"
+                  :key="index"
+                  :label="v.val"
+                  :value="v.key"
+                />
+              </el-select>
+            </el-col>
+          </el-row>
+          <!-- 模型选择为LR时显示可信第三方 -->
+          <template v-if="item.inputType === 'button' && item.parentValue === nodeData.componentTypes[0].inputValue">
+            <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
+            <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
+            <el-button v-if="options.isEditable" type="primary" size="mini" class="block" @click="openProviderOrganDialog">请选择</el-button>
+          </template>
+        </div>
+        <el-button v-if="options.isEditable" style="margin-top: 10px;" @click="resetModelParams">重置参数</el-button>
+      </template>
       <template v-else-if="nodeData.componentCode === 'featuresPoints'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
           <el-row :gutter="20">
@@ -130,16 +183,8 @@
         </el-form-item>
       </template>
       <template v-else>
-        <div v-for="item in nodeData.componentTypes" :key="item.typeCode">
-          <!-- 模型选择为LR时显示可信第三方 -->
-          <template v-if="item.inputType === 'button' && item.typeCode === 'arbiterOrgan'">
-            <el-form-item v-if="showArbiterOrgan" :label="item.typeName" :prop="item.typeCode">
-              <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
-              <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
-              <el-button type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
-            </el-form-item>
-          </template>
-          <el-form-item v-else :prop="item.typeCode">
+        <div v-for="(item,index) in nodeData.componentTypes" :key="index">
+          <el-form-item :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">
               <p>{{ item.typeName }}</p>
               <span class="label-text">{{ item.inputValue }}</span>
@@ -156,24 +201,15 @@
               <p>{{ item.typeName }}</p>
               <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
-                  v-for="(v,index) in item.inputValues"
-                  :key="index"
+                  v-for="(v,i) in item.inputValues"
+                  :key="i"
                   :label="v.val"
                   :value="v.key"
                 />
               </el-select>
             </template>
-            <!-- MPC-lr -->
-            <el-row v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'">
-              <el-col v-if="item.inputType === 'number'" :span="12">
-                <p>{{ item.typeName }}</p>
-                <el-input-number v-model="item.inputValue" controls-position="right" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" @change="handleChange" />
-              </el-col>
-            </el-row>
           </el-form-item>
         </div>
-        <!-- MPC-lr -->
-        <el-button v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'" @click="resetModelParams">重置参数</el-button>
       </template>
     </el-form>
     <!-- add resource dialog -->
@@ -378,6 +414,11 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    handleModelChange() {
+      // reset before params
+      this.resetModelParams()
+      this.handleChange()
+    },
     // 添加填充策略
     addFilling() {
       this.exceptionItems.push({
@@ -393,7 +434,8 @@ export default {
     },
     resetModelParams() {
       this.nodeData.componentTypes.map(item => {
-        if (item.typeCode === 'batchSize' || item.typeCode === 'numlters') {
+        // alpha default value 0.001
+        if (item.typeName.indexOf('Params') !== -1 && item.typeCode !== 'alpha') {
           item.inputValue = ''
         }
       })
@@ -668,11 +710,15 @@ p {
 .right-drawer {
   width: 300px;
   background: #fff;
-  padding: 10px 20px;
+  padding: 10px;
+  max-height: 800px;
   overflow-y: scroll;
 }
 .label-text{
   color: #666;
+  font-size: 14px;
+  margin-bottom: 10px;
+  display: inline-block;
 }
 ::v-deep .detail-title{
   width: 100px;
@@ -682,6 +728,14 @@ p {
 }
 ::v-deep .el-checkbox__label{
   font-size: 12px!important;
+}
+.component-name{
+  line-height: 40px;
+  span{
+    font-size: 14px;
+    display: inline-block;
+    vertical-align: middle;
+  }
 }
 .resource-data{
   font-size: 12px;
@@ -694,9 +748,10 @@ p {
 }
 .required{
   color: red;
-  margin-right: 10px;
-  font-size: 20px;
-  line-height: 1;
+  margin-right: 5px;
+  height: 35px;
+  display: inline-block;
+  vertical-align: middle;
 }
 .not-clickable{
   cursor: default;

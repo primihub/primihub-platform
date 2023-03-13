@@ -327,7 +327,7 @@ export default {
       this.container = this.$refs.containerRef
       const minimapContainer = this.$refs.mapContainerRef
       this.width = this.container.scrollWidth || 800
-      const height = this.container.scrollHeight || 600
+      const height = this.container.scrollHeight || 800
       const options = {
         container: this.container,
         width: this.width,
@@ -1040,15 +1040,24 @@ export default {
         } else {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
+          const modelValue = this.nodeData.componentTypes[0].inputValue
 
-          if (componentTypes) {
-            for (let i = 0; i < componentTypes.length; i++) {
-              const item = componentTypes[i]
-              componentValues.push({
-                key: item.typeCode,
-                val: item.inputValue
-              })
-            }
+          const defaultValue = componentTypes.filter(item => !item.parentValue || item.parentValue === '')
+          for (let i = 0; i < defaultValue.length; i++) {
+            const item = defaultValue[i]
+            componentValues.push({
+              key: item.typeCode,
+              val: item.inputValue
+            })
+          }
+          // filter model component custom params
+          const modelParamsValue = componentTypes.filter(item => item.parentValue === modelValue)
+          for (let i = 0; i < modelParamsValue.length; i++) {
+            const item = modelParamsValue[i]
+            componentValues.push({
+              key: item.typeCode,
+              val: item.inputValue
+            })
           }
 
           // format 参数
@@ -1078,7 +1087,7 @@ export default {
 
       // dataSet component in the second
       this.checkOrder()
-
+      console.log('saveParams', modelComponents)
       this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
@@ -1205,6 +1214,8 @@ export default {
   position: relative;
   width: calc(100% - 300px);
   height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
 }
 .container{
   flex: 1;
