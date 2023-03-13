@@ -36,6 +36,7 @@ import primihub.rpc.Common;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service("dataAlignComponentTaskServiceImpl")
@@ -191,23 +192,17 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择为空");
             List<Integer> clientIndex;
             List<Integer> serverIndex;
+            Stream<String> stream = null;
             if ("1".equals(dataAlign)){
-                clientIndex = new ArrayList<>();
-                int indexClient = clientData.getFileHandleField().indexOf("id");
-                if (indexClient!=-1)
-                    clientIndex.add(indexClient);
-                serverIndex = new ArrayList<>();
-                int indexServer = serverData.getFileHandleField().indexOf("id");
-                if (indexServer!=-1)
-                    serverIndex.add(indexServer);
+                stream = Arrays.stream(new String[]{"id"});
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
-                String[] multipleSelecteds = multipleSelected.split(",");
-                clientIndex = Arrays.stream(multipleSelecteds).map(clientData.getFileHandleField()::indexOf).filter(i -> i != -1).collect(Collectors.toList());
-                serverIndex = Arrays.stream(multipleSelecteds).map(serverData.getFileHandleField()::indexOf).filter(i -> i != -1).collect(Collectors.toList());
+                stream = Arrays.stream(multipleSelected.split(","));
             }
+            clientIndex = stream.map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
+            serverIndex = stream.map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
             if (serverIndex.size()<0)
