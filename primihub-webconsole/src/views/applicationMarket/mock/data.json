@@ -1,0 +1,29 @@
+[{
+  "applicationId": 1,
+  "appName": "PIR",
+  "appTitle": "公安查住建部房产信息应用",
+  "organName": "机构A",
+  "createTime": "2022-12-29 10:00",
+  "description": "公安查住建部房产信息应用运用匿踪查询技术保护隐私数据。匿踪查询本质是在传统的key-value查询的基础上，加入了隐私保护，使得查询方无法拿到数据方其他数据，数据方也无法知晓查询方查的是哪个key，实现了双向隐私保护。",
+  "detailImg": "pir-app.png",
+  "readNumber": 36,
+  "instructions": ["输入关键词，如“张三”；若查询多个，使用英文分隔号隔开即可，如“张三;李四”", "点击【查询】按钮，生成一条数据，以弹窗方式展示出来"]
+},{
+  "applicationId": 2,
+  "appName": "PSI",
+  "appTitle": "防多头借贷联合风控金融应用",
+  "organName": "机构A",
+  "createTime": "2022-12-29 10:00",
+  "description": "防多头借贷联合风控金融应用运用隐私求交等隐私计算技术保护隐私数据。隐私保护集合求交(Private Set Intersection-PSI)技术，允许持有各自集合的两方或多方共同进行集合交集运算。在协议交互最后，一方或多方根据预先约定得到正确交集，且不会得到交集以外其他方集合中的任何信息。",
+  "readNumber": 39,
+  "detailImg": "psi-app.png"
+},{
+  "applicationId": 3,
+  "appName": "reasoning",
+  "appTitle": "隐私计算反欺诈应用",
+  "organName": "机构A",
+  "createTime": "2022-12-29 10:00",
+  "description": "通过隐私计算使用同态加密、秘密分享等多方安全计算技术，融合银行+三方数据进行“原始数据严格保护，数据价值充分利用”的数据能力加持，进行“不暴露用户信息”的信息传递，助力反欺诈风控。",
+  "detailImg": "reasoning-app.png",
+  "readNumber": 137
+}]

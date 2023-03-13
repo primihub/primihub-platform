@@ -1,5 +1,5 @@
 <template>
-  <el-cascader ref="connectRef" :options="cascaderOptions" :props="props" v-bind="$attrs" @change="handleOrganCascaderChange">
+  <el-cascader ref="connectRef" v-model="value" :options="cascaderOptions" :props="propOption" v-bind="$attrs" @change="handleOrganCascaderChange">
     <template slot-scope="{ node, data }">
       <span>{{ data.label }}</span>
     </template>
@@ -19,6 +19,8 @@ export default {
   },
   data() {
     return {
+      showCascader: false,
+      value: this.cascaderValue,
       cascaderOptions: [],
       sysLocalOrganInfo: null,
       fusionList: [],
@@ -26,14 +28,19 @@ export default {
       groupList: [],
       serverAddressList: [],
       serverAddressValue: 0,
-      props: {
+      propOption: {
         lazy: true,
-        lazyLoad: this.lazyLoad
+        lazyLoad: this.lazyLoad,
+        emitPath: true,
+        expandTrigger: 'hover'
       }
     }
   },
   async created() {
     await this.getLocalOrganInfo()
+    if (this.value.length > 0) {
+      this.findMyGroupOrgan()
+    }
   },
   methods: {
     lazyLoad(node, resolve) {
@@ -52,6 +59,7 @@ export default {
                 leaf: true
               }
             })
+            this.showCascader = true
             resolve(data)
           } else {
             this.$message({
@@ -66,6 +74,24 @@ export default {
         resolve([])
       }
     },
+    findMyGroupOrgan() {
+      findMyGroupOrgan({ serverAddress: this.serverAddress }).then(({ result }) => {
+        const organList = result.dataList.organList || []
+        console.log(organList)
+        if (organList.length > 0) {
+          const data = organList && organList.map((item) => {
+            return {
+              label: item.globalName,
+              value: item.globalId,
+              leaf: true
+            }
+          })
+          const posIndex = this.cascaderOptions.findIndex(item => item.label === this.serverAddress)
+          this.$set(this.cascaderOptions[posIndex], 'children', data)
+        }
+      })
+    },
+
     async getLocalOrganInfo() {
       const res = await getLocalOrganInfo()
       this.sysLocalOrganInfo = res.result?.sysLocalOrganInfo
@@ -77,7 +103,8 @@ export default {
           value: item.serverAddress,
           registered: item.registered,
           show: item.show,
-          disabled: false
+          disabled: false,
+          children: []
         })
       })
       this.serverAddressValue = 0
@@ -94,6 +121,7 @@ export default {
         organName,
         cascaderValue: value
       })
+      console.log(value)
     }
   }
 

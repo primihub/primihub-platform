@@ -12,6 +12,7 @@
 </template>
 
 <script>
+import xor from 'lodash/xor'
 import { Graph, FunctionExt, Shape } from '@antv/x6'
 import '@antv/x6-vue-shape'
 import DagNodeComponent from './nodes/DagNode.vue'
@@ -170,7 +171,6 @@ export default {
     },
     async componentsDetail(newVal) {
       if (newVal) {
-        console.log('componentsDetail', newVal)
         this.graph.clearCells()
         this.nodeData = this.startNode
         this.graphData.cells = []
@@ -291,6 +291,12 @@ export default {
       cells[posIndex].data = data
       this.graph.fromJSON(cells)
       this.saveFn()
+      this.$notify.closeAll()
+      this.$notify({
+        message: '保存成功',
+        type: 'success',
+        duration: 1000
+      })
     },
     async init() {
       Graph.registerNode(
@@ -554,6 +560,15 @@ export default {
         })
         graph.on('cell:removed', () => {
           this.needSave = true
+          if (!this.destroyed) {
+            this.saveFn()
+            this.$notify.closeAll()
+            this.$notify({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+          }
         })
         graph.on('node:mouseenter', FunctionExt.debounce(() => {
           const ports = this.container.querySelectorAll('.x6-port-body')
@@ -574,12 +589,7 @@ export default {
           })
         })
         graph.bindKey('backspace', () => {
-          const cells = graph.getSelectedCells()
           this.deleteNode()
-          if (cells.length) {
-            graph.removeCells(cells)
-          }
-          this.nodeData = this.startNode
         })
 
         graph.on('edge:connected', ({ edge }) => {
@@ -593,6 +603,10 @@ export default {
       }
     },
     deleteNode() {
+      const cells = this.graph.getSelectedCells()
+      if (cells.length) {
+        this.graph.removeCells(cells)
+      }
       const currentCode = this.nodeData.componentCode
       // remove duplicates
       this.selectComponentList = [...new Set(this.selectComponentList)]
@@ -601,13 +615,13 @@ export default {
         this.selectComponentList.splice(index, 1)
       }
       this.$emit('selectComponents', this.selectComponentList)
+      this.nodeData = this.startNode
     },
     initToolBarEvent() {
       // 画布不可编辑只可点击
       if (!this.options.isEditable) return
       const { history } = this.graph
       history.on('change', (args) => {
-        console.log(args)
         this.canUndo = history.canUndo()
         this.canRedo = history.canRedo()
         // model is running or destroyed, don't save the model history
@@ -640,6 +654,21 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
+      const fileContainsY = providerResource.fileHandleField.includes('y')
+      // LR features must select
+      if (initiateResource.calculationField.length === 1) { // has Y
+        this.$message.error('请选择发起方数据特征')
+        this.modelRunValidated = false
+        return
+      } else if (fileContainsY && providerResource.calculationField.length === 1 || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
+        this.$message.error('请选择协作方数据特征')
+        this.modelRunValidated = false
+        return
+      } else if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) { // LR select features must be same
+        this.$message.error('选择特征需一致')
+        this.modelRunValidated = false
+        return
+      }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
       if (line.output.cell !== dataSetCom.frontComponentId) {
@@ -684,12 +713,13 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
-      } else if (modelName === '') {
+      } else if (!modelSelectCom || modelName === '') {
         this.$message({
           message: `运行失败：请输入模型名称`,
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,
@@ -1056,12 +1086,6 @@ export default {
         if (this.isCopy) {
           this.$route.query.modelId = this.currentModelId
         }
-        this.$notify.closeAll()
-        this.$notify({
-          message: '保存成功',
-          type: 'success',
-          duration: '1000'
-        })
       } else {
         this.$message({
           message: res.msg,

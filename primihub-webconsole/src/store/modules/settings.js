@@ -1,7 +1,7 @@
 import defaultSettings from '@/settings'
 import { getHomepage, changeHomepage } from '@/api/system'
 
-const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl } = defaultSettings
+const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, isHideAppMarket } = defaultSettings
 
 const baseUrl = '/'
 
@@ -25,6 +25,7 @@ const state = {
   title,
   logo: '',
   isHideFadeBack,
+  isHideAppMarket,
   isHideFooterVersion,
   showLogoTitle: 1, // 1: 添加 2:不添加
   settingChanged: false,
@@ -67,6 +68,9 @@ const mutations = {
   SET_FADE_BACK_STATUS: (state, status) => {
     state.isHideFadeBack = status
   },
+  SET_APP_MARKET_STATUS: (state, status) => {
+    state.isHideAppMarket = status
+  },
   SET_VERSION_STATUS: (state, status) => {
     state.isHideFooterVersion = status
   },
@@ -82,7 +86,7 @@ const actions = {
   async getHomepage({ commit }) {
     const res = await getHomepage()
     if (res.code === 0 && Object.keys(res.result).length > 0) {
-      const { title = '', favicon, logoUrl, loginDescription = '', isHideFadeBack = state.true, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl, footerText } = res.result
+      const { title = '', favicon, logoUrl, loginDescription = '', isHideFadeBack = state.true, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl, footerText, isHideAppMarket } = res.result
 
       commit('SET_TITLE', title || state.title)
       commit('SET_FAVICON', favicon || defaultSettings.favicon)
@@ -90,6 +94,7 @@ const actions = {
       commit('SET_LOGIN_LOGO_URL', loginLogoUrl || state.loginLogoUrl)
       commit('SET_DESCRIPTION', loginDescription || state.loginDescription)
       commit('SET_FADE_BACK_STATUS', isHideFadeBack === undefined ? state.isHideFadeBack : isHideFadeBack)
+      commit('SET_APP_MARKET_STATUS', isHideAppMarket === undefined ? state.isHideAppMarket : isHideAppMarket)
       commit('SET_VERSION_STATUS', isHideFooterVersion === undefined ? state.isHideFooterVersion : isHideFooterVersion)
       commit('SET_LOGO_TITLE', logoTitle)
       commit('SET_SHOW_LOGO_STATUS', showLogoTitle === undefined ? state.showLogoTitle : showLogoTitle)

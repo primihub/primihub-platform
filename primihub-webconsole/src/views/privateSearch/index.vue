@@ -22,10 +22,13 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="任务ID">
+          <el-input v-model="query.taskId" size="small" placeholder="请输入" clearable @clear="handleClear('taskId')" />
+        </el-form-item>
         <el-form-item label="资源名称">
           <el-input v-model="query.resourceName" size="small" placeholder="请输入" clearable @clear="handleClear('resourceName')" />
         </el-form-item>
-        <el-form-item label="检索ID">
+        <el-form-item label="关键词">
           <el-input v-model="query.retrievalId" size="small" placeholder="请输入" clearable @clear="handleClear('retrievalId')" />
         </el-form-item>
         <el-form-item label="状态">
@@ -102,7 +105,7 @@
         </el-table-column>
         <el-table-column
           prop="retrievalId"
-          label="检索ID"
+          label="关键词"
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
@@ -183,7 +186,8 @@ export default {
         organName: '',
         retrievalId: '',
         resourceName: '',
-        taskState: ''
+        taskState: '',
+        taskId: ''
       },
       statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
         {
@@ -231,11 +235,9 @@ export default {
       await this.fetchData()
     },
     reset() {
-      this.query.serverAddress = ''
-      this.query.organName = ''
-      this.query.resourceName = ''
-      this.query.retrievalId = ''
-      this.query.taskState = ''
+      for (const key in this.query) {
+        this.query[key] = ''
+      }
       this.pageNo = 1
       this.fetchData()
     },
@@ -253,8 +255,9 @@ export default {
     },
     async fetchData() {
       this.listLoading = true
-      const { taskState, serverAddress, organName, resourceName, retrievalId } = this.query
+      const { taskState, serverAddress, organName, resourceName, retrievalId, taskId } = this.query
       const params = {
+        taskId,
         taskState,
         serverAddress,
         organName,

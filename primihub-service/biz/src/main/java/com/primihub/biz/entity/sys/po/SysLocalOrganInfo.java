@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.sys.po;
 
+import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import lombok.Data;
 
 import java.util.List;
@@ -14,6 +15,7 @@ public class SysLocalOrganInfo {
 
     private Map<String,SysOrganFusion> fusionMap;
     private List<SysOrganFusion> fusionList;
+    private AddressInfoEntity addressInfo;
 
     private Map<String,Object> homeMap;
 }

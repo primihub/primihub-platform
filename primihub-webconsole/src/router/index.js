@@ -15,34 +15,61 @@ export const constantRoutes = [
   {
     path: '/login',
     component: () => import('@/views/login/index'),
-    hidden: true
+    hidden: true,
+    meta: { title: '登录页' }
   },
   {
     path: '/auth',
     component: () => import('@/views/auth/index'),
-    hidden: true
+    hidden: true,
+    meta: { title: '授权页' }
   },
   {
     path: '/register',
     component: () => import('@/views/register/index'),
-    hidden: true
+    hidden: true,
+    meta: { title: '注册页' }
   },
   {
     path: '/forgotPwd',
     component: () => import('@/views/forgotPwd'),
-    hidden: true
+    hidden: true,
+    meta: { title: '忘记密码' }
   },
   {
     path: '/updatePwd',
     component: () => import('@/views/updatePwd'),
-    hidden: true
+    hidden: true,
+    name: '更新密码',
+    meta: { title: '更新密码' }
   },
   {
     path: '/404',
     component: () => import('@/views/404'),
-    hidden: true
+    hidden: true,
+    meta: { title: 'not found' }
   },
-
+  {
+    path: '/applicationIndex',
+    name: 'applicationIndex',
+    hidden: true,
+    component: () => import('@/views/applicationMarket'),
+    meta: { title: '应用市场' }
+  },
+  {
+    path: '/applicationIndex/detail/:name',
+    name: 'ApplicationDetail',
+    hidden: true,
+    component: () => import('@/views/applicationMarket/detail'),
+    meta: { title: '应用详情' }
+  },
+  {
+    path: '/applicationIndex/application/:name',
+    name: 'Application',
+    hidden: true,
+    component: () => import('@/views/applicationMarket/application'),
+    meta: { title: '应用页' }
+  },
   {
     path: '/',
     component: Layout,
@@ -112,17 +139,22 @@ export const asyncRoutes = [
     component: Layout,
     name: 'PrivateSearch',
     redirect: '/privateSearch/list',
+    meta: { title: '匿踪查询', icon: 'el-icon-search' },
     children: [{
       path: 'list',
       name: 'PrivateSearchList',
       component: () => import('@/views/privateSearch/index'),
-      meta: { title: '匿踪查询', icon: 'el-icon-search' }
+      meta: { title: '匿踪查询', breadcrumb: false }
     }, {
       path: 'task',
       name: 'PIRTask',
       hidden: true,
       component: () => import('@/views/privateSearch/task'),
-      meta: { title: '匿踪查询' }
+      meta: {
+        title: '匿踪查询任务',
+        activeMenu: '/privateSearch/list',
+        parent: { name: 'PrivateSearchList' }
+      }
     }]
   },
   {
@@ -174,14 +206,14 @@ export const asyncRoutes = [
         name: 'ResourceUpload',
         hidden: true,
         component: () => import('@/views/resource/create'),
-        meta: { title: '新建资源' }
+        meta: { title: '新建资源', activeMenu: '/resource/list' }
       },
       {
         path: 'edit/:id',
         name: 'ResourceEdit',
         hidden: true,
         component: () => import('@/views/resource/create'),
-        meta: { title: '编辑资源' }
+        meta: { title: '编辑资源', activeMenu: '/resource/list' }
       },
       {
         path: 'detail/:id',
