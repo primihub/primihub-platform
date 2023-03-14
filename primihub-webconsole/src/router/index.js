@@ -260,7 +260,7 @@ export const asyncRoutes = [
         path: 'unionList',
         name: 'UnionList',
         component: () => import('@/views/resource/unionList'),
-        meta: { title: '联邦资源' }
+        meta: { title: '协作方资源' }
       },
       {
         path: 'create',
@@ -290,7 +290,7 @@ export const asyncRoutes = [
         path: 'unionResourceDetail/:id',
         name: 'UnionResourceDetail',
         meta: {
-          title: '联邦资源详情',
+          title: '协作方资源详情',
           activeMenu: '/resource/unionList'
         },
         hidden: true,
