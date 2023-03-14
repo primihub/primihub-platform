@@ -102,6 +102,25 @@ export const asyncRoutes = [
     }]
   },
   {
+    path: '/PSI',
+    component: Layout,
+    name: 'PSI',
+    redirect: '/PSI/task',
+    meta: { title: '隐私求交', icon: 'el-icon-lock' },
+    children: [
+      {
+        path: 'task',
+        name: 'PSITask',
+        component: () => import('@/views/PSI/task'),
+        meta: { title: '求交任务' }
+      }, {
+        path: 'result',
+        name: 'PSIResult',
+        component: () => import('@/views/PSI/result'),
+        meta: { title: '求交结果' }
+      }]
+  },
+  {
     path: '/project',
     name: 'Project',
     component: Layout,
@@ -156,25 +175,6 @@ export const asyncRoutes = [
         component: () => import('@/views/project/taskDetail')
       }
     ]
-  },
-  {
-    path: '/PSI',
-    component: Layout,
-    name: 'PSI',
-    redirect: '/PSI/task',
-    meta: { title: '隐私求交', icon: 'el-icon-lock' },
-    children: [
-      {
-        path: 'task',
-        name: 'PSITask',
-        component: () => import('@/views/PSI/task'),
-        meta: { title: '求交任务' }
-      }, {
-        path: 'result',
-        name: 'PSIResult',
-        component: () => import('@/views/PSI/result'),
-        meta: { title: '求交结果' }
-      }]
   },
   {
     path: '/resource',
