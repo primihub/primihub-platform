@@ -201,8 +201,10 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
                 stream = Arrays.stream(multipleSelected.split(","));
             }
+            log.info(JSONObject.toJSONString(stream));
             clientIndex = stream.map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
             serverIndex = stream.map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
+            log.info("{} - {}",JSONObject.toJSONString(clientIndex),JSONObject.toJSONString(serverIndex));
             if (clientIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
             if (serverIndex.size()<0)
