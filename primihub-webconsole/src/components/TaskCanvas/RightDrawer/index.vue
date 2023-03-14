@@ -135,21 +135,21 @@
           <el-row v-else-if="item.parentValue && item.parentValue === nodeData.componentTypes[0].inputValue">
             <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
             <el-col v-if="item.inputType === 'number'" :span="12">
-              <el-input-number v-model="item.inputValue" size="mini" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" :step="1" step-strictly @change="handleChange" />
+              <el-input-number v-model="item.inputValue" :disabled="!options.isEditable" size="mini" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" :step="1" step-strictly @change="handleChange" />
             </el-col>
             <el-radio-group v-if="item.inputType === 'radio'" v-model="item.inputValue" @change="handleChange">
-              <el-radio v-for="(radio,index) in item.inputValues" :key="index" :label="radio.key" />
+              <el-radio v-for="(radio,index) in item.inputValues" :key="index" :disabled="!options.isEditable" :label="radio.key" />
             </el-radio-group>
             <el-col v-if="item.inputType === 'text'" :span="12">
               <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="mini" @change="handleChange" />
             </el-col>
             <el-col v-if="item.inputType === 'select'" :span="12">
-              <el-select v-model="item.inputValue" size="mini" class="block" placeholder="请选择" @change="handleChange">
+              <el-select v-model="item.inputValue" :disabled="!options.isEditable" size="mini" class="block" placeholder="请选择" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
                   :key="index"
-                  :label="v.val"
-                  :value="v.key"
+                  :label="v.key"
+                  :value="v.val"
                 />
               </el-select>
             </el-col>
@@ -252,6 +252,10 @@ export default {
           isEditable: false // 是否可编辑
         }
       }
+    },
+    defaultConfig: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -433,10 +437,10 @@ export default {
       this.handleChange('exception')
     },
     resetModelParams() {
+      const modelConfig = this.defaultConfig.find(item => item.componentCode === 'model')
       this.nodeData.componentTypes.map(item => {
-        // alpha default value 0.001
-        if (item.typeName.indexOf('Params') !== -1 && item.typeCode !== 'alpha') {
-          item.inputValue = ''
+        if (item.typeName.indexOf('Params') !== -1) {
+          item.inputValue = modelConfig.componentTypes.find(v => v.typeCode === item.typeCode).inputValue
         }
       })
       this.handleChange()

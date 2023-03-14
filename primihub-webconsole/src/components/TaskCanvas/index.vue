@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="components" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -1040,8 +1040,7 @@ export default {
         } else {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
-          const modelValue = this.nodeData.componentTypes[0].inputValue
-
+          const modelValue = componentCode === 'model' ? data.componentTypes[0].inputValue : ''
           const defaultValue = componentTypes.filter(item => !item.parentValue || item.parentValue === '')
           for (let i = 0; i < defaultValue.length; i++) {
             const item = defaultValue[i]
