@@ -2,10 +2,10 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="模型推理服务ID">
+        <el-form-item label="推理服务ID">
           <el-input v-model="query.id" size="small" placeholder="请输入" clearable @clear="handleClear('id')" />
         </el-form-item>
-        <el-form-item label="模型推理服务名称">
+        <el-form-item label="推理服务名称">
           <el-input v-model="query.reasoningName" size="small" placeholder="请输入" clearable @clear="handleClear('reasoningName')" />
         </el-form-item>
         <el-form-item label="状态">
@@ -44,10 +44,6 @@
           label="推理服务名称"
         />
         <el-table-column
-          prop="reasoningDesc"
-          label="描述"
-        />
-        <el-table-column
           prop="reasoningType"
           label="推理类型"
         >
@@ -55,6 +51,21 @@
             {{ row.reasoningType }}方推理
           </template>
         </el-table-column>
+        <el-table-column
+          label="模型名称"
+        >
+          <template slot-scope="{row}">
+            <el-link type="primary" @click="toModelDetail(row.modelId)">{{ row.modelName }}</el-link>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="releaseDate"
+          label="上线时间"
+        />
+        <el-table-column
+          prop="reasoningDesc"
+          label="描述"
+        />
         <el-table-column
           prop="reasoningState"
           label="状态"
@@ -65,11 +76,6 @@
             {{ row.reasoningState | reasoningStateFilter }}
           </template>
         </el-table-column>
-        <el-table-column
-          prop="releaseDate"
-          label="上线日期"
-          align="center"
-        />
       </el-table>
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
@@ -169,6 +175,12 @@ export default {
     toTaskDetail(id) {
       this.$router.push({
         name: 'ModelReasoningDetail',
+        params: { id }
+      })
+    },
+    toModelDetail(id) {
+      this.$router.push({
+        name: 'ModelDetail',
         params: { id }
       })
     },

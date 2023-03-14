@@ -207,13 +207,13 @@ export const asyncRoutes = [
     component: Layout,
     name: 'ModelReasoning',
     redirect: '/reasoning/list',
-    meta: { title: '模型推理', icon: 'el-icon-aim' },
+    meta: { title: '服务管理', icon: 'el-icon-aim' },
     children: [
       {
         path: 'list',
         name: 'ModelReasoningList',
         component: () => import('@/views/reasoning/list'),
-        meta: { title: '模型推理', breadcrumb: false }
+        meta: { title: '服务管理', breadcrumb: false }
       },
       {
         path: 'task',
