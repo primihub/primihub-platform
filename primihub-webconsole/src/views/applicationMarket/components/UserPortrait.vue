@@ -129,6 +129,7 @@ export default {
       for (const key in this.form) {
         this.form[key] = ''
       }
+      this.$refs.form.resetFields()
     },
     filterData(name) {
       return data.find(item => item.key === name).options
