@@ -3,9 +3,11 @@ package com.primihub.service;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.fusion.param.FusionOrganExtendsParam;
+import com.primihub.entity.fusion.param.FusionOrganSecretParam;
 import com.primihub.entity.fusion.param.RegisterConnectionParam;
 import com.primihub.entity.fusion.po.FusionOrgan;
 import com.primihub.entity.fusion.po.FusionOrganExtends;
+import com.primihub.entity.fusion.po.FusionOrganSecret;
 import com.primihub.repository.FusionRepository;
 import com.primihub.util.SignUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,12 @@ public class FusionService {
         fusionOrgan.setRegisterTime(new Date());
         fusionOrgan.setIsDel(0);
         fusionRepository.insertFusionOrgan(fusionOrgan);
+        FusionOrganSecretParam secret = registerConnectionParam.getSecret();
+        FusionOrganSecret organSecret = new FusionOrganSecret();
+        organSecret.setGlobalId(fusionOrgan.getId());
+        organSecret.setPublicKey(secret.getPublicKey());
+        organSecret.setPrivateKey(secret.getPrivateKey());
+        fusionRepository.insertFusionOrganSecret(organSecret);
         return BaseResultEntity.success();
     }
 
@@ -72,6 +80,18 @@ public class FusionService {
             fusionRepository.updateFusionOrganExtends(fusionOrganExtends);
         }
         return BaseResultEntity.success(fusionOrganExtends);
+    }
+
+    public BaseResultEntity changeOrganSecret(String globalId,String publicKey,String privateKey){
+        FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(globalId);
+        if (fusionOrgan==null)
+            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"无机构信息");
+        FusionOrganSecret organSecret = new FusionOrganSecret();
+        organSecret.setGlobalId(fusionOrgan.getId());
+        organSecret.setPublicKey(publicKey);
+        organSecret.setPrivateKey(privateKey);
+        fusionRepository.updateFusionOrganSecret(organSecret);
+        return BaseResultEntity.success();
     }
 
     public BaseResultEntity getOrganExtendsList() {

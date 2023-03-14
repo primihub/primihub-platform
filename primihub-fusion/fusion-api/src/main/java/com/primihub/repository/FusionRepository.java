@@ -2,6 +2,7 @@ package com.primihub.repository;
 
 import com.primihub.entity.fusion.po.FusionOrganExtends;
 import com.primihub.entity.fusion.po.FusionOrgan;
+import com.primihub.entity.fusion.po.FusionOrganSecret;
 import com.primihub.entity.fusion.vo.OrganExtendsVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -21,5 +22,8 @@ public interface FusionRepository {
 
     void insertFusionOrganExtends(FusionOrganExtends fusionOrganExtends);
     void updateFusionOrganExtends(FusionOrganExtends fusionOrganExtends);
+
+    void insertFusionOrganSecret(FusionOrganSecret fusionOrganSecret);
+    void updateFusionOrganSecret(FusionOrganSecret fusionOrganSecret);
 
 }

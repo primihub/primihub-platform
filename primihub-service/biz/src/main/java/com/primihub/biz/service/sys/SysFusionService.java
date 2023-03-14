@@ -15,6 +15,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
+import com.primihub.biz.util.crypt.CryptUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -25,6 +26,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -82,10 +84,20 @@ public class SysFusionService {
             sysLocalOrganInfo.setFusionMap(new HashMap<>());
         if (sysLocalOrganInfo.getFusionMap().containsKey(serverAddress)&&sysLocalOrganInfo.getFusionMap().get(serverAddress).isRegistered())
             return BaseResultEntity.failure(BaseResultEnum.NON_REPEATABLE,"节点已注册");
+        try {
+            if (StringUtils.isEmpty(sysLocalOrganInfo.getPublicKey())){
+                String[] rsaKeyPair= CryptUtil.genRsaKeyPair();
+                sysLocalOrganInfo.setPublicKey(rsaKeyPair[0]);
+                sysLocalOrganInfo.setPrivateKey(rsaKeyPair[1]);
+            }
+        } catch (Exception e) {
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"生成加密串错误");
+        }
         SysOrganFusion currentFusion=sysLocalOrganInfo.getFusionMap().getOrDefault(serverAddress,new SysOrganFusion(serverAddress,false,true));
         boolean isRegistered=true;
         String fusionMsg="注册成功";
         try{
+
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             MultiValueMap map = new LinkedMultiValueMap<>();
@@ -93,6 +105,8 @@ public class SysFusionService {
             map.put("globalName", new ArrayList(){{add(sysLocalOrganInfo.getOrganName());}});
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             map.put("gatewayAddress", new ArrayList(){{add(sysLocalOrganInfo.getGatewayAddress());}});
+            map.put("secret.publicKey", new ArrayList(){{add(sysLocalOrganInfo.getPublicKey());}});
+            map.put("secret.privateKey", new ArrayList(){{add(sysLocalOrganInfo.getPrivateKey());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/registerConnection",request, BaseResultEntity.class);
             if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode()) {

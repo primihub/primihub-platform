@@ -35,6 +35,8 @@ public class FusionController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pinCode");
         if(registerConnectionParam.getGatewayAddress()==null||registerConnectionParam.getGatewayAddress().trim().equals(""))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gatewayAddress");
+        if (registerConnectionParam.getSecret()==null || registerConnectionParam.getSecret().getPublicKey().trim().equals("")||registerConnectionParam.getSecret().getPrivateKey().trim().equals(""))
+            return  BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"secret");
         return fusionService.registerConnection(registerConnectionParam);
     }
 
@@ -63,6 +65,17 @@ public class FusionController {
         if (StringUtils.isEmpty(param.getLon()))
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"lon");
         return fusionService.changeOrganExtends(param);
+    }
+
+    @RequestMapping("changeOrganSecret")
+    public BaseResultEntity changeOrganSecret(String globalId,String publicKey,String privateKey){
+        if (StringUtils.isEmpty(globalId))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId");
+        if (StringUtils.isEmpty(publicKey))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
+        if (StringUtils.isEmpty(privateKey))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"privateKey");
+        return fusionService.changeOrganSecret(globalId,publicKey,privateKey);
     }
 
     @RequestMapping("getOrganExtendsList")
