@@ -192,18 +192,17 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择为空");
             List<Integer> clientIndex;
             List<Integer> serverIndex;
+            Stream<String> stream = null;
             if ("1".equals(dataAlign)){
-                Stream<String> stream = Arrays.stream(new String[]{"id"});
-                clientIndex = stream.map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
-                serverIndex = stream.map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
+                stream = Arrays.stream(new String[]{"id"});
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
-                String[] multipleSelecteds = multipleSelected.split(",");
-                clientIndex = Arrays.stream(multipleSelecteds).map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
-                serverIndex = Arrays.stream(multipleSelecteds).map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
+                stream = Arrays.stream(multipleSelected.split(","));
             }
+            clientIndex = stream.map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
+            serverIndex = stream.map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
             if (serverIndex.size()<0)
