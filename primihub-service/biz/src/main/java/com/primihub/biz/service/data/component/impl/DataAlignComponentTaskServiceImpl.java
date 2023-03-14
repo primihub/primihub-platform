@@ -267,9 +267,19 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             map.put(serverData.getResourceId(),serverEntity);
             return BaseResultEntity.success(map);
         } catch (Exception e) {
+            e.printStackTrace();
             log.info("grpc Exception:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI 异常:"+e.getMessage());
         }
 
+    }
+
+
+    public static void main(String[] args) {
+        String fildString = "area error,compactness error,concave points error,concavity error,fractal dimension error,mean area,mean compactness,mean concave points,mean concavity,mean fractal dimension,mean perimeter,mean smoothness,mean symmetry,perimeter error,radius error,smoothness error,symmetry error,texture error,worst area,worst compactness,worst concave points,worst concavity,worst fractal dimension,worst perimeter,worst radius,worst smoothness,worst symmetry,worst texture,y";
+        List<String> fileHandleField = Arrays.stream(fildString.split(",")).collect(Collectors.toList());
+        String[] multipleSelecteds = "y".split(",");
+        List<Integer> clientIndex = Arrays.stream(multipleSelecteds).map(fileHandleField::indexOf).collect(Collectors.toList());
+        log.info(clientIndex.toString());
     }
 }
