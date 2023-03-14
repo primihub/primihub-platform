@@ -27,9 +27,9 @@
           <el-option label="协作方" value="2" />
         </el-select>
       </el-form-item>
-      <el-form-item label="项目ID">
+      <!-- <el-form-item label="项目ID">
         <el-input v-model="searchForm.projectId" size="small" placeholder="请输入" />
-      </el-form-item>
+      </el-form-item> -->
       <el-form-item label="项目名称">
         <el-input v-model="searchForm.projectName" size="small" placeholder="请输入" />
       </el-form-item>
@@ -56,8 +56,8 @@
       </el-form-item>
       <el-form-item>
         <div class="buttons">
-          <el-button class="button" type="primary" icon="el-icon-search" @click="searchProject">查询</el-button>
-          <el-button class="button" type="primary" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
+          <el-button class="button" type="primary" size="small" icon="el-icon-search" @click="searchProject">查询</el-button>
+          <el-button class="button" size="small" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
         </div>
       </el-form-item>
     </el-form>

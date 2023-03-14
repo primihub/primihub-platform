@@ -8,7 +8,7 @@
         <el-form-item label="模型名称">
           <el-input v-model="query.modelName" size="small" placeholder="请输入" clearable @clear="handleClear('modelName')" />
         </el-form-item>
-        <el-form-item label="基础模型">
+        <!-- <el-form-item label="基础模型">
           <el-select v-model="query.modelType" size="small" placeholder="请选择" @change="handleChange(row)">
             <el-option
               v-for="item in modelTypeOptions"
@@ -17,7 +17,7 @@
               :value="item.key"
             />
           </el-select>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="建模完成时间">
           <el-date-picker
             v-model="query.successDate"

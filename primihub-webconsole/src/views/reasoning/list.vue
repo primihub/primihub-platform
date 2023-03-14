@@ -51,13 +51,13 @@
             {{ row.reasoningType }}方推理
           </template>
         </el-table-column>
-        <el-table-column
+        <!-- <el-table-column
           label="模型名称"
         >
           <template slot-scope="{row}">
             <el-link type="primary" @click="toModelDetail(row.modelId)">{{ row.modelName }}</el-link>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           prop="releaseDate"
           label="上线时间"
