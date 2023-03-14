@@ -5,7 +5,7 @@
       <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
     </div>
     <div class="middle-container">
-      <span @click="toPage('/')">首页</span>
+      <span @click="toPage('/project/list')">首页</span>
       <span @click="toPage('/applicationIndex')">应用市场</span>
     </div>
     <div class="right-menu avatar-container">
