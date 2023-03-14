@@ -11,19 +11,19 @@
         <el-descriptions-item label="任务类型">
           模型
         </el-descriptions-item>
-        <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
+        <!-- <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
           <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
           <span v-else>{{ model.modelId }}</span>
-        </el-descriptions-item>
+        </el-descriptions-item> -->
         <el-descriptions-item label="开始时间">
           {{ task.taskStartDate?task.taskStartDate: '未开始' }}
         </el-descriptions-item>
         <el-descriptions-item label="结束时间">
           {{ task.taskEndDate?task.taskEndDate: '未结束' }}
         </el-descriptions-item>
-        <el-descriptions-item label="耗时">
+        <!-- <el-descriptions-item label="耗时">
           {{ task.timeConsuming | timeFilter }}
-        </el-descriptions-item>
+        </el-descriptions-item> -->
         <el-descriptions-item label="任务状态">
           <p>
             <i :class="statusStyle(task.taskState)" />

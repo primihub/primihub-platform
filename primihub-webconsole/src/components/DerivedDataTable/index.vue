@@ -6,26 +6,22 @@
     empty-text="暂无数据"
   >
     <el-table-column
+      prop="id"
+      label="衍生数据ID"
+    />
+    <el-table-column
       prop="resourceName"
-      label="资源名称"
-      min-width="140"
+      label="衍生资源名称"
+      min-width="120"
     >
       <template slot-scope="{row}">
         <el-link v-if="row.resourceState === 0" :underline="false" size="small" type="primary" @click="toResourceDetailPage(row.id)">{{ row.resourceName }}</el-link>
         <template v-else>{{ row.resourceName }}</template>
       </template>
     </el-table-column>
+
     <el-table-column
-      prop="id"
-      label="ID"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.id }}
-      </template>
-    </el-table-column>
-    <el-table-column
-      label="资源信息"
+      label="衍生资源信息"
       min-width="120"
     >
       <template slot-scope="{row}">
@@ -35,6 +31,14 @@
           正例样本数量：{{ row.fileYRows || 0 }}<br>
           正例样本比例：{{ row.fileYRatio || 0 }}%
         </div>
+      </template>
+    </el-table-column>
+    <el-table-column
+      label="是否包含Y值"
+      min-width="80"
+    >
+      <template slot-scope="{row}">
+        {{ row.fileContainsY ? '是' : '否' }}
       </template>
     </el-table-column>
     <el-table-column
@@ -57,15 +61,6 @@
       <template slot-scope="{row}">
         {{ row.createDate.split(' ')[0] }} <br>
         {{ row.createDate.split(' ')[1] }}
-      </template>
-    </el-table-column>
-    <el-table-column
-      label="是否包含Y值"
-      min-width="80"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.fileContainsY ? '是' : '否' }}
       </template>
     </el-table-column>
     <el-table-column

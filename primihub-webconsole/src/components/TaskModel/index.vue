@@ -3,13 +3,15 @@
     <div class="section">
       <h3>模型信息</h3>
       <el-descriptions>
+        <el-descriptions-item label="模型ID">
+          <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+        </el-descriptions-item>
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
+        <el-descriptions-item label="基础模型">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
         <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
-        <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
         <template v-if="type==='model'">
           <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
         </template>
-        <el-descriptions-item label="模型ID">{{ model.modelId }}</el-descriptions-item>
         <template v-if="type==='model'">
           <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
         </template>
@@ -168,7 +170,8 @@ export default {
       anotherQuotas: [],
       taskState: null,
       projectId: 0,
-      task: {}
+      task: {},
+      oneself: false
     }
   },
   created() {
@@ -177,6 +180,12 @@ export default {
     this.fetchData()
   },
   methods: {
+    toModelDetail() {
+      this.$router.push({
+        path: `/model/detail/${this.modelId}`,
+        query: { taskId: this.taskId }
+      })
+    },
     toModelTaskDetail() {
       this.$router.push({
         path: `/project/detail/${this.projectId}/task/${this.taskId}`
@@ -209,10 +218,11 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelResources, modelComponent, anotherQuotas, task, project } = response.result
+        const { model, modelResources, modelComponent, anotherQuotas, task, project, oneself } = response.result
         this.task = task
         this.model = model
         this.anotherQuotas = anotherQuotas
+        this.oneself = oneself
         // format model score list
         console.log(Object.keys(anotherQuotas))
         if (JSON.stringify(anotherQuotas) !== '{}') {

@@ -8,11 +8,11 @@
         <el-descriptions-item label="项目名称">
           {{ projectName }}
         </el-descriptions-item>
+        <el-descriptions-item label="角色">
+          {{ creator? '项目发起方' : '项目协作方' }}
+        </el-descriptions-item>
         <el-descriptions-item label="创建时间">
           {{ createDate }}
-        </el-descriptions-item>
-        <el-descriptions-item label="角色">
-          {{ creator? '项目创建方' : '项目协作方' }}
         </el-descriptions-item>
         <el-descriptions-item label="项目描述">
           {{ projectDesc }}

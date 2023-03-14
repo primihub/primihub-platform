@@ -177,6 +177,67 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/model',
+    component: Layout,
+    name: 'Model',
+    redirect: '/model/list',
+    meta: { title: '模型管理', icon: 'el-icon-files' },
+    alwaysShow: true,
+    children: [
+      {
+        path: 'list',
+        name: 'ModelList',
+        component: () => import('@/views/model/list'),
+        meta: { title: '模型管理', breadcrumb: false }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ModelDetail',
+        meta: {
+          title: '模型详情',
+          activeMenu: '/model/list'
+        },
+        hidden: true,
+        component: () => import('@/views/model/detail')
+      }
+    ]
+  },
+  {
+    path: '/reasoning',
+    component: Layout,
+    name: 'ModelReasoning',
+    redirect: '/reasoning/list',
+    meta: { title: '模型推理', icon: 'el-icon-aim' },
+    children: [
+      {
+        path: 'list',
+        name: 'ModelReasoningList',
+        component: () => import('@/views/reasoning/list'),
+        meta: { title: '模型推理', breadcrumb: false }
+      },
+      {
+        path: 'task',
+        name: 'ModelReasoningTask',
+        hidden: true,
+        component: () => import('@/views/reasoning/task'),
+        meta: {
+          title: '模型推理任务',
+          activeMenu: '/reasoning/list'
+        }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ModelReasoningDetail',
+        meta: {
+          title: '模型推理详情',
+          activeMenu: '/reasoning/list'
+        },
+        hidden: true,
+        component: () => import('@/views/reasoning/detail')
+      }
+    ]
+  },
+  {
     path: '/resource',
     component: Layout,
     name: 'ResourceMenu',
@@ -246,67 +307,6 @@ export const asyncRoutes = [
         component: () => import('@/views/resource/derivedDataResourceDetail')
       }
 
-    ]
-  },
-  {
-    path: '/model',
-    component: Layout,
-    name: 'Model',
-    redirect: '/model/list',
-    meta: { title: '模型管理', icon: 'el-icon-files' },
-    alwaysShow: true,
-    children: [
-      {
-        path: 'list',
-        name: 'ModelList',
-        component: () => import('@/views/model/list'),
-        meta: { title: '模型管理', breadcrumb: false }
-      },
-      {
-        path: 'detail/:id',
-        name: 'ModelDetail',
-        meta: {
-          title: '模型详情',
-          activeMenu: '/model/list'
-        },
-        hidden: true,
-        component: () => import('@/views/model/detail')
-      }
-    ]
-  },
-  {
-    path: '/reasoning',
-    component: Layout,
-    name: 'ModelReasoning',
-    redirect: '/reasoning/list',
-    meta: { title: '模型推理', icon: 'el-icon-aim' },
-    children: [
-      {
-        path: 'list',
-        name: 'ModelReasoningList',
-        component: () => import('@/views/reasoning/list'),
-        meta: { title: '模型推理', breadcrumb: false }
-      },
-      {
-        path: 'task',
-        name: 'ModelReasoningTask',
-        hidden: true,
-        component: () => import('@/views/reasoning/task'),
-        meta: {
-          title: '模型推理任务',
-          activeMenu: '/reasoning/list'
-        }
-      },
-      {
-        path: 'detail/:id',
-        name: 'ModelReasoningDetail',
-        meta: {
-          title: '模型推理详情',
-          activeMenu: '/reasoning/list'
-        },
-        hidden: true,
-        component: () => import('@/views/reasoning/detail')
-      }
     ]
   },
   {
