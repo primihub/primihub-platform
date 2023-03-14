@@ -129,7 +129,7 @@ export default {
         },
         {
           value: 3,
-          label: '匿踪查询'
+          label: '隐匿查询'
         },
         {
           value: 4,

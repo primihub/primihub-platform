@@ -79,6 +79,29 @@ export const constantRoutes = [
 
 export const asyncRoutes = [
   {
+    path: '/privateSearch',
+    component: Layout,
+    name: 'PrivateSearch',
+    redirect: '/privateSearch/list',
+    meta: { title: '隐匿查询', icon: 'el-icon-search' },
+    children: [{
+      path: 'list',
+      name: 'PrivateSearchList',
+      component: () => import('@/views/privateSearch/index'),
+      meta: { title: '隐匿查询', breadcrumb: false }
+    }, {
+      path: 'task',
+      name: 'PIRTask',
+      hidden: true,
+      component: () => import('@/views/privateSearch/task'),
+      meta: {
+        title: '隐匿查询任务',
+        activeMenu: '/privateSearch/list',
+        parent: { name: 'PrivateSearchList' }
+      }
+    }]
+  },
+  {
     path: '/project',
     name: 'Project',
     component: Layout,
@@ -133,29 +156,6 @@ export const asyncRoutes = [
         component: () => import('@/views/project/taskDetail')
       }
     ]
-  },
-  {
-    path: '/privateSearch',
-    component: Layout,
-    name: 'PrivateSearch',
-    redirect: '/privateSearch/list',
-    meta: { title: '匿踪查询', icon: 'el-icon-search' },
-    children: [{
-      path: 'list',
-      name: 'PrivateSearchList',
-      component: () => import('@/views/privateSearch/index'),
-      meta: { title: '匿踪查询', breadcrumb: false }
-    }, {
-      path: 'task',
-      name: 'PIRTask',
-      hidden: true,
-      component: () => import('@/views/privateSearch/task'),
-      meta: {
-        title: '匿踪查询任务',
-        activeMenu: '/privateSearch/list',
-        parent: { name: 'PrivateSearchList' }
-      }
-    }]
   },
   {
     path: '/PSI',
