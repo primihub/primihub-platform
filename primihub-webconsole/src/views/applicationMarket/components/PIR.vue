@@ -142,10 +142,8 @@ export default {
       this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
     } else {
       console.log('test env')
-      // this.resourceId = '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591'
-      // this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-      this.resourceId = '704a92e392fd-6eaa5520-16ce-49be-a80f-3ea948334c9d'
-      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+      this.resourceId = '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591'
+      this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
     }
     await this.getDataResource()
     this.form.selectResources = this.resource
