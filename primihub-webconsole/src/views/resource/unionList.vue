@@ -73,7 +73,7 @@
           label="机构名称"
         />
         <el-table-column
-          label="资源Id"
+          label="资源ID"
           min-width="160"
         >
           <template slot-scope="{row}">
@@ -128,11 +128,6 @@
             {{ row.resourceAuthType | authTypeFilter }}
           </template>
         </el-table-column>
-        <!-- <el-table-column
-          prop="resourceHashCode"
-          label="文件Hash"
-          min-width="130"
-        /> -->
         <!-- <el-table-column
           prop="userName"
           label="上传者"
