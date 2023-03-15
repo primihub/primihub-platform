@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="search-area">
-      <el-form :model="query" :inline="true" @keyup.enter.native="search">
+      <el-form :model="query" :inline="true">
         <el-form-item label="推理服务ID">
           <el-input v-model="query.id" size="small" placeholder="请输入" clearable @clear="handleClear('id')" />
         </el-form-item>
