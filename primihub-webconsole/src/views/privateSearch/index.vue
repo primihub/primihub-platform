@@ -50,7 +50,6 @@
     <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">隐匿查询</el-button>
     <div class="list">
       <el-table
-        v-loading="listLoading"
         :data="dataList"
       >
         <el-table-column
@@ -182,7 +181,6 @@ export default {
     return {
       serverAddressLoading: false,
       organLoading: false,
-      listLoading: false,
       organOptions: [],
       serverAddressList: [],
       sysLocalOrganInfo: null,
@@ -222,7 +220,6 @@ export default {
   async created() {
     await this.fetchData()
     if (this.searchList.length > 0) {
-      // this.listLoading = false
       this.timer = window.setInterval(async() => {
         setTimeout(await this.fetchData(), 0)
       }, 5000)
@@ -261,7 +258,6 @@ export default {
       })
     },
     async fetchData() {
-      this.listLoading = true
       const { taskState, serverAddress, organName, resourceName, retrievalId, taskId } = this.query
       const params = {
         taskId,
@@ -278,7 +274,6 @@ export default {
       this.dataList = result.data
       this.total = result.total
       this.pageCount = result.totalPage
-      this.listLoading = false
       // filter the running task
       this.searchList = this.dataList.filter(item => item.taskState === 2)
       // No tasks are running
