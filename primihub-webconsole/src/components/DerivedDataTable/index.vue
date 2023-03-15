@@ -29,16 +29,12 @@
           特征量：{{ row.fileColumns }}<br>
           样本量：{{ row.fileRows }} <br>
           正例样本数量：{{ row.fileYRows || 0 }}<br>
-          正例样本比例：{{ row.fileYRatio || 0 }}%
+          正例样本比例：{{ row.fileYRatio || 0 }}%<br>
         </div>
-      </template>
-    </el-table-column>
-    <el-table-column
-      label="是否包含Y值"
-      min-width="80"
-    >
-      <template slot-scope="{row}">
-        {{ row.fileContainsY ? '是' : '否' }}
+        <div class="margin-top-5">
+          <el-tag v-if="row.resourceContainsY" type="primary" size="mini">包含Y值</el-tag>
+          <el-tag v-else type="danger" size="mini">不包含Y值</el-tag>
+        </div>
       </template>
     </el-table-column>
     <el-table-column

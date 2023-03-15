@@ -37,15 +37,10 @@
         样本量：{{ row.resourceRowsCount }} <br>
         正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
         正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
-      </template>
-    </el-table-column>
-    <el-table-column
-      label="是否包含Y值"
-      min-width="80"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.resourceContainsY? '是' : '否' }}
+        <div class="margin-top-5">
+          <el-tag v-if="row.resourceContainsY" type="primary" size="mini">包含Y值</el-tag>
+          <el-tag v-else type="danger" size="mini">不包含Y值</el-tag>
+        </div>
       </template>
     </el-table-column>
     <el-table-column

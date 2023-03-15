@@ -86,21 +86,17 @@
         </el-table-column>
         <el-table-column
           label="数据信息"
-          min-width="180"
+          min-width="200"
         >
           <template slot-scope="{row}">
             特征量：{{ row.fileColumns }}<br>
             样本量：{{ row.fileRows }} <br>
             正例样本数量：{{ row.fileYRows ? row.fileYRows : 0 }}<br>
             正例样本比例：{{ row.fileYRatio? row.fileYRatio : 0 }}% <br>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="Y值"
-        >
-          <template slot-scope="{row}">
-            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含</el-tag>
-            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含</el-tag>
+            <div class="margin-top-5">
+              <el-tag v-if="row.fileContainsY" type="primary" size="mini">包含Y值</el-tag>
+              <el-tag v-else type="danger" size="mini">不包含Y值</el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column
