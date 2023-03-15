@@ -44,7 +44,7 @@
       :visible.sync="dialogVisible"
       :append-to-body="true"
       top="5vh"
-      width="50%"
+      width="750px"
     >
       <PSI-task-detail :data="taskData" />
     </el-dialog>
