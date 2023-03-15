@@ -1,7 +1,7 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': task.taskState === 5}">
     <section class="infos">
-      <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
+      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
         <el-descriptions-item label="任务ID">
           {{ task.taskIdName }}
         </el-descriptions-item>
@@ -32,7 +32,7 @@
           </p>
         </el-descriptions-item>
         <el-descriptions-item label="任务描述">
-          {{ task.taskDesc }}
+          <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
         </el-descriptions-item>
       </el-descriptions>
       <div class="buttons">
@@ -130,13 +130,15 @@ import { deleteTask, cancelTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 import Log from '@/components/Log'
+import editInput from '@/components/editInput'
 
 export default {
   name: 'TaskDetail',
   components: {
     TaskModel,
     TaskCanvas,
-    Log
+    Log,
+    editInput
   },
   data() {
     return {
@@ -169,7 +171,8 @@ export default {
       },
       logType: '',
       errorLog: [],
-      oneself: false
+      oneself: false,
+      taskDesc: ''
     }
   },
   computed: {
@@ -196,6 +199,12 @@ export default {
     this.tabName = routerFrom === '0' ? '3' : this.task.taskState === 2 ? '3' : '1'
   },
   methods: {
+    handleDescChange(data) {
+      if (data === this.taskDesc) return
+      this.taskDesc = data
+      // TODO task detail edit api
+      this.$message.success('修改成功')
+    },
     tableRowClassName({ row }) {
       if (row.available === 1) {
         return 'disabled'
@@ -231,6 +240,7 @@ export default {
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
+        this.taskDesc = this.task.taskDesc
         if (this.task.isCooperation === 1) {
           // provider organ only view own resource data
           this.modelResources = this.modelResources.filter(item => item.organId === this.userOrganId)
