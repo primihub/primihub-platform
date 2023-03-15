@@ -9,7 +9,7 @@
           {{ task.taskName }}
         </el-descriptions-item>
         <el-descriptions-item label="任务类型">
-          模型
+          {{ task.taskType | taskTypeFilter }}
         </el-descriptions-item>
         <!-- <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
           <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
