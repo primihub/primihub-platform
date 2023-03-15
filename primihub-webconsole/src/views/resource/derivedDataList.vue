@@ -31,7 +31,6 @@
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
             clearable
-            @change="handleClear"
           />
         </el-form-item>
         <el-form-item>
