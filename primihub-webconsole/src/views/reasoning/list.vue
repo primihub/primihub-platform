@@ -24,7 +24,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">模型推理</el-button>
+    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">推理服务</el-button>
     <div class="list">
       <el-table
         v-loading="listLoading"
