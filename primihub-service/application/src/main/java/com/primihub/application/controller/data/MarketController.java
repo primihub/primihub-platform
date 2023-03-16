@@ -1,6 +1,7 @@
 package com.primihub.application.controller.data;
 
 
+import com.primihub.biz.entity.base.BaseJsonParam;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.DataVisitingUsersReq;
@@ -21,17 +22,18 @@ public class MarketController {
      * @return
      */
     @PostMapping("submitvisitingusers")
-    public BaseResultEntity submitVisitingUsers(@RequestBody List<DataVisitingUsersReq> req){
-        if (req == null)
+    public BaseResultEntity submitVisitingUsers(@RequestBody BaseJsonParam<List<DataVisitingUsersReq>> req){
+        List<DataVisitingUsersReq> param = req.getParam();
+        if (param == null)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"visitingUsersList");
-        if (req.size()!=7)
+        if (param.size()!=7)
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"visitingUsersList 数量不够");
-        for (DataVisitingUsersReq dv : req) {
+        for (DataVisitingUsersReq dv : param) {
             if (dv.isNull()){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"存在null值");
             }
         }
-        return marketService.submitVisitingUsers(req);
+        return marketService.submitVisitingUsers(param);
     }
 
     @GetMapping("getvisitingusers")
