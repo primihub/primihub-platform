@@ -728,3 +728,43 @@ CREATE TABLE `data_resource_visibility_auth`  (
                                                   INDEX `resource_id_ix`(`resource_id`) USING BTREE,
                                                   INDEX `organ_global_id_ix`(`organ_global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `data_visiting_users`;
+CREATE TABLE `data_visiting_users` (
+                                       `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '来访ID',
+                                       `familiarity_practitioner` TINYINT  COMMENT '从业者',
+                                       `familiarity_AlreadyInUse` TINYINT  COMMENT '已在应用',
+                                       `familiarity_veryFamiliar` TINYINT  COMMENT '非常熟悉',
+                                       `familiarity_generalFamiliar` TINYINT  COMMENT '一般熟悉',
+                                       `familiarity_notKnow` TINYINT  COMMENT '完全不懂',
+                                       `gender_male` TINYINT  COMMENT '男',
+                                       `gender_female` TINYINT  COMMENT '女',
+                                       `city_beijing` TINYINT  COMMENT '北京',
+                                       `city_shanghai` TINYINT  COMMENT '上海',
+                                       `city_shenzhen` TINYINT  COMMENT '深圳',
+                                       `city_hangzhou` TINYINT  COMMENT '杭州',
+                                       `city_changsha` TINYINT  COMMENT '长沙',
+                                       `industry_internet` TINYINT  COMMENT '互联网',
+                                       `industry_financial` TINYINT  COMMENT '金融',
+                                       `industry_government` TINYINT  COMMENT '政府',
+                                       `industry_medical` TINYINT  COMMENT '医疗',
+                                       `industry_industrial` TINYINT  COMMENT '工业',
+                                       `industry_car` TINYINT  COMMENT '汽车',
+                                       `industry_newEnergy` TINYINT  COMMENT '新能源',
+                                       `industry_other` TINYINT  COMMENT '其他',
+                                       `visitPurposes_cooperation` TINYINT  COMMENT '商业合作',
+                                       `visitPurposes_learning` TINYINT  COMMENT '学习',
+                                       `visitPurposes_trial` TINYINT  COMMENT '试用',
+                                       `visitPurposes_browse` TINYINT  COMMENT '随便看看',
+                                       `age_age` TINYINT  COMMENT '年龄',
+                                       `jobPosition_manager` TINYINT  COMMENT '管理者',
+                                       `jobPosition_PM` TINYINT  COMMENT '产品',
+                                       `jobPosition_developer` TINYINT  COMMENT '技术',
+                                       `jobPosition_commerceAffairs` TINYINT  COMMENT '商务',
+                                       `jobPosition_solution` TINYINT  COMMENT '解决方案',
+                                       `jobPosition_other` TINYINT  COMMENT '其他',
+                                       `is_del` TINYINT DEFAULT '0'  COMMENT '是否删除',
+                                       `create_date` DATETIME ( 3 ) NOT NULL DEFAULT CURRENT_TIMESTAMP ( 3 ) COMMENT '创建时间',
+                                       `update_date` DATETIME ( 3 ) NOT NULL DEFAULT CURRENT_TIMESTAMP ( 3 ) ON UPDATE CURRENT_TIMESTAMP ( 3 ) COMMENT '修改时间',
+                                       PRIMARY KEY ( `id` )
+) ENGINE = INNODB DEFAULT CHARSET = utf8 ROW_FORMAT = DYNAMIC COMMENT = '应用市场来访用户';
