@@ -29,7 +29,8 @@ public class MarketService {
     public BaseResultEntity submitVisitingUsers(List<DataVisitingUsersReq> req) {
         Map<String, String> keySet = req.stream().collect(Collectors.toMap(DataVisitingUsersReq::getKeyValLowerCase, DataVisitingUsersReq::getValue));
         String age = keySet.get("age");
-        if (Integer.parseInt(age)>100){
+        int intAge = Integer.parseInt(age);
+        if (intAge<18 || intAge>100){
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"年龄异常");
         }
         try {
