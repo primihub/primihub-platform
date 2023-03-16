@@ -62,6 +62,18 @@ import { getVisitUsers, submitVisitUsers } from '@/api/market'
 
 export default {
   data() {
+    const checkAge = (rule, value, callback) => {
+      console.log(value < 18 || value > 100)
+      if (!value) {
+        callback(new Error('请输入年龄'))
+      } else if (!Number.isInteger(value)) {
+        callback(new Error('年龄必须为数字'))
+      } else if (value < 18 || value > 100) {
+        callback(new Error('年龄需在18岁-100岁之间'))
+      } else {
+        callback()
+      }
+    }
     return {
       loading: false,
       data: [],
@@ -74,7 +86,9 @@ export default {
         visitPurposes: ''
       },
       rules: {
-        age: [{ required: true, message: '请输入年龄' }, { type: 'number', message: '年龄必须为数字' }],
+        age: [
+          { required: true, validator: checkAge, trigger: 'blur' }
+        ],
         gender: [{ required: true, message: '请选择性别' }],
         industry: [{ required: true, message: '请选择所在行业' }],
         familiarity: [{ required: true, message: '请选择隐私计算熟悉度' }],
@@ -114,6 +128,8 @@ export default {
                 this.getVisitUsers()
                 this.onReset()
               }, 1000)
+            } else {
+              this.loading = false
             }
           }).catch(() => {
             this.loading = false
