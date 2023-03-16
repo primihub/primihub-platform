@@ -2,10 +2,12 @@
   <el-row v-loading="loading" type="flex" justify="center" element-loading-text="加载中">
     <el-col :span="12">
       <div class="user-container">
-        <div v-for="(item,index) in data" :key="item.key" class="item" :class="`item${index}`">
-          <p class="item-title">{{ item.label }}</p>
-          <ul v-if="item.options" style="display:inline-block;">
-            <li v-for="v in item.options" :key="v.key">{{ v.label }}: {{ v.value }}%</li>
+        <div v-for="(item,key,index) in data" :key="item.key" class="item" :class="`item${index}`">
+          <p class="item-title">{{ filterTitle(key) }}</p>
+          <ul v-if="item" style="display:inline-block;">
+            <li v-for="v in item" :key="v.key">
+              {{ v.label }}: {{ v.value }}<span v-if="v.key !== 'age'">%</span>
+            </li>
           </ul>
           <p v-else class="detail">{{ item.value }}</p>
         </div>
@@ -13,7 +15,7 @@
     </el-col>
     <el-col :span="12">
       <el-form ref="form" :rules="rules" class="form-container" :model="form" label-width="80px" size="small">
-        <el-form-item label="性别占比" prop="gender">
+        <el-form-item label="性别" prop="gender">
           <el-select v-model="form.gender" style="width:100%;" placeholder="请选择">
             <el-option v-for="(item,index) in filterData('gender')" :key="index" :label="item.label" :value="item.key" />
           </el-select>
@@ -56,13 +58,13 @@
 </template>
 
 <script>
-import data from '../mock/user.json'
+import { getVisitUsers, submitVisitUsers } from '@/api/market'
 
 export default {
   data() {
     return {
       loading: false,
-      data,
+      data: [],
       form: {
         gender: '',
         age: '',
@@ -79,15 +81,43 @@ export default {
         city: [{ required: true, message: '请选择所在城市' }],
         jobPosition: [{ required: true, message: '请选择行业' }],
         visitPurposes: [{ required: true, message: '请选择来访目的' }]
-      }
+      },
+      submitParams: []
     }
   },
+  created() {
+    this.getVisitUsers()
+  },
   methods: {
+    getVisitUsers() {
+      getVisitUsers().then(res => {
+        if (res.code === 0) {
+          this.data = res.result
+        }
+      })
+    },
     onSubmit() {
       this.$refs.form.validate((valid) => {
         if (valid) {
-          console.log(this.form)
-          this.setValue()
+          for (const key in this.form) {
+            this.submitParams.push({
+              key,
+              value: this.form[key]
+            })
+          }
+          this.loading = true
+          submitVisitUsers({ param: this.submitParams }).then(({ code }) => {
+            if (code === 0) {
+              setTimeout(() => {
+                this.loading = false
+                this.$message.success('你提交的信息已收录进"来访用户实时画像"')
+                this.getVisitUsers()
+                this.onReset()
+              }, 1000)
+            }
+          }).catch(() => {
+            this.loading = false
+          })
         }
       })
     },
@@ -123,16 +153,26 @@ export default {
         this.loading = false
         this.$message.success('提交成功')
         this.data = listData
+        console.log(this.data)
       }, 1000)
     },
     onReset() {
       for (const key in this.form) {
         this.form[key] = ''
       }
+      this.submitParams = []
       this.$refs.form.resetFields()
     },
+    filterTitle(key) {
+      const label = key === 'gender' ? '性别' : key === 'age' ? '年龄' : key === 'jobPosition' ? '岗位分布' : key === 'industry' ? '行业分布' : key === 'familiarity' ? '隐私计算熟悉度' : key === 'city' ? '城市分布' : key === 'visitPurposes' ? '来访目的' : ''
+      return label
+    },
     filterData(name) {
-      return data.find(item => item.key === name).options
+      for (const key in this.data) {
+        if (name === key) {
+          return this.data[key]
+        }
+      }
     }
   }
 }
@@ -158,7 +198,7 @@ ul{
   width: 100%;
   height: 400px;
   position: relative;
-  background: url('../../../assets/userImage.png') left center no-repeat;
+  background: url('../../../assets/userImage.png') center center no-repeat;
   background-size: contain;
   display: flex;
   justify-content: center;
@@ -185,35 +225,32 @@ ul{
     position: absolute;
     // width: 120px;
     &0{
-      left: 20px;
+      left: 0px;
       top: 50px;
     }
     &1{
-      left: 140px;
-      top: -10px;
+      left: 178px;
+      top: -20px;
     }
     &2{
-      left: 300px;
+      left: 326px;
       top: 0px;
     }
     &3{
-      left: 0px;
-      top: 120px;
+      left: 20px;
+      top: 210px;
     }
     &4{
-      left: 320px;
-      top: 170px;
-      .item-title{
-        width: 130px;
-      }
+      left: 345px;
+      top: 150px;
     }
     &5{
-      left: 80px;
-      top: 300px;
+      left: 195px;
+      top: 327px;
     }
-     &6{
-      left: 220px;
-      top: 320px;
+    &6{
+      left: 305px;
+      top: 288px;
     }
   }
 }
