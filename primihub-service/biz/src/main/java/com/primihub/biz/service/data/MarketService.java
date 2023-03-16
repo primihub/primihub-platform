@@ -57,6 +57,8 @@ public class MarketService {
     public BaseResultEntity getVisitingUsers() {
         Map<String,Long> dataVisitingUsers = dataMarketRepository.selectDataVisitingUsers();
         Long total = dataVisitingUsers.get("total");
+        if (total==0L)
+            return BaseResultEntity.success();
         dataVisitingUsers.remove("total");
         Map<String,BigDecimal> totalMap = new HashMap<>();
         Map<String,List<DataVisitingUsersVo>> map = new HashMap<>();
