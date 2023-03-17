@@ -35,7 +35,7 @@ public class FileUtil {
         File file = new File(filePath);
         boolean isFile = file.isFile();
         if (!isFile){
-            isFile = Files.notExists(Paths.get(filePath));
+            isFile = !Files.notExists(Paths.get(filePath));
         }
         return isFile;
     }
