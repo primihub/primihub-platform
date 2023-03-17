@@ -36,6 +36,7 @@ import primihub.rpc.Common;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service("dataAlignComponentTaskServiceImpl")
@@ -191,17 +192,17 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择为空");
             List<Integer> clientIndex;
             List<Integer> serverIndex;
+            List<String> fieldList = null;
             if ("1".equals(dataAlign)){
-                clientIndex = clientData.getFileHandleField().stream().map(c->c.indexOf("id")).filter(i->i!=-1).collect(Collectors.toList());
-                serverIndex = serverData.getFileHandleField().stream().map(s->s.indexOf("id")).filter(i->i!=-1).collect(Collectors.toList());
+                fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected))
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
-                String[] multipleSelecteds = multipleSelected.split(",");
-                clientIndex = Arrays.stream(multipleSelecteds).map(clientData.getFileHandleField()::indexOf).filter(i -> i != -1).collect(Collectors.toList());
-                serverIndex = Arrays.stream(multipleSelecteds).map(serverData.getFileHandleField()::indexOf).filter(i -> i != -1).collect(Collectors.toList());
+                fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
             }
+            clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
+            serverIndex = fieldList.stream().map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0)
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
             if (serverIndex.size()<0)
@@ -264,9 +265,19 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             map.put(serverData.getResourceId(),serverEntity);
             return BaseResultEntity.success(map);
         } catch (Exception e) {
+            e.printStackTrace();
             log.info("grpc Exception:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI 异常:"+e.getMessage());
         }
 
+    }
+
+
+    public static void main(String[] args) {
+        String fildString = "area error,compactness error,concave points error,concavity error,fractal dimension error,mean area,mean compactness,mean concave points,mean concavity,mean fractal dimension,mean perimeter,mean smoothness,mean symmetry,perimeter error,radius error,smoothness error,symmetry error,texture error,worst area,worst compactness,worst concave points,worst concavity,worst fractal dimension,worst perimeter,worst radius,worst smoothness,worst symmetry,worst texture,y";
+        List<String> fileHandleField = Arrays.stream(fildString.split(",")).collect(Collectors.toList());
+        String[] multipleSelecteds = "y".split(",");
+        List<Integer> clientIndex = Arrays.stream(multipleSelecteds).map(fileHandleField::indexOf).collect(Collectors.toList());
+        log.info(clientIndex.toString());
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.DataMarketPrimarydbRepository">
+
+    <insert id="saveDataVisitingUsers" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataVisitingUsers">
+        insert into data_visiting_users (`familiarity_practitioner`,`familiarity_AlreadyInUse`,`familiarity_veryFamiliar`,`familiarity_generalFamiliar`,`familiarity_notKnow`,`gender_male`,`gender_female`,`city_beijing`,`city_shanghai`,`city_shenzhen`,`city_hangzhou`,`city_changsha`,`industry_internet`,`industry_financial`,`industry_government`,`industry_medical`,`industry_industrial`,`industry_car`,`industry_newEnergy`,`industry_other`,`visitPurposes_cooperation`,`visitPurposes_learning`,`visitPurposes_trial`,`visitPurposes_browse`,`age_age`,`jobPosition_manager`,`jobPosition_PM`,`jobPosition_developer`,`jobPosition_commerceAffairs`,`jobPosition_solution`,`jobPosition_other`)
+        values (#{familiarityPractitioner},#{familiarityAlreadyinuse},#{familiarityVeryfamiliar},#{familiarityGeneralfamiliar},#{familiarityNotknow},#{genderMale},#{genderFemale},#{cityBeijing},#{cityShanghai},#{cityShenzhen},#{cityHangzhou},#{cityChangsha},#{industryInternet},#{industryFinancial},#{industryGovernment},#{industryMedical},#{industryIndustrial},#{industryCar},#{industryNewenergy},#{industryOther},#{visitpurposesCooperation},#{visitpurposesLearning},#{visitpurposesTrial},#{visitpurposesBrowse},#{ageAge},#{jobpositionManager},#{jobpositionPm},#{jobpositionDeveloper},#{jobpositionCommerceaffairs},#{jobpositionSolution},#{jobpositionOther})
+    </insert>
+</mapper>

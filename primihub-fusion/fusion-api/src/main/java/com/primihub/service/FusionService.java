@@ -65,13 +65,11 @@ public class FusionService {
             fusionOrganExtends.setIp(param.getIp());
             fusionRepository.insertFusionOrganExtends(fusionOrganExtends);
         }else {
-            if (!fusionOrganExtends.getIp().equals(param.getIp())){
-                fusionOrganExtends.setCountry(param.getCountry());
-                fusionOrganExtends.setLat(param.getLat());
-                fusionOrganExtends.setLon(param.getLon());
-                fusionOrganExtends.setIp(param.getIp());
-                fusionRepository.updateFusionOrganExtends(fusionOrganExtends);
-            }
+            fusionOrganExtends.setCountry(param.getCountry());
+            fusionOrganExtends.setLat(param.getLat());
+            fusionOrganExtends.setLon(param.getLon());
+            fusionOrganExtends.setIp(param.getIp());
+            fusionRepository.updateFusionOrganExtends(fusionOrganExtends);
         }
         return BaseResultEntity.success(fusionOrganExtends);
     }
