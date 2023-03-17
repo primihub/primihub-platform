@@ -8,6 +8,16 @@
         <el-form-item label="模型名称">
           <el-input v-model="query.modelName" size="small" placeholder="请输入" clearable @clear="handleClear('modelName')" />
         </el-form-item>
+        <!-- <el-form-item label="基础模型">
+          <el-select v-model="query.modelType" size="small" placeholder="请选择" @change="handleChange(row)">
+            <el-option
+              v-for="item in modelTypeOptions"
+              :key="item.key"
+              :label="item.val"
+              :value="item.key"
+            />
+          </el-select>
+        </el-form-item> -->
         <el-form-item label="建模完成时间">
           <el-date-picker
             v-model="query.successDate"
@@ -42,6 +52,13 @@
           label="模型名称"
         />
         <el-table-column
+          label="角色"
+        >
+          <template slot-scope="{row}">
+            {{ row.createdOrganId === userOrganId ? '发起方': '协作方' }}
+          </template>
+        </el-table-column>
+        <el-table-column
           prop="taskIdName"
           label="任务ID"
           min-width="120"
@@ -59,11 +76,6 @@
           label="所属项目"
         />
         <el-table-column
-          prop="taskEndDate"
-          label="建模完成时间"
-          min-width="120"
-        />
-        <el-table-column
           label="机构名称"
           min-width="110"
         >
@@ -76,6 +88,11 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column
+          prop="taskEndDate"
+          label="建模完成时间"
+          min-width="120"
+        />
         <el-table-column
           prop="resourceNum"
           label="所用资源数"
@@ -101,6 +118,7 @@ export default {
       query: {
         modelId: '',
         modelName: '',
+        modelType: '',
         state: '',
         successDate: ''
       },
@@ -108,12 +126,29 @@ export default {
       pageNo: 1,
       pageSize: 10,
       total: 0,
-      pageCount: 0
+      pageCount: 0,
+      modelTypeOptions: [
+        {
+          'key': '2',
+          'val': '纵向-xgb'
+        },
+        {
+          'key': '3',
+          'val': '横向-LR'
+        },
+        {
+          'key': '5',
+          'val': '纵向-LR'
+        }
+      ]
     }
   },
   computed: {
     hasModelViewPermission() {
       return this.$store.getters.buttonPermissionList.includes('ModelView')
+    },
+    userOrganId() {
+      return this.$store.getters.userOrganId
     }
   },
   created() {
@@ -135,6 +170,7 @@ export default {
       console.log('reset')
       this.query.modelId = ''
       this.query.modelName = ''
+      this.query.modelType = ''
       this.query.state = ''
       this.query.successDate = ''
       this.pageNo = 1
@@ -158,11 +194,12 @@ export default {
     },
     fetchData() {
       this.modelList = []
-      const { modelId, modelName, successDate } = this.query
+      const { modelId, modelName, successDate, modelType } = this.query
       this.listLoading = true
       const params = {
         modelId,
         modelName: modelName.toString(),
+        modelType,
         successDate,
         pageNo: this.pageNo,
         pageSize: this.pageSize
