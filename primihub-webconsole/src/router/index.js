@@ -71,9 +71,25 @@ export const constantRoutes = [
     meta: { title: '应用页' }
   },
   {
+    path:"/map",
+    component: Layout,
+    name: 'Map',
+    hidden: true,
+    redirect: '/map/index',
+    meta:{title:"地图"},
+    children:[
+      {
+        path: 'index',
+        name: 'mapIndex',
+        meta: {  title: '地图', breadcrumb: false },
+        component:()=> import('@/views/map/index')
+      }
+    ]
+  },
+  {
     path: '/',
     component: Layout,
-    redirect: '/project/list'
+    redirect: '/map/index'
   }
 ]
 
@@ -356,7 +372,7 @@ export const asyncRoutes = [
       meta: { title: '日志管理', breadcrumb: false }
 
     }]
-  },
+  }, 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]
