@@ -132,15 +132,6 @@
               </template>
             </el-table-column>
             <el-table-column
-              label="项目状态"
-              prop="status"
-              width="80"
-            >
-              <template slot-scope="{row}">
-                <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
               label="任务状态"
             >
               <template slot-scope="{row}">
@@ -164,6 +155,15 @@
               prop="createDate"
               min-width="160"
             />
+            <el-table-column
+              label="项目状态"
+              prop="status"
+              width="80"
+            >
+              <template slot-scope="{row}">
+                <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
+              </template>
+            </el-table-column>
             <el-table-column
               v-if="hasViewPermission"
               label="操作"

@@ -15,7 +15,8 @@
           {{ createDate }}
         </el-descriptions-item>
         <el-descriptions-item label="项目描述">
-          <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" />
+          {{ projectDesc }}
+          <!-- <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" /> -->
         </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
@@ -92,7 +93,7 @@ import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
 import DerivedDataTable from '@/components/DerivedDataTable'
-import editInput from '@/components/editInput'
+// import editInput from '@/components/editInput'
 
 export default {
   components: {
@@ -103,8 +104,8 @@ export default {
     ModelTaskList,
     ProjectAudit,
     ResourceApprovalDialog,
-    DerivedDataTable,
-    editInput
+    DerivedDataTable
+    // editInput
   },
   data() {
     return {

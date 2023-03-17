@@ -7,23 +7,19 @@
           <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
         </el-descriptions-item>
         <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
+        <el-descriptions-item label="基础模型">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
         <template v-if="type==='model'">
           <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
           <el-descriptions-item label="任务名称"> {{ task.taskName }}</el-descriptions-item>
         </template>
-        <el-descriptions-item v-if="type==='model'" label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
-        <el-descriptions-item label="基础模型">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
-        <template v-if="model.yvalueColumn">
-          <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>
-        </template>
-        <template v-if="type==='model'">
-          <el-descriptions-item label="建模完成时间">{{ task.taskEndDate }}</el-descriptions-item>
-        </template>
+        <el-descriptions-item v-if="type==='model'" label="建模完成时间">{{ model.createDate }}</el-descriptions-item>
+        <el-descriptions-item v-if="type==='model'" label="角色">{{ oneself ? '发起方': '协作方' }}</el-descriptions-item>
+        <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
       </el-descriptions>
-      <div class="desc-item">
+      <!-- <div class="desc-item">
         <div class="label">模型描述:</div>
         <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
-      </div>
+      </div> -->
       <div v-if="type === 'model' && model.isDel !== 1 && task.isCooperation === 0" class="buttons">
         <el-button type="danger" icon="el-icon-delete" @click="deleteModelTask">删除模型</el-button>
       </div>
@@ -83,11 +79,11 @@
 
 <script>
 import { getModelDetail, deleteModel } from '@/api/model'
-import editInput from '@/components/editInput'
+// import editInput from '@/components/editInput'
 
 export default {
   components: {
-    editInput
+    // editInput
   },
   filters: {
     quotaTypeFilter(type) {

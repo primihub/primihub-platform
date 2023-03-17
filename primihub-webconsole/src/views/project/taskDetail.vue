@@ -21,9 +21,9 @@
         <el-descriptions-item label="结束时间">
           {{ task.taskEndDate?task.taskEndDate: '未结束' }}
         </el-descriptions-item>
-        <!-- <el-descriptions-item label="耗时">
+        <el-descriptions-item label="耗时">
           {{ task.timeConsuming | timeFilter }}
-        </el-descriptions-item> -->
+        </el-descriptions-item>
         <el-descriptions-item label="任务状态">
           <p>
             <i :class="statusStyle(task.taskState)" />
@@ -32,7 +32,8 @@
           </p>
         </el-descriptions-item>
         <el-descriptions-item label="任务描述">
-          <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
+          {{ taskDesc }}
+          <!-- <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" /> -->
         </el-descriptions-item>
       </el-descriptions>
       <div class="buttons">
@@ -130,15 +131,15 @@ import { deleteTask, cancelTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 import Log from '@/components/Log'
-import editInput from '@/components/editInput'
+// import editInput from '@/components/editInput'
 
 export default {
   name: 'TaskDetail',
   components: {
     TaskModel,
     TaskCanvas,
-    Log,
-    editInput
+    Log
+    // editInput
   },
   data() {
     return {

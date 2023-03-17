@@ -76,11 +76,6 @@
           label="所属项目"
         />
         <el-table-column
-          prop="taskEndDate"
-          label="建模完成时间"
-          min-width="120"
-        />
-        <el-table-column
           label="机构名称"
           min-width="110"
         >
@@ -93,6 +88,11 @@
             </div>
           </template>
         </el-table-column>
+        <el-table-column
+          prop="taskEndDate"
+          label="建模完成时间"
+          min-width="120"
+        />
         <el-table-column
           prop="resourceNum"
           label="所用资源数"
