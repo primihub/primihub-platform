@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataMarketRepository">
+    <resultMap id="users" type="java.util.HashMap">
+        <result column="total" javaType="java.lang.Long" property="total"/>
+        <result column="familiarity_practitioner" property="familiarity_practitioner" javaType="java.lang.Long"/>
+        <result column="familiarity_AlreadyInUse" property="familiarity_AlreadyInUse" javaType="java.lang.Long"/>
+        <result column="familiarity_veryFamiliar" property="familiarity_veryFamiliar" javaType="java.lang.Long"/>
+        <result column="familiarity_generalFamiliar" property="familiarity_generalFamiliar" javaType="java.lang.Long"/>
+        <result column="familiarity_notKnow" property="familiarity_notKnow" javaType="java.lang.Long"/>
+        <result column="gender_male" property="gender_male" javaType="java.lang.Long"/>
+        <result column="gender_female" property="gender_female" javaType="java.lang.Long"/>
+        <result column="city_beijing" property="city_beijing" javaType="java.lang.Long"/>
+        <result column="city_shanghai" property="city_shanghai" javaType="java.lang.Long"/>
+        <result column="city_shenzhen" property="city_shenzhen" javaType="java.lang.Long"/>
+        <result column="city_hangzhou" property="city_hangzhou" javaType="java.lang.Long"/>
+        <result column="city_changsha" property="city_changsha" javaType="java.lang.Long"/>
+        <result column="industry_internet" property="industry_internet" javaType="java.lang.Long"/>
+        <result column="industry_financial" property="industry_financial" javaType="java.lang.Long"/>
+        <result column="industry_government" property="industry_government" javaType="java.lang.Long"/>
+        <result column="industry_medical" property="industry_medical" javaType="java.lang.Long"/>
+        <result column="industry_industrial" property="industry_industrial" javaType="java.lang.Long"/>
+        <result column="industry_car" property="industry_car" javaType="java.lang.Long"/>
+        <result column="industry_newEnergy" property="industry_newEnergy" javaType="java.lang.Long"/>
+        <result column="industry_other" property="industry_other" javaType="java.lang.Long"/>
+        <result column="visitPurposes_cooperation" property="visitPurposes_cooperation" javaType="java.lang.Long"/>
+        <result column="visitPurposes_learning" property="visitPurposes_learning" javaType="java.lang.Long"/>
+        <result column="visitPurposes_trial" property="visitPurposes_trial" javaType="java.lang.Long"/>
+        <result column="visitPurposes_browse" property="visitPurposes_browse" javaType="java.lang.Long"/>
+        <result column="age_age" property="age_age" javaType="java.lang.Long"/>
+        <result column="jobPosition_manager" property="jobPosition_manager" javaType="java.lang.Long"/>
+        <result column="jobPosition_PM" property="jobPosition_PM" javaType="java.lang.Long"/>
+        <result column="jobPosition_developer" property="jobPosition_developer" javaType="java.lang.Long"/>
+        <result column="jobPosition_commerceAffairs" property="jobPosition_commerceAffairs" javaType="java.lang.Long"/>
+        <result column="jobPosition_solution" property="jobPosition_solution" javaType="java.lang.Long"/>
+        <result column="jobPosition_other" property="jobPosition_other" javaType="java.lang.Long"/>
+    </resultMap>
+
+    <select id="selectDataVisitingUsers" resultMap="users">
+        SELECT
+            count( `id` ) total,
+            count( `familiarity_practitioner` ) familiarity_practitioner,
+            count( `familiarity_AlreadyInUse` ) familiarity_AlreadyInUse,
+            count( `familiarity_veryFamiliar` ) familiarity_veryFamiliar,
+            count( `familiarity_generalFamiliar` ) familiarity_generalFamiliar,
+            count( `familiarity_notKnow` ) familiarity_notKnow,
+            count( `gender_male` ) gender_male,
+            count( `gender_female` ) gender_female,
+            count( `city_beijing` ) city_beijing,
+            count( `city_shanghai` ) city_shanghai,
+            count( `city_shenzhen` ) city_shenzhen,
+            count( `city_hangzhou` ) city_hangzhou,
+            count( `city_changsha` ) city_changsha,
+            count( `industry_internet` ) industry_internet,
+            count( `industry_financial` ) industry_financial,
+            count( `industry_government` ) industry_government,
+            count( `industry_medical` ) industry_medical,
+            count( `industry_industrial` ) industry_industrial,
+            count( `industry_car` ) industry_car,
+            count( `industry_newEnergy` ) industry_newEnergy,
+            count( `industry_other` ) industry_other,
+            count( `visitPurposes_cooperation` ) visitPurposes_cooperation,
+            count( `visitPurposes_learning` ) visitPurposes_learning,
+            count( `visitPurposes_trial` ) visitPurposes_trial,
+            count( `visitPurposes_browse` ) visitPurposes_browse,
+            sum( `age_age` ) age_age,
+            count( `jobPosition_manager` ) jobPosition_manager,
+            count( `jobPosition_PM` ) jobPosition_PM,
+            count( `jobPosition_developer` ) jobPosition_developer,
+            count( `jobPosition_commerceAffairs` ) jobPosition_commerceAffairs,
+            count( `jobPosition_solution` ) jobPosition_solution,
+            count( `jobPosition_other` ) jobPosition_other
+        FROM
+            data_visiting_users
+    </select>
+</mapper>
