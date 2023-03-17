@@ -1,5 +1,5 @@
 <template>
-  <div v-if="resource.length>0" v-loading="loading" element-loading-text="查询中">
+  <div v-if="form.selectResources.length>0" v-loading="loading" element-loading-text="查询中">
     <div class="search-area">
       <el-steps :active="active" finish-status="success" align-center>
         <el-step title="查询条件" />
@@ -10,7 +10,7 @@
           <div class="select-row">
             <el-form-item label="已选资源" prop="selectResources">
               <el-table
-                :data="resource"
+                :data="form.selectResources"
                 border
                 style="width: 100%"
               >
@@ -80,11 +80,11 @@
       <div class="dialog-body">
         <div v-if="fail" class="result">
           <p class="el-icon-error icon-error" />
-          <p><strong>{{ form.pirParam }}</strong>不在 {{ resource[0].resourceName }}资源中</p>
+          <p><strong>{{ form.pirParam }}</strong>不在 {{ form.selectResources[0].resourceName }}资源中</p>
         </div>
         <div v-else class="result">
           <p><i class="el-icon-success icon-success" /> </p>
-          <p><strong>{{ form.pirParam }}</strong>在 {{ resource[0].resourceName }} 资源中</p>
+          <p><strong>{{ form.pirParam }}</strong>在 {{ form.selectResources[0].resourceName }} 资源中</p>
         </div>
       </div>
     </el-dialog>
@@ -99,6 +99,7 @@ export default {
       dialogVisible: false,
       pirParam: '',
       fail: false,
+      active: 1,
       form: {
         resourceName: '',
         pirParam: '',
