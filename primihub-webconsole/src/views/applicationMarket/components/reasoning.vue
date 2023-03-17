@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="loading" class="form-container">
+  <div v-loading="loading" element-loading-text="开始运算" class="form-container">
     <el-steps :active="active" finish-status="success" align-center>
       <el-step title="查询条件" />
       <el-step title="查询结果" />
@@ -18,20 +18,27 @@
 
     <el-dialog
       :visible="visible"
-      width="740px"
+      width="500px"
       class="dialog"
       :before-close="closeDialog"
+      title="隐私计算反欺诈结果"
     >
       <div class="desc-container">
-        <el-descriptions title="运算数据信息" :column="2">
+        <el-descriptions :column="1">
           <el-descriptions-item label="推理服务名称">{{ dataList.reasoningName }}</el-descriptions-item>
           <el-descriptions-item label="推理服务ID">{{ dataList.reasoningId }}</el-descriptions-item>
           <el-descriptions-item label="类型">{{ dataList.reasoningType }}方推理</el-descriptions-item>
           <el-descriptions-item label="上线时间">{{ dataList.releaseDate }}</el-descriptions-item>
           <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
         </el-descriptions>
-        <h3>运算结果</h3>
-        <div v-if="dataList.reasoningState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
+        <div v-if="dataList.reasoningState === 1" class="result">
+          <!-- <h3>运算结果</h3> -->
+          <!-- <p class="el-icon-error icon-error" />
+          <p>存在欺诈</p> -->
+          <img src="../../../assets/result-img.png" width="200" alt="" srcset="">
+        </div>
+
+        <!-- <div v-if="dataList.reasoningState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
           <table>
             <tbody>
               <tr>
@@ -43,7 +50,7 @@
               </tr>
             </tbody>
           </table>
-        </div>
+        </div> -->
       </div>
     </el-dialog>
   </div>
@@ -179,7 +186,6 @@ export default {
           resourceId: this.providerResourceId
         }
       ]
-
       const { code, result } = await saveReasoning({
         taskId: this.taskId,
         resourceList: this.resourceList,
@@ -281,11 +287,32 @@ tr:last-child td {
 }
 
 .dialog ::v-deep .el-descriptions__body{
-  background-color: #fafafa;
-  padding: 10px 20px 10px 20px;
+  // background-color: #fafafa;
+  padding: 10px 20px 20px 20px;
 }
 .dialog h3{
   font-size: 16px;
   color: #303133;
+}
+.result{
+  text-align: center;
+  color: #F56C6C;
+  transform: rotate(-35deg);
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+p{
+  font-size: 20px;
+  margin: 10px auto;
+  text-align: center;
+}
+.icon-success{
+  color: #67C23A;
+  font-size: 80px;
+}
+.icon-error{
+  color: #F56C6C;
+  font-size: 100px;
 }
 </style>

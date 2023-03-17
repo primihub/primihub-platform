@@ -71,13 +71,71 @@ export const constantRoutes = [
     meta: { title: '应用页' }
   },
   {
+    path:"/map",
+    component: Layout,
+    name: 'Map',
+    hidden: true,
+    redirect: '/map/index',
+    meta:{title:"地图"},
+    children:[
+      {
+        path: 'index',
+        name: 'mapIndex',
+        meta: {  title: '地图', breadcrumb: false },
+        component:()=> import('@/views/map/index')
+      }
+    ]
+  },
+  {
     path: '/',
     component: Layout,
-    redirect: '/project/list'
+    redirect: '/map/index'
   }
 ]
 
 export const asyncRoutes = [
+  {
+    path: '/privateSearch',
+    component: Layout,
+    name: 'PrivateSearch',
+    redirect: '/privateSearch/list',
+    meta: { title: '隐匿查询', icon: 'el-icon-search' },
+    children: [{
+      path: 'list',
+      name: 'PrivateSearchList',
+      component: () => import('@/views/privateSearch/index'),
+      meta: { title: '隐匿查询', breadcrumb: false }
+    }, {
+      path: 'task',
+      name: 'PIRTask',
+      hidden: true,
+      component: () => import('@/views/privateSearch/task'),
+      meta: {
+        title: '隐匿查询任务',
+        activeMenu: '/privateSearch/list',
+        parent: { name: 'PrivateSearchList' }
+      }
+    }]
+  },
+  {
+    path: '/PSI',
+    component: Layout,
+    name: 'PSI',
+    redirect: '/PSI/task',
+    meta: { title: '隐私求交', icon: 'el-icon-lock' },
+    children: [
+      {
+        path: 'task',
+        name: 'PSITask',
+        component: () => import('@/views/PSI/task'),
+        meta: { title: '求交任务' }
+      }, {
+        path: 'result',
+        name: 'PSIResult',
+        component: () => import('@/views/PSI/result'),
+        meta: { title: '求交结果' }
+      }]
+  },
   {
     path: '/project',
     name: 'Project',
@@ -135,120 +193,6 @@ export const asyncRoutes = [
     ]
   },
   {
-    path: '/privateSearch',
-    component: Layout,
-    name: 'PrivateSearch',
-    redirect: '/privateSearch/list',
-    meta: { title: '匿踪查询', icon: 'el-icon-search' },
-    children: [{
-      path: 'list',
-      name: 'PrivateSearchList',
-      component: () => import('@/views/privateSearch/index'),
-      meta: { title: '匿踪查询', breadcrumb: false }
-    }, {
-      path: 'task',
-      name: 'PIRTask',
-      hidden: true,
-      component: () => import('@/views/privateSearch/task'),
-      meta: {
-        title: '匿踪查询任务',
-        activeMenu: '/privateSearch/list',
-        parent: { name: 'PrivateSearchList' }
-      }
-    }]
-  },
-  {
-    path: '/PSI',
-    component: Layout,
-    name: 'PSI',
-    redirect: '/PSI/task',
-    meta: { title: '隐私求交', icon: 'el-icon-lock' },
-    children: [
-      {
-        path: 'task',
-        name: 'PSITask',
-        component: () => import('@/views/PSI/task'),
-        meta: { title: '求交任务' }
-      }, {
-        path: 'result',
-        name: 'PSIResult',
-        component: () => import('@/views/PSI/result'),
-        meta: { title: '求交结果' }
-      }]
-  },
-  {
-    path: '/resource',
-    component: Layout,
-    name: 'ResourceMenu',
-    redirect: '/resource/list',
-    meta: { title: '资源管理', icon: 'el-icon-s-operation' },
-    children: [
-      {
-        path: 'list',
-        name: 'ResourceList',
-        component: () => import('@/views/resource/list'),
-        meta: { title: '我的资源' }
-      },
-      {
-        path: 'derivedDataList',
-        name: 'DerivedDataList',
-        component: () => import('@/views/resource/derivedDataList'),
-        meta: { title: '衍生数据资源' }
-      },
-      {
-        path: 'unionList',
-        name: 'UnionList',
-        component: () => import('@/views/resource/unionList'),
-        meta: { title: '联邦资源' }
-      },
-      {
-        path: 'create',
-        name: 'ResourceUpload',
-        hidden: true,
-        component: () => import('@/views/resource/create'),
-        meta: { title: '新建资源', activeMenu: '/resource/list' }
-      },
-      {
-        path: 'edit/:id',
-        name: 'ResourceEdit',
-        hidden: true,
-        component: () => import('@/views/resource/create'),
-        meta: { title: '编辑资源', activeMenu: '/resource/list' }
-      },
-      {
-        path: 'detail/:id',
-        name: 'ResourceDetail',
-        meta: {
-          title: '资源详情',
-          activeMenu: '/resource/list'
-        },
-        hidden: true,
-        component: () => import('@/views/resource/detail')
-      },
-      {
-        path: 'unionResourceDetail/:id',
-        name: 'UnionResourceDetail',
-        meta: {
-          title: '联邦资源详情',
-          activeMenu: '/resource/unionList'
-        },
-        hidden: true,
-        component: () => import('@/views/resource/unionResourceDetail')
-      },
-      {
-        path: 'derivedDataResourceDetail/:id',
-        name: 'DerivedDataResourceDetail',
-        meta: {
-          title: '衍生数据资源详情',
-          activeMenu: '/resource/derivedDataList'
-        },
-        hidden: true,
-        component: () => import('@/views/resource/derivedDataResourceDetail')
-      }
-
-    ]
-  },
-  {
     path: '/model',
     component: Layout,
     name: 'Model',
@@ -279,13 +223,13 @@ export const asyncRoutes = [
     component: Layout,
     name: 'ModelReasoning',
     redirect: '/reasoning/list',
-    meta: { title: '模型推理', icon: 'el-icon-aim' },
+    meta: { title: '服务管理', icon: 'el-icon-aim' },
     children: [
       {
         path: 'list',
         name: 'ModelReasoningList',
         component: () => import('@/views/reasoning/list'),
-        meta: { title: '模型推理', breadcrumb: false }
+        meta: { title: '服务管理', breadcrumb: false }
       },
       {
         path: 'task',
@@ -307,6 +251,78 @@ export const asyncRoutes = [
         hidden: true,
         component: () => import('@/views/reasoning/detail')
       }
+    ]
+  },
+  {
+    path: '/resource',
+    component: Layout,
+    name: 'ResourceMenu',
+    redirect: '/resource/list',
+    meta: { title: '资源管理', icon: 'el-icon-s-operation' },
+    children: [
+      {
+        path: 'list',
+        name: 'ResourceList',
+        component: () => import('@/views/resource/list'),
+        meta: { title: '我的资源' }
+      },
+      {
+        path: 'derivedDataList',
+        name: 'DerivedDataList',
+        component: () => import('@/views/resource/derivedDataList'),
+        meta: { title: '衍生数据资源' }
+      },
+      {
+        path: 'unionList',
+        name: 'UnionList',
+        component: () => import('@/views/resource/unionList'),
+        meta: { title: '协作方资源' }
+      },
+      {
+        path: 'create',
+        name: 'ResourceUpload',
+        hidden: true,
+        component: () => import('@/views/resource/create'),
+        meta: { title: '新建资源', activeMenu: '/resource/list' }
+      },
+      {
+        path: 'edit/:id',
+        name: 'ResourceEdit',
+        hidden: true,
+        component: () => import('@/views/resource/create'),
+        meta: { title: '编辑资源', activeMenu: '/resource/list' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ResourceDetail',
+        meta: {
+          title: '资源详情',
+          activeMenu: '/resource/list'
+        },
+        hidden: true,
+        component: () => import('@/views/resource/detail')
+      },
+      {
+        path: 'unionResourceDetail/:id',
+        name: 'UnionResourceDetail',
+        meta: {
+          title: '协作方资源详情',
+          activeMenu: '/resource/unionList'
+        },
+        hidden: true,
+        component: () => import('@/views/resource/unionResourceDetail')
+      },
+      {
+        path: 'derivedDataResourceDetail/:id',
+        name: 'DerivedDataResourceDetail',
+        meta: {
+          title: '衍生数据资源详情',
+          activeMenu: '/resource/derivedDataList'
+        },
+        hidden: true,
+        component: () => import('@/views/resource/derivedDataResourceDetail')
+      }
+
     ]
   },
   {
@@ -356,7 +372,7 @@ export const asyncRoutes = [
       meta: { title: '日志管理', breadcrumb: false }
 
     }]
-  },
+  }, 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }
 ]

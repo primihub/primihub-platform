@@ -3,6 +3,9 @@
     <div class="logo">
       <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
       <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
+      <div class="secondary-title" @click="toPath">
+        {{ routePath ? '首页' : '分布式隐私计算服务网络' }}
+      </div>
     </div>
     <div class="right-menu">
       <div v-if="!isHideFadeBack" class="feedback">
@@ -98,7 +101,14 @@ export default {
       'userName',
       'userAccount',
       'registerType'
-    ])
+    ]),
+    routePath(){
+      let path = this.$store.state.watchRouter.currentPath;
+      if(path.search('/map/index') > -1){
+        return true;
+      }
+      return false
+    }
   },
   watch: {
     organChange(newVal) {
@@ -159,7 +169,15 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     ...mapActions('user', ['getInfo']),
-    ...mapActions('settings', ['getHomepage'])
+    ...mapActions('settings', ['getHomepage']),
+    toPath(){
+      if(this.routePath){
+        this.$router.push('/project/list')
+      }else{
+
+        this.$router.push('/map/index')
+      }
+    }
   }
 }
 </script>
@@ -180,6 +198,7 @@ export default {
   width: 100%;
   .logo{
     padding: 5px 20px;
+    line-height: 36px;
     height: 100%;
     flex: 1;
     h1.logo-title{
@@ -192,6 +211,14 @@ export default {
     img{
       max-height: 100%;
       vertical-align: middle;
+    }
+    .secondary-title{
+      display: inline-block;
+      color:#409EFF;
+      margin-left: 45px;
+      font-size:14px;
+      cursor: pointer;
+      user-select: none;
     }
   }
 
