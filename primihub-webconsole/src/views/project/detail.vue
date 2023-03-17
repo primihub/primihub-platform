@@ -1,21 +1,22 @@
 <template>
   <div v-loading="listLoading" class="container">
     <section class="infos">
-      <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
+      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
         <el-descriptions-item label="项目ID">
           {{ projectId }}
         </el-descriptions-item>
         <el-descriptions-item label="项目名称">
           {{ projectName }}
         </el-descriptions-item>
+        <el-descriptions-item label="角色">
+          {{ creator? '项目发起方' : '项目协作方' }}
+        </el-descriptions-item>
         <el-descriptions-item label="创建时间">
           {{ createDate }}
         </el-descriptions-item>
-        <el-descriptions-item label="角色">
-          {{ creator? '项目创建方' : '项目协作方' }}
-        </el-descriptions-item>
         <el-descriptions-item label="项目描述">
           {{ projectDesc }}
+          <!-- <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" /> -->
         </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
@@ -92,6 +93,7 @@ import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
 import DerivedDataTable from '@/components/DerivedDataTable'
+// import editInput from '@/components/editInput'
 
 export default {
   components: {
@@ -103,6 +105,7 @@ export default {
     ProjectAudit,
     ResourceApprovalDialog,
     DerivedDataTable
+    // editInput
   },
   data() {
     return {
@@ -162,6 +165,12 @@ export default {
     await this.fetchData()
   },
   methods: {
+    handleProjectDescChange(data) {
+      if (data === this.projectDesc) return
+      this.projectDesc = data
+      // TODO project edit api
+      this.$message.success('修改成功')
+    },
     async getDerivationResourceList() {
       this.loading = true
       this.derivedDataResourceList = []

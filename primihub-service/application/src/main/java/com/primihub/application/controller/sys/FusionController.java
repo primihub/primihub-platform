@@ -85,4 +85,11 @@ public class FusionController {
         return sysFusionService.findMyGroupOrgan(serverAddress);
     }
 
+    @RequestMapping("getOrganExtendsList")
+    public BaseResultEntity getOrganExtendsList(String serverAddress){
+        if(serverAddress==null||serverAddress.trim().equals(""))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
+        return sysFusionService.getOrganExtendsList(serverAddress);
+    }
+
 }

@@ -20,15 +20,14 @@
       width="40"
     />
     <el-table-column
-      label="资源 / Id"
+      label="资源ID"
+      prop="resourceId"
+    />
+    <el-table-column
+      label="资源名称"
       min-width="120"
-    >
-      <template slot-scope="{row}">
-        <!-- <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br> -->
-        {{ row.resourceName }}<br>
-        {{ row.resourceId }}
-      </template>
-    </el-table-column>
+      prop="resourceName"
+    />
     <el-table-column
       label="资源信息"
       min-width="120"
@@ -38,8 +37,17 @@
         样本量：{{ row.resourceRowsCount }} <br>
         正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
         正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
+        <div class="margin-top-5">
+          <el-tag v-if="row.resourceContainsY" type="primary" size="mini">包含Y值</el-tag>
+          <el-tag v-else type="danger" size="mini">不包含Y值</el-tag>
+        </div>
       </template>
     </el-table-column>
+    <el-table-column
+      v-if="hasResourceDesc"
+      prop="resourceDesc"
+      label="资源描述"
+    />
     <el-table-column
       v-if="showStatus"
       prop="auditStatus"
@@ -50,15 +58,7 @@
         {{ row.auditStatus | resourceAuditStatusFilter }}
       </template>
     </el-table-column>
-    <el-table-column
-      label="是否包含Y值"
-      min-width="80"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.resourceContainsY? '是' : '否' }}
-      </template>
-    </el-table-column>
+
     <el-table-column
       v-if="showButtons"
       label="操作"
@@ -132,6 +132,9 @@ export default {
     }
   },
   computed: {
+    hasResourceDesc() {
+      return this.data[0] && Object.keys(this.data[0]).includes('resourceDesc')
+    },
     ...mapState('project', ['status'])
   },
   watch: {
@@ -146,7 +149,6 @@ export default {
   },
   methods: {
     toggleSelection(rows) {
-      console.log(this.selectedData)
       this.$refs.table.clearSelection()
       this.$nextTick(() => {
         if (rows) {

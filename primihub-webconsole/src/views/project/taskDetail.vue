@@ -1,7 +1,7 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': task.taskState === 5}">
     <section class="infos">
-      <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
+      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
         <el-descriptions-item label="任务ID">
           {{ task.taskIdName }}
         </el-descriptions-item>
@@ -9,12 +9,12 @@
           {{ task.taskName }}
         </el-descriptions-item>
         <el-descriptions-item label="任务类型">
-          模型
+          {{ task.taskType | taskTypeFilter }}
         </el-descriptions-item>
-        <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
+        <!-- <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
           <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
           <span v-else>{{ model.modelId }}</span>
-        </el-descriptions-item>
+        </el-descriptions-item> -->
         <el-descriptions-item label="开始时间">
           {{ task.taskStartDate?task.taskStartDate: '未开始' }}
         </el-descriptions-item>
@@ -32,7 +32,8 @@
           </p>
         </el-descriptions-item>
         <el-descriptions-item label="任务描述">
-          {{ task.taskDesc }}
+          {{ taskDesc }}
+          <!-- <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" /> -->
         </el-descriptions-item>
       </el-descriptions>
       <div class="buttons">
@@ -82,7 +83,7 @@
               label="数据类型"
             >
               <template slot-scope="{row}">
-                {{ row.resourceType === 3 ? '原始数据' : '原始数据' }}
+                {{ row.resourceType === 3 ? '衍生数据' : '原始数据' }}
               </template>
             </el-table-column>
             <el-table-column
@@ -112,7 +113,7 @@
         </el-tab-pane>
         <el-tab-pane v-if="task.isCooperation === 0 || (task.isCooperation === 1 && task.taskState === 1)" label="预览图" name="3">
           <div class="canvas-panel">
-            <TaskCanvas v-if="tabName === '3' || restartRun || task.taskState === 2" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
+            <TaskCanvas v-if="tabName === '3' || restartRun" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
         </el-tab-pane>
         <el-tab-pane label="日志" name="4">
@@ -130,6 +131,7 @@ import { deleteTask, cancelTask } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 import Log from '@/components/Log'
+// import editInput from '@/components/editInput'
 
 export default {
   name: 'TaskDetail',
@@ -137,6 +139,7 @@ export default {
     TaskModel,
     TaskCanvas,
     Log
+    // editInput
   },
   data() {
     return {
@@ -169,7 +172,8 @@ export default {
       },
       logType: '',
       errorLog: [],
-      oneself: false
+      oneself: false,
+      taskDesc: ''
     }
   },
   computed: {
@@ -192,10 +196,16 @@ export default {
   async created() {
     this.taskId = this.$route.params.id
     const routerFrom = this.$route.query.from
-    this.tabName = routerFrom === '0' ? '3' : '1'
     await this.fetchData()
+    this.tabName = routerFrom === '0' ? '3' : this.task.taskState === 2 ? '3' : '1'
   },
   methods: {
+    handleDescChange(data) {
+      if (data === this.taskDesc) return
+      this.taskDesc = data
+      // TODO task detail edit api
+      this.$message.success('修改成功')
+    },
     tableRowClassName({ row }) {
       if (row.available === 1) {
         return 'disabled'
@@ -231,6 +241,7 @@ export default {
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
+        this.taskDesc = this.task.taskDesc
         if (this.task.isCooperation === 1) {
           // provider organ only view own resource data
           this.modelResources = this.modelResources.filter(item => item.organId === this.userOrganId)
@@ -289,7 +300,7 @@ export default {
     },
     restartTaskModel() {
       console.log('重启')
-      // this.tabName = '3'
+      this.tabName = '3'
       this.task.taskState = 2
       this.task.taskStartDate = this.task.taskEndDate
       this.task.taskEndDate = null

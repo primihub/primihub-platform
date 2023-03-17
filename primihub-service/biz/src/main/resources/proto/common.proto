@@ -2,6 +2,10 @@ syntax = "proto3";
 
 package primihub.rpc;
 
+enum retcode {
+  SUCCESS = 0;
+  FAIL = 1;
+}
 enum Language {
   PYTHON = 0;
   JAVA = 1;
@@ -19,6 +23,11 @@ enum TaskType {
   NODE_TASK = 1;
   PIR_TASK = 2;
   PSI_TASK = 3;
+  NODE_PIR_TASK = 4;
+  NODE_PSI_TASK = 5;
+  TEE_TASK = 6;
+  TEE_EXECUTOR_TASK = 7;
+  TEE_DATAPROVIDER_TASK = 8;
 }
 
 enum VarType {
@@ -31,12 +40,31 @@ enum VarType {
   BYTE = 6;
 }
 
+enum PsiType {
+  INTERSECTION = 0;
+  DIFFERENCE = 1;
+}
+
+enum PsiTag {
+  ECDH = 0;
+  KKRT = 1;
+}
+
+enum PirType {
+  ID_PIR = 0;
+  KEY_PIR = 1;
+}
+
 message int32_array {
   repeated int32 value_int32_array = 1;
 }
 
+message int64_array {
+  repeated int64 value_int64_array = 1;
+}
+
 message string_array {
-  repeated int32 value_string_array = 1;
+  repeated bytes value_string_array = 1;
 }
 
 message ParamValue {
@@ -47,6 +75,8 @@ message ParamValue {
     string value_string = 4;
     int32_array value_int32_array = 5;
     string_array value_string_array = 6;
+    int64 value_int64 = 7;
+    int64_array value_int64_array = 8;
   }
 }
 
@@ -77,7 +107,9 @@ message Node {
   bytes ip = 2;
   int32 port = 3;
   int32 data_port = 4;
-  repeated VirtualMachine vm = 5;
+  bool use_tls = 5;
+  bytes role = 6;
+  repeated VirtualMachine vm = 7;
 }
 
 message Task {
@@ -85,9 +117,10 @@ message Task {
   string name = 2;
   Language language = 3;
   Params params = 4;
-  string code = 5;
-  map<string, Node> node_map = 6; // node_id
+  bytes code = 5;
+  map<string, Node> node_map = 6; // key: node_id
   repeated string input_datasets = 7;
   bytes job_id = 8;
   bytes task_id = 9;
 }
+

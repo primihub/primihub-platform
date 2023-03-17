@@ -1,12 +1,14 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -16,10 +18,7 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.ComponentTaskReq;
-import com.primihub.biz.entity.data.req.DataComponentRelationReq;
-import com.primihub.biz.entity.data.req.DataComponentReq;
-import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -35,7 +34,6 @@ import com.primihub.biz.service.sys.SysEmailService;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
-import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
@@ -46,6 +44,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -69,6 +68,8 @@ public class DataAsyncService implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context=applicationContext;
     }
+    @Autowired
+    private StringRedisTemplate stringRedisTemplate;
     @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
@@ -103,14 +104,18 @@ public class DataAsyncService implements ApplicationContextAware {
     private SysUserSecondarydbRepository sysUserSecondarydbRepository;
     @Autowired
     private SysEmailService sysEmailService;
+    @Autowired
+    private DataTaskMonitorService dataTaskMonitorService;
+
+
 
     public BaseResultEntity executeBeanMethod(boolean isCheck,DataComponentReq req, ComponentTaskReq taskReq){
         String baenName = req.getComponentCode()+ DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
         log.info("execute : {}",baenName);
-        ComponentTaskService taskService = (ComponentTaskService)context.getBean(baenName);
-        if (taskService==null)
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"组件无实现方法");
         try {
+            ComponentTaskService taskService = (ComponentTaskService)context.getBean(baenName);
+            if (taskService==null)
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"组件无实现方法");
             return isCheck?taskService.check(req,taskReq):taskService.runTask(req,taskReq);
         }catch (Exception e){
             log.info("ComponentCode:{} -- e:{}",req.getComponentCode(),e.getMessage());
@@ -238,10 +243,18 @@ public class DataAsyncService implements ApplicationContextAware {
                 Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(resourceId).build();
                 Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(dataPsi.getOutputContent()).build();
                 Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(dataPsi.getTag()).build();
-                int clientIndex = Arrays.asList(ownDataResource.getFileHandleField().split(",")).indexOf(dataPsi.getOwnKeyword());
-                Common.ParamValue clientIndexParamValue=Common.ParamValue.newBuilder().setValueInt32(clientIndex).build();
-                int serverIndex = Arrays.asList(resourceColumnNameList.split(",")).indexOf(dataPsi.getOtherKeyword());
-                Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setValueInt32(serverIndex).build();
+                List<String> clientFields = Arrays.asList(ownDataResource.getFileHandleField().split(","));
+                Common.int32_array.Builder clientFieldsBuilder = Common.int32_array.newBuilder();
+                Arrays.stream(dataPsi.getOwnKeyword().split(",")).forEach(str -> {
+                    clientFieldsBuilder.addValueInt32Array(clientFields.indexOf(str));
+                });
+                Common.ParamValue clientIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(clientFieldsBuilder.build()).build();
+                List<String> serverFields = Arrays.asList(resourceColumnNameList.split(","));
+                Common.int32_array.Builder serverFieldsBuilder = Common.int32_array.newBuilder();
+                Arrays.stream(dataPsi.getOtherKeyword().split(",")).forEach(str -> {
+                    serverFieldsBuilder.addValueInt32Array(serverFields.indexOf(str));
+                });
+                Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(serverFieldsBuilder.build()).build();
                 Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(psiTask.getFilePath()).build();
                 Common.Params params=Common.Params.newBuilder()
                         .putParamMap("clientData",clientDataParamValue)
@@ -257,9 +270,9 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setParams(params)
                         .setName("testTask")
                         .setLanguage(Common.Language.PROTO)
-                        .setCode("import sys;")
-                        .setJobId(ByteString.copyFrom(dataPsi.getId().toString().getBytes(StandardCharsets.UTF_8)))
-                        .setTaskId(ByteString.copyFrom(psiTask.getId().toString().getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+                        .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                        .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                         .addInputDatasets("clientData")
                         .addInputDatasets("serverData")
                         .build();
@@ -269,9 +282,11 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
+                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,psiTask.getFilePath());
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
                 psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState()!=4){
@@ -330,8 +345,8 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setParams(params)
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
-                    .setCode("import sys;")
-                    .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("serverData")
                     .build();
@@ -341,15 +356,18 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
+                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
+            log.info(reply.toString());
             if (reply.getRetCode()==0){
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,dataTask.getTaskResultPath());
+//                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
 //                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
-                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                    dataTask.setTaskErrorMsg("运行失败:无文件信息");
-                }
+//                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
+//                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+//                    dataTask.setTaskErrorMsg("运行失败:无文件信息");
+//                }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
@@ -396,14 +414,17 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList){
-        String resourceId = "";
+    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
+        String labelDataset = "";
+        String guestDataset = "";
         for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
             if (dataReasoningResource.getParticipationIdentity() == 1){
-                resourceId = dataReasoningResource.getResourceId();
+                labelDataset = dataReasoningResource.getResourceId();
+            }else {
+                guestDataset = dataReasoningResource.getResourceId();
             }
         }
-        log.info(resourceId);
+        log.info("{}-{}",labelDataset,guestDataset);
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
@@ -417,61 +438,36 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_LABEL_DATASET,resourceId);
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PAHT, freeMarkerConfigurer, map);
-        if (freemarkerContent != null) {
-            try {
-                log.info(freemarkerContent);
-                DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
-                log.info(modelTask.toString());
-                log.info(modelTask.getTaskResultContent());
-                ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
-                log.info(modelOutputPathDto.toString());
-                StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
-                dataTask.setTaskResultPath(filePath.toString());
-                log.info(dataTask.getTaskResultPath());
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
-                Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
-                Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("predictFileName", predictFileNameeParamValue)
-                        .build();
-                Common.Task task = Common.Task.newBuilder()
-                        .setType(Common.TaskType.ACTOR_TASK)
-                        .setParams(params)
-                        .setName("modelTask")
-                        .setLanguage(Common.Language.PYTHON)
-                        .setCodeBytes(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
-                        .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
-                        .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
-                PushTaskRequest request = PushTaskRequest.newBuilder()
-                        .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTask(task)
-                        .setSequenceNumber(11)
-                        .setClientProcessedUpTo(22)
-                        .build();
-                PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                log.info("grpc结果:{}", reply.toString());
-                if (reply.getRetCode()==0){
-                    dataReasoning.setReleaseDate(new Date());
-                    dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                }else {
-                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                    dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
-                }
-            } catch (Exception e) {
+        map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
+        List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
+        DataComponent model = dataComponents.stream().filter(dataComponent -> dataComponent.getComponentCode().equals("model")).findFirst().orElse(null);
+        if (model==null){
+            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+            dataTask.setTaskErrorMsg("未能获取到模型信息");
+        }else {
+            List<DataComponentValue> dataComponentValue = JSONArray.parseArray(model.getDataJson(), DataComponentValue.class);
+            DataComponentValue modelType = dataComponentValue.stream().filter(d -> d.getKey().equals("modelType")).findFirst().orElse(null);
+            if (modelType==null || StringUtils.isBlank(modelType.getVal())){
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg(e.getMessage());
-                log.info("grpc Exception:{}", e.getMessage());
-                e.printStackTrace();
+                dataTask.setTaskErrorMsg("未能获取到模型类型信息");
+            }else {
+                Long[] portNumber = getPortNumber();
+                map.put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
+                map.put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
+                String freemarkerContent = "";
+                if (modelType.getVal().equals("2")){
+                    map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
+                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
+                }else{
+                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),1);
+                }
             }
-            dataReasoning.setReasoningState(dataTask.getTaskState());
         }
+
         dataTask.setTaskEndTime(System.currentTimeMillis());
-        updateTaskState(dataTask);
-//        dataTaskPrRepository.updateDataTask(dataTask);
+        dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
@@ -515,6 +511,103 @@ public class DataAsyncService implements ApplicationContextAware {
         }else {
             dataTaskPrRepository.updateDataTask(dataTask);
         }
+    }
+
+
+    public Long[] getPortNumber(){
+        Long[] port = new Long[2];
+        String hostKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "h");
+        String guestKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "g");
+        // 递增还是递减
+        String squareKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "s");
+        String squareVal = stringRedisTemplate.opsForValue().get(squareKey);
+        String hostVal = stringRedisTemplate.opsForValue().get(hostKey);
+        if (org.apache.commons.lang.StringUtils.isBlank(hostVal)){
+            stringRedisTemplate.opsForValue().set(squareKey,"0");
+            stringRedisTemplate.opsForValue().set(hostKey,DataConstant.HOST_PORT_RANGE[0].toString());
+            stringRedisTemplate.opsForValue().set(guestKey,DataConstant.GUEST_PORT_RANGE[0].toString());
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(squareVal) || "0".equals(squareVal)){
+            port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
+            port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
+            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0]))
+                stringRedisTemplate.opsForValue().set(squareKey,"1");
+        }else {
+            port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
+            port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
+            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0]))
+                stringRedisTemplate.opsForValue().set(squareKey,"0");
+        }
+        return port;
+    }
+
+
+
+    public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType,int size){
+        try {
+            log.info(freemarkerContent);
+            DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+            log.info(modelTask.toString());
+            log.info(modelTask.getTaskResultContent());
+            ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
+            log.info(modelOutputPathDto.toString());
+            StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
+            dataTask.setTaskResultPath(filePath.toString());
+            log.info(dataTask.getTaskResultPath());
+            Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getModelFileName()).build();
+            Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(dataTask.getTaskResultPath()).build();
+            Common.Params params = null;
+            if (modelType.equals("2")){
+                Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getHostLookupTable()).build();
+                Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(modelOutputPathDto.getGuestLookupTable()).build();
+                params = Common.Params.newBuilder()
+                        .putParamMap("modelFileName", modelFileNameParamValue)
+                        .putParamMap("predictFileName", predictFileNameeParamValue)
+                        .putParamMap("hostLookupTable", hostLookupTableParamValue)
+                        .putParamMap("guestLookupTable", guestLookupTableParamValue)
+                        .build();
+            }else {
+                params = Common.Params.newBuilder()
+                        .putParamMap("modelFileName", modelFileNameParamValue)
+                        .putParamMap("predictFileName", predictFileNameeParamValue)
+                        .build();
+            }
+
+            Common.Task task = Common.Task.newBuilder()
+                    .setType(Common.TaskType.ACTOR_TASK)
+                    .setParams(params)
+                    .setName("modelTask")
+                    .setLanguage(Common.Language.PYTHON)
+                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                    .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                    .setTaskId(ByteString.copyFrom(dataTask.getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .build();
+            log.info("grpc Common.Task :\n{}", task.toString());
+            PushTaskRequest request = PushTaskRequest.newBuilder()
+                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                    .setTask(task)
+                    .setSequenceNumber(11)
+                    .setClientProcessedUpTo(22)
+                    .build();
+            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+            log.info("grpc结果:{}", reply.toString());
+//            if (reply.getRetCode()==0){
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",size,dataTask.getTaskResultPath());
+            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+                dataReasoning.setReleaseDate(new Date());
+            }
+//                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+//            }else {
+//                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+//                dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+//            }
+        } catch (Exception e) {
+            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+            dataTask.setTaskErrorMsg(e.getMessage());
+            log.info("grpc Exception:{}", e.getMessage());
+            e.printStackTrace();
+        }
+        dataReasoning.setReasoningState(dataTask.getTaskState());
     }
 
 

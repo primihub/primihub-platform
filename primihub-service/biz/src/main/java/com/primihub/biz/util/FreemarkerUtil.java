@@ -1,6 +1,8 @@
 package com.primihub.biz.util;
 
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.tool.TemplatesHelper;
+import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -16,6 +18,9 @@ import java.util.Map;
 public class FreemarkerUtil {
 
     public static String configurerCreateFreemarkerContent(String ftlName, FreeMarkerConfigurer freeMarkerConfigurer, Map<String, String> map){
+        if (TemplatesHelper.getTemplatesMap().containsKey(ftlName)){
+            return stringTemplateLoaderFreemarkerContent(ftlName,map);
+        }
         Configuration configuration = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
         configuration.setDefaultEncoding("utf-8");
         try {
@@ -27,8 +32,25 @@ public class FreemarkerUtil {
         return null;
     }
 
+    public static  String stringTemplateLoaderFreemarkerContent(String ftlName, Map<String, String> map){
+        try {
+            Configuration configuration = new Configuration(Configuration.getVersion());
+            StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
+            stringTemplateLoader.putTemplate(ftlName, TemplatesHelper.getTemplatesMap().get(ftlName));
+            configuration.setTemplateLoader(stringTemplateLoader);
+            Template template = configuration.getTemplate(ftlName);
+            return FreeMarkerTemplateUtils.processTemplateIntoString(template,map);
+        }catch (Exception e){
+            log.info("创建模板失败:{}",e.getMessage());
+        }
+        return null;
+    }
+
 
     public static String configurerCreateFreemarker(String path, String fileName,String ftlName, FreeMarkerConfigurer freeMarkerConfigurer, Map<String, String> map){
+        if (TemplatesHelper.getTemplatesMap().containsKey(ftlName)){
+            return stringTemplateLoaderFreemarkerContent(ftlName,map);
+        }
         Configuration configuration = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
         configuration.setDefaultEncoding("utf-8");
         try {
@@ -51,6 +73,9 @@ public class FreemarkerUtil {
     }
 
     public static String createFreemarker(String path,String fileName,String packagePaht,String ftlName, Map<String, String> map){
+        if (TemplatesHelper.getTemplatesMap().containsKey(ftlName)){
+            return stringTemplateLoaderFreemarkerContent(ftlName,map);
+        }
         Configuration configuration = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
         configuration.setDefaultEncoding("utf-8");
         try {

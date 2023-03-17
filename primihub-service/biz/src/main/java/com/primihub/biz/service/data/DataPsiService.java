@@ -57,6 +57,7 @@ public class DataPsiService {
             paramMap.put("offset",req.getOffset());
             paramMap.put("pageSize",req.getPageSize());
             paramMap.put("resourceName",resourceName);
+            paramMap.put("resourceState",0);
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
             if (dataResources.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -65,7 +66,7 @@ public class DataPsiService {
             Set<Long> resourceIds = dataResources.stream().map(DataResource::getResourceId).collect(Collectors.toSet());
             List<DataFileField> dataFileField = dataResourceRepository.queryDataFileField(new HashMap() {{
                 put("resourceIds", resourceIds);
-                put("relevance", 1);
+//                put("relevance", 1);
             }});
             Map<Long, List<DataFileField>> fileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.DataResourcePoConvertAllocationVo(re,fileFieldMap.get(re.getResourceId()),localOrganId)).collect(Collectors.toList())));

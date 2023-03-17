@@ -22,13 +22,16 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="资源名称">
+        <el-form-item label="任务ID">
+          <el-input v-model="query.taskId" size="small" placeholder="请输入" clearable @clear="handleClear('taskId')" />
+        </el-form-item>
+        <el-form-item label="被查询资源名">
           <el-input v-model="query.resourceName" size="small" placeholder="请输入" clearable @clear="handleClear('resourceName')" />
         </el-form-item>
-        <el-form-item label="检索ID">
+        <el-form-item label="查询关键词">
           <el-input v-model="query.retrievalId" size="small" placeholder="请输入" clearable @clear="handleClear('retrievalId')" />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item label="查询状态">
           <el-select v-model="query.taskState" size="small" placeholder="请选择" clearable @clear="handleClear('taskState')">
             <el-option
               v-for="item in statusOptions"
@@ -44,10 +47,9 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">匿踪查询</el-button>
+    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">隐匿查询</el-button>
     <div class="list">
       <el-table
-        v-loading="listLoading"
         :data="dataList"
       >
         <el-table-column
@@ -68,14 +70,10 @@
           </template>
         </el-table-column>
         <el-table-column
-          prop="resourceName"
-          label="资源名称"
-          min-width="100"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
-          </template>
-        </el-table-column>
+          prop="taskId"
+          label="任务ID"
+          align="center"
+        />
         <el-table-column
           prop="resourceId"
           label="资源ID"
@@ -88,7 +86,17 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="数据信息"
+          prop="resourceName"
+          label="资源名称"
+          min-width="100"
+        >
+          <template slot-scope="{row}">
+            <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
+          </template>
+        </el-table-column>
+
+        <el-table-column
+          label="资源信息"
           min-width="150"
         >
           <template slot-scope="{row}">
@@ -102,10 +110,21 @@
         </el-table-column>
         <el-table-column
           prop="retrievalId"
-          label="检索ID"
+          label="查询关键词"
+          min-width="100"
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="createDate"
+          label="查询时间"
+          min-width="120"
+        >
+          <template slot-scope="{row}">
+            {{ row.createDate.split(' ')[0] }} <br>
+            {{ row.createDate.split(' ')[1] }}
           </template>
         </el-table-column>
         <el-table-column
@@ -116,16 +135,6 @@
           <template slot-scope="{row}">
             <StatusIcon :status="row.taskState" />
             {{ row.taskState | statusFilter }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="createDate"
-          label="查询时间"
-          min-width="100"
-        >
-          <template slot-scope="{row}">
-            {{ row.createDate.split(' ')[0] }} <br>
-            {{ row.createDate.split(' ')[1] }}
           </template>
         </el-table-column>
         <el-table-column
@@ -172,7 +181,6 @@ export default {
     return {
       serverAddressLoading: false,
       organLoading: false,
-      listLoading: false,
       organOptions: [],
       serverAddressList: [],
       sysLocalOrganInfo: null,
@@ -183,7 +191,8 @@ export default {
         organName: '',
         retrievalId: '',
         resourceName: '',
-        taskState: ''
+        taskState: '',
+        taskId: ''
       },
       statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
         {
@@ -211,11 +220,13 @@ export default {
   async created() {
     await this.fetchData()
     if (this.searchList.length > 0) {
-      // this.listLoading = false
       this.timer = window.setInterval(async() => {
         setTimeout(await this.fetchData(), 0)
       }, 5000)
     }
+  },
+  destroyed() {
+    clearInterval(this.timer)
   },
   methods: {
     toTaskPage() {
@@ -228,11 +239,9 @@ export default {
       await this.fetchData()
     },
     reset() {
-      this.query.serverAddress = ''
-      this.query.organName = ''
-      this.query.resourceName = ''
-      this.query.retrievalId = ''
-      this.query.taskState = ''
+      for (const key in this.query) {
+        this.query[key] = ''
+      }
       this.pageNo = 1
       this.fetchData()
     },
@@ -249,9 +258,9 @@ export default {
       })
     },
     async fetchData() {
-      this.listLoading = true
-      const { taskState, serverAddress, organName, resourceName, retrievalId } = this.query
+      const { taskState, serverAddress, organName, resourceName, retrievalId, taskId } = this.query
       const params = {
+        taskId,
         taskState,
         serverAddress,
         organName,
@@ -265,7 +274,6 @@ export default {
       this.dataList = result.data
       this.total = result.total
       this.pageCount = result.totalPage
-      this.listLoading = false
       // filter the running task
       this.searchList = this.dataList.filter(item => item.taskState === 2)
       // No tasks are running

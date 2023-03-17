@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'not-clickable': !options.isEditable, 'disabled':!options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
@@ -34,9 +34,9 @@
           </template>
         </el-form-item>
       </template>
-      <template v-else-if="nodeData.componentCode === 'dataAlign'">
+      <template v-else-if="nodeData.componentCode === 'dataAlign' && nodeData.componentTypes[0].inputValue === '2'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -45,7 +45,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-row v-if="nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
+        <el-row v-if="nodeData.componentCode === 'dataAlign' && nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
           <el-col :span="12">
             <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
             <div class="feature-container">
@@ -54,7 +54,7 @@
             <el-form-item />
           </el-col>
           <el-col :span="12">
-            <el-select v-model="nodeData.componentTypes[2].inputValue" :disabled="!options.isEditable" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
+            <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
               <el-option
                 v-for="(v) in nodeData.componentTypes[2].inputValues"
                 :key="v.key"
@@ -67,7 +67,7 @@
       </template>
       <template v-else-if="nodeData.componentCode === 'exception'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -123,7 +123,6 @@
                 />
               </el-select>
             </el-col>
-
             <el-col :span="12">
               <el-input-number v-model="nodeData.componentTypes[1].inputValue" controls-position="right" :min="1" :max="100" /> 箱
             </el-col>
@@ -140,22 +139,21 @@
               <el-button type="primary" size="small" class="block" @click="openProviderOrganDialog">请选择</el-button>
             </el-form-item>
           </template>
-          <el-form-item v-else :label="item.typeName" :prop="item.typeCode">
+          <el-form-item v-else :prop="item.typeCode">
             <template v-if="item.inputType === 'label'">
+              <p>{{ item.typeName }}</p>
               <span class="label-text">{{ item.inputValue }}</span>
             </template>
             <template v-if="item.inputType === 'text'">
+              <p>{{ item.typeName }}</p>
               <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="small" @change="handleChange" />
             </template>
             <template v-if="item.inputType === 'textarea'">
+              <p>{{ item.typeName }}</p>
               <el-input v-model="item.inputValue" :disabled="!options.isEditable" type="textarea" size="small" @change="handleChange" />
             </template>
-            <template v-if="item.inputType === 'radio'">
-              <el-radio-group v-model="item.inputValue" @change="handleChange">
-                <el-radio v-for="(r,index) in item.inputValues" :key="index" :disabled="!options.isEditable" :label="r.key">{{ r.val }}</el-radio>
-              </el-radio-group>
-            </template>
             <template v-if="item.inputType === 'select'">
+              <p>{{ item.typeName }}</p>
               <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" :value-key="item.typeCode" @change="handleChange">
                 <el-option
                   v-for="(v,index) in item.inputValues"
@@ -165,8 +163,17 @@
                 />
               </el-select>
             </template>
+            <!-- MPC-lr -->
+            <el-row v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'">
+              <el-col v-if="item.inputType === 'number'" :span="12">
+                <p>{{ item.typeName }}</p>
+                <el-input-number v-model="item.inputValue" controls-position="right" :min="filterNumber(item.inputValues,'min')" :max="filterNumber(item.inputValues,'max')" @change="handleChange" />
+              </el-col>
+            </el-row>
           </el-form-item>
         </div>
+        <!-- MPC-lr -->
+        <el-button v-if="nodeData.componentCode === 'model' && nodeData.componentTypes[0].inputValue === '4'" @click="resetModelParams">重置参数</el-button>
       </template>
     </el-form>
     <!-- add resource dialog -->
@@ -174,7 +181,7 @@
     <!-- add provider organ dialog -->
     <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
-    <FeatureSelectDialog :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
+    <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :has-selected-features="hasSelectedFeatures" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
 </template>
 
@@ -234,14 +241,18 @@ export default {
         inputValues: [],
         typeName: ''
       },
-      missingData: [
-
+      exceptionItems: [ // filling items
+        {
+          selectedExceptionFeatures: '',
+          exceptionType: ''
+        }
       ],
       selectedFeaturesCode: '',
-      selectedFeaturesIndex: '',
+      selectedFeaturesIndex: '', //  exception component feature select index
       selectedDataAlignFeatures: null,
       selectedExceptionFeatures: null,
       selectedFeatures: null,
+      selectedFeatureIndex: -1,
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
@@ -282,6 +293,14 @@ export default {
     }
   },
   computed: {
+    // has selected features collection, A feature can perform only one operation
+    hasSelectedFeatures() {
+      return this.exceptionItems.map((item, index) => {
+        if (item.selectedExceptionFeatures !== '' && this.selectedFeaturesIndex !== index) {
+          return item.selectedExceptionFeatures
+        }
+      })
+    },
     isDataSelect() {
       return this.nodeData && this.nodeData.componentCode === 'dataSet'
     },
@@ -359,6 +378,35 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    // 添加填充策略
+    addFilling() {
+      this.exceptionItems.push({
+        selectedExceptionFeatures: '',
+        exceptionType: ''
+      })
+      this.handleChange('exception')
+    },
+    removeFilling(index) {
+      this.exceptionItems.splice(index, 1)
+      this.selectedFeatures = ''
+      this.handleChange('exception')
+    },
+    resetModelParams() {
+      this.nodeData.componentTypes.map(item => {
+        if (item.typeCode === 'batchSize' || item.typeCode === 'numlters') {
+          item.inputValue = ''
+        }
+      })
+      this.handleChange()
+    },
+    filterNumber(data, name) {
+      const filterData = data.find(item => item.key === name)
+      if (filterData) {
+        return Number(filterData.val)
+      } else {
+        return 1
+      }
+    },
     filterData(organId) {
       return this.selectedProviderOrgans.find(item => item.organId === organId)
     },
@@ -466,7 +514,10 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
-    handleChange() {
+    handleChange(name) {
+      if (name === 'exception') {
+        this.nodeData.componentTypes[1].inputValue = JSON.stringify(this.exceptionItems)
+      }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -511,7 +562,7 @@ export default {
     },
     setInputValue(data) {
       // set default feature value
-      data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField[0] : ''
+      data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
@@ -550,17 +601,17 @@ export default {
     save() {
       this.$emit('save')
     },
-    openFeaturesDialog(code) {
+    openFeaturesDialog(code, index) {
       this.selectedFeaturesCode = code
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedFeatures = this.selectedDataAlignFeatures
       } else if (this.selectedFeaturesCode === 'exception') {
-        this.selectedFeatures = this.selectedExceptionFeatures
+        this.selectedFeaturesIndex = index
+        this.selectedFeatures = this.exceptionItems[this.selectedFeaturesIndex].selectedExceptionFeatures
       }
       this.featuresDialogVisible = true
     },
     handleFeatureDialogSubmit(data) {
-      console.log(data)
       if (this.selectedFeaturesCode === 'dataAlign') {
         this.selectedDataAlignFeatures = data
         this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
@@ -571,9 +622,8 @@ export default {
         this.selectedFeatures = this.selectedExceptionFeatures
         console.log(this.selectedExceptionFeatures)
       }
-      console.log(this.nodeData)
       this.featuresDialogVisible = false
-      this.handleChange()
+      this.handleChange(this.selectedFeaturesCode)
     },
     handleFeatureDialogClose() {
       this.featuresDialogVisible = false
@@ -586,6 +636,13 @@ export default {
 p {
   margin-block-start: .2em;
   margin-block-end: .2em;
+}
+::v-deep .el-button{
+  padding: 12px 15px;
+  line-height: 1!important;
+}
+::v-deep .el-select .el-input__inner{
+  padding: 12px 10px!important;
 }
 ::v-deep .el-button--mini.is-circle{
   padding: 3px;
@@ -655,11 +712,9 @@ p {
   width: 100%;
   display: block;
 }
-.feature-container{
-  margin: 10px 0;
-}
 .organ-header{
   display: flex;
+  align-items: center;
   justify-content: space-between;
   line-height: 20px;
   margin: 10px 0;
@@ -667,4 +722,5 @@ p {
 .icon-delete{
   color: #F56C6C;
 }
+
 </style>

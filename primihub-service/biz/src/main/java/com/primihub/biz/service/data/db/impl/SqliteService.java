@@ -7,7 +7,7 @@ import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.db.DataDBService;
-import com.primihub.biz.util.sqlite.SqliteHelper;
+import com.primihub.biz.util.dbclient.SqliteHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

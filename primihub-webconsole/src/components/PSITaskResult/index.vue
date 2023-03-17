@@ -10,16 +10,18 @@
         align="center"
         width="50"
       />
-      <el-table-column label="任务名称">
+      <el-table-column label="任务ID" min-width="120px">
         <template slot-scope="{row}">
-          <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.resultName }}</span> <br>
+          <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span> <br>
         </template>
       </el-table-column>
-      <el-table-column label="任务ID">
+      <el-table-column label="任务名称" min-width="120px">
         <template slot-scope="{row}">
-          <p class="result-id">{{ row.taskIdName }}</p>
+          <p class="result-id">{{ row.resultName }}</p>
         </template>
       </el-table-column>
+      <el-table-column label="任务类型" prop="ascription" />
+      <el-table-column label="任务发起时间" prop="createDate" min-width="120px" />
       <el-table-column label="任务状态" prop="taskState">
         <template slot-scope="{row}">
           <i :class="statusStyle(row.taskState)" />
@@ -27,8 +29,6 @@
           <span v-if="row.taskState === 2"> <i class="el-icon-loading" /></span>
         </template>
       </el-table-column>
-      <el-table-column label="求交结果归属" prop="ascription" />
-      <el-table-column label="时间" prop="createDate" />
       <el-table-column label="操作" min-width="120px" align="center">
         <template slot-scope="{row}">
           <p class="tool-buttons">
@@ -44,7 +44,7 @@
       :visible.sync="dialogVisible"
       :append-to-body="true"
       top="5vh"
-      width="50%"
+      width="750px"
     >
       <PSI-task-detail :data="taskData" />
     </el-dialog>
@@ -209,22 +209,6 @@ export default {
 ::v-deep .el-table th{
   background: #fafafa;
   font-size: 14px;
-}
-::v-deep .el-descriptions__body{
-  background-color: #fafafa;
-  padding: 10px 20px 10px 20px;
-}
-::v-deep  .el-descriptions{
-  margin-bottom:20px;
-}
-::v-deep .el-descriptions-item__container{
-  align-items: center;
-}
-::v-deep .el-descriptions__header{
-  margin-bottom: 10px;
-}
-::v-deep .el-dialog__body{
-  padding: 20px 20px 10px 20px;
 }
 .result-id{
   line-height: 17px!important;

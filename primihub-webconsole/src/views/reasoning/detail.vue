@@ -2,12 +2,12 @@
   <div class="container">
     <div class="desc-container">
       <el-descriptions :column="2">
-        <el-descriptions-item label="推理服务名称">{{ dataList.reasoningName }}</el-descriptions-item>
-        <el-descriptions-item label="推理服务描述">{{ dataList.reasoningDesc }}</el-descriptions-item>
         <el-descriptions-item label="推理服务ID">{{ dataList.reasoningId }}</el-descriptions-item>
-        <el-descriptions-item label="类型">{{ dataList.reasoningType }}方推理</el-descriptions-item>
+        <el-descriptions-item label="推理服务名称">{{ dataList.reasoningName }}</el-descriptions-item>
+        <el-descriptions-item label="推理类型">{{ dataList.reasoningType }}方推理</el-descriptions-item>
         <el-descriptions-item label="上线时间">{{ dataList.releaseDate }}</el-descriptions-item>
         <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
+        <el-descriptions-item label="描述">{{ dataList.reasoningDesc }}</el-descriptions-item>
       </el-descriptions>
       <div class="buttons">
         <el-button v-if="dataList.reasoningState === 1" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
@@ -43,14 +43,25 @@ export default {
   data() {
     return {
       id: '',
-      dataList: [],
-      timer: null
+      dataList: {},
+      timer: null,
+      reasoningState: ''
     }
   },
   async mounted() {
     this.id = this.$route.params.id
     await this.fetchData()
-    console.log(this.$route)
+    console.log(this.reasoningState)
+    if (this.reasoningState === 2) {
+      this.timer = window.setInterval(async() => {
+        setTimeout(await this.fetchData(), 0)
+      }, 2000)
+    } else {
+      clearInterval(this.timer)
+    }
+  },
+  destroyed() {
+    clearInterval(this.timer)
   },
   methods: {
     async download() {
@@ -65,13 +76,8 @@ export default {
       const res = await getReasoning({ id: this.id })
       if (res.code === 0) {
         this.dataList = res.result
-        if (this.dataList.reasoningState === 2) {
-          this.timer = window.setInterval(() => {
-            setTimeout(this.fetchData(), 0)
-          }, 1000)
-        } else {
-          clearInterval(this.timer)
-        }
+        this.reasoningState = this.dataList.reasoningState
+        this.listLoading = false
       }
     }
   }

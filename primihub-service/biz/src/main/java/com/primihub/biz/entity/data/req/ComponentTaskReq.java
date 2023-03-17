@@ -28,6 +28,7 @@ public class  ComponentTaskReq {
     private List<ModelDerivationDto> derivationList = new ArrayList<>();
     private List<ModelDerivationDto> newest;
     private String serverAddress;
+    private int job = 0;
 
     public ComponentTaskReq(DataModel dataModel) {
         this.dataModel = dataModel;
@@ -45,5 +46,10 @@ public class  ComponentTaskReq {
             e.printStackTrace();
         }
         return modelComponentReq;
+    }
+
+    public int getJob() {
+        job++;
+        return job;
     }
 }

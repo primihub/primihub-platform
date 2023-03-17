@@ -514,6 +514,8 @@ INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_aut
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1060, '衍生数据资源', 'DerivedDataList', 2, 1022, 1022, '1022,1060', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 18:33:03.000', '2022-10-30 18:33:08.000');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1061, '衍生数据资源详情', 'DerivedDataResourceDetail', 2, 1060, 1022, '1022,1060,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 10:34:38.945', '2022-10-30 10:34:38.945');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1062, '日志列表', 'LogList', 2, 1058, 1058, '1058,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-11-14 13:44:39.353', '2022-11-14 13:44:39.353');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1063, '界面设置', 'UISetting', 2, 1029, 1029, '1029，1063', ' ', 'own', 2, 2, 0, 0, 0, '2022-12-01 10:55:42.000', '2022-12-01 10:55:46.000');
+
 DROP TABLE IF EXISTS `sys_ra`;
 CREATE TABLE `sys_ra`  (
                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
@@ -627,6 +629,7 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1099, 1000, 1061, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1100, 1, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1101, 1000, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1102, 1, 1063, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (
@@ -725,3 +728,43 @@ CREATE TABLE `data_resource_visibility_auth`  (
                                                   INDEX `resource_id_ix`(`resource_id`) USING BTREE,
                                                   INDEX `organ_global_id_ix`(`organ_global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = Dynamic;
+
+DROP TABLE IF EXISTS `data_visiting_users`;
+CREATE TABLE `data_visiting_users` (
+                                       `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '来访ID',
+                                       `familiarity_practitioner` TINYINT  COMMENT '从业者',
+                                       `familiarity_AlreadyInUse` TINYINT  COMMENT '已在应用',
+                                       `familiarity_veryFamiliar` TINYINT  COMMENT '非常熟悉',
+                                       `familiarity_generalFamiliar` TINYINT  COMMENT '一般熟悉',
+                                       `familiarity_notKnow` TINYINT  COMMENT '完全不懂',
+                                       `gender_male` TINYINT  COMMENT '男',
+                                       `gender_female` TINYINT  COMMENT '女',
+                                       `city_beijing` TINYINT  COMMENT '北京',
+                                       `city_shanghai` TINYINT  COMMENT '上海',
+                                       `city_shenzhen` TINYINT  COMMENT '深圳',
+                                       `city_hangzhou` TINYINT  COMMENT '杭州',
+                                       `city_changsha` TINYINT  COMMENT '长沙',
+                                       `industry_internet` TINYINT  COMMENT '互联网',
+                                       `industry_financial` TINYINT  COMMENT '金融',
+                                       `industry_government` TINYINT  COMMENT '政府',
+                                       `industry_medical` TINYINT  COMMENT '医疗',
+                                       `industry_industrial` TINYINT  COMMENT '工业',
+                                       `industry_car` TINYINT  COMMENT '汽车',
+                                       `industry_newEnergy` TINYINT  COMMENT '新能源',
+                                       `industry_other` TINYINT  COMMENT '其他',
+                                       `visitPurposes_cooperation` TINYINT  COMMENT '商业合作',
+                                       `visitPurposes_learning` TINYINT  COMMENT '学习',
+                                       `visitPurposes_trial` TINYINT  COMMENT '试用',
+                                       `visitPurposes_browse` TINYINT  COMMENT '随便看看',
+                                       `age_age` TINYINT  COMMENT '年龄',
+                                       `jobPosition_manager` TINYINT  COMMENT '管理者',
+                                       `jobPosition_PM` TINYINT  COMMENT '产品',
+                                       `jobPosition_developer` TINYINT  COMMENT '技术',
+                                       `jobPosition_commerceAffairs` TINYINT  COMMENT '商务',
+                                       `jobPosition_solution` TINYINT  COMMENT '解决方案',
+                                       `jobPosition_other` TINYINT  COMMENT '其他',
+                                       `is_del` TINYINT DEFAULT '0'  COMMENT '是否删除',
+                                       `create_date` DATETIME ( 3 ) NOT NULL DEFAULT CURRENT_TIMESTAMP ( 3 ) COMMENT '创建时间',
+                                       `update_date` DATETIME ( 3 ) NOT NULL DEFAULT CURRENT_TIMESTAMP ( 3 ) ON UPDATE CURRENT_TIMESTAMP ( 3 ) COMMENT '修改时间',
+                                       PRIMARY KEY ( `id` )
+) ENGINE = INNODB DEFAULT CHARSET = utf8 ROW_FORMAT = DYNAMIC COMMENT = '应用市场来访用户';

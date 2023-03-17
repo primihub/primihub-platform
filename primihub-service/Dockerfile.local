@@ -1,14 +1,7 @@
-FROM maven:3.8.1-openjdk as build
+FROM ibmjava:8-jre
 
-WORKDIR /opt
+ADD application/target/*-SNAPSHOT.jar /applications/application.jar
+ADD gateway/target/*-SNAPSHOT.jar /applications/gateway.jar
 
-ADD . /opt/
-
-RUN mvn clean install -Dmaven.test.skip=true -Dasciidoctor.skip=true
-
-FROM java:8-jre
-
-COPY --from=build /opt/application/target/*-SNAPSHOT.jar /applications/application.jar
-COPY --from=build /opt/gateway/target/*-SNAPSHOT.jar /applications/gateway.jar
 
 ENTRYPOINT ["/bin/sh","-c","java -jar -Dfile.encoding=UTF-8 /applications/application.jar --spring.profiles.active=test --server.port=8080"]

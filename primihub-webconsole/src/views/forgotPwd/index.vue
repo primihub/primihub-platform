@@ -1,11 +1,11 @@
 <template>
   <div class="container">
     <div class="body">
-      <div class="poster-wrap">
-        <Poster />
-      </div>
-      <div class="register-wrap">
-        <RegisterForm :code-type="2" />
+      <div class="bd-wrap">
+        <CompanyIntro />
+        <div class="register-wrap">
+          <RegisterForm :code-type="2" />
+        </div>
       </div>
       <Footer />
     </div>
@@ -13,16 +13,16 @@
 </template>
 
 <script>
-import Poster from '@/components/Poster'
 import RegisterForm from '@/components/RegisterForm'
 import Footer from '@/components/Footer'
+import CompanyIntro from '@/components/CompanyIntro'
 
 export default {
   name: 'Register',
   components: {
     RegisterForm,
-    Poster,
-    Footer
+    Footer,
+    CompanyIntro
   },
   data() {
     return {
@@ -73,15 +73,24 @@ export default {
     align-items: center;
   }
   .register-wrap {
+    width: 50%;
+    padding: 60px 59px;
+    max-width: 100%;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .bd-wrap {
+    display: flex;
     flex-grow: 1;
     flex-shrink: 0;
-    // width: 50vw;
-    margin-top: 30px;
     position: relative;
     background-color: #fff;
-    border-radius: 30px;
-    padding: 64px;
+    border-radius: 10px;
+    // padding: 64px;
     box-shadow: 0 16px 32px 0 rgb(0 0 0 / 8%);
+    margin-top: 30px;
+    width: 1000px;
+    height: 500px;
   }
 }
 </style>

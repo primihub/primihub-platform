@@ -10,11 +10,11 @@
           <el-form ref="form" :model="formData" :rules="rules" label-width="70px">
             <div class="header">
               <div class="organ-container">
-                <div class="organ"><span>使用方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
-                <div class="organ"><span>加持方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
+                <div class="organ"><span>发起方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
+                <div class="organ"><span>协作方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
               </div>
               <div class="line">
-                <div class="line-icon">交</div>
+                <div class="line-icon">{{ taskTypeText }}</div>
               </div>
             </div>
             <div class="item-row">
@@ -69,7 +69,7 @@
             <el-row>
               <el-col :span="8">
                 <el-form-item label="输出内容" prop="outputContent">
-                  <el-select v-model="formData.outputContent" placeholder="请选择">
+                  <el-select v-model="formData.outputContent" placeholder="请选择" @change="handleTaskTypeChange">
                     <el-option label="交集" :value="0" />
                     <el-option label="差集" :value="1" />
                   </el-select>
@@ -79,13 +79,6 @@
                 <el-form-item label="输出格式" prop="outputFormat">
                   <el-select v-model="formData.outputFormat" placeholder="请选择">
                     <el-option label="资源文件(csv)" :value="0" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="输出资源路径" prop="outputFilePathType">
-                  <el-select v-model="formData.outputFilePathType" placeholder="请选择">
-                    <el-option label="自动生成" :value="0" />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -113,7 +106,7 @@
                 <el-checkbox v-for="(item,index) in resultOrgan" :key="index" :label="item.organId">{{ item.organName }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item> -->
-            <el-form-item label="备注（可选）" prop="remarks">
+            <el-form-item label="备注" prop="remarks">
               <el-input
                 v-model="formData.remarks"
                 size="mini"
@@ -150,6 +143,7 @@ export default {
   },
   data() {
     return {
+      taskTypeText: '交',
       resourceName: '',
       selectLoading: false,
       ownOrganResourceField: [],
@@ -271,6 +265,9 @@ export default {
     this.formData.resultOrgan.push(this.formData.ownOrganId)
   },
   methods: {
+    handleTaskTypeChange(value) {
+      this.taskTypeText = value === 0 ? '交' : '差'
+    },
     async getPsiResourceAllocationList(params) {
       const { resourceName, organId } = params
       const res = await getPsiResourceAllocationList({
@@ -322,16 +319,16 @@ export default {
         message = '请选择求交机构'
         enable = false
       } else if (ownResourceId === '') {
-        message = '请选择使用方资源'
+        message = '请选择发起方资源'
         enable = false
       } else if (otherResourceId === '') {
-        message = '请选择加持方资源'
+        message = '请选择协作方资源'
         enable = false
       } else if (otherKeyword === '') {
-        message = '请选择加持方关联键'
+        message = '请选择协作方关联键'
         enable = false
       } else if (ownKeyword === '') {
-        message = '请选择使用方关联键'
+        message = '请选择发起方关联键'
         enable = false
       }
       if (!enable) {
@@ -352,7 +349,7 @@ export default {
       } else {
         if (this.formData.serverAddress === '') {
           this.$message({
-            message: '请选择加持方',
+            message: '请选择协作方',
             type: 'warning'
           })
           this.tableDataB = []

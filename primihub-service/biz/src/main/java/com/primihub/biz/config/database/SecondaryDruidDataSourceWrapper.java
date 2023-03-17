@@ -16,6 +16,8 @@ public class SecondaryDruidDataSourceWrapper extends DruidDataSource implements 
     private String driverClassName;
     @NacosValue(value="${spring.datasource.druid.secondary.connection-properties}",autoRefreshed = true)
     private String connectionProperties;
+    @NacosValue(value="${spring.datasource.druid.secondary.filter.config.enabled}",autoRefreshed = true)
+    private Boolean filterConfigEnabled = false;
 
 //    private String passwordCallbackClassName;
 
@@ -71,6 +73,9 @@ public class SecondaryDruidDataSourceWrapper extends DruidDataSource implements 
         super.setMaxPoolPreparedStatementPerConnectionSize(maxPoolPreparedStatementPerConnectionSize);
         super.setConnectionProperties(connectionProperties);
         super.setDbType(dbType);
+        if (filterConfigEnabled){
+            super.addFilters("config");
+        }
 //        super.setPasswordCallbackClassName(passwordCallbackClassName);
     }
 

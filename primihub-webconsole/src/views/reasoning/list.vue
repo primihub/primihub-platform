@@ -1,11 +1,11 @@
 <template>
   <div class="container">
     <div class="search-area">
-      <el-form :model="query" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="模型推理服务ID">
+      <el-form :model="query" :inline="true">
+        <el-form-item label="推理服务ID">
           <el-input v-model="query.id" size="small" placeholder="请输入" clearable @clear="handleClear('id')" />
         </el-form-item>
-        <el-form-item label="模型推理服务名称">
+        <el-form-item label="推理服务名称">
           <el-input v-model="query.reasoningName" size="small" placeholder="请输入" clearable @clear="handleClear('reasoningName')" />
         </el-form-item>
         <el-form-item label="状态">
@@ -24,7 +24,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">模型推理</el-button>
+    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">推理服务</el-button>
     <div class="list">
       <el-table
         v-loading="listLoading"
@@ -44,10 +44,6 @@
           label="推理服务名称"
         />
         <el-table-column
-          prop="reasoningDesc"
-          label="描述"
-        />
-        <el-table-column
           prop="reasoningType"
           label="推理类型"
         >
@@ -55,6 +51,21 @@
             {{ row.reasoningType }}方推理
           </template>
         </el-table-column>
+        <!-- <el-table-column
+          label="模型名称"
+        >
+          <template slot-scope="{row}">
+            <el-link type="primary" @click="toModelDetail(row.modelId)">{{ row.modelName }}</el-link>
+          </template>
+        </el-table-column> -->
+        <el-table-column
+          prop="releaseDate"
+          label="上线时间"
+        />
+        <el-table-column
+          prop="reasoningDesc"
+          label="描述"
+        />
         <el-table-column
           prop="reasoningState"
           label="状态"
@@ -65,11 +76,6 @@
             {{ row.reasoningState | reasoningStateFilter }}
           </template>
         </el-table-column>
-        <el-table-column
-          prop="releaseDate"
-          label="上线日期"
-          align="center"
-        />
       </el-table>
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
@@ -130,13 +136,19 @@ export default {
       timer: null
     }
   },
-  created() {
-    this.fetchData()
+  async created() {
+    await this.fetchData()
+    console.log(this.searchList)
     if (this.searchList.length > 0) {
-      this.timer = window.setInterval(() => {
-        setTimeout(this.fetchData(), 0)
-      }, 5000)
+      this.timer = window.setInterval(async() => {
+        setTimeout(await this.fetchData(), 0)
+      }, 3000)
+    } else {
+      clearInterval(this.timer)
     }
+  },
+  destroyed() {
+    clearInterval(this.timer)
   },
   methods: {
     toTaskPage() {
@@ -166,14 +178,19 @@ export default {
         params: { id }
       })
     },
+    toModelDetail(id) {
+      this.$router.push({
+        name: 'ModelDetail',
+        params: { id }
+      })
+    },
     toModelTaskDetail(row) {
       this.$router.push({
         path: `/project/detail/${row.projectId}/task/${row.taskId}`
       })
     },
-    fetchData() {
+    async fetchData() {
       this.listLoading = true
-      this.dataList = []
       const { id, reasoningName, reasoningState } = this.query
       const params = {
         id,
@@ -182,24 +199,13 @@ export default {
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
-      console.log('fetchData', params)
-      getReasoningList(params).then((response) => {
-        console.log('response.data', response.result)
-        const { result } = response
-        this.dataList = result.data
-        this.total = result.total
-        this.pageCount = result.totalPage
-        // filter the running task
-        this.searchList = this.dataList.filter(item => item.taskState === 2)
-        // No tasks are running
-        if (this.searchList.length === 0) {
-          this.startInterval = false
-          clearInterval(this.timer)
-        }
-        this.listLoading = false
-      }).catch(() => {
-        this.listLoading = false
-      })
+      const { result } = await getReasoningList(params)
+      this.dataList = result.data
+      this.total = result.total
+      this.pageCount = result.totalPage
+      // filter the running task
+      this.searchList = this.dataList.filter(item => item.reasoningState === 2)
+      this.listLoading = false
     },
     handlePagination(data) {
       this.pageNo = data.page
