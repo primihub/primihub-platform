@@ -130,21 +130,6 @@ public class DataTaskMonitorService {
         return false;
     }
 
-    public static void main(String[] args) throws InterruptedException {
-        long start = System.currentTimeMillis();
-        long timeConsuming = 0L;
-        int judgmentFile = 0;
-        while (true){
-            timeConsuming = System.currentTimeMillis() - start;
-            // 五分钟判断一下文件是否存在
-            if (judgmentFile!=(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT)) {
-                judgmentFile = Long.valueOf(timeConsuming / DataConstant.GRPC_FILE_TIMEOUT).intValue();
-                log.info("{}--{}",timeConsuming,judgmentFile);
-            }
-            Thread.sleep(5000L);
-        }
-    }
-
 
     /**
      * 获取任务的成功数量
