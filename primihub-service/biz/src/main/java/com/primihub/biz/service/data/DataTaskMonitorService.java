@@ -99,18 +99,18 @@ public class DataTaskMonitorService {
     public boolean blockingAccessToTaskStatus(String taskId,String jobId,int num,Long timeout,String path){
         long start = System.currentTimeMillis();
         long timeConsuming = 0L;
-        int judgmentFile = 0;
+//        int judgmentFile = 0;
         while (timeConsuming<=timeout){
             try {
                 if (StringUtils.isNotBlank(path)){
                     timeConsuming = System.currentTimeMillis() - start;
                     // 五分钟判断一下文件是否存在
-                    if (judgmentFile!=(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT)){
-                        judgmentFile = Long.valueOf(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT).intValue();
-                        if (FileUtil.isFileExists(path)){
-                            return true;
-                        }
+//                    if (judgmentFile!=(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT)){
+//                        judgmentFile = Long.valueOf(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT).intValue();
+                    if (FileUtil.isFileExists(path)){
+                        return true;
                     }
+//                    }
                 }
                 int numberOfSuccessfulTasks = getNumberOfSuccessfulTasks(taskId, jobId);
                 log.info("get into wait for start:{} - timeout:{} - timeConsuming:{} - taskId:{} - jobId:{} - numberOfSuccessfulTasks:{}",start,timeout,timeConsuming,taskId,jobId,numberOfSuccessfulTasks);

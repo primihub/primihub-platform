@@ -103,6 +103,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.MPC_LR.getType())){
             return mpclr(req,taskReq);
         }
+        taskReq.getFreemarkerMap().putAll(getComponentVals(req.getComponentValues()));
         if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
             log.info("newest:{}",JSONObject.toJSONString(taskReq.getNewest()));
             log.info("freemarkerMap1:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
