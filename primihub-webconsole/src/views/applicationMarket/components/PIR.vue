@@ -92,22 +92,11 @@
 </template>
 
 <script>
-import { pirSubmitTask } from '@/api/PIR'
-import { getTaskData } from '@/api/task'
-import { getDataResource } from '@/api/fusionResource'
-
 export default {
   data() {
     return {
       loading: false,
-      taskTimer: null,
-      taskState: '',
-      taskId: 0,
-      active: 0,
       dialogVisible: false,
-      resourceId: '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
-      serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
-      resource: [],
       pirParam: '',
       fail: false,
       form: {
@@ -128,28 +117,16 @@ export default {
     }
   },
   async created() {
-    if (window.location.origin.indexOf('https://node1') !== -1) {
-      console.log('pro env')
-      this.resourceId = '704a92e392fd-6eaa5520-16ce-49be-a80f-3ea948334c9d'
-      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-    } else if (window.location.origin.indexOf('https://node2') !== -1) {
-      console.log('pro env node2')
-      this.resourceId = 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3'
-      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-    } else if (window.location.origin.indexOf('https://node3') !== -1) {
-      console.log('pro env node3')
-      this.resourceId = 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3'
-      this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-    } else {
-      console.log('test env')
-      this.resourceId = '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591'
-      this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-    }
-    await this.getDataResource()
-    this.form.selectResources = this.resource
-  },
-  destroyed() {
-    clearInterval(this.taskTimer)
+    this.form.selectResources = [{
+      'resourceId': '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
+      'resourceName': 'pir测试数据',
+      'resourceDesc': '测试数据',
+      'resourceRowsCount': 30,
+      'resourceColumnCount': 2,
+      'resourceContainsY': null,
+      'resourceYRowsCount': null,
+      'resourceYRatio': null
+    }]
   },
   methods: {
     next() {
@@ -175,77 +152,14 @@ export default {
               this.dialogVisible = true
             }, 1000)
           }
-          pirSubmitTask({
-            serverAddress: this.serverAddress,
-            resourceId: this.resource[0].resourceId,
-            pirParam: this.form.pirParam
-          }).then(res => {
-            if (res.code === 0) {
-              this.taskId = res.result.taskId
-              // 任务运行中，轮询任务状态
-              // this.taskTimer = window.setInterval(() => {
-              //   setTimeout(this.getTaskData(), 0)
-              // }, 1500)
-            } else {
-              this.$emit('error', {
-                taskId: this.taskId,
-                pirParam: this.form.pirParam
-              })
-              this.$message({
-                message: res.msg,
-                type: 'error'
-              })
-              this.loading = false
-            }
-          }).catch(err => {
-            console.log(err)
-            this.loading = false
-          })
         } else {
           console.log('error submit!!')
           return false
         }
       })
     },
-    getTaskData() {
-      getTaskData({ taskId: this.taskId }).then(res => {
-        if (res.code === 0) {
-          this.taskState = res.result.taskState
-          if (this.taskState === 3) {
-            this.loading = false
-            clearInterval(this.taskTimer)
-            this.active = 1
-            this.dialogVisible = true
-            this.fail = true
-          } else if (this.taskState !== 2) {
-            this.loading = false
-            clearInterval(this.taskTimer)
-            this.active = 1
-            this.dialogVisible = true
-          }
-        }
-      })
-    },
-    showResult(data) {
-      this.pirParam = data.pirParam
-      this.dialogVisible = true
-    },
-    handleError(data) {
-      this.fail = true
-      this.pirParam = data.pirParam
-      this.dialogVisible = true
-    },
     handleClose() {
       this.dialogVisible = false
-    },
-    async getDataResource() {
-      const res = await getDataResource({
-        resourceId: this.resourceId,
-        serverAddress: this.serverAddress
-      })
-      if (res.code === 0) {
-        this.resource = [res.result]
-      }
     }
   }
 }
