@@ -69,6 +69,7 @@
     <select id="selectDataPirTaskPage" resultType="com.primihub.biz.entity.data.vo.DataPirTaskVo" parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
         select
             dpt.task_id taskId,
+            dpt.task_id_name taskIdName,
             dpt.server_address serverAddress,
             dpt.provider_organ_name organName,
             dpt.resource_id resourceId,

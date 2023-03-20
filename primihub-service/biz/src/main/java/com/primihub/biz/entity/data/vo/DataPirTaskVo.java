@@ -13,6 +13,8 @@ public class DataPirTaskVo {
 
     private Long taskId;
 
+    private String taskIdName;
+
     private String organId;
 
     private String organName;

@@ -103,16 +103,18 @@ public class DataPsiService {
         task.setTaskId(Long.toString(SnowflakeId.getInstance().nextId()));
         task.setTaskState(0);
         if (dataPsi.getResultOrganIds().indexOf(",")!=-1){
-            task.setAscription("双方获取");
+//            task.setAscription("双方获取");
             task.setAscriptionType(1);
         }else {
-            task.setAscription("一方获取");
+//            task.setAscription("一方获取");
             task.setAscriptionType(0);
         }
         if (dataPsi.getOutputContent()==0){
-            task.setAscription(task.getAscription()+"交集");
+//            task.setAscription(task.getAscription()+"交集");
+            task.setAscription("求交集");
         }else {
-            task.setAscription(task.getAscription()+"差集");
+//            task.setAscription(task.getAscription()+"差集");
+            task.setAscription("求差集");
         }
         task.setCreateDate(new Date());
         dataPsiPrRepository.saveDataPsiTask(task);
