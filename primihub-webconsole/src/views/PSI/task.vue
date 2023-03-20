@@ -23,12 +23,12 @@
                   <ResourceSelect :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="ownKeyword">
-                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" no-data-text="暂无数据" clearable placeholder="请选择" @change="handleOwnKeywordChange">
+                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" multiple no-data-text="暂无数据" clearable placeholder="请选择" @change="handleKeywordChange($event,formData.otherKeyword)">
                     <el-option
                       v-for="(item,index) in ownOrganResourceField"
                       :key="index"
-                      :label="item.name"
-                      :value="item.value"
+                      :label="item"
+                      :value="item"
                     />
                   </el-select>
                 </el-form-item>
@@ -42,12 +42,12 @@
                   <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="otherKeyword">
-                  <el-select v-model="formData.otherKeyword" no-data-text="暂无数据" placeholder="请选择" clearable @change="handleOtherKeywordChange">
+                  <el-select v-model="formData.otherKeyword" multiple no-data-text="暂无数据" placeholder="请选择" clearable @change="handleKeywordChange($event,formData.ownKeyword)">
                     <el-option
                       v-for="(item,index) in otherOrganResourceField"
                       :key="index"
-                      :label="item.name"
-                      :value="index"
+                      :label="item"
+                      :value="item"
                     />
                   </el-select>
                 </el-form-item>
@@ -159,10 +159,10 @@ export default {
       formData: {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
-        ownKeyword: '', // 本机构关联键
+        ownKeyword: [], // 本机构关联键
         otherOrganId: 0,
         otherResourceId: '', // 其他机构资源Id
-        otherKeyword: '', // 其他机构关联键
+        otherKeyword: [], // 其他机构关联键
         outputFormat: 0, // 输出方式
         outputFilePathType: 0, // 输出路径
         outputContent: 0,
@@ -181,13 +181,13 @@ export default {
           { required: true, message: '请选择资源' }
         ],
         ownKeyword: [
-          { required: true, message: '请选择关联键', trigger: 'change' }
+          { required: true, message: '请选择关联键', trigger: 'blur' }
         ],
         otherResourceId: [
-          { required: true, message: '请选择资源', trigger: 'change' }
+          { required: true, message: '请选择资源', trigger: 'blur' }
         ],
         otherKeyword: [
-          { required: true, message: '请选择关联键', trigger: 'change' }
+          { required: true, message: '请选择关联键', trigger: 'blur' }
         ],
         outputFilePathType: [
           { required: true, message: '请选择输出资源路径', trigger: 'blur' }
@@ -288,8 +288,14 @@ export default {
       this.$refs.form.validate(async valid => {
         if (valid) {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
+          const ownKeyword = this.formData.ownKeyword.join(',')
+          const otherKeyword = this.formData.otherKeyword.join(',')
+          if (ownKeyword !== otherKeyword) {
+            this.$message.error('两方关联键需相同')
+            return
+          }
           this.isRun = true
-          const res = await saveDataPsi(this.formData)
+          const res = await saveDataPsi(Object.assign({}, this.formData, { ownKeyword, otherKeyword }))
           if (res.code === 0) {
             this.$message({
               message: '创建完成',
@@ -362,11 +368,36 @@ export default {
         })
       }
     },
-    handleOwnKeywordChange(index) {
-      this.formData.ownKeyword = this.ownOrganResourceField[index]?.name
+    handleKeywordChange(value, data) {
+      if (data.length > 0) {
+        for (let i = 0; i < value.length; i++) {
+          if (!data.includes(value[i])) {
+            this.$message.error('关联键配置错误！请选择相同关联键')
+            break
+          }
+        }
+      }
     },
-    handleOtherKeywordChange(index) {
-      this.formData.otherKeyword = this.otherOrganResourceField[index]?.name
+    handleOwnKeywordChange(value) {
+      if (this.formData.otherKeyword.length > 0) {
+        for (let i = 0; i < value.length; i++) {
+          if (!this.formData.otherKeyword.includes(value[i])) {
+            this.$message.error('关联键配置错误！请选择相同关联键')
+            break
+          }
+        }
+      }
+    },
+    handleOtherKeywordChange(value) {
+      console.log(this.formData.ownKeyword)
+      if (this.formData.ownKeyword.length > 0) {
+        for (let i = 0; i < value.length; i++) {
+          if (!this.formData.ownKeyword.includes(value[i])) {
+            this.$message.error('关联键配置错误！请选择相同关联键')
+            break
+          }
+        }
+      }
     },
     async handleOwnResourceSearch(resourceName) {
       this.resourceName = resourceName
@@ -395,27 +426,21 @@ export default {
     handleOwnResourceChange(resourceId) {
       this.formData.ownResourceId = resourceId
       this.ownOrganResourceField = []
-      this.formData.ownKeyword = ''
+      this.formData.ownKeyword = []
       const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
       this.ownResourceName = currentResource ? currentResource.resourceName : ''
       currentResource?.keywordList.forEach((item, index) => {
-        this.ownOrganResourceField.push({
-          value: index,
-          name: item
-        })
+        this.ownOrganResourceField.push(item)
       })
     },
     handleTargetResourceChange(resourceId) {
       this.otherOrganResourceField = []
       this.formData.otherResourceId = resourceId
-      this.formData.otherKeyword = ''
+      this.formData.otherKeyword = []
       const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
       this.otherResourceName = currentResource ? currentResource.resourceName : ''
       currentResource?.keywordList.forEach((item, index) => {
-        this.otherOrganResourceField.push({
-          value: index,
-          name: item
-        })
+        this.otherOrganResourceField.push(item)
       })
     },
     async handleOrganSelect(data) {
@@ -424,7 +449,7 @@ export default {
       this.formData.otherOrganName = data.organName
       this.otherOrganResourceField = []
       this.formData.otherResourceId = ''
-      this.formData.otherKeyword = ''
+      this.formData.otherKeyword = []
       this.formData.serverAddress = data.serverAddress
       this.tableDataB = []
       this.tableDataB = await this.getPsiResourceAllocationList({
