@@ -149,7 +149,7 @@ public class DataPsiService {
         return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataOrganPsiTaskVos));
     }
 
-    public BaseResultEntity getPsiTaskDetails(Long taskId, Long userId) {
+    public BaseResultEntity getPsiTaskDetails(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
         if (task==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务信息");
@@ -180,7 +180,7 @@ public class DataPsiService {
         return dataPsiRepository.selectPsiById(psiId);
     }
 
-    public BaseResultEntity delPsiTask(Long taskId, Long userId) {
+    public BaseResultEntity delPsiTask(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
         if (task==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -191,14 +191,14 @@ public class DataPsiService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity cancelPsiTask(Long taskId, Long userId) {
+    public BaseResultEntity cancelPsiTask(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
         task.setTaskState(4);
         dataPsiPrRepository.updateDataPsiTask(task);
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity retryPsiTask(Long taskId, Long userId) {
+    public BaseResultEntity retryPsiTask(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
         if (task.getTaskState()==1||task.getTaskState()==2)
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"运行中或完成");
@@ -207,7 +207,16 @@ public class DataPsiService {
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         task.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(task);
-//        psiAsyncService.psiGrpcRun(task,dataPsi);
+        dataAsyncService.psiGrpcRun(task,dataPsi);
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity updateDataPsiResultName(DataPsiReq req) {
+        DataPsi dataPsi = dataPsiRepository.selectPsiById(req.getId());
+        if (dataPsi==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到隐私求交信息");
+        dataPsi.setResultName(req.getResultName());
+        dataPsiPrRepository.updateDataPsi(dataPsi);
         return BaseResultEntity.success();
     }
 }

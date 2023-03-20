@@ -548,8 +548,11 @@ public class DataModelService {
 
 
     public BaseResultEntity getModelTaskSuccessList(ModelTaskSuccessReq req) {
-        if (StringUtils.isNotBlank(req.getSuccessDate())){
-            req.setSuccessTime(DateUtil.parseDate(req.getSuccessDate(),DateUtil.DateStyle.DATE_FORMAT_NORMAL.getFormat()).getTime());
+        if (StringUtils.isNotBlank(req.getStartDate())){
+            req.setStartTime(DateUtil.parseDate(req.getStartDate(),DateUtil.DateStyle.DATE_FORMAT_NORMAL.getFormat()).getTime());
+        }
+        if (StringUtils.isNotBlank(req.getEndDate())){
+            req.setEndTime(DateUtil.parseDate(req.getEndDate(),DateUtil.DateStyle.DATE_FORMAT_NORMAL.getFormat()).getTime());
         }
         if (baseConfiguration.getAdminUserIds().contains(req.getUserId()))
             req.setIsAdmin(1);

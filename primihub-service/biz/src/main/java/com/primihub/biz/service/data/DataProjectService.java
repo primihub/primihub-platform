@@ -197,7 +197,7 @@ public class DataProjectService {
         List<DataProjectOrganVo> organs = new ArrayList<>();
         for (DataProjectOrgan projectOrgan : dataProjectOrgans) {
             DataProjectOrganVo dataProjectOrganVo = DataProjectConvert.DataProjectOrganConvertVo(projectOrgan, dataProject.getCreatedOrganId().equals(projectOrgan.getOrganId()), sysLocalOrganInfo,organListMap.get(projectOrgan.getOrganId()));
-            List<DataProjectResource> projectResources = organResourceMap.get(dataProjectOrganVo.getOrganId());
+            List<DataProjectResource> projectResources = organResourceMap.get(dataProjectOrganVo.getOrganId()).stream().sorted(Comparator.comparing(DataProjectResource::getId).reversed()).collect(Collectors.toList());
             if (projectResources!=null){
                 for (DataProjectResource projectResource : projectResources) {
                     Map map = resourceListMap.get(projectResource.getResourceId());

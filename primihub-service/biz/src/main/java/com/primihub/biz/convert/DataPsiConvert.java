@@ -85,6 +85,7 @@ public class DataPsiConvert {
         dataPsiVo.setTaskId(task.getId());
         dataPsiVo.setTaskIdName(task.getTaskId());
         dataPsiVo.setTaskState(task.getTaskState());
+        dataPsiVo.setServerAddress(dataPsi.getServerAddress());
         return dataPsiVo;
     }
 }

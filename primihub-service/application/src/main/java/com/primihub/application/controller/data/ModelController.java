@@ -10,7 +10,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * 模型管理
+ */
 @RequestMapping("model")
 @RestController
 public class ModelController {
@@ -140,6 +142,12 @@ public class ModelController {
         return dataModelService.getModelPrediction(modelId);
     }
 
+    /**
+     * 运行成功的模型列表
+     * @param userId
+     * @param req
+     * @return
+     */
     @RequestMapping("getModelTaskSuccessList")
     public BaseResultEntity getModelTaskSuccessList(@RequestHeader("userId") Long userId,ModelTaskSuccessReq req){
         if (userId==null||userId==0L)
