@@ -50,7 +50,7 @@ public class DataConstant {
     public final static Long[] HOST_PORT_RANGE = new Long[]{40000L,50000L};
 
     public final static Long GRPC_SERVER_TIMEOUT = 24L * 60L * 60L * 1000L;
-    public final static Long GRPC_FILE_TIMEOUT = 30L * 1000L;
+    public final static Long GRPC_FILE_TIMEOUT = 10L * 1000L;
 
     public final static String TASK_LOG_FILE_NAME = "taskLog.log";
 

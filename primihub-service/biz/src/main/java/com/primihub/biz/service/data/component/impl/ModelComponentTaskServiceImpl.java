@@ -103,6 +103,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.MPC_LR.getType())){
             return mpclr(req,taskReq);
         }
+        taskReq.getFreemarkerMap().putAll(getComponentVals(req.getComponentValues()));
         if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
             log.info("newest:{}",JSONObject.toJSONString(taskReq.getNewest()));
             log.info("freemarkerMap1:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
@@ -202,7 +203,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -270,7 +271,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -352,7 +353,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

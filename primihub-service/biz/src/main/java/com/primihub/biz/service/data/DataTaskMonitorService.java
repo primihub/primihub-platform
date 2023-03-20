@@ -102,18 +102,7 @@ public class DataTaskMonitorService {
         int judgmentFile = 0;
         while (timeConsuming<=timeout){
             try {
-                if (StringUtils.isNotBlank(path)){
-                    timeConsuming = System.currentTimeMillis() - start;
-                    // 五分钟判断一下文件是否存在
-                    if (judgmentFile!=(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT)){
-                        judgmentFile = Long.valueOf(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT).intValue();
-                        if (FileUtil.isFileExists(path)){
-                            return true;
-                        }
-                    }
-                }
                 int numberOfSuccessfulTasks = getNumberOfSuccessfulTasks(taskId, jobId);
-                log.info("get into wait for start:{} - timeout:{} - timeConsuming:{} - taskId:{} - jobId:{} - numberOfSuccessfulTasks:{}",start,timeout,timeConsuming,taskId,jobId,numberOfSuccessfulTasks);
                 if (numberOfSuccessfulTasks<0){
                     return false;
                 }else {
@@ -121,14 +110,23 @@ public class DataTaskMonitorService {
                         return true;
                     }
                 }
-
+                if (StringUtils.isNotBlank(path)){
+                    timeConsuming = System.currentTimeMillis() - start;
+                    // 10秒判断一下文件是否存在
+                    if (judgmentFile!=(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT)){
+                        judgmentFile = Long.valueOf(timeConsuming/DataConstant.GRPC_FILE_TIMEOUT).intValue();
+                        log.info("get into wait for start:{} - timeout:{} - timeConsuming:{} - taskId:{} - jobId:{} - numberOfSuccessfulTasks:{}",start,timeout,timeConsuming,taskId,jobId,numberOfSuccessfulTasks);
+                        if (FileUtil.isFileExists(path)){
+                            return true;
+                        }
+                    }
+                }
                 Thread.sleep(5000L);
-
             }catch (Exception e){
                 e.printStackTrace();
             }
         }
-        log.info("Automatically exit after exceeding the maximum timeout start:{} end:{} consuming:{} taskId:{} - jobId:{} ",start,System.currentTimeMillis(),timeout,taskId,jobId);
+//        log.info("Automatically exit after exceeding the maximum timeout start:{} end:{} consuming:{} taskId:{} - jobId:{} ",start,System.currentTimeMillis(),timeout,taskId,jobId);
         return false;
     }
 
