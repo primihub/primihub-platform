@@ -6,6 +6,7 @@ import lombok.Data;
 public class ModelTaskSuccessReq extends PageReq {
     private Long modelId;
     private String modelName;
+    private Integer modelType;
     private String startDate;
     private String endDate;
     private Long startTime;

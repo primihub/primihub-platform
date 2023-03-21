@@ -24,6 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.UUID;
 
+/**
+ * 任务接口
+ */
 @RequestMapping("task")
 @RestController
 @Slf4j
@@ -33,6 +36,22 @@ public class TaskController {
     private DataTaskService dataTaskService;
     @Autowired
     private DataPsiRepository dataPsiRepository;
+
+
+    /**
+     * 修改任务描述
+     * @param taskId    任务ID-数字的
+     * @param taskDesc  任务描述信息
+     * @return
+     */
+    @RequestMapping("updateTaskDesc")
+    public BaseResultEntity updateTaskDesc(Long taskId,String taskDesc){
+        if (taskId==null||taskId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        if (StringUtils.isBlank(taskDesc))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskDesc");
+        return dataTaskService.updateTaskDesc(taskId,taskDesc);
+    }
 
     @RequestMapping("deleteTask")
     public BaseResultEntity deleteTask(Long taskId){

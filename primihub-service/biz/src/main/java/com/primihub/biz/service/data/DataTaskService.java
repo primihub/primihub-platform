@@ -568,5 +568,14 @@ public class DataTaskService {
     public void removeSseTask(String taskId) {
         sseEmitterService.removeKey(taskId);
     }
+
+    public BaseResultEntity updateTaskDesc(Long taskId, String taskDesc) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        dataTask.setTaskDesc(taskDesc);
+        dataTaskPrRepository.updateDataTask(dataTask);
+        return BaseResultEntity.success();
+    }
 }
 
