@@ -89,6 +89,7 @@ public class DataResourceService {
         paramMap.put("selectTag",req.getSelectTag());
         paramMap.put("userName",req.getUserName());
         paramMap.put("derivation",req.getDerivation());
+        paramMap.put("fileContainsY",req.getDerivation());
         List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
         if (dataResources.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));

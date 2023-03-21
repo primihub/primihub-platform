@@ -253,6 +253,7 @@
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="resourceType!=null and resourceType!=0">and r.resource_type = #{resourceType}</if>
         <if test="tagName!=null and tagName!=''">and FIND_IN_SET(#{tagName}, r.resource_tag)</if>
+        <if test="fileContainsY!=null"> r.fileContainsY = #{fileContainsY}</if>
     </sql>
 
     <delete id="deleteResourceAuthOrgan">

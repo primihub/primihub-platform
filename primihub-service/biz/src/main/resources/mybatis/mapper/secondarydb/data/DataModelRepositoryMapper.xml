@@ -301,6 +301,7 @@
             dt.task_id_name taskIdName,
             dt.task_name taskName,
             dt.task_end_time taskEndTime,
+            dt.is_cooperation isCooperation,
             dm.model_id modelId,
             dm.model_name modelName,
             dp.id projectId,
