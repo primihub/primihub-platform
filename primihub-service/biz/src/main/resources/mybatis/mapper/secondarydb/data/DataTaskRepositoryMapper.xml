@@ -116,6 +116,7 @@
         where
         dpt.task_id = dt.task_id
         <if test="resourceName!=null and resourceName!=''"> and dpt.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
+        <if test="taskIdName!=null and taskIdName!=''"> and dt.task_id_name like CONCAT('%',#{taskIdName,jdbcType=VARCHAR},'%')</if>
         <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
         <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
         <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
