@@ -637,10 +637,6 @@ p {
   margin-block-start: .2em;
   margin-block-end: .2em;
 }
-::v-deep .el-button{
-  padding: 12px 15px;
-  line-height: 1!important;
-}
 ::v-deep .el-select .el-input__inner{
   padding: 12px 10px!important;
 }
