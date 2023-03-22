@@ -46,7 +46,7 @@
       top="5vh"
       width="750px"
     >
-      <PSI-task-detail :data="taskData" />
+      <PSI-task-detail :server-address="taskData.serverAddress" :data="taskData" />
     </el-dialog>
   </div>
 </template>

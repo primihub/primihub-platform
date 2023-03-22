@@ -378,27 +378,6 @@ export default {
         }
       }
     },
-    handleOwnKeywordChange(value) {
-      if (this.formData.otherKeyword.length > 0) {
-        for (let i = 0; i < value.length; i++) {
-          if (!this.formData.otherKeyword.includes(value[i])) {
-            this.$message.error('关联键配置错误！请选择相同关联键')
-            break
-          }
-        }
-      }
-    },
-    handleOtherKeywordChange(value) {
-      console.log(this.formData.ownKeyword)
-      if (this.formData.ownKeyword.length > 0) {
-        for (let i = 0; i < value.length; i++) {
-          if (!this.formData.ownKeyword.includes(value[i])) {
-            this.$message.error('关联键配置错误！请选择相同关联键')
-            break
-          }
-        }
-      }
-    },
     async handleOwnResourceSearch(resourceName) {
       this.resourceName = resourceName
       this.tableDataA = await this.getPsiResourceAllocationList({
