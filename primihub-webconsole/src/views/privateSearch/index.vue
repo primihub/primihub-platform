@@ -70,13 +70,12 @@
           </template>
         </el-table-column>
         <el-table-column
-          prop="taskId"
+          prop="taskIdName"
           label="任务ID"
-          align="center"
         />
         <el-table-column
           prop="resourceId"
-          label="资源ID"
+          label="联邦资源ID"
           min-width="120"
         >
           <template slot-scope="{row}">
