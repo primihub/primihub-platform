@@ -17,7 +17,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
         @NacosPropertySource(dataId = "redis.yaml" ,autoRefreshed = true)})
 @SpringBootApplication(scanBasePackages="com.primihub")
 @EnableAsync
-@ServletComponentScan(basePackages = {"com.primihub.biz.filter"})
+//@ServletComponentScan(basePackages = {"com.primihub.biz.filter"})
 @EnableBinding({SingleTaskChannel.class})
 public class PlatformApplication {
 
