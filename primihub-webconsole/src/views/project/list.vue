@@ -27,9 +27,9 @@
           <el-option label="协作方" value="2" />
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="项目ID">
+      <el-form-item label="项目ID">
         <el-input v-model="searchForm.projectId" size="small" placeholder="请输入" />
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item label="项目名称">
         <el-input v-model="searchForm.projectName" size="small" placeholder="请输入" />
       </el-form-item>
