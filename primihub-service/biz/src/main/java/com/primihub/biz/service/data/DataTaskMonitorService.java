@@ -8,11 +8,6 @@ import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.util.FileUtil;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-import java_data_service.ClientContext;
-import java_data_service.NodeEventReply;
-import java_data_service.NodeServiceGrpc;
-import java_data_service.TaskContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,42 +45,42 @@ public class DataTaskMonitorService {
     }
 
     public void initGrpcServerChannel(Integer serverPort){
-        String grpcClientAddress = baseConfiguration.getGrpcClient().getGrpcClientAddress();
-        Integer grpcClientPort = baseConfiguration.getGrpcClient().getGrpcClientPort();
-        Channel channel= ManagedChannelBuilder
-                .forAddress(grpcClientAddress,serverPort)
-                .usePlaintext()
-                .build();
-        ClientContext context= ClientContext.newBuilder().setClientId(grpcClientPort.toString()).build();
-        NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
-        stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
-            @Override
-            public void onNext(NodeEventReply nodeEventReply) {
-                log.info("on Next:{}-{}:{}",grpcClientAddress,serverPort,nodeEventReply);
-                if (nodeEventReply!=null && nodeEventReply.getTaskStatus()!=null && nodeEventReply.getTaskResult().getTaskContext()!=null){
-                    String status = nodeEventReply.getTaskStatus().getStatus();
-                    TaskContext taskContext = nodeEventReply.getTaskStatus().getTaskContext();
-                    String taskId = taskContext.getTaskId();
-                    if (StringUtils.isNotBlank(taskId)){
-                        String jobId = taskContext.getJobId();
-                        String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskId).replace("<jobId>",jobId);
-                        primaryStringRedisTemplate.opsForList().rightPush(key,status);
-                        primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Throwable throwable) {
-                log.info("on Error:{}-{}",grpcClientAddress,serverPort);
-                initGrpcServerChannel(serverPort);
-            }
-
-            @Override
-            public void onCompleted() {
-                log.info("complete:{}-{}",grpcClientAddress,serverPort);
-            }
-        });
+//        String grpcClientAddress = baseConfiguration.getGrpcClient().getGrpcClientAddress();
+//        Integer grpcClientPort = baseConfiguration.getGrpcClient().getGrpcClientPort();
+//        Channel channel= ManagedChannelBuilder
+//                .forAddress(grpcClientAddress,serverPort)
+//                .usePlaintext()
+//                .build();
+//        ClientContext context= ClientContext.newBuilder().setClientId(grpcClientPort.toString()).build();
+//        NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
+//        stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
+//            @Override
+//            public void onNext(NodeEventReply nodeEventReply) {
+//                log.info("on Next:{}-{}:{}",grpcClientAddress,serverPort,nodeEventReply);
+//                if (nodeEventReply!=null && nodeEventReply.getTaskStatus()!=null && nodeEventReply.getTaskResult().getTaskContext()!=null){
+//                    String status = nodeEventReply.getTaskStatus().getStatus();
+//                    TaskContext taskContext = nodeEventReply.getTaskStatus().getTaskContext();
+//                    String taskId = taskContext.getTaskId();
+//                    if (StringUtils.isNotBlank(taskId)){
+//                        String jobId = taskContext.getJobId();
+//                        String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskId).replace("<jobId>",jobId);
+//                        primaryStringRedisTemplate.opsForList().rightPush(key,status);
+//                        primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onError(Throwable throwable) {
+//                log.info("on Error:{}-{}",grpcClientAddress,serverPort);
+//                initGrpcServerChannel(serverPort);
+//            }
+//
+//            @Override
+//            public void onCompleted() {
+//                log.info("complete:{}-{}",grpcClientAddress,serverPort);
+//            }
+//        });
     }
 
     /**
