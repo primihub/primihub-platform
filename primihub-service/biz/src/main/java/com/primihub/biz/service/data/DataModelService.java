@@ -660,4 +660,25 @@ public class DataModelService {
         dataModelPrRepository.deleteComponentDraft(draftId);
         return BaseResultEntity.success();
     }
+
+    public BaseResultEntity updateModelDesc(Long modelId, String modelDesc) {
+        DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
+        if (dataModel==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到模型信息");
+        dataModel.setModelDesc(modelDesc);
+        DataModelAndComponentReq dataModelAndComponentReq = JSONObject.parseObject(dataModel.getComponentJson(), DataModelAndComponentReq.class);
+        dataModelAndComponentReq.setModelDesc(modelDesc);
+        for (DataComponentReq modelComponent : dataModelAndComponentReq.getModelComponents()) {
+            if (modelComponent.getComponentCode().equals("model")){
+                for (DataComponentValue componentValue : modelComponent.getComponentValues()) {
+                    if (componentValue.getKey().equals("modelDesc")){
+                        componentValue.setVal(modelDesc);
+                    }
+                }
+            }
+        }
+        dataModel.setComponentJson(JSONObject.toJSONString(dataModelAndComponentReq));
+        dataModelPrRepository.updateDataModel(dataModel);
+        return BaseResultEntity.success();
+    }
 }
