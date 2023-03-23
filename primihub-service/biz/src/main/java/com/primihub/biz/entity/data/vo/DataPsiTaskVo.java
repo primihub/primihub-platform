@@ -45,6 +45,8 @@ public class DataPsiTaskVo {
     private Long taskEnd;
 
     public Long getConsuming() {
+        if (taskStart==null)
+            return 0L;
         if (taskEnd==null||taskEnd==0)
             return System.currentTimeMillis() - taskStart;
         return taskEnd - taskStart;
