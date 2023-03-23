@@ -19,24 +19,24 @@
           <div class="desc-label">基础模型:</div>
           <div class="desc-content">{{ model.modelType | modelTypeFilter }}</div>
         </el-col>
-      </el-row>
-      <el-row v-if="type==='model'" type="flex">
-        <el-col class="desc-col" :span="6">
+        <el-col v-if="type==='model'" class="desc-col" :span="6">
           <div class="desc-label">任务ID:</div>
           <div class="desc-content">
             <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link>
           </div>
         </el-col>
+      </el-row>
+      <el-row v-if="type==='model'" type="flex">
         <el-col class="desc-col" :span="6">
           <div class="desc-label">任务名称:</div>
           <div class="desc-content">{{ task.taskName }}</div>
         </el-col>
-      </el-row>
-      <el-row v-if="type==='model'" type="flex">
         <el-col class="desc-col" :span="6">
           <div class="desc-label">建模完成时间:</div>
           <div class="desc-content">{{ model.createDate }}</div>
         </el-col>
+      </el-row>
+      <el-row v-if="type==='model'" type="flex">
         <el-col class="desc-col" :span="6">
           <div class="desc-label">角色:</div>
           <div class="desc-content">{{ oneself ? '发起方': '协作方' }}</div>
