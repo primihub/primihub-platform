@@ -17,6 +17,7 @@
         v-if="selectType === 'checkbox'"
         type="selection"
         width="55"
+        :selectable="checkStatus"
       />
       <el-table-column v-else label="选择" width="55">
         <template slot-scope="{row}">
@@ -72,7 +73,6 @@ export default {
   },
   watch: {
     selectedData(newVal) {
-      console.log('watch selectedData', newVal)
       if (this.selectType === 'checkbox') {
         this.toggleSelection(newVal)
       } else {
@@ -115,7 +115,6 @@ export default {
     },
     handleSelectionChange(value) {
       this.multipleSelection = []
-      console.log('handleSelectionChange', value)
       this.multipleSelection = value
     },
     toggleSelection(rows) {
@@ -126,6 +125,10 @@ export default {
       } else {
         this.$refs.table.clearSelection()
       }
+    },
+    checkStatus(row) {
+      const res = !(this.selectedData.length > 0 && this.selectedData.find(organId => row.organId === organId))
+      return res
     }
   }
 
