@@ -1,25 +1,55 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': model.isDel === 1, 'model': type === 'model'}">
     <div class="section">
-      <h3>模型信息</h3>
-      <el-descriptions :column="2">
-        <el-descriptions-item label="模型ID">
-          <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
-        </el-descriptions-item>
-        <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
-        <el-descriptions-item label="基础模型">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
-        <template v-if="type==='model'">
-          <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
-          <el-descriptions-item label="任务名称"> {{ task.taskName }}</el-descriptions-item>
-        </template>
-        <el-descriptions-item v-if="type==='model'" label="建模完成时间">{{ model.createDate }}</el-descriptions-item>
-        <el-descriptions-item v-if="type==='model'" label="角色">{{ oneself ? '发起方': '协作方' }}</el-descriptions-item>
-        <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
-      </el-descriptions>
-      <!-- <div class="desc-item">
-        <div class="label">模型描述:</div>
-        <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
-      </div> -->
+      <h2 class="infos-title">模型信息</h2>
+      <el-row type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">模型ID:</div>
+          <div class="desc-content">
+            <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+          </div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">模型名称:</div>
+          <div class="desc-content">{{ model.modelName }}</div>
+        </el-col>
+      </el-row>
+      <el-row type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">基础模型:</div>
+          <div class="desc-content">{{ model.modelType | modelTypeFilter }}</div>
+        </el-col>
+      </el-row>
+      <el-row v-if="type==='model'" type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">任务ID:</div>
+          <div class="desc-content">
+            <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link>
+          </div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">任务名称:</div>
+          <div class="desc-content">{{ task.taskName }}</div>
+        </el-col>
+      </el-row>
+      <el-row v-if="type==='model'" type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">建模完成时间:</div>
+          <div class="desc-content">{{ model.createDate }}</div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">角色:</div>
+          <div class="desc-content">{{ oneself ? '发起方': '协作方' }}</div>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col class="desc-col" :span="24">
+          <div class="desc-label">模型描述:</div>
+          <div class="desc-content">
+            <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+          </div>
+        </el-col>
+      </el-row>
       <div v-if="type === 'model' && model.isDel !== 1 && task.isCooperation === 0" class="buttons">
         <el-button type="danger" icon="el-icon-delete" @click="deleteModelTask">删除模型</el-button>
       </div>
@@ -78,12 +108,12 @@
 </template>
 
 <script>
-import { getModelDetail, deleteModel } from '@/api/model'
-// import editInput from '@/components/editInput'
+import { getModelDetail, deleteModel, updateModelDesc } from '@/api/model'
+import editInput from '@/components/editInput'
 
 export default {
   components: {
-    // editInput
+    editInput
   },
   filters: {
     quotaTypeFilter(type) {
@@ -133,16 +163,24 @@ export default {
     }
   },
   created() {
-    this.modelId = this.$route.params.id
     this.taskId = this.$route.query.taskId || this.$route.params.taskId
     this.fetchData()
   },
   methods: {
-    handleDescChange(data) {
-      if (data === this.model.modelDesc) return
-      this.model.modelDesc = data
-      // TODO task detail edit api
-      this.$message.success('修改成功')
+    handleDescChange({ change, value }) {
+      if (change) {
+        this.model.modelDesc = value
+        updateModelDesc({
+          modelId: this.modelId,
+          modelDesc: this.model.modelDesc
+        }).then(({ code }) => {
+          if (code === 0) {
+            this.$message.success('修改成功')
+          } else {
+            this.$message.error('修改失败')
+          }
+        })
+      }
     },
     toModelDetail() {
       this.$router.push({
@@ -185,10 +223,10 @@ export default {
         const { model, modelResources, modelComponent, anotherQuotas, task, project, oneself } = response.result
         this.task = task
         this.model = model
+        this.modelId = model.modelId
         this.anotherQuotas = anotherQuotas
         this.oneself = oneself
         // format model score list
-        console.log(Object.keys(anotherQuotas))
         if (JSON.stringify(anotherQuotas) !== '{}') {
           for (let i = 0; i < 2; i++) {
             const modelType = model.modelType === 3 ? '横向-LR' : model.modelType === 4 ? 'MPC_LR' : '纵向-XGBoost'
@@ -211,6 +249,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/description.scss";
 ::v-deep .time-consuming-label {
   width: 100px;
 }
