@@ -11,6 +11,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataReasoningReq;
 import com.primihub.biz.entity.data.req.DataReasoningResourceReq;
 import com.primihub.biz.entity.data.req.ReasoningListReq;
+import com.primihub.biz.entity.data.vo.DataReasoningVo;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
@@ -46,12 +47,12 @@ public class DataReasoningService {
     public BaseResultEntity getReasoningList(ReasoningListReq req) {
         if (baseConfiguration.getAdminUserIds().contains(req.getUserId()))
             req.setIsAdmin(1);
-        List<DataReasoning> dataReasonings = dataReasoningRepository.selectDataReasoninPage(req);
+        List<DataReasoningVo> dataReasonings = dataReasoningRepository.selectDataReasoninPage(req);
         if (dataReasonings.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
         Integer tolal = dataReasoningRepository.selectDataReasoninCount(req);
-        return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataReasonings.stream().map(DataReasoningConvert::dataReasoningConvertVo).collect(Collectors.toList())));
+        return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataReasonings));
     }
 
     public BaseResultEntity saveReasoning(DataReasoningReq req) {
