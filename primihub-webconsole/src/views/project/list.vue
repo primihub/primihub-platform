@@ -156,6 +156,11 @@
               min-width="160"
             />
             <el-table-column
+              label="最后更新时间"
+              prop="updateDate"
+              min-width="160"
+            />
+            <el-table-column
               label="项目状态"
               prop="status"
               width="80"
