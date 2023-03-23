@@ -55,7 +55,7 @@
           width="100"
         >
           <template slot-scope="{row}">
-            <span>{{ row.timeConsuming | timeFilter }}</span> <br>
+            <span>{{ (row.timeConsuming / 1000) | timeFilter }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column

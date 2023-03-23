@@ -136,6 +136,11 @@
             {{ row.taskState | statusFilter }}
           </template>
         </el-table-column>
+        <el-table-column label="任务耗时" min-width="120px">
+          <template slot-scope="{row}">
+            {{ row.consuming | timeFilter }}
+          </template>
+        </el-table-column>
         <el-table-column
           label="操作"
           width="120"

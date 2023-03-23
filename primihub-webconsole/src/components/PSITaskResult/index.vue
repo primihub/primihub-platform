@@ -22,6 +22,11 @@
       </el-table-column>
       <el-table-column label="任务类型" prop="ascription" />
       <el-table-column label="任务发起时间" prop="createDate" min-width="120px" />
+      <el-table-column label="任务耗时" min-width="120px">
+        <template slot-scope="{row}">
+          {{ row.consuming | timeFilter }}
+        </template>
+      </el-table-column>
       <el-table-column label="任务状态" prop="taskState">
         <template slot-scope="{row}">
           <i :class="statusStyle(row.taskState)" />
