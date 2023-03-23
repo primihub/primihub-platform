@@ -58,7 +58,7 @@ public class DataPirTaskVo {
         if (taskStart==null)
             return 0L;
         if (taskEnd==null||taskEnd==0)
-            return System.currentTimeMillis() - taskStart;
-        return taskEnd - taskStart;
+            return (System.currentTimeMillis() - taskStart)/1000;
+        return (taskEnd - taskStart)/1000;
     }
 }
