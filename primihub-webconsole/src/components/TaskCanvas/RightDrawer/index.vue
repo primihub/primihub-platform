@@ -450,14 +450,15 @@ export default {
       }
     },
     handleProviderRemove(index) {
-      this.selectedProviderOrgans.splice(index, 1)
-      this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
       if (this.inputValue !== '') {
         const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
         this.inputValue.splice(posIndex, 1)
         this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
         this.handleChange()
       }
+
+      this.selectedProviderOrgans.splice(index, 1)
+      this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
     },
     closeProviderOrganDialog(data) {
       this.providerOrganDialogVisible = false
@@ -473,19 +474,16 @@ export default {
               const index = this.selectedProviderOrgans.findIndex(v => v.organId === item.organId)
               console.log(index)
               if (index === -1) {
-                this.selectedProviderOrgans.push({ organId: item.organId, organName: item.organName })
+                this.selectedProviderOrgans.push(item)
               } else {
                 this.selectedProviderOrgans[index] = Object.assign(this.selectedProviderOrgans[index], item)
               }
             })
           }
           this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
-          this.setInputValue(data)
+          this.setInputValue(this.selectedProviderOrgans)
         } else {
-          this.selectedProviderOrgans.push({
-            organId: data.organId,
-            organName: data.organName
-          })
+          this.selectedProviderOrgans.push(data)
         }
       } else {
         const posIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'arbiterOrgan')
@@ -602,7 +600,6 @@ export default {
         data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
         const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
         const currentData = data
-        console.log('currentData', currentData)
         if (posIndex !== -1) {
           this.inputValues.splice(posIndex, 1, currentData)
         } else {
