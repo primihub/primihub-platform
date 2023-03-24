@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -43,10 +44,13 @@ public class DataTaskMonitorService {
                 log.info(taskStatusReply.toString());
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
+                    log.info(JSONObject.toJSONString(taskStatus));
                     String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
                     primaryStringRedisTemplate.delete(key);
                     primaryStringRedisTemplate.opsForList().leftPushAll(key,taskStatus);
-                    if (num <= taskStatusReply.getTaskStatusCount()){
+                    long success = taskStatus.stream().filter(t -> t.equals("SUCCESS")).count();
+                    log.info("success:{}",success);
+                    if (num <= success){
                         isContinue = false;
                     }
                 }
