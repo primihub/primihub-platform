@@ -110,8 +110,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
                 } else {
-                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),null);
+                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, ModelEntity>> iterator = map.entrySet().iterator();
                     Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
@@ -258,8 +257,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:"+reply);
-            dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-            dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),clientEntity.getPsiPath());
+            dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),clientEntity.getPsiPath());
             if (!FileUtil.isFileExists(clientEntity.getPsiPath())){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI无文件信息");
             }

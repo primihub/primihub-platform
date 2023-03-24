@@ -190,26 +190,27 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),outputPathDto.getModelFileName());
-                File sourceFile = new File(baseSb.toString());
-                if (sourceFile.isDirectory()){
-                    File[] files = sourceFile.listFiles();
-                    if (files!=null){
-                        for (File file : files) {
-                            if (file.getName().contains("modelFileName")){
-                                taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                                taskReq.getDataTask().setTaskErrorMsg("");
-                                break;
+                dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
+                if (TaskStateEnum.SUCCESS.getStateType() !=taskReq.getDataTask().getTaskState() ){
+                    File sourceFile = new File(baseSb.toString());
+                    if (sourceFile.isDirectory()){
+                        File[] files = sourceFile.listFiles();
+                        if (files!=null){
+                            for (File file : files) {
+                                if (file.getName().contains("modelFileName")){
+                                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                    taskReq.getDataTask().setTaskErrorMsg("");
+                                    break;
+                                }
                             }
+                        }else {
+                            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                     }
-                }else {
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                 }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -258,27 +259,28 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),outputPathDto.getModelFileName()+".host");
-                    File sourceFile = new File(baseSb.toString());
-                    if (sourceFile.isDirectory()){
-                        File[] files = sourceFile.listFiles();
-                        if (files!=null){
-                            for (File file : files) {
-                                if (file.getName().contains("modelFileName")){
-                                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
-                                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                                    taskReq.getDataTask().setTaskErrorMsg("");
-                                    break;
+                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
+                    if (taskReq.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+                        File sourceFile = new File(baseSb.toString());
+                        if (sourceFile.isDirectory()){
+                            File[] files = sourceFile.listFiles();
+                            if (files!=null){
+                                for (File file : files) {
+                                    if (file.getName().contains("modelFileName")){
+                                        taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
+                                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                        taskReq.getDataTask().setTaskErrorMsg("");
+                                        break;
+                                    }
                                 }
+                            }else {
+                                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                         }
-                    }else {
-                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -341,27 +343,28 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),outputPathDto.getModelFileName()+".host");
-                    File sourceFile = new File(baseSb.toString());
-                    if (sourceFile.isDirectory()){
-                        File[] files = sourceFile.listFiles();
-                        if (files!=null){
-                            for (File file : files) {
-                                if (file.getName().contains("modelFileName")){
-                                    taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
-                                    taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                                    taskReq.getDataTask().setTaskErrorMsg("");
-                                    break;
+                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
+                    if (taskReq.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+                        File sourceFile = new File(baseSb.toString());
+                        if (sourceFile.isDirectory()){
+                            File[] files = sourceFile.listFiles();
+                            if (files!=null){
+                                for (File file : files) {
+                                    if (file.getName().contains("modelFileName")){
+                                        taskReq.getDataModelTask().setPredictContent(FileUtil.getFileContent(taskReq.getDataModelTask().getPredictFile()));
+                                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                        taskReq.getDataTask().setTaskErrorMsg("");
+                                        break;
+                                    }
                                 }
+                            }else {
+                                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                         }
-                    }else {
-                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

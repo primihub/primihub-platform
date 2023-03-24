@@ -286,8 +286,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .build();
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",reply.getPartyCount(),psiTask.getFilePath());
+                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),psiTask.getFilePath());
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
                 psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState()!=4){
@@ -362,14 +361,7 @@ public class DataAsyncService implements ApplicationContextAware {
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info(reply.toString());
             if (reply.getRetCode()==0){
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",reply.getPartyCount(),dataTask.getTaskResultPath());
-//                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-//                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
-//                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
-//                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-//                    dataTask.setTaskErrorMsg("运行失败:无文件信息");
-//                }
+                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
@@ -592,17 +584,15 @@ public class DataAsyncService implements ApplicationContextAware {
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
-//            if (reply.getRetCode()==0){
-            dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
-            dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",reply.getPartyCount(),dataTask.getTaskResultPath());
+            if (reply.getRetCode()==0){
+            dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
             if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                 dataReasoning.setReleaseDate(new Date());
             }
-//                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-//            }else {
-//                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-//                dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
-//            }
+            }else {
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+            }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
