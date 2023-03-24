@@ -111,8 +111,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
             }else {
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,ids.size());
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,ids.size(),null);
+                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),null);
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Iterator<String> keyi = exceptionEntityMap.keySet().iterator();

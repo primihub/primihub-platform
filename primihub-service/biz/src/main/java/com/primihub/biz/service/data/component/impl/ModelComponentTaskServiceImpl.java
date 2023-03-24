@@ -190,8 +190,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,resourceIds.size());
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,resourceIds.size(),outputPathDto.getModelFileName());
+                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),outputPathDto.getModelFileName());
                 File sourceFile = new File(baseSb.toString());
                 if (sourceFile.isDirectory()){
                     File[] files = sourceFile.listFiles();
@@ -258,8 +258,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,taskReq.getFusionResourceList().size());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName()+".host");
+                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),outputPathDto.getModelFileName()+".host");
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();
@@ -341,8 +341,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
-                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,taskReq.getFusionResourceList().size());
-                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getFusionResourceList().size(),outputPathDto.getModelFileName()+".host");
+                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+                    dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,reply.getPartyCount(),outputPathDto.getModelFileName()+".host");
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();

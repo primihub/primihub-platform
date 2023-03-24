@@ -286,8 +286,8 @@ public class DataAsyncService implements ApplicationContextAware {
                         .build();
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,2);
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,psiTask.getFilePath());
+                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",reply.getPartyCount(),psiTask.getFilePath());
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
                 psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState()!=4){
@@ -362,8 +362,8 @@ public class DataAsyncService implements ApplicationContextAware {
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info(reply.toString());
             if (reply.getRetCode()==0){
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,2);
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",2,dataTask.getTaskResultPath());
+                dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",reply.getPartyCount(),dataTask.getTaskResultPath());
 //                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
 //                dataTask.setTaskResultContent(FileUtil.getFileContent(dataTask.getTaskResultPath()));
 //                if (!FileUtil.isFileExists(dataTask.getTaskResultPath())){
@@ -593,8 +593,8 @@ public class DataAsyncService implements ApplicationContextAware {
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
 //            if (reply.getRetCode()==0){
-            dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,size);
-            dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",size,dataTask.getTaskResultPath());
+            dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,reply.getPartyCount());
+            dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(dataTask, "1",reply.getPartyCount(),dataTask.getTaskResultPath());
             if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                 dataReasoning.setReleaseDate(new Date());
             }
