@@ -23,6 +23,7 @@ import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.Data;
@@ -82,18 +83,18 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             try {
                 String jobId = String.valueOf(taskReq.getJob());
                 log.info("runAssemblyDatamap:{}", JSONObject.toJSONString(map));
-                Common.ParamValue detailParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(map)).build();
+                Common.ParamValue detailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(map).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("detail", detailParamValue)
                         .build();
+                Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
                         .setName("runAssemblyData")
                         .setLanguage(Common.Language.PYTHON)
                         .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                        .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
-                        .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
+                        .setTaskInfo(taskBuild)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -109,6 +110,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
                 } else {
+                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,map.size());
                     dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,map.size(),null);
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, ModelEntity>> iterator = map.entrySet().iterator();
@@ -211,8 +213,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
             ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex,serverData.getResourceId());
-            Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(clientData.getResourceId()).build();
-            Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(serverData.getResourceId()).build();
+            Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientData.getResourceId().getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverData.getResourceId().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(0).build();
             Common.ParamValue syncResultToServerParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
@@ -222,8 +224,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             Common.int32_array.Builder serverFieldsBuilder = Common.int32_array.newBuilder();
             serverIndex.forEach(serverFieldsBuilder::addValueInt32Array);
             Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(serverFieldsBuilder.build()).build();
-            Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(clientEntity.getPsiPath()).build();
-            Common.ParamValue serverOutputFullFilnameParamValue=Common.ParamValue.newBuilder().setValueString(serverEntity.getPsiPath()).build();
+            Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue serverOutputFullFilnameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params=Common.Params.newBuilder()
                     .putParamMap("clientData",clientDataParamValue)
                     .putParamMap("serverData",serverDataParamValue)
@@ -235,14 +237,14 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .putParamMap("outputFullFilename",outputFullFilenameParamValue)
                     .putParamMap("server_outputFullFilname",serverOutputFullFilnameParamValue)
                     .build();
+            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
             Common.Task task= Common.Task.newBuilder()
                     .setType(Common.TaskType.PSI_TASK)
                     .setParams(params)
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
-                    .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
-                    .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setTaskInfo(taskBuild)
                     .addInputDatasets("clientData")
                     .addInputDatasets("serverData")
                     .build();
@@ -256,6 +258,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .build();
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:"+reply);
+            dataTaskMonitorService.continuouslyObtainTaskStatus(taskBuild,taskReq.getResourceList().size());
             dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,taskReq.getResourceList().size(),clientEntity.getPsiPath());
             if (!FileUtil.isFileExists(clientEntity.getPsiPath())){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI无文件信息");

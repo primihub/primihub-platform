@@ -1,29 +1,23 @@
 package com.primihub.biz.service.data;
 
-import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.util.FileUtil;
-import io.grpc.Channel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.stub.StreamObserver;
-import java_data_service.ClientContext;
-import java_data_service.NodeEventReply;
-import java_data_service.NodeServiceGrpc;
-import java_data_service.TaskContext;
+import java_worker.TaskStatus;
+import java_worker.TaskStatusReply;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import javax.annotation.PostConstruct;
+import primihub.rpc.Common;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -31,61 +25,37 @@ import java.util.stream.Collectors;
 @Service
 public class DataTaskMonitorService {
 
-    @Autowired
-    private BaseConfiguration baseConfiguration;
     @Resource(name="primaryStringRedisTemplate")
     private StringRedisTemplate primaryStringRedisTemplate;
+    @Autowired
+    private WorkGrpcClient workGrpcClient;
 
-    @PostConstruct
-    public void init(){
-        log.info("open server node event");
-        if (baseConfiguration.getGrpcClient()!=null && baseConfiguration.getGrpcClient().getGrpcServerPorts()!=null){
-            Integer[] serverPorts = baseConfiguration.getGrpcClient().getGrpcServerPorts();
-            if (serverPorts!=null){
-                for (Integer serverPort : serverPorts) {
-                    initGrpcServerChannel(serverPort);
-                }
-            }
-        }
-    }
-
-    public void initGrpcServerChannel(Integer serverPort){
-        String grpcClientAddress = baseConfiguration.getGrpcClient().getGrpcClientAddress();
-        Integer grpcClientPort = baseConfiguration.getGrpcClient().getGrpcClientPort();
-        Channel channel= ManagedChannelBuilder
-                .forAddress(grpcClientAddress,serverPort)
-                .usePlaintext()
-                .build();
-        ClientContext context= ClientContext.newBuilder().setClientId(grpcClientPort.toString()).build();
-        NodeServiceGrpc.NodeServiceStub stub=NodeServiceGrpc.newStub(channel).withDeadlineAfter(30,TimeUnit.MINUTES);
-        stub.subscribeNodeEvent(context, new StreamObserver<NodeEventReply>(){
-            @Override
-            public void onNext(NodeEventReply nodeEventReply) {
-                log.info("on Next:{}-{}:{}",grpcClientAddress,serverPort,nodeEventReply);
-                if (nodeEventReply!=null && nodeEventReply.getTaskStatus()!=null && nodeEventReply.getTaskResult().getTaskContext()!=null){
-                    String status = nodeEventReply.getTaskStatus().getStatus();
-                    TaskContext taskContext = nodeEventReply.getTaskStatus().getTaskContext();
-                    String taskId = taskContext.getTaskId();
-                    if (StringUtils.isNotBlank(taskId)){
-                        String jobId = taskContext.getJobId();
-                        String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskId).replace("<jobId>",jobId);
-                        primaryStringRedisTemplate.opsForList().rightPush(key,status);
-                        primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
+    @Async
+    public void continuouslyObtainTaskStatus(Common.TaskContext taskBuild,int num){
+        boolean isContinue = true;
+        Long pauseTime = 1000L;
+        primaryStringRedisTemplate.opsForSet().add(RedisKeyConstant.TASK_STATUS_LIST_KEY,String.format("%s-%s-%s",taskBuild.getTaskId(),taskBuild.getJobId(),taskBuild.getRequestId()));
+        try {
+            while (isContinue){
+                if (pauseTime!=12000L)
+                    pauseTime += 1000L;
+                TaskStatusReply taskStatusReply = workGrpcClient.run(o -> o.fetchTaskStatus(taskBuild));
+                log.info(taskStatusReply.toString());
+                if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
+                    List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
+                    String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
+                    primaryStringRedisTemplate.delete(key);
+                    primaryStringRedisTemplate.opsForList().leftPushAll(key,taskStatus);
+                    if (num <= taskStatusReply.getTaskStatusCount()){
+                        isContinue = false;
                     }
                 }
+                Thread.sleep(pauseTime);
             }
-
-            @Override
-            public void onError(Throwable throwable) {
-                log.info("on Error:{}-{}",grpcClientAddress,serverPort);
-                initGrpcServerChannel(serverPort);
-            }
-
-            @Override
-            public void onCompleted() {
-                log.info("complete:{}-{}",grpcClientAddress,serverPort);
-            }
-        });
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        primaryStringRedisTemplate.opsForSet().remove(RedisKeyConstant.TASK_STATUS_LIST_KEY,String.format("%s-%s-%s",taskBuild.getTaskId(),taskBuild.getJobId(),taskBuild.getRequestId()));
     }
 
     /**
@@ -165,8 +135,6 @@ public class DataTaskMonitorService {
                 dataTask.setTaskErrorMsg("运行失败:无文件信息");
             }
         }
-
-
     }
 
 

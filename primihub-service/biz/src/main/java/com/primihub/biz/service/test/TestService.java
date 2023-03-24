@@ -31,6 +31,7 @@ import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.repository.resourceprimarydb.test.TestResourcePrimaryRepository;
 import com.primihub.biz.repository.resourcesecondarydb.test.TestResourceSecondaryRepository;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -154,17 +155,17 @@ public class TestService {
     public void runGrpc(){
         log.info("请求开始");
         Common.ParamValue revealIntersectionParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-        Common.ParamValue clientDataDirParamValue=Common.ParamValue.newBuilder().setValueString("/usr/local/src/data").build();
-        Common.ParamValue clientFileNameParamValue=Common.ParamValue.newBuilder().setValueString("client.csv").build();
-        Common.ParamValue serverDataDirParamValue=Common.ParamValue.newBuilder().setValueString("/usr/local/src/data").build();
-        Common.ParamValue serverFileNameParamValue=Common.ParamValue.newBuilder().setValueString("server.csv").build();
+        Common.ParamValue clientDataDirParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("/usr/local/src/data".getBytes(StandardCharsets.UTF_8))).build();
+        Common.ParamValue clientFileNameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("client.csv".getBytes(StandardCharsets.UTF_8))).build();
+        Common.ParamValue serverDataDirParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("/usr/local/src/data".getBytes(StandardCharsets.UTF_8))).build();
+        Common.ParamValue serverFileNameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("server.csv".getBytes(StandardCharsets.UTF_8))).build();
         Common.ParamValue colParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
         Common.ParamValue clientStartRowParamValue=Common.ParamValue.newBuilder().setValueInt32(2).build();
         Common.ParamValue serverColParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
         Common.ParamValue serverStartRowParamValue=Common.ParamValue.newBuilder().setValueInt32(2).build();
         // out
-        Common.ParamValue outputDataDirParamValue=Common.ParamValue.newBuilder().setValueString("/usr/local/src/data").build();
-        Common.ParamValue outputFileNameParamValue=Common.ParamValue.newBuilder().setValueString("output.csv").build();
+        Common.ParamValue outputDataDirParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("/usr/local/src/data".getBytes(StandardCharsets.UTF_8))).build();
+        Common.ParamValue outputFileNameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("output.csv".getBytes(StandardCharsets.UTF_8))).build();
         Common.Params params=Common.Params.newBuilder()
                 .putParamMap("reveal_intersection",revealIntersectionParamValue)
                 .putParamMap("client_data_dir",clientDataDirParamValue)
@@ -178,14 +179,14 @@ public class TestService {
                 .putParamMap("output_data_dir",outputDataDirParamValue)
                 .putParamMap("output_filename",outputFileNameParamValue)
                 .build();
+        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("1").build();
         primihub.rpc.Common.Task task= Common.Task.newBuilder()
                 .setType(Common.TaskType.PSI_TASK)
                 .setParams(params)
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
+                .setTaskInfo(taskBuild)
                 .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
-                .setJobId(ByteString.copyFrom("2".getBytes(StandardCharsets.UTF_8)))
-                .setTaskId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskRequest request=PushTaskRequest.newBuilder()
                 .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
