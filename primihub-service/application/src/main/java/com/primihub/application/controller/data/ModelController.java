@@ -184,6 +184,21 @@ public class ModelController {
         return dataModelService.deleteComponentDraft(draftId,userId);
     }
 
+    /**
+     * 修改模型描述
+     * @param modelId   模型ID
+     * @param modelDesc 模型描述
+     * @return
+     */
+    @RequestMapping("updateModelDesc")
+    public BaseResultEntity updateModelDesc(Long modelId,String modelDesc){
+        if (modelId==null||modelId==0L)
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+        if (StringUtils.isBlank(modelDesc))
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelDesc");
+        return dataModelService.updateModelDesc(modelId,modelDesc);
+    }
+
 
 
 

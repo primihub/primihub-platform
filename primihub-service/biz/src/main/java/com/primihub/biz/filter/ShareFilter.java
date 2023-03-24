@@ -21,7 +21,7 @@ import java.io.IOException;
 
 @Slf4j
 //@Component
-@WebFilter(filterName = "shareFilter", urlPatterns = {"/shareData/*"})
+//@WebFilter(filterName = "shareFilter", urlPatterns = {"/shareData/*"})
 public class ShareFilter implements Filter {
 
     @Autowired

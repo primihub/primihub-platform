@@ -235,9 +235,11 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
                 Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("predictFileName", predictFileNameParamValue)
                         .putParamMap("modelFileName", modelFileNameParamValue)
+                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
                         .build();
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
