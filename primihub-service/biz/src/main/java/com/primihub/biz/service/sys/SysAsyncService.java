@@ -61,9 +61,9 @@ public class SysAsyncService {
         }
 
         if(sysLocalOrganInfo==null
-                ||(sysLocalOrganInfo.getOrganId()==null&&sysLocalOrganInfo.getOrganId().equals(""))
-                ||(sysLocalOrganInfo.getOrganName()==null&&sysLocalOrganInfo.getOrganName().equals(""))
-                ||(sysLocalOrganInfo.getPinCode()==null&&sysLocalOrganInfo.getPinCode().equals(""))){
+                ||(sysLocalOrganInfo.getOrganId()==null&& "".equals(sysLocalOrganInfo.getOrganId()))
+                ||(sysLocalOrganInfo.getOrganName()==null&& "".equals(sysLocalOrganInfo.getOrganName()))
+                ||(sysLocalOrganInfo.getPinCode()==null&& "".equals(sysLocalOrganInfo.getPinCode()))){
             log.info("没有机构信息请重新生成");
             return;
         }

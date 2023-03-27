@@ -180,17 +180,20 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         Map<String, ModelEntity> map = null;
         try {
             List<ModelProjectResourceVo> projectResource = resourceMap.get(1);
-            if (projectResource==null || projectResource.size()==0)
+            if (projectResource==null || projectResource.size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐查询不到发起方资源");
+            }
             ModelProjectResourceVo clientData = projectResource.get(0);
             projectResource = resourceMap.get(2);
-            if (projectResource==null || projectResource.size()==0)
+            if (projectResource==null || projectResource.size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐查询不到发起方资源");
+            }
             ModelProjectResourceVo serverData = projectResource.get(0);
             Map<String, String> componentVals = getComponentVals(req.getComponentValues());
             String dataAlign = componentVals.get("dataAlign");
-            if (StringUtils.isBlank(dataAlign))
+            if (StringUtils.isBlank(dataAlign)) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择为空");
+            }
             List<Integer> clientIndex;
             List<Integer> serverIndex;
             List<String> fieldList = null;
@@ -198,16 +201,19 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
-                if (StringUtils.isBlank(multipleSelected))
+                if (StringUtils.isBlank(multipleSelected)) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
+                }
                 fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
             }
             clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
             serverIndex = fieldList.stream().map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
-            if (clientIndex.size()<0)
+            if (clientIndex.size()<0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐发起方特征未查询到");
-            if (serverIndex.size()<0)
+            }
+            if (serverIndex.size()<0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐协作方特征未查询到");
+            }
             String jobId = String.valueOf(taskReq.getJob());
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());

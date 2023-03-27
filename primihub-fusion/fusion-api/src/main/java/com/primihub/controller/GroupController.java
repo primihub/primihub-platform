@@ -16,8 +16,9 @@ public class GroupController {
 
     @RequestMapping("createGroup")
     public BaseResultEntity createGroup(String globalId,String groupName){
-        if(groupName==null||groupName.equals(""))
+        if(groupName==null|| "".equals(groupName)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"groupName");
+        }
         return groupService.createGroup(globalId,groupName);
     }
 
@@ -28,22 +29,25 @@ public class GroupController {
 
     @RequestMapping("joinGroup")
     public BaseResultEntity joinGroup(String globalId,Long groupId){
-        if(groupId==null)
+        if(groupId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"groupId");
+        }
         return groupService.joinGroup(globalId,groupId);
     }
 
     @RequestMapping("exitGroup")
     public BaseResultEntity exitGroup(String globalId,Long groupId){
-        if(groupId==null)
+        if(groupId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"groupId");
+        }
         return groupService.exitGroup(globalId,groupId);
     }
 
     @RequestMapping("findOrganInGroup")
     public BaseResultEntity findOrganInGroup(Long groupId){
-        if(groupId==null)
+        if(groupId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"groupId");
+        }
         return groupService.findOrganInGroup(groupId);
     }
 

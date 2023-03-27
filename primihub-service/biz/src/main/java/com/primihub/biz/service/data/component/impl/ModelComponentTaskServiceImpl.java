@@ -11,7 +11,6 @@ import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
-import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
@@ -21,11 +20,10 @@ import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.service.data.DataTaskMonitorService;
-import com.primihub.biz.service.data.FusionResourceService;
+import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
-import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
@@ -55,7 +53,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
-    private FusionResourceService fusionResourceService;
+    private OtherBusinessesService otherBusinessesService;
     @Autowired
     private DataProjectRepository dataProjectRepository;
     @Autowired
@@ -64,35 +62,41 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
         BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
-        if (baseResultEntity.getCode()!=0)
+        if (baseResultEntity.getCode()!=0) {
             return baseResultEntity;
+        }
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
         if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
             String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
             log.info(arbiterOrgan);
-            if (StringUtils.isBlank(arbiterOrgan))
+            if (StringUtils.isBlank(arbiterOrgan)) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
+            }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
-            if (dataProjectOrgans.size()<=2)
+            if (dataProjectOrgans.size()<=2) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"项目参与方少于3方");
+            }
             List<ModelProjectResourceVo> resourceLists = JSONObject.parseArray(taskReq.getValueMap().get("selectData"), ModelProjectResourceVo.class);
             Set<String> organIdSet = resourceLists.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
             log.info(organIdSet.toString());
-            if (organIdSet.contains(arbiterOrgan))
+            if (organIdSet.contains(arbiterOrgan)) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方不可以和数据集机构重复");
+            }
             DataFResourceReq fresourceReq = new DataFResourceReq();
             fresourceReq.setOrganId(arbiterOrgan);
             fresourceReq.setServerAddress(dataProject.getServerAddress());
-            BaseResultEntity resourceList = fusionResourceService.getResourceList(fresourceReq);
-            if (resourceList.getCode()!=0)
+            BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
+            if (resourceList.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码1");
+            }
             LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
             List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
-            if (resourceDataList==null || resourceDataList.size()==0)
+            if (resourceDataList==null || resourceDataList.size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码2");
+            }
             taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET,resourceDataList.get(0).get("resourceId").toString());
             taskReq.getFusionResourceList().add(resourceDataList.get(0));
         }
@@ -191,7 +195,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
                 dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
-                if (TaskStateEnum.SUCCESS.getStateType() !=taskReq.getDataTask().getTaskState() ){
+                if (!TaskStateEnum.SUCCESS.getStateType().equals(taskReq.getDataTask().getTaskState())){
                     File sourceFile = new File(baseSb.toString());
                     if (sourceFile.isDirectory()){
                         File[] files = sourceFile.listFiles();
@@ -262,7 +266,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
                     dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
-                    if (taskReq.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+                    if (taskReq.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                         File sourceFile = new File(baseSb.toString());
                         if (sourceFile.isDirectory()){
                             File[] files = sourceFile.listFiles();
@@ -346,7 +350,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
                     dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
-                    if (taskReq.getDataTask().getTaskState() == TaskStateEnum.SUCCESS.getStateType()){
+                    if (taskReq.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                         File sourceFile = new File(baseSb.toString());
                         if (sourceFile.isDirectory()){
                             File[] files = sourceFile.listFiles();
@@ -401,13 +405,15 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         if (StringUtils.isBlank(squareVal) || "0".equals(squareVal)){
             port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
             port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0]))
+            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0])) {
                 stringRedisTemplate.opsForValue().set(squareKey,"1");
+            }
         }else {
             port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
             port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0]))
+            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0])) {
                 stringRedisTemplate.opsForValue().set(squareKey,"0");
+            }
         }
         return port;
     }

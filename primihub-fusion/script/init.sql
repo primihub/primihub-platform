@@ -47,7 +47,8 @@ CREATE TABLE `fusion_organ`  (
                                  PRIMARY KEY (`id`) USING BTREE,
                                  INDEX `global_id_ix`(`global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-
+alter table `fusion_organ` Add column `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥';
+alter table `fusion_organ` Add column `private_key` varchar(1000) DEFAULT NULL COMMENT '机构私钥';
 -- ----------------------------
 -- Table structure for fusion_resource
 -- ----------------------------
@@ -163,18 +164,3 @@ CREATE TABLE `fusion_organ_extends` (
                                         PRIMARY KEY (`id`),
                                         INDEX `global_id_ix`(`global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Table structure for fusion_organ_secret
--- ----------------------------
-DROP TABLE IF EXISTS `fusion_organ_secret`;
-CREATE TABLE `fusion_organ_secret`  (
-                                        `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
-                                        `global_id` bigint(64) NOT NULL COMMENT '机构id',
-                                        `public_key` varchar(1000) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'rsa公钥',
-                                        `private_key` varchar(1000) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'rsa秘钥',
-                                        `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                                        `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                        `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                        PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 COMMENT = '机构rsa秘钥' ROW_FORMAT = DYNAMIC;

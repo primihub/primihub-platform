@@ -42,26 +42,36 @@ public class PsiController {
     @PostMapping("saveDataPsi")
     public BaseResultEntity saveDataPsi(@RequestHeader("userId") Long userId,
                                         DataPsiReq req){
-        if (userId<=0)
+        if (userId<=0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        if (req.getOwnOrganId()==null)
+        }
+        if (req.getOwnOrganId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownOrganId");
-        if (req.getOwnResourceId()==null||req.getOwnResourceId()==0L)
+        }
+        if (req.getOwnResourceId()==null||req.getOwnResourceId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownResourceId");
-        if (StringUtils.isBlank(req.getOwnKeyword()))
+        }
+        if (StringUtils.isBlank(req.getOwnKeyword())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownKeyword");
-        if (req.getOtherOrganId()==null)
+        }
+        if (req.getOtherOrganId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherOrganId");
-        if (req.getOtherResourceId()==null)
+        }
+        if (req.getOtherResourceId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherResourceId");
-        if (StringUtils.isBlank(req.getOtherKeyword()))
+        }
+        if (StringUtils.isBlank(req.getOtherKeyword())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherKeyword");
-        if (StringUtils.isBlank(req.getResultName()))
+        }
+        if (StringUtils.isBlank(req.getResultName())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultName");
-        if (StringUtils.isBlank(req.getResultOrganIds()))
+        }
+        if (StringUtils.isBlank(req.getResultOrganIds())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultOrganIds");
-        if (req.getPsiTag()==null)
+        }
+        if (req.getPsiTag()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"psiTag");
+        }
         return dataPsiService.saveDataPsi(req,userId);
     }
 
@@ -72,10 +82,12 @@ public class PsiController {
      */
     @PostMapping("updateDataPsiResultName")
     public BaseResultEntity updateDataPsiResultName(DataPsiReq req){
-        if (req.getId()==null||req.getId()==0L)
+        if (req.getId()==null||req.getId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
-        if (StringUtils.isBlank(req.getResultName()))
+        }
+        if (StringUtils.isBlank(req.getResultName())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultName");
+        }
         return dataPsiService.updateDataPsiResultName(req);
     }
 
@@ -87,8 +99,9 @@ public class PsiController {
      */
     @GetMapping("getPsiResourceList")
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId){
-        if (organId==null||organId==0L)
+        if (organId==null||organId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
         return dataPsiService.getPsiResourceList(req,organId);
     }
 
@@ -127,8 +140,9 @@ public class PsiController {
     public BaseResultEntity getOrganPsiTask(@RequestHeader("userId") Long userId,
                                             String resultName,
                                             PageReq req){
-        if (userId<=0)
+        if (userId<=0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
         return dataPsiService.getOrganPsiTask(userId,resultName,req);
     }
 
@@ -139,8 +153,9 @@ public class PsiController {
      */
     @GetMapping("getPsiTaskDetails")
     public BaseResultEntity getPsiTaskDetails(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return  dataPsiService.getPsiTaskDetails(taskId);
     }
 
@@ -152,8 +167,9 @@ public class PsiController {
      */
     @GetMapping("downloadPsiTask")
     public void downloadPsiTask(HttpServletResponse response,Long taskId) throws Exception{
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return;
+        }
         DataPsiTask task = dataPsiService.selectPsiTaskById(taskId);
         DataPsi dataPsi = dataPsiService.selectPsiById(task.getPsiId());
         File file = new File(task.getFilePath());
@@ -207,8 +223,9 @@ public class PsiController {
      */
     @GetMapping("delPsiTask")
     public BaseResultEntity delPsiTask(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return  dataPsiService.delPsiTask(taskId);
     }
 
@@ -219,8 +236,9 @@ public class PsiController {
      */
     @GetMapping("cancelPsiTask")
     public BaseResultEntity cancelPsiTask(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return  dataPsiService.cancelPsiTask(taskId);
     }
 
@@ -231,8 +249,9 @@ public class PsiController {
      */
     @GetMapping("retryPsiTask")
     public BaseResultEntity retryPsiTask(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return  dataPsiService.retryPsiTask(taskId);
     }
 

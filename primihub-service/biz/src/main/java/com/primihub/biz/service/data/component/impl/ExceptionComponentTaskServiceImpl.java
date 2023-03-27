@@ -118,8 +118,9 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 while (keyi.hasNext()){
                     String key = keyi.next();
                     GrpcComponentDto value = exceptionEntityMap.get(key);
-                    if (value==null)
+                    if (value==null) {
                         continue;
+                    }
                     log.info("value:{}",JSONObject.toJSONString(value));
                     derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
                     log.info("derivationList:{}",JSONObject.toJSONString(derivationList));

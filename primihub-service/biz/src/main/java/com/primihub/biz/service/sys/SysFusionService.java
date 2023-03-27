@@ -48,8 +48,9 @@ public class SysFusionService {
     public BaseResultEntity healthConnection(String serverAddress){
         try{
             BaseResultEntity resultEntity=restTemplate.getForObject(serverAddress+"/fusion/healthConnection", BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 return BaseResultEntity.failure(BaseResultEnum.FAILURE);
+            }
         }catch (Exception e){
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
         }
@@ -75,15 +76,18 @@ public class SysFusionService {
         }
 
         if(sysLocalOrganInfo==null
-                ||(sysLocalOrganInfo.getOrganId()==null&&sysLocalOrganInfo.getOrganId().equals(""))
-                ||(sysLocalOrganInfo.getOrganName()==null&&sysLocalOrganInfo.getOrganName().equals(""))
-                ||(sysLocalOrganInfo.getPinCode()==null&&sysLocalOrganInfo.getPinCode().equals("")))
+                ||(sysLocalOrganInfo.getOrganId()==null&& "".equals(sysLocalOrganInfo.getOrganId()))
+                ||(sysLocalOrganInfo.getOrganName()==null&& "".equals(sysLocalOrganInfo.getOrganName()))
+                ||(sysLocalOrganInfo.getPinCode()==null&& "".equals(sysLocalOrganInfo.getPinCode()))) {
             return BaseResultEntity.failure(BaseResultEnum.NO_ORGAN_DATA);
+        }
 
-        if(sysLocalOrganInfo.getFusionMap()==null)
+        if(sysLocalOrganInfo.getFusionMap()==null) {
             sysLocalOrganInfo.setFusionMap(new HashMap<>());
-        if (sysLocalOrganInfo.getFusionMap().containsKey(serverAddress)&&sysLocalOrganInfo.getFusionMap().get(serverAddress).isRegistered())
+        }
+        if (sysLocalOrganInfo.getFusionMap().containsKey(serverAddress)&&sysLocalOrganInfo.getFusionMap().get(serverAddress).isRegistered()) {
             return BaseResultEntity.failure(BaseResultEnum.NON_REPEATABLE,"节点已注册");
+        }
         try {
             if (StringUtils.isEmpty(sysLocalOrganInfo.getPublicKey())){
                 String[] rsaKeyPair= CryptUtil.genRsaKeyPair();
@@ -105,11 +109,11 @@ public class SysFusionService {
             map.put("globalName", new ArrayList(){{add(sysLocalOrganInfo.getOrganName());}});
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             map.put("gatewayAddress", new ArrayList(){{add(sysLocalOrganInfo.getGatewayAddress());}});
-            map.put("secret.publicKey", new ArrayList(){{add(sysLocalOrganInfo.getPublicKey());}});
-            map.put("secret.privateKey", new ArrayList(){{add(sysLocalOrganInfo.getPrivateKey());}});
+            map.put("publicKey", new ArrayList(){{add(sysLocalOrganInfo.getPublicKey());}});
+            map.put("privateKey", new ArrayList(){{add(sysLocalOrganInfo.getPrivateKey());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/registerConnection",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode()) {
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 isRegistered = false;
                 fusionMsg = resultEntity.getMsg();
             }
@@ -128,8 +132,9 @@ public class SysFusionService {
             log.info("nacos-publish",e);
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
         }
-        if (isRegistered)
+        if (isRegistered) {
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),currentFusion))).build());
+        }
         Map result=new HashMap();
         result.put("fusionMsg",fusionMsg);
         result.put("isRegistered",isRegistered);
@@ -154,17 +159,21 @@ public class SysFusionService {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
         }
         if(sysLocalOrganInfo==null
-                ||(sysLocalOrganInfo.getOrganId()==null&&sysLocalOrganInfo.getOrganId().equals(""))
-                ||(sysLocalOrganInfo.getOrganName()==null&&sysLocalOrganInfo.getOrganName().equals(""))
-                ||(sysLocalOrganInfo.getPinCode()==null&&sysLocalOrganInfo.getPinCode().equals("")))
+                ||(sysLocalOrganInfo.getOrganId()==null&& "".equals(sysLocalOrganInfo.getOrganId()))
+                ||(sysLocalOrganInfo.getOrganName()==null&& "".equals(sysLocalOrganInfo.getOrganName()))
+                ||(sysLocalOrganInfo.getPinCode()==null&& "".equals(sysLocalOrganInfo.getPinCode()))) {
             return BaseResultEntity.failure(BaseResultEnum.NO_ORGAN_DATA);
-        if (sysLocalOrganInfo.getFusionMap()==null||sysLocalOrganInfo.getFusionMap().size()==0)
+        }
+        if (sysLocalOrganInfo.getFusionMap()==null||sysLocalOrganInfo.getFusionMap().size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"无连接信息");
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
+        }
+        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress)) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"该连接不存在");
+        }
         SysOrganFusion sysOrganFusion = sysLocalOrganInfo.getFusionMap().get(serverAddress);
-        if (sysOrganFusion.isRegistered())
+        if (sysOrganFusion.isRegistered()) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"连接无法删除");
+        }
         sysLocalOrganInfo.getFusionMap().remove(serverAddress);
         try {
             configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
@@ -207,8 +216,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/createGroup",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
             result.put("groupData",resultEntity.getResult());
         }catch (Exception e){
             fusionMsg=e.getMessage();
@@ -235,8 +245,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/findAllGroup",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
             result.put("organList",resultEntity.getResult());
         }catch (Exception e){
             fusionMsg=e.getMessage();
@@ -264,8 +275,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/joinGroup",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
         }catch (Exception e){
             fusionMsg=e.getMessage();
         }
@@ -292,8 +304,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/exitGroup",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
         }catch (Exception e){
             fusionMsg=e.getMessage();
         }
@@ -320,8 +333,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/findOrganInGroup",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
             result.put("dataList",resultEntity.getResult());
         }catch (Exception e){
             fusionMsg=e.getMessage();
@@ -348,8 +362,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/group/findMyGroupOrgan",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
             result.put("dataList",resultEntity.getResult());
         }catch (Exception e){
             fusionMsg=e.getMessage();
@@ -377,8 +392,9 @@ public class SysFusionService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/getOrganExtendsList",request, BaseResultEntity.class);
-            if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode())
+            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                 fusionMsg=resultEntity.getMsg();
+            }
             result.put("dataList",resultEntity.getResult());
         }catch (Exception e){
             fusionMsg=e.getMessage();

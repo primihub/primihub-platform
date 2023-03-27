@@ -3,15 +3,14 @@ package com.primihub.service;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.fusion.param.FusionOrganExtendsParam;
-import com.primihub.entity.fusion.param.FusionOrganSecretParam;
-import com.primihub.entity.fusion.param.RegisterConnectionParam;
+import com.primihub.entity.fusion.param.FusionConnectionParam;
 import com.primihub.entity.fusion.po.FusionOrgan;
 import com.primihub.entity.fusion.po.FusionOrganExtends;
-import com.primihub.entity.fusion.po.FusionOrganSecret;
 import com.primihub.repository.FusionRepository;
 import com.primihub.util.SignUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,33 +21,37 @@ public class FusionService {
     @Autowired
     private FusionRepository fusionRepository;
 
-    public BaseResultEntity registerConnection(RegisterConnectionParam registerConnectionParam){
-        FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(registerConnectionParam.getGlobalId());
-        if(fusionOrgan!=null&&fusionOrgan.getId()!=null)
+    public BaseResultEntity registerConnection(FusionConnectionParam fusionConnectionParam){
+        FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(fusionConnectionParam.getGlobalId());
+        if(fusionOrgan!=null&&fusionOrgan.getId()!=null) {
             return BaseResultEntity.success();
+        }
         fusionOrgan=new FusionOrgan();
-        fusionOrgan.setGlobalName(registerConnectionParam.getGlobalName());
-        fusionOrgan.setGlobalId(registerConnectionParam.getGlobalId());
-        fusionOrgan.setPinCodeMd(SignUtil.getMD5ValueUpperCaseByDefaultEncode(registerConnectionParam.getPinCode()));
-        fusionOrgan.setGatewayAddress(registerConnectionParam.getGatewayAddress());
+        fusionOrgan.setGlobalName(fusionConnectionParam.getGlobalName());
+        fusionOrgan.setGlobalId(fusionConnectionParam.getGlobalId());
+        fusionOrgan.setPinCodeMd(SignUtil.getMD5ValueUpperCaseByDefaultEncode(fusionConnectionParam.getPinCode()));
+        fusionOrgan.setGatewayAddress(fusionConnectionParam.getGatewayAddress());
         fusionOrgan.setRegisterTime(new Date());
         fusionOrgan.setIsDel(0);
+        fusionOrgan.setPublicKey(fusionConnectionParam.getPublicKey());
+        fusionOrgan.setPrivateKey(fusionConnectionParam.getPrivateKey());
         fusionRepository.insertFusionOrgan(fusionOrgan);
-        FusionOrganSecretParam secret = registerConnectionParam.getSecret();
-        FusionOrganSecret organSecret = new FusionOrganSecret();
-        organSecret.setGlobalId(fusionOrgan.getId());
-        organSecret.setPublicKey(secret.getPublicKey());
-        organSecret.setPrivateKey(secret.getPrivateKey());
-        fusionRepository.insertFusionOrganSecret(organSecret);
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity changeConnection(String globalId,String globalName,String gatewayAddress) {
-        FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(globalId);
-        if (fusionOrgan==null)
+    public BaseResultEntity changeConnection(FusionConnectionParam fusionConnectionParam) {
+        FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(fusionConnectionParam.getGlobalId());
+        if (fusionOrgan==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"无机构信息");
-        fusionOrgan.setGlobalName(globalName);
-        fusionOrgan.setGatewayAddress(gatewayAddress);
+        }
+        fusionOrgan.setGlobalName(fusionConnectionParam.getGlobalName());
+        fusionOrgan.setGatewayAddress(fusionConnectionParam.getGatewayAddress());
+        if (!StringUtils.isEmpty(fusionConnectionParam.getPrivateKey())){
+            fusionOrgan.setPrivateKey(fusionConnectionParam.getPrivateKey());
+        }
+        if (!StringUtils.isEmpty(fusionConnectionParam.getPublicKey())){
+            fusionOrgan.setPublicKey(fusionConnectionParam.getPublicKey());
+        }
         fusionRepository.updateFusionOrganSpeByGlobalId(fusionOrgan);
         return BaseResultEntity.success();
     }
@@ -61,8 +64,9 @@ public class FusionService {
 
     public BaseResultEntity changeOrganExtends(FusionOrganExtendsParam param) {
         FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(param.getGlobalId());
-        if (fusionOrgan==null)
+        if (fusionOrgan==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"无机构信息");
+        }
         FusionOrganExtends fusionOrganExtends = fusionRepository.getFusionOrganExtendsByGlobalId(fusionOrgan.getId());
         if (fusionOrganExtends==null){
             fusionOrganExtends = new FusionOrganExtends();
@@ -82,17 +86,6 @@ public class FusionService {
         return BaseResultEntity.success(fusionOrganExtends);
     }
 
-    public BaseResultEntity changeOrganSecret(String globalId,String publicKey,String privateKey){
-        FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(globalId);
-        if (fusionOrgan==null)
-            return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"无机构信息");
-        FusionOrganSecret organSecret = new FusionOrganSecret();
-        organSecret.setGlobalId(fusionOrgan.getId());
-        organSecret.setPublicKey(publicKey);
-        organSecret.setPrivateKey(privateKey);
-        fusionRepository.updateFusionOrganSecret(organSecret);
-        return BaseResultEntity.success();
-    }
 
     public BaseResultEntity getOrganExtendsList() {
         return BaseResultEntity.success(fusionRepository.getFusionOrganExtends());

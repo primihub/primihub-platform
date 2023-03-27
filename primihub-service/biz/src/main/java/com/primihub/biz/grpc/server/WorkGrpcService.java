@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class WorkGrpcService extends VMNodeGrpc.VMNodeImplBase {
 
+    @Override
     public void submitTask(PushTaskRequest request, StreamObserver<PushTaskReply> responseObserver) {
         try {
 //            Thread.sleep(10000L);

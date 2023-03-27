@@ -28,10 +28,12 @@ public class MarketController {
     @PostMapping("submitvisitingusers")
     public BaseResultEntity submitVisitingUsers(@RequestBody BaseJsonParam<List<DataVisitingUsersReq>> req){
         List<DataVisitingUsersReq> param = req.getParam();
-        if (param == null)
+        if (param == null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"visitingUsersList");
-        if (param.size()!=7)
+        }
+        if (param.size()!=7) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"visitingUsersList 数量不够");
+        }
         for (DataVisitingUsersReq dv : param) {
             if (dv.isNull()){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"存在null值");
@@ -57,10 +59,12 @@ public class MarketController {
      */
     @GetMapping("display")
     public BaseResultEntity display(String type,Integer operation){
-        if (operation==null)
+        if (operation==null) {
             operation = 0;
-        if (StringUtils.isBlank(type) && operation!=0)
+        }
+        if (StringUtils.isBlank(type) && operation!=0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"type");
+        }
         return BaseResultEntity.success(marketService.display(type,operation));
     }
 

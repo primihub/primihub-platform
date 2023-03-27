@@ -14,7 +14,7 @@ public class TestConfiguration {
     private String first;
     private String second;
 
-    public static final double[] temp=new double[]{
+    public static final double[] TEMP=new double[]{
             0.657334623	,
             0.697762682	,
             0.657334623	,

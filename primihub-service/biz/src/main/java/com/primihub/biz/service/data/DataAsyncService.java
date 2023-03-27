@@ -85,7 +85,7 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private DataPsiRepository dataPsiRepository;
     @Autowired
-    private FusionResourceService fusionResourceService;
+    private OtherBusinessesService otherBusinessesService;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
@@ -114,8 +114,9 @@ public class DataAsyncService implements ApplicationContextAware {
         log.info("execute : {}",baenName);
         try {
             ComponentTaskService taskService = (ComponentTaskService)context.getBean(baenName);
-            if (taskService==null)
+            if (taskService==null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"组件无实现方法");
+            }
             return isCheck?taskService.check(req,taskReq):taskService.runTask(req,taskReq);
         }catch (Exception e){
             log.info("ComponentCode:{} -- e:{}",req.getComponentCode(),e.getMessage());
@@ -152,16 +153,18 @@ public class DataAsyncService implements ApplicationContextAware {
             dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
             for (DataComponent dataComponent : req.getDataComponents()) {
                 if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())
-                        || req.getDataTask().getTaskState().equals(TaskStateEnum.CANCEL.getStateType()))
+                        || req.getDataTask().getTaskState().equals(TaskStateEnum.CANCEL.getStateType())) {
                     break;
+                }
                 dataComponent.setStartTime(System.currentTimeMillis());
                 dataComponent.setComponentState(2);
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
                 dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
                 dataComponent.setComponentState(1);
                 executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
-                if(req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+                if(req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
                     dataComponent.setComponentState(3);
+                }
                 dataComponent.setEndTime(System.currentTimeMillis());
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
                 dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
@@ -214,9 +217,10 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getFileHandleField();
             available = otherDataResource.getResourceState();
         }else {
-            BaseResultEntity dataResource = fusionResourceService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
-            if (dataResource.getCode()!=0)
+            BaseResultEntity dataResource = otherBusinessesService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            if (dataResource.getCode()!=0) {
                 return;
+            }
             Map<String, Object> otherDataResource = (LinkedHashMap)dataResource.getResult();
             resourceId = otherDataResource.getOrDefault("resourceId","1").toString();
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
@@ -309,8 +313,9 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(dataTask);
     }
     public void psiTaskOutputFileHandle(DataPsiTask task){
-        if (task.getTaskState()!=1)
+        if (task.getTaskState()!=1) {
             return;
+        }
         List<String> fileContent = FileUtil.getFileContent(task.getFilePath(), null);
         StringBuilder sb = new StringBuilder();
         for (String line : fileContent) {
@@ -434,13 +439,13 @@ public class DataAsyncService implements ApplicationContextAware {
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
-        DataComponent model = dataComponents.stream().filter(dataComponent -> dataComponent.getComponentCode().equals("model")).findFirst().orElse(null);
+        DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model==null){
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg("未能获取到模型信息");
         }else {
             List<DataComponentValue> dataComponentValue = JSONArray.parseArray(model.getDataJson(), DataComponentValue.class);
-            DataComponentValue modelType = dataComponentValue.stream().filter(d -> d.getKey().equals("modelType")).findFirst().orElse(null);
+            DataComponentValue modelType = dataComponentValue.stream().filter(d -> "modelType".equals(d.getKey())).findFirst().orElse(null);
             if (modelType==null || StringUtils.isBlank(modelType.getVal())){
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("未能获取到模型类型信息");
@@ -449,7 +454,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 map.put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
                 map.put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
                 String freemarkerContent = "";
-                if (modelType.getVal().equals("2")){
+                if ("2".equals(modelType.getVal())){
                     map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
                     grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
@@ -466,10 +471,12 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     public void sendModelTaskMail(DataTask dataTask,Long projectId){
-        if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType()))
+        if (!dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
             return;
-        if (StringUtils.isBlank(baseConfiguration.getTaskEmailSubject()))
+        }
+        if (StringUtils.isBlank(baseConfiguration.getTaskEmailSubject())) {
             return;
+        }
         SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(dataTask.getTaskUserId());
         if (sysUser == null){
             log.info("task_id:{} The task email was not sent. Reason for not sending : No user information",dataTask.getTaskIdName());
@@ -524,13 +531,15 @@ public class DataAsyncService implements ApplicationContextAware {
         if (org.apache.commons.lang.StringUtils.isBlank(squareVal) || "0".equals(squareVal)){
             port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
             port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0]))
+            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0])) {
                 stringRedisTemplate.opsForValue().set(squareKey,"1");
+            }
         }else {
             port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
             port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0]))
+            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0])) {
                 stringRedisTemplate.opsForValue().set(squareKey,"0");
+            }
         }
         return port;
     }
@@ -551,7 +560,7 @@ public class DataAsyncService implements ApplicationContextAware {
             Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(dataTask.getTaskResultPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = null;
-            if (modelType.equals("2")){
+            if ("2".equals(modelType)){
                 Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 params = Common.Params.newBuilder()

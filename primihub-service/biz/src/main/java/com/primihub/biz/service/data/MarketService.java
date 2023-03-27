@@ -62,8 +62,9 @@ public class MarketService {
     public BaseResultEntity getVisitingUsers() {
         Map<String,Long> dataVisitingUsers = dataMarketRepository.selectDataVisitingUsers();
         Long total = dataVisitingUsers.get("total");
-        if (total==0L)
+        if (total==0L) {
             return BaseResultEntity.success();
+        }
         dataVisitingUsers.remove("total");
         Map<String,BigDecimal> totalMap = new HashMap<>();
         Map<String,List<DataVisitingUsersVo>> map = new HashMap<>();
@@ -73,11 +74,13 @@ public class MarketService {
             Map.Entry<String, Long> next = iterator.next();
             String key = next.getKey();
             Long value = next.getValue();
-            if (key.equals("age_age")){
+            if ("age_age".equals(key)){
                 map.put("age",new ArrayList(){{add(new DataVisitingUsersVo(MarketConstant.DICTIONARY.get("age_age"), String.valueOf(value/total),"age"));}});
             }else {
                 String[] keys = key.split("_");
-                if(!map.containsKey(keys[0]))map.put(keys[0],new ArrayList<>());
+                if(!map.containsKey(keys[0])) {
+                    map.put(keys[0],new ArrayList<>());
+                }
                 BigDecimal price = new BigDecimal(value).divide(new BigDecimal(total), 4, BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(100));
                 DataVisitingUsersVo vo = new DataVisitingUsersVo(MarketConstant.DICTIONARY.get(key), df.format(price), keys[1]);
                 if (totalMap.containsKey(keys[0])) {

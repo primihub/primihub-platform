@@ -45,14 +45,16 @@ public class OrganConfiguration {
      * @return
      */
     public String getLocalOrganShortCode(){
-        if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null)
+        if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null) {
             return null;
+        }
         return sysLocalOrganInfo.getOrganId().substring(24,36);
     }
 
     public String generateUniqueCode(){
-        if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null)
+        if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null) {
             return null;
+        }
         return getLocalOrganShortCode()+"-"+ UUID.randomUUID().toString();
     }
 

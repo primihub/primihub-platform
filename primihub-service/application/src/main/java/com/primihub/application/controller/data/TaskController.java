@@ -46,31 +46,36 @@ public class TaskController {
      */
     @RequestMapping("updateTaskDesc")
     public BaseResultEntity updateTaskDesc(Long taskId,String taskDesc){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        if (StringUtils.isBlank(taskDesc))
+        }
+        if (StringUtils.isBlank(taskDesc)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskDesc");
+        }
         return dataTaskService.updateTaskDesc(taskId,taskDesc);
     }
 
     @RequestMapping("deleteTask")
     public BaseResultEntity deleteTask(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return dataTaskService.deleteTaskData(taskId);
     }
 
     @RequestMapping("getTaskData")
     public BaseResultEntity getTaskData(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return dataTaskService.getTaskData(taskId);
     }
 
     @RequestMapping("getModelTaskList")
     public BaseResultEntity getModelTaskList(Long modelId, PageReq req){
-        if (modelId==null||modelId==0L)
+        if (modelId==null||modelId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+        }
         return dataTaskService.getModelTaskList(modelId,req);
     }
 
@@ -82,8 +87,9 @@ public class TaskController {
 
     @GetMapping("cancelTask")
     public BaseResultEntity cancelPsiTask(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return  dataTaskService.cancelTask(taskId);
     }
 
@@ -92,8 +98,9 @@ public class TaskController {
      */
     @GetMapping(value = "sseConnect/{taskId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter connect(@PathVariable String taskId,Integer all) {
-        if (all==null)
+        if (all==null) {
             all = 0;
+        }
         return dataTaskService.connectSseTask(taskId,all);
     }
 
@@ -102,16 +109,18 @@ public class TaskController {
      */
     @GetMapping("sseClose/{taskId}")
     public BaseResultEntity close(@PathVariable("taskId") String taskId) {
-        if (StringUtils.isBlank(taskId))
+        if (StringUtils.isBlank(taskId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         dataTaskService.removeSseTask(taskId);
         return BaseResultEntity.success();
     }
 
     @GetMapping("getTaskLogInfo")
     public BaseResultEntity getTaskLogInfo(Long taskId){
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
         return  dataTaskService.getTaskLogInfo(taskId);
     }
 
@@ -168,8 +177,9 @@ public class TaskController {
                 // 获得文件输入流
                 FileInputStream inputStream = new FileInputStream(file);
                 // 设置响应头、以附件形式打开文件
-                if (!isCooperation)
+                if (!isCooperation) {
                     response.setContentType("application/zip");
+                }
                 response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
                 ServletOutputStream outputStream = response.getOutputStream();
                 int len = 0;
@@ -207,8 +217,9 @@ public class TaskController {
         File file = null;
         if (dataTask.getTaskType().equals(TaskTypeEnum.PSI.getTaskType())){
             DataPsiTask dataPsiTask = dataPsiRepository.selectPsiTaskById(dataTask.getTaskId());
-            if (dataPsiTask!=null)
+            if (dataPsiTask!=null) {
                 file = new File(dataPsiTask.getFilePath());
+            }
         }else{
             file = new File(dataTask.getTaskResultPath());
         }

@@ -44,8 +44,9 @@ public class SysAuthService {
         sysAuth.setIsEditable(1);
         sysAuth.setIsDel(0);
         sysAuth.setFullPath("");
-        if(sysAuth.getAuthUrl()==null)
+        if(sysAuth.getAuthUrl()==null) {
             sysAuth.setAuthUrl("");
+        }
         sysAuthPrimarydbRepository.insertSysAuth(sysAuth);
         if(parentSysAuth!=null) {
             sysAuth.setFullPath(new StringBuilder().append(parentSysAuth.getFullPath()).append(",").append(sysAuth.getAuthId()).toString());
@@ -65,10 +66,12 @@ public class SysAuthService {
 
     public BaseResultEntity alterAuthNodeStatus(AlterAuthNodeStatusParam alterAuthNodeStatusParam){
         SysAuth sysAuth=sysAuthSecondarydbRepository.selectSysAuthByAuthId(alterAuthNodeStatusParam.getAuthId());
-        if(sysAuth==null||sysAuth.getAuthId()==null)
+        if(sysAuth==null||sysAuth.getAuthId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"不存在该数据");
-        if(sysAuth.getIsEditable().equals(0))
+        }
+        if(sysAuth.getIsEditable().equals(0)) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"该记录是不可编辑状态");
+        }
         sysAuthPrimarydbRepository.updateSysAuthExplicit(alterAuthNodeStatusParam);
         sysAuthPrimaryRedisRepository.deleteSysAuthForBfs();
         return BaseResultEntity.success();
@@ -76,10 +79,12 @@ public class SysAuthService {
 
     public BaseResultEntity deleteAuthNode(Long authId){
         SysAuth sysAuth=sysAuthSecondarydbRepository.selectSysAuthByAuthId(authId);
-        if(sysAuth==null||sysAuth.getAuthId()==null)
+        if(sysAuth==null||sysAuth.getAuthId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"不存在该数据");
-        if(sysAuth.getIsEditable().equals(0))
+        }
+        if(sysAuth.getIsEditable().equals(0)) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"该记录是不可编辑状态");
+        }
         sysAuthPrimarydbRepository.deleteSysAuth(authId);
         sysAuthPrimaryRedisRepository.deleteSysAuthForBfs();
         return BaseResultEntity.success();
@@ -213,7 +218,7 @@ public class SysAuthService {
             indexMap.put(auth[3],index+1);
 
             SysAuth parent=map.get(auth[3]);
-            if(auth[3].equals("")) {
+            if("".equals(auth[3])) {
                 sysAuth.setPAuthId(0L);
                 sysAuth.setRAuthId(0L);
                 sysAuth.setAuthDepth(0);
@@ -254,7 +259,9 @@ public class SysAuthService {
 
 
         sysRolePrimarydbRepository.insertSysRaBatch(adminRaList);
-        if(anotherRaList.size()!=0)sysRolePrimarydbRepository.insertSysRaBatch(anotherRaList);
+        if(anotherRaList.size()!=0) {
+            sysRolePrimarydbRepository.insertSysRaBatch(anotherRaList);
+        }
         return BaseResultEntity.success();
     }
 

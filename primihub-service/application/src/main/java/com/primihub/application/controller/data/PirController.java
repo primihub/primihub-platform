@@ -43,8 +43,9 @@ public class PirController {
     @RequestMapping("getPirTaskList")
     public BaseResultEntity getPirTaskList(DataPirTaskReq req){
         if (req.getTaskState()!=null){
-            if(!TaskStateEnum.TASK_STATE_MAP.containsKey(req.getTaskState()))
+            if(!TaskStateEnum.TASK_STATE_MAP.containsKey(req.getTaskState())) {
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"taskState");
+            }
         }
         if (req.getResourceName()!=null && req.getResourceName().contains("_")){
             // Cancel mysql like _ Wildcard action
@@ -55,8 +56,9 @@ public class PirController {
 
     @GetMapping("downloadPirTask")
     public void downloadPirTask(HttpServletResponse response, String taskId,String taskDate) {
-        if (StringUtils.isBlank(taskId)||StringUtils.isBlank(taskDate))
+        if (StringUtils.isBlank(taskId)||StringUtils.isBlank(taskDate)) {
             return;
+        }
         String resultFilePath = pirService.getResultFilePath(taskId,taskDate);
         String fileName = taskId+".csv";
         OutputStream outputStream = null;

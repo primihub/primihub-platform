@@ -55,10 +55,12 @@ public class DataPirTaskVo {
     private Long taskEnd;
 
     public Long getConsuming() {
-        if (taskStart==null)
+        if (taskStart==null) {
             return 0L;
-        if (taskEnd==null||taskEnd==0)
+        }
+        if (taskEnd==null||taskEnd==0) {
             return (System.currentTimeMillis() - taskStart)/1000;
+        }
         return (taskEnd - taskStart)/1000;
     }
 }

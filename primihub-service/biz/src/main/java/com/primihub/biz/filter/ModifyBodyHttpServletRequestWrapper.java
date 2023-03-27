@@ -22,7 +22,9 @@ public class ModifyBodyHttpServletRequestWrapper extends HttpServletRequestWrapp
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
-        if(StringUtils.isEmpty(body)) body = "";
+        if(StringUtils.isEmpty(body)) {
+            body = "";
+        }
         final ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body.getBytes("utf-8"));
         ServletInputStream servletInputStream = new ServletInputStream() {
             @Override

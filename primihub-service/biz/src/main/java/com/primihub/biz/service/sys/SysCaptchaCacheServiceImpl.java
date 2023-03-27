@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.concurrent.TimeUnit;
 
 @Service
-public class SysCaptchaCacheService implements CaptchaCacheService {
+public class SysCaptchaCacheServiceImpl implements CaptchaCacheService {
 
     @Autowired
     private StringRedisTemplate stringRedisTemplate;

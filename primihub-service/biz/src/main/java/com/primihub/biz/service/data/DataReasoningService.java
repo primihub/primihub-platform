@@ -45,8 +45,9 @@ public class DataReasoningService {
 
 
     public BaseResultEntity getReasoningList(ReasoningListReq req) {
-        if (baseConfiguration.getAdminUserIds().contains(req.getUserId()))
+        if (baseConfiguration.getAdminUserIds().contains(req.getUserId())) {
             req.setIsAdmin(1);
+        }
         List<DataReasoningVo> dataReasonings = dataReasoningRepository.selectDataReasoninPage(req);
         if (dataReasonings.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
@@ -57,8 +58,9 @@ public class DataReasoningService {
 
     public BaseResultEntity saveReasoning(DataReasoningReq req) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(req.getTaskId());
-        if (modelTask == null)
+        if (modelTask == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到模型信息");
+        }
         DataReasoning dataReasoning = DataReasoningConvert.dataReasoningReqConvertPo(req);
         Set<String> resourceIds = req.getResourceList().stream().map(DataReasoningResourceReq::getResourceId).collect(Collectors.toSet());
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByResourceIds(resourceIds);
@@ -78,8 +80,9 @@ public class DataReasoningService {
 
     public BaseResultEntity getReasoning(Long id) {
         DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninById(id);
-        if (dataReasoning==null)
+        if (dataReasoning==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据");
+        }
         return BaseResultEntity.success(DataReasoningConvert.dataReasoningConvertVo(dataReasoning));
     }
 }

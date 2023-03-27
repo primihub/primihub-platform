@@ -52,7 +52,7 @@ public class DataTaskMonitorService {
                         dataTask.setTaskErrorMsg(sb.toString());
                         isContinue = false;
                     }else {
-                        long success = taskStatus.stream().filter(t -> t.equals("SUCCESS")).count();
+                        long success = taskStatus.stream().filter(t -> "SUCCESS".equals(t)).count();
                         log.info("success:{}",success);
                         if (num <= success){
                             dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());

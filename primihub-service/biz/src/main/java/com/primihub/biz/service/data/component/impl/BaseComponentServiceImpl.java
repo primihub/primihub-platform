@@ -26,11 +26,13 @@ public class BaseComponentServiceImpl {
      * @return
      */
     public BaseResultEntity componentTypeVerification(DataComponentReq req, List<ModelComponent> modelComponents, ComponentTaskReq taskReq){
-        if (req==null || req.getComponentValues()==null || req.getComponentValues().isEmpty())
+        if (req==null || req.getComponentValues()==null || req.getComponentValues().isEmpty()) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"无入参数信息");
+        }
         ModelComponent modelComponent = modelComponents.stream().filter(mc -> mc.getComponentCode().equals(req.getComponentCode())).findFirst().orElse(null);
-        if (modelComponent==null)
+        if (modelComponent==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"无法查找到"+req.getComponentName()+"组件信息");
+        }
         Map<String, String> valueMap = getComponentVals(req.getComponentValues());
         taskReq.getValueMap().putAll(valueMap);
 //        for (ModelComponentType mct : modelComponent.getComponentTypes()) {
@@ -48,8 +50,9 @@ public class BaseComponentServiceImpl {
 //            }
 //        }
         BaseResultEntity validateResult = validateComponents(modelComponent.getComponentTypes(), valueMap, req.getComponentName());
-        if (!validateResult.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+        if (!validateResult.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
             return validateResult;
+        }
         List<DataComponentRelationReq> input = req.getInput();
         List<DataComponentRelationReq> output = req.getOutput();
         if (input.size()==0&&output.size()==0){

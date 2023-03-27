@@ -3,31 +3,24 @@
 <mapper namespace="com.primihub.repository.FusionRepository">
 
     <insert id="insertFusionOrgan" useGeneratedKeys="true" keyProperty="id">
-        insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,is_del)
-        values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{isDel})
+        insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,public_key,private_key,is_del)
+        values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{publicKey},#{privateKey},#{isDel})
     </insert>
     <insert id="insertFusionOrganExtends" useGeneratedKeys="true" keyProperty="id">
         insert into fusion_organ_extends(global_id, ip, lat, lon, country, is_del)
         values (#{globalId},#{ip},#{lat},#{lon},#{country},0)
     </insert>
-    <insert id="insertFusionOrganSecret" useGeneratedKeys="true" keyProperty="id">
-        insert into fusion_organ_secret(global_id, public_key, private_key, is_del)
-        values (#{globalId},#{publicKey},#{privateKey},0)
-    </insert>
 
     <update id="updateFusionOrganSpeByGlobalId">
-        update fusion_organ set global_name=#{globalName},gateway_address=#{gatewayAddress} where global_id=#{globalId}
+        update fusion_organ  set global_name=#{globalName},gateway_address=#{gatewayAddress},public_key=#{publicKey},private_key=#{privateKey} where global_id=#{globalId}
     </update>
     <update id="updateFusionOrganExtends">
         update fusion_organ_extends set ip=#{ip},lat=#{lat},lon=#{lon},country=#{country} where id=#{id}
     </update>
-    <update id="updateFusionOrganSecret">
-        update fusion_organ_secret set public_key = #{publicKey},private_key = #{privateKey} where global_id = #{globalId}
-    </update>
 
     <select id="getFusionOrganByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrgan">
         select
-            id,global_id globalId,global_name globalName,pin_code_md pinCodeMd,gateway_address gatewayAddress,register_time registerTime,is_del isDel,c_time cTime,u_time uTime
+            id,global_id globalId,global_name globalName,pin_code_md pinCodeMd,gateway_address gatewayAddress,register_time registerTime,public_key publicKey,is_del isDel,c_time cTime,u_time uTime
         from
             fusion_organ
         where global_id=#{globalId}
@@ -36,7 +29,7 @@
 
     <select id="selectFusionOrganByGlobalIds" resultType="com.primihub.entity.fusion.po.FusionOrgan">
         select
-            id,global_id globalId,global_name globalName,gateway_address gatewayAddress,register_time registerTime,is_del isDel,c_time cTime,u_time uTime
+            id,global_id globalId,global_name globalName,gateway_address gatewayAddress,register_time registerTime,public_key publicKey,is_del isDel,c_time cTime,u_time uTime
         from
             fusion_organ
         where global_id in

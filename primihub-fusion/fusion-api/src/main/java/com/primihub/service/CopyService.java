@@ -26,8 +26,9 @@ public class CopyService implements ApplicationContextAware {
 
     public BaseResultEntity batchSave(String globalId,DataFusionCopyDto copyDto){
         CopyEnum enu=CopyEnum.FUSION_COPY_MAP.get(copyDto.getTableName());
-        if(enu==null)
+        if(enu==null) {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"没有"+copyDto.getTableName());
+        }
         Object object = context.getBean(enu.getBeanName());
         Class<? extends Object> clazz = object.getClass();
         try {
