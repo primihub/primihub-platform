@@ -176,6 +176,7 @@ public class OtherBusinessesService {
             log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
         }catch (Exception e){
             log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
+            e.printStackTrace();
         }
         log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());
     }
