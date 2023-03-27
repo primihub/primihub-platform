@@ -46,7 +46,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
     public GatewayFilter apply(Object config) {
         return ((exchange, chain) -> {
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
-            log.info(currentRawPath);
+//            log.info(currentRawPath);
             MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
             if (MATCHER.match(SHARE_URL,currentRawPath)){
                 return chain.filter(exchange).then(
