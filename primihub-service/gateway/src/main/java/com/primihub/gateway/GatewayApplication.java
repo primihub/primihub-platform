@@ -34,7 +34,8 @@ import org.springframework.context.annotation.FilterType;
                         SysUserService.class,
                         SysOauthService.class,
                         SysSseEmitterService.class,
-                        SysWebSocketService.class
+                        SysWebSocketService.class,
+                        SysEmailService.class
                 }),
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = {"com.primihub.biz.service.data.*","com.primihub.biz.service.schedule.*","com.primihub.biz.service.test.*","com.primihub.biz.config.captcha.*"})
     }
