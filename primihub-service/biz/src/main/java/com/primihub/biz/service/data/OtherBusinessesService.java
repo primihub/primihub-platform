@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -161,7 +162,12 @@ public class OtherBusinessesService {
 
     public void syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey){
         try {
-            String data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
+            Object data = null;
+            if (StringUtils.isEmpty(publicKey)){
+                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
+            }else {
+                data = vo;
+            }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);
@@ -169,8 +175,8 @@ public class OtherBusinessesService {
             BaseResultEntity baseResultEntity = restTemplate.postForObject(gatewayAddressAndApi, request, BaseResultEntity.class);
             log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
         }catch (Exception e){
-            log.info("gatewayAddress api Exception:{}",e.getMessage());
+            log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
         }
-        log.info("gatewayAddress api end:{}",System.currentTimeMillis());
+        log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());
     }
 }

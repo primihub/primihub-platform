@@ -99,6 +99,8 @@ public class DataTaskService {
     private SysWebSocketService webSocketService;
     @Autowired
     private DataAsyncService dataAsyncService;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
 
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
@@ -289,23 +291,19 @@ public class DataTaskService {
                 if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
                     if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
                         Map map = organListMap.get(dataProjectOrgan.getOrganId());
-                        organNames.add(map.get("globalName").toString());
                         Object gatewayAddress = map==null?null:map.get("gatewayAddress");
                         if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
                             log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
                             return;
                         }
-                        log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareProjectVo, headers);
-                        log.info(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
-                        try {
-                            BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
-                        }catch (Exception e){
-                            log.info("projectId:{} - OrganId:{} gatewayAddress api Exception:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),e.getMessage());
+                        String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
+                        String publicKey = (String) map.get("publicKey");
+                        if (publicKey==null){
+                            url = url+"?ignore";
                         }
+                        organNames.add(map.get("globalName").toString());
+                        log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
+                        otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
                         log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                     }
                 }
@@ -342,17 +340,12 @@ public class DataTaskService {
                         return;
                     }
                     log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
-                    shareModelVo.supplement();
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_JSON);
-                    HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareModelVo, headers);
-                    log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
-                    try {
-                        BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                        log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
-                    }catch (Exception e){
-                        log.info("modelUUID:{} - OrganId:{} gatewayAddress api Exception:{}",shareModelVo.getDataModel().getModelUUID(),organId,e.getMessage());
+                    String url = CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
+                    String publicKey = (String) map.get("publicKey");
+                    if (publicKey==null){
+                        url = url+"?ignore";
                     }
+                    otherBusinessesService.syncGatewayApiData(shareModelVo,url,publicKey);
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }
             }

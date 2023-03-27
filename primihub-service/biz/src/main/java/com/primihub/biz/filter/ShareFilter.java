@@ -33,26 +33,29 @@ public class ShareFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
-        String bodytxt;
-        try {
-            bodytxt = getBodytxt(request);
-            JSONObject jsonObject = JSONObject.parseObject(bodytxt);
-            if (jsonObject == null || !jsonObject.containsKey("shareData")){
-                writeJsonToResponse(response,"解析内容空或同步内容为空");
-                return;
+        HttpServletRequest httpRequest = (HttpServletRequest)request;
+        String contextPath = httpRequest.getContextPath();
+        if (contextPath.contains("ignore")){
+            filterChain.doFilter(request, response);
+        }else {
+            String bodytxt;
+            try {
+                bodytxt = getBodytxt(request);
+                if (StringUtils.isBlank(bodytxt)){
+                    writeJsonToResponse(response,"解析内容空或同步内容为空");
+                    return;
+                }
+                String privateKey = organConfiguration.getSysLocalOrganInfo().getPrivateKey();
+                if (StringUtils.isNotBlank(privateKey)){
+                    String shareData = CryptUtil.multipartDecrypt(bodytxt,privateKey);
+                    ModifyBodyHttpServletRequestWrapper httpServletRequestWrapper = new ModifyBodyHttpServletRequestWrapper((HttpServletRequest)request, shareData);
+                    filterChain.doFilter(httpServletRequestWrapper, response);
+                }
+            }catch (IOException e){
+                writeJsonToResponse(response,"获取同步内容失败:"+e.getMessage());
+            }catch (Exception e) {
+                writeJsonToResponse(response,"解密内容失败:"+e.getMessage());
             }
-            String privateKey = organConfiguration.getSysLocalOrganInfo().getPrivateKey();
-            if (StringUtils.isNotBlank(privateKey)){
-                String shareData = CryptUtil.multipartDecrypt(jsonObject.getString("shareData"),privateKey);
-                ModifyBodyHttpServletRequestWrapper httpServletRequestWrapper = new ModifyBodyHttpServletRequestWrapper((HttpServletRequest)request, shareData);
-                filterChain.doFilter(httpServletRequestWrapper, response);
-            }
-        }catch (IOException e){
-            writeJsonToResponse(response,"获取同步内容失败:"+e.getMessage());
-        }catch (JSONException e){
-            writeJsonToResponse(response,"解析同步内容失败:"+e.getMessage());
-        } catch (Exception e) {
-            writeJsonToResponse(response,"解密内容失败:"+e.getMessage());
         }
     }
 
