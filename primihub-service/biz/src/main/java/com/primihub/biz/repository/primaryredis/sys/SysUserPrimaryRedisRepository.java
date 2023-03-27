@@ -43,7 +43,9 @@ public class SysUserPrimaryRedisRepository {
     public SysUserListVO findUserLoginStatus(String token){
         String tokenKey=RedisKeyConstant.SYS_USER_LOGIN_TOKEN_STR_KEY.replace("<token>",token);
         String userIdStr=stringRedisTemplate.opsForValue().get(tokenKey);
-        if(userIdStr==null||userIdStr.equals("")) return null;
+        if(userIdStr==null|| "".equals(userIdStr)) {
+            return null;
+        }
         String userKey=RedisKeyConstant.SYS_USER_LOGIN_STATUS_HASH_KEY.replace("<user_id>",userIdStr);
         Map map=stringRedisTemplate.opsForHash().entries(userKey);
         SysUserListVO sysUserListVO=new SysUserListVO();
@@ -69,8 +71,9 @@ public class SysUserPrimaryRedisRepository {
     public void deleteUserLoginStatus(Long userId){
         String userKey=RedisKeyConstant.SYS_USER_LOGIN_STATUS_HASH_KEY.replace("<user_id>",userId.toString());
         Object token=stringRedisTemplate.opsForHash().get(userKey,"token");
-        if (token==null)
+        if (token==null) {
             return;
+        }
         String tokenKey=RedisKeyConstant.SYS_USER_LOGIN_TOKEN_STR_KEY.replace("<token>",token.toString());
         stringRedisTemplate.delete(tokenKey);
         stringRedisTemplate.delete(userKey);

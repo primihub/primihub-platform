@@ -12,6 +12,7 @@ public class FusionConfig {
     @Bean
     public WebMvcConfigurer WebMvcConfigurer(PinCodeInterceptor pinCodeInterceptor) {
         return new WebMvcConfigurer() {
+            @Override
             public void addInterceptors(InterceptorRegistry registry) {
                 registry.addInterceptor(pinCodeInterceptor)
                         .addPathPatterns("/**")

@@ -211,8 +211,9 @@ public class DataTaskService {
 //        log.info(paramStr);
         SysOrganFusion sysOrganFusion = JSONObject.parseObject(paramStr, SysOrganFusion.class);
         Long maxId=dataResourceRepository.findMaxDataResource();
-        if (maxId==null)
+        if (maxId==null) {
             return;
+        }
         DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress());
         dataCopyPrimarydbRepository.saveCopyInfo(task);
         dataCopyService.handleFusionCopyTask(task);
@@ -249,7 +250,7 @@ public class DataTaskService {
             map.put("globalIdArray", organGlobalIdList);
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity<Map<String,Object>> resultEntity=restTemplate.postForObject(key+"/fusion/findOrganByGlobalId",request, BaseResultEntity.class);
-            if(resultEntity!=null&&resultEntity.getCode()== BaseResultEnum.SUCCESS.getReturnCode()&&resultEntity.getResult()!=null){
+            if(resultEntity!=null&& resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()) &&resultEntity.getResult()!=null){
                 Map resultMap=resultEntity.getResult();
                 if(resultMap.get("organList")!=null) {
                     List<Map<String,String>> organDtoList = (List<Map<String,String>>)  resultMap.get("organList");
@@ -273,12 +274,14 @@ public class DataTaskService {
         ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
         shareProjectVo.supplement();
         shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
-        if (shareProjectVo.getProjectResources().size()==0)
+        if (shareProjectVo.getProjectResources().size()==0) {
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
+        }
         if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
             List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
-            if (dataProjectOrgans.size()==0)
+            if (dataProjectOrgans.size()==0) {
                 return;
+            }
             List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
             Map<String, Map> organListMap = dataProjectService.getOrganListMap(organIds, shareProjectVo.getServerAddress());
             List<String> organNames = new ArrayList<>();
@@ -362,8 +365,9 @@ public class DataTaskService {
         map.put("offset",req.getOffset());
         map.put("pageSize",req.getPageSize());
         List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
-        if (dataModelTasks.size()==0)
+        if (dataModelTasks.size()==0) {
             return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(),new ArrayList()));
+        }
         Integer count = dataModelRepository.queryModelTaskByModelIdCount(modelId);
         Set<Long> taskId = dataModelTasks.stream().map(DataModelTask::getTaskId).collect(Collectors.toSet());
         List<DataTask> dataTaskList = dataTaskRepository.selectDataTaskByTaskIds(taskId);
@@ -379,24 +383,28 @@ public class DataTaskService {
             List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
             taskId = dataModelTasks.stream().mapToLong(DataModelTask::getTaskId).max().orElse(0);
         }
-        if (taskId!=null&&taskId!=0L)
+        if (taskId!=null&&taskId!=0L) {
             return dataTaskRepository.selectDataTaskByTaskId(taskId);
+        }
         return null;
     }
 
     public BaseResultEntity getTaskData(Long taskId) {
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
-        if (dataTask==null)
+        if (dataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"为查询到任务信息");
+        }
         return BaseResultEntity.success(DataTaskConvert.dataTaskPoConvertDataModelTaskList(dataTask));
     }
 
     public BaseResultEntity deleteTaskData(Long taskId) {
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
-        if (dataTask==null)
+        if (dataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"无任务信息");
-        if (dataTask.getTaskState()==2)
+        }
+        if (dataTask.getTaskState()==2) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"任务运行中无法删除");
+        }
         if (dataTask.getTaskType().equals(TaskTypeEnum.MODEL.getTaskType())){
             dataAsyncService.deleteModelTask(dataTask);
             dataTask.setTaskState(TaskStateEnum.DELETE.getStateType());
@@ -410,10 +418,12 @@ public class DataTaskService {
 
     public BaseResultEntity cancelTask(Long taskId) {
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
-        if (rawDataTask==null)
+        if (rawDataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
-        if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType()))
+        }
+        if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType())) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法取消,任务状态不是运行中");
+        }
         rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
         dataTaskPrRepository.updateDataTask(rawDataTask);
         return BaseResultEntity.success(taskId);
@@ -422,11 +432,13 @@ public class DataTaskService {
     public BaseResultEntity getTaskLogInfo(Long taskId) {
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
         if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())
-                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer()))
+                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"请检查loki配置信息");
+        }
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
-        if (rawDataTask==null)
+        if (rawDataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("address",lokiConfig.getAddress());
         map.put("job",lokiConfig.getJob());
@@ -446,8 +458,9 @@ public class DataTaskService {
         File file = new File(filePath);
         if (!file.exists()){
             File runFile = new File(baseConfiguration.getRunModelFileUrlDirPrefix()+ dataTask.getTaskIdName());
-            if (!runFile.exists())
+            if (!runFile.exists()) {
                 runFile.mkdirs();
+            }
             generateLogFile(file,dataTask);
         }
         return file;
@@ -456,8 +469,9 @@ public class DataTaskService {
     public void generateLogFile(File file,DataTask dataTask){
         try {
             List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime()/1000);
-            if (lokiLogList==null || lokiLogList.isEmpty())
+            if (lokiLogList==null || lokiLogList.isEmpty()) {
                 return;
+            }
             log.info("{}",lokiLogList.size());
             boolean next = true;
             Long nextTsNs = 0L;
@@ -493,14 +507,16 @@ public class DataTaskService {
     public List<String[]> getLokiLogList(String taskId,Long start){
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
         if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
-        ||StringUtils.isBlank(lokiConfig.getContainer()))
+        ||StringUtils.isBlank(lokiConfig.getContainer())) {
             return null;
+        }
         String query = "query={job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
         String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&"+query;
         log.info(url);
         LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
-        if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0)
+        if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0) {
             return null;
+        }
         List<String[]> logArray = new ArrayList<>();
         List<LokiResultContentDto> result = lokiDto.getData().getResult();
         for (LokiResultContentDto lokiResultContentDto : result) {
@@ -512,8 +528,9 @@ public class DataTaskService {
 
     public BaseResultEntity getTaskList(DataTaskReq req) {
         List<DataTaskVo> dataTaskVos = dataTaskRepository.selectDataTaskList(req);
-        if (dataTaskVos.size()==0)
+        if (dataTaskVos.size()==0) {
             return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(),new ArrayList()));
+        }
         Integer count = dataTaskRepository.selectDataTaskListCount(req);
         return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
     }
@@ -567,6 +584,16 @@ public class DataTaskService {
 
     public void removeSseTask(String taskId) {
         sseEmitterService.removeKey(taskId);
+    }
+
+    public BaseResultEntity updateTaskDesc(Long taskId, String taskDesc) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
+        }
+        dataTask.setTaskDesc(taskDesc);
+        dataTaskPrRepository.updateDataTask(dataTask);
+        return BaseResultEntity.success();
     }
 }
 

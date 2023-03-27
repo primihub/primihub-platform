@@ -9,7 +9,9 @@ public class DataVisitingUsersReq {
     private String value;
 
     public String getKeyValLowerCase(){
-        if ("age".equals(key)) return key;
+        if ("age".equals(key)) {
+            return key;
+        }
         return (key+value).toLowerCase();
     }
 

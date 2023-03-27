@@ -70,8 +70,9 @@ public class DataCopyService implements ApplicationContextAware {
         if(enu!=null) {
             int errorCount=0;
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null||sysLocalOrganInfo.getOrganId().trim().equals(""))
+            if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null|| "".equals(sysLocalOrganInfo.getOrganId().trim())) {
                 return;
+            }
 
             while(startOffset<endOffset) {
                 log.info(startOffset+"-"+endOffset);
@@ -92,7 +93,7 @@ public class DataCopyService implements ApplicationContextAware {
 
                 boolean isSuccess=true;
                 String errorMsg="";
-                if(!copyDto.getCopyPart().equals("[]")) {
+                if(!"[]".equals(copyDto.getCopyPart())) {
                     try {
                         HttpHeaders headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -102,15 +103,17 @@ public class DataCopyService implements ApplicationContextAware {
                         map.put("pinCode", new ArrayList() {{add(sysLocalOrganInfo.getPinCode());}});
                         HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
                         BaseResultEntity resultEntity = restTemplate.postForObject(task.getFusionServerAddress() + "/copy/batchSave", request, BaseResultEntity.class);
-                        if (resultEntity.getCode() != BaseResultEnum.SUCCESS.getReturnCode()) {
+                        if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                             isSuccess = false;
-                            if (++errorCount >= 3)
+                            if (++errorCount >= 3) {
                                 errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
+                            }
                         }
                     } catch (Exception e) {
                         isSuccess = false;
-                        if (++errorCount >= 3)
+                        if (++errorCount >= 3) {
                             errorMsg = e.getMessage().substring(0, Math.min(1000, e.getMessage().length()));
+                        }
                     }
                 }
 

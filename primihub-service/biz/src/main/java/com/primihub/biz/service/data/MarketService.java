@@ -10,8 +10,10 @@ import com.primihub.biz.repository.primarydb.data.DataMarketPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataMarketRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
@@ -25,6 +27,8 @@ public class MarketService {
     private DataMarketPrimarydbRepository dataMarketPrimarydbRepository;
     @Autowired
     private DataMarketRepository dataMarketRepository;
+    @Resource(name="primaryStringRedisTemplate")
+    private StringRedisTemplate primaryStringRedisTemplate;
 
     public BaseResultEntity submitVisitingUsers(List<DataVisitingUsersReq> req) {
         Map<String, String> keySet = req.stream().collect(Collectors.toMap(DataVisitingUsersReq::getKeyValLowerCase, DataVisitingUsersReq::getValue));
@@ -58,8 +62,9 @@ public class MarketService {
     public BaseResultEntity getVisitingUsers() {
         Map<String,Long> dataVisitingUsers = dataMarketRepository.selectDataVisitingUsers();
         Long total = dataVisitingUsers.get("total");
-        if (total==0L)
+        if (total==0L) {
             return BaseResultEntity.success();
+        }
         dataVisitingUsers.remove("total");
         Map<String,BigDecimal> totalMap = new HashMap<>();
         Map<String,List<DataVisitingUsersVo>> map = new HashMap<>();
@@ -69,11 +74,13 @@ public class MarketService {
             Map.Entry<String, Long> next = iterator.next();
             String key = next.getKey();
             Long value = next.getValue();
-            if (key.equals("age_age")){
+            if ("age_age".equals(key)){
                 map.put("age",new ArrayList(){{add(new DataVisitingUsersVo(MarketConstant.DICTIONARY.get("age_age"), String.valueOf(value/total),"age"));}});
             }else {
                 String[] keys = key.split("_");
-                if(!map.containsKey(keys[0]))map.put(keys[0],new ArrayList<>());
+                if(!map.containsKey(keys[0])) {
+                    map.put(keys[0],new ArrayList<>());
+                }
                 BigDecimal price = new BigDecimal(value).divide(new BigDecimal(total), 4, BigDecimal.ROUND_DOWN).multiply(BigDecimal.valueOf(100));
                 DataVisitingUsersVo vo = new DataVisitingUsersVo(MarketConstant.DICTIONARY.get(key), df.format(price), keys[1]);
                 if (totalMap.containsKey(keys[0])) {
@@ -96,5 +103,19 @@ public class MarketService {
             }
         }
         return BaseResultEntity.success(map);
+    }
+
+    public Map<Object, Object> display(String type, Integer operation) {
+        if (operation!=0){
+            if (operation == 1){
+                primaryStringRedisTemplate.opsForHash().increment(MarketConstant.MARKET_DISPLAY_MAP_KEY,type,1);
+            }else if (operation == 2){
+                String[] split = type.split(",");
+                for (String t : split) {
+                    primaryStringRedisTemplate.opsForHash().put(MarketConstant.MARKET_DISPLAY_MAP_KEY,t,String.valueOf((int)(Math.random()*1000)));
+                }
+            }
+        }
+        return new TreeMap<Object, Object>(primaryStringRedisTemplate.opsForHash().entries(MarketConstant.MARKET_DISPLAY_MAP_KEY));
     }
 }

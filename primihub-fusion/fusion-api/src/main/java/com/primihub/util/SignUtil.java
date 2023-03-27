@@ -130,8 +130,9 @@ public class SignUtil {
         }
         byte[] digestBytes = messagedigest.digest();
         String value= Hex.encodeHexString(digestBytes);
-        if(CaseStyle.UPPER.equals(caseStyle))
+        if(CaseStyle.UPPER.equals(caseStyle)) {
             return value.toUpperCase();
+        }
         return value;
     }
 

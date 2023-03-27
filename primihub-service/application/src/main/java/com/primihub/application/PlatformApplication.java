@@ -5,6 +5,7 @@ import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -16,6 +17,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
         @NacosPropertySource(dataId = "redis.yaml" ,autoRefreshed = true)})
 @SpringBootApplication(scanBasePackages="com.primihub")
 @EnableAsync
+//@ServletComponentScan(basePackages = {"com.primihub.biz.filter"})
 @EnableBinding({SingleTaskChannel.class})
 public class PlatformApplication {
 

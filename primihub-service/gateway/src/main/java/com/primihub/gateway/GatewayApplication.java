@@ -30,7 +30,7 @@ import org.springframework.context.annotation.FilterType;
                         SysFusionService.class ,
                         ThreadPoolConfig.class,
                         NodeDataConfig.class,
-                        SysCaptchaCacheService.class,
+                        SysCaptchaCacheServiceImpl.class,
                         SysUserService.class,
                         SysOauthService.class,
                         SysSseEmitterService.class,

@@ -36,8 +36,9 @@ public class  ComponentTaskReq {
     }
 
     public DataModelAndComponentReq getModelComponentReq(){
-        if (modelComponentReq!=null)
+        if (modelComponentReq!=null){
             return modelComponentReq;
+        }
         try {
             if (StringUtils.isNotBlank(dataModel.getComponentJson())) {
                 modelComponentReq  = JSONObject.parseObject(dataModel.getComponentJson(), DataModelAndComponentReq.class);

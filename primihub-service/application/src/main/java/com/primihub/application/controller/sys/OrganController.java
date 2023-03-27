@@ -33,8 +33,9 @@ public class OrganController {
         homeMap.remove("token");
         homeMap.remove("timestamp");
         homeMap.remove("nonce");
-        if (homeMap.size()==0)
+        if (homeMap.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"无参数");
+        }
         return sysOrganService.changeHomepage(homeMap);
     }
 

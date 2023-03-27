@@ -110,16 +110,18 @@ public class TestController {
 
     @RequestMapping("/testFile")
     public BaseResultEntity testFile(String filePath,Integer severalLines) throws Exception {
-        if (StringUtils.isBlank(filePath))
+        if (StringUtils.isBlank(filePath)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
+        }
         ResourceFileData resourceFileData = dataResourceService.getResourceFileData(filePath);
         return BaseResultEntity.success(resourceFileData);
     }
 
     @RequestMapping("/testFileMd5")
     public BaseResultEntity testFileMd5(String filePath){
-        if (StringUtils.isBlank(filePath))
+        if (StringUtils.isBlank(filePath)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
+        }
         return BaseResultEntity.success(FileUtil.md5HashCode(new File(filePath)));
     }
 

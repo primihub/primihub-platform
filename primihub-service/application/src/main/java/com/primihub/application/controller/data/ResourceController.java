@@ -63,8 +63,9 @@ public class ResourceController {
 
     @GetMapping("getDerivationResourceData")
     public BaseResultEntity getDerivationResourceData(DerivationResourceReq req){
-        if (req.getResourceId() == null || req.getResourceId() ==0L)
+        if (req.getResourceId() == null || req.getResourceId() ==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        }
         return dataResourceService.getDerivationResourceData(req);
     }
 
@@ -78,29 +79,31 @@ public class ResourceController {
     public BaseResultEntity saveDataResource(@RequestBody DataResourceReq req,
                                              @RequestHeader("userId") Long userId){
         if (req.getResourceId()!=null&&req.getResourceId()!=0L){
-            if ((req.getResourceName()==null||req.getResourceName().trim().equals(""))
-                    &&(req.getResourceDesc()==null||req.getResourceDesc().trim().equals(""))
+            if ((req.getResourceName()==null|| "".equals(req.getResourceName().trim()))
+                    &&(req.getResourceDesc()==null|| "".equals(req.getResourceDesc().trim()))
                     &&(req.getResourceAuthType()==null || req.getResourceAuthType()==0)
-                    &&(req.getPublicOrganId()==null||req.getPublicOrganId().trim().equals(""))
+                    &&(req.getPublicOrganId()==null|| "".equals(req.getPublicOrganId().trim()))
                     &&(req.getResourceSource()==null || req.getResourceSource()==0)
                     &&(req.getTags()==null||req.getTags().size()==0)){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"至少需要一个修改的字段");
             }
-            if(!DataResourceAuthType.AUTH_TYPE_MAP.containsKey(req.getResourceAuthType()))
+            if(!DataResourceAuthType.AUTH_TYPE_MAP.containsKey(req.getResourceAuthType())) {
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"resourceAuthType");
+            }
             return dataResourceService.editDataResource(req,userId);
         }else {
-            if (req.getResourceName()==null||req.getResourceName().trim().equals("")){
+            if (req.getResourceName()==null|| "".equals(req.getResourceName().trim())){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceName");
             }
-            if (req.getResourceDesc()==null||req.getResourceDesc().trim().equals("")){
+            if (req.getResourceDesc()==null|| "".equals(req.getResourceDesc().trim())){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceDesc");
             }
             if (req.getResourceAuthType()==null || req.getResourceAuthType()==0){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceAuthType");
             }
-            if(!DataResourceAuthType.AUTH_TYPE_MAP.containsKey(req.getResourceAuthType()))
+            if(!DataResourceAuthType.AUTH_TYPE_MAP.containsKey(req.getResourceAuthType())) {
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"resourceAuthType");
+            }
             if (req.getResourceSource()==null || req.getResourceSource()<=0){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceSource");
             }
@@ -113,27 +116,36 @@ public class ResourceController {
                 }
             }
             if (req.getResourceSource() == 2){
-                if (req.getDataSource() == null)
+                if (req.getDataSource() == null) {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSource");
-                if (StringUtils.isBlank(req.getDataSource().getDbUrl()))
+                }
+                if (StringUtils.isBlank(req.getDataSource().getDbUrl())) {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Url");
-                if (StringUtils.isBlank(req.getDataSource().getDbName()))
+                }
+                if (StringUtils.isBlank(req.getDataSource().getDbName())) {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"DbName");
-                if (StringUtils.isBlank(req.getDataSource().getDbTableName()))
+                }
+                if (StringUtils.isBlank(req.getDataSource().getDbTableName())) {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"DbTableName");
-                if (req.getDataSource().getDbType()==null || req.getDataSource().getDbType()<=0)
+                }
+                if (req.getDataSource().getDbType()==null || req.getDataSource().getDbType()<=0) {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Type");
+                }
                 if (SourceEnum.SOURCE_MAP.get(req.getDataSource().getDbType()) == SourceEnum.mysql){
-                    if (StringUtils.isBlank(req.getDataSource().getDbDriver()))
+                    if (StringUtils.isBlank(req.getDataSource().getDbDriver())) {
                         return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Driver");
-                    if (StringUtils.isBlank(req.getDataSource().getDbUsername()))
+                    }
+                    if (StringUtils.isBlank(req.getDataSource().getDbUsername())) {
                         return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Username");
-                    if (StringUtils.isBlank(req.getDataSource().getDbPassword()))
+                    }
+                    if (StringUtils.isBlank(req.getDataSource().getDbPassword())) {
                         return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Password");
+                    }
                 }
             }
-            if (req.getFieldList()==null || req.getFieldList().size()==0)
+            if (req.getFieldList()==null || req.getFieldList().size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldList");
+            }
             return dataResourceService.saveDataResource(req,userId);
         }
     }
@@ -168,8 +180,9 @@ public class ResourceController {
     @RequestMapping("resourceFilePreview")
     public BaseResultEntity resourceFilePreview(Long fileId,String resourceId){
         if (StringUtils.isBlank(resourceId)){
-            if(fileId==null||fileId==0L)
+            if(fileId==null||fileId==0L) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId or resourceId");
+            }
         }
         return dataResourceService.resourceFilePreview(fileId,resourceId);
     }
@@ -199,13 +212,15 @@ public class ResourceController {
      */
     @RequestMapping("updateDataResourceField")
     public BaseResultEntity updateDataResourceField(DataResourceFieldReq req){
-        if (req.getFieldId()==null||req.getFieldId()==0L)
+        if (req.getFieldId()==null||req.getFieldId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldId");
+        }
         FieldTypeEnum fieldTypeEnum = null;
         if (StringUtils.isNotBlank(req.getFieldType())){
             fieldTypeEnum = FieldTypeEnum.getEnumByTypeName(req.getFieldType());
-            if (fieldTypeEnum==null)
+            if (fieldTypeEnum==null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"类型错误");
+            }
         }
         return dataResourceService.updateDataResourceField(req,fieldTypeEnum);
     }
@@ -219,8 +234,9 @@ public class ResourceController {
         if (resourceState==null){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceState");
         }
-        if (!ResourceStateEnum.RESOURCE_STATE_MAP.containsKey(resourceState))
+        if (!ResourceStateEnum.RESOURCE_STATE_MAP.containsKey(resourceState)) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"resourceState");
+        }
         return dataResourceService.resourceStatusChange(resourceId,resourceState);
     }
 

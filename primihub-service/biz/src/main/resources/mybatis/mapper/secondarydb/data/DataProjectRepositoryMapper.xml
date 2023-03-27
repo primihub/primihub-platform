@@ -237,6 +237,7 @@
                 </if>
             )
         </if>
+        <if test="projectId!=null and projectId!=''">and project_id like CONCAT('%',#{projectId,jdbcType=VARCHAR},'%')</if>
         <if test="startDate!=null and startDate!=''">and create_date <![CDATA[ >= ]]> #{startDate}  </if>
         <if test="endDate!=null and endDate!=''">and create_date <![CDATA[ <= ]]> #{endDate}  </if>
     </sql>
