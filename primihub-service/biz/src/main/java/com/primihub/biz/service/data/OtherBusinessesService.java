@@ -164,9 +164,9 @@ public class OtherBusinessesService {
         try {
             Object data = null;
             if (StringUtils.isEmpty(publicKey)){
-                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
-            }else {
                 data = vo;
+            }else {
+                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
             }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
