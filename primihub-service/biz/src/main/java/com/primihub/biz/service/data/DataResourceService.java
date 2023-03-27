@@ -397,7 +397,7 @@ public class DataResourceService {
         return fileFieldList;
     }
 
-    public List<DataFileField> batchInsertDataDataSourceField(Set<String> headers,Map<String,Object> dataMap) {
+    public List<DataFileField> batchInsertDataDataSourceField(TreeSet<String> headers,Map<String,Object> dataMap) {
         List<DataFileField> fileFieldList = new ArrayList<>();
         int i = 1;
         Iterator<String> iterator = headers.iterator();

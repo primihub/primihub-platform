@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Service
 public class SqliteServiceAbstract extends AbstractDataDBService {
 
-    protected static final String QUERY_TABLES_SQL = "select name from sqlite_master where type='table' order by name";
+    protected static final String QUERY_TABLES_SQL = "select name from sqlite_master where type='table' order by name desc";
     protected static final String QUERY_DETAILS_SQL = "select * from <tableName> limit 0,50";
     protected static final String QUERY_COUNT_SQL = "select count(*) total from <tableName>";
     protected static final String QUERY_COUNT_Y_SQL = "select count(*) ytotal from <tableName>";
@@ -76,7 +76,7 @@ public class SqliteServiceAbstract extends AbstractDataDBService {
                 }
                 details.add(map);
             }
-            Set<String> columns = details.get(0).keySet();
+            TreeSet<String> columns = new TreeSet<>(details.get(0).keySet());
             List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columns, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));

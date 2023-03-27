@@ -34,8 +34,7 @@ public class ShareFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpRequest = (HttpServletRequest)request;
-        String contextPath = httpRequest.getContextPath();
-        if (contextPath.contains("ignore")){
+        if (httpRequest.getParameterMap().containsKey("ignore")){
             filterChain.doFilter(request, response);
         }else {
             String bodytxt;

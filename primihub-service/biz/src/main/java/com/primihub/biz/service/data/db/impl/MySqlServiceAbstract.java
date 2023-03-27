@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data.db.impl;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -15,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -80,8 +78,8 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
             if (details.isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据信息");
             }
-            Set<String> columns = details.get(0).keySet();
-            List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columns, details.get(0));
+            TreeSet<String> treeSet = new TreeSet(details.get(0).keySet());
+            List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(treeSet, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
             map.put("dataList",details);
@@ -94,6 +92,16 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
                 jdbcDataSource.close();
             }
         }
+    }
+
+    public static void main(String[] args) {
+        TreeSet treeSet = new TreeSet();
+        treeSet.add("zhang");
+        treeSet.add("id");
+        treeSet.add("d");
+        treeSet.add("ad");
+        treeSet.add("y");
+        System.out.println(JSONObject.toJSONString(treeSet));
     }
 
     @Override
