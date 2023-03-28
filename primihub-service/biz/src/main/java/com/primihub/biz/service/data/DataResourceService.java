@@ -343,8 +343,14 @@ public class DataResourceService {
             if (dataResource==null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
             }
+            if (dataResource.getResourceSource() == 2){
+                DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                return dataSourceService.dataSourceTableDetails(dataSource);
+
+            }
             fileId = dataResource.getFileId();
         }
+
         SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(fileId);
         if (sysFile==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
