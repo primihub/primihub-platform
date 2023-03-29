@@ -378,7 +378,7 @@ public class SysFusionService {
     }
 
 
-    public BaseResultEntity getOrganExtendsList(String serverAddress) {
+    public BaseResultEntity getOrganExtendsList() {
         Map result=new HashMap();
         try {
             ResponseEntity<JSONObject> forEntity = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);

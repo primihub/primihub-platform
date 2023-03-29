@@ -99,11 +99,8 @@ public class FusionController {
     }
 
     @RequestMapping("getOrganExtendsList")
-    public BaseResultEntity getOrganExtendsList(String serverAddress){
-        if(serverAddress==null|| "".equals(serverAddress.trim())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-        }
-        return sysFusionService.getOrganExtendsList(serverAddress);
+    public BaseResultEntity getOrganExtendsList(){
+        return sysFusionService.getOrganExtendsList();
     }
 
 }
