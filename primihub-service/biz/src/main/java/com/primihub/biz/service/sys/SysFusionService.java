@@ -6,6 +6,7 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
@@ -22,6 +23,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -44,6 +46,8 @@ public class SysFusionService {
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private SysAsyncService sysAsyncService;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     public BaseResultEntity healthConnection(String serverAddress){
         try{
@@ -375,31 +379,13 @@ public class SysFusionService {
 
 
     public BaseResultEntity getOrganExtendsList(String serverAddress) {
-        SysLocalOrganInfo sysLocalOrganInfo;
-        try {
-            sysLocalOrganInfo = getSysLocalOrganInfo();
-        } catch (NacosException e) {
-            log.info("nacos-get",e);
-            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
-        }
-        String fusionMsg="查询成功";
         Map result=new HashMap();
-        try{
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            MultiValueMap map = new LinkedMultiValueMap<>();
-            map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
-            map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-            BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/getOrganExtendsList",request, BaseResultEntity.class);
-            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
-                fusionMsg=resultEntity.getMsg();
-            }
-            result.put("dataList",resultEntity.getResult());
+        try {
+            ResponseEntity<BaseResultEntity> forEntity = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, BaseResultEntity.class);
+            result.put("dataList",forEntity.getBody().getResult());
         }catch (Exception e){
-            fusionMsg=e.getMessage();
+            result.put("dataList",organConfiguration.getCollectOrganList());
         }
-        result.put("fusionMsg",fusionMsg);
         return BaseResultEntity.success(result);
     }
 }

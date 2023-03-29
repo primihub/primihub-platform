@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * 机构
+ */
 @RequestMapping("organ")
 @RestController
 public class OrganController {
@@ -42,5 +45,15 @@ public class OrganController {
     @RequestMapping("getHomepage")
     public BaseResultEntity getHomepage(){
         return sysOrganService.getHomepage();
+    }
+
+    /**
+     * 上报节点信息
+     * @return
+     */
+    @RequestMapping("collectBaseData")
+    public BaseResultEntity collectBaseData(){
+        sysOrganService.collectBaseData();
+        return BaseResultEntity.success();
     }
 }
