@@ -381,9 +381,14 @@ public class SysFusionService {
     public BaseResultEntity getOrganExtendsList(String serverAddress) {
         Map result=new HashMap();
         try {
-            ResponseEntity<BaseResultEntity> forEntity = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, BaseResultEntity.class);
-            result.put("dataList",forEntity.getBody().getResult());
+            ResponseEntity<JSONObject> forEntity = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);
+            if (forEntity != null && forEntity.getBody()!=null && forEntity.getBody().containsKey("data")) {
+                result.put("dataList",forEntity.getBody().get("data"));
+            }
         }catch (Exception e){
+            log.info(e.getMessage());
+        }
+        if (!result.containsKey("dataList")){
             result.put("dataList",organConfiguration.getCollectOrganList());
         }
         return BaseResultEntity.success(result);
