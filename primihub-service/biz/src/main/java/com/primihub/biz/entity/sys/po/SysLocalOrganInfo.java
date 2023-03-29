@@ -21,6 +21,6 @@ public class SysLocalOrganInfo {
     private Map<String,Object> homeMap;
 
     private String publicKey;
-    @JsonIgnore
+//    @JsonIgnore
     private String privateKey;
 }
