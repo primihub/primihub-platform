@@ -119,27 +119,27 @@
         where
         dpt.task_id = dt.task_id
         <if test="resourceName!=null and resourceName!=''"> and dpt.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
-        <if test="taskIdName!=null and taskIdName!=''"> and dt.task_id_name like CONCAT('%',#{taskIdName,jdbcType=VARCHAR},'%')</if>
+        <if test="taskId!=null and taskId!=''"> and dt.task_id_name like CONCAT('%',#{taskId,jdbcType=VARCHAR},'%')</if>
         <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
         <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
         <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
     </sql>
     <sql id="selectDataTaskListWhere">
-        where dt.is_del = 0
+        where is_del = 0
         <if test="taskId!=null and taskId!=''">
-            and dt.task_id_name like CONCAT('%',#{taskId,jdbcType=VARCHAR},'%')
+            and task_id_name = #{taskId}
         </if>
         <if test="start!=null and start!=0">
-            and dt.task_start_time &gt;= #{start}
+            and task_start_time &gt;= #{start}
         </if>
         <if test="end!=null and end!=0">
-            and dt.task_end_time &lt;= #{end}
+            and task_end_time &lt;= #{end}
         </if>
         <if test="taskName!=null and taskName!=''">
-            and dt.task_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+            and task_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
         </if>
         <if test="taskType!=null">
-            and dt.task_type = #{taskType}
+            and task_type = #{taskType}
         </if>
     </sql>
 </mapper>
