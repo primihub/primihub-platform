@@ -23,10 +23,7 @@ import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
-import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
-import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
-import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
-import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
@@ -92,6 +89,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private DataTaskRepository dataTaskRepository;
     @Autowired
     private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataProjectPrRepository dataProjectPrRepository;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
@@ -190,6 +189,7 @@ public class DataAsyncService implements ApplicationContextAware {
             sendShareModelTask(vo);
         }
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
+        dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(req.getDataModel().getProjectId(),null));
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap){
