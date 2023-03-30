@@ -47,7 +47,7 @@ public class DataProjectConvert {
         dataProjectListVo.setProviderOrganNames(dataProject.getProviderOrganNames());
         dataProjectListVo.setStatus(status==null||status==0?dataProject.getStatus():status);
         dataProjectListVo.setCreateDate(dataProject.getCreateDate());
-        dataProjectListVo.setCreateDate(dataProject.getCreateDate());
+        dataProjectListVo.setUpdateDate(dataProject.getUpdateDate());
         if (list!=null){
             for (Map<String, Object> objectMap : list) {
                 Object latestTaskStatus = objectMap.get("latestTaskStatus");

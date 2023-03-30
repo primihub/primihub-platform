@@ -79,22 +79,23 @@ public class DataTaskMonitorService {
                 }
                 Thread.sleep(1000L);
             }
+            primaryStringRedisTemplate.delete(key);
         }catch (Exception e){
             e.printStackTrace();
         }
         primaryStringRedisTemplate.opsForSet().remove(RedisKeyConstant.TASK_STATUS_LIST_KEY,String.format("%s-%s-%s",taskBuild.getTaskId(),taskBuild.getJobId(),taskBuild.getRequestId()));
     }
 
-    public int getNumberOfSuccessfulTasks(String key){
+    public long getNumberOfSuccessfulTasks(String key){
         Long count = primaryStringRedisTemplate.opsForList().size(key);
         if (count==null || count==0L)
-            return 0;
+            return 0L;
         List<String> range = primaryStringRedisTemplate.opsForList().range(key, 0L, count);
         Map<String, Long> statusMap = range.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         if (statusMap.containsKey("SUCCESS")){
-            return statusMap.get("SUCCESS").intValue();
+            return statusMap.get("SUCCESS");
         }
-        return 0;
+        return 0L;
     }
 
 
