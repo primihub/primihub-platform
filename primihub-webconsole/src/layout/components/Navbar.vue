@@ -63,7 +63,7 @@ import { mapGetters, mapState, mapActions } from 'vuex'
 import UpdatePwdForm from '@/components/UpdatePwdForm'
 import BindPhoneDialog from '@/components/BindPhoneDialog'
 
-const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
+const phonePattern = /^[1][\d][0-9]{9}$/
 
 export default {
   components: {
