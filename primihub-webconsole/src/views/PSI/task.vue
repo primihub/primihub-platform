@@ -131,6 +131,7 @@
 import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
 import OrganCascader from '@/components/OrganCascader'
 import ResourceSelect from '@/components/ResourceSelect'
+import difference from 'lodash/difference'
 
 const intersection = require('@/assets/intersection.svg')
 const diffsection = require('@/assets/diffsection.svg')
@@ -290,9 +291,18 @@ export default {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
           const ownKeyword = this.formData.ownKeyword.join(',')
           const otherKeyword = this.formData.otherKeyword.join(',')
-          if (ownKeyword !== otherKeyword) {
+          if (this.formData.ownKeyword.length !== this.formData.otherKeyword.length) {
             this.$message.error('两方关联键需相同')
             return
+          } else {
+            const ownKeywordData = this.formData.ownKeyword
+            const otherKeywordData = this.formData.otherKeyword
+            const difference = ownKeywordData.concat(otherKeywordData).filter(v => !ownKeywordData.includes(v) || !otherKeywordData.includes(v))
+            console.log('difference', difference)
+            if (difference.length > 0) {
+              this.$message.error('两方关联键需相同')
+              return
+            }
           }
           this.isRun = true
           const res = await saveDataPsi(Object.assign({}, this.formData, { ownKeyword, otherKeyword }))
