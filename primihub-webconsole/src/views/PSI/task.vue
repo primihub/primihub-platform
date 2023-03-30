@@ -131,7 +131,6 @@
 import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
 import OrganCascader from '@/components/OrganCascader'
 import ResourceSelect from '@/components/ResourceSelect'
-import difference from 'lodash/difference'
 
 const intersection = require('@/assets/intersection.svg')
 const diffsection = require('@/assets/diffsection.svg')
