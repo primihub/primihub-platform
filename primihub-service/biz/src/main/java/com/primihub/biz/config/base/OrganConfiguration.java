@@ -126,7 +126,6 @@ public class OrganConfiguration {
                 sb.append(data);
             }
             if (StringUtils.isNotBlank(sb.toString())){
-                log.info("data:{}",sb.toString());
                 collectOrganList = JSON.parseArray(sb.toString(),SysCollectOrgan.class);
             }
             br.close();
