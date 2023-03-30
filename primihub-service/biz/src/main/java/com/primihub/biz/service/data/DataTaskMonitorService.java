@@ -40,20 +40,20 @@ public class DataTaskMonitorService {
                 log.info(taskStatusReply.toString());
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
-                    log.info(JSONObject.toJSONString(taskStatus));
+                    log.info("taskId:{} - num:{} - {}",taskBuild.getTaskId(),num,JSONObject.toJSONString(taskStatus));
                     if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){
                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                         List<TaskStatus> taskStatusFails = taskStatusReply.getTaskStatusList().stream().filter(t -> t.getStatus() == TaskStatus.StatusCode.FAIL).collect(Collectors.toList());
                         StringBuilder sb = new StringBuilder();
                         for (TaskStatus taskStatusFail : taskStatusFails) {
-                            log.info("fail:{}",taskStatusFail.toString());
+                            log.info("taskid:{}-fail:{}",taskBuild.getTaskId(),taskStatusFail.toString());
                             sb.append(taskStatusFail.getParty()).append(":").append(taskStatusFail.getMessage()).append("\n");
                         }
                         dataTask.setTaskErrorMsg(sb.toString());
                         isContinue = false;
                     }else {
                         long success = taskStatus.stream().filter("SUCCESS"::equals).count();
-                        log.info("success:{}",success);
+                        log.info("num:{} - success:{}",num,success);
                         if (num <= success){
                             dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                             if (StringUtils.isNotBlank(path)){
@@ -65,6 +65,10 @@ public class DataTaskMonitorService {
                             }
                             isContinue = false;
                         }
+                    }
+                    if (StringUtils.isNotBlank(path) && FileUtil.isFileExists(path)){
+                        dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                        isContinue = false;
                     }
 
                 }
