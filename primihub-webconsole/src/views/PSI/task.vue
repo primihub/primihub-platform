@@ -535,7 +535,6 @@ width: 1200px;
 }
 .item-row{
   display: flex;
-  align-items: center;
   justify-content: space-between;
   width: 781px;
   margin: 0 auto;
