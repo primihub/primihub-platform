@@ -126,8 +126,8 @@
     </sql>
     <sql id="selectDataTaskListWhere">
         where dt.is_del = 0
-        <if test="taskIdName!=null and taskIdName!=''">
-            and dt.task_id_name like CONCAT('%',#{taskIdName,jdbcType=VARCHAR},'%')
+        <if test="taskId!=null and taskId!=''">
+            and dt.task_id_name like CONCAT('%',#{taskId,jdbcType=VARCHAR},'%')
         </if>
         <if test="start!=null and start!=0">
             and dt.task_start_time &gt;= #{start}
