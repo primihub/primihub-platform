@@ -257,7 +257,7 @@ export default {
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
-      providerOrganIds: null,
+      providerOrganIds: [],
       providerOrganDialogVisible: false,
       featuresDialogVisible: false,
       form: {
@@ -354,7 +354,7 @@ export default {
           } else {
             this.initiateOrgan.resourceId = ''
             this.selectedProviderOrgans = []
-            this.providerOrganIds = null
+            this.providerOrganIds = []
             this.selectedResourceId = ''
           }
         } else if (newVal.componentCode === 'model') {
@@ -432,6 +432,8 @@ export default {
           })
           return
         }
+        console.log('23e44', this.selectedProviderOrgans)
+        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
