@@ -11,4 +11,5 @@ public class SysCollectOrgan {
     private String lat;
     private String lon;
     private String creationTime;
+    private String online;
 }
