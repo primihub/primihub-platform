@@ -28,9 +28,9 @@ export default {
         'pk.eyJ1IjoiemhhbmppbmdqaW5nIiwiYSI6ImNsZHNodWltZjF2cHkzdnFnYzhpc2dxa28ifQ.FnBt8nvjN6jtLpvJgU3Z6g'
       this.map = new mapboxgl.Map({
         container: this.doms.Map,
-        style: 'mapbox://styles/mapbox/streets-v11', // style URL
+        style: 'mapbox://styles/mapbox/streets-v12', // style URL
         center: [116.407, 39.9042],
-        zoom: 1,
+        zoom: 2.2,
         attributionControl: false,
         customAttribution: ''
       })
