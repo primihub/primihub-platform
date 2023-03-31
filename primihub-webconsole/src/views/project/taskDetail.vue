@@ -42,8 +42,13 @@
         <el-col class="desc-col" :span="24">
           <div class="desc-label">任务描述:</div>
           <div class="desc-content">
-            <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
-          </div>
+            <template v-if="oneself">
+              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
+            </template>
+            <template v-else>
+              {{ taskDesc }}
+            </template>
+          </div>x
         </el-col>
       </el-row>
       <div class="buttons">
