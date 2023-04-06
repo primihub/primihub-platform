@@ -11,7 +11,7 @@ public enum ModelTypeEnum {
     MPC_LR(4,"MPC-LR",1,null),
     HETERO_LR(5,"HETERO-LR",1,DataConstant.FREEMARKER_PYTHON_HETERO_LR_PATH),
     BINARY(6,"binary",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH),
-    BINARY_DPSGD(7,"binary_dpsgd",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH),
+    BINARY_DPSGD(7,"binary_dpsgd",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_DPSGD_PATH),
     ;
     private Integer type;
     private String name;
