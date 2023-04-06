@@ -9,7 +9,9 @@ public enum ModelTypeEnum {
     V_XGBOOST(2,"V-XGBoost",1, DataConstant.FREEMARKER_PYTHON_EN_PATH),
     TRANSVERSE_LR(3,"横向LR",1,DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH),
     MPC_LR(4,"MPC-LR",1,null),
-    HETERO_LR(5,"HETERO-LR",1,DataConstant.FREEMARKER_PYTHON_HETERO_LR_PATH)
+    HETERO_LR(5,"HETERO-LR",1,DataConstant.FREEMARKER_PYTHON_HETERO_LR_PATH),
+    BINARY(6,"binary",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH),
+    BINARY_DPSGD(7,"binary_dpsgd",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH),
     ;
     private Integer type;
     private String name;
