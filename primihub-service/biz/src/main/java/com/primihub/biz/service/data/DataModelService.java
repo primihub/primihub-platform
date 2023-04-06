@@ -21,6 +21,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
@@ -43,6 +44,8 @@ public class DataModelService {
 
     @Autowired
     private DataProjectRepository dataProjectRepository;
+    @Autowired
+    private DataProjectPrRepository dataProjectPrRepository;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
@@ -244,6 +247,7 @@ public class DataModelService {
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
 //                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
+                dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null));
             }
             dataModel.setProjectId(params.getProjectId());
             saveOrGetModelComponentCache(true, userId,params.getProjectId(), params, dataModel);
@@ -574,6 +578,7 @@ public class DataModelService {
             }
             dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
         }
+        dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(null,vo.getProjectId()));
         return BaseResultEntity.success();
     }
 

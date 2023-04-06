@@ -6,7 +6,7 @@ import lombok.Data;
 public class DataFResourceReq extends PageReq {
     private String resourceId;
     private String resourceName;
-    private Integer resourceType;
+    private Integer resourceSource;
     private String organId;
     private String tagName;
     private String serverAddress;

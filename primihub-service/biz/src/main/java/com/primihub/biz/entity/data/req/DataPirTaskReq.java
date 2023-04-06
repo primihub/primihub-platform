@@ -18,6 +18,6 @@ public class DataPirTaskReq extends PageReq {
      */
     private Integer taskState;
 
-    private String taskIdName;
+    private String taskId;
 
 }

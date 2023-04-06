@@ -343,8 +343,14 @@ public class DataResourceService {
             if (dataResource==null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
             }
+            if (dataResource.getResourceSource() == 2){
+                DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                return dataSourceService.dataSourceTableDetails(dataSource);
+
+            }
             fileId = dataResource.getFileId();
         }
+
         SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(fileId);
         if (sysFile==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -397,7 +403,7 @@ public class DataResourceService {
         return fileFieldList;
     }
 
-    public List<DataFileField> batchInsertDataDataSourceField(Set<String> headers,Map<String,Object> dataMap) {
+    public List<DataFileField> batchInsertDataDataSourceField(TreeSet<String> headers,Map<String,Object> dataMap) {
         List<DataFileField> fileFieldList = new ArrayList<>();
         int i = 1;
         Iterator<String> iterator = headers.iterator();

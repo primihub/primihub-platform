@@ -19,6 +19,7 @@ import primihub.rpc.Common;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -35,45 +36,66 @@ public class DataTaskMonitorService {
         boolean isContinue = true;
         primaryStringRedisTemplate.opsForSet().add(RedisKeyConstant.TASK_STATUS_LIST_KEY,String.format("%s-%s-%s",taskBuild.getTaskId(),taskBuild.getJobId(),taskBuild.getRequestId()));
         try {
+            String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
             while (isContinue){
                 TaskStatusReply taskStatusReply = workGrpcClient.run(o -> o.fetchTaskStatus(taskBuild));
                 log.info(taskStatusReply.toString());
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
-                    List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
-                    log.info(JSONObject.toJSONString(taskStatus));
-                    if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){
-                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                        List<TaskStatus> taskStatusFails = taskStatusReply.getTaskStatusList().stream().filter(t -> t.getStatus() == TaskStatus.StatusCode.FAIL).collect(Collectors.toList());
-                        StringBuilder sb = new StringBuilder();
-                        for (TaskStatus taskStatusFail : taskStatusFails) {
-                            log.info("fail:{}",taskStatusFail.toString());
-                            sb.append(taskStatusFail.getParty()).append(":").append(taskStatusFail.getMessage()).append("\n");
-                        }
-                        dataTask.setTaskErrorMsg(sb.toString());
-                        isContinue = false;
-                    }else {
-                        long success = taskStatus.stream().filter(t -> "SUCCESS".equals(t)).count();
-                        log.info("success:{}",success);
-                        if (num <= success){
-                            dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                            if (StringUtils.isNotBlank(path)){
-                                if (!FileUtil.isFileExists(path)){
-                                    log.info("path:{} 不存在",path);
-                                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                                    dataTask.setTaskErrorMsg("运行失败:无文件信息");
-                                }
+                    List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->StringUtils.isNotBlank(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
+                    if (!taskStatus.isEmpty()){
+                        log.info("taskId:{} - num:{} - {}",taskBuild.getTaskId(),num,JSONObject.toJSONString(taskStatus));
+                        primaryStringRedisTemplate.opsForList().rightPushAll(key,taskStatus);
+                        primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
+                        if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){
+                            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                            List<TaskStatus> taskStatusFails = taskStatusReply.getTaskStatusList().stream().filter(t -> t.getStatus() == TaskStatus.StatusCode.FAIL).collect(Collectors.toList());
+                            StringBuilder sb = new StringBuilder();
+                            for (TaskStatus taskStatusFail : taskStatusFails) {
+                                log.info("taskid:{}-fail:{}",taskBuild.getTaskId(),taskStatusFail.toString());
+                                sb.append(taskStatusFail.getParty()).append(":").append(taskStatusFail.getMessage()).append("\n");
                             }
+                            dataTask.setTaskErrorMsg(sb.toString());
+                            isContinue = false;
+                        }else {
+                            long success = getNumberOfSuccessfulTasks(key);
+                            log.info("num:{} - success:{}",num,success);
+                            if (num <= success){
+                                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                if (StringUtils.isNotBlank(path)){
+                                    if (!FileUtil.isFileExists(path)){
+                                        log.info("path:{} 不存在",path);
+                                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                                        dataTask.setTaskErrorMsg("运行失败:无文件信息");
+                                    }
+                                }
+                                isContinue = false;
+                            }
+                        }
+                        if (StringUtils.isNotBlank(path) && FileUtil.isFileExists(path)){
+                            dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                             isContinue = false;
                         }
                     }
-
                 }
                 Thread.sleep(1000L);
             }
+            primaryStringRedisTemplate.delete(key);
         }catch (Exception e){
             e.printStackTrace();
         }
         primaryStringRedisTemplate.opsForSet().remove(RedisKeyConstant.TASK_STATUS_LIST_KEY,String.format("%s-%s-%s",taskBuild.getTaskId(),taskBuild.getJobId(),taskBuild.getRequestId()));
+    }
+
+    public long getNumberOfSuccessfulTasks(String key){
+        Long count = primaryStringRedisTemplate.opsForList().size(key);
+        if (count==null || count==0L)
+            return 0L;
+        List<String> range = primaryStringRedisTemplate.opsForList().range(key, 0L, count);
+        Map<String, Long> statusMap = range.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        if (statusMap.containsKey("SUCCESS")){
+            return statusMap.get("SUCCESS");
+        }
+        return 0L;
     }
 
 

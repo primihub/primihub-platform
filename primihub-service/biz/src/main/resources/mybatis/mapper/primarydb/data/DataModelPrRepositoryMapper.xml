@@ -55,11 +55,19 @@
             <if test="resourceNum!=null">resource_num = #{resourceNum},</if>
             <if test="yValueColumn!=null">y_value_column = #{yValueColumn},</if>
             <if test="trainType!=null">train_type = #{trainType},</if>
-            <if test="isDraft!=null">is_draft = #{isDraft},</if>
+            <if test="isDraft!=null">
+                is_draft = #{isDraft},
+                <if test="isDraft==1">
+                    update_date = now(),
+                </if>
+                <if test="isDraft==0 and updateDate!=null">
+                    update_date = #{updateDate},
+                </if>
+            </if>
             <if test="userId!=null">user_id = #{userId},</if>
             <if test="organId!=null">organ_id = #{organId},</if>
             <if test="componentJson!=null">component_json = #{componentJson},</if>
-            update_date = now()
+
         </set>
         where model_id = #{modelId}
     </update>

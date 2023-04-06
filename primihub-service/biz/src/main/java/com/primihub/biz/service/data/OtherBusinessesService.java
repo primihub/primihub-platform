@@ -17,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -44,7 +45,7 @@ public class OtherBusinessesService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             map.put("resourceId", new ArrayList(){{add(req.getResourceId());}});
             map.put("resourceName", new ArrayList(){{add(req.getResourceName());}});
-            map.put("resourceType", new ArrayList(){{add(req.getResourceType());}});
+            map.put("resourceType", new ArrayList(){{add(req.getResourceSource());}});
             map.put("organId", new ArrayList(){{add(req.getOrganId());}});
             map.put("fileContainsY", new ArrayList(){{add(req.getFileContainsY());}});
             map.put("tagName", new ArrayList(){{add(req.getTagName());}});
@@ -161,16 +162,22 @@ public class OtherBusinessesService {
 
     public void syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey){
         try {
-            String data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
+            Object data;
+            if (StringUtils.isEmpty(publicKey)){
+                data = vo;
+            }else {
+                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
+            }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);
             log.info(gatewayAddressAndApi);
             BaseResultEntity baseResultEntity = restTemplate.postForObject(gatewayAddressAndApi, request, BaseResultEntity.class);
-            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+            log.info("baseResultEntity {}",JSONObject.toJSONString(baseResultEntity));
         }catch (Exception e){
-            log.info("gatewayAddress api Exception:{}",e.getMessage());
+            log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
+            e.printStackTrace();
         }
-        log.info("gatewayAddress api end:{}",System.currentTimeMillis());
+        log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());
     }
 }
