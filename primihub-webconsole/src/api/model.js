@@ -154,3 +154,11 @@ export function restartTaskModel(params) {
   })
 }
 
+export function updateModelDesc(params) {
+  return request({
+    url: '/data/model/updateModelDesc',
+    method: 'get',
+    params
+  })
+}
+

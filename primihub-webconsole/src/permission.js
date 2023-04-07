@@ -15,12 +15,13 @@ router.beforeEach(async(to, from, next) => {
   // start progress bar
   NProgress.start()
 
+  await store.dispatch('watchRouter/getPath', to.path)
+
   // set page title
   document.title = getPageTitle(to.meta.title)
 
   // determine whether the user has logged in
   const hasToken = getToken()
-
   if (to.matched.length === 0 && flag !== 0) { // 如果未匹配到路由
     console.log('未匹配到路由', to.path)
     Message({

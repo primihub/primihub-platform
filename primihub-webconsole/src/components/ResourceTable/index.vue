@@ -7,6 +7,7 @@
     :data="data"
     v-bind="$attrs"
     highlight-current-row
+    min-height="300"
     @selection-change="handleSelectionChange"
   >
     <template slot="empty">
@@ -20,15 +21,14 @@
       width="40"
     />
     <el-table-column
-      label="资源名称 / Id"
+      label="资源ID"
+      prop="resourceId"
+    />
+    <el-table-column
+      label="资源名称"
       min-width="120"
-    >
-      <template slot-scope="{row}">
-        <!-- <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br> -->
-        {{ row.resourceName }}<br>
-        {{ row.resourceId }}
-      </template>
-    </el-table-column>
+      prop="resourceName"
+    />
     <el-table-column
       label="资源信息"
       min-width="120"
@@ -38,6 +38,10 @@
         样本量：{{ row.resourceRowsCount }} <br>
         正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
         正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
+        <div class="margin-top-5">
+          <el-tag v-if="row.resourceContainsY" type="primary" size="mini">包含Y值</el-tag>
+          <el-tag v-else type="danger" size="mini">不包含Y值</el-tag>
+        </div>
       </template>
     </el-table-column>
     <el-table-column
@@ -55,28 +59,20 @@
         {{ row.auditStatus | resourceAuditStatusFilter }}
       </template>
     </el-table-column>
+
     <el-table-column
-      label="是否包含Y值"
-      min-width="80"
-      align="center"
-    >
-      <template slot-scope="{row}">
-        {{ row.resourceContainsY? '是' : '否' }}
-      </template>
-    </el-table-column>
-    <el-table-column
-      v-if="showButtons"
+      v-if="showDeleteButton || showPreviewButton"
       label="操作"
       align="center"
       min-width="120"
     >
       <template slot-scope="{row}">
-        <template v-if="thisInstitution && row.participationIdentity === 2 && projectAuditStatus && row.auditStatus === 0">
+        <template v-if="thisInstitution && projectAuditStatus && row.auditStatus === 0">
           <el-button :disabled="status === 2" size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
           <el-button :disabled="status === 2" size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
         </template>
-        <el-button v-if="thisInstitution" :disabled="status === 2" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-        <el-button v-if="thisInstitution || creator" :disabled="status === 2" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+        <el-button v-if="showPreviewButton" :disabled="status === 2" size="mini" type="primary" plain @click="handlePreview(row)">查看</el-button>
+        <el-button v-if="showDeleteButton" :disabled="status === 2" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -113,7 +109,11 @@ export default {
       type: Boolean,
       default: true
     },
-    showButtons: {
+    showPreviewButton: {
+      type: Boolean,
+      default: true
+    },
+    showDeleteButton: {
       type: Boolean,
       default: true
     },
@@ -149,12 +149,15 @@ export default {
       }
     }
   },
+  created() {
+    console.log(this.showDeleteButton)
+    console.log(this.showPreviewButton)
+  },
   mounted() {
     this.toggleSelection(this.selectedData)
   },
   methods: {
     toggleSelection(rows) {
-      console.log(this.selectedData)
       this.$refs.table.clearSelection()
       this.$nextTick(() => {
         if (rows) {
