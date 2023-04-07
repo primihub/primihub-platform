@@ -33,7 +33,8 @@
           <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
             <el-tab-pane v-for="item in organs" :key="item.organId" :name="item.organId" :label="item.organId">
               <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
-                <span :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
+                <span v-if="item.creator" class="identity">{{ item.creator ? '&lt;发起方&gt;':'' }}</span>
+                <span v-else :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
               </p>
               <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain :disabled="projectStatus === 2" @click="openDialog(item.organId)">添加资源到此项目</el-button>
               <p v-if="item.participationIdentity !== 1 && item.auditOpinion" class="auditOpinion" :class="{'danger': item.auditStatus === 2}">审核建议：{{ formatEmoji(item.auditOpinion) }}</p>

@@ -155,7 +155,7 @@ export default {
       modelId: 0,
       modelComponent: [],
       lineChartData: [],
-      anotherQuotas: [],
+      anotherQuotas: null,
       taskState: null,
       projectId: 0,
       task: {},

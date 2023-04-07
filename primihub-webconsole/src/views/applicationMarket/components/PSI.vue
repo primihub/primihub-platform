@@ -9,15 +9,8 @@
         <el-form ref="form" :model="formData" :rules="rules" label-width="70px">
           <div class="header">
             <div class="organ-container">
-              <div class="organ"><span>使用方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
-              <div class="organ"><span>加持方: </span>
-                <el-cascader
-                  v-model="cascaderValue"
-                  disabled
-                  :options="options"
-                  :show-all-levels="false"
-                />
-              </div>
+              <div class="organ"><span>发起方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
+              <div class="organ"><span>协作方: </span><OrganCascader disabled :cascader-value="cascaderValue" placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
             </div>
             <div class="line">
               <div class="line-icon">交</div>
