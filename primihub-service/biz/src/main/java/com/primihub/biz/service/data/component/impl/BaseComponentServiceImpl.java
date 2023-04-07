@@ -3,6 +3,7 @@ package com.primihub.biz.service.data.component.impl;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dto.GrpcComponentDto;
 import com.primihub.biz.entity.data.po.DataModelComponent;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentRelationReq;
@@ -14,6 +15,7 @@ import com.primihub.biz.entity.data.vo.ModelComponentType;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -106,5 +108,15 @@ public class BaseComponentServiceImpl {
 
     public Map<String,String> getComponentVals(List<DataComponentValue> componentValues){
         return componentValues.stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
+    }
+
+    public Map<String, GrpcComponentDto> getGrpcComponentDataSetMap(List<LinkedHashMap<String,Object>> maps){
+        Map<String, GrpcComponentDto> map = new HashMap<>();
+        for (LinkedHashMap<String, Object> dataMap : maps) {
+            List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>)dataMap.get("fieldList");
+            Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
+            map.put(dataMap.get("resourceId").toString(),new GrpcComponentDto(fieldMap,dataMap.get("resourceId").toString()));
+        }
+        return map;
     }
 }
