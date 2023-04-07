@@ -5,8 +5,8 @@
       <el-descriptions-item label="任务Id">{{ data.taskIdName }}</el-descriptions-item>
     </el-descriptions>
     <el-descriptions title="数据配置" :column="2" label-class-name="detail-title">
-      <el-descriptions-item label="节点1">{{ data.ownOrganName }}</el-descriptions-item>
-      <el-descriptions-item label="节点2">{{ data.otherOrganName }}</el-descriptions-item>
+      <el-descriptions-item label="发起方">{{ data.ownOrganName }}</el-descriptions-item>
+      <el-descriptions-item label="协作方">{{ data.otherOrganName }}</el-descriptions-item>
       <el-descriptions-item label="数据表">{{ data.ownResourceName }}</el-descriptions-item>
       <el-descriptions-item label="数据表">{{ data.otherResourceName }}</el-descriptions-item>
       <el-descriptions-item label="关联键">{{ data.ownKeyword }}</el-descriptions-item>
