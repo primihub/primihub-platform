@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data.component.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
@@ -69,74 +70,82 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
 
                 log.info("newids:{}", ids);
             }
-            String jobId = String.valueOf(taskReq.getJob());
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(jointStatisticalMap));
-            Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(taskReq.getValueMap().get("jointStatistical").getBytes(StandardCharsets.UTF_8))).build();
-            Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("ColumnInfo", columnInfoParamValue)
-                    .putParamMap("Data_File", dataFileParamValue)
-                    .putParamMap("TaskDetail", taskDetailParamValue)
-                    .build();
-            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
-            Common.Task task = Common.Task.newBuilder()
-                    .setType(Common.TaskType.ACTOR_TASK)
-                    .setParams(params)
-                    .setName("mpc_statistics")
-                    .setLanguage(Common.Language.PROTO)
-                    .setCode(ByteString.copyFrom("mpc_statistics".getBytes(StandardCharsets.UTF_8)))
-                    .setTaskInfo(taskBuild)
-                    .addInputDatasets("Data_File")
-                    .build();
-            log.info("grpc Common.Task :\n{}", task.toString());
-            PushTaskRequest request = PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
-                    .setTask(task)
-                    .setSequenceNumber(11)
-                    .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
-                    .build();
-            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc结果:{}", reply.toString());
-            if(reply.getRetCode() == 2){
-                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
+            String jointStatistical = taskReq.getValueMap().get("jointStatistical");
+            if (jointStatistical!=null){
+                JSONArray objects = JSONArray.parseArray(jointStatistical);
+                for (Object object : objects) {
+                    Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
+                    Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
+                    Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(object).getBytes(StandardCharsets.UTF_8))).build();
+                    Common.Params params = Common.Params.newBuilder()
+                            .putParamMap("ColumnInfo", columnInfoParamValue)
+                            .putParamMap("Data_File", dataFileParamValue)
+                            .putParamMap("TaskDetail", taskDetailParamValue)
+                            .build();
+                    Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(String.valueOf(taskReq.getJob())).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
+                    Common.Task task = Common.Task.newBuilder()
+                            .setType(Common.TaskType.ACTOR_TASK)
+                            .setParams(params)
+                            .setName("mpc_statistics")
+                            .setLanguage(Common.Language.PROTO)
+                            .setCode(ByteString.copyFrom("mpc_statistics".getBytes(StandardCharsets.UTF_8)))
+                            .setTaskInfo(taskBuild)
+                            .addInputDatasets("Data_File")
+                            .build();
+                    log.info("grpc Common.Task :\n{}", task.toString());
+                    PushTaskRequest request = PushTaskRequest.newBuilder()
+                            .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
+                            .setTask(task)
+                            .setSequenceNumber(11)
+                            .setClientProcessedUpTo(22)
+                            .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
+                            .build();
+                    PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+                    log.info("grpc结果:{}", reply.toString());
+                    if(reply.getRetCode() == 2){
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
+                    }else {
+                        dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
+                        List<ModelDerivationDto> derivationList = new ArrayList<>();
+                        log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(jointStatisticalMap));
+                        Iterator<String> keyi = jointStatisticalMap.keySet().iterator();
+                        while (keyi.hasNext()){
+                            String key = keyi.next();
+                            GrpcComponentDto value = jointStatisticalMap.get(key);
+                            if (value==null) {
+                                continue;
+                            }
+                            log.info("value:{}",JSONObject.toJSONString(value));
+                            derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
+                            log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
+                        }
+                        taskReq.getDerivationList().addAll(derivationList);
+                        taskReq.setNewest(derivationList);
+                        // derivation resource datas
+                        log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
+                        BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
+                        log.info(JSONObject.toJSONString(derivationResource));
+                        if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+derivationResource.getMsg());
+                        }else {
+                            List<String> resourceIdLst = (List<String>)derivationResource.getResult();
+                            for (String resourceId : resourceIdLst) {
+                                DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
+                                dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
+                                dataModelResource.setResourceId(resourceId);
+                                dataModelResource.setTakePartType(1);
+                                dataModelPrRepository.saveDataModelResource(dataModelResource);
+                                taskReq.getDmrList().add(dataModelResource);
+                            }
+                        }
+                    }
+                }
             }else {
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
-                List<ModelDerivationDto> derivationList = new ArrayList<>();
-                log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(jointStatisticalMap));
-                Iterator<String> keyi = jointStatisticalMap.keySet().iterator();
-                while (keyi.hasNext()){
-                    String key = keyi.next();
-                    GrpcComponentDto value = jointStatisticalMap.get(key);
-                    if (value==null) {
-                        continue;
-                    }
-                    log.info("value:{}",JSONObject.toJSONString(value));
-                    derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
-                    log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
-                }
-                taskReq.getDerivationList().addAll(derivationList);
-                taskReq.setNewest(derivationList);
-                // derivation resource datas
-                log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
-                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
-                log.info(JSONObject.toJSONString(derivationResource));
-                if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+derivationResource.getMsg());
-                }else {
-                    List<String> resourceIdLst = (List<String>)derivationResource.getResult();
-                    for (String resourceId : resourceIdLst) {
-                        DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
-                        dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
-                        dataModelResource.setResourceId(resourceId);
-                        dataModelResource.setTakePartType(1);
-                        dataModelPrRepository.saveDataModelResource(dataModelResource);
-                        taskReq.getDmrList().add(dataModelResource);
-                    }
-                }
+                taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:jointStatistical不可以为null");
             }
         } catch (Exception e) {
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
