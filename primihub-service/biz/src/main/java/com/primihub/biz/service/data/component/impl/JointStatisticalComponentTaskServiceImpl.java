@@ -85,7 +85,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     .setParams(params)
                     .setName("mpc_statistics")
                     .setLanguage(Common.Language.PROTO)
-                    .setCode(ByteString.copyFrom("MPCStatistics".getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom("mpc_statistics".getBytes(StandardCharsets.UTF_8)))
                     .setTaskInfo(taskBuild)
                     .addInputDatasets("Data_File")
                     .build();
