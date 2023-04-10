@@ -74,10 +74,11 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             String jointStatistical = taskReq.getValueMap().get("jointStatistical");
             if (jointStatistical!=null){
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
-                for (Object object : objects) {
+                for (int i = 0; i < objects.size(); i++) {
+                    JSONObject jsonObject = objects.getJSONObject(i);
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
-                    Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(object).getBytes(StandardCharsets.UTF_8))).build();
+                    Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jsonObject.toJSONString()).getBytes(StandardCharsets.UTF_8))).build();
                     Common.Params params = Common.Params.newBuilder()
                             .putParamMap("ColumnInfo", columnInfoParamValue)
                             .putParamMap("Data_File", dataFileParamValue)
@@ -118,7 +119,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                                 continue;
                             }
                             log.info("value:{}",JSONObject.toJSONString(value));
-                            derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
+                            derivationList.add(new ModelDerivationDto(key,"jointStatistical","联合统计-"+jsonObject.getString("type"),value.getNewDataSetId(),null,value.getDataSetId()));
                             log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
                         }
                         taskReq.getDerivationList().addAll(derivationList);
