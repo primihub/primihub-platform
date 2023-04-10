@@ -73,7 +73,7 @@ public class JointStatisticalComponentServiceImpl extends BaseComponentServiceIm
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(jointStatisticalMap));
             Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(taskReq.getValueMap().get("jointStatistical").getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("ColumnInfo", columnInfoParamValue)
                     .putParamMap("Data_File", dataFileParamValue)
