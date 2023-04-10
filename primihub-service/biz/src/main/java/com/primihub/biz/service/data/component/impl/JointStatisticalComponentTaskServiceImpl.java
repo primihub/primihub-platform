@@ -78,7 +78,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     JSONObject jsonObject = objects.getJSONObject(i);
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
-                    Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jsonObject.toJSONString()).getBytes(StandardCharsets.UTF_8))).build();
+                    Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))).build();
                     Common.Params params = Common.Params.newBuilder()
                             .putParamMap("ColumnInfo", columnInfoParamValue)
                             .putParamMap("Data_File", dataFileParamValue)
@@ -156,4 +156,5 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
         }
         return BaseResultEntity.success();
     }
+
 }
