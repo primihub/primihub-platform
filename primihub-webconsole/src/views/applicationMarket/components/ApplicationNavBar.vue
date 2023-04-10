@@ -175,6 +175,7 @@ export default {
     img{
       max-height: 100%;
       vertical-align: middle;
+      height: 100%;
     }
   }
   .avatar-container {
