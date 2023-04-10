@@ -83,7 +83,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
-                    .setName("MPCStatistics")
+                    .setName("mpc_statistics")
                     .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("MPCStatistics".getBytes(StandardCharsets.UTF_8)))
                     .setTaskInfo(taskBuild)
