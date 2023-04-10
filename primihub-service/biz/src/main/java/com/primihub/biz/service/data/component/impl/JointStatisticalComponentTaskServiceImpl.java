@@ -32,9 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@Service("jointStatisticalComponentServiceImpl")
+@Service("jointStatisticalComponentTaskServiceImpl")
 @Slf4j
-public class JointStatisticalComponentServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
+public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
