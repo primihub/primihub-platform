@@ -119,7 +119,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                                 continue;
                             }
                             log.info("value:{}",JSONObject.toJSONString(value));
-                            derivationList.add(new ModelDerivationDto(key,"jointStatistical","联合统计-"+jsonObject.getString("type"),value.getNewDataSetId(),null,value.getDataSetId()));
+                            derivationList.add(new ModelDerivationDto(key,"jointStatistical","联合统计-"+jsonObject.getString("type"),value.getNewDataSetId(),value.getOutputFilePath(),value.getDataSetId()));
                             log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
                         }
                         taskReq.getDerivationList().addAll(derivationList);
