@@ -110,12 +110,16 @@ public class BaseComponentServiceImpl {
         return componentValues.stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
     }
 
-    public Map<String, GrpcComponentDto> getGrpcComponentDataSetMap(List<LinkedHashMap<String,Object>> maps){
+    public Map<String, GrpcComponentDto> getGrpcComponentDataSetMap(List<LinkedHashMap<String,Object>> maps,String path){
         Map<String, GrpcComponentDto> map = new HashMap<>();
         for (LinkedHashMap<String, Object> dataMap : maps) {
             List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>)dataMap.get("fieldList");
             Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
-            map.put(dataMap.get("resourceId").toString(),new GrpcComponentDto(fieldMap,dataMap.get("resourceId").toString()));
+            GrpcComponentDto resource = new GrpcComponentDto(fieldMap, dataMap.get("resourceId").toString());
+            if (path!=null){
+                resource.setOutputFilePath(path);
+            }
+            map.put(dataMap.get("resourceId").toString(),resource);
         }
         return map;
     }

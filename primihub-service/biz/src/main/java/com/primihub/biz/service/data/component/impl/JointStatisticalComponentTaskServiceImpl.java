@@ -58,7 +58,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
-            Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList());
+            Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName());
             log.info("jointStatisticalMap-1:{}", JSONObject.toJSONString(jointStatisticalMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
