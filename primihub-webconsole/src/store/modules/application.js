@@ -40,7 +40,7 @@ const actions = {
     // type key PIR,PSI,reasoning,ADPrediction,UserPortrait
     return new Promise((resolve, reject) => {
       readNumber(params).then(res => {
-        if (res.code === 0) {
+        if (res.code === 0 && Object.keys(res.result).length > 0) {
           data.map(item => {
             if (res.result[item.appName]) {
               item.readNumber = res.result[item.appName]
@@ -49,7 +49,7 @@ const actions = {
           commit('SET_DATA', data)
           resolve(res.result)
         } else {
-          reject(res.msg)
+          resolve(null)
         }
       }).catch(error => {
         console.log(error)
