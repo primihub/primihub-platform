@@ -237,9 +237,9 @@ public class DataModelService {
             if (params.getIsDraft()!=null&&params.getIsDraft()==1){
                 Map<String, String> paramValuesMap = getDataAlignmentComponentVals(params.getModelComponents());
                 // 模型名称
-                if (StringUtils.isBlank(paramValuesMap.get("modelName"))) {
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少模型名称");
-                }
+//                if (StringUtils.isBlank(paramValuesMap.get("modelName"))) {
+//                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少模型名称");
+//                }
                 // 取消训练类型保存放入 改为运行模型枚举处理
 //                if (StringUtils.isBlank(paramValuesMap.get("trainType")))
 //                    return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"缺少训练类型");
@@ -369,9 +369,9 @@ public class DataModelService {
         if (StringUtils.isBlank(dataModel.getComponentJson())) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
         }
-        if (StringUtils.isBlank(dataModel.getModelName())) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
-        }
+//        if (StringUtils.isBlank(dataModel.getModelName())) {
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
+//        }
 //        if (dataModel.getTrainType()==null)
 //            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型训练类型不能为空");
         Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
@@ -392,11 +392,11 @@ public class DataModelService {
                 .filter(modelComponent -> modelComponent.getIsMandatory() == 0)
                 .map(ModelComponent::getComponentCode)
                 .collect(Collectors.toSet());
-        Set<String> reqSet = modelComponentReq.getModelComponents().stream().map(DataComponentReq::getComponentCode).collect(Collectors.toSet());
-        mandatorySet.removeAll(reqSet);
-        if (!mandatorySet.isEmpty()) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少必选组件,请检查组件");
-        }
+//        Set<String> reqSet = modelComponentReq.getModelComponents().stream().map(DataComponentReq::getComponentCode).collect(Collectors.toSet());
+//        mandatorySet.removeAll(reqSet);
+//        if (!mandatorySet.isEmpty()) {
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少必选组件,请检查组件");
+//        }
         for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
             BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
             if (baseResultEntity.getCode()!=0){
