@@ -146,8 +146,11 @@ public class DataAsyncService implements ApplicationContextAware {
             req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
             req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
             req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-            dataTaskPrRepository.updateDataTask(req.getDataTask());
             Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
+            if (dataComponentReqMap.containsKey("jointStatistical")){
+                req.getDataTask().setTaskType(TaskTypeEnum.JOINT_STATISTICAL.getTaskType());
+            }
+            dataTaskPrRepository.updateDataTask(req.getDataTask());
             req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
             dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
             for (DataComponent dataComponent : req.getDataComponents()) {

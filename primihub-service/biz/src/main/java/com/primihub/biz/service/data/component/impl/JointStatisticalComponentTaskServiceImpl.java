@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("jointStatisticalComponentTaskServiceImpl")
@@ -132,6 +133,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                             taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+derivationResource.getMsg());
                         }else {
+                            Map<String, ModelDerivationDto> dtoMap = derivationList.stream().collect(Collectors.toMap(ModelDerivationDto::getNewResourceId, Function.identity()));
                             List<String> resourceIdLst = (List<String>)derivationResource.getResult();
                             for (String resourceId : resourceIdLst) {
                                 DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
@@ -140,6 +142,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                                 dataModelResource.setTakePartType(1);
                                 dataModelPrRepository.saveDataModelResource(dataModelResource);
                                 taskReq.getDmrList().add(dataModelResource);
+                                taskReq.getDataTask().setTaskResultPath(dtoMap.get(resourceId).getPath());
                             }
                         }
                     }
