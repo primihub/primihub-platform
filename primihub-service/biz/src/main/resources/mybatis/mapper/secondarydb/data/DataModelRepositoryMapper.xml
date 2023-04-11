@@ -20,7 +20,8 @@
             dmt.task_id as latestTaskId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
-            dm.resource_num AS resourceNum
+            dm.resource_num AS resourceNum,
+            dt.task_type as TaskType
         from
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
