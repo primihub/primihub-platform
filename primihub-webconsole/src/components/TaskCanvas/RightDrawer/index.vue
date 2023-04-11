@@ -14,7 +14,7 @@
             <el-divider />
             <div class="organ-header">
               <span><i class="el-icon-office-building" /> <strong>协作方</strong></span>
-              <div class="operation-buttons">
+              <div v-if="options.isEditable" class="operation-buttons">
                 <el-button icon="el-icon-plus" plain size="mini" @click="openProviderOrganDialog">添加协作方</el-button>
               </div>
             </div>
@@ -22,10 +22,10 @@
               <div class="organ-header">
                 <p>
                   {{ organ.organName }}
-                  <i class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
+                  <i v-if="options.isEditable" class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
                 </p>
               </div>
-              <el-button class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
+              <el-button v-if="options.isEditable" class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>
               <ResourceDec v-if="filterData(organ.organId).resourceId" :disabled="!options.isEditable" :data="organ" @change="handleResourceHeaderChange" />
             </div>
           </template>

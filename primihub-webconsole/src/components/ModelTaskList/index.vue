@@ -29,8 +29,8 @@
           align="center"
           label="任务类型"
         >
-          <template>
-            <span><el-tag type="primary" size="mini">模型</el-tag></span>
+          <template slot-scope="{row}">
+            <span><el-tag type="primary" size="mini">{{ row.taskType | taskTypeFilter }}</el-tag></span>
           </template>
         </el-table-column>
         <el-table-column

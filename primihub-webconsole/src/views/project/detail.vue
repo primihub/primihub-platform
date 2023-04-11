@@ -9,7 +9,7 @@
           <template v-if="creator">
             <editInput style="width: 70%;" show-word-limit maxlength="20" :value="projectName" @change="handleProjectNameChange" />
           </template>
-          <template>{{ projectName }}</template>
+          <template v-else>{{ projectName }}</template>
         </el-descriptions-item>
         <el-descriptions-item label="角色">
           {{ creator? '项目发起方' : '项目协作方' }}
