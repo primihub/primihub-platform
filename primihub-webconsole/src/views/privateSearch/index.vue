@@ -86,7 +86,7 @@
         </el-table-column>
         <el-table-column
           prop="resourceName"
-          label="资源名称"
+          label="被查询资源名"
           min-width="100"
         >
           <template slot-scope="{row}">
@@ -126,6 +126,11 @@
             {{ row.createDate.split(' ')[1] }}
           </template>
         </el-table-column>
+        <el-table-column label="任务耗时" min-width="120px">
+          <template slot-scope="{row}">
+            {{ row.consuming | timeFilter }}
+          </template>
+        </el-table-column>
         <el-table-column
           prop="taskState"
           label="查询状态"
@@ -134,11 +139,6 @@
           <template slot-scope="{row}">
             <StatusIcon :status="row.taskState" />
             {{ row.taskState | statusFilter }}
-          </template>
-        </el-table-column>
-        <el-table-column label="任务耗时" min-width="120px">
-          <template slot-scope="{row}">
-            {{ row.consuming | timeFilter }}
           </template>
         </el-table-column>
         <el-table-column

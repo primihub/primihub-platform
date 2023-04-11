@@ -24,9 +24,15 @@
       </el-row>
       <el-row type="flex">
         <el-col class="desc-col" :span="6">
+          <div class="desc-label">结束时间:</div>
+          <div class="desc-content">{{ task.timeConsuming | timeFilter }}</div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
           <div class="desc-label">耗时:</div>
           <div class="desc-content">{{ task.timeConsuming | timeFilter }}</div>
         </el-col>
+      </el-row>
+      <el-row type="flex">
         <el-col class="desc-col" :span="6">
           <div class="desc-label">任务状态:</div>
           <div class="desc-content">

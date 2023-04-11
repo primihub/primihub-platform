@@ -29,7 +29,7 @@
           />
         </div>
       </el-form-item>
-      <el-form-item label="关键词" prop="tags">
+      <el-form-item label="标签" prop="tags">
         <div class="item-wrap-normal">
           <el-tag
             v-for="(tag,index) in dataForm.tags"
@@ -51,8 +51,8 @@
             @keyup.enter.native="handleInputConfirm"
             @blur="handleInputConfirm"
           />
-          <el-button class="button-new-tag" size="small" icon="el-icon-plus" type="primary" plain @click="showInput">添加关键词</el-button>
-          <p class="tips">关键词个数不能超过5个</p>
+          <el-button class="button-new-tag" size="small" icon="el-icon-plus" type="primary" plain @click="showInput">添加标签</el-button>
+          <p class="tips">标签个数不能超过5个</p>
         </div>
       </el-form-item>
       <el-form-item label="授权方式" prop="resourceAuthType">
@@ -167,7 +167,7 @@ export default {
           { min: 0, max: 200, message: '长度200字符以内', trigger: 'blur' }
         ],
         tags: [
-          { required: true, message: '请输入关键词', trigger: 'blur' }
+          { required: true, message: '请输入标签', trigger: 'blur' }
         ],
         resourceSource: [
           { required: true, message: '请选择来源', trigger: 'change' }
@@ -283,7 +283,7 @@ export default {
     showInput() {
       if (this.dataForm.tags.length > 4) {
         this.$message({
-          message: '关键词个数不能超过5个',
+          message: '标签个数不能超过5个',
           type: 'warning'
         })
         return
@@ -300,7 +300,7 @@ export default {
     handelTagsInputFocus() {
       if (this.dataForm.tags.length > 4) {
         this.$message({
-          message: '关键词个数不能超过5个',
+          message: '标签个数不能超过5个',
           type: 'warning'
         })
       }
