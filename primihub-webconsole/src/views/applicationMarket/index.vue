@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { mapState } from 'vuex'
+import { mapState, mapActions } from 'vuex'
 import Navbar from './components/ApplicationNavBar'
 import TopBanner from './components/TopBanner.vue'
 
@@ -40,10 +40,26 @@ export default {
   computed: {
     ...mapState('application', ['data'])
   },
+  created() {
+    this.getReadNumber().then(res => {
+      if (!res) {
+        const type = []
+        this.data.forEach(item => {
+          type.push(item.appName)
+        })
+        this.getReadNumber({
+          type: type.join(','),
+          operation: 2
+        })
+      }
+    })
+  },
   methods: {
     toDetail(name) {
+      this.getReadNumber({ type: name, operation: 1 })
       this.$router.push(`/applicationIndex/detail/${name}`)
-    }
+    },
+    ...mapActions('application', ['getReadNumber'])
   }
 }
 </script>

@@ -6,7 +6,8 @@ const taskTypeFilter = (status) => {
     1: '联合建模',
     2: '安全求交',
     3: '隐匿查询',
-    4: '联合预测'
+    4: '联合预测',
+    5: '联合统计'
   }
   return statusMap[status]
 }
