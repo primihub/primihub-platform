@@ -43,8 +43,12 @@ export default {
   created() {
     this.getReadNumber().then(res => {
       if (!res) {
+        const type = []
+        this.data.forEach(item => {
+          type.push(item.appName)
+        })
         this.getReadNumber({
-          type: 'PIR,PSI,reasoning,ADPrediction,UserPortrait',
+          type: type.join(','),
           operation: 2
         })
       }
