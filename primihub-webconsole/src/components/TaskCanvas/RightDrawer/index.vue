@@ -22,7 +22,7 @@
               <div class="organ-header">
                 <p>
                   {{ organ.organName }}
-                  <i class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
+                  <i v-if="options.isEditable" class="el-icon-remove icon-delete" @click="handleProviderRemove(i)" />
                 </p>
               </div>
               <el-button v-if="options.isEditable" class="select-button" type="primary" size="mini" plain @click="openDialog(organ.organId,organ.participationIdentity)">选择资源</el-button>

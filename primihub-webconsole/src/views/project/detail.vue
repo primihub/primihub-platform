@@ -9,7 +9,7 @@
           <template v-if="creator">
             <editInput style="width: 70%;" show-word-limit maxlength="20" :value="projectName" @change="handleProjectNameChange" />
           </template>
-          <template>{{ projectName }}</template>
+          <template v-else>{{ projectName }}</template>
         </el-descriptions-item>
         <el-descriptions-item label="角色">
           {{ creator? '项目发起方' : '项目协作方' }}
@@ -21,7 +21,7 @@
           <template v-if="creator">
             <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" />
           </template>
-          <template>{{ projectDesc }}</template>
+          <template v-else>{{ projectDesc }}</template>
         </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />

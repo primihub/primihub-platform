@@ -15,3 +15,11 @@ export function submitVisitUsers(data) {
     data
   })
 }
+
+export function readNumber(params) {
+  return request({
+    url: '/data/market/display',
+    method: 'GET',
+    params
+  })
+}

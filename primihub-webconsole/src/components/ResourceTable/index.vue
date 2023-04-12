@@ -56,7 +56,7 @@
       align="center"
     >
       <template slot-scope="{row}">
-        {{ row.auditStatus | resourceAuditStatusFilter }}
+        <span :class="statusStyle(row.auditStatus)">{{ row.auditStatus | resourceAuditStatusFilter }}</span>
       </template>
     </el-table-column>
 
@@ -157,6 +157,9 @@ export default {
     this.toggleSelection(this.selectedData)
   },
   methods: {
+    statusStyle(status) {
+      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : ''
+    },
     toggleSelection(rows) {
       this.$refs.table.clearSelection()
       this.$nextTick(() => {
@@ -224,11 +227,21 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
 .table{
   margin: 15px 0;
 }
 ::v-deep .el-button{
   margin: 2px 5px;
+}
+.status-0{
+  color: $mainColor;
+}
+.status-1{
+  color: #67C23A;
+}
+.status-2{
+  color: #F56C6C;
 }
 
 </style>

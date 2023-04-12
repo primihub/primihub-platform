@@ -9,7 +9,10 @@
       <el-descriptions-item label="输出格式">{{ data.outputFormat === '0'? '资源文件(csv)': '' }}</el-descriptions-item>
       <el-descriptions-item label="实现协议">{{ data.tag === 0? 'ECDH': 'KKRT' }}</el-descriptions-item>
       <el-descriptions-item label="关键键有重复值时">{{ data.outputNoRepeat === 1? '去重': '不去重' }}</el-descriptions-item>
-      <el-descriptions-item v-if="data.taskState === 1 && showDownload" label="任务结果"><el-button class="download-button" type="text" @click="downloadPsiTask">{{ data.resultName }}.csv <i class="el-icon-download" /></el-button></el-descriptions-item>
+      <el-descriptions-item v-if="data.taskState === 1 && showDownload" label="任务结果">
+        <el-link :underline="false" type="primary" @click="downloadPsiTask">{{ data.resultName }}.csv <svg-icon icon-class="download" /></el-link>
+      </el-descriptions-item>
+      <el-descriptions-item label="备注">{{ data.remarks }}</el-descriptions-item>
     </el-descriptions>
     <el-descriptions title="数据配置" :column="2" label-class-name="detail-title">
       <el-descriptions-item label="发起方">{{ data.ownOrganName }}</el-descriptions-item>
@@ -95,6 +98,10 @@ export default {
         this.data.resultName = value
         updateDataPsiResultName({ id: this.data.taskId, resultName: this.data.resultName }).then(res => {
           if (res.code === 0) {
+            this.$emit('change', {
+              taskId: this.data.taskId,
+              resultName: this.data.resultName
+            })
             this.$message.success('修改成功')
           } else {
             this.$message.error('修改失败')
@@ -107,6 +114,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::v-deep .el-descriptions-item__container .el-descriptions-item__content{
+  align-items: center;
+}
 ::v-deep .el-descriptions__body{
   background-color: #fafafa;
   padding: 20px 10px 10px 10px;
@@ -122,6 +132,11 @@ export default {
 }
 .download-button{
   padding: 0;
-  line-height: 20px;
+  line-height: 1;
+}
+.svg-icon{
+  width: 25px;
+  height: 18px;
+  vertical-align: middle;
 }
 </style>
