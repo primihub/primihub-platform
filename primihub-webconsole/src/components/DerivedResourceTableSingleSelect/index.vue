@@ -129,6 +129,7 @@ export default {
         }
         this.loading = false
       }
+      this.loading = false
     },
     handleRadioChange(row) {
       this.currentRow = row

@@ -216,7 +216,7 @@
     <!-- add resource dialog -->
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
     <!-- add provider organ dialog -->
-    <ArbiterOrganDialog :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <CooperateOrganDialog v-if="providerOrganDialogVisible" :select-type="selectType" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
     <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :has-selected-features="hasSelectedFeatures" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
   </div>
@@ -226,14 +226,14 @@
 import { getProjectResourceData, getProjectResourceOrgan } from '@/api/model'
 import ModelTaskResourceDialog from '@/components/ModelTaskResourceDialog'
 import ResourceDec from '@/components/ResourceDec'
-import ArbiterOrganDialog from '@/components/ArbiterOrganDialog'
+import CooperateOrganDialog from '@/components/CooperateOrganDialog'
 import FeatureSelectDialog from '@/components/FeatureSelectDialog'
 
 export default {
   components: {
     ModelTaskResourceDialog,
     ResourceDec,
-    ArbiterOrganDialog,
+    CooperateOrganDialog,
     FeatureSelectDialog
   },
   props: {
@@ -738,6 +738,7 @@ export default {
       }
     }
     return {
+      selectType: 'radio',
       emptyMissingData: {
         selectedExceptionFeatures: [],
         inputValue: '',
@@ -759,7 +760,7 @@ export default {
       organData: [],
       arbiterOrganName: '',
       arbiterOrganId: '',
-      providerOrganIds: null,
+      providerOrganIds: [],
       providerOrganDialogVisible: false,
       featuresDialogVisible: false,
       form: {
@@ -874,7 +875,7 @@ export default {
           } else {
             this.initiateOrgan.resourceId = ''
             this.selectedProviderOrgans = []
-            this.providerOrganIds = null
+            this.providerOrganIds = []
             this.selectedResourceId = ''
           }
         } else if (newVal.componentCode === 'model') {
@@ -959,6 +960,8 @@ export default {
     },
     async openProviderOrganDialog() {
       if (this.nodeData.componentCode === 'dataSet') {
+        // multiple selection
+        this.selectType = 'checkbox'
         if (this.selectedProviderOrgans.length === 2) {
           this.$message({
             message: '最多选择2个协作方',
@@ -966,15 +969,16 @@ export default {
           })
           return
         }
+        console.log('23e44', this.selectedProviderOrgans)
+        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
+        // single selection
+        this.selectType = 'radio'
         if (this.initiateOrgan.organId && this.selectedProviderOrgans.length > 0) {
           const organs = this.selectedProviderOrgans.concat([this.initiateOrgan])
-          console.log('organs', organs)
           this.organData = [...this.organs].filter(x => [...organs].every(y => y.organId !== x.organId))
-          // this.organData = this.organs.filter(item => item.organId !== this.initiateOrgan.organId && item.organId !== this.selectedProviderOrgans[0].organId)
-          console.log(this.organData)
           this.providerOrganDialogVisible = true
         } else {
           this.$message({
@@ -985,25 +989,41 @@ export default {
       }
     },
     handleProviderRemove(index) {
-      this.providerOrganIds = null
-      const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
-      this.inputValue !== '' && this.inputValue.splice(posIndex, 1)
+      if (this.inputValue !== '') {
+        const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
+        this.inputValue.splice(posIndex, 1)
+        this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
+        this.handleChange()
+      }
+
       this.selectedProviderOrgans.splice(index, 1)
-      this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
-      this.handleChange()
+      this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
     },
     closeProviderOrganDialog(data) {
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      const { organId, organName } = data
-      this.providerOrganIds = organId
       if (this.nodeData.componentCode === 'dataSet') {
-        this.selectedProviderOrgans.push({
-          organId,
-          organName
-        })
-        this.setInputValue(data)
+        // multiple select type
+        if (Array.isArray(data)) {
+          if (data.length === 0) {
+            this.selectedProviderOrgans = []
+          } else {
+            data.map(item => {
+              const index = this.selectedProviderOrgans.findIndex(v => v.organId === item.organId)
+              console.log(index)
+              if (index === -1) {
+                this.selectedProviderOrgans.push(item)
+              } else {
+                this.selectedProviderOrgans[index] = Object.assign(this.selectedProviderOrgans[index], item)
+              }
+            })
+          }
+          this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
+          this.setInputValue(this.selectedProviderOrgans)
+        } else {
+          this.selectedProviderOrgans.push(data)
+        }
       } else {
         this.arbiterOrganName = data.organName
         this.arbiterOrganId = data.organId
@@ -1012,6 +1032,7 @@ export default {
           this.modelParams[index].inputValue = this.arbiterOrganId
         }
       }
+
       this.providerOrganDialogVisible = false
       this.$emit('change', this.nodeData)
     },
@@ -1022,6 +1043,7 @@ export default {
       const providerOrgans = this.inputValue?.filter(item => item.participationIdentity === 2)
       if (providerOrgans && providerOrgans.length) {
         this.selectedProviderOrgans = providerOrgans
+        this.providerOrganIds = providerOrgans.map(item => item.organId)
       } else {
         this.$set(this.initiateOrgan, 'resourceId', '')
         this.selectedProviderOrgans.splice(0)
@@ -1101,17 +1123,30 @@ export default {
       this.$emit('change', this.nodeData)
     },
     setInputValue(data) {
-      // set default feature value
-      data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
       if (this.inputValue) {
         this.inputValues = this.inputValue
       }
-      const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
-      const currentData = data
-      if (posIndex !== -1) {
-        this.inputValues.splice(posIndex, 1, currentData)
+      if (data.length) {
+        data.forEach(item => {
+          // set default feature value
+          item.calculationField = item.calculationField ? item.calculationField : item.fileHandleField ? item.fileHandleField : ''
+          const posIndex = this.inputValues.findIndex(v => item.organId === v.organId)
+          if (posIndex !== -1) {
+            this.inputValues.splice(posIndex, 1, item)
+          } else {
+            this.inputValues.push(item)
+          }
+        })
       } else {
-        this.inputValues.push(currentData)
+        // set default feature value
+        data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
+        const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
+        const currentData = data
+        if (posIndex !== -1) {
+          this.inputValues.splice(posIndex, 1, currentData)
+        } else {
+          this.inputValues.push(currentData)
+        }
       }
       this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValues)
       this.handleChange()
@@ -1176,10 +1211,6 @@ export default {
 p {
   margin-block-start: .2em;
   margin-block-end: .2em;
-}
-::v-deep .el-button{
-  padding: 12px 15px;
-  line-height: 1!important;
 }
 ::v-deep .el-select .el-input__inner{
   padding: 12px 10px!important;

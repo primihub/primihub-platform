@@ -68,17 +68,37 @@
       </el-form-item>
     </el-form>
     <!-- add resource dialog -->
-    <ProjectResourceDialog ref="dialogRef" top="10px" :selected-data="resourceList[selectedOrganId]" title="添加资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ProjectResourceDialog
+      ref="dialogRef"
+      top="10px"
+      width="800px"
+      :selected-data="resourceList[selectedOrganId]"
+      title="添加资源"
+      :show-preview-button="thisInstitution"
+      :server-address="serverAddress"
+      :organ-id="selectedOrganId"
+      :visible="dialogVisible"
+      @close="handleDialogCancel"
+      @submit="handleDialogSubmit"
+      @preview="handlePreview"
+    />
     <!-- add provider organ dialog -->
     <ProviderOrganDialog :server-address="serverAddress" :selected-data="dataForm.providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
     <!-- preview dialog -->
-    <el-dialog
+    <ResourcePreviewDialog
+      :data="previewList"
+      :visible.sync="previewDialogVisible"
+      append-to-body
+      width="1000px"
+      @close="closeDialog"
+    />
+    <!-- <el-dialog
       :visible.sync="previewDialogVisible"
       :before-close="closeDialog"
       append-to-body
     >
-      <ResourcePreviewTable :data="previewList" height="500" />
-    </el-dialog>
+      <ResourcePreviewTable :data="previewList" max-height="500" />
+    </el-dialog> -->
   </div>
 </template>
 
@@ -89,14 +109,13 @@ import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import ResourceTable from '@/components/ResourceTable'
 import ProviderOrganDialog from '@/components/ProviderOrganDialog'
-import ResourcePreviewTable from '@/components/ResourcePreviewTable'
+import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 
 export default {
-  components: { ProjectResourceDialog, ResourceTable, ProviderOrganDialog, ResourcePreviewTable },
+  components: { ProjectResourceDialog, ResourceTable, ProviderOrganDialog, ResourcePreviewDialog },
   data() {
     return {
       loading: false,
-      fieldListLoading: false,
       dataForm: {
         projectName: '',
         projectDesc: '',
@@ -261,17 +280,14 @@ export default {
       const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
       this.organList = result.dataList.organList
     },
-    handlePreview(row) {
+    async handlePreview(row) {
       this.resourceId = row.resourceId
-      this.resourceFilePreview()
+      await this.resourceFilePreview()
       this.previewDialogVisible = true
     },
-    resourceFilePreview() {
-      this.fieldListLoading = true
-      resourceFilePreview({ resourceId: this.resourceId }).then(res => {
-        this.previewList = res?.result.dataList
-        this.fieldListLoading = false
-      })
+    async resourceFilePreview() {
+      const res = await resourceFilePreview({ resourceId: this.resourceId })
+      this.previewList = res?.result.dataList
     },
     closeDialog() {
       this.previewDialogVisible = false

@@ -1,21 +1,27 @@
 <template>
   <div v-loading="listLoading" class="container">
     <section class="infos">
-      <el-descriptions :column="3" label-class-name="detail-title" title="基本信息">
+      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
         <el-descriptions-item label="项目ID">
           {{ projectId }}
         </el-descriptions-item>
         <el-descriptions-item label="项目名称">
-          {{ projectName }}
+          <template v-if="creator">
+            <editInput style="width: 70%;" show-word-limit maxlength="20" :value="projectName" @change="handleProjectNameChange" />
+          </template>
+          <template>{{ projectName }}</template>
+        </el-descriptions-item>
+        <el-descriptions-item label="角色">
+          {{ creator? '项目发起方' : '项目协作方' }}
         </el-descriptions-item>
         <el-descriptions-item label="创建时间">
           {{ createDate }}
         </el-descriptions-item>
-        <el-descriptions-item label="角色">
-          {{ creator? '项目创建方' : '项目协作方' }}
-        </el-descriptions-item>
         <el-descriptions-item label="项目描述">
-          {{ projectDesc }}
+          <template v-if="creator">
+            <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" />
+          </template>
+          <template>{{ projectDesc }}</template>
         </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
@@ -27,7 +33,7 @@
           <el-tabs v-model="activeName" type="border-card" class="tabs" @tab-click="handleClick">
             <el-tab-pane v-for="item in organs" :key="item.organId" :name="item.organId" :label="item.organId">
               <p slot="label">{{ item.participationIdentity === 1 ? '发起方：':'协作方：' }}{{ item.organName }}
-                <span v-if="item.creator" class="identity">{{ item.creator ? '&lt;创建者&gt;':'' }}</span>
+                <span v-if="item.creator" class="identity">{{ item.creator ? '&lt;发起方&gt;':'' }}</span>
                 <span v-else :class="statusStyle(item.auditStatus)">{{ item.creator?'': item.auditStatus === 0 ? '等待审核中':item.auditStatus === 2?'已拒绝':'' }}</span>
               </p>
               <el-button v-if="item.auditStatus === 1 && creator" type="primary" plain :disabled="projectStatus === 2" @click="openDialog(item.organId)">添加资源到此项目</el-button>
@@ -37,6 +43,7 @@
                 :project-audit-status="projectAuditStatus"
                 :this-institution="thisInstitution"
                 :creator="creator"
+                :show-preview-button="thisInstitution"
                 :server-address="serverAddress"
                 :selected-data="selectedData"
                 row-key="resourceId"
@@ -60,22 +67,32 @@
     </section>
 
     <!-- add resource dialog -->
-    <ProjectResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="resourceList[selectedOrganId]" title="选择资源" :server-address="serverAddress" :organ-id="selectedOrganId" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+    <ProjectResourceDialog
+      ref="dialogRef"
+      top="10px"
+      width="800px"
+      :selected-data="resourceList[selectedOrganId]"
+      title="选择资源"
+      :server-address="serverAddress"
+      :organ-id="selectedOrganId"
+      :show-preview-button="thisInstitution"
+      :visible="dialogVisible"
+      @close="handleDialogCancel"
+      @submit="handleDialogSubmit"
+      @preview="handlePreview"
+    />
     <!-- add provider organ dialog -->
     <ProviderOrganDialog v-show="providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" @delete="handleProviderOrganDelete" />
     <!-- resource refused dialog-->
     <ResourceApprovalDialog v-if="resourceApprovalDialogVisible" :visible="resourceApprovalDialogVisible" :resource-id="localResourceId" @close="handleResourceApprovalDialogClose" @submit="handleResourceApprovalDialogSubmit" />
     <!-- preview dialog -->
-    <el-dialog
+    <ResourcePreviewDialog
+      :data="previewList"
       :visible.sync="previewDialogVisible"
-      :before-close="closeDialog"
       append-to-body
       width="1000px"
-    >
-      <ResourcePreviewTable :data="previewList" height="500" />
-    </el-dialog>
-    <!-- preview dialog -->
-
+      @close="closeDialog"
+    />
   </div>
 </template>
 
@@ -88,21 +105,23 @@ import ProjectResourceDialog from '@/components/ProjectResourceDialog'
 import ProviderOrganDialog from '@/components/ProviderOrganDialog'
 import ResourceApprovalDialog from '@/components/ResourceApprovalDialog'
 import ResourceTable from '@/components/ResourceTable'
-import ResourcePreviewTable from '@/components/ResourcePreviewTable'
+import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
 import DerivedDataTable from '@/components/DerivedDataTable'
+import editInput from '@/components/editInput'
 
 export default {
   components: {
     ProjectResourceDialog,
     ProviderOrganDialog,
     ResourceTable,
-    ResourcePreviewTable,
+    ResourcePreviewDialog,
     ModelTaskList,
     ProjectAudit,
     ResourceApprovalDialog,
-    DerivedDataTable
+    DerivedDataTable,
+    editInput
   },
   data() {
     return {
@@ -162,6 +181,18 @@ export default {
     await this.fetchData()
   },
   methods: {
+    handleProjectDescChange({ change, value }) {
+      if (change) {
+        this.saveParams.projectDesc = value
+        this.saveProject(1)
+      }
+    },
+    handleProjectNameChange({ change, value }) {
+      if (change) {
+        this.saveParams.projectName = value
+        this.saveProject(1)
+      }
+    },
     async getDerivationResourceList() {
       this.loading = true
       this.derivedDataResourceList = []
@@ -224,9 +255,9 @@ export default {
       this.projectAuditStatus = this.currentOrgan.auditStatus === 1
       this.selectedData = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources
     },
-    handlePreview(row) {
+    async handlePreview(row) {
       this.resourceId = row.resourceId
-      this.resourceFilePreview()
+      await this.resourceFilePreview()
       this.previewDialogVisible = true
     },
     handleRemove({ organId, id }) {
@@ -254,12 +285,9 @@ export default {
         }
       })
     },
-    resourceFilePreview() {
-      this.fieldListLoading = true
-      resourceFilePreview({ resourceId: this.resourceId }).then(res => {
-        this.previewList = res?.result.dataList
-        this.fieldListLoading = false
-      })
+    async resourceFilePreview() {
+      const res = await resourceFilePreview({ resourceId: this.resourceId })
+      this.previewList = res.result?.dataList
     },
     openDialog(id) {
       this.selectedOrganId = id
@@ -334,13 +362,18 @@ export default {
         }
       })
     },
-    saveProject() {
+    /**
+     * type string
+     * 0: add resource
+     * 1: edit description
+    */
+    saveProject(type = 0) {
       // const { projectName, projectDesc, projectOrgans } = this
       this.saveParams.id = this.list.id
       saveProject(this.saveParams).then(res => {
         if (res.code === 0) {
           this.$message({
-            message: '添加成功',
+            message: type === 0 ? '添加成功' : '修改成功',
             type: 'success'
           })
 
@@ -474,6 +507,9 @@ section{
 }
 ::v-deep .tab-container .el-tabs__item {
   font-size: 16px;
+}
+.preview-dialog .el-dialog__header{
+  padding: 0;
 }
 .infos-title{
   margin-bottom: 10px;

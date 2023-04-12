@@ -13,8 +13,13 @@
       :data="data"
       @selection-change="handleSelectionChange"
     >
-      <!-- :selectable="checkSelectable" 默认选中置灰 -->
-      <el-table-column label="选择" width="55">
+      <el-table-column
+        v-if="selectType === 'checkbox'"
+        type="selection"
+        width="55"
+        :selectable="checkStatus"
+      />
+      <el-table-column v-else label="选择" width="55">
         <template slot-scope="{row}">
           <el-radio v-model="radioSelect" :label="row.organId" @change="handleRadioChange(row)"><i /></el-radio>
         </template>
@@ -43,13 +48,17 @@ export default {
       default: () => []
     },
     selectedData: {
-      type: String,
-      default: ''
+      type: [String, Array],
+      default: () => []
     },
     visible: {
       type: Boolean,
       default: false,
       require: true
+    },
+    selectType: {
+      type: String,
+      default: 'radio' // checkbox or radio
     }
   },
   data() {
@@ -64,8 +73,27 @@ export default {
   },
   watch: {
     selectedData(newVal) {
-      this.setCurrent(newVal)
+      if (this.selectType === 'checkbox') {
+        this.toggleSelection(newVal)
+      } else {
+        this.setCurrent(newVal)
+      }
     }
+  },
+  created() {
+    this.$nextTick(() => {
+      if (this.selectType === 'checkbox' && this.selectedData && this.selectedData.length > 0) {
+        const selectOrgans = this.selectedData.map(organId => {
+          const index = this.data.findIndex(v => v.organId === organId)
+          if (index !== -1) {
+            return this.data[index]
+          }
+        })
+        this.toggleSelection(selectOrgans)
+      } else if (this.selectType === 'radio' && this.selectedData !== '') {
+        this.setCurrent(this.selectedData)
+      }
+    })
   },
   methods: {
     handleRadioChange(row) {
@@ -79,22 +107,28 @@ export default {
       this.$emit('close', this.selectedData)
     },
     handleSubmit() {
-      this.$emit('submit', this.currentRow)
+      if (this.selectType === 'radio') {
+        this.$emit('submit', this.currentRow)
+      } else {
+        this.$emit('submit', this.multipleSelection)
+      }
     },
     handleSelectionChange(value) {
       this.multipleSelection = []
-      console.log('handleSelectionChange', value)
       this.multipleSelection = value
     },
-    handleSelect(rows, row) {
-      const selected = rows.length && rows.indexOf(row) !== -1
-      const posIndex = this.selectedData.findIndex(item => item.globalId === row.globalId)
-      const id = this.selectedData.filter(item => item.globalId === row.globalId)[0]?.id
-      // true:选中，0或者false:取消选中
-      // 取消选中需判断是否在选择过的列表里
-      if (!selected && posIndex !== -1) {
-        this.confirm([id])
+    toggleSelection(rows) {
+      if (rows) {
+        rows.forEach(row => {
+          this.$refs.table.toggleRowSelection(row)
+        })
+      } else {
+        this.$refs.table.clearSelection()
       }
+    },
+    checkStatus(row) {
+      const res = !(this.selectedData.length > 0 && this.selectedData.find(organId => row.organId === organId))
+      return res
     }
   }
 
