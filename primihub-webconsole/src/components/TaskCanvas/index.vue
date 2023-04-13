@@ -283,6 +283,12 @@ export default {
     toolBarSave() {
       // this.isDraft = this.isCopy ? 0 : 1
       this.saveFn()
+      this.$notify.closeAll()
+      this.$notify({
+        message: '保存成功',
+        type: 'success',
+        duration: 1000
+      })
     },
     handleChange(data) {
       this.graphData = this.graph.toJSON()
