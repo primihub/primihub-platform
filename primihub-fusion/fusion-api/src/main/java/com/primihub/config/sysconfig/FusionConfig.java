@@ -1,4 +1,4 @@
-package com.primihub.config;
+package com.primihub.config.sysconfig;
 
 import com.primihub.interceptor.PinCodeInterceptor;
 import org.springframework.context.annotation.Bean;

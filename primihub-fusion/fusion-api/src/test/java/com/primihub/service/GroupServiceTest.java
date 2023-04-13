@@ -4,6 +4,8 @@ import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.repository.FusionRepository;
 import com.primihub.repository.GroupRepository;
+import io.grpc.Channel;
+import io.grpc.ManagedChannelBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,5 +67,13 @@ public class GroupServiceTest {
         BaseResultEntity<?> result = groupService.findMyGroupOrgan("groupID");
         assertThat(result.getCode()).isEqualTo(BaseResultEnum.SUCCESS.getReturnCode());
         assertThat(result.getResult()).isInstanceOf(ArrayList.class);
+    }
+
+    public static void main(String[] args) {
+        Channel channel= ManagedChannelBuilder
+//                .forAddress("118.190.39.100",27937)
+                .forAddress("localhost",9090)
+                .usePlaintext()
+                .build();
     }
 }
