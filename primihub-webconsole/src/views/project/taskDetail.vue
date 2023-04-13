@@ -54,7 +54,7 @@
             <template v-else>
               {{ taskDesc }}
             </template>
-          </div>x
+          </div>
         </el-col>
       </el-row>
       <div class="buttons">

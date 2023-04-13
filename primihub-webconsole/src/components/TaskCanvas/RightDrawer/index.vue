@@ -162,7 +162,7 @@
             </el-col>
           </el-row>
         </template>
-        <el-button v-if="options.isEditable && modelParams && modelParams.find(item => item.typeCode !=='param.arbiterOrgan')" style="margin-top: 10px;" @click="resetModelParams">重置参数</el-button>
+        <el-button v-if="options.isEditable && modelParams && modelParams.find(item => item.typeCode !=='arbiterOrgan')" style="margin-top: 10px;" @click="resetModelParams">重置参数</el-button>
       </template>
       <template v-else-if="nodeData.componentCode === 'featuresPoints'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
@@ -256,469 +256,7 @@ export default {
     },
     defaultConfig: {
       type: Array,
-      default: () => [
-        {
-          'componentCode': 'start',
-          'componentName': '开始',
-          'isShow': 0,
-          'isMandatory': 0,
-          'componentTypes': [
-            {
-              'typeCode': 'taskName',
-              'typeName': '任务名称',
-              'inputType': 'text',
-              'inputValue': '',
-              'isRequired': 1,
-              'inputValues': [
-
-              ]
-            },
-            {
-              'typeCode': 'taskDesc',
-              'typeName': '任务描述',
-              'inputType': 'textarea',
-              'inputValue': '',
-              'isRequired': 0,
-              'inputValues': [
-
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'dataSet',
-          'componentName': '选择数据集',
-          'isShow': 0,
-          'isMandatory': 0,
-          'componentTypes': [
-            {
-              'typeCode': 'selectData',
-              'typeName': '选择数据',
-              'inputType': 'none',
-              'inputValue': '',
-              'isRequired': 1,
-              'inputValues': [
-
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'dataAlign',
-          'componentName': '数据对齐',
-          'isShow': 0,
-          'isMandatory': 1,
-          'componentTypes': [
-            {
-              'typeCode': 'dataAlign',
-              'typeName': '数据对齐',
-              'inputType': 'select',
-              'inputValue': '',
-              'isRequired': 0,
-              'inputValues': [
-                {
-                  'key': '1',
-                  'val': '样本对齐',
-                  'param': null
-                },
-                {
-                  'key': '2',
-                  'val': '特征对齐',
-                  'param': null
-                }
-              ]
-            },
-            {
-              'typeCode': 'MultipleSelected',
-              'typeName': '可多选特征',
-              'inputType': 'none',
-              'inputValue': '',
-              'isRequired': 0,
-              'inputValues': [
-
-              ]
-            },
-            {
-              'typeCode': 'encryption',
-              'typeName': '加密方式',
-              'inputType': 'none',
-              'inputValue': '1',
-              'isRequired': 0,
-              'inputValues': [
-                {
-                  'key': '1',
-                  'val': 'MD5',
-                  'param': null
-                }
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'exception',
-          'componentName': '异常值处理',
-          'isShow': 0,
-          'isMandatory': 1,
-          'componentTypes': [
-            {
-              'typeCode': 'exception',
-              'typeName': '异常值处理',
-              'inputType': 'select',
-              'inputValue': '1',
-              'isRequired': 0,
-              'inputValues': [
-                {
-                  'key': '1',
-                  'val': '异常值处理',
-                  'param': null
-                }
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'missing',
-          'componentName': '缺失值处理',
-          'isShow': 0,
-          'isMandatory': 1,
-          'componentTypes': [
-            {
-              'typeCode': 'missingValue',
-              'typeName': '缺失值处理',
-              'inputType': 'select',
-              'inputValue': '1',
-              'isRequired': 0,
-              'inputValues': [
-                {
-                  'key': '1',
-                  'val': '缺失值处理',
-                  'param': null
-                }
-              ]
-            },
-            {
-              'typeCode': 'selectFeatures',
-              'typeName': '选择特征',
-              'inputType': 'none',
-              'inputValue': '',
-              'isRequired': 0,
-              'inputValues': [
-
-              ]
-            },
-            {
-              'typeCode': 'exceptionType',
-              'typeName': '缺失值处理',
-              'inputType': 'select',
-              'inputValue': '1',
-              'isRequired': 0,
-              'inputValues': [
-                {
-                  'key': '1',
-                  'val': '平均值',
-                  'param': null
-                }
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'featureCoding',
-          'componentName': '特征编码',
-          'isShow': 0,
-          'isMandatory': 1,
-          'componentTypes': [
-            {
-              'typeCode': 'featureCoding',
-              'typeName': '特征编码',
-              'inputType': 'select',
-              'inputValue': '',
-              'isRequired': 0,
-              'inputValues': [
-                {
-                  'key': '1',
-                  'val': '标签编码',
-                  'param': null
-                },
-                {
-                  'key': '2',
-                  'val': '哈希编码',
-                  'param': null
-                },
-                {
-                  'key': '3',
-                  'val': '独热编码',
-                  'param': null
-                },
-                {
-                  'key': '4',
-                  'val': '计数编码',
-                  'param': null
-                },
-                {
-                  'key': '5',
-                  'val': '直方图编码',
-                  'param': null
-                },
-                {
-                  'key': '6',
-                  'val': 'WOE编码',
-                  'param': null
-                },
-                {
-                  'key': '7',
-                  'val': '目标编码',
-                  'param': null
-                },
-                {
-                  'key': '8',
-                  'val': '平均编码',
-                  'param': null
-                },
-                {
-                  'key': '9',
-                  'val': '模型编码',
-                  'param': null
-                }
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'model',
-          'componentName': '模型选择',
-          'isShow': 0,
-          'isMandatory': 0,
-          'componentTypes': [
-            {
-              'typeCode': 'modelType',
-              'typeName': '模型选择',
-              'inputType': 'select',
-              'inputValue': '',
-              'isRequired': 1,
-              'inputValues': [
-                {
-                  'key': '2',
-                  'val': '纵向-XGBoost',
-                  'param': [
-                    {
-                      'typeCode': 'numTree',
-                      'typeName': 'Params.NumTree',
-                      'inputType': 'number',
-                      'inputValue': '5',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'min',
-                          'val': '3',
-                          'param': null
-                        },
-                        {
-                          'key': 'max',
-                          'val': '10',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'maxDepth',
-                      'typeName': 'Params.MaxDepth',
-                      'inputType': 'number',
-                      'inputValue': '5',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'min',
-                          'val': '3',
-                          'param': null
-                        },
-                        {
-                          'key': 'max',
-                          'val': '10',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'regLambda',
-                      'typeName': 'Params.RegLambda',
-                      'inputType': 'text',
-                      'inputValue': '1',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'min',
-                          'val': '1',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'minChildWeight',
-                      'typeName': 'Params.MinChildWeight',
-                      'inputType': 'number',
-                      'inputValue': '3',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'min',
-                          'val': '1',
-                          'param': null
-                        },
-                        {
-                          'key': 'max',
-                          'val': '100',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'isEncrypted',
-                      'typeName': 'Params.IsEncrypted',
-                      'inputType': 'radio',
-                      'inputValue': 'True',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'True',
-                          'val': 'True',
-                          'param': null
-                        },
-                        {
-                          'key': 'False',
-                          'val': 'False',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'mergeGh',
-                      'typeName': 'Params.MergeGh',
-                      'inputType': 'radio',
-                      'inputValue': 'True',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'True',
-                          'val': 'True',
-                          'param': null
-                        },
-                        {
-                          'key': 'False',
-                          'val': 'False',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'rayGroup',
-                      'typeName': 'Params.RayGroup',
-                      'inputType': 'radio',
-                      'inputValue': 'False',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'True',
-                          'val': 'True',
-                          'param': null
-                        },
-                        {
-                          'key': 'False',
-                          'val': 'False',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'sampleType',
-                      'typeName': 'Params.SampleType',
-                      'inputType': 'select',
-                      'inputValue': 'random',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'random',
-                          'val': 'random',
-                          'param': null
-                        },
-                        {
-                          'key': 'goss',
-                          'val': 'goss',
-                          'param': null
-                        }
-                      ]
-                    },
-                    {
-                      'typeCode': 'featureSample',
-                      'typeName': 'Params.FeatureSample',
-                      'inputType': 'radio',
-                      'inputValue': 'True',
-                      'isRequired': 0,
-                      'inputValues': [
-                        {
-                          'key': 'True',
-                          'val': 'True',
-                          'param': null
-                        },
-                        {
-                          'key': 'False',
-                          'val': 'False',
-                          'param': null
-                        }
-                      ]
-                    }
-                  ]
-                },
-                {
-                  'key': '3',
-                  'val': '横向-LR',
-                  'param': [
-                    {
-                      'typeCode': 'param.arbiterOrgan',
-                      'typeName': '可信第三方选择',
-                      'inputType': 'button',
-                      'inputValue': '',
-                      'isRequired': 1,
-                      'inputValues': [
-
-                      ]
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              'typeCode': 'modelName',
-              'typeName': '模型名称',
-              'inputType': 'text',
-              'inputValue': '',
-              'isRequired': 1,
-              'inputValues': [
-
-              ]
-            },
-            {
-              'typeCode': 'modelDesc',
-              'typeName': '模型描述',
-              'inputType': 'textarea',
-              'inputValue': '',
-              'isRequired': 0,
-              'inputValues': [
-
-              ]
-            }
-          ]
-        },
-        {
-          'componentCode': 'assessment',
-          'componentName': '评估模型',
-          'isShow': 0,
-          'isMandatory': 1,
-          'componentTypes': [
-
-          ]
-        }
-      ]
+      default: () => []
     }
   },
   data() {
@@ -807,7 +345,7 @@ export default {
       set() {}
     },
     defaultComponentConfig() {
-      console.log('this.defaultConfig', this.defaultConfig)
+      if (this.defaultConfig.length === 0) return
       const model = this.defaultConfig.find(item => item.componentCode === 'model')
       console.log('model', model)
       const currentInputValues = model.componentTypes.find(item => item.typeCode === 'modelType').inputValues
@@ -885,7 +423,7 @@ export default {
           // model select type is H-lr, filter arbiter organ
           if (this.modelTypeValue === '3') {
             const param = newVal.componentTypes[modelTypeIndex].inputValues.find(item => item.key === this.modelTypeValue).param
-            this.arbiterOrganId = param.find(item => item.typeCode === 'param.arbiterOrgan').inputValue
+            this.arbiterOrganId = param.find(item => item.typeCode === 'arbiterOrgan').inputValue
             this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
           }
         } else if (newVal.componentCode === 'dataAlign') {
@@ -908,9 +446,11 @@ export default {
   methods: {
     handleModelChange(val) {
       this.modelTypeValue = val
-      // reset before params
-      this.resetModelParams()
-      this.handleChange()
+      if (this.defaultConfig.length > 0) {
+        // reset before params
+        this.resetModelParams()
+        this.handleChange()
+      }
     },
     // 添加填充策略
     addFilling() {
@@ -929,12 +469,6 @@ export default {
       this.defaultComponentConfig.forEach((item, index) => {
         this.$set(this.modelParams, index, item)
       })
-      // if (param) {
-      //   param.map((item, index) => {
-      //     this.$set(this.modelParams, index, item)
-      //   })
-      // }
-      console.log('modelParams', this.modelParams)
       this.handleChange()
     },
     filterNumber(data, name) {
@@ -969,8 +503,6 @@ export default {
           })
           return
         }
-        console.log('23e44', this.selectedProviderOrgans)
-        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
@@ -1011,7 +543,6 @@ export default {
           } else {
             data.map(item => {
               const index = this.selectedProviderOrgans.findIndex(v => v.organId === item.organId)
-              console.log(index)
               if (index === -1) {
                 this.selectedProviderOrgans.push(item)
               } else {
@@ -1028,7 +559,7 @@ export default {
         this.arbiterOrganName = data.organName
         this.arbiterOrganId = data.organId
         if (this.modelParams) {
-          const index = this.modelParams.findIndex(item => item.typeCode === 'param.arbiterOrgan')
+          const index = this.modelParams.findIndex(item => item.typeCode === 'arbiterOrgan')
           this.modelParams[index].inputValue = this.arbiterOrganId
         }
       }
@@ -1079,7 +610,6 @@ export default {
       if (name === 'exception') {
         this.nodeData.componentTypes[1].inputValue = JSON.stringify(this.exceptionItems)
       }
-      console.log('handleChange defaultConfig', this.defaultComponentConfig)
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -1195,7 +725,6 @@ export default {
         this.selectedExceptionFeatures = data
         this.nodeData.componentTypes[1].inputValue = this.selectedExceptionFeatures
         this.selectedFeatures = this.selectedExceptionFeatures
-        console.log(this.selectedExceptionFeatures)
       }
       this.featuresDialogVisible = false
       this.handleChange(this.selectedFeaturesCode)

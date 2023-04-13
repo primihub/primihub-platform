@@ -1027,53 +1027,55 @@ export default {
       const modelPointComponents = [] // 线数据
 
       const edgeList = cells.filter(item => item.shape === 'edge')
-      const nodeList = cells.filter(item => item.shape !== 'edge')
-      edgeList.forEach(item => {
-        modelPointComponents.push({
-          frontComponentId: item.frontComponentId,
-          shape: item.shape,
-          input: item.source,
-          output: item.target
-        })
-      })
-      nodeList.forEach(item => {
+      for (let i = 0; i < cells.length; i++) {
+        const item = cells[i]
         const { position, data, size, shape } = item
-        const { componentCode, componentName, componentTypes } = data
         const componentValues = []
-        const { input, output } = this.filterFn(item, edgeList, cells)
         item.frontComponentId = item.id
-        // set model params
-        if (componentTypes) {
-          componentTypes.forEach(item => {
-            const params = item.inputValues.find(c => c.key === item.inputValue)?.param
-            params && params.forEach(v => {
+        if (shape === 'edge') {
+          modelPointComponents.push({
+            frontComponentId: item.frontComponentId,
+            shape,
+            input: item.source,
+            output: item.target
+          })
+        } else {
+          const { componentCode, componentName, componentTypes } = data
+          const { input, output } = this.filterFn(item, edgeList, cells)
+          item.frontComponentId = item.id
+          // set model params
+          if (componentTypes) {
+            componentTypes.forEach(item => {
+              const params = item.inputValues.find(c => c.key === item.inputValue)?.param
+              params && params.forEach(v => {
+                componentValues.push({
+                  key: v.typeCode,
+                  val: v.inputValue
+                })
+              })
               componentValues.push({
-                key: v.typeCode,
-                val: v.inputValue
+                key: item.typeCode,
+                val: item.inputValue
               })
             })
-            componentValues.push({
-              key: item.typeCode,
-              val: item.inputValue
-            })
+          }
+
+          // format 参数
+          modelComponents.push({
+            frontComponentId: item.frontComponentId,
+            coordinateX: position.x,
+            coordinateY: position.y,
+            width: size.width,
+            height: size.height,
+            shape,
+            componentCode,
+            componentName,
+            componentValues,
+            input: input,
+            output: output
           })
         }
-
-        // format 参数
-        modelComponents.push({
-          frontComponentId: item.frontComponentId,
-          coordinateX: position.x,
-          coordinateY: position.y,
-          width: size.width,
-          height: size.height,
-          shape,
-          componentCode,
-          componentName,
-          componentValues,
-          input: input,
-          output: output
-        })
-      })
+      }
 
       this.saveParams.param.modelComponents = modelComponents
       console.log('save defaultComponentsConfig', this.defaultComponentsConfig)
@@ -1184,33 +1186,19 @@ export default {
         this.$emit('selectComponents', this.selectComponentList)
         const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
         item.componentValues.forEach(componentValue => {
-          // for (let i = 0; i < this.components[posIndex]?.componentTypes.length; i++) {
-          //   const c = this.components[posIndex]?.componentTypes[i]
-          //   const posIndex = c.inputValues.findIndex(item => item.key === c.inputValue)
-          //   if (posIndex !== -1) {
-          //     const params = c.inputValues[posIndex].param
-          //     params.map(param => {
-          //       const index = item.componentValues.findIndex(item => item.key === param.typeCode)
-          //       param.inputValue = item.componentValues[index].val
-          //     })
-          //   }
-          //   if (c.typeCode === componentValue.key && componentValue.val !== '') {
-          //     c.inputValue = componentValue.val
-          //   }
-          // }
-          // this.components[posIndex]?.componentTypes.forEach(c => {
-          //   const posIndex = c.inputValues.findIndex(item => item.key === c.inputValue)
-          //   if (posIndex !== -1) {
-          //     const params = c.inputValues[posIndex].param
-          //     params.forEach(param => {
-          //       const index = item.componentValues.findIndex(item => item.key === param.typeCode)
-          //       param.inputValue = item.componentValues[index].val
-          //     })
-          //   }
-          //   if (c.typeCode === componentValue.key && componentValue.val !== '') {
-          //     c.inputValue = componentValue.val
-          //   }
-          // })
+          this.components[posIndex]?.componentTypes.forEach(c => {
+            const posIndex = c.inputValues.findIndex(item => item.key === c.inputValue)
+            if (posIndex !== -1) {
+              const params = c.inputValues[posIndex].param
+              params.forEach(param => {
+                const index = item.componentValues.findIndex(item => item.key === param.typeCode)
+                param.inputValue = item.componentValues[index].val
+              })
+            }
+            if (c.typeCode === componentValue.key && componentValue.val !== '') {
+              c.inputValue = componentValue.val
+            }
+          })
         })
       })
       this.initGraphShape()
