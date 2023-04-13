@@ -641,21 +641,23 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     private void spreadDispatchlData(String url,Object shareVo){
-        if (org.apache.commons.lang.StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+        log.info("DispatchUrl{}",baseConfiguration.getDispatchUrl());
+        if (org.apache.commons.lang.StringUtils.isBlank(baseConfiguration.getDispatchUrl())){
             return;
-        String gatewayAddress = baseConfiguration.getDispatchUrl();
-        log.info("DispatchUrl{}",gatewayAddress);
-//        log.info("shareVo:{}",JSONObject.toJSONString(shareVo));
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
-        try {
-            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
-        }catch (Exception e){
-            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
         }
-        log.info("出去");
+        String gatewayAddress = baseConfiguration.getDispatchUrl();
+        otherBusinessesService.syncGatewayApiData(shareVo,url.replace("<address>", gatewayAddress),null);
+//        log.info("shareVo:{}",JSONObject.toJSONString(shareVo));
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+//        try {
+//            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+//            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+//        }catch (Exception e){
+//            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+//        }
+//        log.info("出去");
     }
 
 

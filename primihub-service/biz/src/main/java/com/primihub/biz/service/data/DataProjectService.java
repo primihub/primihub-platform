@@ -392,20 +392,22 @@ public class DataProjectService {
 
 
     private void spreadDispatchlData(String url,Object shareVo){
-        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl())){
             return;
+        }
         String gatewayAddress = baseConfiguration.getDispatchUrl();
         log.info("DispatchUrl{}",gatewayAddress);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
-        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
-        try {
-            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
-        }catch (Exception e){
-            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
-        }
+        otherBusinessesService.syncGatewayApiData(shareVo,url.replace("<address>", gatewayAddress),null);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+//        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+//        try {
+//            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+//            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+//        }catch (Exception e){
+//            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+//        }
         log.info("出去");
     }
 

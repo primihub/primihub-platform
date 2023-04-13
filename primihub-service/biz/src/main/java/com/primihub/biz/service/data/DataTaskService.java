@@ -299,9 +299,6 @@ public class DataTaskService {
                         }
                         String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                         String publicKey = (String) map.get("publicKey");
-                        if (publicKey==null){
-                            url = url+"?ignore=ignore";
-                        }
                         organNames.add(map.get("globalName").toString());
                         log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                         otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
@@ -347,9 +344,6 @@ public class DataTaskService {
                     log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
                     String url = CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                     String publicKey = (String) map.get("publicKey");
-                    if (publicKey==null){
-                        url = url+"?ignore=ignore";
-                    }
                     otherBusinessesService.syncGatewayApiData(shareModelVo,url,publicKey);
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }
@@ -360,20 +354,21 @@ public class DataTaskService {
 
     private void spreadDispatchlData(String url,Object shareVo){
         log.info("DispatchUrl{}",baseConfiguration.getDispatchUrl());
-        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl())){
             return;
-        String gatewayAddress = baseConfiguration.getDispatchUrl();
-        log.info("DispatchUrl{}",gatewayAddress);
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
-        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
-        try {
-            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
-        }catch (Exception e){
-            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
         }
+        String gatewayAddress = baseConfiguration.getDispatchUrl();
+        otherBusinessesService.syncGatewayApiData(shareVo,url.replace("<address>", gatewayAddress),null);
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+//        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+//        try {
+//            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+//            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+//        }catch (Exception e){
+//            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+//        }
         log.info("出去");
     }
 
