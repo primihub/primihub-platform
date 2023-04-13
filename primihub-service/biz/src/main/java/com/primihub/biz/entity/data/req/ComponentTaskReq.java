@@ -14,6 +14,7 @@ import java.util.*;
 @Data
 @Slf4j
 public class  ComponentTaskReq {
+    private String projectId;
     private DataModel dataModel;
     private DataModelTask dataModelTask;
     private DataTask dataTask;
@@ -33,6 +34,9 @@ public class  ComponentTaskReq {
     public ComponentTaskReq(DataModel dataModel) {
         this.dataModel = dataModel;
         this.dataTask = new DataTask();
+    }
+
+    public ComponentTaskReq() {
     }
 
     public DataModelAndComponentReq getModelComponentReq(){

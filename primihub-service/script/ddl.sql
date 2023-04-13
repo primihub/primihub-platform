@@ -205,7 +205,7 @@ DROP TABLE IF EXISTS `data_psi`;
 CREATE TABLE `data_psi`  (
                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi 主键',
                              `own_organ_id` varchar(255) DEFAULT NULL COMMENT '本机构id',
-                             `own_resource_id` bigint(20) DEFAULT NULL COMMENT '本机构资源id',
+                             `own_resource_id` varchar(255) DEFAULT NULL COMMENT '本机构资源id',
                              `own_keyword` varchar(255) DEFAULT NULL COMMENT '本机构资源关键字',
                              `other_organ_id` varchar(255) DEFAULT NULL COMMENT '其他机构id',
                              `other_resource_id` varchar(255) DEFAULT NULL COMMENT '其他机构资源id',

@@ -16,6 +16,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.LokiDto;
 import com.primihub.biz.entity.data.dto.LokiResultContentDto;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.DataTaskVo;
@@ -308,6 +309,9 @@ public class DataTaskService {
                     }
                 }
             }
+            log.info("开始向调度方进行项目同步");
+            spreadDispatchlData(CommonConstant.PROJECT_SYNC_API_URL,shareProjectVo);
+            log.info("结束向调度方进行项目同步");
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
             dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
@@ -324,6 +328,7 @@ public class DataTaskService {
         }
         if (shareModelVo.getDataModel()!=null&&shareModelVo.getDataModel().getProjectId()!=null&&shareModelVo.getDataModel().getProjectId()!=0L){
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(shareModelVo.getDataModel().getProjectId(), null);
+//            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareModelVo.getProjectId());
             if (dataProject==null){
                 log.info("spread modelUUID:{},no project data",shareModelVo.getDataModel().getModelUUID());
                 return;
@@ -349,7 +354,27 @@ public class DataTaskService {
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }
             }
+            spreadDispatchlData(CommonConstant.MODEL_SYNC_API_URL,shareModelVo);
         }
+    }
+
+    private void spreadDispatchlData(String url,Object shareVo){
+        log.info("DispatchUrl{}",baseConfiguration.getDispatchUrl());
+        if (StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+            return;
+        String gatewayAddress = baseConfiguration.getDispatchUrl();
+        log.info("DispatchUrl{}",gatewayAddress);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+        log.info(CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString()));
+        try {
+            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+        }catch (Exception e){
+            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+        }
+        log.info("出去");
     }
 
     public BaseResultEntity getModelTaskList(Long modelId,PageReq req) {
@@ -376,9 +401,13 @@ public class DataTaskService {
             List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
             taskId = dataModelTasks.stream().mapToLong(DataModelTask::getTaskId).max().orElse(0);
         }
-        if (taskId!=null&&taskId!=0L) {
-            return dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (taskId!=null&&taskId!=0L){
+            DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+            if (dataTask==null)
+                dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId.toString());
+            return dataTask;
         }
+
         return null;
     }
 
@@ -577,6 +606,21 @@ public class DataTaskService {
 
     public void removeSseTask(String taskId) {
         sseEmitterService.removeKey(taskId);
+    }
+
+    public BaseResultEntity saveDataTask(DataPirTaskSyncReq req) {
+        DataTask dt = dataTaskRepository.selectDataTaskByTaskIdName(req.getDataTask().getTaskIdName());
+        if (dt==null){
+            req.getDataTask().setTaskId(null);
+            dataTaskPrRepository.saveDataTask(req.getDataTask());
+            req.getDataPirTask().setTaskId(req.getDataTask().getTaskId());
+            dataTaskPrRepository.saveDataPirTask(req.getDataPirTask());
+        }else {
+            req.getDataTask().setTaskId(dt.getTaskId());
+            dataTaskPrRepository.updateDataTask(req.getDataTask());
+        }
+
+        return BaseResultEntity.success();
     }
 
     public BaseResultEntity updateTaskDesc(Long taskId, String taskDesc) {

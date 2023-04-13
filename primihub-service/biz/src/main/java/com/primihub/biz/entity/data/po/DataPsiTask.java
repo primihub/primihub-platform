@@ -54,7 +54,7 @@ public class DataPsiTask {
     /**
      * 文件路径
      */
-    @JsonIgnore
+//    @JsonIgnore
     private String filePath;
 
     /**

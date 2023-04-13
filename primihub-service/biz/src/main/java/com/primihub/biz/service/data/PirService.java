@@ -11,6 +11,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
@@ -66,7 +67,7 @@ public class PirService {
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(resourceId);
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam);
+        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam,dataPirTask);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);
@@ -98,5 +99,13 @@ public class PirService {
             }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataPirTaskVos));
+    }
+
+    public BaseResultEntity runPir(DataPirTaskSyncReq taskReq) {
+        dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
+        taskReq.getDataPirTask().setTaskId(taskReq.getDataTask().getTaskId());
+        dataTaskPrRepository.saveDataPirTask(taskReq.getDataPirTask());
+        dataAsyncService.pirGrpcTask(taskReq.getDataTask(),taskReq.getDataPirTask().getResourceId(),taskReq.getDataPirTask().getRetrievalId(),taskReq.getDataPirTask());
+        return BaseResultEntity.success();
     }
 }

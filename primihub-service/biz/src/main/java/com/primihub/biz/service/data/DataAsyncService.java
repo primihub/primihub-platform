@@ -42,12 +42,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
+import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
@@ -105,6 +110,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private SysEmailService sysEmailService;
     @Autowired
     private DataTaskMonitorService dataTaskMonitorService;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
 
 
 
@@ -119,6 +126,7 @@ public class DataAsyncService implements ApplicationContextAware {
             return isCheck?taskService.check(req,taskReq):taskService.runTask(req,taskReq);
         }catch (Exception e){
             log.info("ComponentCode:{} -- e:{}",req.getComponentCode(),e.getMessage());
+            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,req.getComponentName()+"组件执行异常");
         }
     }
@@ -133,6 +141,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataComponent.setTaskId(req.getDataModelTask().getTaskId());
             dataModelPrRepository.saveDataComponent(dataComponent);
         }
+        List<String> organIds = req.getFusionResourceList().stream().map(k -> k.get("organId").toString()).collect(Collectors.toList());
         try {
             Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
             for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
@@ -170,6 +179,15 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataComponent.setEndTime(System.currentTimeMillis());
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
                 dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+                ShareModelVo vo = new ShareModelVo();
+                vo.setDataModel(req.getDataModel());
+                vo.setDataTask(req.getDataTask());
+                vo.setDataModelTask(req.getDataModelTask());
+                vo.setDmrList(req.getDmrList());
+                vo.setShareOrganId(organIds);
+//                vo.setDerivationList(req.getDerivationList());
+                log.info("进入同步数据中");
+                sendShareModelTask(vo);
             }
         }catch (Exception e){
             req.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -180,17 +198,15 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(req.getDataTask());
 //        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
-        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
-            log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
-            ShareModelVo vo = new ShareModelVo();
-            vo.setDataModel(req.getDataModel());
-            vo.setDataTask(req.getDataTask());
-            vo.setDataModelTask(req.getDataModelTask());
-            vo.setDmrList(req.getDmrList());
-            vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
-            vo.setDerivationList(req.getDerivationList());
-            sendShareModelTask(vo);
-        }
+        log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
+        ShareModelVo vo = new ShareModelVo();
+        vo.setDataModel(req.getDataModel());
+        vo.setDataTask(req.getDataTask());
+        vo.setDataModelTask(req.getDataModelTask());
+        vo.setDmrList(req.getDmrList());
+        vo.setShareOrganId(organIds);
+        vo.setDerivationList(req.getDerivationList());
+        sendShareModelTask(vo);
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
         dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(req.getDataModel().getProjectId(),null));
     }
@@ -210,8 +226,11 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi){
-        DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,DataTask dataTask){
+        DataResource ownDataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
+        if (ownDataResource==null){
+            ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
+        }
         String resourceId,resourceColumnNameList;
         int available;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
@@ -221,7 +240,9 @@ public class DataAsyncService implements ApplicationContextAware {
             available = otherDataResource.getResourceState();
         }else {
             BaseResultEntity dataResource = otherBusinessesService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
-            if (dataResource.getCode()!=0) {
+            log.info("{} - {}",dataPsi.getServerAddress(),dataPsi.getOtherResourceId());
+            log.info(JSONObject.toJSONString(dataResource));
+            if (dataResource.getCode()!=0)
                 return;
             }
             Map<String, Object> otherDataResource = (LinkedHashMap)dataResource.getResult();
@@ -229,17 +250,12 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList","").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available","1").toString());
         }
-        DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(psiTask.getTaskId());
-        dataTask.setTaskName(dataPsi.getResultName());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTaskPrRepository.saveDataTask(dataTask);
         psiTask.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(psiTask);
+        spreadDispatchlData(CommonConstant.PSI_SYNC_API_URL,new DataPsiTaskSyncReq(psiTask,dataPsi,dataTask));
         log.info("psi available:{}",available);
         if (available==0){
+            spreadDispatchlData(CommonConstant.PSI_SYNC_API_URL,new DataPsiTaskSyncReq(psiTask,dataPsi,dataTask));
             Date date=new Date();
             StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
             psiTask.setFilePath(sb.toString());
@@ -314,6 +330,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         dataTask.setTaskState(psiTask.getTaskState());
         updateTaskState(dataTask);
+        spreadDispatchlData(CommonConstant.PSI_SYNC_API_URL,new DataPsiTaskSyncReq(psiTask,dataPsi,dataTask));
     }
     public void psiTaskOutputFileHandle(DataPsiTask task){
         if (task.getTaskState()!=1) {
@@ -330,9 +347,10 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam) {
+    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam,DataPirTask dataPirTask) {
         Date date = new Date();
         try {
+            spreadDispatchlData(CommonConstant.PIR_SYNC_API_URL,new DataPirTaskSyncReq(dataTask,dataPirTask));
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
@@ -383,6 +401,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
 //        dataTaskPrRepository.updateDataTask(dataTask);
+        spreadDispatchlData(CommonConstant.PIR_SYNC_API_URL,new DataPirTaskSyncReq(dataTask,dataPirTask));
     }
 
     public void sendShareModelTask(ShareModelVo shareModelVo){
@@ -416,7 +435,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
+    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask,DataTask dataTask){
         String labelDataset = "";
         String guestDataset = "";
         for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
@@ -427,18 +446,16 @@ public class DataAsyncService implements ApplicationContextAware {
             }
         }
         log.info("{}-{}",labelDataset,guestDataset);
-        DataTask dataTask = new DataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
-        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(dataReasoning.getReasoningName());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskUserId(dataReasoning.getUserId());
-        dataTaskPrRepository.saveDataTask(dataTask);
-        dataReasoning.setRunTaskId(dataTask.getTaskId());
+
+        dataReasoning.setRunTaskId(Long.parseLong(dataTask.getTaskIdName()));
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        DataReasoningTaskSyncReq dataReasoningTaskReq = new DataReasoningTaskSyncReq();
+        dataReasoningTaskReq.setDataReasoning(dataReasoning);
+        dataReasoningTaskReq.setDataTask(dataTask);
+        dataReasoningTaskReq.setDataReasoningResourceList(dataReasoningResourceList);
+        log.info(JSONObject.toJSONString(dataReasoningTaskReq));
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskReq);
         Map<String,String> map = new HashMap<>();
         map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
@@ -478,6 +495,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        spreadDispatchlData(CommonConstant.REASONING_SYNC_API_URL,dataReasoningTaskReq);
     }
 
     public void sendModelTaskMail(DataTask dataTask,Long projectId){
@@ -559,7 +577,7 @@ public class DataAsyncService implements ApplicationContextAware {
     public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType,int size){
         try {
             log.info(freemarkerContent);
-            DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+            DataTask modelTask = dataTaskRepository.selectDataTaskByTaskIdName(dataReasoning.getTaskId().toString());
             log.info(modelTask.toString());
             log.info(modelTask.getTaskResultContent());
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
@@ -620,6 +638,27 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         dataReasoning.setReasoningState(dataTask.getTaskState());
     }
+
+    private void spreadDispatchlData(String url,Object shareVo){
+        if (org.apache.commons.lang.StringUtils.isBlank(baseConfiguration.getDispatchUrl()))
+            return;
+        String gatewayAddress = baseConfiguration.getDispatchUrl();
+        log.info("DispatchUrl{}",gatewayAddress);
+//        log.info("shareVo:{}",JSONObject.toJSONString(shareVo));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(shareVo, headers);
+        try {
+            BaseResultEntity baseResultEntity = restTemplate.postForObject(url.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+            log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+        }catch (Exception e){
+            log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+        }
+        log.info("出去");
+    }
+
+
+
 
 
 }

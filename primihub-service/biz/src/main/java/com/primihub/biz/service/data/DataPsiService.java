@@ -1,19 +1,25 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.convert.DataPsiConvert;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
 import com.primihub.biz.entity.data.vo.DataPsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,6 +46,10 @@ public class DataPsiService {
     private OtherBusinessesService otherBusinessesService;
     @Autowired
     private DataAsyncService dataAsyncService;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private DataTaskRepository dataTaskRepository;
     @Autowired
     private OrganConfiguration organConfiguration;
 
@@ -97,6 +108,8 @@ public class DataPsiService {
         }
         DataPsi dataPsi = DataPsiConvert.DataPsiReqConvertPo(req);
         dataPsi.setUserId(userId);
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(req.getOwnResourceId()));
+        dataPsi.setOwnResourceId(dataResource.getResourceFusionId());
         dataPsiPrRepository.saveDataPsi(dataPsi);
         DataPsiTask task = new DataPsiTask();
         task.setPsiId(dataPsi.getId());
@@ -119,7 +132,14 @@ public class DataPsiService {
         }
         task.setCreateDate(new Date());
         dataPsiPrRepository.saveDataPsiTask(task);
-        dataAsyncService.psiGrpcRun(task,dataPsi);
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(task.getTaskId());
+        dataTask.setTaskName(dataPsi.getResultName());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTaskPrRepository.saveDataTask(dataTask);
+        dataAsyncService.psiGrpcRun(task,dataPsi,dataTask);
         Map<String, Object> map = new HashMap<>();
         map.put("dataPsi",dataPsi);
         map.put("dataPsiTask",DataPsiConvert.DataPsiTaskConvertVo(task));
@@ -160,23 +180,19 @@ public class DataPsiService {
         }
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         if (dataPsi==null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到PSI信息");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到PSI信息");
         }
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
-        Map<String, Object> otherDataResource = null;
-        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
-            DataResource otherResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
-            otherDataResource = new LinkedHashMap<>();
-            otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
-            otherDataResource.put("resourceName",otherResource.getResourceName());
-        }else {
-            BaseResultEntity baseResult = otherBusinessesService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
-            if (baseResult.getCode()==0){
-                otherDataResource = (LinkedHashMap)baseResult.getResult();
-            }
-        }
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,dataResource,otherDataResource,sysLocalOrganInfo));
+        String[] resourceIds = new String[]{dataPsi.getOwnResourceId(),dataPsi.getOtherResourceId()};
+        BaseResultEntity baseResult = otherBusinessesService.getResourceListById(dataPsi.getServerAddress(), resourceIds);
+        if (baseResult.getCode()!=0)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"查询中心节点资源失败");
+        if (baseResult.getResult()==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"查询中心节点资源无数据");
+        List<LinkedHashMap<String, Object>> mapList = (List<LinkedHashMap<String, Object>>)baseResult.getResult();
+        if (mapList.size()!=2)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"查询中心节点资源数据数量异常");
+        Map<String, LinkedHashMap<String, Object>> resourceMap = mapList.stream().collect(Collectors.toMap(map -> map.get("resourceId").toString(), Function.identity()));
+        return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,resourceMap.get(dataPsi.getOwnResourceId()),resourceMap.get(dataPsi.getOtherResourceId())));
     }
 
     public DataPsiTask selectPsiTaskById(Long taskId){
@@ -228,6 +244,34 @@ public class DataPsiService {
         }
         dataPsi.setResultName(req.getResultName());
         dataPsiPrRepository.updateDataPsi(dataPsi);
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity runPsi(DataPsiTask psiTask, DataPsi dataPsi,DataTask dataTask){
+        log.info("进入保存");
+        syncPsi(psiTask,dataPsi,dataTask);
+        log.info("结束保存");
+        dataAsyncService.psiGrpcRun(psiTask,dataPsi,dataTask);
+        log.info("结束运行");
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity syncPsi(DataPsiTask psiTask, DataPsi dataPsi,DataTask dataTask) {
+        DataTask dt = dataTaskRepository.selectDataTaskByTaskIdName(dataTask.getTaskIdName());
+        if (dt==null){
+            psiTask.setId(null);
+            dataPsi.setId(null);
+            dataTask.setTaskId(null);
+            dataPsiPrRepository.saveDataPsi(dataPsi);
+            psiTask.setPsiId(dataPsi.getId());
+            dataPsiPrRepository.saveDataPsiTask(psiTask);
+            dataTaskPrRepository.saveDataTask(dataTask);
+        }else {
+            dataTask.setTaskId(dt.getTaskId());
+            dataTaskPrRepository.updateDataTask(dataTask);
+            psiTask.setPsiId(dataPsi.getId());
+            dataPsiPrRepository.updateDataPsiTaskByTaskId(psiTask);
+        }
         return BaseResultEntity.success();
     }
 }

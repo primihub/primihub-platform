@@ -69,9 +69,8 @@ public class DataModelService {
 
     public BaseResultEntity getDataModel(Long taskId,Long userId) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
-        if (modelTask==null) {
+        if (modelTask==null)
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
-        }
         ModelVo modelVo = dataModelRepository.queryModelById(modelTask.getModelId());
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -357,6 +356,67 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
+    public BaseResultEntity dispatchRunTaskModel(ComponentTaskReq taskReq){
+        DataModel dataModel = taskReq.getDataModel();
+        DataModel dm = dataModelRepository.queryDataModelByUUID(dataModel.getModelUUID());
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, taskReq.getProjectId());
+        dataModel.setProjectId(dataProject.getId());
+        if (dm==null){
+            dataModelPrRepository.saveDataModel(dataModel);
+        }else {
+            dataModel.setModelId(dm.getModelId());
+            dataModelPrRepository.updateDataModel(dataModel);
+        }
+//        if (dataModel==null)
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型");
+//        if (dataModel.getIsDraft().equals(ModelStateEnum.DRAFT.getStateType()))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型未保存,请保存后再次尝试");
+//        if (StringUtils.isBlank(dataModel.getComponentJson()))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
+//        if (StringUtils.isBlank(dataModel.getModelName()))
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型名称不能为空");
+//        Map<Long, Map<String, Object>> taskMap = dataModelRepository.queryModelLatestTask(new HashSet() {{
+//            add(dataModel.getModelId());
+//        }});
+//        if (taskMap!=null&&!taskMap.isEmpty()){
+//            Map<String, Object> dataMap = taskMap.get(dataModel.getModelId());
+//            if (dataMap.get("taskState")!=null&&Integer.parseInt(dataMap.get("taskState").toString())==2)
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务正在运行中");
+//        }
+//        DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
+//        if (modelComponentReq==null)
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
+//        Set<String> mandatorySet = baseConfiguration.getModelComponents().stream()
+//                .filter(modelComponent -> modelComponent.getIsMandatory() == 0)
+//                .map(ModelComponent::getComponentCode)
+//                .collect(Collectors.toSet());
+//        Set<String> reqSet = modelComponentReq.getModelComponents().stream().map(DataComponentReq::getComponentCode).collect(Collectors.toSet());
+//        mandatorySet.removeAll(reqSet);
+//        if (!mandatorySet.isEmpty())
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少必选组件,请检查组件");
+//        for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
+//            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
+//            if (baseResultEntity.getCode()!=0){
+//                return baseResultEntity;
+//            }
+//        }
+        dataModelPrRepository.updateDataModel(taskReq.getDataModel());
+        dataTaskPrRepository.saveDataTask(taskReq.getDataTask());
+        DataModelTask modelTask = taskReq.getDataModelTask();
+        modelTask.setTaskId(taskReq.getDataTask().getTaskId());
+        modelTask.setModelId(dataModel.getModelId());
+        dataModelPrRepository.saveDataModelTask(modelTask);
+        dataAsyncService.runModelTask(taskReq);
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity dispatchRestartTaskModel(String taskId) {
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+        if (dataTask==null)
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
+        return restartTaskModel(dataTask.getTaskId());
+    }
+
 
     public BaseResultEntity runTaskModel(Long modelId,Long userId) {
         DataModel dataModel = dataModelRepository.queryDataModelById(modelId);
@@ -606,6 +666,15 @@ public class DataModelService {
                 modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
             }
             if(taskResource.containsKey(modelTaskSuccessVo.getTaskId())){
+                List<Map<String, String>> maps = taskResource.get(modelTaskSuccessVo.getTaskId());
+                for (Map<String, String> map : maps) {
+                    if ("1".equals(map.get("participationIdentity"))){
+                        modelTaskSuccessVo.setCreatedOrgan(map.get("organName"));
+                        modelTaskSuccessVo.setCreatedOrganId(map.get("organId"));
+                        maps.remove(map);
+                        break;
+                    }
+                }
                 modelTaskSuccessVo.setProviderOrgans(taskResource.get(modelTaskSuccessVo.getTaskId()));
             }
         }
@@ -628,6 +697,7 @@ public class DataModelService {
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
                                     put("organName",modelProjectResourceVo.getOrganName());
+                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity().toString());
                                 }
                             });
                         }
