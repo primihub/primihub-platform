@@ -180,7 +180,7 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(req.getDataTask());
 //        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
-        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+//        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
             log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
             ShareModelVo vo = new ShareModelVo();
             vo.setDataModel(req.getDataModel());
@@ -190,7 +190,7 @@ public class DataAsyncService implements ApplicationContextAware {
             vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
             vo.setDerivationList(req.getDerivationList());
             sendShareModelTask(vo);
-        }
+//        }
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
         dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(req.getDataModel().getProjectId(),null));
     }
