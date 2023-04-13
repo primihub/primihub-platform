@@ -5,7 +5,6 @@ import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
 //import com.primihub.biz.config.base.NodeDataConfig;
 import com.primihub.biz.config.base.TemplatesConfig;
 import com.primihub.biz.config.base.JsonSerializerManage;
-import com.primihub.biz.config.base.NodeDataConfig;
 import com.primihub.biz.config.grpc.GrpcServerConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
 import com.primihub.biz.config.thread.ThreadPoolConfig;
@@ -32,7 +31,6 @@ import org.springframework.context.annotation.FilterType;
                         SingleTaskChannelConsumer.class,
                         SysFusionService.class ,
                         ThreadPoolConfig.class,
-//                        NodeDataConfig.class,
                         TemplatesConfig.class,
                         SysCaptchaCacheServiceImpl.class,
                         SysUserService.class,

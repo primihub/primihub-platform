@@ -35,7 +35,7 @@ public class FusionService {
         fusionOrgan.setPinCodeMd(SignUtil.getMD5ValueUpperCaseByDefaultEncode(fusionConnectionParam.getPinCode()));
         fusionOrgan.setGatewayAddress(fusionConnectionParam.getGatewayAddress());
         fusionOrgan.setRegisterTime(new Date());
-        fusionOrgan.setDispatch(registerConnectionParam.getDispatch());
+        fusionOrgan.setDispatch(fusionConnectionParam.getDispatch());
         fusionOrgan.setIsDel(0);
         fusionOrgan.setPublicKey(fusionConnectionParam.getPublicKey());
         fusionOrgan.setPrivateKey(fusionConnectionParam.getPrivateKey());

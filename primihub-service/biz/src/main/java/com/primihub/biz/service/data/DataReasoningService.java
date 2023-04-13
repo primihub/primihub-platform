@@ -134,4 +134,18 @@ public class DataReasoningService {
         }
         return BaseResultEntity.success(DataReasoningConvert.dataReasoningConvertVo(dataReasoning));
     }
+
+    public BaseResultEntity syncReasoning(DataReasoningTaskSyncReq req) {
+        DataReasoning dataReasoning = dataReasoningRepository.selectDataReasoninByIdS(req.getDataReasoning().getReasoningId());
+        if (dataReasoning!=null){
+            req.getDataReasoning().setId(dataReasoning.getId());
+            dataReasoningPrRepository.updateDataReasoning(dataReasoning);
+        }
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(req.getDataTask().getTaskIdName());
+        if (dataTask!=null){
+            req.getDataTask().setTaskId(dataTask.getTaskId());
+            dataTaskPrRepository.updateDataTask(dataTask);
+        }
+        return BaseResultEntity.success();
+    }
 }
