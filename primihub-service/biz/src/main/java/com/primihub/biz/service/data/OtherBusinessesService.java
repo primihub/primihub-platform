@@ -160,10 +160,11 @@ public class OtherBusinessesService {
         }
     }
 
-    public void syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey){
+    public BaseResultEntity syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey){
         try {
             Object data;
             if (StringUtils.isEmpty(publicKey)){
+                gatewayAddressAndApi = gatewayAddressAndApi+"?ignore=ignore";
                 data = vo;
             }else {
                 data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
@@ -174,10 +175,12 @@ public class OtherBusinessesService {
             log.info(gatewayAddressAndApi);
             BaseResultEntity baseResultEntity = restTemplate.postForObject(gatewayAddressAndApi, request, BaseResultEntity.class);
             log.info("baseResultEntity {}",JSONObject.toJSONString(baseResultEntity));
+            return baseResultEntity;
         }catch (Exception e){
             log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
             e.printStackTrace();
         }
         log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());
+        return null;
     }
 }

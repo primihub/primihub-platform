@@ -74,6 +74,9 @@ public class DataModelService {
     private DataAsyncService dataAsyncService;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
     @Autowired
     private DataResourceService dataResourceService;
 
@@ -459,15 +462,11 @@ public class DataModelService {
         }}, dataProjectOrgan.getServerAddress());
         if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
             taskReq.supplement();
-            Map map = organListMap.get(dataProjectOrgan.getOrganId());
-            String gatewayAddress = map.get("gatewayAddress").toString();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(taskReq, headers);
-            log.info(CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress.toString()));
             try {
-                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                Map map = organListMap.get(dataProjectOrgan.getOrganId());
+                String gatewayAddress = map.get("gatewayAddress").toString();
+                String publicKey = (String) map.get("publicKey");
+                otherBusinessesService.syncGatewayApiData(taskReq,CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress),publicKey);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
             }

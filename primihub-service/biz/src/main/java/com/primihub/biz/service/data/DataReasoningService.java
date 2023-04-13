@@ -50,6 +50,8 @@ public class DataReasoningService {
     @Autowired
     private DataAsyncService dataAsyncService;
     @Autowired
+    private OtherBusinessesService otherBusinessesService;
+    @Autowired
     private DataProjectService dataProjectService;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
@@ -103,16 +105,11 @@ public class DataReasoningService {
             add(organId);
         }}, dataProjectResources.get(0).getServerAddress());
         if (organListMap.containsKey(organId)){
-            Map map = organListMap.get(organId);
-            String gatewayAddress = map.get("gatewayAddress").toString();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(new DataReasoningTaskSyncReq(dataReasoning,dataReasoningResourceList,modelTask,dataTask), headers);
-            log.info(CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress.toString()));
             try {
-                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                Map map = organListMap.get(organId);
+                String gatewayAddress = map.get("gatewayAddress").toString();
+                String publicKey = (String) map.get("publicKey");
+                otherBusinessesService.syncGatewayApiData(new DataReasoningTaskSyncReq(dataReasoning,dataReasoningResourceList,modelTask,dataTask),CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress),publicKey);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
             }

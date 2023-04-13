@@ -81,16 +81,11 @@ public class PirService {
             add(organId);
         }}, serverAddress);
         if (organListMap.containsKey(organId)){
-            Map map = organListMap.get(organId);
-            String gatewayAddress = map.get("gatewayAddress").toString();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(new DataPirTaskSyncReq(dataTask,dataPirTask), headers);
-            log.info(CommonConstant.DISPATCH_RUN_PIR.replace("<address>", gatewayAddress.toString()));
             try {
-                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_PIR.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                Map map = organListMap.get(organId);
+                String gatewayAddress = map.get("gatewayAddress").toString();
+                String publicKey = (String) map.get("publicKey");
+                otherBusinessesService.syncGatewayApiData(new DataPirTaskSyncReq(dataTask,dataPirTask),CommonConstant.DISPATCH_RUN_PIR.replace("<address>", gatewayAddress),publicKey);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
             }

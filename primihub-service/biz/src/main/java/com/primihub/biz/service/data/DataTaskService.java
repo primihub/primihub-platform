@@ -299,9 +299,6 @@ public class DataTaskService {
                         }
                         String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                         String publicKey = (String) map.get("publicKey");
-                        if (publicKey==null){
-                            url = url+"?ignore=ignore";
-                        }
                         organNames.add(map.get("globalName").toString());
                         log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                         otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
@@ -343,9 +340,6 @@ public class DataTaskService {
                     log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
                     String url = CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                     String publicKey = (String) map.get("publicKey");
-                    if (publicKey==null){
-                        url = url+"?ignore=ignore";
-                    }
                     otherBusinessesService.syncGatewayApiData(shareModelVo,url,publicKey);
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }

@@ -150,18 +150,14 @@ public class DataPsiService {
             add(dataPsi.getOwnOrganId());
         }}, dataPsi.getServerAddress());
         if (organListMap.containsKey(dataPsi.getOwnOrganId())){
-            Map map = organListMap.get(dataPsi.getOwnOrganId());
-            String gatewayAddress = map.get("gatewayAddress").toString();
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(new DataPsiTaskSyncReq(task,dataPsi,dataTask), headers);
-            log.info(CommonConstant.DISPATCH_RUN_PSI.replace("<address>", gatewayAddress.toString()));
             try {
-                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_PSI.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
-                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+                Map map = organListMap.get(dataPsi.getOwnOrganId());
+                String gatewayAddress = map.get("gatewayAddress").toString();
+                String publicKey = (String) map.get("publicKey");
+                otherBusinessesService.syncGatewayApiData(new DataPsiTaskSyncReq(task,dataPsi,dataTask),CommonConstant.DISPATCH_RUN_PSI.replace("<address>", gatewayAddress),publicKey);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+                e.printStackTrace();
             }
             log.info("出去");
         }else {
