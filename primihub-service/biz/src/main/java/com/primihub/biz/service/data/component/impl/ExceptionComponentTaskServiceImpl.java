@@ -1,10 +1,8 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -18,11 +16,9 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -31,7 +27,10 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -103,7 +102,6 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(dataTaskMonitorService.getClientId().getBytes(StandardCharsets.UTF_8)))
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());

@@ -7,6 +7,7 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
@@ -242,7 +243,7 @@ public class DataAsyncService implements ApplicationContextAware {
             BaseResultEntity dataResource = otherBusinessesService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
             log.info("{} - {}",dataPsi.getServerAddress(),dataPsi.getOtherResourceId());
             log.info(JSONObject.toJSONString(dataResource));
-            if (dataResource.getCode()!=0)
+            if (dataResource.getCode()!=0){
                 return;
             }
             Map<String, Object> otherDataResource = (LinkedHashMap)dataResource.getResult();

@@ -233,7 +233,7 @@ public class DataPsiService {
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         task.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(task);
-        dataAsyncService.psiGrpcRun(task,dataPsi);
+//        dataAsyncService.psiGrpcRun(task,dataPsi);
         return BaseResultEntity.success();
     }
 
