@@ -6,14 +6,11 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
-import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.GrpcComponentDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
-import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
-import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
@@ -25,15 +22,12 @@ import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("jointStatisticalComponentTaskServiceImpl")
@@ -76,10 +70,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(jointStatisticalMap));
             String jointStatistical = taskReq.getValueMap().get("jointStatistical");
             if (jointStatistical!=null){
-                ModelProjectResourceVo modelProjectResourceVo = taskReq.getResourceList().stream().filter(r -> r.getParticipationIdentity() == 1).findFirst().get();
-                if (modelProjectResourceVo != null){
-                    taskReq.getDataTask().setTaskResultPath(jointStatisticalMap.get(taskReq.getFreemarkerMap().get(modelProjectResourceVo.getResourceId())).getOutputFilePath());
-                }
+                taskReq.getDataTask().setTaskResultPath(jointStatisticalMap.get(taskReq.getFreemarkerMap().get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET))).getOutputFilePath());
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
