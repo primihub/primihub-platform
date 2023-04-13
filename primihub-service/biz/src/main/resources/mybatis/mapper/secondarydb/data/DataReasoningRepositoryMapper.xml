@@ -51,6 +51,19 @@
              data_reasoning_resource
         where reasoning_id = #{reasoningId}
     </select>
+    <select id="selectDataReasoninByIdS" resultType="com.primihub.biz.entity.data.po.DataReasoning">
+        select
+            id,
+            reasoning_id reasoningId,
+            reasoning_name reasoningName,
+            reasoning_desc reasoningDesc,
+            reasoning_type reasoningType,
+            reasoning_state reasoningState,
+            task_id taskId,
+            run_task_id runTaskId,
+            release_date releaseDate
+        from data_reasoning where reasoning_id = #{id}
+    </select>
 
     <sql id="whereDataReasonin">
         <if test="isAdmin == 0">and r.user_id = #{userId}</if>

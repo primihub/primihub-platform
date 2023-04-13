@@ -3,8 +3,8 @@
 <mapper namespace="com.primihub.repository.FusionRepository">
 
     <insert id="insertFusionOrgan" useGeneratedKeys="true" keyProperty="id">
-        insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,public_key,private_key,is_del)
-        values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{publicKey},#{privateKey},#{isDel})
+        insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,public_key,private_key,`dispatch`,is_del)
+        values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{publicKey},#{privateKey},#{dispatch},#{isDel})
     </insert>
     <insert id="insertFusionOrganExtends" useGeneratedKeys="true" keyProperty="id">
         insert into fusion_organ_extends(global_id, ip, lat, lon, country, is_del)
@@ -37,6 +37,7 @@
                  separator="," close=")">
             #{item}
         </foreach>
+        and `dispatch` = 0
     </select>
     <select id="getFusionOrganExtendsByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrganExtends">
         select
@@ -56,6 +57,7 @@
             fusion_organ_extends e
         WHERE
             o.id = e.global_id
+        and o.dispatch = 0
     </select>
 
 </mapper>

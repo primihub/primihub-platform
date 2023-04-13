@@ -79,6 +79,7 @@ public class DataProjectService {
             // Available by default
             dataProject.setStatus(1);
             updateProjectProviderOrganName(req.getProjectOrgans(),dataProject);
+            log.info(JSONObject.toJSONString(dataProject));
             dataProjectPrRepository.saveDataProject(dataProject);
             req.setProjectId(dataProject.getProjectId());
         }else {
@@ -98,6 +99,9 @@ public class DataProjectService {
         }
         if (req.getProjectOrgans()!=null){
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(req.getProjectId());
+//            String subOrganId = dataProjectOrgans.stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse(null);
+//            if (subOrganId == null)
+//                subOrganId = req.getProjectOrgans().stream().filter(d -> d.getParticipationIdentity() == 1).findFirst().map(o-> o.getOrganId().substring(24, 36)).orElse(null);
             Map<String, DataProjectOrgan> organMap = dataProjectOrgans.stream().collect(Collectors.toMap(DataProjectOrgan::getOrganId, Function.identity()));
             for (DataProjectOrganReq projectOrgan : req.getProjectOrgans()) {
                 DataProjectOrgan dataProjectOrgan = organMap.get(projectOrgan.getOrganId());
@@ -120,6 +124,8 @@ public class DataProjectService {
                             DataProjectResource dataProjectResource = new DataProjectResource(UUID.randomUUID().toString(), dataProjectOrgan.getProjectId(), sysLocalOrganInfo.getOrganId(), dataProjectOrgan.getOrganId(), dataProjectOrgan.getParticipationIdentity(), req.getServerAddress());
                             dataProjectResource.setResourceId(resourceId);
                             if (projectOrgan.getOrganId().equals(sysLocalOrganInfo.getOrganId())){
+//                            log.info("resourceId:{}--subOrganId:{}",resourceId,subOrganId);
+//                            if (resourceId.contains(subOrganId)){
                                 dataProjectResource.setAuditStatus(1);
                                 dataProjectResource.setAuditOpinion("项目发起者自动同意");
                             }
@@ -130,6 +136,7 @@ public class DataProjectService {
                 }
             }
         }
+        log.info(JSONObject.toJSONString(dataProject));
         dataProjectPrRepository.updateDataProject(dataProject);
         sendTask(new ShareProjectVo(dataProject));
         Map<String,String> map = new HashMap<>();
@@ -195,7 +202,7 @@ public class DataProjectService {
         if (sysLocalOrganInfo.getOrganId().equals(dataProject.getCreatedOrganId())) {
             dataProjectDetailsVo.setCreator(true);
         }
-        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(organ -> dataProjectDetailsVo.getCreator() || organ.getOrganId().equals(organ.getInitiateOrganId()) || organ.getOrganId().equals(sysLocalOrganInfo.getOrganId())).collect(Collectors.toList());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
         List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
         Map<String, List<DataProjectResource>> organResourceMap = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getOrganId));
@@ -380,6 +387,10 @@ public class DataProjectService {
             }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, vo.getProjectId());
             dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(vo.getProjectId()).size());
+            log.info("SysLocalOrganId:{} --- CreatedOrganId:{}",organConfiguration.getSysLocalOrganId(),dataProject.getCreatedOrganId());
+            if (organConfiguration.getSysLocalOrganId().equals(dataProject.getCreatedOrganId())){
+                dataProject.setStatus(1);
+            }
             dataProjectPrRepository.updateDataProject(dataProject);
         }
         return BaseResultEntity.success();
@@ -549,36 +560,37 @@ public class DataProjectService {
 
 
     public BaseResultEntity getResourceList(OrganResourceReq req) {
-        if (req.getAuditStatus() == null || req.getAuditStatus() == 0) {
-            req.setAuditStatus(1);
-        }
-        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(req.getModelId(), null);
-        if (modelResourceVos.isEmpty()) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"模型无资源信息");
-        }
-        List<DataResource> dataResourcesList = dataResourceRepository.queryDataResourceByResourceIds(null, modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toSet()));
-        if (dataResourcesList.isEmpty()) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无资源信息");
-        }
-        Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("organId",req.getOrganId());
-        paramMap.put("offset",req.getOffset());
-        paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("resourceName",req.getResourceName());
-        paramMap.put("resourceState",0);
+//        if (req.getAuditStatus() == null || req.getAuditStatus() == 0)
+//            req.setAuditStatus(1);
+//        List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(req.getModelId(), null);
+//        if (modelResourceVos.isEmpty())
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"模型无资源信息");
+//        List<DataResource> dataResourcesList = dataResourceRepository.queryDataResourceByResourceIds(null, modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toSet()));
+//        if (dataResourcesList.isEmpty())
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无资源信息");
+//        Map<String,Object> paramMap = new HashMap<>();
+//        paramMap.put("organId",req.getOrganId());
+//        paramMap.put("offset",req.getOffset());
+//        paramMap.put("pageSize",req.getPageSize());
+//        paramMap.put("resourceName",req.getResourceName());
+//        paramMap.put("resourceState",0);
 //        paramMap.put("fileHandleField",rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
-        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
-            List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
-            if (dataResources.size()==0){
-                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
-            }
-            Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
-            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
-        }else {
+//        if (organConfiguration.getSysLocalOrganId().equals(req.getOrganId())){
+//            List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
+//            if (dataResources.size()==0){
+//                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+//            }
+//            Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
+//            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.resourceConvertSelectVo(re)).collect(Collectors.toList())));
+//        }else {
 //            req.setColumnStr(rmFileHandleFieldY(dataResourcesList.get(0).getFileHandleField()));
             log.info(JSONObject.toJSONString(req));
-            return otherBusinessesService.getOrganResourceList(req);
-        }
+        DataFResourceReq req1 = new DataFResourceReq();
+        req1.setServerAddress(req.getServerAddress());
+        req1.setResourceName(req.getResourceName());
+        req1.setOrganId(req.getOrganId());
+        return otherBusinessesService.getResourceList(req1);
+//        }
     }
 
     public String rmFileHandleFieldY(String fileHandleField){

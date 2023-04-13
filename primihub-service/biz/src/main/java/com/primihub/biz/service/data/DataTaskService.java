@@ -16,6 +16,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.LokiDto;
 import com.primihub.biz.entity.data.dto.LokiResultContentDto;
 import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
 import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.entity.data.vo.DataTaskVo;
@@ -376,8 +377,11 @@ public class DataTaskService {
             List<DataModelTask> dataModelTasks = dataModelRepository.queryModelTaskByModelId(map);
             taskId = dataModelTasks.stream().mapToLong(DataModelTask::getTaskId).max().orElse(0);
         }
-        if (taskId!=null&&taskId!=0L) {
-            return dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (taskId!=null&&taskId!=0L){
+            DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+            if (dataTask==null)
+                dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId.toString());
+            return dataTask;
         }
         return null;
     }
@@ -577,6 +581,23 @@ public class DataTaskService {
 
     public void removeSseTask(String taskId) {
         sseEmitterService.removeKey(taskId);
+    }
+
+
+
+    public BaseResultEntity saveDataTask(DataPirTaskSyncReq req) {
+        DataTask dt = dataTaskRepository.selectDataTaskByTaskIdName(req.getDataTask().getTaskIdName());
+        if (dt==null){
+            req.getDataTask().setTaskId(null);
+            dataTaskPrRepository.saveDataTask(req.getDataTask());
+            req.getDataPirTask().setTaskId(req.getDataTask().getTaskId());
+            dataTaskPrRepository.saveDataPirTask(req.getDataPirTask());
+        }else {
+            req.getDataTask().setTaskId(dt.getTaskId());
+            dataTaskPrRepository.updateDataTask(req.getDataTask());
+        }
+
+        return BaseResultEntity.success();
     }
 
     public BaseResultEntity updateTaskDesc(Long taskId, String taskDesc) {

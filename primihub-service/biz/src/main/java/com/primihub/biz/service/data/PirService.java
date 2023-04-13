@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -11,14 +12,21 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
+import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,14 +41,18 @@ public class PirService {
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
+    private DataProjectService dataProjectService;
+    @Autowired
     private DataTaskRepository dataTaskRepository;
     @Autowired
     private DataAsyncService dataAsyncService;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
 
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(String serverAddress,String resourceId, String pirParam) {
+    public BaseResultEntity pirSubmitTask(String serverAddress,String resourceId, String pirParam,String organId) {
         BaseResultEntity dataResource = otherBusinessesService.getDataResource(serverAddress, resourceId);
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
@@ -51,7 +63,6 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
         }
         DataTask dataTask = new DataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(pirDataResource.get("resourceName").toString());
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
@@ -66,7 +77,29 @@ public class PirService {
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(resourceId);
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam);
+        Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
+            add(organId);
+        }}, serverAddress);
+        if (organListMap.containsKey(organId)){
+            Map map = organListMap.get(organId);
+            String gatewayAddress = map.get("gatewayAddress").toString();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(new DataPirTaskSyncReq(dataTask,dataPirTask), headers);
+            log.info(CommonConstant.DISPATCH_RUN_PIR.replace("<address>", gatewayAddress.toString()));
+            try {
+                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_PIR.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+            }catch (Exception e){
+                log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+            }
+            log.info("出去");
+        }else {
+            log.info("下发失败");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,中心节点未获取到机构信息");
+        }
+//        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);

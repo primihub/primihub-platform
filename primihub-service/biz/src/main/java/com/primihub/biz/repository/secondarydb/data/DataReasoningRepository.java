@@ -16,5 +16,7 @@ public interface DataReasoningRepository {
 
     DataReasoning selectDataReasoninById(Long id);
 
+    DataReasoning selectDataReasoninByIdS(String id);
+
     List<DataReasoningResource> selectDataReasoningResource(Long reasoninId );
 }

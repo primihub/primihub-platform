@@ -7,6 +7,7 @@ import com.alibaba.fastjson.parser.ParserConfig;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.convert.DataTaskConvert;
@@ -32,8 +33,15 @@ import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -52,6 +60,8 @@ public class DataModelService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private DataProjectService dataProjectService;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -405,7 +415,6 @@ public class DataModelService {
         }
         dataModelPrRepository.updateDataModel(taskReq.getDataModel());
         DataTask dataTask = taskReq.getDataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskType(TaskTypeEnum.MODEL.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
@@ -413,17 +422,65 @@ public class DataModelService {
         dataTask.setTaskUserId(userId);
         dataTask.setCreateDate(new Date());
         dataTaskPrRepository.saveDataTask(dataTask);
-//        taskReq.setDataTask(dataTask);
         DataModelTask modelTask = new DataModelTask();
         modelTask.setTaskId(dataTask.getTaskId());
         modelTask.setModelId(dataModel.getModelId());
+        modelTask.setComponentJson(JSONObject.toJSONString(taskReq.getDataComponents()));
         dataModelPrRepository.saveDataModelTask(modelTask);
         taskReq.setDataModelTask(modelTask);
-        dataAsyncService.runModelTask(taskReq);
+        for (DataComponent dataComponent : taskReq.getDataComponents()) {
+            dataComponent.setModelId(modelTask.getModelId());
+            dataComponent.setTaskId(modelTask.getTaskId());
+            dataModelPrRepository.saveDataComponent(dataComponent);
+        }
+        Map<String, DataComponent> dataComponentMap = taskReq.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
+        for (DataModelComponent dataModelComponent : taskReq.getDataModelComponents()) {
+            dataModelComponent.setModelId(modelTask.getModelId());
+            dataModelComponent.setTaskId(modelTask.getTaskId());
+            dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
+            dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
+            dataModelPrRepository.saveDataModelComponent(dataModelComponent);
+        }
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataModel.getProjectId(), null);
+        taskReq.setProjectId(dataProject.getProjectId());
+        return distributeModelTasks(taskReq);
+    }
+
+    private BaseResultEntity distributeModelTasks(ComponentTaskReq taskReq){
+        Long projectId = taskReq.getDataModel().getProjectId();
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
+        DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(dop -> dop.getParticipationIdentity() == 1).findFirst().orElse(null);
+        if (dataProjectOrgan==null){
+            log.info("下发失败");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,发起机构为null");
+        }
+        Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
+            add(dataProjectOrgan.getOrganId());
+        }}, dataProjectOrgan.getServerAddress());
+        if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
+            taskReq.supplement();
+            Map map = organListMap.get(dataProjectOrgan.getOrganId());
+            String gatewayAddress = map.get("gatewayAddress").toString();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(taskReq, headers);
+            log.info(CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress.toString()));
+            try {
+                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+            }catch (Exception e){
+                log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+            }
+            log.info("出去");
+        }else {
+            log.info("下发失败");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,中心节点未获取到机构信息");
+        }
         Map<String,Object> returnMap = new HashMap<>();
-        returnMap.put("modelId",modelId);
-        returnMap.put("taskId",dataTask.getTaskId());
+        returnMap.put("modelId",taskReq.getDataModel().getModelId());
+        returnMap.put("taskId",taskReq.getDataTask().getTaskId());
         return BaseResultEntity.success(returnMap);
+
     }
 
     public BaseResultEntity restartTaskModel(Long taskId) {
@@ -460,12 +517,45 @@ public class DataModelService {
         dataModelPrRepository.deleteDataModelResource(dataModel.getModelId());
         dataModelPrRepository.deleteDataComponent(dataModel.getModelId());
         dataModelPrRepository.deleteDataModelComponent(dataModel.getModelId());
-        dataAsyncService.runModelTask(taskReq);
+        return distributeRestartTaskModel(dataModel,dataTask);
+    }
+
+
+    public BaseResultEntity distributeRestartTaskModel(DataModel dataModel,DataTask dataTask){
+        try{
+            Long projectId = dataModel.getProjectId();
+            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
+            DataProjectOrgan dataProjectOrgan = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId()).stream().filter(dop -> dop.getParticipationIdentity() == 1).findFirst().orElse(null);
+            if (dataProjectOrgan==null){
+                log.info("下发失败");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,发起机构为null");
+            }
+            Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
+                add(dataProjectOrgan.getOrganId());
+            }}, dataProjectOrgan.getServerAddress());
+            if (organListMap.containsKey(dataProjectOrgan.getOrganId())) {
+                Map mapo = organListMap.get(dataProjectOrgan.getOrganId());
+                String gatewayAddress = mapo.get("gatewayAddress").toString();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+                MultiValueMap map = new LinkedMultiValueMap<>();
+                map.put("taskId", new ArrayList() {{
+                    add(dataTask.getTaskIdName());
+                }});
+                HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+                BaseResultEntity resultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RESTART_TASK_MODEL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                log.info("baseResultEntity code:{} msg:{}", resultEntity.getCode(), resultEntity.getMsg());
+            }
+        }catch (Exception e){
+           log.info(e.getMessage());
+        }
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",dataModel.getModelId());
         returnMap.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(returnMap);
     }
+
+
 
     public BaseResultEntity getTaskModelComponent(Long taskId) {
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
@@ -513,10 +603,10 @@ public class DataModelService {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataTask");
             }
             if (StringUtils.isBlank(vo.getDataModel().getModelUUID())) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelUUID");
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "modelUUID");
             }
-            if (vo.getDmrList()==null||vo.getDmrList().isEmpty()) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dmrList");
+            if (vo.getDmrList()==null||vo.getDmrList().isEmpty()){
+                vo.setDmrList(new ArrayList<>());
             }
         }
         DataModel dataModel = this.dataModelRepository.queryDataModelByUUID(vo.getDataModel().getModelUUID());
@@ -576,7 +666,9 @@ public class DataModelService {
                     vo.getDmrList().add(dataModelResource);
                 }
             }
-            dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
+            if (!vo.getDmrList().isEmpty()){
+                dataModelPrRepository.saveDataModelResourceList(vo.getDmrList());
+            }
         }
         dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(null,vo.getProjectId()));
         return BaseResultEntity.success();
@@ -606,7 +698,16 @@ public class DataModelService {
                 modelTaskSuccessVo.setTaskEndDate(new Date(modelTaskSuccessVo.getTaskEndTime()));
             }
             if(taskResource.containsKey(modelTaskSuccessVo.getTaskId())){
-                modelTaskSuccessVo.setProviderOrgans(taskResource.get(modelTaskSuccessVo.getTaskId()));
+                List<Map<String, String>> maps = taskResource.get(modelTaskSuccessVo.getTaskId());
+                for (Map<String, String> map : maps) {
+                    if ("1".equals(map.get("participationIdentity"))){
+                        modelTaskSuccessVo.setCreatedOrgan(map.get("organName"));
+                        modelTaskSuccessVo.setCreatedOrganId(map.get("organId"));
+                        maps.remove(map);
+                        break;
+                    }
+                }
+                modelTaskSuccessVo.setProviderOrgans(maps);
             }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),modelTaskSuccessVos));
@@ -628,6 +729,7 @@ public class DataModelService {
                                 {
                                     put("organId",modelProjectResourceVo.getOrganId());
                                     put("organName",modelProjectResourceVo.getOrganName());
+                                    put("participationIdentity",modelProjectResourceVo.getParticipationIdentity().toString());
                                 }
                             });
                         }

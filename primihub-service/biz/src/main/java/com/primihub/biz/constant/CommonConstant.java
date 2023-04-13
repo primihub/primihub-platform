@@ -9,4 +9,15 @@ public class CommonConstant {
     // sync Project api
     public static final String PROJECT_SYNC_API_URL = "<address>/share/shareData/syncProject";
     public static final String MODEL_SYNC_API_URL = "<address>/share/shareData/syncModel";
+
+    // sync run model api
+    public static final String DISPATCH_RUN_TASK_MODEL = "<address>/share/shareData/dispatchRunTaskModel";
+    public static final String DISPATCH_RESTART_TASK_MODEL = "<address>/share/shareData/dispatchRestartTaskModel";
+    public static final String DISPATCH_RUN_PSI = "<address>/share/shareData/dispatchRunPsi";
+    public static final String DISPATCH_RUN_PIR = "<address>/share/shareData/dispatchRunPir";
+    public static final String DISPATCH_RUN_REASONING = "<address>/share/shareData/dispatchRunReasoning";
+
+
+    public static final String PSI_SYNC_API_URL = "<address>/share/shareData/syncPsi";
+    public static final String PIR_SYNC_API_URL = "<address>/share/shareData/syncPir";
 }

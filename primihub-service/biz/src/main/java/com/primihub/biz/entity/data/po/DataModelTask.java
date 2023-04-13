@@ -25,7 +25,7 @@ public class DataModelTask {
     /**
      * 预测文件路径
      */
-    @JsonIgnore
+//    @JsonIgnore
     private String predictFile;
     /**
      * 预测文件内容

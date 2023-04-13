@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.convert.DataReasoningConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -8,19 +9,24 @@ import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataReasoningReq;
-import com.primihub.biz.entity.data.req.DataReasoningResourceReq;
-import com.primihub.biz.entity.data.req.ReasoningListReq;
 import com.primihub.biz.entity.data.vo.DataReasoningVo;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.repository.primarydb.data.DataReasoningPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataReasoningRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +46,13 @@ public class DataReasoningService {
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
+    private DataTaskRepository dataTaskRepository;
+    @Autowired
     private DataAsyncService dataAsyncService;
+    @Autowired
+    private DataProjectService dataProjectService;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
 
 
 
@@ -67,11 +79,48 @@ public class DataReasoningService {
         if (dataProjectResources.isEmpty()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源信息");
         }
+        DataTask dataTask1 = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
+        dataReasoning.setTaskId(Long.valueOf(dataTask1.getTaskIdName()));
         dataReasoningPrRepository.saveDataReasoning(dataReasoning);
         Map<String, String> resourceMap = dataProjectResources.stream().collect(Collectors.toMap(DataProjectResource::getResourceId, DataProjectResource::getServerAddress,(key1, key2) -> key2));
         List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId(), resourceMap.get(r.getResourceId()))).collect(Collectors.toList());
         dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
-        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList,modelTask);
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
+        dataTask.setTaskName(dataReasoning.getReasoningName());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTask.setTaskType(TaskTypeEnum.REASONING.getTaskType());
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskUserId(dataReasoning.getUserId());
+        dataTaskPrRepository.saveDataTask(dataTask);
+//        dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList,modelTask,dataTask);
+        DataReasoningResource dataReasoningResource = dataReasoningResourceList.stream().filter(r -> r.getParticipationIdentity().toString().equals("1")).findFirst().get();
+        Map<String,Map> resourceListMap = dataProjectService.getResourceListMap(new ArrayList() {{
+            add(dataReasoningResource.getResourceId());
+        }}, dataProjectResources.get(0).getServerAddress());
+        String organId = resourceListMap.get(dataReasoningResource.getResourceId()).get("organId").toString();
+        Map<String, Map> organListMap = dataProjectService.getOrganListMap(new ArrayList() {{
+            add(organId);
+        }}, dataProjectResources.get(0).getServerAddress());
+        if (organListMap.containsKey(organId)){
+            Map map = organListMap.get(organId);
+            String gatewayAddress = map.get("gatewayAddress").toString();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(new DataReasoningTaskSyncReq(dataReasoning,dataReasoningResourceList,modelTask,dataTask), headers);
+            log.info(CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress.toString()));
+            try {
+                BaseResultEntity baseResultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                log.info("baseResultEntity code:{} msg:{}",baseResultEntity.getCode(),baseResultEntity.getMsg());
+            }catch (Exception e){
+                log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
+            }
+            log.info("出去");
+        }else {
+            log.info("下发失败");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"任务下发失败,中心节点未获取到机构信息");
+        }
         Map<String,Object> map = new HashMap<>();
         map.put("id",dataReasoning.getId());
         map.put("reasoningId",dataReasoning.getReasoningId());

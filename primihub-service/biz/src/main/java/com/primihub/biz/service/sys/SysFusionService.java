@@ -115,6 +115,7 @@ public class SysFusionService {
             map.put("gatewayAddress", new ArrayList(){{add(sysLocalOrganInfo.getGatewayAddress());}});
             map.put("publicKey", new ArrayList(){{add(sysLocalOrganInfo.getPublicKey());}});
             map.put("privateKey", new ArrayList(){{add(sysLocalOrganInfo.getPrivateKey());}});
+            map.put("dispatch", new ArrayList(){{add(1);}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/registerConnection",request, BaseResultEntity.class);
             if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {

@@ -14,6 +14,7 @@ import java.util.*;
 @Data
 @Slf4j
 public class  ComponentTaskReq {
+    private String projectId;
     private DataModel dataModel;
     private DataModelTask dataModelTask;
     private DataTask dataTask;
@@ -35,6 +36,9 @@ public class  ComponentTaskReq {
         this.dataTask = new DataTask();
     }
 
+    public ComponentTaskReq() {
+    }
+
     public DataModelAndComponentReq getModelComponentReq(){
         if (modelComponentReq!=null){
             return modelComponentReq;
@@ -52,5 +56,11 @@ public class  ComponentTaskReq {
     public int getJob() {
         job++;
         return job;
+    }
+    private Long timestamp;
+    private Integer nonce;
+    public void supplement(){
+        this.timestamp = System.currentTimeMillis();
+        this.nonce = (int)Math.random()*100;
     }
 }
