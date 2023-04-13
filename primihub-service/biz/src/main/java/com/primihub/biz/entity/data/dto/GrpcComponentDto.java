@@ -26,6 +26,6 @@ public class GrpcComponentDto {
         if (outputFilePath == null){
             return null;
         }
-        return outputFilePath+ File.separator + newDataSetId+".csv";
+        return outputFilePath + File.separator + newDataSetId+".csv";
     }
 }
