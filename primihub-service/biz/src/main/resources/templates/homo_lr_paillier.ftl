@@ -3,15 +3,14 @@ from primihub.FL.model.logistic_regression.homo_lr_dev import run_party
 
 
 config = {
-	'mode': 'DPSGD',
-	'delta': 1e-3,
-	'noise_multiplier': 2.0,
-	'l2_norm_clip': 1.0,
-	'secure_mode': True,
+	'mode': 'Paillier',
+	'n_length': 1024,
 	'learning_rate': 'optimal',
-	'alpha': 0.0001,
-	'batch_size': 50,
-	'max_iter': 100,
+	'alpha': 0.01,
+	'batch_size': 100,
+	'max_iter': 50,
+	'n_iter_no_change': 5,
+	'compare_threshold': 1e-6,
 	'category': 2,
 	'feature_names': None,
 }
