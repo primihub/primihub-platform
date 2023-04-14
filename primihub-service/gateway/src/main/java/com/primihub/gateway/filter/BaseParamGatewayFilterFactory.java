@@ -19,11 +19,13 @@ import org.springframework.http.codec.multipart.Part;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.server.HandlerStrategies;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.io.File;
 import java.util.Collections;
 
 @Slf4j
@@ -32,6 +34,8 @@ import java.util.Collections;
 public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory {
 
     public static final String REQUEST_TIME_START="requestTimeStart";
+    public static final AntPathMatcher MATCHER = new AntPathMatcher(File.separator);
+    public static final String SHARE_URL = "/shareData/**";
 
     @Autowired
     private BaseConfiguration baseConfiguration;
@@ -41,36 +45,56 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
     @Override
     public GatewayFilter apply(Object config) {
         return ((exchange, chain) -> {
+            String currentRawPath=exchange.getRequest().getURI().getRawPath();
+//            log.info(currentRawPath);
             MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
+            if (MATCHER.match(SHARE_URL,currentRawPath)){
+                return chain.filter(exchange).then(
+                        Mono.fromRunnable(()->{
+                            Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
+                            if(requestTimeStart!=null){
+                                StringBuilder sb=new StringBuilder(exchange.getRequest().getURI().getRawPath())
+                                        .append(":")
+                                        .append(System.currentTimeMillis() -requestTimeStart)
+                                        .append("ms");
+                                log.info(sb.toString());
+                            }
+                        })
+                );
+            }
             if(mediaType==null){
                 MultiValueMap<String, String> queryParams=exchange.getRequest().getQueryParams();
 
                 String timestamp=queryParams.getFirst(BaseParamEnum.TIMESTAMP.getColumnName());
-                if(timestamp==null||timestamp.trim().equals("")) {
+                if(timestamp==null|| "".equals(timestamp.trim())) {
                     return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TIMESTAMP);
                 }
                 String nonce=queryParams.getFirst(BaseParamEnum.NONCE.getColumnName());
-                if(nonce==null||nonce.trim().equals("")) {
+                if(nonce==null|| "".equals(nonce.trim())) {
                     return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.NONCE);
                 }
-                String currentRawPath=exchange.getRequest().getURI().getRawPath();
+
                 String token=queryParams.getFirst(BaseParamEnum.TOKEN.getColumnName());
                 if(!(baseConfiguration.getTokenValidateUriBlackList()!=null
                         && baseConfiguration.getTokenValidateUriBlackList().contains(currentRawPath))
-                        &&(token==null||token.trim().equals(""))){
+                        &&(token==null|| "".equals(token.trim()))){
                     return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TOKEN);
                 }
                 String sign=queryParams.getFirst(BaseParamEnum.SIGN.getColumnName());
                 if((baseConfiguration.getNeedSignUriList()!=null
                         && baseConfiguration.getNeedSignUriList().contains(currentRawPath))
-                        &&(sign==null||sign.trim().equals(""))){
+                        &&(sign==null|| "".equals(sign.trim()))){
                     return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.SIGN);
                 }
 
                 exchange.getAttributes().put(BaseParamEnum.TIMESTAMP.getColumnName(),timestamp);
                 exchange.getAttributes().put(BaseParamEnum.NONCE.getColumnName(),nonce);
-                if(token!=null)exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
-                if(sign!=null)exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
+                if(token!=null){
+                    exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
+                }
+                if(sign!=null){
+                    exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
+                }
                 exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
@@ -118,7 +142,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TIMESTAMP);
                                         }
                                         String timestamp = GatewayFilterFactoryTool.getFromDataBufferToString(timeStampPart.content());
-                                        if(timestamp==null||timestamp.equals("")){
+                                        if(timestamp==null|| "".equals(timestamp)){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TIMESTAMP);
                                         }
 
@@ -127,7 +151,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.NONCE);
                                         }
                                         String nonce = GatewayFilterFactoryTool.getFromDataBufferToString(noncePart.content());
-                                        if(nonce==null||nonce.equals("")){
+                                        if(nonce==null|| "".equals(nonce)){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.NONCE);
                                         }
 
@@ -135,14 +159,13 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                         Part tokenPart = (Part) ((MultiValueMap) resolvedBody).getFirst(BaseParamEnum.TOKEN.getColumnName());
                                         if(tokenPart!=null) {
                                             token = GatewayFilterFactoryTool.getFromDataBufferToString(tokenPart.content());
-                                            if(token==null||token.equals("")){
+                                            if(token==null|| "".equals(token)){
                                                 return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TOKEN);
                                             }
                                         }
-                                        String currentRawPath=exchange.getRequest().getURI().getRawPath();
                                         if(!(baseConfiguration.getTokenValidateUriBlackList()!=null
                                                 && baseConfiguration.getTokenValidateUriBlackList().contains(currentRawPath))
-                                                &&(token==null||token.trim().equals(""))){
+                                                &&(token==null|| "".equals(token.trim()))){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TOKEN);
                                         }
 
@@ -150,70 +173,76 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                         Part signPart = (Part) ((MultiValueMap) resolvedBody).getFirst(BaseParamEnum.SIGN.getColumnName());
                                         if(signPart!=null) {
                                             sign = GatewayFilterFactoryTool.getFromDataBufferToString(signPart.content());
-                                            if(sign==null||sign.equals("")){
+                                            if(sign==null|| "".equals(sign)){
                                                 return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.SIGN);
                                             }
                                         }
                                         if((baseConfiguration.getNeedSignUriList()!=null
                                                 && baseConfiguration.getNeedSignUriList().contains(currentRawPath))
-                                                &&(sign==null||sign.trim().equals(""))){
+                                                &&(sign==null|| "".equals(sign.trim()))){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.SIGN);
                                         }
 
                                         exchange.getAttributes().put(BaseParamEnum.TIMESTAMP.getColumnName(),timestamp);
                                         exchange.getAttributes().put(BaseParamEnum.NONCE.getColumnName(),nonce);
-                                        if(token!=null)exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
-                                        if(sign!=null)exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
+                                        if(token!=null){
+                                            exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
+                                        }
+                                        if(sign!=null){
+                                            exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
+                                        }
                                     } else if (MediaType.APPLICATION_JSON.isCompatibleWith(mediaType)) {
                                         BaseJsonParam baseJsonParam=JSON.parseObject(resolvedBody.toString(),BaseJsonParam.class);
-                                        if(baseJsonParam.getTimestamp()==null||baseJsonParam.getTimestamp().equals("")){
+                                        if(baseJsonParam.getTimestamp()==null|| "".equals(baseJsonParam.getTimestamp())){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TIMESTAMP);
                                         }
-                                        if(baseJsonParam.getNonce()==null||baseJsonParam.getNonce().equals("")){
+                                        if(baseJsonParam.getNonce()==null|| "".equals(baseJsonParam.getNonce())){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.NONCE);
                                         }
-                                        String currentRawPath=exchange.getRequest().getURI().getRawPath();
                                         if(!(baseConfiguration.getTokenValidateUriBlackList()!=null
                                                 && baseConfiguration.getTokenValidateUriBlackList().contains(currentRawPath))
-                                                &&(baseJsonParam.getToken()==null||baseJsonParam.getToken().trim().equals(""))){
+                                                &&(baseJsonParam.getToken()==null|| "".equals(baseJsonParam.getToken().trim()))){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.LACK_OF_PARAM, BaseParamEnum.TOKEN);
                                         }
                                         if((baseConfiguration.getNeedSignUriList()!=null
                                                 && baseConfiguration.getNeedSignUriList().contains(currentRawPath))
-                                                &&(baseJsonParam.getSign()==null||baseJsonParam.getSign().trim().equals(""))){
+                                                &&(baseJsonParam.getSign()==null|| "".equals(baseJsonParam.getSign().trim()))){
                                             return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.LACK_OF_PARAM, BaseParamEnum.SIGN);
                                         }
 
                                         exchange.getAttributes().put(BaseParamEnum.TIMESTAMP.getColumnName(),baseJsonParam.getTimestamp());
                                         exchange.getAttributes().put(BaseParamEnum.NONCE.getColumnName(),baseJsonParam.getNonce());
-                                        if(baseJsonParam.getToken()!=null)exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),baseJsonParam.getToken());
-                                        if(baseJsonParam.getSign()!=null)exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),baseJsonParam.getSign());
+                                        if(baseJsonParam.getToken()!=null){
+                                            exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),baseJsonParam.getToken());
+                                        }
+                                        if(baseJsonParam.getSign()!=null){
+                                            exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),baseJsonParam.getSign());
+                                        }
                                     } else{
                                         MultiValueMap<String, String> queryParams=exchange.getRequest().getQueryParams();
 
                                         String timestamp=queryParams.getFirst(BaseParamEnum.TIMESTAMP.getColumnName());
-                                        if(timestamp==null||timestamp.trim().equals("")) {
+                                        if(timestamp==null|| "".equals(timestamp.trim())) {
                                             timestamp=((MultiValueMap<String,String>) resolvedBody).getFirst(BaseParamEnum.TIMESTAMP.getColumnName());
-                                            if(timestamp==null||timestamp.trim().equals("")) {
+                                            if(timestamp==null|| "".equals(timestamp.trim())) {
                                                 return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.LACK_OF_PARAM, BaseParamEnum.TIMESTAMP);
                                             }
                                         }
 
                                         String nonce=queryParams.getFirst(BaseParamEnum.NONCE.getColumnName());
-                                        if(nonce==null||nonce.trim().equals("")) {
+                                        if(nonce==null|| "".equals(nonce.trim())) {
                                             nonce=((MultiValueMap<String,String>) resolvedBody).getFirst(BaseParamEnum.NONCE.getColumnName());
-                                            if(nonce==null||nonce.trim().equals("")) {
+                                            if(nonce==null|| "".equals(nonce.trim())) {
                                                 return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.LACK_OF_PARAM, BaseParamEnum.NONCE);
                                             }
                                         }
 
-                                        String currentRawPath=exchange.getRequest().getURI().getRawPath();
                                         String token=queryParams.getFirst(BaseParamEnum.TOKEN.getColumnName());
                                         if(!(baseConfiguration.getTokenValidateUriBlackList()!=null
                                                 && baseConfiguration.getTokenValidateUriBlackList().contains(currentRawPath))
-                                                &&(token==null||token.trim().equals(""))){
+                                                &&(token==null|| "".equals(token.trim()))){
                                             token=((MultiValueMap<String,String>) resolvedBody).getFirst(BaseParamEnum.TOKEN.getColumnName());
-                                            if(token==null||token.trim().equals("")){
+                                            if(token==null|| "".equals(token.trim())){
                                                 return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.LACK_OF_PARAM, BaseParamEnum.TOKEN);
                                             }
                                         }
@@ -221,17 +250,21 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                         String sign=queryParams.getFirst(BaseParamEnum.SIGN.getColumnName());
                                         if((baseConfiguration.getNeedSignUriList()!=null
                                                 && baseConfiguration.getNeedSignUriList().contains(currentRawPath))
-                                                &&(sign==null||sign.trim().equals(""))){
+                                                &&(sign==null|| "".equals(sign.trim()))){
                                             sign=((MultiValueMap<String,String>) resolvedBody).getFirst(BaseParamEnum.SIGN.getColumnName());
-                                            if(sign==null||sign.trim().equals("")) {
+                                            if(sign==null|| "".equals(sign.trim())) {
                                                 return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.LACK_OF_PARAM, BaseParamEnum.SIGN);
                                             }
                                         }
 
                                         exchange.getAttributes().put(BaseParamEnum.TIMESTAMP.getColumnName(),timestamp);
                                         exchange.getAttributes().put(BaseParamEnum.NONCE.getColumnName(),nonce);
-                                        if(token!=null)exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
-                                        if(sign!=null)exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
+                                        if(token!=null){
+                                            exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
+                                        }
+                                        if(sign!=null){
+                                            exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
+                                        }
                                     }
 
                                     exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());

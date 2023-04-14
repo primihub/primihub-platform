@@ -8,14 +8,18 @@
             dp.result_name AS resultName,
             dpt.id as taskId,
             dpt.task_id as taskIdName,
+            dt.task_start_time as taskStart,
+            dt.task_end_time as taskEnd,
             dpt.task_state as taskState,
             dpt.ascription as ascription,
             dpt.create_date as createDate
         FROM
             data_psi dp,
-            data_psi_task dpt
+            data_psi_task dpt,
+            data_task dt
         WHERE
             dp.id = dpt.psi_id
+            and dpt.task_id = dt.task_id_name
         <if test="resultName!=null"> and dp.result_name like CONCAT('%',#{resultName},'%')</if>
         ORDER BY dp.id desc
         LIMIT #{offset},#{pageSize}

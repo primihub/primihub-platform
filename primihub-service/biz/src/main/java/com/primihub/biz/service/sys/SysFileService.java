@@ -51,8 +51,9 @@ public class SysFileService {
 
         try {
             File tempFile=new File(sb.toString());
-            if(!tempFile.exists())
+            if(!tempFile.exists()) {
                 tempFile.mkdirs();
+            }
             sysFile.setFileUrl(sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
             file.transferTo(new File(sysFile.getFileUrl()));
         } catch (IOException e) {
@@ -115,8 +116,9 @@ public class SysFileService {
 
         try {
             File tempFile=new File(sysFile.getFileUrl());
-            if(!tempFile.getParentFile().exists())
+            if(!tempFile.getParentFile().exists()) {
                 tempFile.getParentFile().mkdirs();
+            }
             RandomAccessFile raf = new RandomAccessFile(sysFile.getFileUrl(), "rw");
             long fileLength = raf.length();
             raf.seek(fileLength);

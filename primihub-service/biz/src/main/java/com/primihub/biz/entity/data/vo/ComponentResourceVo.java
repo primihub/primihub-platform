@@ -11,8 +11,9 @@ import java.util.List;
 public class ComponentResourceVo {
     public ComponentResourceVo() {}
     public ComponentResourceVo(String fileStr) {
-        if (StringUtils.isBlank(fileStr))
+        if (StringUtils.isBlank(fileStr)){
             fileStr = "id,name";
+        }
         String[] fileSplit = fileStr.split(",");
         yfile = new ArrayList<>();
         if (fileSplit.length==0){

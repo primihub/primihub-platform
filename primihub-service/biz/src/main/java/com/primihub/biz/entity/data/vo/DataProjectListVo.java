@@ -65,6 +65,11 @@ public class DataProjectListVo {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createDate;
+    /**
+     * 编辑时间
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private Date updateDate;
 
 
     public Integer getTaskNum() {

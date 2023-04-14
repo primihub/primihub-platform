@@ -6,10 +6,9 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.db.DataDBService;
+import com.primihub.biz.service.data.db.AbstractDataDBService;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.dbclient.HiveHelper;
-import com.primihub.biz.util.dbclient.SqliteHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class HiveService extends DataDBService {
+public class HiveServiceAbstract extends AbstractDataDBService {
 
     protected static final String QUERY_TABLES_SQL = "show tables in <dataBaseName>";
     protected static final String QUERY_DETAILS_SQL = "SELECT * FROM <tableName> LIMIT 50";
@@ -35,8 +34,9 @@ public class HiveService extends DataDBService {
     public BaseResultEntity healthConnection(DataSource dbSource) {
         String url = dbSource.getDbUrl();
         String dataBaseName = (String) DataUtil.getJDBCData(url).get("database");
-        if (StringUtils.isBlank(dataBaseName))
+        if (StringUtils.isBlank(dataBaseName)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
+        }
         dbSource.setDbName(dataBaseName);
         return dataSourceTables(dbSource);
     }
@@ -84,7 +84,7 @@ public class HiveService extends DataDBService {
                 }
                 details.add(map);
             }
-            Set<String> columns = details.get(0).keySet();
+            TreeSet<String> columns = new TreeSet<>(details.get(0).keySet());
             List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columns, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));

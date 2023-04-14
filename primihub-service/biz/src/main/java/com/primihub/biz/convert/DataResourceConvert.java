@@ -77,10 +77,10 @@ public class DataResourceConvert {
     }
 
     public static void editResourceReqConvertPo(DataResourceReq req, DataResource po){
-        if (req.getResourceName()!=null && !req.getResourceName().trim().equals("")){
+        if (req.getResourceName()!=null && !"".equals(req.getResourceName().trim())){
             po.setResourceName(req.getResourceName());
         }
-        if (req.getResourceDesc()!=null && !req.getResourceDesc().trim().equals("")){
+        if (req.getResourceDesc()!=null && !"".equals(req.getResourceDesc().trim())){
             po.setResourceDesc(req.getResourceDesc());
         }
         if (req.getResourceAuthType()!=null && req.getResourceAuthType()!=0){
@@ -147,8 +147,9 @@ public class DataResourceConvert {
 //        if (StringUtils.isNotBlank(req.getFieldType())){
 //            dataFileField.setFieldType(Integer.valueOf(req.getFieldType()));
 //        }
-        if (fieldTypeEnum!=null)
+        if (fieldTypeEnum!=null) {
             dataFileField.setFieldType(fieldTypeEnum.getCode());
+        }
         dataFileField.setFieldDesc(req.getFieldDesc());
         dataFileField.setRelevance(req.getRelevance());
         dataFileField.setGrouping(req.getGrouping());
@@ -190,8 +191,9 @@ public class DataResourceConvert {
         dataResourceCopyVo.setResourceTag(tags);
         dataResourceCopyVo.setAuthOrganList(authOrganList);
         dataResourceCopyVo.setFieldList(new ArrayList<>());
-        if (dataResource.getIsDel()!=null && dataResource.getIsDel()!=0)
+        if (dataResource.getIsDel()!=null && dataResource.getIsDel()!=0) {
             dataResourceCopyVo.setIsDel(dataResource.getIsDel());
+        }
         if (fieldList!=null&&fieldList.size()!=0){
             for (DataFileField dataFileField : fieldList) {
                 dataResourceCopyVo.getFieldList().add(dataResourceFieldPoConvertCopyVo(dataFileField));
@@ -216,8 +218,9 @@ public class DataResourceConvert {
 
     public static DataPsiResourceAllocationVo fusionResourceConvertAllocationVo(Map<String,Object> fr, String organId) {
         DataPsiResourceAllocationVo vo = new DataPsiResourceAllocationVo();
-        if (fr==null)
+        if (fr==null) {
             return vo;
+        }
         vo.setResourceId(fr.getOrDefault("resourceId","").toString());
         vo.setResourceName(fr.getOrDefault("resourceName","").toString());
         vo.setOrganId(fr.getOrDefault("organId","").toString());
@@ -254,8 +257,9 @@ public class DataResourceConvert {
 
     public static String getMapValue(LinkedHashMap<String, Object> map,String key,String defaultVal){
         Object val = map.get(key);
-        if (val==null)
+        if (val==null) {
             return defaultVal;
+        }
         return val.toString();
     }
 

@@ -47,7 +47,8 @@ CREATE TABLE `fusion_organ`  (
                                  PRIMARY KEY (`id`) USING BTREE,
                                  INDEX `global_id_ix`(`global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-
+alter table `fusion_organ` Add column `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥';
+alter table `fusion_organ` Add column `private_key` varchar(1000) DEFAULT NULL COMMENT '机构私钥';
 -- ----------------------------
 -- Table structure for fusion_resource
 -- ----------------------------
