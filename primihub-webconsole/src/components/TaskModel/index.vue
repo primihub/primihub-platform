@@ -127,14 +127,6 @@ export default {
         2: '测试样本集'
       }
       return typeMap[type]
-    },
-    modelTypeFilter(type) {
-      const statusMap = {
-        2: '纵向-XGBoost',
-        3: '横向-LR',
-        4: 'MPC_LR'
-      }
-      return statusMap[type]
     }
   },
   props: {
