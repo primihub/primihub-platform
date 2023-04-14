@@ -1,0 +1,29 @@
+.description-container{
+  display: flex;
+  flex-flow: wrap;
+  font-size: 14px;
+  line-height: 35px;
+  margin-bottom: 20px;
+}
+.infos-title{
+  font-size: 16px;
+}
+
+.desc-col{
+  width: 50%;
+  flex-shrink: 0;
+  display: flex;
+  color: #606266;
+  font-size: 14px;
+  // flex: 1;
+  margin-bottom: 12px;
+  align-items: center;
+  line-height: 1;
+  padding: 3px 0;
+}
+.desc-label{
+  margin-right: 10px;
+}
+.desc-content{
+  flex: 1;
+}

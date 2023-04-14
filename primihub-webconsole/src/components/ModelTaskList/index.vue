@@ -60,7 +60,7 @@
         </el-table-column>
         <el-table-column
           prop="latestTaskStatus"
-          label="状态"
+          label="任务状态"
           sortable
         >
           <template slot-scope="{row}">
