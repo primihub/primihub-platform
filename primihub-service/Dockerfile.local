@@ -1,5 +1,11 @@
 FROM ibmjava:8-jre
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update \
+  && apt install tzdata \
+  && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
 ADD application/target/*-SNAPSHOT.jar /applications/application.jar
 ADD gateway/target/*-SNAPSHOT.jar /applications/gateway.jar
 
