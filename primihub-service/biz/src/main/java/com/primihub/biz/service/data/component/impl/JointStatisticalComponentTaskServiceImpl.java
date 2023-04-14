@@ -70,7 +70,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(jointStatisticalMap));
             String jointStatistical = taskReq.getValueMap().get("jointStatistical");
             if (jointStatistical!=null){
-                taskReq.getDataTask().setTaskResultPath(jointStatisticalMap.get(taskReq.getFreemarkerMap().get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET))).getOutputFilePath());
+                taskReq.getDataTask().setTaskResultPath(jointStatisticalMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET)).getOutputFilePath());
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
