@@ -186,9 +186,9 @@ h2{
   display: flex;
   color: #606266;
   font-size: 14px;
-  // flex: 1;
   margin-bottom: 12px;
-  line-height: 1.5;
+  align-items: center;
+  height: 22px;
 }
 .desc-label{
   margin-right: 10px;
