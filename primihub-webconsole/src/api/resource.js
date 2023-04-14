@@ -72,6 +72,7 @@ export function saveResource(data) {
     url: '/data/resource/saveorupdateresource',
     method: 'post',
     type: 'json',
+    timeout: 600000,
     data
   })
 }
