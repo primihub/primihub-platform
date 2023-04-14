@@ -48,7 +48,7 @@
         <el-col class="desc-col" :span="24">
           <div class="desc-label">任务描述:</div>
           <div class="desc-content">
-            <template v-if="isCooperation === 0">
+            <template v-if="task.isCooperation === 0">
               <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
             </template>
             <template v-else>
@@ -260,8 +260,7 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project, isCooperation } = response.result
-        this.isCooperation = isCooperation
+        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
         this.task = task
         this.project = project
         this.model = model
