@@ -2,7 +2,8 @@ package com.primihub.gateway;
 
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
-import com.primihub.biz.config.base.NodeDataConfig;
+//import com.primihub.biz.config.base.NodeDataConfig;
+import com.primihub.biz.config.base.TemplatesConfig;
 import com.primihub.biz.config.grpc.GrpcServerConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
 import com.primihub.biz.config.thread.ThreadPoolConfig;
@@ -29,12 +30,14 @@ import org.springframework.context.annotation.FilterType;
                         SingleTaskChannelConsumer.class,
                         SysFusionService.class ,
                         ThreadPoolConfig.class,
-                        NodeDataConfig.class,
-                        SysCaptchaCacheService.class,
+//                        NodeDataConfig.class,
+                        TemplatesConfig.class,
+                        SysCaptchaCacheServiceImpl.class,
                         SysUserService.class,
                         SysOauthService.class,
                         SysSseEmitterService.class,
-                        SysWebSocketService.class
+                        SysWebSocketService.class,
+                        SysEmailService.class
                 }),
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = {"com.primihub.biz.service.data.*","com.primihub.biz.service.schedule.*","com.primihub.biz.service.test.*","com.primihub.biz.config.captcha.*"})
     }

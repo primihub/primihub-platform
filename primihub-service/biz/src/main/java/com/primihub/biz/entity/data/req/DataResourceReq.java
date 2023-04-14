@@ -57,4 +57,6 @@ public class DataResourceReq extends PageReq{
 
     private Integer derivation = 0;
 
+    private Integer fileContainsY;
+
 }

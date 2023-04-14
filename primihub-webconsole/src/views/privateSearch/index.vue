@@ -70,13 +70,12 @@
           </template>
         </el-table-column>
         <el-table-column
-          prop="taskId"
+          prop="taskIdName"
           label="任务ID"
-          align="center"
         />
         <el-table-column
           prop="resourceId"
-          label="资源ID"
+          label="联邦资源ID"
           min-width="120"
         >
           <template slot-scope="{row}">
@@ -87,7 +86,7 @@
         </el-table-column>
         <el-table-column
           prop="resourceName"
-          label="资源名称"
+          label="被查询资源名"
           min-width="100"
         >
           <template slot-scope="{row}">
@@ -125,6 +124,11 @@
           <template slot-scope="{row}">
             {{ row.createDate.split(' ')[0] }} <br>
             {{ row.createDate.split(' ')[1] }}
+          </template>
+        </el-table-column>
+        <el-table-column label="任务耗时" min-width="120px">
+          <template slot-scope="{row}">
+            {{ row.consuming | timeFilter }}
           </template>
         </el-table-column>
         <el-table-column

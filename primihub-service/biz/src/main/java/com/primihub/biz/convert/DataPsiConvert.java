@@ -4,10 +4,7 @@ import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.req.DataPsiReq;
-import com.primihub.biz.entity.data.req.DataPsiResourceReq;
-import com.primihub.biz.entity.data.vo.DataPsiResourceVo;
 import com.primihub.biz.entity.data.vo.DataPsiVo;
-import com.primihub.biz.entity.data.vo.DataResourceRecordVo;
 import com.primihub.biz.entity.data.vo.PsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import org.apache.commons.lang.StringUtils;
@@ -85,6 +82,7 @@ public class DataPsiConvert {
         dataPsiVo.setTaskId(task.getId());
         dataPsiVo.setTaskIdName(task.getTaskId());
         dataPsiVo.setTaskState(task.getTaskState());
+        dataPsiVo.setServerAddress(dataPsi.getServerAddress());
         return dataPsiVo;
     }
 }

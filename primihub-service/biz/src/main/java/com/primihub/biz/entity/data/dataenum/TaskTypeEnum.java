@@ -8,6 +8,7 @@ public enum TaskTypeEnum {
     PSI(2,"psi"),
     PIR(3,"pir"),
     REASONING(4,"推理"),
+    JOINT_STATISTICAL(5,"联合统计"),
     ;
     private Integer taskType;
     private String taskName;

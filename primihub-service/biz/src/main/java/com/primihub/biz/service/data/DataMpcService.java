@@ -63,8 +63,9 @@ public class DataMpcService {
 
     public BaseResultEntity getDataScriptList(Long userId, Long organId, String scriptName) {
         List<DataScript> dataScripts = dataMpcRepository.selectDataScriptByUser(userId, scriptName);
-        if (dataScripts.size()==0)
+        if (dataScripts.size()==0) {
             return BaseResultEntity.success(new ArrayList<>());
+        }
         List<DataScriptVo> scriptVoList = dataScripts.stream().map(DataMpcConvert::dataScriptPoConvertVo).collect(Collectors.toList());
         if (StringUtils.isBlank(scriptName)){
             List<DataScriptVo> tops = scriptVoList.stream().filter(vo -> vo.getPScriptId() == null).collect(Collectors.toList());
@@ -92,11 +93,13 @@ public class DataMpcService {
 
     public BaseResultEntity delDataScript(Long scriptId) {
         DataScript dataScript = dataMpcRepository.selectDataScriptById(scriptId);
-        if (dataScript==null)
+        if (dataScript==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到信息");
+        }
         if (dataScript.getCatalogue()==1){
-            if(dataMpcRepository.selectDataScriptByPId(scriptId).size()>0)
+            if(dataMpcRepository.selectDataScriptByPId(scriptId).size()>0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"有下级目录或文件");
+            }
         }
         dataMpcPrRepository.deleteDataScript(scriptId);
         return BaseResultEntity.success();
@@ -109,16 +112,19 @@ public class DataMpcService {
         } catch (Exception e) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"sql 校验失败",e.getMessage());
         }
-        if (astMysqlSelectProperty == null)
+        if (astMysqlSelectProperty == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"sql 校验失败");
+        }
         List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(null);
-        if (dataProjectResources.size()==0)
+        if (dataProjectResources.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"未找到资源数据");
+        }
         Map<String, DataRunScript> dataRunScriptMap = getDataRunScript(dataProjectResources);
         BaseResultEntity baseResultEntity = checkSqlResources(astMysqlSelectProperty, dataRunScriptMap, scriptContent);
         log.info(baseResultEntity.getMsg());
-        if (baseResultEntity.getCode()!=0)
+        if (baseResultEntity.getCode()!=0) {
             return baseResultEntity;
+        }
         log.info(baseResultEntity.getResult().toString());
         DataMpcTask mpcTask = new DataMpcTask(UUID.randomUUID().toString(),scriptId,projectId,userId);
         dataMpcPrRepository.saveDataMpcTask(mpcTask);
@@ -140,10 +146,12 @@ public class DataMpcService {
             Map.Entry<String, String> next = tableIt.next();
             String tableUnicode = cnToUnicode(next.getKey());
             dataRunScript = dataRunScriptMap.get(tableUnicode);
-            if (dataRunScript==null)
+            if (dataRunScript==null) {
                 dataRunScript = dataRunScriptMap.get("60"+tableUnicode+"60");
-            if (dataRunScript==null)
+            }
+            if (dataRunScript==null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"资源:"+next.getKey() + "不存在");
+            }
             scriptContent = scriptContent.replaceAll(next.getKey(),"`"+dataRunScript.getFileName()+"`");
             String asName = next.getValue();
             for (DataFileField dataFileField : dataRunScript.getDataFileFields()) {
@@ -172,8 +180,9 @@ public class DataMpcService {
                     scriptContent = scriptContent.replace("*",allColumn);
                 }
             }else {
-                if (!columnSet.contains(next.getKey()))
+                if (!columnSet.contains(next.getKey())) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_SQL_CHECK_FAIL,"字段:"+next.getKey() + "不存在");
+                }
             }
         }
         return BaseResultEntity.success(scriptContent);

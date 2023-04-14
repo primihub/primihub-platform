@@ -1,6 +1,7 @@
 package com.primihub.biz.entity.data.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -12,6 +13,8 @@ public class DataPirTaskVo {
     private String serverAddress;
 
     private Long taskId;
+
+    private String taskIdName;
 
     private String organId;
 
@@ -45,4 +48,19 @@ public class DataPirTaskVo {
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createDate;
+    private Long consuming;
+    @JsonIgnore
+    private Long taskStart;
+    @JsonIgnore
+    private Long taskEnd;
+
+    public Long getConsuming() {
+        if (taskStart==null) {
+            return 0L;
+        }
+        if (taskEnd==null||taskEnd==0) {
+            return (System.currentTimeMillis() - taskStart)/1000;
+        }
+        return (taskEnd - taskStart)/1000;
+    }
 }

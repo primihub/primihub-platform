@@ -6,7 +6,7 @@ import com.primihub.biz.entity.data.po.DataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 
-public abstract class DataDBService {
+public abstract class AbstractDataDBService {
 
 
     /**

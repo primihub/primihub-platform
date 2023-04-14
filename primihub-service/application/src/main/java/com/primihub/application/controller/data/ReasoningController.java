@@ -24,34 +24,42 @@ public class ReasoningController {
     @GetMapping("getReasoningList")
     public BaseResultEntity getReasoningList(ReasoningListReq req,
                                              @RequestHeader("userId") Long userId){
-        if (userId==null || userId==0L)
+        if (userId==null || userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
         req.setUserId(userId);
         return dataReasoningService.getReasoningList(req);
     }
     @PostMapping("saveReasoning")
     public BaseResultEntity saveReasoning(DataReasoningReq req,
                                           @RequestHeader("userId") Long userId){
-        if (userId==null || userId==0L)
+        if (userId==null || userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        if (req==null)
+        }
+        if (req==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataReasoning");
-        if (req.getTaskId()==null || req.getTaskId()==0L)
+        }
+        if (req.getTaskId()==null || req.getTaskId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        if (StringUtils.isBlank(req.getReasoningName()))
+        }
+        if (StringUtils.isBlank(req.getReasoningName())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"reasoningName");
-        if (StringUtils.isBlank(req.getReasoningDesc()))
+        }
+        if (StringUtils.isBlank(req.getReasoningDesc())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"reasoningDesc");
-        if (req.getResourceList() == null || req.getResourceList().isEmpty())
+        }
+        if (req.getResourceList() == null || req.getResourceList().isEmpty()) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceList");
+        }
         req.setUserId(userId);
         return dataReasoningService.saveReasoning(req);
     }
 
     @GetMapping("getReasoning")
     public BaseResultEntity getReasoning(Long id){
-        if (id==null || id==0L)
+        if (id==null || id==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
         return dataReasoningService.getReasoning(id);
     }
 }

@@ -20,11 +20,12 @@ public class PinCodeInterceptor implements HandlerInterceptor {
     @Autowired
     private FusionRepository fusionRepository;
 
+    @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         String globalId = request.getParameter("globalId");
         String pinCode = request.getParameter("pinCode");
-        if (globalId==null||globalId.equals("")||pinCode==null||pinCode.equals("")) {
+        if (globalId==null|| "".equals(globalId)||pinCode==null|| "".equals(pinCode)) {
             response.setContentType(MediaType.APPLICATION_JSON.toString());
             response.setCharacterEncoding("utf-8");
             response.getWriter().println(JSON.toJSONString(BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId,pinCode")));

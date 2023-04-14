@@ -24,8 +24,9 @@ public class FusionResourceController {
 
     @RequestMapping("getResourceListById")
     public BaseResultEntity getResourceListById(String[] resourceIdArray,String globalId){
-        if(resourceIdArray==null||resourceIdArray.length==0)
+        if(resourceIdArray==null||resourceIdArray.length==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIdArray");
+        }
         return resourceService.getResourceListById(resourceIdArray,globalId);
     }
 
@@ -36,27 +37,33 @@ public class FusionResourceController {
 
     @RequestMapping("getDataResource")
     public BaseResultEntity getDataResource(String resourceId,String globalId){
-        if (StringUtils.isEmpty(resourceId))
+        if (StringUtils.isEmpty(resourceId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        }
         return resourceService.getDataResource(resourceId,globalId);
     }
     @RequestMapping("saveOrganResourceAuth")
     public BaseResultEntity saveOrganResourceAuth(String organId,String resourceId,String projectId,Integer auditStatus){
-        if (StringUtils.isEmpty(organId))
+        if (StringUtils.isEmpty(organId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        if (StringUtils.isEmpty(resourceId))
+        }
+        if (StringUtils.isEmpty(resourceId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        if (StringUtils.isEmpty(projectId))
+        }
+        if (StringUtils.isEmpty(projectId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        if (auditStatus==null)
+        }
+        if (auditStatus==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
+        }
         return resourceService.saveOrganResourceAuth(organId,resourceId,projectId,auditStatus);
     }
 
     @RequestMapping("getOrganResourceList")
     public BaseResultEntity getOrganResourceList(OrganResourceParam param){
-        if (StringUtils.isEmpty(param.getOrganId()))
+        if (StringUtils.isEmpty(param.getOrganId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
         return resourceService.getOrganResourceList(param);
     }
 

@@ -18,24 +18,27 @@ public class BasicIPInfoHelper {
 
     public AddressInfoEntity getAddressInfo(){
         // 获取客户端ip
-        ResponseEntity<JSONObject> ipInfoData = restTemplate.getForEntity("https://ipinfo.io", JSONObject.class);
+        ResponseEntity<JSONObject> ipInfoData = restTemplate.getForEntity("http://ipinfo.io", JSONObject.class);
         log.info("获取客户端ip json:{}",JSONObject.toJSONString(ipInfoData));
-        if (ipInfoData==null || ipInfoData.getBody()==null)
+        if (ipInfoData==null || ipInfoData.getBody()==null){
             return null;
+        }
         JSONObject body = ipInfoData.getBody();
         String ip = ipInfoData.getBody().getString("ip");
         String loc = body.getString("loc");
-        if (StringUtils.isBlank(loc))
+        if (StringUtils.isBlank(loc)){
             return null;
+        }
         String[] locs = loc.split(",");
-        if (locs.length!=2)
+        if (locs.length!=2){
             return null;
-
+        }
         String lat = locs[0];
         String lon = locs[1];
         String country = body.getString("country");
-        if (StringUtils.isBlank(lat)||StringUtils.isBlank(lon)||StringUtils.isBlank(country))
+        if (StringUtils.isBlank(lat)||StringUtils.isBlank(lon)||StringUtils.isBlank(country)){
             return null;
+        }
         return new AddressInfoEntity(ip,new BigDecimal(lat),new BigDecimal(lon),country);
     }
 

@@ -5,6 +5,8 @@ import java.util.Map;
 
 public class MarketConstant {
 
+    public static final String MARKET_DISPLAY_MAP_KEY = "market:display:key";
+
 
     public static final Map<String,String> DICTIONARY = new HashMap(){{
         put("familiarity_practitioner","从业者");

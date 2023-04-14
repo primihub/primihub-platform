@@ -22,6 +22,9 @@ import java.io.OutputStream;
 import java.net.URLEncoder;
 import java.util.UUID;
 
+/**
+ * 隐私求交
+ */
 @RequestMapping("psi")
 @RestController
 @Slf4j
@@ -30,39 +33,86 @@ public class PsiController {
     @Autowired
     private DataPsiService dataPsiService;
 
+    /**
+     * 创建并运行隐私求交任务
+     * @param userId
+     * @param req
+     * @return
+     */
     @PostMapping("saveDataPsi")
     public BaseResultEntity saveDataPsi(@RequestHeader("userId") Long userId,
                                         DataPsiReq req){
-        if (userId<=0)
+        if (userId<=0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        if (req.getOwnOrganId()==null)
+        }
+        if (req.getOwnOrganId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownOrganId");
-        if (req.getOwnResourceId()==null||req.getOwnResourceId()==0L)
+        }
+        if (req.getOwnResourceId()==null||req.getOwnResourceId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownResourceId");
-        if (StringUtils.isBlank(req.getOwnKeyword()))
+        }
+        if (StringUtils.isBlank(req.getOwnKeyword())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownKeyword");
-        if (req.getOtherOrganId()==null)
+        }
+        if (req.getOtherOrganId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherOrganId");
-        if (req.getOtherResourceId()==null)
+        }
+        if (req.getOtherResourceId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherResourceId");
-        if (StringUtils.isBlank(req.getOtherKeyword()))
+        }
+        if (StringUtils.isBlank(req.getOtherKeyword())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherKeyword");
-        if (StringUtils.isBlank(req.getResultName()))
+        }
+        if (StringUtils.isBlank(req.getResultName())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultName");
-        if (StringUtils.isBlank(req.getResultOrganIds()))
+        }
+        if (StringUtils.isBlank(req.getResultOrganIds())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultOrganIds");
-        if (req.getPsiTag()==null)
+        }
+        if (req.getPsiTag()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"psiTag");
+        }
         return dataPsiService.saveDataPsi(req,userId);
     }
 
+    /**
+     * 根据隐私求交(psi)ID修改结果名称
+     * @param req
+     * @return
+     */
+    @PostMapping("updateDataPsiResultName")
+    public BaseResultEntity updateDataPsiResultName(DataPsiReq req){
+        if (req.getId()==null||req.getId()==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
+        if (StringUtils.isBlank(req.getResultName())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultName");
+        }
+        return dataPsiService.updateDataPsiResultName(req);
+    }
+
+    /**
+     * 查询本地资源列表
+     * @param req
+     * @param organId
+     * @return
+     */
     @GetMapping("getPsiResourceList")
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId){
-        if (organId==null||organId==0L)
+        if (organId==null||organId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
         return dataPsiService.getPsiResourceList(req,organId);
     }
 
+    /**
+     * 多方位查询资源支持中心节点查询
+     * @param req
+     * @param organId
+     * @param serverAddress
+     * @param resourceName
+     * @return
+     */
     @GetMapping("getPsiResourceAllocationList")
     public BaseResultEntity getPsiResourceDataList(PageReq req,
                                                    String organId,
@@ -73,34 +123,53 @@ public class PsiController {
         return dataPsiService.getPsiResourceAllocationList(req,organId,serverAddress,resourceName);
     }
 
+    /**
+     * 查询隐私求交任务列表
+     * @param resultName
+     * @param req
+     * @return
+     */
     @GetMapping("getPsiTaskList")
     public BaseResultEntity getPsiTaskList(String resultName,
                                            PageReq req){
         return  dataPsiService.getPsiTaskList(req,resultName);
     }
+
+
     @GetMapping("getOrganPsiTask")
     public BaseResultEntity getOrganPsiTask(@RequestHeader("userId") Long userId,
                                             String resultName,
                                             PageReq req){
-        if (userId<=0)
+        if (userId<=0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
         return dataPsiService.getOrganPsiTask(userId,resultName,req);
     }
 
+    /**
+     * 查询隐私求交任务详情
+     * @param taskId
+     * @return
+     */
     @GetMapping("getPsiTaskDetails")
-    public BaseResultEntity getPsiTaskDetails(@RequestHeader("userId") Long userId,
-                                               Long taskId){
-        if (userId<=0)
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        if (taskId==null||taskId==0L)
+    public BaseResultEntity getPsiTaskDetails(Long taskId){
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        return  dataPsiService.getPsiTaskDetails(taskId,userId);
+        }
+        return  dataPsiService.getPsiTaskDetails(taskId);
     }
 
+    /**
+     * 下载隐私求交结果文件
+     * @param response
+     * @param taskId
+     * @throws Exception
+     */
     @GetMapping("downloadPsiTask")
     public void downloadPsiTask(HttpServletResponse response,Long taskId) throws Exception{
-        if (taskId==null||taskId==0L)
+        if (taskId==null||taskId==0L) {
             return;
+        }
         DataPsiTask task = dataPsiService.selectPsiTaskById(taskId);
         DataPsi dataPsi = dataPsiService.selectPsiById(task.getPsiId());
         File file = new File(task.getFilePath());
@@ -147,28 +216,43 @@ public class PsiController {
         }
     }
 
+    /**
+     * 删除隐私求交任务
+     * @param taskId
+     * @return
+     */
     @GetMapping("delPsiTask")
-    public BaseResultEntity delPsiTask(@RequestHeader("userId") Long userId,
-                                              Long taskId){
-        if (taskId==null||taskId==0L)
+    public BaseResultEntity delPsiTask(Long taskId){
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        return  dataPsiService.delPsiTask(taskId,userId);
+        }
+        return  dataPsiService.delPsiTask(taskId);
     }
 
+    /**
+     * 取消隐私求交任务
+     * @param taskId
+     * @return
+     */
     @GetMapping("cancelPsiTask")
-    public BaseResultEntity cancelPsiTask(@RequestHeader("userId") Long userId,
-                                       Long taskId){
-        if (taskId==null||taskId==0L)
+    public BaseResultEntity cancelPsiTask(Long taskId){
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        return  dataPsiService.cancelPsiTask(taskId,userId);
+        }
+        return  dataPsiService.cancelPsiTask(taskId);
     }
 
+    /**
+     * 重启隐私求交任务
+     * @param taskId
+     * @return
+     */
     @GetMapping("retryPsiTask")
-    public BaseResultEntity retryPsiTask(@RequestHeader("userId") Long userId,
-                                          Long taskId){
-        if (taskId==null||taskId==0L)
+    public BaseResultEntity retryPsiTask(Long taskId){
+        if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        return  dataPsiService.retryPsiTask(taskId,userId);
+        }
+        return  dataPsiService.retryPsiTask(taskId);
     }
 
 

@@ -130,8 +130,9 @@ public class DataModelConvert {
         modelProjectOrganVo.setAuditStatus(organ.getAuditStatus());
         modelProjectOrganVo.setCreator(sysLocalOrganId.equals(organ.getOrganId()));
         modelProjectOrganVo.setOrganName(organMap==null?"":organMap.get("globalName")==null?"":organMap.get("globalName").toString());
-        if (resourceVo!=null)
+        if (resourceVo!=null) {
             modelProjectOrganVo.getResources().add(resourceVo);
+        }
         modelProjectOrganVo.setServerAddress(organ.getServerAddress());
         return modelProjectOrganVo;
     }

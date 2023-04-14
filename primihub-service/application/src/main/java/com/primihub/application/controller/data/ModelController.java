@@ -10,7 +10,9 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
+/**
+ * 模型管理
+ */
 @RequestMapping("model")
 @RestController
 public class ModelController {
@@ -135,45 +137,76 @@ public class ModelController {
 
     @RequestMapping("getModelPrediction")
     public BaseResultEntity getModelPrediction(Long modelId){
-        if (modelId==null||modelId==0L)
+        if (modelId==null||modelId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+        }
         return dataModelService.getModelPrediction(modelId);
     }
 
+    /**
+     * 运行成功的模型列表
+     * @param userId
+     * @param req
+     * @return
+     */
     @RequestMapping("getModelTaskSuccessList")
     public BaseResultEntity getModelTaskSuccessList(@RequestHeader("userId") Long userId,ModelTaskSuccessReq req){
-        if (userId==null||userId==0L)
+        if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
         req.setUserId(userId);
         return dataModelService.getModelTaskSuccessList(req);
     }
 
     @RequestMapping("saveOrUpdateComponentDraft")
     public BaseResultEntity saveOrUpdateComponentDraft(@RequestHeader("userId") Long userId, ComponentDraftReq req){
-        if (userId==null||userId==0L)
+        if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
         req.setUserId(userId);
-        if (StringUtils.isBlank(req.getComponentJson()))
+        if (StringUtils.isBlank(req.getComponentJson())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"componentJson");
-        if (StringUtils.isBlank(req.getComponentImage()))
+        }
+        if (StringUtils.isBlank(req.getComponentImage())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"componentImage");
+        }
         return dataModelService.saveOrUpdateComponentDraft(req);
     }
 
     @RequestMapping("getComponentDraftList")
     public BaseResultEntity getComponentDraftList(@RequestHeader("userId") Long userId){
-        if (userId==null||userId==0L)
+        if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
         return dataModelService.getComponentDraftList(userId);
     }
 
     @RequestMapping("deleteComponentDraft")
     public BaseResultEntity deleteComponentDraft(@RequestHeader("userId") Long userId,Long draftId){
-        if (userId==null||userId==0L)
+        if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
-        if (draftId==null||draftId==0L)
+        }
+        if (draftId==null||draftId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"draftId");
+        }
         return dataModelService.deleteComponentDraft(draftId,userId);
+    }
+
+    /**
+     * 修改模型描述
+     * @param modelId   模型ID
+     * @param modelDesc 模型描述
+     * @return
+     */
+    @RequestMapping("updateModelDesc")
+    public BaseResultEntity updateModelDesc(Long modelId,String modelDesc){
+        if (modelId==null||modelId==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+        }
+        if (StringUtils.isBlank(modelDesc)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelDesc");
+        }
+        return dataModelService.updateModelDesc(modelId,modelDesc);
     }
 
 

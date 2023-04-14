@@ -19,9 +19,11 @@ public enum AuthTypeEnum {
     }
 
     public static AuthTypeEnum findByCode(Integer code){
-        for(AuthTypeEnum e: AuthTypeEnum.values())
-            if(e.getTypeCode().equals(code))
+        for(AuthTypeEnum e: AuthTypeEnum.values()){
+            if(e.getTypeCode().equals(code)){
                 return e;
+            }
+        }
         return null;
     }
 

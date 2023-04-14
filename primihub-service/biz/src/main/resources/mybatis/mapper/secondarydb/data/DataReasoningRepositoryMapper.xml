@@ -2,18 +2,19 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.secondarydb.data.DataReasoningRepository">
 
-    <select id="selectDataReasoninPage" parameterType="com.primihub.biz.entity.data.req.ReasoningListReq" resultType="com.primihub.biz.entity.data.po.DataReasoning">
+    <select id="selectDataReasoninPage" parameterType="com.primihub.biz.entity.data.req.ReasoningListReq" resultType="com.primihub.biz.entity.data.vo.DataReasoningVo">
         select
-               id,
-               reasoning_id reasoningId,
-               reasoning_name reasoningName,
-               reasoning_desc reasoningDesc,
-               reasoning_type reasoningType,
-               reasoning_state reasoningState,
-               task_id taskId,
-               run_task_id runTaskId,
-               release_date releaseDate
-        from data_reasoning where is_del = 0
+            r.id,
+            r.reasoning_id reasoningId,
+            r.reasoning_name reasoningName,
+            r.reasoning_desc reasoningDesc,
+            r.reasoning_type reasoningType,
+            r.reasoning_state reasoningState,
+            (select m.model_name from data_model m,data_model_task mt where m.model_id=mt.model_id and mt.task_id = r.task_id) modelName,
+            r.task_id taskId,
+            r.run_task_id runTaskId,
+            r.release_date releaseDate
+        from data_reasoning r where r.is_del = 0
         <include refid="whereDataReasonin"></include>
         ORDER BY id desc
         LIMIT #{offset},#{pageSize}
@@ -21,8 +22,8 @@
 
     <select id="selectDataReasoninCount" parameterType="com.primihub.biz.entity.data.req.ReasoningListReq" resultType="java.lang.Integer">
         select
-        count(id)
-        from data_reasoning where is_del = 0
+        count(r.id)
+        from data_reasoning r where r.is_del = 0
         <include refid="whereDataReasonin"></include>
     </select>
     <select id="selectDataReasoninById" resultType="com.primihub.biz.entity.data.po.DataReasoning">
@@ -52,9 +53,9 @@
     </select>
 
     <sql id="whereDataReasonin">
-        <if test="isAdmin == 0">and user_id = #{userId}</if>
-        <if test="id!=null and id!=0"> and id = #{id} </if>
-        <if test="reasoningState!=null"> and reasoning_state = #{reasoningState} </if>
-        <if test="reasoningName!=null and reasoningName!=''"> and reasoning_name like CONCAT('%',#{reasoningName,jdbcType=VARCHAR},'%') </if>
+        <if test="isAdmin == 0">and r.user_id = #{userId}</if>
+        <if test="id!=null and id!=0"> and r.id = #{id} </if>
+        <if test="reasoningState!=null"> and r.reasoning_state = #{reasoningState} </if>
+        <if test="reasoningName!=null and reasoningName!=''"> and r.reasoning_name like CONCAT('%',#{reasoningName,jdbcType=VARCHAR},'%') </if>
     </sql>
 </mapper>

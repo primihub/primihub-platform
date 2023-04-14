@@ -23,6 +23,11 @@ public class DataProjectQueryReq extends PageReq {
      * 项目名称
      */
     private String projectName;
+
+    /**
+     * 项目ID
+     */
+    private String projectId;
     /**
      * 机构ID
      */

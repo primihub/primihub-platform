@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div ref="mapBox" style="width: 100%; height: calc(100vh - 75px); margin-top: 5px" />
+    <div ref="mapBox" style="width: 100%; height: calc(100vh - 50px); margin-top: 5px" />
   </div>
 </template>
 <script>
@@ -11,6 +11,7 @@ import 'mapbox-gl/dist/mapbox-gl.css'
 import MapboxLanguage from '@mapbox/mapbox-gl-language'
 
 import { getOrgInfo, getCoordinates } from '@/api/map'
+
 export default {
   data() {
     return {
@@ -28,11 +29,10 @@ export default {
         'pk.eyJ1IjoiemhhbmppbmdqaW5nIiwiYSI6ImNsZHNodWltZjF2cHkzdnFnYzhpc2dxa28ifQ.FnBt8nvjN6jtLpvJgU3Z6g'
       this.map = new mapboxgl.Map({
         container: this.doms.Map,
-        style: 'mapbox://styles/mapbox/streets-v11', // style URL
-        center: [116.407, 39.9042],
-        zoom: 1,
-        attributionControl: false,
-        customAttribution: ''
+        style: 'mapbox://styles/mapbox/streets-v12', // style URL
+        // projection: 'globe',
+        center: [103.407, 31.9042],
+        zoom: 4.5
       })
 
       this.map.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hans' }))
@@ -41,6 +41,7 @@ export default {
       this.map.addControl(nav, 'top-right')
       this.map.addControl(new mapboxgl.FullscreenControl())
       this.map.on('load', () => {
+        // this.map.setFog({})
         this.getData()
       })
     },
@@ -70,7 +71,8 @@ export default {
                   coordinates: lonlat
                 },
                 properties: {
-                  title: item.globalName
+                  title: item.globalName,
+                  online: item.online
                 }
               })
             })
@@ -80,107 +82,33 @@ export default {
 
           const map = this.map
 
-          // Add a new source from our GeoJSON data and
-          // set the 'cluster' option to true. GL-JS will
-          // add the point_count property to your source data.
-          map.addSource('earthquakes', {
-            type: 'geojson',
-            // Point to GeoJSON data. This example visualizes all M1.0+ earthquakes
-            // from 12/22/15 to 1/21/16 as logged by USGS' Earthquake hazards program.
-            data: geoJson,
-            cluster: true,
-            clusterMaxZoom: 14, // Max zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-          })
+          dataList.forEach(function(marker) {
+            console.log(marker.online)
+            const color = marker.online ? '#36ab60' : '#8a8a8a'
+            // const color = marker.online ? '#F56C6C' : '#8a8a8a'
+            const marker_on = new mapboxgl.Marker({
+              color,
+              anchor: 'center',
+              draggable: false
+            }).setLngLat([marker.lon, marker.lat])
+              .addTo(map)
 
-          map.addLayer({
-            id: 'clusters',
-            type: 'circle',
-            // type: "symbol",
-            source: 'earthquakes',
-            filter: ['has', 'point_count'],
-            paint: {
-              // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-              // with three steps to implement three types of circles:
-              //   * Blue, 20px circles when point count is less than 100
-              //   * Yellow, 30px circles when point count is between 100 and 750
-              //   * Pink, 40px circles when point count is greater than or equal to 750
-              'circle-color': ['step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'],
-              'circle-radius': ['step', ['get', 'point_count'], 20, 100, 30, 750, 40]
-
-            }
-
-          })
-
-          map.addLayer({
-            id: 'cluster-count',
-            type: 'symbol',
-            source: 'earthquakes',
-            filter: ['has', 'point_count'],
-            layout: {
-              'text-field': ['get', 'point_count_abbreviated'],
-              'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-              'text-size': 12
-            }
-          })
-
-          const imgUrl = require('@/assets/icon-fill.png')
-          map.loadImage(imgUrl, (err, image) => {
-            if (err) throw err
-            map.addImage('store-icon', image)
-            map.addLayer({
-              id: 'unclustered-point',
-              type: 'symbol',
-              source: 'earthquakes',
-              filter: ['!', ['has', 'point_count']],
-              'layout': {
-                'icon-image': 'store-icon',
-                'icon-size': 0.12,
-                'text-field': ['get', 'title'],
-                'text-offset': [0, 1.25],
-                'text-anchor': 'top'
-              }
-            })
-          })
-
-          // inspect a cluster on click
-          map.on('click', 'clusters', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-              layers: ['clusters']
-            })
-            const clusterId = features[0].properties.cluster_id
-            map
-              .getSource('earthquakes')
-              .getClusterExpansionZoom(clusterId, (err, zoom) => {
-                if (err) return
-
-                map.easeTo({
-                  center: features[0].geometry.coordinates,
-                  zoom: zoom
-                })
-              })
-          })
-
-          // When a click event occurs on a feature in
-          // the unclustered-point layer, open a popup at
-          // the location of the feature, with
-          // description HTML from its properties.
-          map.on('click', 'unclustered-point', (e) => {
-            const coordinates = e.features[0].geometry.coordinates.slice()
-
-            // Ensure that if the map is zoomed out such that
-            // multiple copies of the feature are visible, the
-            // popup appears over the copy being pointed to.
-            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-              coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360
-            }
-          })
-
-          map.on('mouseenter', 'clusters', () => {
-            map.getCanvas().style.cursor = 'pointer'
-          })
-          map.on('mouseleave', 'clusters', () => {
-            map.getCanvas().style.cursor = ''
+            const el = marker_on.getElement()
+            console.log(el)
+            const div = document.createElement('div')
+            div.className = marker.online ? 'marker-online' : 'marker-offline'
+            div.innerHTML = `${marker.globalName}`
+            const dot = document.createElement('span')
+            const status = document.createElement('span')
+            status.className = 'status-text'
+            status.innerHTML = marker.online ? ' (在线)' : ' (离线)'
+            dot.className = marker.online ? 'marker-dot' : 'marker-dot off'
+            div.insertBefore(dot, div.firstChild)
+            div.appendChild(status)
+            new mapboxgl.Popup({ anchor: marker.direction ? marker.direction : 'bottom', offset: marker.offset || [0, -30], className: 'info', closeButton: false, closeOnClick: false })
+              .setLngLat([marker.lon, marker.lat])
+              .setDOMContent(div)
+              .addTo(map)
           })
         })
       })
@@ -189,10 +117,70 @@ export default {
 }
 </script>
 
-<style scoped>
-    .custom-data{
-        color:#51bbd6;
-        color:#f1f075;
-        color:#f28cb1;
-    }
+<style lang="scss">
+.mapboxgl-popup-content{
+  padding: 10px;
+}
+::v-deep .mapboxgl-marker{
+  svg{
+    height:35px
+  }
+}
+.status-con{
+  font-size: 12px;
+  border-bottom: 1px solid #e9e9e9;
+  margin-bottom: 5px;
+  padding-left: 3px;
+}
+.marker-online{
+  color: #333;
+  font-size: 14px;
+}
+.marker-offline{
+  color: #999;
+  .status-text{
+    color: #999;
+  }
+}
+.marker-dot{
+  border-radius: 50%;
+  width: 6px;
+  height: 6px;
+  background-color: #36ab60;
+  border: 1px solid #aad08f;
+  display: inline-block;
+  margin-right: 5px;
+  animation: 2s infinite flash;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+  vertical-align: middle;
+  &.off{
+    background-color: #999;
+    border: 1px solid #999;
+    animation: none;
+  }
+}
+@-webkit-keyframes flash {
+  from,
+  50%,
+  to {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0;
+  }
+}
+@keyframes flash {
+  from,
+  50%,
+  to {
+    opacity: 1;
+  }
+
+  25%,
+  75% {
+    opacity: 0;
+  }
+}
 </style>

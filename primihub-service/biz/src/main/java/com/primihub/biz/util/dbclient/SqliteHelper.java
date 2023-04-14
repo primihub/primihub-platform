@@ -52,12 +52,16 @@ public class SqliteHelper {
     }
 
     private Connection getConnection() throws ClassNotFoundException, SQLException {
-        if (null == connection) connection = getConnection(dbFilePath);
+        if (null == connection) {
+            connection = getConnection(dbFilePath);
+        }
         return connection;
     }
 
     private Statement getStatement() throws SQLException, ClassNotFoundException {
-        if (null == statement) statement = getConnection().createStatement();
+        if (null == statement) {
+            statement = getConnection().createStatement();
+        }
         return statement;
     }
 

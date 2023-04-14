@@ -169,6 +169,7 @@
         from data_project_resource
         where project_id = #{projectId}
         and organ_id = #{organId}
+        ORDER BY id desc
     </select>
     <select id="selectProjectResourceByResourceIds"
             resultType="com.primihub.biz.entity.data.po.DataProjectResource">
@@ -237,6 +238,7 @@
                 </if>
             )
         </if>
+        <if test="projectId!=null and projectId!=''">and project_id like CONCAT('%',#{projectId,jdbcType=VARCHAR},'%')</if>
         <if test="startDate!=null and startDate!=''">and create_date <![CDATA[ >= ]]> #{startDate}  </if>
         <if test="endDate!=null and endDate!=''">and create_date <![CDATA[ <= ]]> #{endDate}  </if>
     </sql>

@@ -19,6 +19,7 @@ import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FreemarkerUtil;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.Data;
@@ -60,7 +61,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
-            Map<String, GrpcComponentDto> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+            Map<String, GrpcComponentDto> exceptionEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),null);
             log.info("exceptionEntityMap-1:{}",JSONObject.toJSONString(exceptionEntityMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
@@ -78,22 +79,22 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             if (StringUtils.isEmpty(replaceType)){
                 replaceType = "MAX";
             }
-            Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(JSONObject.toJSONString(exceptionEntityMap)).build();
-            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ids.stream().collect(Collectors.joining(";"))).build();
-            Common.ParamValue replaceTypeParamValue = Common.ParamValue.newBuilder().setValueString(replaceType).build();
+            Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(exceptionEntityMap).getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue replaceTypeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(replaceType.getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("ColumnInfo", columnInfoParamValue)
                     .putParamMap("Data_File", dataFileParamValue)
                     .putParamMap("Replace_Type", replaceTypeParamValue)
                     .build();
+            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
                     .setName("AbnormalProcessTask")
                     .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("AbnormalProcessTask".getBytes(StandardCharsets.UTF_8)))
-                    .setJobId(ByteString.copyFrom(jobId.getBytes(StandardCharsets.UTF_8)))
-                    .setTaskId(ByteString.copyFrom(taskReq.getDataTask().getTaskIdName().getBytes(StandardCharsets.UTF_8)))
+                    .setTaskInfo(taskBuild)
                     .addInputDatasets("Data_File")
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
@@ -110,15 +111,16 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
             }else {
-                dataTaskMonitorService.verifyWhetherTheTaskIsSuccessfulAgain(taskReq.getDataTask(), jobId,ids.size(),null);
+                dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Iterator<String> keyi = exceptionEntityMap.keySet().iterator();
                 while (keyi.hasNext()){
                     String key = keyi.next();
                     GrpcComponentDto value = exceptionEntityMap.get(key);
-                    if (value==null)
+                    if (value==null) {
                         continue;
+                    }
                     log.info("value:{}",JSONObject.toJSONString(value));
                     derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
                     log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
@@ -153,13 +155,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         return BaseResultEntity.success();
     }
 
-    public Map<String,GrpcComponentDto> getExceptionEntityMap(List<LinkedHashMap<String,Object>> maps){
-        Map<String, GrpcComponentDto> map = new HashMap<>();
-        for (LinkedHashMap<String, Object> dataMap : maps) {
-            List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>)dataMap.get("fieldList");
-            Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
-            map.put(dataMap.get("resourceId").toString(),new GrpcComponentDto(fieldMap,dataMap.get("resourceId").toString()));
-        }
-        return map;
+    public static void main(String[] args) {
+        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1212").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("213123123123232").build();
+        System.out.println(JSONObject.toJSONString(taskBuild));
     }
 }

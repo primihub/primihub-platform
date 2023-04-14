@@ -22,7 +22,7 @@
             />
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="Y值">
+        <el-form-item label="Y值">
           <el-select v-model="query.fileContainsY" size="small" placeholder="请选择" clearable>
             <el-option
               v-for="item in YValueOptions"
@@ -31,7 +31,7 @@
               :value="item.value"
             />
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
         <el-form-item label="上传者">
           <el-input v-model="query.userName" size="small" placeholder="请输入上传者名称" />
         </el-form-item>

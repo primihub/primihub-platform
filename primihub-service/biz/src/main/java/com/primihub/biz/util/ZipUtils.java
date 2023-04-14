@@ -30,8 +30,9 @@ public class ZipUtils {
                 boolean isExclude = excludeFileNames!=null;
                 if (files.length != 0) {
                     for (File file : files) {
-                        if (isExclude&&excludeFileNames.contains(file.getName()))
+                        if (isExclude&&excludeFileNames.contains(file.getName())) {
                             continue;
+                        }
                         executeToZip(zipOutputStream, file);
                     }
                 }

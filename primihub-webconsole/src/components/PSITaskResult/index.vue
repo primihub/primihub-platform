@@ -22,6 +22,11 @@
       </el-table-column>
       <el-table-column label="任务类型" prop="ascription" />
       <el-table-column label="任务发起时间" prop="createDate" min-width="120px" />
+      <el-table-column label="任务耗时" min-width="120px">
+        <template slot-scope="{row}">
+          {{ row.consuming | timeFilter }}
+        </template>
+      </el-table-column>
       <el-table-column label="任务状态" prop="taskState">
         <template slot-scope="{row}">
           <i :class="statusStyle(row.taskState)" />
@@ -36,7 +41,6 @@
             <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
             <el-link type="danger" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-link>
           </p>
-
         </template>
       </el-table-column>
     </el-table>
@@ -46,7 +50,7 @@
       top="5vh"
       width="750px"
     >
-      <PSI-task-detail :data="taskData" />
+      <PSI-task-detail :server-address="taskData.serverAddress" :data="taskData" @change="handleEditChange" />
     </el-dialog>
   </div>
 </template>
@@ -201,6 +205,12 @@ export default {
         this.data[index].taskState = taskState
         this.$emit('complete')
       })
+    },
+    handleEditChange({ taskId, resultName }) {
+      const posIndex = this.tableData.findIndex(item => item.taskId === taskId)
+      if (posIndex !== -1) {
+        this.tableData[posIndex].resultName = resultName
+      }
     }
   }
 }

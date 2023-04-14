@@ -1,13 +1,14 @@
 package com.primihub.biz.service.data.db.impl;
 
 import com.alibaba.druid.pool.DruidDataSource;
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.db.DataDBService;
+import com.primihub.biz.service.data.db.AbstractDataDBService;
 import com.primihub.biz.util.DataUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -15,15 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class MySqlService extends DataDBService {
+public class MySqlServiceAbstract extends AbstractDataDBService {
 
 
 
@@ -40,8 +38,9 @@ public class MySqlService extends DataDBService {
     public BaseResultEntity healthConnection(DataSource dbSource) {
         String url = dbSource.getDbUrl();
         String dataBaseName = (String) DataUtil.getJDBCData(url).get("database");
-        if (StringUtils.isBlank(dataBaseName))
+        if (StringUtils.isBlank(dataBaseName)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
+        }
         dbSource.setDbName(dataBaseName);
         return dataSourceTables(dbSource);
     }
@@ -76,10 +75,11 @@ public class MySqlService extends DataDBService {
             jdbcDataSource = getJdbcDataSource(dbSource);
             JdbcTemplate jdbcTemplate = getJdbcTemplate(jdbcDataSource);
             List<Map<String, Object>> details = jdbcTemplate.queryForList(QUERY_DETAILS_SQL.replace("<tableName>",dbSource.getDbTableName()));
-            if (details.isEmpty())
+            if (details.isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据信息");
-            Set<String> columns = details.get(0).keySet();
-            List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columns, details.get(0));
+            }
+            TreeSet<String> treeSet = new TreeSet(details.get(0).keySet());
+            List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(treeSet, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
             map.put("dataList",details);
@@ -94,7 +94,18 @@ public class MySqlService extends DataDBService {
         }
     }
 
-    public BaseResultEntity tableDataStatistics(DataSource dataSource,boolean isY){
+    public static void main(String[] args) {
+        TreeSet treeSet = new TreeSet();
+        treeSet.add("zhang");
+        treeSet.add("id");
+        treeSet.add("d");
+        treeSet.add("ad");
+        treeSet.add("y");
+        System.out.println(JSONObject.toJSONString(treeSet));
+    }
+
+    @Override
+    public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY){
         Map<String,Object> map = new HashMap<>();
         DruidDataSource jdbcDataSource =null;
         try {

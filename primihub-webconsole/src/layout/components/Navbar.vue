@@ -1,8 +1,10 @@
 <template>
   <div class="navbar">
     <div class="logo">
-      <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
-      <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
+      <template v-if="loaded">
+        <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
+        <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
+      </template>
       <div class="secondary-title" @click="toPath">
         {{ routePath ? '首页' : '分布式隐私计算服务网络' }}
       </div>
@@ -61,7 +63,7 @@ import { mapGetters, mapState, mapActions } from 'vuex'
 import UpdatePwdForm from '@/components/UpdatePwdForm'
 import BindPhoneDialog from '@/components/BindPhoneDialog'
 
-const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
+const phonePattern = /^[1][\d][0-9]{9}$/
 
 export default {
   components: {
@@ -85,6 +87,7 @@ export default {
     },
     ...mapState('user', ['organChange']),
     ...mapState('settings', [
+      'loaded',
       'logoUrl',
       'sidebarLogo',
       'isHideFadeBack',
@@ -102,10 +105,10 @@ export default {
       'userAccount',
       'registerType'
     ]),
-    routePath(){
-      let path = this.$store.state.watchRouter.currentPath;
-      if(path.search('/map/index') > -1){
-        return true;
+    routePath() {
+      const path = this.$store.state.watchRouter.currentPath
+      if (path.search('/map/index') > -1) {
+        return true
       }
       return false
     }
@@ -170,11 +173,10 @@ export default {
     },
     ...mapActions('user', ['getInfo']),
     ...mapActions('settings', ['getHomepage']),
-    toPath(){
-      if(this.routePath){
+    toPath() {
+      if (this.routePath) {
         this.$router.push('/project/list')
-      }else{
-
+      } else {
         this.$router.push('/map/index')
       }
     }
