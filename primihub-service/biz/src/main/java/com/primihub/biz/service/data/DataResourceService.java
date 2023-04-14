@@ -518,7 +518,7 @@ public class DataResourceService {
     }
 
     public BaseResultEntity handleDataResourceSource(DataResource dataResource, List<DataResourceFieldReq> fieldList, DataSource dataSource) {
-        List<String> fieldNames = fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toList());
+        TreeSet<String> fieldNames = new TreeSet<>(fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toSet()));
         BaseResultEntity baseResultEntity = dataSourceService.tableDataStatistics(dataSource, fieldNames.contains("y") || fieldNames.contains("Y"));
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
             return baseResultEntity;
@@ -527,7 +527,7 @@ public class DataResourceService {
         Object total = map.get("total");
         if (total!=null){
             dataResource.setFileRows(Integer.parseInt(total.toString()));
-            dataResource.setFileHandleField(fieldNames.stream().collect(Collectors.joining(",")));
+            dataResource.setFileHandleField(String.join(",", fieldNames));
             dataResource.setFileColumns(fieldNames.size());
         }else {
             dataResource.setFileHandleField("");
