@@ -29,7 +29,8 @@ const state = {
   isHideFooterVersion,
   showLogoTitle: 1, // 1: 添加 2:不添加
   settingChanged: false,
-  footerText
+  footerText,
+  loaded: false
 }
 
 const mutations = {
@@ -38,6 +39,9 @@ const mutations = {
   },
   SET_CHANGE_STATUS: (state, status) => {
     state.settingChanged = status
+  },
+  SET_REQUEST_STATUS: (state, status) => {
+    state.loaded = status
   },
   SET_FOOTER_TEXT: (state, text) => {
     state.footerText = text
@@ -100,6 +104,7 @@ const actions = {
       commit('SET_SHOW_LOGO_STATUS', showLogoTitle === undefined ? state.showLogoTitle : showLogoTitle)
       commit('SET_FOOTER_TEXT', footerText || state.footerText)
     }
+    commit('SET_REQUEST_STATUS', true)
   },
   changeHomepage({ commit }, { state, mutation, value }) {
     return new Promise((resolve, reject) => {

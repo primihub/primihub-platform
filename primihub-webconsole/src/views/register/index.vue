@@ -4,7 +4,7 @@
       <div class="bd-wrap">
         <CompanyIntro />
         <div class="register-wrap">
-          <RegisterForm :size="mini" :code-type="1" />
+          <RegisterForm size="mini" :code-type="1" />
         </div>
       </div>
       <Footer />

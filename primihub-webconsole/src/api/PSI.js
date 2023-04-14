@@ -90,3 +90,10 @@ export function saveOrUpdatePsiResource(data) {
     data
   })
 }
+export function updateDataPsiResultName(data) {
+  return request({
+    url: '/data/psi/updateDataPsiResultName',
+    method: 'post',
+    data
+  })
+}
