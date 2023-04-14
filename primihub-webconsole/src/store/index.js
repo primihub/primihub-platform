@@ -7,6 +7,7 @@ import permission from './modules/permission'
 import user from './modules/user'
 import project from './modules/project'
 import application from './modules/application'
+import watchRouter from './modules/watchRoute'
 
 Vue.use(Vuex)
 
@@ -17,7 +18,8 @@ const store = new Vuex.Store({
     user,
     permission,
     project,
-    application
+    application,
+    watchRouter
   },
   getters
 })

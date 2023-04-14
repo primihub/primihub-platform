@@ -92,7 +92,7 @@ service.interceptors.response.use(
     }
     endLoading()
     const { data } = response
-    const { code, msg } = data
+    const { code, msg, result } = data
     if (code !== 0) {
       if (code === -1 || code === 1001 || code === 1007) {
         return data
@@ -141,6 +141,8 @@ service.interceptors.response.use(
         })
         return data
       } else if (code === 121) {
+        return data
+      } else if (result?.sysLocalOrganInfo?.fusionMap) {
         return data
       } else {
         message({

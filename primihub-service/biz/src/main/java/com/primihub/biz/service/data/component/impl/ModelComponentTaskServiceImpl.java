@@ -218,7 +218,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         }
                     }else {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                     }
                 }
             }else {
@@ -290,7 +290,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                         }
                     }
                 }else {
@@ -374,7 +374,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
                         }
                     }
                 }else {
