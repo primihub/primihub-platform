@@ -3,20 +3,17 @@
     <div class="search-area">
       <el-button v-if="hasUploadAuth" type="primary" class="upload-button" @click="toResourceCreatePage"> <i class="el-icon-upload" /> 添加资源</el-button>
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="数据资源ID">
-          <el-input v-model.number="query.resourceId" placeholder="请输入资源ID" />
+        <el-form-item label="资源ID">
+          <el-input v-model.number="query.resourceId" size="small" placeholder="请输入资源ID" />
         </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="query.resourceName" placeholder="请输入资源名称" />
+        <el-form-item label="资源名称">
+          <el-input v-model="query.resourceName" size="small" placeholder="请输入资源名称" />
         </el-form-item>
-        <el-form-item label="关键词">
-          <TagsSelect :data="tags" :reset="isReset" :remote="false" @filter="searchResource" @change="handleTagChange" />
-        </el-form-item>
-        <el-form-item label="上传者">
-          <el-input v-model="query.userName" placeholder="请输入上传者名称" />
+        <el-form-item label="标签">
+          <TagsSelect :data="tags" :reset="isReset" size="small" :remote="false" @filter="searchResource" @change="handleTagChange" />
         </el-form-item>
         <el-form-item label="资源类型">
-          <el-select v-model="query.resourceSource" placeholder="请选择" clearable>
+          <el-select v-model="query.resourceSource" size="small" placeholder="请选择" clearable>
             <el-option
               v-for="item in resourceSourceList"
               :key="item.value"
@@ -25,8 +22,22 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="Y值">
+          <el-select v-model="query.fileContainsY" size="small" placeholder="请选择" clearable>
+            <el-option
+              v-for="item in YValueOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="上传者">
+          <el-input v-model="query.userName" size="small" placeholder="请输入上传者名称" />
+        </el-form-item>
+
         <el-form-item label="可见性">
-          <el-select v-model="query.resourceAuthType" placeholder="请选择" clearable>
+          <el-select v-model="query.resourceAuthType" size="small" placeholder="请选择" clearable>
             <el-option
               v-for="item in resourceAuthTypeOptions"
               :key="item.value"
@@ -36,8 +47,8 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
+          <el-button type="primary" icon="el-icon-search" class="search-button" size="small" @click="search">查询</el-button>
+          <el-button size="small" icon="el-icon-refresh-right" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -50,36 +61,42 @@
       >
         <el-table-column
           prop="resourceId"
-          label="资源Id"
-        />
-        <el-table-column
-          prop="resourceName"
-          label="名称"
+          label="资源ID"
         >
           <template slot-scope="{row}">
             <template v-if="hasViewPermission && row.resourceState === 0">
-              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceId }}</el-link><br>
             </template>
             <template v-else>
-              {{ row.resourceName }}<br>
+              {{ row.resourceId }}<br>
             </template>
           </template>
         </el-table-column>
         <el-table-column
+          prop="resourceName"
+          label="资源名称"
+        />
+        <el-table-column
           prop="tags"
-          label="关键词"
+          label="标签"
         >
           <template slot-scope="{row}">
             <el-tag v-for="tag in row.tags" :key="tag.tagId" type="success" size="mini" class="tag">{{ tag.tagName }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column
-          prop="resourceAuthType"
-          label="可见性"
-          align="center"
+          label="数据信息"
+          min-width="200"
         >
           <template slot-scope="{row}">
-            {{ row.resourceAuthType | authTypeFilter }}
+            特征量：{{ row.fileColumns }}<br>
+            样本量：{{ row.fileRows }} <br>
+            正例样本数量：{{ row.fileYRows ? row.fileYRows : 0 }}<br>
+            正例样本比例：{{ row.fileYRatio? row.fileYRatio : 0 }}% <br>
+            <div class="margin-top-5">
+              <el-tag v-if="row.fileContainsY" type="primary" size="mini">包含Y值</el-tag>
+              <el-tag v-else type="danger" size="mini">不包含Y值</el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column
@@ -92,22 +109,12 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="数据信息"
-          min-width="180"
+          prop="resourceAuthType"
+          label="可见性"
+          align="center"
         >
           <template slot-scope="{row}">
-            特征量：{{ row.fileColumns }}<br>
-            样本量：{{ row.fileRows }} <br>
-            正例样本数量：{{ row.fileYRows ? row.fileYRows : 0 }}<br>
-            正例样本比例：{{ row.fileYRatio? row.fileYRatio : 0 }}% <br>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="是否包含Y值"
-        >
-          <template slot-scope="{row}">
-            <el-tag v-if="row.fileContainsY" class="containsy-tag" type="primary" size="mini">包含</el-tag>
-            <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含</el-tag>
+            {{ row.resourceAuthType | authTypeFilter }}
           </template>
         </el-table-column>
         <el-table-column
@@ -131,9 +138,9 @@
           align="center"
         >
           <template slot-scope="{row}">
-            <el-button type="text" size="mini" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
-            <el-button v-if="hasEditPermission && row.resourceState === 0" size="mini" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
-            <el-button size="mini" type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+            <el-button type="text" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+            <el-button v-if="hasEditPermission && row.resourceState === 0" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
+            <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -154,7 +161,7 @@ export default {
   data() {
     return {
       query: {
-        resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0, resourceAuthType: ''
+        fileContainsY: '', resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0, resourceAuthType: ''
       },
       tags: [],
       resourceSourceList: [{
@@ -173,6 +180,13 @@ export default {
       }, {
         label: '指定机构可见',
         value: 3
+      }],
+      YValueOptions: [{
+        label: '包含',
+        value: 1
+      }, {
+        label: '不包含',
+        value: 0
       }],
       resourceList: [],
       currentPage: 1,
@@ -311,7 +325,7 @@ export default {
     },
     async fetchData() {
       this.resourceList = []
-      const { resourceName, tag, userName, resourceSource, selectTag, resourceAuthType } = this.query
+      const { resourceName, tag, userName, resourceSource, selectTag, resourceAuthType, fileContainsY } = this.query
       const resourceId = Number(this.query.resourceId)
       if (resourceId !== '' && isNaN(resourceId)) {
         this.$message({
@@ -330,7 +344,8 @@ export default {
         resourceSource,
         selectTag,
         derivation: 0,
-        resourceAuthType
+        resourceAuthType,
+        fileContainsY
       }
       const res = await getResourceList(params)
       if (res.code === 0) {

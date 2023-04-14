@@ -273,6 +273,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             map.put(serverData.getResourceId(),serverEntity);
             return BaseResultEntity.success(map);
         } catch (Exception e) {
+            e.printStackTrace();
             log.info("grpc Exception:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI 异常:"+e.getMessage());
         }

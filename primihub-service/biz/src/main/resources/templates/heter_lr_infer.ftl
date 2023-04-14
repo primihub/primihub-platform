@@ -1,10 +1,14 @@
 import pickle
 import ray
+import json
+import pandas as pd
 import numpy as np
 import modin.pandas as md
 import primihub as ph
+from sklearn import metrics
 from primihub import dataset, context
 from primihub.utils.net_worker import GrpcServer
+from primihub.utils.evaluation import evaluate_ks_and_roc_auc
 from primihub.FL.model.logistic_regression.hetero_lr_host import HeterLrHost
 from primihub.FL.model.logistic_regression.hetero_lr_guest import HeterLrGuest
 
@@ -29,7 +33,9 @@ class HeteroLrHostInfer(HeterLrHost):
                  sample_method="random",
                  sample_ratio=0.5,
                  host_model=None,
-                 host_data=None):
+                 host_data=None,
+                 eval_path=None,
+                 output_file=None):
         super().__init__(learning_rate, alpha, epochs, penalty, batch_size,
                          optimal_method, update_type, loss_type, random_state,
                          host_channel, add_noise, tol, momentum,
@@ -38,6 +44,8 @@ class HeteroLrHostInfer(HeterLrHost):
         self.data = host_data
         self.scaler = None
         self.label = None
+        self.eval_path = eval_path
+        self.output_file = output_file
 
     def load_model(self):
         self.weights = self.model['weights']
@@ -47,7 +55,7 @@ class HeteroLrHostInfer(HeterLrHost):
 
     def preprocess(self):
         if 'y' in self.data.columns:
-            self.label = self.data.pop('y')
+            self.label = self.data.pop('y').values
 
         if len(self.col_names) > 0:
             self.data = self.data[self.col_names].values
@@ -68,9 +76,28 @@ class HeteroLrHostInfer(HeterLrHost):
         y_hat = self.predict_raw(self.data)
         pred_y = (self.sigmoid(y_hat) > 0.5).astype('int')
 
+        pred_df = pd.DataFrame({'preds': pred_y, 'probs': self.sigmoid(y_hat)})
+        pred_df.to_csv(self.output_file, index=False, sep='\t')
+
         if self.label is not None:
             acc = sum((pred_y == self.label).astype('int')) / self.data.shape[0]
-            print("test acc is", acc)
+            ks, auc = evaluate_ks_and_roc_auc(self.label, self.sigmoid(y_hat))
+            fpr, tpr, threshold = metrics.roc_curve(self.label,
+                                                    self.sigmoid(y_hat))
+
+            evals = {
+                "test_acc": acc,
+                "test_ks": ks,
+                "test_auc": auc,
+                "test_fpr": fpr.tolist(),
+                "test_tpr": tpr.tolist()
+            }
+
+            metrics_buff = json.dumps(evals)
+
+            with open(self.eval_path, 'w') as filePath:
+                filePath.write(metrics_buff)
+            print("test acc is", acc, ks, auc)
 
 
 class HeteroLrGuestInfer(HeterLrGuest):
@@ -152,16 +179,21 @@ def lr_host_infer():
                               local_port=host_port,
                               context=ph.context.Context)
 
-    model_path = "hetero_lr_host.ml"
+    # model_path = "hetero_lr_host.ml"
+    model_path = ph.context.Context.get_model_file_path() + ".host"
     with open(model_path, 'rb') as lr_host_ml:
         host_model = pickle.load(lr_host_ml)
 
-    # data = md.read_csv("/home/primihub/xusong/data/merged_large_host.csv")
-    data = ph.dataset.read(dataset_key=data_key).df_data
+    data = md.read_csv("/data/merged_large_host_16.csv.bak").iloc[:1000000, :]
+    # data = ph.dataset.read(dataset_key=data_key).df_data
+    indicator_file_path = ph.context.Context.get_indicator_file_path()
+    output_file = ph.context.Context.get_predict_file_path()
 
     heter_lr = HeteroLrHostInfer(host_channel=host_channel,
                                  host_data=data,
-                                 host_model=host_model)
+                                 host_model=host_model,
+                                 eval_path=indicator_file_path,
+                                 output_file=output_file)
     heter_lr.run()
 
 
@@ -190,12 +222,14 @@ def lr_guest_infer():
                                local_port=guest_port,
                                context=ph.context.Context)
 
-    model_path = "hetero_lr_guest.ml"
+    # model_path = "hetero_lr_guest.ml"
+    model_path = ph.context.Context.get_model_file_path() + ".guest"
+
     with open(model_path, 'rb') as lr_guest_ml:
         guest_model = pickle.load(lr_guest_ml)
 
-    # data = md.read_csv("/home/primihub/xusong/data/merged_large_guest.csv")
-    data = ph.dataset.read(dataset_key=data_key).df_data
+    data = md.read_csv("/data/merged_large_guest_16.csv.bak").iloc[:1000000, :]
+    # data = ph.dataset.read(dataset_key=data_key).df_data
     heter_lr = HeteroLrGuestInfer(guest_channel=guest_channel,
                                   guest_data=data,
                                   guest_model=guest_model)

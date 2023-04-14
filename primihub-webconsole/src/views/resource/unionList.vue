@@ -3,7 +3,7 @@
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="中心节点">
-          <el-select v-model="query.serverAddressValue" placeholder="请选择" @change="handleServerAddressChange">
+          <el-select v-model="query.serverAddressValue" size="small" placeholder="请选择" @change="handleServerAddressChange">
             <el-option
               v-for="item in serverAddressList"
               :key="item.value"
@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="机构">
-          <el-select v-model="query.organId" placeholder="请选择" clearable @change="handleOrganCascaderChange" @clear="handleClear">
+          <el-select v-model="query.organId" size="small" placeholder="请选择" clearable @change="handleOrganCascaderChange" @clear="handleClear">
             <el-option
               v-for="item in cascaderOptions"
               :key="item.value"
@@ -22,17 +22,17 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="数据资源ID">
-          <el-input v-model="query.resourceId" placeholder="请输入资源ID" clearable @clear="handleClear" />
+        <el-form-item label="资源ID">
+          <el-input v-model="query.resourceId" size="small" placeholder="请输入资源ID" clearable @clear="handleClear" />
         </el-form-item>
-        <el-form-item label="名称">
-          <el-input v-model="query.resourceName" placeholder="请输入资源名称" clearable @clear="handleClear" />
+        <el-form-item label="资源名称">
+          <el-input v-model="query.resourceName" size="small" placeholder="请输入资源名称" clearable @clear="handleClear" />
         </el-form-item>
-        <el-form-item label="关键词">
-          <TagsSelect :data="tags" :reset="isReset" :remote="false" @filter="searchResource" @change="handleTagChange" />
+        <el-form-item label="标签">
+          <TagsSelect :data="tags" :reset="isReset" size="small" :remote="false" @filter="searchResource" @change="handleTagChange" />
         </el-form-item>
         <el-form-item label="资源类型">
-          <el-select v-model="query.resourceSource" placeholder="请选择" clearable @clear="handleClear">
+          <el-select v-model="query.resourceSource" size="small" placeholder="请选择" clearable @clear="handleClear">
             <el-option
               v-for="item in resourceSourceList"
               :key="item.value"
@@ -41,9 +41,19 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="Y值">
+          <el-select v-model="query.fileContainsY" size="small" placeholder="请选择" clearable>
+            <el-option
+              v-for="item in YValueOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" class="search-button" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
+          <el-button type="primary" icon="el-icon-search" class="search-button" size="small" @click="search">查询</el-button>
+          <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -54,59 +64,39 @@
         border
       >
         <el-table-column
-          label="机构名称 / ID"
-          min-width="160"
-        >
-          <template slot-scope="{row}">
-            <span>{{ row.organName }}</span> <br>
-            <span>{{ row.organId }}</span>
-          </template>
-        </el-table-column>
+          prop="organId"
+          label="机构ID"
+          min-width="120"
+        />
         <el-table-column
-          label="资源名称 / Id"
+          prop="organName"
+          label="机构名称"
+        />
+        <el-table-column
+          label="资源ID"
           min-width="160"
         >
           <template slot-scope="{row}">
             <template v-if="hasViewPermission">
-              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceName }}</el-link><br>
+              <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceId }}</el-link><br>
             </template>
             <template v-else>
-              {{ row.resourceName }}<br>
+              {{ row.resourceId }}<br>
             </template>
-            {{ row.resourceId }}
           </template>
         </el-table-column>
         <el-table-column
+          prop="resourceName"
+          label="资源名称"
+        />
+        <el-table-column
           prop="tags"
-          label="关键词"
+          label="标签"
         >
           <template slot-scope="{row}">
             <el-tag v-for="(tag,index) in row.resourceTag" :key="index" type="success" size="mini" class="tag">{{ tag }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="resourceAuthType"
-          label="可见性"
-          align="center"
-        >
-          <template slot-scope="{row}">
-            {{ row.resourceAuthType | authTypeFilter }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="resourceSource"
-          label="资源类型"
-          align="center"
-        >
-          <template slot-scope="{row}">
-            {{ row.resourceType | sourceFilter }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="resourceHashCode"
-          label="文件Hash"
-          min-width="130"
-        />
         <el-table-column
           label="数据信息"
           min-width="200"
@@ -120,6 +110,28 @@
             <el-tag v-else class="containsy-tag" type="danger" size="mini">不包含Y值</el-tag>
           </template>
         </el-table-column>
+        <el-table-column
+          prop="resourceSource"
+          label="资源类型"
+          align="center"
+        >
+          <template slot-scope="{row}">
+            {{ row.resourceType | sourceFilter }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="resourceAuthType"
+          label="可见性"
+          align="center"
+        >
+          <template slot-scope="{row}">
+            {{ row.resourceAuthType | authTypeFilter }}
+          </template>
+        </el-table-column>
+        <!-- <el-table-column
+          prop="userName"
+          label="上传者"
+        /> -->
         <el-table-column
           label="上传时间"
           min-width="160"
@@ -162,7 +174,8 @@ export default {
         serverAddressValue: '',
         groupId: 0,
         organId: '',
-        resourceAuthType: ''
+        resourceAuthType: '',
+        fileContainsY: ''
       },
       resourceSourceList: [{
         label: '文件上传',
@@ -170,6 +183,13 @@ export default {
       }, {
         label: '数据库导入',
         value: 2
+      }],
+      YValueOptions: [{
+        label: '包含',
+        value: 1
+      }, {
+        label: '不包含',
+        value: 0
       }],
       cascaderValue: [],
       resourceList: [],
@@ -254,7 +274,7 @@ export default {
     async fetchData() {
       this.loading = true
       this.resourceList = []
-      const { resourceId, resourceName, tagName, organId, resourceSource } = this.query
+      const { resourceId, resourceName, tagName, organId, resourceSource, fileContainsY } = this.query
       const params = {
         serverAddress: this.serverAddress,
         pageNo: this.pageNo,
@@ -263,7 +283,8 @@ export default {
         resourceName,
         tagName,
         resourceSource,
-        organId
+        organId,
+        fileContainsY
       }
       const { code, result } = await getResourceList(params)
       if (code === -1) {
