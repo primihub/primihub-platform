@@ -326,6 +326,7 @@ export default {
           saveResource(this.dataForm).then(res => {
             this.loading = false
             if (res.code === 0) {
+              this.$message.success('保存成功')
               this.toResourceDetail(res.result.resourceId)
             } else {
               this.loading = false
@@ -406,6 +407,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+::v-deep .el-loading-mask{
+  z-index: 1;
+}
 ::v-deep .el-tag{
   margin: 0 3px;
 }
