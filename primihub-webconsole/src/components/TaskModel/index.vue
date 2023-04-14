@@ -46,7 +46,12 @@
         <el-col class="desc-col" :span="24">
           <div class="desc-label">模型描述:</div>
           <div class="desc-content">
-            <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+            <template v-if="task.isCooperation === 0">
+              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+            </template>
+            <template v-else>
+              {{ model.modelDesc }}
+            </template>
           </div>
         </el-col>
       </el-row>
