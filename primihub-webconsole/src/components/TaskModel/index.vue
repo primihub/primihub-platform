@@ -7,6 +7,9 @@
           <div class="desc-label">模型ID:</div>
           <div class="desc-content">
             <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+            <template v-else>
+              {{ model.modelId }}
+            </template>
           </div>
         </el-col>
         <el-col class="desc-col" :span="6">
