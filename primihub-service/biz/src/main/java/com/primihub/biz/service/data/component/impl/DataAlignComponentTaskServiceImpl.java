@@ -205,6 +205,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 }
                 fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
             }
+            clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
+            serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
             serverIndex = fieldList.stream().map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0) {
