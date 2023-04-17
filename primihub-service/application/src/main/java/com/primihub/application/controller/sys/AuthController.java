@@ -19,37 +19,48 @@ public class AuthController {
 
     @RequestMapping("createAuthNode")
     public BaseResultEntity createAuthNode(CreateAuthNodeParam createAuthNodeParam){
-        if(createAuthNodeParam.getAuthName()==null||createAuthNodeParam.getAuthName().trim().equals(""))
+        if(createAuthNodeParam.getAuthName()==null|| "".equals(createAuthNodeParam.getAuthName().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authName");
-        if(createAuthNodeParam.getAuthCode()==null||createAuthNodeParam.getAuthCode().trim().equals(""))
+        }
+        if(createAuthNodeParam.getAuthCode()==null|| "".equals(createAuthNodeParam.getAuthCode().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authCode");
-        if(createAuthNodeParam.getPAuthId()==null)
+        }
+        if(createAuthNodeParam.getPAuthId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pAuthId");
-        if(createAuthNodeParam.getPAuthId()<0)
+        }
+        if(createAuthNodeParam.getPAuthId()<0) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"pAuthId");
-        if(createAuthNodeParam.getAuthIndex()==null)
+        }
+        if(createAuthNodeParam.getAuthIndex()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authIndex");
-        if(createAuthNodeParam.getAuthType()==null)
+        }
+        if(createAuthNodeParam.getAuthType()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authType");
-        if(AuthTypeEnum.findByCode(createAuthNodeParam.getAuthType())==null)
+        }
+        if(AuthTypeEnum.findByCode(createAuthNodeParam.getAuthType())==null) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"authType");
-        if(createAuthNodeParam.getIsShow()==null)
+        }
+        if(createAuthNodeParam.getIsShow()==null) {
             createAuthNodeParam.setIsShow(1);
-        if(createAuthNodeParam.getDataAuthCode()==null||createAuthNodeParam.getDataAuthCode().trim().equals(""))
+        }
+        if(createAuthNodeParam.getDataAuthCode()==null|| "".equals(createAuthNodeParam.getDataAuthCode().trim())) {
             createAuthNodeParam.setDataAuthCode("own");
+        }
         return sysAuthService.createAuthNode(createAuthNodeParam);
     }
 
     @RequestMapping("alterAuthNodeStatus")
     public BaseResultEntity alterAuthNodeStatus(AlterAuthNodeStatusParam alterAuthNodeStatusParam){
-        if(alterAuthNodeStatusParam.getAuthId()==null)
+        if(alterAuthNodeStatusParam.getAuthId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authId");
-        if((alterAuthNodeStatusParam.getAuthName()==null|| alterAuthNodeStatusParam.getAuthName().trim().equals(""))
-                &&(alterAuthNodeStatusParam.getAuthCode()==null|| alterAuthNodeStatusParam.getAuthCode().trim().equals(""))
-                &&(alterAuthNodeStatusParam.getDataAuthCode()==null|| alterAuthNodeStatusParam.getDataAuthCode().trim().equals(""))
+        }
+        if((alterAuthNodeStatusParam.getAuthName()==null|| "".equals(alterAuthNodeStatusParam.getAuthName().trim()))
+                &&(alterAuthNodeStatusParam.getAuthCode()==null|| "".equals(alterAuthNodeStatusParam.getAuthCode().trim()))
+                &&(alterAuthNodeStatusParam.getDataAuthCode()==null|| "".equals(alterAuthNodeStatusParam.getDataAuthCode().trim()))
                 && alterAuthNodeStatusParam.getAuthType()==null
-                && alterAuthNodeStatusParam.getIsShow()==null)
+                && alterAuthNodeStatusParam.getIsShow()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"至少需要一个修改的字段");
+        }
         return sysAuthService.alterAuthNodeStatus(alterAuthNodeStatusParam);
     }
 

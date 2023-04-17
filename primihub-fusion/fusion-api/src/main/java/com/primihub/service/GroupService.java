@@ -52,8 +52,9 @@ public class GroupService {
     }
 
     public BaseResultEntity joinGroup(String globalId,Long groupId){
-        if(groupRepository.selectFusionGo(groupId,globalId))
+        if(groupRepository.selectFusionGo(groupId,globalId)) {
             return BaseResultEntity.success();
+        }
         FusionGo fusionGo=new FusionGo();
         fusionGo.setIsDel(0);
         fusionGo.setGroupId(groupId);
@@ -75,12 +76,14 @@ public class GroupService {
 
     public BaseResultEntity findMyGroupOrgan(String globalId){
         List<Long> organInGroupList=groupRepository.findOrganInGroup(globalId);
-        if(organInGroupList==null||organInGroupList.size()==0)
+        if(organInGroupList==null||organInGroupList.size()==0) {
             return BaseResultEntity.success(new ArrayList());
+        }
         List<String> organIdList = groupRepository.findOrganGlobalIdByGroupIdList(organInGroupList);
         Set<String> organIdSet=organIdList.stream().filter(item->!item.equals(globalId)).collect(Collectors.toSet());
-        if(organIdSet.size()==0)
+        if(organIdSet.size()==0) {
             return BaseResultEntity.success(new ArrayList());
+        }
         List<FusionOrgan> organList = fusionRepository.selectFusionOrganByGlobalIds(organIdSet);
         Map result=new HashMap<>();
         result.put("organList",organList);

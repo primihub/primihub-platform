@@ -29,8 +29,9 @@ public class SysRoleService {
         Long roleId=saveOrUpdateRoleParam.getRoleId();
         SysRole sysRole;
         if(roleId==null){
-            if(saveOrUpdateRoleParam.getRoleName()==null)
+            if(saveOrUpdateRoleParam.getRoleName()==null) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"roleId");
+            }
             sysRole=new SysRole();
             sysRole.setRoleName(saveOrUpdateRoleParam.getRoleName());
             sysRole.setIsEditable(1);
@@ -39,10 +40,12 @@ public class SysRoleService {
             roleId=sysRole.getRoleId();
         }else{
             sysRole=sysRoleSecondarydbRepository.selectSysRoleByRoleId(roleId);
-            if(sysRole==null||sysRole.getRoleId()==null)
+            if(sysRole==null||sysRole.getRoleId()==null) {
                 return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"不存在该数据");
-            if(sysRole.getIsEditable().equals(0))
+            }
+            if(sysRole.getIsEditable().equals(0)) {
                 return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"该记录是不可编辑状态");
+            }
             Map paramMap=new HashMap(){
                 {
                     put("roleId",saveOrUpdateRoleParam.getRoleId());
@@ -78,13 +81,16 @@ public class SysRoleService {
 
     public BaseResultEntity deleteSysRole(Long roleId){
         SysRole sysRole=sysRoleSecondarydbRepository.selectSysRoleByRoleId(roleId);
-        if(sysRole==null||sysRole.getRoleId()==null)
+        if(sysRole==null||sysRole.getRoleId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"不存在该数据");
-        if(sysRole.getIsEditable().equals(0))
+        }
+        if(sysRole.getIsEditable().equals(0)) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"该记录是不可编辑状态");
+        }
         Long userCount = sysRoleSecondarydbRepository.selectUserCountByRole(roleId);
-        if (userCount>0)
+        if (userCount>0) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"该记录下存在用户");
+        }
         sysRolePrimarydbRepository.deleteSysRole(roleId);
         sysRolePrimarydbRepository.deleteSysRa(roleId);
         return BaseResultEntity.success();

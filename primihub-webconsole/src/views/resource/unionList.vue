@@ -41,7 +41,7 @@
             />
           </el-select>
         </el-form-item>
-        <!-- <el-form-item label="Y值">
+        <el-form-item label="Y值">
           <el-select v-model="query.fileContainsY" size="small" placeholder="请选择" clearable>
             <el-option
               v-for="item in YValueOptions"
@@ -50,7 +50,7 @@
               :value="item.value"
             />
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" class="search-button" size="small" @click="search">查询</el-button>
           <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>

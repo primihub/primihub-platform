@@ -20,7 +20,8 @@
             dmt.task_id as latestTaskId,
             dm.model_name AS modelName,
             dp.project_name AS projectName,
-            dm.resource_num AS resourceNum
+            dm.resource_num AS resourceNum,
+            dt.task_type as TaskType
         from
             data_model dm left join
             data_model_task dmt on dm.model_id = dmt.model_id left join
@@ -301,6 +302,7 @@
             dt.task_id_name taskIdName,
             dt.task_name taskName,
             dt.task_end_time taskEndTime,
+            dt.is_cooperation isCooperation,
             dm.model_id modelId,
             dm.model_name modelName,
             dp.id projectId,
@@ -369,8 +371,19 @@
     <sql id="modeltasksuccess">
         <if test="isAdmin == 0">AND dt.task_user_id = #{userId}</if>
         <if test="modelId!=null and modelId!=0">and dm.model_id =#{modelId}</if>
+        <if test="modelType!=null and modelType!=0">and dm.model_type =#{modelType}</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
-        <if test="successTime!=null and successTime!=0">and dt.task_end_time BETWEEN #{successTime} AND (#{successTime} + 86400000)</if>
+        <choose>
+            <when test="startTime!=null and startTime!=0 and endTime!=null and endTime!=0">
+                and dt.task_end_time BETWEEN #{startTime} AND #{endTime}
+            </when>
+            <when test="startTime!=null and startTime!=0">
+                and dt.task_end_time &gt;= #{startTime}
+            </when>
+            <when test="endTime!=null and endTime!=0">
+                and dt.task_end_time &lt;= #{endTime}
+            </when>
+        </choose>
     </sql>
 
 </mapper>

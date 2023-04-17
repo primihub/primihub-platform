@@ -22,14 +22,14 @@
         </el-select>
       </el-form-item>
       <el-form-item label="参与角色">
-        <el-select v-model="searchForm.participationIdentity" size="small" placeholder="请选择" clearable>
+        <el-select v-model="searchForm.queryType" size="small" placeholder="请选择" clearable>
           <el-option label="发起方" value="1" />
           <el-option label="协作方" value="2" />
         </el-select>
       </el-form-item>
-      <!-- <el-form-item label="项目ID">
+      <el-form-item label="项目ID">
         <el-input v-model="searchForm.projectId" size="small" placeholder="请输入" />
-      </el-form-item> -->
+      </el-form-item>
       <el-form-item label="项目名称">
         <el-input v-model="searchForm.projectName" size="small" placeholder="请输入" />
       </el-form-item>
@@ -156,6 +156,11 @@
               min-width="160"
             />
             <el-table-column
+              label="最后更新时间"
+              prop="updateDate"
+              min-width="160"
+            />
+            <el-table-column
               label="项目状态"
               prop="status"
               width="80"
@@ -238,13 +243,13 @@ export default {
         projectName: '',
         serverAddress: '',
         organId: '',
-        participationIdentity: '',
         status: '',
         createDate: [],
-        queryType: 0,
+        queryType: '',
         startDate: '',
         endDate: ''
       },
+      queryType: '',
       pageNo: 1,
       pageSize: 10,
       total: 0,
@@ -435,7 +440,7 @@ export default {
       this.searchForm.projectName = ''
       this.searchForm.serverAddress = ''
       this.searchForm.organId = ''
-      this.searchForm.participationIdentity = ''
+      this.searchForm.queryType = ''
       this.searchForm.status = ''
       this.searchForm.createDate = []
       this.searchForm.startDate = ''
@@ -444,27 +449,25 @@ export default {
       this.organList = []
       this.fetchData()
     },
-    fetchData() {
+    fetchData(type) {
       this.listLoading = true
       this.projectList = []
-      const { projectName, serverAddress, organId, participationIdentity, status, createDate, queryType, projectId } = this.searchForm
+      const { projectName, serverAddress, organId, status, createDate, projectId, queryType } = this.searchForm
       const params = {
         projectId,
         projectName,
         serverAddress,
         organId,
-        participationIdentity,
+        queryType: type || queryType,
         status,
         startDate: createDate && createDate[0],
         endDate: createDate && createDate[1],
-        queryType,
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
       console.log('params', params)
       getProjectList(params).then((res) => {
         if (res.code === 0) {
-          this.listLoading = false
           const { data, totalPage } = res.result
           this.total = res.result.total || 0
           this.pageCount = totalPage
@@ -474,6 +477,7 @@ export default {
           } else {
             this.noData = true
           }
+          this.listLoading = false
         }
       }).catch(err => {
         console.log(err)
@@ -481,15 +485,15 @@ export default {
       })
     },
     handleSelect(key) {
-      this.searchForm.queryType = parseInt(key)
+      this.queryType = key
+      this.searchForm.queryType = ''
       this.searchForm.projectName = ''
       this.searchForm.organId = ''
-      this.searchForm.participationIdentity = ''
       this.searchForm.status = ''
       this.searchForm.startDate = ''
       this.searchForm.endDate = ''
       this.pageNo = 1
-      this.fetchData()
+      this.fetchData(this.queryType)
     },
     handlePagination(data) {
       this.pageNo = data.page

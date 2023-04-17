@@ -1,41 +1,62 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': task.taskState === 5}">
     <section class="infos">
-      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
-        <el-descriptions-item label="任务ID">
-          {{ task.taskIdName }}
-        </el-descriptions-item>
-        <el-descriptions-item label="任务名称">
-          {{ task.taskName }}
-        </el-descriptions-item>
-        <el-descriptions-item label="任务类型">
-          {{ task.taskType | taskTypeFilter }}
-        </el-descriptions-item>
-        <!-- <el-descriptions-item v-if="task.taskState === 1" label="模型ID">
-          <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
-          <span v-else>{{ model.modelId }}</span>
-        </el-descriptions-item> -->
-        <el-descriptions-item label="开始时间">
-          {{ task.taskStartDate?task.taskStartDate: '未开始' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="结束时间">
-          {{ task.taskEndDate?task.taskEndDate: '未结束' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="耗时">
-          {{ task.timeConsuming | timeFilter }}
-        </el-descriptions-item>
-        <el-descriptions-item label="任务状态">
-          <p>
-            <i :class="statusStyle(task.taskState)" />
-            {{ task.taskState | taskStatusFilter }}
-            <span v-if="task.taskState === 3" class="error-tips">{{ task.taskErrorMsg }}</span>
-          </p>
-        </el-descriptions-item>
-        <el-descriptions-item label="任务描述">
-          {{ taskDesc }}
-          <!-- <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" /> -->
-        </el-descriptions-item>
-      </el-descriptions>
+      <h2 class="infos-title">基本信息</h2>
+      <el-row type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">任务ID:</div>
+          <div class="desc-content">{{ task.taskIdName }}</div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">任务名称:</div>
+          <div class="desc-content">{{ task.taskName }}</div>
+        </el-col>
+      </el-row>
+      <el-row type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">任务类型:</div>
+          <div class="desc-content">{{ task.taskType | taskTypeFilter }}</div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">开始时间:</div>
+          <div class="desc-content">{{ task.taskStartDate?task.taskStartDate: '未开始' }}</div>
+        </el-col>
+      </el-row>
+      <el-row type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">结束时间:</div>
+          <div class="desc-content">{{ task.taskEndDate? task.taskEndDate:'未结束' }}</div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">耗时:</div>
+          <div class="desc-content">{{ task.timeConsuming | timeFilter }}</div>
+        </el-col>
+      </el-row>
+      <el-row type="flex">
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">任务状态:</div>
+          <div class="desc-content">
+            <p>
+              <i :class="statusStyle(task.taskState)" />
+              {{ task.taskState | taskStatusFilter }}
+              <span v-if="task.taskState === 3" class="error-tips">{{ task.taskErrorMsg }}</span>
+            </p>
+          </div>
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col class="desc-col" :span="24">
+          <div class="desc-label">任务描述:</div>
+          <div class="desc-content">
+            <template v-if="task.isCooperation === 0">
+              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
+            </template>
+            <template v-else>
+              {{ taskDesc }}
+            </template>
+          </div>
+        </el-col>
+      </el-row>
       <div class="buttons">
         <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
         <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
@@ -111,7 +132,7 @@
         <el-tab-pane v-if="task.taskState === 1 || task.taskState === 5" label="任务模型" name="2">
           <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
-        <el-tab-pane v-if="task.isCooperation === 0 || (task.isCooperation === 1 && task.taskState === 1)" label="预览图" name="3">
+        <el-tab-pane label="预览图" name="3">
           <div class="canvas-panel">
             <TaskCanvas v-if="tabName === '3' || restartRun" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
@@ -127,19 +148,19 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { getModelDetail } from '@/api/model'
-import { deleteTask, cancelTask } from '@/api/task'
+import { deleteTask, cancelTask, updateTaskDesc } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 import Log from '@/components/Log'
-// import editInput from '@/components/editInput'
+import editInput from '@/components/editInput'
 
 export default {
   name: 'TaskDetail',
   components: {
     TaskModel,
     TaskCanvas,
-    Log
-    // editInput
+    Log,
+    editInput
   },
   data() {
     return {
@@ -172,7 +193,7 @@ export default {
       },
       logType: '',
       errorLog: [],
-      oneself: false,
+      isCooperation: false,
       taskDesc: ''
     }
   },
@@ -200,11 +221,18 @@ export default {
     this.tabName = routerFrom === '0' ? '3' : this.task.taskState === 2 ? '3' : '1'
   },
   methods: {
-    handleDescChange(data) {
-      if (data === this.taskDesc) return
-      this.taskDesc = data
-      // TODO task detail edit api
-      this.$message.success('修改成功')
+    handleDescChange({ change, value }) {
+      if (change) {
+        this.taskDesc = value
+        updateTaskDesc({
+          taskId: this.taskId,
+          taskDesc: this.taskDesc
+        }).then(({ code }) => {
+          if (code === 0) {
+            this.$message.success('修改成功')
+          }
+        })
+      }
     },
     tableRowClassName({ row }) {
       if (row.available === 1) {
@@ -232,8 +260,7 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project, oneself } = response.result
-        this.oneself = oneself
+        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
         this.task = task
         this.project = project
         this.model = model
@@ -322,6 +349,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "~@/styles/description.scss";
 ::v-deep .el-tabs__item {
   font-size: 16px;
 }
@@ -330,22 +358,8 @@ export default {
   text-align: left;
   line-height: 1.5;
 }
-::v-deep .el-table .cell{
-  font-size: 14px;
-  line-height: 1.3;
-}
-::v-deep .el-table .el-table__cell{
-  padding: 8px;
-  font-size: 14px;
-}
 ::v-deep .el-tabs__nav{
   transform: none;
-}
-::v-deep .el-descriptions-item__container{
-  margin: 5px 10px 0px 0;
-}
-.panel{
-  display: flex;
 }
 .canvas-panel{
   flex: 1;
@@ -354,38 +368,10 @@ export default {
   height: 100%;
   position: relative;
 }
-.container {
-  &.disabled{
-    filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
-    -webkit-filter: grayscale(100%);
-  }
-  .total-time-label{
-    font-size: 18px;
-    margin-right: 10px;
-  }
-  .total-time{
-    font-size: 20px;
-  }
-  .progress-line {
-    width: 400px;
-    margin-left: 10px;
-  }
-  .el-icon-time {
-    color: #409EFF;
-    margin-right: 3px;
-  }
-  section {
-    padding: 30px;
-    background-color: #fff;
-    margin-bottom: 30px;
-  }
-  .img-container{
-    display: flex;
-    img{
-      width: 500px;
-      max-width: 100%;
-    }
-  }
+ section {
+  padding: 20px 30px;
+  background-color: #fff;
+  margin-bottom: 30px;
 }
 .status-default,.status-processing,.status-error,.status-end{
   margin-right: 3px;
@@ -413,9 +399,6 @@ export default {
 .buttons{
   display: flex;
   justify-content: flex-end;
-}
-::v-deep .el-table .disabled {
-  color: #C0C4CC;
 }
 
 .log-panel{

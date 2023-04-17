@@ -12,13 +12,14 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class WorkGrpcService extends VMNodeGrpc.VMNodeImplBase {
 
+    @Override
     public void submitTask(PushTaskRequest request, StreamObserver<PushTaskReply> responseObserver) {
         try {
 //            Thread.sleep(10000L);
         }catch (Exception e){
 
         }
-        PushTaskReply reply=PushTaskReply.newBuilder().setJobId(ByteString.copyFrom("666".getBytes(StandardCharsets.UTF_8))).build();
+        PushTaskReply reply=PushTaskReply.newBuilder().build();
         responseObserver.onNext(reply);
         responseObserver.onCompleted();
     }

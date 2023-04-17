@@ -1,17 +1,17 @@
 package com.primihub.biz.entity.data.dataenum;
 
-import com.primihub.biz.service.data.db.impl.HiveService;
-import com.primihub.biz.service.data.db.impl.MySqlService;
-import com.primihub.biz.service.data.db.impl.SqliteService;
+import com.primihub.biz.service.data.db.impl.HiveServiceAbstract;
+import com.primihub.biz.service.data.db.impl.MySqlServiceAbstract;
+import com.primihub.biz.service.data.db.impl.SqliteServiceAbstract;
 
 import java.util.HashMap;
 import java.util.Map;
 
 
 public enum SourceEnum {
-    mysql(1,"mysql", MySqlService.class),
-    sqlite(2,"sqlite", SqliteService.class),
-    hive(3,"hive", HiveService.class),
+    mysql(1,"mysql", MySqlServiceAbstract.class),
+    sqlite(2,"sqlite", SqliteServiceAbstract.class),
+    hive(3,"hive", HiveServiceAbstract.class),
     ;
     private Integer sourceType;
     private String sourceName;

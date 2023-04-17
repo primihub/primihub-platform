@@ -1,20 +1,20 @@
 
 const state = {
-  currentPath: '',
+  currentPath: ''
 }
 
 const mutations = {
   SET_PATH: (state, url) => {
-    console.log('触发改变url==',url);
+    console.log('触发改变url==', url)
     state.currentPath = url
   }
 }
 
 const actions = {
-    // getPATH
-    getPath({commit},pathURL){
-        commit('SET_PATH',pathURL)
-    },
+  // getPATH
+  getPath({ commit }, pathURL) {
+    commit('SET_PATH', pathURL)
+  }
 }
 
 export default {

@@ -43,10 +43,10 @@ export default {
         mobile: this.device === 'mobile'
       }
     },
-    routePath(){
-      let path = this.$store.state.watchRouter.currentPath;
-      if(path.search('/map/index') > -1){
-        return true;
+    routePath() {
+      const path = this.$store.state.watchRouter.currentPath
+      if (path.search('/map/index') > -1) {
+        return true
       }
       return false
     }

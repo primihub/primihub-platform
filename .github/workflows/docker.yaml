@@ -38,23 +38,31 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Extract Docker metadata
-      id: meta
+      id: metafusion
       uses: docker/metadata-action@v4
       with:
-        images: |
-          ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}
-          ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}
-          ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}
+        images: ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}
+    
+    - name: Extract Docker metadata
+      id: metaplatform
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}
 
-    - name: Build and push fusin images
+    - name: Extract Docker metadata
+      id: metaweb
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}
+
+    - name: Build and push fusion images
       uses: docker/build-push-action@v2
       with:
         context: ./primihub-fusion
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: 
-          ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:latest
-          ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}:${{ steps.meta.outputs.tags }}
+        tags: ${{ steps.metafusion.outputs.tags }}
+        labels: ${{ steps.metafusion.outputs.labels }}
 
     - name: Build and push platform images
       uses: docker/build-push-action@v2
@@ -62,9 +70,8 @@ jobs:
         context: ./primihub-service
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: 
-          ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:latest
-          ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}:${{ steps.meta.outputs.tags }}
+        tags: ${{ steps.metaplatform.outputs.tags }}
+        labels: ${{ steps.metaplatform.outputs.labels }}
 
     - name: Build and push web images
       uses: docker/build-push-action@v2
@@ -72,6 +79,5 @@ jobs:
         context: ./primihub-webconsole
         push: true
         platforms: linux/amd64,linux/arm64
-        tags: 
-          ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:latest
-          ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}:${{ steps.meta.outputs.tags }}
+        tags: ${{ steps.metaweb.outputs.tags }}
+        labels: ${{ steps.metaweb.outputs.labels }}

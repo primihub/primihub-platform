@@ -28,39 +28,48 @@ public class FileController {
      */
     @RequestMapping("upload")
     public BaseResultEntity upload(@RequestParam(value = "file") MultipartFile file,Integer fileSource){
-        if(fileSource==null)
+        if(fileSource==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileSource");
-        if(file.getSize()==0)
+        }
+        if(file.getSize()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"file大小为0");
+        }
         return sysFileService.upload(file,fileSource);
     }
 
     @RequestMapping("createFile")
     public BaseResultEntity createFile(CreateFileParam createFileParam){
-        if(createFileParam.getFileSource()==null)
+        if(createFileParam.getFileSource()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileSource");
-        if(createFileParam.getFileSize()==null)
+        }
+        if(createFileParam.getFileSize()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileSize");
-        if(createFileParam.getFileSize()<=0)
+        }
+        if(createFileParam.getFileSize()<=0) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"fileSize");
-        if(createFileParam.getFileSuffix()==null||createFileParam.getFileSuffix().equals(""))
+        }
+        if(createFileParam.getFileSuffix()==null|| "".equals(createFileParam.getFileSuffix())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileSuffix");
+        }
         return sysFileService.createFile(createFileParam);
     }
 
     @RequestMapping("getFileById")
     public BaseResultEntity getFileById(Long fileId){
-        if(fileId==null)
+        if(fileId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
+        }
         return sysFileService.getFileById(fileId);
     }
 
     @RequestMapping("uploadPart")
     public BaseResultEntity uploadPart(@RequestParam(value = "file") MultipartFile file,Long fileId){
-        if(fileId==null)
+        if(fileId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
-        if(file.getSize()==0)
+        }
+        if(file.getSize()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"file大小为0");
+        }
         return sysFileService.uploadPart(file,fileId);
     }
 

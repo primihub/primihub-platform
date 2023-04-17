@@ -51,13 +51,13 @@
             {{ row.reasoningType }}方推理
           </template>
         </el-table-column>
-        <!-- <el-table-column
+        <el-table-column
           label="模型名称"
         >
           <template slot-scope="{row}">
-            <el-link type="primary" @click="toModelDetail(row.modelId)">{{ row.modelName }}</el-link>
+            <el-link type="primary" @click="toModelDetail(row)">{{ row.modelName }}</el-link>
           </template>
-        </el-table-column> -->
+        </el-table-column>
         <el-table-column
           prop="releaseDate"
           label="上线时间"
@@ -178,10 +178,10 @@ export default {
         params: { id }
       })
     },
-    toModelDetail(id) {
+    toModelDetail({ runTaskId, taskId }) {
       this.$router.push({
-        name: 'ModelDetail',
-        params: { id }
+        path: `/model/detail/${runTaskId}`,
+        query: { taskId }
       })
     },
     toModelTaskDetail(row) {

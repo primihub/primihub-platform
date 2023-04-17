@@ -1,5 +1,5 @@
 <template>
-  <section class="app-main">
+  <section class="app-main" :class="{'padding':!routePath}">
     <template v-if="!routePath">
       <hamburger :is-active="$store.getters.sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
       <breadcrumb class="breadcrumb-container" />
@@ -24,10 +24,10 @@ export default {
     key() {
       return this.$route.path
     },
-    routePath(){
-      let path = this.$store.state.watchRouter.currentPath;
-      if(path.search('/map/index') > -1){
-        return true;
+    routePath() {
+      const path = this.$store.state.watchRouter.currentPath
+      if (path.search('/map/index') > -1) {
+        return true
       }
       return false
     }
@@ -40,7 +40,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
 .app-main {
   /*50 = navbar  */
   min-height: calc(100vh - 50px);
@@ -48,8 +48,10 @@ export default {
   position: relative;
   overflow: hidden;
   background-color: #f0f2f5;
-  padding: 0 20px 20px 20px;
-  top: 50px;
+  top: 45px;
+  &.padding{
+     padding: 0 20px 20px 20px;
+  }
 }
 /* .fixed-header+.app-main {
   padding-top: 30px;

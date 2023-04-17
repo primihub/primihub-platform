@@ -2,11 +2,13 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.DataFResourceReq;
 import com.primihub.biz.entity.data.req.OrganResourceReq;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.util.crypt.CryptUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -15,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -24,7 +27,7 @@ import java.util.HashMap;
 
 @Slf4j
 @Service
-public class FusionResourceService {
+public class OtherBusinessesService {
 
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
@@ -34,8 +37,6 @@ public class FusionResourceService {
 
     public BaseResultEntity getResourceList(DataFResourceReq req) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(req.getServerAddress()))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -44,8 +45,9 @@ public class FusionResourceService {
             map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
             map.put("resourceId", new ArrayList(){{add(req.getResourceId());}});
             map.put("resourceName", new ArrayList(){{add(req.getResourceName());}});
-            map.put("resourceType", new ArrayList(){{add(req.getResourceType());}});
+            map.put("resourceType", new ArrayList(){{add(req.getResourceSource());}});
             map.put("organId", new ArrayList(){{add(req.getOrganId());}});
+            map.put("fileContainsY", new ArrayList(){{add(req.getFileContainsY());}});
             map.put("tagName", new ArrayList(){{add(req.getTagName());}});
             map.put("pageNo", new ArrayList(){{add(req.getPageNo());}});
             map.put("pageSize", new ArrayList(){{add(req.getPageSize());}});
@@ -60,8 +62,6 @@ public class FusionResourceService {
 
     public BaseResultEntity getOrganResourceList(OrganResourceReq req) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(req.getServerAddress()))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -85,8 +85,6 @@ public class FusionResourceService {
 
     public BaseResultEntity getDataResource(String serverAddress,String resourceId) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -105,8 +103,6 @@ public class FusionResourceService {
 
     public BaseResultEntity getResourceListById(String serverAddress,String[] resourceIds) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try{
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -126,8 +122,6 @@ public class FusionResourceService {
 
     public BaseResultEntity getResourceTagList(String serverAddress) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -144,10 +138,7 @@ public class FusionResourceService {
     }
 
     public BaseResultEntity syncResourceUse(String serverAddress,String organId,String resourceId,String projectId,Integer auditStatus){
-        log.info("进入");
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -167,5 +158,26 @@ public class FusionResourceService {
             log.info("获取中心节点资源标签数据异常:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"请求中心节点失败");
         }
+    }
+
+    public void syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey){
+        try {
+            Object data;
+            if (StringUtils.isEmpty(publicKey)){
+                data = vo;
+            }else {
+                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);
+            log.info(gatewayAddressAndApi);
+            BaseResultEntity baseResultEntity = restTemplate.postForObject(gatewayAddressAndApi, request, BaseResultEntity.class);
+            log.info("baseResultEntity {}",JSONObject.toJSONString(baseResultEntity));
+        }catch (Exception e){
+            log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
+            e.printStackTrace();
+        }
+        log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());
     }
 }

@@ -3,14 +3,14 @@
     <el-input
       v-if="inputVisible"
       ref="inputRef"
-      v-model="resourceName"
+      v-model="inputValue"
       size="small"
       v-bind="$attrs"
       @keyup.enter.native="handleInputConfirm"
       @blur="handleInputConfirm"
     />
     <span v-else>
-      <span>{{ resourceName }}</span>
+      <span>{{ inputValue }}</span>
       <i class="edit-icon el-icon-edit-outline" @click="showInput" />
     </span>
   </div>
@@ -27,22 +27,25 @@ export default {
   },
   data() {
     return {
-      resourceName: this.value,
+      inputValue: this.value,
       inputVisible: false
     }
   },
   watch: {
     value(newValue, oldValue) {
-      this.resourceName = oldValue
+      this.inputValue = oldValue
       if (newValue) {
-        this.resourceName = newValue
+        this.inputValue = newValue
       }
     }
   },
   methods: {
     handleInputConfirm() {
       this.inputVisible = false
-      this.$emit('change', this.resourceName)
+      this.$emit('change', {
+        change: this.value !== this.inputValue,
+        value: this.inputValue
+      })
     },
     showInput() {
       this.inputVisible = true

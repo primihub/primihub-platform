@@ -84,7 +84,6 @@ const actions = {
     return new Promise(resolve => {
       const buttonPermission = filterButtonPermission(authList)
       const accessedRoutes = getRoutes(asyncRoutes, authList)
-      console.log('路由==',asyncRoutes, authList);
       resetRouter() // 先清除路由再添加，防止重复添加
       router.addRoutes(accessedRoutes)
 

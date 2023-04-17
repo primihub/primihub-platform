@@ -8,8 +8,8 @@
         <el-form-item label="模型名称">
           <el-input v-model="query.modelName" size="small" placeholder="请输入" clearable @clear="handleClear('modelName')" />
         </el-form-item>
-        <!-- <el-form-item label="基础模型">
-          <el-select v-model="query.modelType" size="small" placeholder="请选择" @change="handleChange(row)">
+        <el-form-item label="基础模型">
+          <el-select v-model="query.modelType" size="small" placeholder="请选择">
             <el-option
               v-for="item in modelTypeOptions"
               :key="item.key"
@@ -17,14 +17,15 @@
               :value="item.key"
             />
           </el-select>
-        </el-form-item> -->
+        </el-form-item>
         <el-form-item label="建模完成时间">
           <el-date-picker
             v-model="query.successDate"
             size="small"
-            clearable
-            type="datetime"
-            placeholder="请选择"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
           />
         </el-form-item>
@@ -200,7 +201,8 @@ export default {
         modelId,
         modelName: modelName.toString(),
         modelType,
-        successDate,
+        startDate: successDate && successDate[0],
+        endDate: successDate && successDate[1],
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
@@ -229,6 +231,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+::v-deep .el-date-editor.el-input, .el-date-editor.el-input__inner{
+  width: 300px;
+}
 .search-area {
   padding: 30px 0px 10px 20px;
   background-color: #fff;

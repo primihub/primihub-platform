@@ -31,12 +31,15 @@ public class ProjectController {
     public BaseResultEntity saveOrUpdateProject(@RequestBody DataProjectReq req,
                                                 @RequestHeader("userId") Long userId){
         if (req.getId()==null || req.getId()==0L){
-            if (StringUtils.isBlank(req.getProjectName()))
+            if (StringUtils.isBlank(req.getProjectName())) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectName");
-            if (StringUtils.isBlank(req.getServerAddress()))
+            }
+            if (StringUtils.isBlank(req.getServerAddress())) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-            if (req.getProjectOrgans()==null||req.getProjectOrgans().isEmpty())
+            }
+            if (req.getProjectOrgans()==null||req.getProjectOrgans().isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectOrgans");
+            }
         }
         return dataProjectService.saveOrUpdateProject(req,userId);
     }
@@ -48,10 +51,12 @@ public class ProjectController {
     @RequestMapping("getProjectList")
     public BaseResultEntity getProjectList(DataProjectQueryReq req){
         try {
-            if (StringUtils.isNotBlank(req.getStartDate()))
+            if (StringUtils.isNotBlank(req.getStartDate())) {
                 DateUtil.parseDate(req.getStartDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat());
-            if (StringUtils.isNotBlank(req.getEndDate()))
+            }
+            if (StringUtils.isNotBlank(req.getEndDate())) {
                 DateUtil.parseDate(req.getEndDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat());
+            }
         }catch (Exception e){
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"开始时间或结束时间校验失败");
         }
@@ -64,8 +69,9 @@ public class ProjectController {
      */
     @RequestMapping("getProjectDetails")
     public BaseResultEntity getProjectDetails(Long id){
-        if (id==null || id == 0L)
+        if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
         return dataProjectService.getProjectDetails(id);
     }
 
@@ -75,12 +81,15 @@ public class ProjectController {
      */
     @RequestMapping("approval")
     public BaseResultEntity approval(DataProjectApprovalReq req){
-        if (req.getId()==null || req.getId() == 0L)
+        if (req.getId()==null || req.getId() == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
-        if (req.getType()==null || req.getType()==0 || req.getType() >=3)
+        }
+        if (req.getType()==null || req.getType()==0 || req.getType() >=3) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"type");
-        if (req.getAuditStatus()==null||req.getAuditStatus()==0||req.getAuditStatus()>=3)
+        }
+        if (req.getAuditStatus()==null||req.getAuditStatus()==0||req.getAuditStatus()>=3) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
+        }
         return dataProjectService.approval(req);
     }
 
@@ -90,8 +99,9 @@ public class ProjectController {
      */
     @RequestMapping("removeResource")
     public BaseResultEntity removeResource(Long id){
-        if (id==null || id == 0L)
+        if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
         return dataProjectService.removeResource(id);
     }
 
@@ -101,8 +111,9 @@ public class ProjectController {
      */
     @RequestMapping("removeOrgan")
     public BaseResultEntity removeOrgan(Long id){
-        if (id==null || id == 0L)
+        if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
         return dataProjectService.removeOrgan(id);
     }
 
@@ -115,8 +126,9 @@ public class ProjectController {
      */
     @RequestMapping("closeProject")
     public BaseResultEntity closeProject(Long id){
-        if (id==null || id == 0L)
+        if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
         return dataProjectService.closeProject(id);
     }
 
@@ -127,8 +139,9 @@ public class ProjectController {
      */
     @RequestMapping("openProject")
     public BaseResultEntity openProject(Long id){
-        if (id==null || id == 0L)
+        if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
         return dataProjectService.openProject(id);
     }
 
@@ -163,15 +176,17 @@ public class ProjectController {
         if (StringUtils.isBlank(req.getServerAddress())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
         }
-        if (req.getModelId()==null || req.getModelId()==0L)
+        if (req.getModelId()==null || req.getModelId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
+        }
         return dataProjectService.getResourceList(req);
     }
 
     @GetMapping("getDerivationResourceList")
     public BaseResultEntity getDerivationResourceList(Long projectId){
-        if (projectId==null || projectId==0L)
+        if (projectId==null || projectId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
+        }
         return dataProjectService.getDerivationResourceList(projectId);
     }
 

@@ -39,23 +39,28 @@ public class OauthController {
 
     @RequestMapping("authLogin")
     public BaseResultEntity authLogin(LoginParam loginParam){
-        if(loginParam.getAuthPublicKey()==null||loginParam.getAuthPublicKey().trim().equals(""))
+        if(loginParam.getAuthPublicKey()==null|| "".equals(loginParam.getAuthPublicKey().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
+        }
         return sysOauthService.authLogin(loginParam);
     }
     @RequestMapping("authRegister")
     public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam){
-        if(saveOrUpdateUserParam.getAuthPublicKey()==null||saveOrUpdateUserParam.getAuthPublicKey().equals(""))
+        if(saveOrUpdateUserParam.getAuthPublicKey()==null|| "".equals(saveOrUpdateUserParam.getAuthPublicKey())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
-        if(saveOrUpdateUserParam.getVerificationCode()==null||saveOrUpdateUserParam.getVerificationCode().equals(""))
+        }
+        if(saveOrUpdateUserParam.getVerificationCode()==null|| "".equals(saveOrUpdateUserParam.getVerificationCode())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"verificationCode");
-        if(saveOrUpdateUserParam.getRegisterType()==null)
+        }
+        if(saveOrUpdateUserParam.getRegisterType()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"registerType");
+        }
         saveOrUpdateUserParam.setUserId(null);
         saveOrUpdateUserParam.setRoleIdList(new Long[]{1000L});
         if (org.apache.commons.lang.StringUtils.isBlank(interiorCode) || !saveOrUpdateUserParam.getVerificationCode().equals(interiorCode) ){
-            if(!sysOauthService.validateVerificationCode(VerificationCodeEnum.REGISTER.getCode(),saveOrUpdateUserParam.getUserAccount(),saveOrUpdateUserParam.getVerificationCode()))
+            if(!sysOauthService.validateVerificationCode(VerificationCodeEnum.REGISTER.getCode(),saveOrUpdateUserParam.getUserAccount(),saveOrUpdateUserParam.getVerificationCode())) {
                 return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE);
+            }
         }
         return sysOauthService.authRegister(saveOrUpdateUserParam);
     }

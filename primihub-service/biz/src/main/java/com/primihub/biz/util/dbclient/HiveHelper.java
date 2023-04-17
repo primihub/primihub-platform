@@ -72,12 +72,16 @@ public class HiveHelper {
     }
 
     private Connection getConnection() throws ClassNotFoundException, SQLException {
-        if (null == connection) connection = getConnection(dbUrl);
+        if (null == connection) {
+            connection = getConnection(dbUrl);
+        }
         return connection;
     }
 
     private Statement getStatement() throws SQLException, ClassNotFoundException {
-        if (null == statement) statement = getConnection().createStatement();
+        if (null == statement) {
+            statement = getConnection().createStatement();
+        }
         return statement;
     }
 

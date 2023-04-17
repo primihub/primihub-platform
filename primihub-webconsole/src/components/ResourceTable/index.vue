@@ -7,6 +7,7 @@
     :data="data"
     v-bind="$attrs"
     highlight-current-row
+    min-height="300"
     @selection-change="handleSelectionChange"
   >
     <template slot="empty">
@@ -55,23 +56,23 @@
       align="center"
     >
       <template slot-scope="{row}">
-        {{ row.auditStatus | resourceAuditStatusFilter }}
+        <span :class="statusStyle(row.auditStatus)">{{ row.auditStatus | resourceAuditStatusFilter }}</span>
       </template>
     </el-table-column>
 
     <el-table-column
-      v-if="showButtons"
+      v-if="showDeleteButton || showPreviewButton"
       label="操作"
       align="center"
       min-width="120"
     >
       <template slot-scope="{row}">
-        <template v-if="thisInstitution && row.participationIdentity === 2 && projectAuditStatus && row.auditStatus === 0">
+        <template v-if="thisInstitution && projectAuditStatus && row.auditStatus === 0">
           <el-button :disabled="status === 2" size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
           <el-button :disabled="status === 2" size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
         </template>
-        <el-button v-if="thisInstitution" :disabled="status === 2" size="mini" type="primary" plain @click="handlePreview(row)">预览</el-button>
-        <el-button v-if="thisInstitution || creator" :disabled="status === 2" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+        <el-button v-if="showPreviewButton" :disabled="status === 2" size="mini" type="primary" plain @click="handlePreview(row)">查看</el-button>
+        <el-button v-if="showDeleteButton" :disabled="status === 2" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -108,7 +109,11 @@ export default {
       type: Boolean,
       default: true
     },
-    showButtons: {
+    showPreviewButton: {
+      type: Boolean,
+      default: true
+    },
+    showDeleteButton: {
       type: Boolean,
       default: true
     },
@@ -144,10 +149,17 @@ export default {
       }
     }
   },
+  created() {
+    console.log(this.showDeleteButton)
+    console.log(this.showPreviewButton)
+  },
   mounted() {
     this.toggleSelection(this.selectedData)
   },
   methods: {
+    statusStyle(status) {
+      return status === 0 ? 'status-0 el-icon-refresh' : status === 1 ? 'status-1 el-icon-circle-check' : status === 2 ? 'status-2 el-icon-circle-close' : ''
+    },
     toggleSelection(rows) {
       this.$refs.table.clearSelection()
       this.$nextTick(() => {
@@ -215,11 +227,21 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
 .table{
   margin: 15px 0;
 }
 ::v-deep .el-button{
   margin: 2px 5px;
+}
+.status-0{
+  color: $mainColor;
+}
+.status-1{
+  color: #67C23A;
+}
+.status-2{
+  color: #F56C6C;
 }
 
 </style>
