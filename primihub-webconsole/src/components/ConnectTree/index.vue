@@ -1,12 +1,11 @@
 <template>
   <div>
-
     <el-tree
       ref="connectTree"
       lazy
       node-key="id"
       :data="treeData"
-      :expand-on-click-node="true"
+      :expand-on-click-node="false"
       :props="defaultProps"
       :load="loadNode"
     >
@@ -149,6 +148,8 @@ export default {
       this.$refs['groupForm'].validate(async valid => {
         if (valid) {
           const currentNode = this.$refs.connectTree.getCurrentNode()
+          console.log('currentNode', currentNode)
+          console.log('params', params)
           const { code, result } = await createGroup(params)
           if (code === 0) {
             if (!currentNode.children) {
@@ -207,30 +208,43 @@ export default {
       } else if (node.level === 1) {
         this.serverAddress = node.data.serverAddress
         const data = await this.formatGroup(node)
-        return resolve(data)
+        if (data.length > 0) {
+          return resolve(data)
+        } else {
+          return resolve({ id: null, label: '-暂无群组', leaf: true })
+        }
       } else if (node.level === 2) {
         this.groupId = node.data.id
         const data = await this.formatOrgan(node)
-        resolve(data)
+        if (data) {
+          return resolve(data)
+        } else {
+          return resolve([])
+        }
       }
       if (node.level > 2) {
         return resolve([])
       }
     },
     getFirstLevel() {
-      this.treeData = []
-      this.fusionList.length > 0 && this.fusionList.forEach((item, index) => {
-        if (item.show) {
-          this.treeData.push({
-            id: index,
-            label: `中心节点${index + 1}: ${item.serverAddress}`,
-            serverAddress: item.serverAddress,
-            registered: item.registered,
-            show: item.show,
-            icon: connectIcon
-          })
-        }
-      })
+      try {
+        this.treeData = []
+        console.log('fusionList', this.fusionList)
+        this.fusionList.length > 0 && this.fusionList.forEach((item, index) => {
+          if (item.show) {
+            this.treeData.push({
+              id: index,
+              label: `中心节点${index + 1}: ${item.serverAddress}`,
+              serverAddress: item.serverAddress,
+              registered: item.registered,
+              show: item.show,
+              icon: connectIcon
+            })
+          }
+        })
+      } catch (e) {
+        console.log(e)
+      }
     },
     async formatOrgan(node) {
       await this.findOrganInGroup()
@@ -281,7 +295,8 @@ export default {
       }, 1000)
     },
     async exitGroup(node, data) {
-      console.log('exitGroup', data.id)
+      console.log('node', this.$refs.connectTree.getCurrentKey())
+      console.log('treeData', this.treeData)
       const { code } = await exitGroup({ serverAddress: this.serverAddress, groupId: data.id })
       if (code === 0) {
         this.$message({
@@ -298,6 +313,9 @@ export default {
       if (code === 0) {
         this.$set(data, 'in', true)
         console.log(' data.children', data.children)
+        if (!data.children) {
+          this.$set(data, 'children', [])
+        }
         data.children.push({
           id: this.organId,
           globalId: this.organId,
@@ -316,6 +334,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::v-deep .el-tree__empty-text{
+  position: relative;
+  left: 0;
+}
 .buttons{
   margin: 0 5px;
   .el-button{

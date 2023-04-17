@@ -12,6 +12,7 @@ public class ModelComponentType {
     private String inputType;
     private String inputValue;
     private Integer isRequired;
+    private String parentValue;
     private List<InputValue> inputValues = new ArrayList<>();
 }
 

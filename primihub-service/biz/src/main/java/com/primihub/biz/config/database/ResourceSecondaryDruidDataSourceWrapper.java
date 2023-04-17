@@ -24,10 +24,12 @@ public class ResourceSecondaryDruidDataSourceWrapper extends DruidDataSource imp
         this.maxWait = maxWait;
     }
 
+    @Override
     public void setTimeBetweenEvictionRunsMillis(long timeBetweenEvictionRunsMillis) {
         this.timeBetweenEvictionRunsMillis = timeBetweenEvictionRunsMillis;
     }
 
+    @Override
     public void setMinEvictableIdleTimeMillis(long minEvictableIdleTimeMillis) {
         this.minEvictableIdleTimeMillis = minEvictableIdleTimeMillis;
     }

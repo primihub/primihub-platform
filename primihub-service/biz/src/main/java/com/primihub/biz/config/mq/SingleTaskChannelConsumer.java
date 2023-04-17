@@ -26,7 +26,7 @@ public class SingleTaskChannelConsumer implements ApplicationContextAware {
 
     @StreamListener(SingleTaskChannel.INPUT)
     public void receive(String message) {
-        if(message!=null&&!message.trim().equals("")) {
+        if(message!=null&&!"".equals(message.trim())) {
             BaseFunctionHandleEntity baseFunctionHandleEntity=JSON.parseObject(message,BaseFunctionHandleEntity.class);
             if(baseFunctionHandleEntity.getHandleType()!=null){
                 BaseFunctionHandleEnum enu=BaseFunctionHandleEnum.FUNCTION_MAP.get(baseFunctionHandleEntity.getHandleType());

@@ -9,5 +9,5 @@ public class SysUserLoginVO {
     private Long userId;
     private String userAccount;
     private String userName;
-    private boolean isForbid;
+    private boolean forbid;
 }

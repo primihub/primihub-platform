@@ -39,8 +39,9 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
     public GatewayFilter apply(Object config) {
         return (((exchange, chain) -> {
             String token=exchange.getAttribute(BaseParamEnum.TOKEN.getColumnName());
-            if(token==null||token.equals(""))
+            if(token==null|| "".equals(token)) {
                 return chain.filter(exchange).then();
+            }
 
             String userIdStr;
             String rawPath = exchange.getRequest().getURI().getRawPath();
@@ -48,18 +49,20 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
                 userIdStr="1";
             }else {
                 SysUserListVO sysUserListVO = sysUserPrimaryRedisRepository.findUserLoginStatus(token);
-                if (sysUserListVO == null)
+                if (sysUserListVO == null) {
                     return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.TOKEN_INVALIDATION);
+                }
                 sysUserPrimaryRedisRepository.expireUserLoginStatus(token, sysUserListVO.getUserId());
 
-                Set<Long> roleIdSet= Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!item.equals(""))
+                Set<Long> roleIdSet= Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!"".equals(item))
                         .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
                 Set<Long> authIdList = sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
                 Map<String, SysAuthNodeVO> mapping = sysAuthService.getSysAuthUrlMapping();
                 SysAuthNodeVO sysAuthNodeVO = mapping.get(rawPath);
                 if (sysAuthNodeVO != null) {
-                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString())&&!authIdList.contains(sysAuthNodeVO.getAuthId()))
+                    if (!sysUserListVO.getAuthIdList().contains(sysAuthNodeVO.getAuthId().toString())&&!authIdList.contains(sysAuthNodeVO.getAuthId())) {
                         return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange, BaseResultEnum.NO_AUTH);
+                    }
                 }
 
                 userIdStr = sysUserListVO.getUserId().toString();

@@ -21,10 +21,12 @@ public class DataTaskConvert {
         dataModelTaskListVo.setTaskType(dataTask.getTaskType());
         dataModelTaskListVo.setTaskStartTime(dataTask.getTaskStartTime());
         dataModelTaskListVo.setTaskEndTime(dataTask.getTaskEndTime());
-        if (dataTask.getTaskStartTime()!=null)
+        if (dataTask.getTaskStartTime()!=null) {
             dataModelTaskListVo.setTaskStartDate(new Date(dataTask.getTaskStartTime()));
-        if (dataTask.getTaskEndTime()!=null)
+        }
+        if (dataTask.getTaskEndTime()!=null) {
             dataModelTaskListVo.setTaskEndDate(new Date(dataTask.getTaskEndTime()));
+        }
         dataModelTaskListVo.setTaskErrorMsg(dataTask.getTaskErrorMsg());
         dataModelTaskListVo.setIsCooperation(dataTask.getIsCooperation());
         return dataModelTaskListVo;
@@ -44,8 +46,9 @@ public class DataTaskConvert {
 
     public static String getMapValue(LinkedHashMap<String, Object> map,String key,String defaultVal){
         Object val = map.get(key);
-        if (val==null)
+        if (val==null) {
             return defaultVal;
+        }
         return val.toString();
     }
 }

@@ -19,23 +19,26 @@ public class RoleController {
     @RequestMapping("saveOrUpdateRole")
     public BaseResultEntity saveOrUpdateRole(SaveOrUpdateRoleParam saveOrUpdateRoleParam){
         if(saveOrUpdateRoleParam.getRoleId()!=null){
-            if(saveOrUpdateRoleParam.getRoleId()<=0L)
+            if(saveOrUpdateRoleParam.getRoleId()<=0L) {
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"roleId");
+            }
         }
         return sysRoleService.saveOrUpdateRole(saveOrUpdateRoleParam);
     }
 
     @RequestMapping("deleteSysRole")
     public BaseResultEntity deleteSysRole(Long roleId){
-        if(roleId==null)
+        if(roleId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"roleId");
+        }
         return sysRoleService.deleteSysRole(roleId);
     }
 
     @RequestMapping("getRoleAuthTree")
     public BaseResultEntity getRoleAuthTree(Long roleId){
-        if(roleId==null)
+        if(roleId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"roleId");
+        }
         return sysRoleService.getRoleAuthTree(roleId);
     }
 

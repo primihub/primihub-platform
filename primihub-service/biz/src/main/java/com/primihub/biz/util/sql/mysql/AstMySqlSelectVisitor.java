@@ -34,8 +34,9 @@ public class AstMySqlSelectVisitor extends SchemaStatVisitor {
             });
         }
 
-        if(beautifulSql==null)
+        if(beautifulSql==null) {
             beautifulSql=x.getParent().toString();
+        }
         return true;
     }
 

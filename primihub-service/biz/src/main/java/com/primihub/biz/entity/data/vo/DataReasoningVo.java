@@ -20,6 +20,8 @@ public class DataReasoningVo {
 
     private Integer reasoningState;
 
+    private String modelName;
+
     private Long runTaskId;
 
     private Long taskId;

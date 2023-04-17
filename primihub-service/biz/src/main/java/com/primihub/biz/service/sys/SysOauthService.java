@@ -67,14 +67,16 @@ public class SysOauthService {
 
     public Set<String> getOauthList() {
         Set<String> set= new HashSet<>();
-        if (baseConfiguration.getAuthConfigs()==null || baseConfiguration.getAuthConfigs().isEmpty())
+        if (baseConfiguration.getAuthConfigs()==null || baseConfiguration.getAuthConfigs().isEmpty()) {
             return set;
+        }
         Iterator<Map.Entry<String, BaseAuthConfig>> iterator = baseConfiguration.getAuthConfigs().entrySet().iterator();
         while (iterator.hasNext()){
             Map.Entry<String, BaseAuthConfig> next = iterator.next();
             BaseAuthConfig value = next.getValue();
-            if (value.getAuthEnable()!=null && value.getAuthEnable() == 0 && StringUtils.isNotBlank(value.getRedirectUrl()))
+            if (value.getAuthEnable()!=null && value.getAuthEnable() == 0 && StringUtils.isNotBlank(value.getRedirectUrl())) {
                 set.add(next.getKey());
+            }
         }
         return set;
     }
@@ -88,8 +90,9 @@ public class SysOauthService {
         AuthRequest authRequest = getAuthRequest(source);
         AuthResponse login = authRequest.login(callback);
         log.info(JSONObject.toJSONString(login));
-        if (login.getCode() != AuthResponseStatus.SUCCESS.getCode())
+        if (login.getCode() != AuthResponseStatus.SUCCESS.getCode()) {
             return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,source.getSourceName()+"授权登录失败");
+        }
         AuthUser authUser = (AuthUser)login.getData();
         String authUuid =  authUser.getSource() + authUser.getUuid();
         log.info(authUuid);
@@ -128,13 +131,15 @@ public class SysOauthService {
     public BaseResultEntity authLogin(LoginParam loginParam) {
         loginParam.setToken(loginParam.getTokenKey());
         ResponseModel verification = captchaService.verification(loginParam);
-        if (!verification.isSuccess())
+        if (!verification.isSuccess()) {
             return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
+        }
         String authUuid = sysCommonPrimaryRedisRepository.getKey(loginParam.getAuthPublicKey());
         log.info(authUuid);
         SysUser sysUser = userSecondarydbRepository.selectUserByAuthUuid(authUuid);
-        if (sysUser == null)
+        if (sysUser == null) {
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
+        }
         return sysUserService.baseLogin(sysUser);
     }
 
@@ -154,8 +159,9 @@ public class SysOauthService {
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息异常 null");
             }
 
-            if (StringUtils.isBlank(authUser.getSource()) || StringUtils.isBlank(authUser.getUuid()))
+            if (StringUtils.isBlank(authUser.getSource()) || StringUtils.isBlank(authUser.getUuid())) {
                 return BaseResultEntity.failure(BaseResultEnum.AUTH_LOGIN,"获取授权信息来源或唯一标识为空");
+            }
             saveOrUpdateUserParam.setAuthUuid(authUser.getSource()+authUser.getUuid());
             SysUser sysUser = userSecondarydbRepository.selectUserByUserAccount(saveOrUpdateUserParam.getUserAccount());
             if (sysUser!=null){
