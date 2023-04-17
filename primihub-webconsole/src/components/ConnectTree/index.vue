@@ -248,38 +248,22 @@ export default {
     },
     async formatOrgan(node) {
       await this.findOrganInGroup()
-      // if (!node.data.children) {
-      //   let children = []
-      //   if (this.organList.length > 0) {
-      //     children = this.organList && this.organList.map(item => {
-      //       return {
-      //         id: item.globalId,
-      //         globalId: item.globalId,
-      //         label: item.globalName,
-      //         leaf: true,
-      //         icon: organIcon
-      //       }
-      //     })
-      //     this.$set(node.data, 'children', children)
-      //   }
-      //   return children
-      // }
-
-      let children = []
-      console.log('node data', node.data)
-      if (this.organList.length > 0) {
-        children = this.organList && this.organList.map(item => {
-          return {
-            id: item.globalId,
-            globalId: item.globalId,
-            label: item.globalName,
-            leaf: true,
-            icon: organIcon
-          }
-        })
-        this.$set(node.data, 'children', children)
+      if (!node.data.children) {
+        let children = []
+        if (this.organList.length > 0) {
+          children = this.organList && this.organList.map(item => {
+            return {
+              id: item.globalId,
+              globalId: item.globalId,
+              label: item.globalName,
+              leaf: true,
+              icon: organIcon
+            }
+          })
+          this.$set(node.data, 'children', children)
+        }
+        return children
       }
-      return children
     },
     async formatGroup(node) {
       if (!node.data.children && node.data.registered) {
