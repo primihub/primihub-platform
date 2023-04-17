@@ -29,8 +29,8 @@
           align="center"
           label="任务类型"
         >
-          <template>
-            <span><el-tag type="primary" size="mini">模型</el-tag></span>
+          <template slot-scope="{row}">
+            <span><el-tag type="primary" size="mini">{{ row.taskType | taskTypeFilter }}</el-tag></span>
           </template>
         </el-table-column>
         <el-table-column
@@ -55,12 +55,12 @@
           width="100"
         >
           <template slot-scope="{row}">
-            <span>{{ row.timeConsuming | timeFilter }}</span> <br>
+            <span>{{ (row.timeConsuming) | timeFilter }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column
           prop="latestTaskStatus"
-          label="状态"
+          label="任务状态"
           sortable
         >
           <template slot-scope="{row}">

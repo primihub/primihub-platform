@@ -11,7 +11,6 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
-            @change="handleClear"
           />
 
         </el-form-item>
@@ -129,7 +128,7 @@ export default {
         },
         {
           value: 3,
-          label: '匿踪查询'
+          label: '隐匿查询'
         },
         {
           value: 4,

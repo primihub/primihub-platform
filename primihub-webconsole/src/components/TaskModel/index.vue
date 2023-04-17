@@ -1,62 +1,60 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': model.isDel === 1, 'model': type === 'model'}">
-    <div class="section">
-      <h3>模型信息</h3>
-      <el-descriptions>
-        <el-descriptions-item label="模型名称">{{ model.modelName }}</el-descriptions-item>
-        <el-descriptions-item label="模型描述">{{ model.modelDesc }}</el-descriptions-item>
-        <el-descriptions-item label="模型模版">{{ model.modelType | modelTypeFilter }}</el-descriptions-item>
-        <template v-if="type==='model'">
-          <el-descriptions-item label="任务ID"> <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link></el-descriptions-item>
-        </template>
-        <el-descriptions-item label="模型ID">{{ model.modelId }}</el-descriptions-item>
-        <template v-if="type==='model'">
-          <el-descriptions-item label="角色">{{ task.isCooperation === 1 ? '参与方' : '发起方' }}</el-descriptions-item>
-        </template>
-        <template v-if="model.yvalueColumn">
-          <el-descriptions-item label="Y值字段"><el-tag type="mini" size="mini">{{ model.yvalueColumn }}</el-tag></el-descriptions-item>
-        </template>
-        <template v-if="type==='model'">
-          <el-descriptions-item label="建模完成时间">{{ task.taskEndDate }}</el-descriptions-item>
-        </template>
-      </el-descriptions>
+    <div v-if="hasModelSelectComponent" class="section">
+      <h2 class="infos-title">模型信息</h2>
+      <div class="description-container">
+        <div class="desc-col">
+          <div class="desc-label">模型ID:</div>
+          <div class="desc-content">
+            <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+            <template v-else>
+              {{ model.modelId }}
+            </template>
+          </div>
+        </div>
+        <div class="desc-col">
+          <div class="desc-label">模型名称:</div>
+          <div class="desc-content">{{ model.modelName }}</div>
+        </div>
+        <div v-if="type==='model'" class="desc-col">
+          <div class="desc-label">任务ID:</div>
+          <div class="desc-content">
+            <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link>
+          </div>
+        </div>
+        <div v-if="type=== 'model'" class="desc-col">
+          <div class="desc-label">任务名称:</div>
+          <div class="desc-content">{{ task.taskName }}</div>
+        </div>
+        <div v-if="type=== 'model'" class="desc-col">
+          <div class="desc-label">角色:</div>
+          <div class="desc-content">{{ oneself ? '发起方': '协作方' }}</div>
+        </div>
+        <div class="desc-col">
+          <div class="desc-label">基础模型:</div>
+          <div class="desc-content">{{ model.modelType | modelTypeFilter }}</div>
+        </div>
+        <div v-if="type=== 'model'" class="desc-col">
+          <div class="desc-label">建模完成时间:</div>
+          <div class="desc-content">{{ model.createDate }}</div>
+        </div>
+        <div class="desc-col" style="width: 100%;">
+          <div class="desc-label">模型描述:</div>
+          <div class="desc-content">
+            <template v-if="task.isCoperation === 0">
+              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+            </template>
+            <template v-else>
+              {{ model.modelDesc }}
+            </template>
+          </div>
+        </div>
+      </div>
       <div v-if="type === 'model' && model.isDel !== 1 && task.isCooperation === 0" class="buttons">
         <el-button type="danger" icon="el-icon-delete" @click="deleteModelTask">删除模型</el-button>
       </div>
     </div>
 
-    <div class="section">
-      <h3>所用数据</h3>
-      <el-table
-        :data="modelResources"
-        border
-      >
-        <el-table-column
-          prop="resourceName"
-          label="资源名称"
-        />
-        <el-table-column
-          prop="organName"
-          label="所属机构"
-        />
-        <el-table-column
-          prop="fileNum"
-          label="原始记录数"
-        />
-        <el-table-column
-          prop="alignmentNum"
-          label="对齐后记录数量"
-        />
-        <el-table-column
-          prop="primitiveParamNum"
-          label="原始变量数量"
-        />
-        <el-table-column
-          prop="modelParamNum"
-          label="入模变量数量"
-        />
-      </el-table>
-    </div>
     <div class="section">
       <h3>模型耗时</h3>
       <el-descriptions :column="1" label-class-name="time-consuming-label" :colon="false">
@@ -72,19 +70,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div class="section">
-      <h3>模型评估指标</h3>
-      <el-descriptions class="quotas" :column="1" border :label-style="{'width':'300px'}">
-        <el-descriptions-item label="① ROOT MEAN SQUARED ERROR">{{ anotherQuotas.rootMeanSquaredError }}</el-descriptions-item>
-        <el-descriptions-item label="② MEAN SQUARED ERROR">{{ anotherQuotas.meanSquaredError }}</el-descriptions-item>
-        <el-descriptions-item label="③ EXPLAINED VARIANCE">{{ anotherQuotas.explainedVariance }}</el-descriptions-item>
-        <el-descriptions-item label="④ MEAN SQUARED LOG ERROR">{{ anotherQuotas.meanSquaredLogError }}</el-descriptions-item>
-        <el-descriptions-item label="⑤ R2 SCORE">{{ anotherQuotas.r2Score }}</el-descriptions-item>
-        <el-descriptions-item label="⑥ MEAN ABSOLUTE ERROR">{{ anotherQuotas.meanAbsoluteError }}</el-descriptions-item>
-        <el-descriptions-item label="⑦ MEDIAN ABSOLUTE ERROR">{{ anotherQuotas.medianAbsoluteError }}</el-descriptions-item>
-      </el-descriptions>
-    </div>
-    <div class="section">
+    <div v-if="hasModelSelectComponent" class="section">
       <h3>模型评估分数</h3>
       <el-table
         :data="modelQuotas"
@@ -122,9 +108,13 @@
 </template>
 
 <script>
-import { getModelDetail, deleteModel } from '@/api/model'
+import { getModelDetail, deleteModel, updateModelDesc } from '@/api/model'
+import editInput from '@/components/editInput'
 
 export default {
+  components: {
+    editInput
+  },
   filters: {
     quotaTypeFilter(type) {
       const typeMap = {
@@ -132,14 +122,6 @@ export default {
         2: '测试样本集'
       }
       return typeMap[type]
-    },
-    modelTypeFilter(type) {
-      const statusMap = {
-        2: '纵向-XGBoost',
-        3: '横向-LR',
-        4: 'MPC_LR'
-      }
-      return statusMap[type]
     }
   },
   props: {
@@ -168,15 +150,41 @@ export default {
       anotherQuotas: [],
       taskState: null,
       projectId: 0,
-      task: {}
+      task: {},
+      oneself: false
+    }
+  },
+  computed: {
+    hasModelSelectComponent() {
+      return this.modelComponent.find(component => component.componentCode === 'model')
     }
   },
   created() {
-    this.modelId = this.$route.params.id
     this.taskId = this.$route.query.taskId || this.$route.params.taskId
     this.fetchData()
   },
   methods: {
+    handleDescChange({ change, value }) {
+      if (change) {
+        this.model.modelDesc = value
+        updateModelDesc({
+          modelId: this.modelId,
+          modelDesc: this.model.modelDesc
+        }).then(({ code }) => {
+          if (code === 0) {
+            this.$message.success('修改成功')
+          } else {
+            this.$message.error('修改失败')
+          }
+        })
+      }
+    },
+    toModelDetail() {
+      this.$router.push({
+        path: `/model/detail/${this.modelId}`,
+        query: { taskId: this.taskId }
+      })
+    },
     toModelTaskDetail() {
       this.$router.push({
         path: `/project/detail/${this.projectId}/task/${this.taskId}`
@@ -209,12 +217,13 @@ export default {
       getModelDetail({ taskId: this.taskId }).then((response) => {
         this.listLoading = false
         console.log('response.data', response.result)
-        const { model, modelResources, modelComponent, anotherQuotas, task, project } = response.result
+        const { model, modelResources, modelComponent, anotherQuotas, task, project, oneself } = response.result
         this.task = task
         this.model = model
+        this.modelId = model.modelId
         this.anotherQuotas = anotherQuotas
+        this.oneself = oneself
         // format model score list
-        console.log(Object.keys(anotherQuotas))
         if (JSON.stringify(anotherQuotas) !== '{}') {
           for (let i = 0; i < 2; i++) {
             const modelType = model.modelType === 3 ? '横向-LR' : model.modelType === 4 ? 'MPC_LR' : '纵向-XGBoost'
@@ -237,11 +246,25 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/details.scss";
 ::v-deep .time-consuming-label {
   width: 100px;
 }
 h3{
   font-size: 16px;
+}
+.description{
+  display: flex;
+}
+.desc-item{
+  flex: 1;
+  color: #606268;
+  font-size: 14px;
+  display: flex;
+  line-height: 1.5;
+  .label{
+    margin-right: 10px;
+  }
 }
 .container {
   &.disabled{
@@ -288,4 +311,5 @@ h3{
   display: flex;
   justify-content: flex-end;
 }
+
 </style>

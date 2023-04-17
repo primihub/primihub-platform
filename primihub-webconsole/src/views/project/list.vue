@@ -1,11 +1,8 @@
 <template>
   <div class="container">
     <el-form :inline="true" :model="searchForm" class="search-area">
-      <el-form-item label="项目名称">
-        <el-input v-model="searchForm.projectName" />
-      </el-form-item>
       <el-form-item label="中心节点">
-        <el-select v-model="searchForm.serverAddress" clearable placeholder="请选择" @change="handleServerAddressChange" @clear="handleServerAddressClear">
+        <el-select v-model="searchForm.serverAddress" size="small" clearable placeholder="请选择" @change="handleServerAddressChange" @clear="handleServerAddressClear">
           <el-option
             v-for="center in fusionList"
             :key="center.serverAddress"
@@ -15,7 +12,7 @@
         </el-select>
       </el-form-item>
       <el-form-item label="参与机构">
-        <el-select v-model="searchForm.organId" placeholder="请选择" clearable @focus="handleOrganSelect">
+        <el-select v-model="searchForm.organId" size="small" placeholder="请选择" clearable @focus="handleOrganSelect">
           <el-option
             v-for="organ in organList"
             :key="organ.organId"
@@ -25,13 +22,19 @@
         </el-select>
       </el-form-item>
       <el-form-item label="参与角色">
-        <el-select v-model="searchForm.participationIdentity" placeholder="请选择" clearable>
+        <el-select v-model="searchForm.queryType" size="small" placeholder="请选择" clearable>
           <el-option label="发起方" value="1" />
           <el-option label="协作方" value="2" />
         </el-select>
       </el-form-item>
+      <el-form-item label="项目ID">
+        <el-input v-model="searchForm.projectId" size="small" placeholder="请输入" />
+      </el-form-item>
+      <el-form-item label="项目名称">
+        <el-input v-model="searchForm.projectName" size="small" placeholder="请输入" />
+      </el-form-item>
       <el-form-item label="项目状态">
-        <el-select v-model="searchForm.status" placeholder="请选择" clearable>
+        <el-select v-model="searchForm.status" size="small" placeholder="请选择" clearable>
           <el-option
             v-for="status in projectStatusList"
             :key="status.value"
@@ -43,6 +46,7 @@
       <el-form-item label="创建时间">
         <el-date-picker
           v-model="searchForm.createDate"
+          size="small"
           type="daterange"
           range-separator="至"
           start-placeholder="开始日期"
@@ -52,8 +56,8 @@
       </el-form-item>
       <el-form-item>
         <div class="buttons">
-          <el-button class="button" type="primary" icon="el-icon-search" @click="searchProject">查询</el-button>
-          <el-button class="button" type="primary" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
+          <el-button class="button" type="primary" size="small" icon="el-icon-search" @click="searchProject">查询</el-button>
+          <el-button class="button" size="small" icon="el-icon-refresh-right" plain @click="reset">重置</el-button>
         </div>
       </el-form-item>
     </el-form>
@@ -94,25 +98,29 @@
             highlight-current-row
             :row-class-name="tableRowDisabled"
           >
-            <el-table-column
+            <!-- <el-table-column
               type="index"
               width="40"
               align="center"
-            />
+            /> -->
             <el-table-column
-              label="项目名称 / ID"
-              min-width="200"
+              label="项目ID"
+              min-width="150"
             >
               <template slot-scope="{row}">
                 <template v-if="hasViewPermission && row.status !== 2">
-                  <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectName }}</el-link> <br>
+                  <el-link type="primary" @click="toProjectDetail(row.id)">{{ row.projectId }}</el-link> <br>
                 </template>
                 <template v-else>
-                  {{ row.projectName }}<br>
+                  {{ row.projectId }}<br>
                 </template>
-                <span>{{ row.projectId }}</span>
               </template>
             </el-table-column>
+            <el-table-column
+              prop="projectName"
+              label="项目名称"
+              min-width="120"
+            />
 
             <el-table-column
               label="参与机构"
@@ -121,15 +129,6 @@
               <template slot-scope="{row}">
                 <span>发起方: {{ row.createdOrganName }}</span><br>
                 <span>协作方: {{ row.providerOrganNames }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              label="项目状态"
-              prop="status"
-              width="80"
-            >
-              <template slot-scope="{row}">
-                <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
               </template>
             </el-table-column>
             <el-table-column
@@ -156,6 +155,20 @@
               prop="createDate"
               min-width="160"
             />
+            <el-table-column
+              label="最后更新时间"
+              prop="updateDate"
+              min-width="160"
+            />
+            <el-table-column
+              label="项目状态"
+              prop="status"
+              width="80"
+            >
+              <template slot-scope="{row}">
+                <span :class="statusStyle(row.status)">{{ row.status | projectAuditStatusFilter }}</span>
+              </template>
+            </el-table-column>
             <el-table-column
               v-if="hasViewPermission"
               label="操作"
@@ -226,16 +239,17 @@ export default {
       activeIndex: '0',
       listLoading: false,
       searchForm: {
+        projectId: '',
         projectName: '',
         serverAddress: '',
         organId: '',
-        participationIdentity: '',
         status: '',
         createDate: [],
-        queryType: 0,
+        queryType: '',
         startDate: '',
         endDate: ''
       },
+      queryType: '',
       pageNo: 1,
       pageSize: 10,
       total: 0,
@@ -422,10 +436,11 @@ export default {
       this.fetchData()
     },
     reset() {
+      this.searchForm.projectId = ''
       this.searchForm.projectName = ''
       this.searchForm.serverAddress = ''
       this.searchForm.organId = ''
-      this.searchForm.participationIdentity = ''
+      this.searchForm.queryType = ''
       this.searchForm.status = ''
       this.searchForm.createDate = []
       this.searchForm.startDate = ''
@@ -434,26 +449,25 @@ export default {
       this.organList = []
       this.fetchData()
     },
-    fetchData() {
+    fetchData(type) {
       this.listLoading = true
       this.projectList = []
-      const { projectName, serverAddress, organId, participationIdentity, status, createDate, queryType } = this.searchForm
+      const { projectName, serverAddress, organId, status, createDate, projectId, queryType } = this.searchForm
       const params = {
+        projectId,
         projectName,
         serverAddress,
         organId,
-        participationIdentity,
+        queryType: type || queryType,
         status,
         startDate: createDate && createDate[0],
         endDate: createDate && createDate[1],
-        queryType,
         pageNo: this.pageNo,
         pageSize: this.pageSize
       }
       console.log('params', params)
       getProjectList(params).then((res) => {
         if (res.code === 0) {
-          this.listLoading = false
           const { data, totalPage } = res.result
           this.total = res.result.total || 0
           this.pageCount = totalPage
@@ -463,6 +477,7 @@ export default {
           } else {
             this.noData = true
           }
+          this.listLoading = false
         }
       }).catch(err => {
         console.log(err)
@@ -470,15 +485,15 @@ export default {
       })
     },
     handleSelect(key) {
-      this.searchForm.queryType = parseInt(key)
+      this.queryType = key
+      this.searchForm.queryType = ''
       this.searchForm.projectName = ''
       this.searchForm.organId = ''
-      this.searchForm.participationIdentity = ''
       this.searchForm.status = ''
       this.searchForm.startDate = ''
       this.searchForm.endDate = ''
       this.pageNo = 1
-      this.fetchData()
+      this.fetchData(this.queryType)
     },
     handlePagination(data) {
       this.pageNo = data.page

@@ -129,7 +129,7 @@ import { sendVerificationCode, register, forgetPassword } from '@/api/user'
 import PasswordLevel from '@/components/PasswordLevel'
 
 const emailPattern = /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/
-const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
+const phonePattern = /^[1][\d][0-9]{9}$/
 const pwdPattern = /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?\d)(?=.*?[^\w]).{8,16}$/
 
 export default {

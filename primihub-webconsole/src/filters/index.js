@@ -1,12 +1,12 @@
 
 const taskTypeFilter = (status) => {
-  // 任务类型 1、模型 2、PSI 3、PIR
   status = status || 0
   const statusMap = {
     1: '联合建模',
     2: '安全求交',
-    3: '匿踪查询',
-    4: '联合预测'
+    3: '隐匿查询',
+    4: '联合预测',
+    5: '联合统计'
   }
   return statusMap[status]
 }
@@ -95,10 +95,10 @@ const authStatusFilter = (status) => {
 }
 const modelTypeFilter = (type) => {
   const typeMap = {
-    1: '联邦学习ID对齐',
-    2: 'V-XGBoost ',
-    3: 'V-逻辑回归 ',
-    4: '线性回归 '
+    2: '纵向-XGBoost',
+    3: '横向-LR',
+    4: 'MPC-LR',
+    5: '纵向-LR'
   }
   return typeMap[type]
 }
@@ -125,10 +125,15 @@ const timeFilter = (time) => {
   if (!time) {
     return '00:00:00'
   } else {
+    const days = parseInt(time / (60 * 60 * 24))
     const hour = parseInt(time / 3600) < 10 ? '0' + parseInt(time / 3600) : parseInt(time / 3600)
     const min = parseInt(time % 3600 / 60) < 10 ? '0' + parseInt(time % 3600 / 60) : parseInt(time % 3600 / 60)
     const sec = parseInt(time % 3600 % 60) < 10 ? '0' + parseInt(time % 3600 % 60) : parseInt(time % 3600 % 60)
-    return hour + ':' + min + ':' + sec
+    if (days > 0) {
+      return days + '天' + hour + ':' + min + ':' + sec
+    } else {
+      return hour + ':' + min + ':' + sec
+    }
   }
 }
 

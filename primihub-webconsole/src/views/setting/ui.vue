@@ -1,6 +1,6 @@
 <template>
   <div v-loading="loading" class="container">
-    <div class="detail">
+    <div v-if="loaded" class="detail">
       <el-descriptions :column="1" label-class-name="detail-title">
         <el-descriptions-item label="页面标题">
           <ConfirmInput name="title" :default-value="title" @submit="handleInputSubmit" />
@@ -70,6 +70,7 @@ export default {
   },
   computed: {
     ...mapState('settings', [
+      'loaded',
       'title',
       'favicon',
       'settingChanged',
