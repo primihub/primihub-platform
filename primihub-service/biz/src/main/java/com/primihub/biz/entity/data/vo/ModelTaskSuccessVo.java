@@ -30,4 +30,6 @@ public class ModelTaskSuccessVo {
     private String providerOrganNames;
     private List<Map<String,String>> providerOrgans;
     private Integer resourceNum;
+
+    private Integer isCooperation;
 }

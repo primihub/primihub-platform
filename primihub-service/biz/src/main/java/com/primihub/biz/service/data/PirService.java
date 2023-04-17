@@ -29,7 +29,7 @@ public class PirService {
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
-    private FusionResourceService fusionResourceService;
+    private OtherBusinessesService otherBusinessesService;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
     @Autowired
@@ -41,13 +41,15 @@ public class PirService {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
     public BaseResultEntity pirSubmitTask(String serverAddress,String resourceId, String pirParam) {
-        BaseResultEntity dataResource = fusionResourceService.getDataResource(serverAddress, resourceId);
-        if (dataResource.getCode()!=0)
+        BaseResultEntity dataResource = otherBusinessesService.getDataResource(serverAddress, resourceId);
+        if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
+        }
         Map<String, Object> pirDataResource = (LinkedHashMap)dataResource.getResult();
         int available = Integer.parseInt(pirDataResource.getOrDefault("available","1").toString());
-        if (available == 1)
+        if (available == 1) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
+        }
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
@@ -72,8 +74,9 @@ public class PirService {
 
     public BaseResultEntity getPirTaskList(DataPirTaskReq req) {
         List<DataPirTaskVo> dataPirTaskVos = dataTaskRepository.selectDataPirTaskPage(req);
-        if (dataPirTaskVos.isEmpty())
+        if (dataPirTaskVos.isEmpty()) {
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        }
         Integer tolal = dataTaskRepository.selectDataPirTaskCount(req);
         Map<String,LinkedHashMap<String, Object>> resourceMap= new HashMap<>();
         Map<String, List<DataPirTaskVo>> resourceMapList = dataPirTaskVos.stream().collect(Collectors.groupingBy(DataPirTaskVo::getServerAddress));
@@ -81,7 +84,7 @@ public class PirService {
         while (it.hasNext()){
             Map.Entry<String, List<DataPirTaskVo>> next = it.next();
             String[] ids = next.getValue().stream().map(DataPirTaskVo::getResourceId).toArray(String[]::new);
-            BaseResultEntity baseResult = fusionResourceService.getResourceListById(next.getKey(), ids);
+            BaseResultEntity baseResult = otherBusinessesService.getResourceListById(next.getKey(), ids);
             if (baseResult.getCode()==0){
                 List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
                 if (voList != null && voList.size()!=0){

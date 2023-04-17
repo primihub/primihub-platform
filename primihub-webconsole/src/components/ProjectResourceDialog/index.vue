@@ -9,14 +9,17 @@
       v-if="resourceList"
       v-loading="listLoading"
       :server-address="serverAddress"
-      :show-buttons="false"
+      :show-delete-button="showDeleteButton"
+      :show-preview-button="showPreviewButton"
       :show-status="false"
       :multiple="true"
       :organ-id="organId"
       :selected-data="selectedData"
       row-key="resourceId"
       :data="resourceList"
+      min-height="300"
       @change="handleChange"
+      @preview="handlePreview"
     />
     <span slot="footer" class="dialog-footer">
       <pagination v-show="pageCount>1" small :limit.sync="pageSize" :page.sync="pageNo" :page-count="pageCount" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
@@ -58,6 +61,14 @@ export default {
     selectedData: {
       type: Array,
       default: () => []
+    },
+    showPreviewButton: {
+      type: Boolean,
+      default: true
+    },
+    showDeleteButton: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -136,8 +147,9 @@ export default {
       this.resourceName = ''
       this.$emit('submit', this.selectedResources)
     },
-    handleSearch() {
-
+    handlePreview(row) {
+      console.log('handlePreview', row)
+      this.$emit('preview', row)
     }
   }
 }

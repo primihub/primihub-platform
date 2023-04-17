@@ -4,6 +4,7 @@
     placeholder="请选择"
     clearable
     filterable
+    v-bind="$attrs"
     :remote="remote"
     :remote-method="handleFilter"
     @change="handleTagChange"

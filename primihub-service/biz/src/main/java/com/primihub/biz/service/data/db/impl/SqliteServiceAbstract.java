@@ -6,7 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.db.DataDBService;
+import com.primihub.biz.service.data.db.AbstractDataDBService;
 import com.primihub.biz.util.dbclient.SqliteHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,9 +19,9 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class SqliteService extends DataDBService {
+public class SqliteServiceAbstract extends AbstractDataDBService {
 
-    protected static final String QUERY_TABLES_SQL = "select name from sqlite_master where type='table' order by name";
+    protected static final String QUERY_TABLES_SQL = "select name from sqlite_master where type='table' order by name desc";
     protected static final String QUERY_DETAILS_SQL = "select * from <tableName> limit 0,50";
     protected static final String QUERY_COUNT_SQL = "select count(*) total from <tableName>";
     protected static final String QUERY_COUNT_Y_SQL = "select count(*) ytotal from <tableName>";
@@ -76,7 +76,7 @@ public class SqliteService extends DataDBService {
                 }
                 details.add(map);
             }
-            Set<String> columns = details.get(0).keySet();
+            TreeSet<String> columns = new TreeSet<>(details.get(0).keySet());
             List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columns, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));

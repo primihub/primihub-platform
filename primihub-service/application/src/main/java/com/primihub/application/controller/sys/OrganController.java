@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
+/**
+ * 机构
+ */
 @RequestMapping("organ")
 @RestController
 public class OrganController {
@@ -33,13 +36,24 @@ public class OrganController {
         homeMap.remove("token");
         homeMap.remove("timestamp");
         homeMap.remove("nonce");
-        if (homeMap.size()==0)
+        if (homeMap.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"无参数");
+        }
         return sysOrganService.changeHomepage(homeMap);
     }
 
     @RequestMapping("getHomepage")
     public BaseResultEntity getHomepage(){
         return sysOrganService.getHomepage();
+    }
+
+    /**
+     * 上报节点信息
+     * @return
+     */
+    @RequestMapping("collectBaseData")
+    public BaseResultEntity collectBaseData(){
+        sysOrganService.collectBaseData();
+        return BaseResultEntity.success();
     }
 }

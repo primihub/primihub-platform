@@ -7,6 +7,11 @@ import lombok.Data;
 public class DataPsiReq {
 
     /**
+     * psi 数字ID
+     */
+    private Long id;
+
+    /**
      * 本机构id
      */
     private String ownOrganId;

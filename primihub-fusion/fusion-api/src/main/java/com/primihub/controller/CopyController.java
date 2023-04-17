@@ -19,12 +19,15 @@ public class CopyController {
     @RequestMapping("batchSave")
     public BaseResultEntity batchSave(String globalId,String copyPart){
         DataFusionCopyDto copyDto=JSON.parseObject(copyPart, DataFusionCopyDto.class);
-        if(copyDto.getTableName()==null||copyDto.getTableName().equals(""))
+        if(copyDto.getTableName()==null|| "".equals(copyDto.getTableName())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"tableName");
-        if(copyDto.getMaxOffset()==null||copyDto.getMaxOffset().equals(""))
+        }
+        if(copyDto.getMaxOffset()==null|| "".equals(copyDto.getMaxOffset())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"maxOffset");
-        if(copyDto.getCopyPart()==null||copyDto.getCopyPart().equals(""))
+        }
+        if(copyDto.getCopyPart()==null|| "".equals(copyDto.getCopyPart())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyPart");
+        }
         return copyService.batchSave(globalId,copyDto);
     }
 

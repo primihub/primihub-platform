@@ -28,10 +28,11 @@ public class PageParam {
 
     public Boolean isLoadMore(List list){
         isLoadMore=true;
-        if(list==null||list.size()<=pageSize)
+        if(list==null||list.size()<=pageSize) {
             isLoadMore=false;
-        else
+        } else {
             list.remove(list.size()-1);
+        }
         return isLoadMore;
     }
 

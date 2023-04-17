@@ -68,6 +68,14 @@
         <if test="resourceName!=null and resourceName!=''">
             and resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
         </if>
+        <choose>
+            <when test="fileContainsY!=null and fileContainsY==1">
+                and file_contains_y = 1
+            </when>
+            <when test="fileContainsY!=null and fileContainsY==0">
+                and file_contains_y is null
+            </when>
+        </choose>
         <if test="tag!=null and tag!=''">
             and resource_id in
             (

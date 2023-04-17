@@ -51,8 +51,9 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceAuthType(fusionResource.getResourceAuthType());
         fusionResourceVo.setResourceRowsCount(fusionResource.getResourceRowsCount());
         fusionResourceVo.setResourceColumnCount(fusionResource.getResourceColumnCount());
-        if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList().length>=0)
+        if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList().length>=0) {
             fusionResourceVo.setResourceColumnNameList(new String(fusionResource.getResourceColumnNameList(),Charset.forName("UTF-8")));
+        }
         fusionResourceVo.setFieldList(fieldList);
         fusionResourceVo.setResourceContainsY(fusionResource.getResourceContainsY());
         fusionResourceVo.setResourceYRowsCount(fusionResource.getResourceYRowsCount());
@@ -73,8 +74,9 @@ public class DataResourceConvert {
                 if (!StringUtils.isEmpty(fusionResource.getAuthOrgans()) && !StringUtils.isEmpty(globalId)){
                     Set<String> authOrgansSet = Arrays.stream(fusionResource.getAuthOrgans().split(",")).collect(Collectors.toSet());
                     authOrgansSet.add(fusionResource.getOrganId());
-                    if (authOrgansSet.contains(globalId))
+                    if (authOrgansSet.contains(globalId)) {
                         fusionResourceVo.setAvailable(0);
+                    }
                 }
             }
             if(fusionResource.getResourceAuthType().equals(AuthTypeEnum.PUBLIC.getAuthType()) && groupInOrganIds!=null && groupInOrganIds.contains(fusionResource.getOrganId())) {
