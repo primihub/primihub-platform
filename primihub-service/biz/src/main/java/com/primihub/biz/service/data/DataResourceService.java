@@ -28,6 +28,7 @@ import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.sys.SysUserService;
+import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
@@ -252,7 +253,7 @@ public class DataResourceService {
                     }
                 }
             }else {
-                List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), 0, DataConstant.READ_DATA_ROW);
+                List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), DataConstant.READ_DATA_ROW);
                 map.put("dataList",csvData);
             }
         }catch (Exception e){
@@ -371,7 +372,7 @@ public class DataResourceService {
             }
             csvVo =  new DataResourceCsvVo();
             String[] headers = headersStr.split(",");
-            List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(), 0, DataConstant.READ_DATA_ROW);
+            List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(),DataConstant.READ_DATA_ROW);
             csvVo.setDataList(csvData);
             List<DataFileField> dataFileFieldList = batchInsertDataFileField(sysFile, headers, csvData.get(0));
             csvVo.setFieldDataList(dataFileFieldList);
