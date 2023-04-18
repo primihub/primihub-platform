@@ -404,7 +404,7 @@ public class DataResourceService {
         return fileFieldList;
     }
 
-    public List<DataFileField> batchInsertDataDataSourceField(TreeSet<String> headers,Map<String,Object> dataMap) {
+    public List<DataFileField> batchInsertDataDataSourceField(List<String> headers,Map<String,Object> dataMap) {
         List<DataFileField> fileFieldList = new ArrayList<>();
         int i = 1;
         Iterator<String> iterator = headers.iterator();
@@ -519,7 +519,8 @@ public class DataResourceService {
     }
 
     public BaseResultEntity handleDataResourceSource(DataResource dataResource, List<DataResourceFieldReq> fieldList, DataSource dataSource) {
-        TreeSet<String> fieldNames = new TreeSet<>(fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toSet()));
+//        TreeSet<String> fieldNames = new TreeSet<>(fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toSet()));
+        List<String> fieldNames = fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toList());
         BaseResultEntity baseResultEntity = dataSourceService.tableDataStatistics(dataSource, fieldNames.contains("y") || fieldNames.contains("Y"));
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
             return baseResultEntity;
