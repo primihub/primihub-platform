@@ -76,7 +76,8 @@ public class SqliteServiceAbstract extends AbstractDataDBService {
                 }
                 details.add(map);
             }
-            TreeSet<String> columns = new TreeSet<>(details.get(0).keySet());
+//            TreeSet<String> columns = new TreeSet<>(details.get(0).keySet());
+            List<String> columns = details.get(0).keySet().stream().collect(Collectors.toList());
             List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columns, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
