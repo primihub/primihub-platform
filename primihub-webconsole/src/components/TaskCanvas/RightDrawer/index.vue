@@ -582,6 +582,8 @@ export default {
           })
           return
         }
+        console.log('23e44', this.selectedProviderOrgans)
+        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
@@ -647,6 +649,7 @@ export default {
       if (this.graphData.cells.find(item => item.componentCode === 'jointStatistical')) {
         this.getFeaturesItem()
       }
+
       this.providerOrganDialogVisible = false
       this.$emit('change', this.nodeData)
     },

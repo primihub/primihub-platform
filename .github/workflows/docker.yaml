@@ -1,0 +1,83 @@
+name: Build and push Docker images
+on:
+  push:
+    tags: [ '*.*.*' ]
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - develop # for test
+
+env:
+  REGISTRY: docker.io
+  FUSION_IMAGE: primihub/primihub-fusion
+  PLATFORM_IMAGE: primihub/primihub-platform
+  WEB_IMAGE: primihub/primihub-web
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Extract Docker metadata
+      id: metafusion
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}
+    
+    - name: Extract Docker metadata
+      id: metaplatform
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.PLATFORM_IMAGE }}
+
+    - name: Extract Docker metadata
+      id: metaweb
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.WEB_IMAGE }}
+
+    - name: Build and push fusion images
+      uses: docker/build-push-action@v2
+      with:
+        context: ./primihub-fusion
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: ${{ steps.metafusion.outputs.tags }}
+        labels: ${{ steps.metafusion.outputs.labels }}
+
+    - name: Build and push platform images
+      uses: docker/build-push-action@v2
+      with:
+        context: ./primihub-service
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: ${{ steps.metaplatform.outputs.tags }}
+        labels: ${{ steps.metaplatform.outputs.labels }}
+
+    - name: Build and push web images
+      uses: docker/build-push-action@v2
+      with:
+        context: ./primihub-webconsole
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: ${{ steps.metaweb.outputs.tags }}
+        labels: ${{ steps.metaweb.outputs.labels }}
