@@ -117,7 +117,6 @@ export default {
       const { code, result } = await getDerivationResourceList(params)
       if (code === 0) {
         if (result.length > 0) {
-          this.loading = false
           const { organId, participationIdentity } = JSON.parse(sessionStorage.getItem('organ'))
           result.map(item => {
             if (item.organId === organId) {
@@ -129,6 +128,7 @@ export default {
           })
         }
       }
+      this.loading = false
     },
     handleRadioChange(row) {
       this.currentRow = row

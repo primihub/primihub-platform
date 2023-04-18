@@ -1,0 +1,190 @@
+[
+  {
+    "key": "age",
+    "label": "年龄",
+    "value": 28
+  },{
+    "key": "gender",
+    "label": "性别",
+    "options": [
+      {
+        "label": "男",
+        "value": 57.00,
+        "key": "male"
+      },{
+        "label": "女",
+        "value": 43.00,
+        "key": "female"
+      }
+    ]
+  },
+  {
+    "key": "jobPosition",
+    "label": "岗位分布",
+    "options": [
+      {
+        "label": "管理者",
+        "value": 22.00,
+        "key": "manager"
+      },
+      {
+        "label": "产品",
+        "value": 21.00,
+        "key": "PM"
+      },
+      {
+        "label": "技术",
+        "value": 17.00,
+        "key": "developer"
+      },
+      {
+        "label": "商务",
+        "value": 20.00,
+        "key": "commerceAffairs"
+      },
+      {
+        "label": "解决方案",
+        "value": 13.00,
+        "key": "solution"
+      },
+      {
+        "label": "其他",
+        "value": 11.00,
+        "key": "other"
+      }
+    ]
+  },
+  {
+    "key": "industry",
+    "label": "行业分布",
+    "options": [
+      {
+        "label": "互联网",
+        "value": 21.00,
+        "key": "internet"
+      },
+      {
+        "label": "金融",
+        "value": 17.00,
+        "key": "financial"
+      },
+      {
+        "label": "政府",
+        "value": 13.00,
+        "key": "government"
+      },
+      {
+        "label": "医疗",
+        "value": 11.00,
+        "key": "medical"
+      },
+      {
+        "label": "工业",
+        "value": 9.00,
+        "key": "industrial"
+      },
+      {
+        "label": "汽车",
+        "value": 8.00,
+        "key": "car"
+      },
+      {
+        "label": "新能源",
+        "value": 9.00,
+        "key": "newEnergy"
+      },
+      {
+        "label": "其他",
+        "value": 12.00,
+        "key": "other"
+      }
+    ]
+  },
+  {
+    "key": "familiarity",
+    "label": "隐私计算熟悉度",
+    "options": [
+      {
+        "label": "从业者",
+        "value": 21.00,
+        "key": "practitioner"
+      },
+      {
+        "label": "已在应用",
+        "value": 16.00,
+        "key": "AlreadyInUse"
+      },
+      {
+        "label": "非常熟悉",
+        "value": 25.00,
+        "key": "veryFamiliar"
+      },
+      {
+        "label": "一般熟悉",
+        "value": 23.00,
+        "key": "generalFamiliar"
+      },
+      {
+        "label": "完全不懂",
+        "value": 16.00,
+        "key": "notKnow"
+      }
+    ]
+  },
+  {
+    "key": "city",
+    "label": "城市分布",
+    "options": [
+      {
+        "label": "北京",
+        "value": 22.00,
+        "key": "beijing"
+      },
+      {
+        "label": "上海",
+        "value": 20.00,
+        "key": "shanghai"
+      },
+      {
+        "label": "深圳",
+        "value": 17.00,
+        "key": "shenzhen"
+      },
+      {
+        "label": "杭州",
+        "value": 15.00,
+        "key": "hangzhou"
+      },
+      {
+        "label": "长沙",
+        "value": 8.00,
+        "key": "changsha"
+      }
+    ]
+  },{
+    "key": "visitPurposes",
+    "label": "来访目的",
+    "options": [
+      {
+        "label": "商业合作",
+        "value": 21.00,
+        "key": "cooperation"
+      },
+      {
+        "label": "学习",
+        "value": 33.00,
+        "key": "learning"
+      },
+      {
+        "label": "试用",
+        "value": 29.00,
+        "key": "trial"
+      },
+      {
+        "label": "随便看看",
+        "value": 17.00,
+        "key": "browse"
+      }
+    ]
+  }
+]

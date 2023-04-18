@@ -1,0 +1,20 @@
+.infos-title{
+  font-size: 16px;
+}
+
+.desc-col{
+  width: 50%;
+  flex-shrink: 0;
+  display: flex;
+  color: #606266;
+  font-size: 14px;
+  margin-bottom: 12px;
+  align-items: center;
+  height: 22px;
+}
+.desc-label{
+  margin-right: 10px;
+}
+.desc-content{
+  flex: 1;
+}

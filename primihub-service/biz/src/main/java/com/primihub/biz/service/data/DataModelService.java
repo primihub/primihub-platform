@@ -69,8 +69,9 @@ public class DataModelService {
 
     public BaseResultEntity getDataModel(Long taskId,Long userId) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
-        if (modelTask==null)
+        if (modelTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+        }
         ModelVo modelVo = dataModelRepository.queryModelById(modelTask.getModelId());
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);

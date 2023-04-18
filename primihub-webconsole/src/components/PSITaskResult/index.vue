@@ -10,14 +10,21 @@
         align="center"
         width="50"
       />
-      <el-table-column label="任务名称">
+      <el-table-column label="任务ID" min-width="120px">
         <template slot-scope="{row}">
-          <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.resultName }}</span> <br>
+          <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span> <br>
         </template>
       </el-table-column>
-      <el-table-column label="任务ID">
+      <el-table-column label="任务名称" min-width="120px">
         <template slot-scope="{row}">
-          <p class="result-id">{{ row.taskIdName }}</p>
+          <p class="result-id">{{ row.resultName }}</p>
+        </template>
+      </el-table-column>
+      <el-table-column label="任务类型" prop="ascription" />
+      <el-table-column label="任务发起时间" prop="createDate" min-width="120px" />
+      <el-table-column label="任务耗时" min-width="120px">
+        <template slot-scope="{row}">
+          {{ row.consuming | timeFilter }}
         </template>
       </el-table-column>
       <el-table-column label="任务状态" prop="taskState">
@@ -27,8 +34,6 @@
           <span v-if="row.taskState === 2"> <i class="el-icon-loading" /></span>
         </template>
       </el-table-column>
-      <el-table-column label="求交结果归属" prop="ascription" />
-      <el-table-column label="时间" prop="createDate" />
       <el-table-column label="操作" min-width="120px" align="center">
         <template slot-scope="{row}">
           <p class="tool-buttons">
@@ -36,7 +41,6 @@
             <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
             <el-link type="danger" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-link>
           </p>
-
         </template>
       </el-table-column>
     </el-table>
@@ -44,9 +48,9 @@
       :visible.sync="dialogVisible"
       :append-to-body="true"
       top="5vh"
-      width="50%"
+      width="750px"
     >
-      <PSI-task-detail :data="taskData" />
+      <PSI-task-detail :server-address="taskData.serverAddress" :data="taskData" @change="handleEditChange" />
     </el-dialog>
   </div>
 </template>
@@ -201,6 +205,12 @@ export default {
         this.data[index].taskState = taskState
         this.$emit('complete')
       })
+    },
+    handleEditChange({ taskId, resultName }) {
+      const posIndex = this.tableData.findIndex(item => item.taskId === taskId)
+      if (posIndex !== -1) {
+        this.tableData[posIndex].resultName = resultName
+      }
     }
   }
 }

@@ -5,7 +5,7 @@
       <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
     </div>
     <div class="middle-container">
-      <span @click="toPage('/')">首页</span>
+      <span @click="toPage('/project/list')">首页</span>
       <span @click="toPage('/applicationIndex')">应用市场</span>
     </div>
     <div class="right-menu avatar-container">
@@ -37,7 +37,7 @@ import { mapGetters, mapState, mapActions } from 'vuex'
 import UpdatePwdForm from '@/components/UpdatePwdForm'
 import BindPhoneDialog from '@/components/BindPhoneDialog'
 
-const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
+const phonePattern = /^[1][\d][0-9]{9}$/
 
 export default {
   components: {
@@ -175,6 +175,7 @@ export default {
     img{
       max-height: 100%;
       vertical-align: middle;
+      height: 100%;
     }
   }
   .avatar-container {

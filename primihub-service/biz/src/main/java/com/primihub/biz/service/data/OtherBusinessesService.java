@@ -138,10 +138,7 @@ public class OtherBusinessesService {
     }
 
     public BaseResultEntity syncResourceUse(String serverAddress,String organId,String resourceId,String projectId,Integer auditStatus){
-        log.info("进入");
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (!sysLocalOrganInfo.getFusionMap().containsKey(serverAddress))
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"serverAddress");
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -167,7 +164,6 @@ public class OtherBusinessesService {
         try {
             Object data;
             if (StringUtils.isEmpty(publicKey)){
-                gatewayAddressAndApi = gatewayAddressAndApi+"?ignore=ignore";
                 data = vo;
             }else {
                 data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);

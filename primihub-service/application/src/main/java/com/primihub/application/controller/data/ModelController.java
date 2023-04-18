@@ -109,7 +109,6 @@ public class ModelController {
         return dataModelService.runTaskModel(modelId,userId);
     }
 
-
     /**
      * 重启模型
      * @param taskId
@@ -209,7 +208,6 @@ public class ModelController {
         }
         return dataModelService.updateModelDesc(modelId,modelDesc);
     }
-
 
 
 
