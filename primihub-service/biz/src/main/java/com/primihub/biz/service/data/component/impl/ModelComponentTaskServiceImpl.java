@@ -233,8 +233,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return BaseResultEntity.success();
     }
-    private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq) {
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+    private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
@@ -290,7 +290,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                             }
                         }else {
                             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:目录文件夹中无文件");
+                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:无目录文件夹");
                         }
                     }
                 }else {
