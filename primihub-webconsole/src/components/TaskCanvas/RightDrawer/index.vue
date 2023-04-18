@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'disabled':!options.isEditable}">
+  <div v-loading="listLoading" class="right-drawer" :class="{'disabled':!options.isEditable}" @click="handleClick">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
@@ -266,6 +266,8 @@ export default {
       }
     }
     return {
+      modelParams: [],
+      defaultComponentConfig: [],
       selectType: 'radio',
       emptyMissingData: {
         selectedExceptionFeatures: [],
@@ -334,23 +336,24 @@ export default {
     }
   },
   computed: {
-    modelParams: {
-      get() {
-        const modelType = this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')
-        const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
-        return currentData?.param
-      },
-      set() {}
-    },
-    defaultComponentConfig() {
-      if (this.defaultConfig.length === 0) return
-      const model = this.defaultConfig.find(item => item.componentCode === 'model')
-      console.log('model', model)
-      const currentInputValues = model.componentTypes.find(item => item.typeCode === 'modelType').inputValues
-      const param = currentInputValues.find(item => item.key === this.modelTypeValue)?.param
-      console.log('defaultComponentConfig param', param)
-      return param
-    },
+    // modelParams: {
+    //   get() {
+    //     const modelType = this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')
+    //     const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
+    //     return currentData?.param
+    //   },
+    //   set() {}
+    // },
+    // defaultComponentConfig() {
+    //   if (this.defaultConfig.length > 0) {
+    //     const model = this.defaultConfig.find(item => item.componentCode === 'model')
+    //     const currentInputValues = model.componentTypes.find(item => item.typeCode === 'modelType').inputValues
+    //     const param = currentInputValues.find(item => item.key === this.modelTypeValue)?.param
+    //     return param
+    //   } else {
+    //     return []
+    //   }
+    // },
     processingType() {
       const processingType = this.nodeData.componentTypes.find(item => item.typeCode === 'processingType')
       return processingType ? processingType.inputValues : []
@@ -428,8 +431,13 @@ export default {
           }
         } else if (newVal.componentCode === 'model') {
           this.getDataSetComValue()
-          this.arbiterOrganId = newVal.componentTypes.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
-          this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+          const modelType = newVal.componentTypes.find(item => item.typeCode === 'modelType')
+          this.modelParams = this.getModelParams()
+          this.modelTypeValue = modelType.inputValue
+          if (this.modelParams) {
+            this.arbiterOrganId = this.modelParams.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
+            this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+          }
         } else if (newVal.componentCode === 'dataAlign') {
           this.selectedDataAlignFeatures = this.nodeData.componentTypes[1]?.inputValue !== '' ? this.nodeData.componentTypes[1]?.inputValue : null
           this.selectedFeatures = this.selectedDataAlignFeatures
@@ -450,13 +458,20 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    // preview model drawing is not editable
+    handleClick(e) {
+      if (!this.options.isEditable) e.preventDefault()
+    },
+    getModelParams() {
+      const modelType = this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')
+      const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
+      return currentData?.param
+    },
     handleModelChange(val) {
       this.modelTypeValue = val
-      if (this.defaultConfig.length > 0) {
-        // reset before params
-        this.resetModelParams()
-        this.handleChange()
-      }
+      // reset before params
+      this.resetModelParams()
+      this.handleChange()
     },
     getFeaturesItem() {
       this.defaultExceptionFeatures = this.inputValue.map(item => {
@@ -520,9 +535,17 @@ export default {
       this.setFeaturesValue()
     },
     resetModelParams() {
-      this.defaultComponentConfig.forEach((item, index) => {
-        this.$set(this.modelParams, index, item)
-      })
+      const defaultConfig = JSON.parse(JSON.stringify(this.defaultConfig))
+      const param = defaultConfig.find(item => item.key === this.modelTypeValue).param
+      this.defaultComponentConfig = JSON.parse(JSON.stringify(param))
+      this.modelParams = this.defaultComponentConfig && this.defaultComponentConfig.slice()
+      if (this.arbiterOrganId !== '') {
+        this.arbiterOrganId = ''
+        this.arbiterOrganName = ''
+      }
+      const modelTypeIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'modelType')
+      const paramIndex = this.nodeData.componentTypes[modelTypeIndex].inputValues.findIndex(item => item.key === this.modelTypeValue)
+      this.nodeData.componentTypes[modelTypeIndex].inputValues[paramIndex].param = this.modelParams
       this.handleChange()
     },
     filterNumber(data, name) {
@@ -559,8 +582,6 @@ export default {
           })
           return
         }
-        console.log('23e44', this.selectedProviderOrgans)
-        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {

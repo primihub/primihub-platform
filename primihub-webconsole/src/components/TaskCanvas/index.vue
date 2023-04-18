@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -119,10 +119,6 @@ export default {
     restartRun: {
       type: Boolean,
       default: false
-    },
-    componentsDetail: {
-      type: Object,
-      default: () => null
     }
   },
   data() {
@@ -170,24 +166,22 @@ export default {
       if (newVal) {
         await this.restartTaskModel()
       }
-    },
-    async componentsDetail(newVal) {
-      if (newVal) {
-        this.graph.clearCells()
-        this.nodeData = this.startNode
-        this.graphData.cells = []
-        this.graph.fromJSON(this.graphData)
-        this.selectComponentList = []
-        this.$emit('selectComponents', this.selectComponentList)
-        this.setComponentsDetail(newVal)
-        this.$message({
-          message: '导入成功',
-          type: 'success'
-        })
-      }
-    },
-    deep: true,
-    immediate: true
+    }
+    // componentsDetail(newVal) {
+    //   if (newVal) {
+    //     this.graph.clearCells()
+    //     this.nodeData = this.startNode
+    //     this.graphData.cells = []
+    //     this.graph.fromJSON(this.graphData)
+    //     this.selectComponentList = []
+    //     this.$emit('selectComponents', this.selectComponentList)
+    //     this.setComponentsDetail(newVal)
+    //     this.$message({
+    //       message: '导入成功',
+    //       type: 'success'
+    //     })
+    //   }
+    // },
   },
   async mounted() {
     this.taskId = this.$route.params.taskId
@@ -488,16 +482,18 @@ export default {
     addStartNode() {
       // 60 = start node width
       const x = this.width * 0.5 - 90
-      this.startData = this.components.filter(item => item.componentCode === 'start')[0]
-      this.graph.addNode({
-        x: x,
-        y: 100,
-        shape: 'start-node',
-        componentCode: this.startData.componentCode,
-        label: this.startData.componentName,
-        data: this.startData,
-        ports
-      })
+      if (this.components) {
+        this.startData = this.components.find(item => item.componentCode === 'start')
+        this.startData && this.graph.addNode({
+          x: x,
+          y: 100,
+          shape: 'start-node',
+          componentCode: this.startData.componentCode,
+          label: this.startData.componentName,
+          data: this.startData,
+          ports
+        })
+      }
     },
     showPorts(ports, show) {
       for (let i = 0, len = ports.length; i < len; i = i + 1) {
@@ -1056,12 +1052,14 @@ export default {
           if (componentTypes) {
             componentTypes.forEach(item => {
               const params = item.inputValues.find(c => c.key === item.inputValue)?.param
-              params && params.forEach(v => {
-                componentValues.push({
-                  key: v.typeCode,
-                  val: v.inputValue
+              if (params) {
+                params.forEach(v => {
+                  componentValues.push({
+                    key: v.typeCode,
+                    val: v.inputValue
+                  })
                 })
-              })
+              }
               componentValues.push({
                 key: item.typeCode,
                 val: item.inputValue
@@ -1087,7 +1085,6 @@ export default {
       }
 
       this.saveParams.param.modelComponents = modelComponents
-      console.log('save defaultComponentsConfig', this.defaultComponentsConfig)
       this.saveParams.param.modelPointComponents = modelPointComponents
       if (this.isClear) {
         const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
@@ -1139,11 +1136,13 @@ export default {
       const res = await getModelComponent()
       if (res.code === 0) {
         console.log('result', res.result)
-        const config = res.result
-        this.defaultComponentsConfig = res.result
-        this.components = config
-        // console.log('defaultComponentsConfig 1', this.defaultComponentsConfig)
-        this.componentsList = config.slice(1)
+        const { result } = res
+        // const config = [...result]
+        const model = result.find(item => item.componentCode === 'model')
+        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === 'modelType')?.inputValues
+        this.components = JSON.parse(JSON.stringify(result))
+        console.log('defaultComponentsConfig 1', this.defaultComponentsConfig)
+        // this.componentsList = config.slice(1)
       }
     },
     // 获取模型组件详情
