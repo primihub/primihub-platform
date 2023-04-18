@@ -24,6 +24,9 @@
         </set>
         where id = #{id}
     </update>
+    <update id="updateDataPsi">
+        update data_psi set result_name = #{resultName} where id = #{id}
+    </update>
     <delete id="delPsiTask">
         delete from data_psi_task where id = #{taskId}
     </delete>

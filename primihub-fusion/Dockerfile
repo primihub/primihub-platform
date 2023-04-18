@@ -6,7 +6,13 @@ ADD . /opt/
 
 RUN mvn clean install -Dmaven.test.skip=true
 
-FROM openjdk:8-jre-alpine
+FROM openjdk:8-jre
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update \
+  && apt install tzdata \
+  && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 COPY --from=build /opt/fusion-api/target/*-SNAPSHOT.jar /applications/fusion.jar
 

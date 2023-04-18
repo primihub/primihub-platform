@@ -25,7 +25,7 @@
       <el-row type="flex">
         <el-col class="desc-col" :span="6">
           <div class="desc-label">结束时间:</div>
-          <div class="desc-content">{{ task.timeConsuming | timeFilter }}</div>
+          <div class="desc-content">{{ task.taskEndDate? task.taskEndDate:'未结束' }}</div>
         </el-col>
         <el-col class="desc-col" :span="6">
           <div class="desc-label">耗时:</div>
@@ -48,7 +48,7 @@
         <el-col class="desc-col" :span="24">
           <div class="desc-label">任务描述:</div>
           <div class="desc-content">
-            <template v-if="oneself">
+            <template v-if="task.isCooperation === 0">
               <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
             </template>
             <template v-else>
@@ -58,7 +58,7 @@
         </el-col>
       </el-row>
       <div class="buttons">
-        <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
+        <el-button v-if="hasModelDownloadPermission && task.taskState === 1 && task.isCooperation === 0 " :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
         <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
         <el-button v-if="task.taskState === 2" :disabled="project.status === 2" type="primary" @click="cancelTaskModel(task.taskId)">取消任务</el-button>
         <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5 && task.isCooperation === 0" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
@@ -132,7 +132,7 @@
         <el-tab-pane v-if="task.taskState === 1 || task.taskState === 5" label="任务模型" name="2">
           <TaskModel v-if="tabName === '2'" :state="task.taskState" :project-status="project.status" />
         </el-tab-pane>
-        <el-tab-pane v-if="task.isCooperation === 0 || (task.isCooperation === 1 && task.taskState === 1)" label="预览图" name="3">
+        <el-tab-pane label="预览图" name="3">
           <div class="canvas-panel">
             <TaskCanvas v-if="tabName === '3' || restartRun" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
@@ -193,7 +193,7 @@ export default {
       },
       logType: '',
       errorLog: [],
-      oneself: false,
+      isCooperation: false,
       taskDesc: ''
     }
   },
@@ -260,8 +260,7 @@ export default {
       const response = await getModelDetail({ taskId: this.taskId })
       if (response.code === 0) {
         this.listLoading = false
-        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project, oneself } = response.result
-        this.oneself = oneself
+        const { task, model, modelResources, modelQuotas, modelComponent, anotherQuotas, taskState, project } = response.result
         this.task = task
         this.project = project
         this.model = model

@@ -468,7 +468,6 @@ export default {
       console.log('params', params)
       getProjectList(params).then((res) => {
         if (res.code === 0) {
-          this.listLoading = false
           const { data, totalPage } = res.result
           this.total = res.result.total || 0
           this.pageCount = totalPage
@@ -478,6 +477,7 @@ export default {
           } else {
             this.noData = true
           }
+          this.listLoading = false
         }
       }).catch(err => {
         console.log(err)

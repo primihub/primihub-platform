@@ -1,14 +1,15 @@
 <template>
   <el-dialog
-    title="选择特征"
+    title="选择多方特征列"
     width="50%"
     v-bind="$attrs"
     :before-close="handleClose"
   >
-    <el-checkbox-group v-if="data.length>0" v-model="checkList">
-      <el-checkbox v-for="item in data" :key="item.key" :label="item.val" />
-    </el-checkbox-group>
-    <NoData v-else />
+    <el-tabs v-model="activeName">
+      <el-tab-pane v-for="(item,index) in currentData" :key="index" :label="item.organName" :name="item.organId">
+        <checkbox :options="item" :checked="item.checked" @change="handleChange" />
+      </el-tab-pane>
+    </el-tabs>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click="handleClose">取 消</el-button>
       <el-button size="small" type="primary" @click="handleDialogSubmit">确 定</el-button>
@@ -18,19 +19,15 @@
 </template>
 
 <script>
-import NoData from '@/components/NoData'
+import checkbox from './checkboxGroup.vue'
 
 export default {
-  name: '',
+  name: 'FeatureMultiSelectDialog',
   components: {
-    NoData
+    checkbox
   },
   props: {
     data: {
-      type: Array,
-      default: () => []
-    },
-    selectedData: {
       type: Array,
       default: () => []
     }
@@ -38,22 +35,33 @@ export default {
   data() {
     return {
       dialogVisible: false,
-      checkList: this.selectedData
+      checkAll: false,
+      isIndeterminate: true,
+      activeName: '',
+      currentData: [],
+      selectedData: {}
     }
   },
-  watch: {
-    selectedData(newVal) {
-      if (newVal) {
-        this.checkList = newVal
-      }
-    }
+  created() {
+    this.currentData = this.data.map(item => {
+      item.isIndeterminate = true
+      item.checkAll = false
+      item.checked = !item.checked ? [] : item.checked
+      return item
+    })
+    this.activeName = this.data && this.data[0].organId
   },
   methods: {
     handleClose() {
       this.$emit('close')
     },
     handleDialogSubmit() {
-      this.$emit('submit', this.checkList)
+      this.$emit('submit', this.currentData)
+    },
+    handleChange(data) {
+      this.selectedData = data
+      const posIndex = this.currentData.findIndex(item => item.organId === this.selectedData.organId)
+      this.currentData[posIndex] = this.selectedData
     }
 
   }

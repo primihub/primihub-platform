@@ -113,17 +113,13 @@ export default {
     }
   },
   computed: {
-    ...mapGetters([
-      'userOrganId'
-    ]),
     showPreviewButton() {
-      console.log(this.data)
       return this.data.length > 0 && this.data[0].participationIdentity === 1 && this.userOrganId === this.data[0].organId
     },
-
     hasResourceDesc() {
       return this.data[0] && Object.keys(this.data[0]).includes('resourceDesc')
-    }
+    },
+    ...mapGetters(['userOrganId'])
   },
   watch: {
     selectedData(newVal) {

@@ -33,7 +33,11 @@ public class FileUtil {
 
     public static boolean isFileExists(String filePath){
         File file = new File(filePath);
-        return file.exists();
+        boolean isFile = file.isFile();
+        if (!isFile){
+            isFile = !Files.notExists(Paths.get(filePath));
+        }
+        return isFile;
     }
 
     public static String getFileContent(String filePath){
@@ -71,8 +75,9 @@ public class FileUtil {
             while((str = bufferedReader.readLine())!=null) {
                 list.add(str);
                 if (severalLines!=null&&severalLines>0){
-                    if (list.size()==severalLines)
+                    if (list.size()==severalLines) {
                         break;
+                    }
                 }
             }
             bufferedReader.close();
@@ -112,17 +117,22 @@ public class FileUtil {
             bis.reset();
             if (!checked) {
                 while ((read = bis.read()) != -1) {
-                    if (read >= 0xF0)
+                    if (read >= 0xF0) {
                         break;
+                    }
                     if (0x80 <= read && read <= 0xBF) // 单独出现BF以下的，也算是GBK
+                    {
                         break;
+                    }
                     if (0xC0 <= read && read <= 0xDF) {
                         read = bis.read();
                         if (0x80 <= read && read <= 0xBF) // 双字节 (0xC0 - 0xDF)
                             // (0x80 - 0xBF),也可能在GB编码内
+                        {
                             continue;
-                        else
+                        } else {
                             break;
+                        }
                     } else if (0xE0 <= read && read <= 0xEF) { // 也有可能出错，但是几率较小
                         read = bis.read();
                         if (0x80 <= read && read <= 0xBF) {
@@ -130,10 +140,12 @@ public class FileUtil {
                             if (0x80 <= read && read <= 0xBF) {
                                 charset = "UTF-8";
                                 break;
-                            } else
+                            } else {
                                 break;
-                        } else
+                            }
+                        } else {
                             break;
+                        }
                     }
                 }
             }
@@ -147,8 +159,9 @@ public class FileUtil {
 
     public static void writeFile(String filePath,String fileNamePath,List<String> dataList) throws IOException {
         File tempFile=new File(filePath);
-        if(!tempFile.exists())
+        if(!tempFile.exists()) {
             tempFile.mkdirs();
+        }
         FileOutputStream fos=new FileOutputStream(new File(fileNamePath));
         OutputStreamWriter osw=new OutputStreamWriter(fos, "UTF-8");
         BufferedWriter  bw=new BufferedWriter(osw);
@@ -166,15 +179,17 @@ public class FileUtil {
         try{
 //            List<String> list=curStream.skip(pageNo).limit(pageSize+1).collect(Collectors.toList());
             List<String> list = getFileContent(filePath, pageSize + 1);
-            if (list.size()==0)
+            if (list.size()==0) {
                 return dataList;
+            }
             String[] fields = list.get(0).split(",");
             log.info(Arrays.toString(fields));
             for(int i=1;i<list.size();i++) {
                 String[] data = StringUtils.splitPreserveAllTokens(list.get(i), ",");
                 log.info(Arrays.toString(data));
-                if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length)))
+                if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length))) {
                     dataList.add(readValues(data,fields));
+                }
             }
         } catch (Exception e) {
             log.info("getCsvData",e);
@@ -271,8 +286,9 @@ public class FileUtil {
             while (sc.hasNext()) {
                 list.add(sc.nextLine());
                 if (severalLines!=null&&severalLines>0){
-                    if (list.size()==severalLines)
+                    if (list.size()==severalLines) {
                         break;
+                    }
                 }
             }
         } catch (IOException e) {

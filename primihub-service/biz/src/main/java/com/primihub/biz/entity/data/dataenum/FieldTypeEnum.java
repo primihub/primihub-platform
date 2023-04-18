@@ -19,7 +19,7 @@ public enum FieldTypeEnum {
 
     public static String getTypeName(Integer code){
         for (FieldTypeEnum value : values()) {
-            if (value.code==code){
+            if (value.code.equals(code)){
                 return value.typeName;
             }
         }

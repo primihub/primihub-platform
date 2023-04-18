@@ -95,10 +95,10 @@ const authStatusFilter = (status) => {
 }
 const modelTypeFilter = (type) => {
   const typeMap = {
-    1: '联邦学习ID对齐',
-    2: 'V-XGBoost ',
-    3: 'V-逻辑回归 ',
-    4: '线性回归 '
+    2: '纵向-XGBoost',
+    3: '横向-LR',
+    4: 'MPC-LR',
+    5: '纵向-LR'
   }
   return typeMap[type]
 }

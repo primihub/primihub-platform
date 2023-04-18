@@ -1,55 +1,55 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': model.isDel === 1, 'model': type === 'model'}">
-    <div class="section">
+    <div v-if="hasModelSelectComponent" class="section">
       <h2 class="infos-title">模型信息</h2>
-      <el-row type="flex">
-        <el-col class="desc-col" :span="6">
+      <div class="description-container">
+        <div class="desc-col">
           <div class="desc-label">模型ID:</div>
           <div class="desc-content">
             <el-link v-if="task.isCooperation === 0 && oneself" type="primary" @click="toModelDetail">{{ model.modelId }}</el-link>
+            <template v-else>
+              {{ model.modelId }}
+            </template>
           </div>
-        </el-col>
-        <el-col class="desc-col" :span="6">
+        </div>
+        <div class="desc-col">
           <div class="desc-label">模型名称:</div>
           <div class="desc-content">{{ model.modelName }}</div>
-        </el-col>
-      </el-row>
-      <el-row type="flex">
-        <el-col class="desc-col" :span="6">
-          <div class="desc-label">基础模型:</div>
-          <div class="desc-content">{{ model.modelType | modelTypeFilter }}</div>
-        </el-col>
-        <el-col v-if="type==='model'" class="desc-col" :span="6">
+        </div>
+        <div v-if="type==='model'" class="desc-col">
           <div class="desc-label">任务ID:</div>
           <div class="desc-content">
             <el-link type="primary" @click="toModelTaskDetail">{{ task.taskIdName }}</el-link>
           </div>
-        </el-col>
-      </el-row>
-      <el-row v-if="type==='model'" type="flex">
-        <el-col class="desc-col" :span="6">
+        </div>
+        <div v-if="type=== 'model'" class="desc-col">
           <div class="desc-label">任务名称:</div>
           <div class="desc-content">{{ task.taskName }}</div>
-        </el-col>
-        <el-col class="desc-col" :span="6">
-          <div class="desc-label">建模完成时间:</div>
-          <div class="desc-content">{{ model.createDate }}</div>
-        </el-col>
-      </el-row>
-      <el-row v-if="type==='model'" type="flex">
-        <el-col class="desc-col" :span="6">
+        </div>
+        <div v-if="type=== 'model'" class="desc-col">
           <div class="desc-label">角色:</div>
           <div class="desc-content">{{ oneself ? '发起方': '协作方' }}</div>
-        </el-col>
-      </el-row>
-      <el-row>
-        <el-col class="desc-col" :span="24">
+        </div>
+        <div class="desc-col">
+          <div class="desc-label">基础模型:</div>
+          <div class="desc-content">{{ model.modelType | modelTypeFilter }}</div>
+        </div>
+        <div v-if="type=== 'model'" class="desc-col">
+          <div class="desc-label">建模完成时间:</div>
+          <div class="desc-content">{{ model.createDate }}</div>
+        </div>
+        <div class="desc-col" style="width: 100%;">
           <div class="desc-label">模型描述:</div>
           <div class="desc-content">
-            <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+            <template v-if="task.isCoperation === 0">
+              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+            </template>
+            <template v-else>
+              {{ model.modelDesc }}
+            </template>
           </div>
-        </el-col>
-      </el-row>
+        </div>
+      </div>
       <div v-if="type === 'model' && model.isDel !== 1 && task.isCooperation === 0" class="buttons">
         <el-button type="danger" icon="el-icon-delete" @click="deleteModelTask">删除模型</el-button>
       </div>
@@ -70,7 +70,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div class="section">
+    <div v-if="hasModelSelectComponent" class="section">
       <h3>模型评估分数</h3>
       <el-table
         :data="modelQuotas"
@@ -122,14 +122,6 @@ export default {
         2: '测试样本集'
       }
       return typeMap[type]
-    },
-    modelTypeFilter(type) {
-      const statusMap = {
-        2: '纵向-XGBoost',
-        3: '横向-LR',
-        4: 'MPC_LR'
-      }
-      return statusMap[type]
     }
   },
   props: {
@@ -160,6 +152,11 @@ export default {
       projectId: 0,
       task: {},
       oneself: false
+    }
+  },
+  computed: {
+    hasModelSelectComponent() {
+      return this.modelComponent.find(component => component.componentCode === 'model')
     }
   },
   created() {
@@ -249,7 +246,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "~@/styles/description.scss";
+@import "~@/styles/details.scss";
 ::v-deep .time-consuming-label {
   width: 100px;
 }
@@ -314,4 +311,5 @@ h3{
   display: flex;
   justify-content: flex-end;
 }
+
 </style>

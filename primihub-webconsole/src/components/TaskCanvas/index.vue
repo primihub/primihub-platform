@@ -285,6 +285,12 @@ export default {
     toolBarSave() {
       // this.isDraft = this.isCopy ? 0 : 1
       this.saveFn()
+      this.$notify.closeAll()
+      this.$notify({
+        message: '保存成功',
+        type: 'success',
+        duration: 1000
+      })
     },
     handleChange(data) {
       this.graphData = this.graph.toJSON()
@@ -642,6 +648,9 @@ export default {
       const data = this.graph.toJSON()
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
+
+      const jointStatisticalCom = modelComponents.find(item => item.componentCode === 'jointStatistical')
+
       const startCom = modelComponents.find(item => item.componentCode === 'start')
 
       const modelSelectCom = modelComponents.find(item => item.componentCode === 'model')
@@ -715,7 +724,7 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
-      } else if (!modelSelectCom || modelName === '') {
+      } else if (!jointStatisticalCom && (!modelSelectCom || modelName === '')) {
         this.$message({
           message: `运行失败：请输入模型名称`,
           type: 'error'

@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.sys.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import lombok.Data;
 
@@ -18,4 +19,8 @@ public class SysLocalOrganInfo {
     private AddressInfoEntity addressInfo;
 
     private Map<String,Object> homeMap;
+
+    private String publicKey;
+//    @JsonIgnore
+    private String privateKey;
 }

@@ -6,7 +6,6 @@ import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
-import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.po.DataProject;
 import com.primihub.biz.entity.data.po.DataProjectResource;
@@ -15,7 +14,7 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.service.data.FusionResourceService;
+import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("dataSetComponentTaskServiceImpl")
@@ -36,54 +34,65 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
-    private FusionResourceService fusionResourceService;
+    private OtherBusinessesService otherBusinessesService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
         BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(),taskReq);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()))
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
             return baseResultEntity;
+        }
         Map<String,String> valMap = (Map<String,String>)baseResultEntity.getResult();
         try {
             List<ModelProjectResourceVo> resourceList = JSONObject.parseArray(valMap.get("selectData"), ModelProjectResourceVo.class);
-            if (resourceList==null || resourceList.size()<=1)
+            if (resourceList==null || resourceList.size()<=1) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未选择资源或资源缺少");
+            }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
-            if (dataProject==null)
+            if (dataProject==null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到项目信息");
+            }
             List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByProjectId(dataProject.getProjectId());
-            if (dataProjectResources.isEmpty())
+            if (dataProjectResources.isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到项目资源信息");
+            }
             Set<String> resourceIds = dataProjectResources.stream().filter(dpr -> dpr.getAuditStatus() == 1).map(DataProjectResource::getResourceId).collect(Collectors.toSet());
             for (ModelProjectResourceVo mprv : resourceList) {
-                if (mprv.getDerivation() == 1)
+                if (mprv.getDerivation() == 1) {
                     continue;
-                if (!resourceIds.contains(mprv.getResourceId()))
+                }
+                if (!resourceIds.contains(mprv.getResourceId())) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源["+mprv.getResourceName()+"]审核未通过或移除,不可使用");
+                }
             }
             String[] modelResourceIds = resourceList.stream().map(ModelProjectResourceVo::getResourceId).toArray(String[]::new);
-            BaseResultEntity baseResult = fusionResourceService.getResourceListById(dataProjectResources.get(0).getServerAddress(), modelResourceIds);
-            if (baseResult.getCode()!=0)
+            BaseResultEntity baseResult = otherBusinessesService.getResourceListById(dataProjectResources.get(0).getServerAddress(), modelResourceIds);
+            if (baseResult.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:"+baseResult.getMsg());
+            }
             List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
-            if (voList == null && voList.size()==0)
+            if (voList == null && voList.size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:无数据信息");
+            }
             taskReq.setFusionResourceList(voList);
             taskReq.setServerAddress(dataProjectResources.get(0).getServerAddress());
 //            log.info("json:{}",JSONObject.toJSONString(voList));
             List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.parseInt(data.get("available").toString())==1).collect(Collectors.toList());
 //            log.info("availableList - size :{}",availableList.size());
-            if (!availableList.isEmpty())
+            if (!availableList.isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
+            }
             String modelType = taskReq.getValueMap().get("modelType");
             if ("3".equals(modelType)){
                 Set<Object> resourceColumnNameList = voList.stream().map(data -> data.get("resourceColumnNameList")).collect(Collectors.toSet());
-                if (resourceColumnNameList.contains(null) || resourceColumnNameList.size()!=1)
+                if (resourceColumnNameList.contains(null) || resourceColumnNameList.size()!=1) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源特征量不一致,不可使用");
+                }
             }
             if(ModelTypeEnum.MPC_LR.getType().equals(modelType)){
-                if (voList.size()<3)
+                if (voList.size()<3) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型需要三个数据集");
+                }
             }
         }catch (Exception e){
             log.info("modelId:{} Failed to convert JSON :{}",taskReq.getDataModel().getModelId(),e.getMessage());

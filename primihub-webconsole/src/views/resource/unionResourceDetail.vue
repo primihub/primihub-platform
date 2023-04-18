@@ -2,7 +2,8 @@
   <div class="app-container">
     <h2>资源详情</h2>
     <div class="detail">
-      <el-descriptions title="资源信息" :column="2" label-class-name="detail-title">
+      <el-descriptions title="资源信息" :column="2">
+        <el-descriptions-item label="资源ID">{{ resource.resourceId }}</el-descriptions-item>
         <el-descriptions-item label="资源名称">{{ resource.resourceName }}</el-descriptions-item>
         <el-descriptions-item label="标签">
           <el-tag v-for="(tag,index) in resource.resourceTag" :key="index" type="primary" size="mini">{{ tag }}</el-tag>
@@ -10,17 +11,17 @@
         <el-descriptions-item label="授权方式">
           <span>{{ resource.resourceAuthType | authTypeFilter }}</span>
         </el-descriptions-item>
+        <el-descriptions-item label="资源描述">{{ resource.resourceName }}</el-descriptions-item>
       </el-descriptions>
     </div>
     <div class="detail">
-      <el-descriptions title="数据信息" :column="2" label-class-name="detail-title">
-        <el-descriptions-item label="数据来源">{{ resource.resourceAuthType | sourceFilter }}</el-descriptions-item>
-        <el-descriptions-item label="特征量">{{ resource.resourceColumnCount }}</el-descriptions-item>
+      <el-descriptions title="数据信息" :column="2">
         <el-descriptions-item label="样本量">{{ resource.resourceRowsCount }}</el-descriptions-item>
+        <el-descriptions-item label="特征量">{{ resource.resourceColumnCount }}</el-descriptions-item>
         <el-descriptions-item label="正例样本数量">{{ resource.resourceYRowsCount ? resource.resourceYRowsCount : 0 }}</el-descriptions-item>
         <el-descriptions-item label="正例样本比例">{{ resource.resourceYRatio ? resource.resourceYRatio : 0 }}%</el-descriptions-item>
+        <el-descriptions-item label="数据来源">{{ resource.resourceAuthType | sourceFilter }}</el-descriptions-item>
         <el-descriptions-item label="是否包含Y值">{{ resource.resourceContainsY === 1? '是': '否' }}</el-descriptions-item>
-        <el-descriptions-item label="字段信息">{{ resource.resourceColumnNameList }}</el-descriptions-item>
       </el-descriptions>
     </div>
   </div>
@@ -62,6 +63,7 @@ export default {
 
 <style lang="scss" scoped>
 @import "~@/styles/variables.scss";
+@import "~@/styles/details.scss";
 ::v-deep .el-tag{
   margin:  0 3px;
 }

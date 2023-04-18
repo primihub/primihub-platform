@@ -73,11 +73,13 @@ public class SysUserService {
 
     public BaseResultEntity login(LoginParam loginParam){
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
-        if(privateKey==null)
+        if(privateKey==null) {
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
+        }
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(loginParam.getUserAccount());
-        if(sysUser==null||sysUser.getUserId()==null)
+        if(sysUser==null||sysUser.getUserId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
+        }
         Long number = sysUserPrimaryRedisRepository.loginVerificationNumber(sysUser.getUserId());
         if(number >= SysConstant.SYS_USER_PASS_ERRER_NUM){
             BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN,"限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
@@ -85,15 +87,16 @@ public class SysUserService {
             return failure;
         }
         if (number>3){
-            if (loginParam.getCaptchaVerification()==null || loginParam.getCaptchaVerification().trim().equals("")){
+            if (loginParam.getCaptchaVerification()==null || "".equals(loginParam.getCaptchaVerification().trim())){
                 BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.FORCE_VALIDATION);
                 failure.setResult(number);
                 return failure;
             }
             loginParam.setToken(loginParam.getTokenKey());
             ResponseModel verification = captchaService.verification(loginParam);
-            if (!verification.isSuccess())
+            if (!verification.isSuccess()) {
                 return BaseResultEntity.failure(BaseResultEnum.VERIFICATION_CODE,verification.getRepMsg());
+            }
         }
         String userPassword;
         try {
@@ -117,7 +120,7 @@ public class SysUserService {
     }
 
     public BaseResultEntity baseLogin(SysUser sysUser){
-        Set<Long> roleIdSet=Stream.of(sysUser.getRoleIdList().split(",")).filter(item->!item.equals(""))
+        Set<Long> roleIdSet=Stream.of(sysUser.getRoleIdList().split(",")).filter(item->!"".equals(item))
                 .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
         Set<Long> authIdList=sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
         List<SysAuthNodeVO> roleAuthRootList=sysAuthService.getSysAuthForBfs();
@@ -152,7 +155,7 @@ public class SysUserService {
     }
 
     public BaseResultEntity logout(String token,Long userId){
-        if(token!=null&&token.equals("")&&userId==null) {
+        if(token!=null&& "".equals(token)&&userId==null) {
             sysUserPrimaryRedisRepository.deleteUserLoginStatus(token, userId);
         }
         return BaseResultEntity.success();
@@ -162,35 +165,42 @@ public class SysUserService {
         Long userId=saveOrUpdateUserParam.getUserId();
         SysUser sysUser;
         if(userId==null){
-            if(saveOrUpdateUserParam.getUserAccount()==null||saveOrUpdateUserParam.getUserAccount().trim().equals(""))
+            if(saveOrUpdateUserParam.getUserAccount()==null|| "".equals(saveOrUpdateUserParam.getUserAccount().trim())) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
-            if(saveOrUpdateUserParam.getUserName()==null||saveOrUpdateUserParam.getUserName().trim().equals(""))
+            }
+            if(saveOrUpdateUserParam.getUserName()==null|| "".equals(saveOrUpdateUserParam.getUserName().trim())) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userName");
-            if(saveOrUpdateUserParam.getIsForbid()==null)
+            }
+            if(saveOrUpdateUserParam.getIsForbid()==null) {
                 saveOrUpdateUserParam.setIsForbid(0);
-            if(sysUserSecondarydbRepository.isExistUserAccount(saveOrUpdateUserParam.getUserAccount()))
+            }
+            if(sysUserSecondarydbRepository.isExistUserAccount(saveOrUpdateUserParam.getUserAccount())) {
                 return BaseResultEntity.failure(BaseResultEnum.NON_REPEATABLE,"账户名称");
+            }
 
             sysUser = new SysUser();
             BeanUtils.copyProperties(saveOrUpdateUserParam,sysUser);
-            String password=saveOrUpdateUserParam.getPassword()!=null&&!saveOrUpdateUserParam.getPassword().equals("")?saveOrUpdateUserParam.getPassword():baseConfiguration.getDefaultPassword();
+            String password=saveOrUpdateUserParam.getPassword()!=null&&!"".equals(saveOrUpdateUserParam.getPassword())?saveOrUpdateUserParam.getPassword():baseConfiguration.getDefaultPassword();
             StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(password);
             sysUser.setUserPassword(SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString()));
             sysUser.setRoleIdList("");
             sysUser.setIsForbid(saveOrUpdateUserParam.getIsForbid());
             sysUser.setIsEditable(1);
             sysUser.setIsDel(0);
-            if (saveOrUpdateUserParam.getAuthUuid()!=null)
+            if (saveOrUpdateUserParam.getAuthUuid()!=null) {
                 sysUser.setAuthUuid(saveOrUpdateUserParam.getAuthUuid());
+            }
             sysUserPrimarydbRepository.insertSysUser(sysUser);
             userId=sysUser.getUserId();
         }else{
             sysUser=sysUserSecondarydbRepository.selectSysUserByUserId(userId);
-            if(sysUser==null||sysUser.getUserId()==null)
+            if(sysUser==null||sysUser.getUserId()==null) {
                 return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"不存在该数据");
-            if(sysUser.getIsEditable().equals(0))
+            }
+            if(sysUser.getIsEditable().equals(0)) {
                 return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"该记录是不可编辑状态");
-            if((saveOrUpdateUserParam.getUserName()!=null&&!saveOrUpdateUserParam.getUserName().trim().equals(""))
+            }
+            if((saveOrUpdateUserParam.getUserName()!=null&&!"".equals(saveOrUpdateUserParam.getUserName().trim()))
                 ||(saveOrUpdateUserParam.getIsForbid()!=null)||(saveOrUpdateUserParam.getAuthUuid()!=null)){
                 Map paramMap=new HashMap(){
                     {
@@ -223,7 +233,7 @@ public class SysUserService {
 
 
         String roleIdListStr=roleFlag?Stream.of(saveOrUpdateUserParam.getRoleIdList()).map(item->(String.valueOf(item))).collect(Collectors.joining(",")):"";
-        if(!roleIdListStr.equals("")){
+        if(!"".equals(roleIdListStr)){
             Map paramMap=new HashMap(){
                 {
                     put("userId",sysUser.getUserId());
@@ -242,10 +252,12 @@ public class SysUserService {
 
     public BaseResultEntity deleteSysUser(Long userId){
         SysUser sysUser=sysUserSecondarydbRepository.selectSysUserByUserId(userId);
-        if(sysUser==null||sysUser.getUserId()==null)
+        if(sysUser==null||sysUser.getUserId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"不存在该数据");
-        if(sysUser.getIsEditable().equals(0))
+        }
+        if(sysUser.getIsEditable().equals(0)) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_DELETE,"该记录是不可编辑状态");
+        }
         sysUserPrimarydbRepository.updateSysUserDelStatus(userId);
         sysUserPrimaryRedisRepository.deleteUserLoginStatus(userId);
         sysUserPrimarydbRepository.deleteSysUrBatch(userId);
@@ -267,7 +279,7 @@ public class SysUserService {
         Set<Long> roleIdSet=new HashSet<>();
         Set<Long> organIdSet=new HashSet<>();
         for(SysUserListVO sysUserListVO:sysUserList){
-            roleIdSet.addAll(Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!item.equals(""))
+            roleIdSet.addAll(Stream.of(sysUserListVO.getRoleIdList().split(",")).filter(item->!"".equals(item))
                     .map(item->(Long.parseLong(item))).collect(Collectors.toSet()));
         }
         List<SysRole> roleList=roleIdSet.size()==0?new ArrayList<>():sysRoleSecondarydbRepository.selectSysRoleByBatchRoleId(roleIdSet);
@@ -286,18 +298,21 @@ public class SysUserService {
 
     private String formIdDesc(Map<Long, String> roleMap, String idListStr) {
         StringBuilder sb=new StringBuilder();
-        if(idListStr!=null&&!idListStr.trim().equals("")) {
+        if(idListStr!=null&&!"".equals(idListStr.trim())) {
             String[] idStrArray = idListStr.split(",");
             for (String idStr:idStrArray){
-                if(idStr!=null&&!idStr.trim().equals("")){
+                if(idStr!=null&&!"".equals(idStr.trim())){
                     Long currentId=Long.parseLong(idStr);
                     String currentName= roleMap.get(currentId);
-                    if(currentName!=null)
+                    if(currentName!=null) {
                         sb.append(currentName).append(",");
+                    }
                 }
             }
         }
-        if(sb.length()>0) sb.setLength(sb.length()-1);
+        if(sb.length()>0) {
+            sb.setLength(sb.length()-1);
+        }
         return sb.toString();
     }
 
@@ -326,8 +341,9 @@ public class SysUserService {
 
     public BaseResultEntity updatePassword(Long userId, String password,String validateKeyName) {
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(validateKeyName);
-        if(privateKey==null)
+        if(privateKey==null) {
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
+        }
         String oldAndNewPassword;
         try {
             oldAndNewPassword=CryptUtil.decryptRsaWithPrivateKey(password,privateKey);
@@ -335,16 +351,19 @@ public class SysUserService {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"解密失败");
         }
         String[] passwordArray = oldAndNewPassword.split(",");
-        if (passwordArray.length!=2)
+        if (passwordArray.length!=2) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"password");
+        }
         SysUser sysUser=sysUserSecondarydbRepository.selectSysUserContainPassByUserId(userId);
-        if(sysUser==null||sysUser.getUserId()==null)
+        if(sysUser==null||sysUser.getUserId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
+        }
         String oldPassword = passwordArray[0];
         StringBuffer sb=new StringBuffer().append(baseConfiguration.getDefaultPasswordVector()).append(oldPassword);
         String signPassword=SignUtil.getMD5ValueLowerCaseByDefaultEncode(sb.toString());
-        if(!signPassword.equals(sysUser.getUserPassword()))
+        if(!signPassword.equals(sysUser.getUserPassword())) {
             return BaseResultEntity.failure(BaseResultEnum.OLD_PASSWORD_NOT_CORRECT);
+        }
         String newPassword = passwordArray[1];
         updatePassword(userId,newPassword);
         return BaseResultEntity.success();
@@ -371,30 +390,33 @@ public class SysUserService {
     }
 
     public BaseResultEntity sendVerificationCode(SendVerificationCodeParam sendVerificationCodeParam){
-        String verificationCode=sendVerificationCodeParam.getCellphone()!=null&&!sendVerificationCodeParam.getCellphone().equals("")?String.valueOf(RandomUtils.nextInt(100000,999999)): RandomStringUtils.randomAlphanumeric(8);
-        String userAccount=sendVerificationCodeParam.getCellphone()!=null&&!sendVerificationCodeParam.getCellphone().equals("")?sendVerificationCodeParam.getCellphone():sendVerificationCodeParam.getEmail();
+        String verificationCode=sendVerificationCodeParam.getCellphone()!=null&&!"".equals(sendVerificationCodeParam.getCellphone())?String.valueOf(RandomUtils.nextInt(100000,999999)): RandomStringUtils.randomAlphanumeric(8);
+        String userAccount=sendVerificationCodeParam.getCellphone()!=null&&!"".equals(sendVerificationCodeParam.getCellphone())?sendVerificationCodeParam.getCellphone():sendVerificationCodeParam.getEmail();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         MultiValueMap map = new LinkedMultiValueMap<>();
-        if(sendVerificationCodeParam.getCellphone()!=null&&!sendVerificationCodeParam.getCellphone().equals(""))
+        if(sendVerificationCodeParam.getCellphone()!=null&&!"".equals(sendVerificationCodeParam.getCellphone())) {
             map.put("cellphone", new ArrayList(){{add(sendVerificationCodeParam.getCellphone());}});
-        if(sendVerificationCodeParam.getEmail()!=null&&!sendVerificationCodeParam.getEmail().equals(""))
+        }
+        if(sendVerificationCodeParam.getEmail()!=null&&!"".equals(sendVerificationCodeParam.getEmail())) {
             map.put("email", new ArrayList(){{add(sendVerificationCodeParam.getEmail());}});
+        }
         map.put("verify_code", new ArrayList(){{add(verificationCode);}});
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
         BaseResultEntity baseResultEntity=restTemplate.postForObject(baseConfiguration.getPrimihubOfficalService()+"/expericence/send_verify_code",request, BaseResultEntity.class);
-        if(baseResultEntity.getCode().equals(-7))
+        if(baseResultEntity.getCode().equals(-7)) {
             return BaseResultEntity.failure(BaseResultEnum.NOT_IN_THE_WHITE_LIST);
-        else if(baseResultEntity.getCode().equals(-6))
+        } else if(baseResultEntity.getCode().equals(-6)) {
             return BaseResultEntity.failure(BaseResultEnum.FIVE_MINUTES_LATER);
-        else if(baseResultEntity.getCode().equals(-5))
+        } else if(baseResultEntity.getCode().equals(-5)) {
             return BaseResultEntity.failure(BaseResultEnum.OUTNUMBER);
-        else if(baseResultEntity.getCode().equals(-4))
+        } else if(baseResultEntity.getCode().equals(-4)) {
             return BaseResultEntity.failure(BaseResultEnum.SMS_FAILURE);
-        else if(baseResultEntity.getCode().equals(-8))
+        } else if(baseResultEntity.getCode().equals(-8)) {
             return BaseResultEntity.failure(BaseResultEnum.ONE_MINUTES_LATER);
-        else if(baseResultEntity.getCode().equals(-1))
+        } else if(baseResultEntity.getCode().equals(-1)) {
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,baseResultEntity.getMsg());
+        }
 
         String key=RedisKeyConstant.VERIFICATION_CODE_TYPE_KEY
                 .replace("<code_type>",sendVerificationCodeParam.getCodeType().toString())
@@ -409,30 +431,36 @@ public class SysUserService {
                 .replace("<code_type>",codeType.toString())
                 .replace("<code_key>",codeKey);
         String result=sysCommonPrimaryRedisRepository.getKey(key);
-        if(result==null||result.equals(""))
+        if(result==null|| "".equals(result)) {
             return false;
-        if(!result.equals(verificationCode))
+        }
+        if(!result.equals(verificationCode)) {
             return false;
+        }
         return true;
     }
 
     public BaseResultEntity forgetPassword(ForgetPasswordParam forgetPasswordParam){
         SysUser sysUser=sysUserSecondarydbRepository.selectUserByUserAccount(forgetPasswordParam.getUserAccount());
-        if(sysUser==null||sysUser.getUserId()==null)
+        if(sysUser==null||sysUser.getUserId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
+        }
         updatePassword(sysUser.getUserId(),forgetPasswordParam.getPassword());
         return BaseResultEntity.success();
     }
 
     public BaseResultEntity changeUserAccount(SaveOrUpdateUserParam param) {
         SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(param.getUserId());
-        if (sysUser==null)
+        if (sysUser==null) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无用户信息");
-        if (sysUser.getUserAccount().equals(param.getUserAccount()))
+        }
+        if (sysUser.getUserAccount().equals(param.getUserAccount())) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"修改账号名称和当前账号名称没有变动");
+        }
         String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<userId>", param.getUserId().toString());
-        if (!sysCommonPrimaryRedisRepository.lock(accountKey))
+        if (!sysCommonPrimaryRedisRepository.lock(accountKey)) {
             return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW,"账号修改中");
+        }
         SysUser verificationUser = sysUserSecondarydbRepository.selectUserByUserAccount(param.getUserAccount());
         if (verificationUser!=null){
             sysCommonPrimaryRedisRepository.unlock(accountKey);
@@ -445,13 +473,16 @@ public class SysUserService {
 
     public BaseResultEntity relieveUserAccount(Long userId) {
         SysUser sysUser = sysUserSecondarydbRepository.selectSysUserByUserId(userId);
-        if (sysUser==null)
+        if (sysUser==null) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"无用户信息");
-        if (sysUser.getRegisterType() != 4)
+        }
+        if (sysUser.getRegisterType() != 4) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"账号来源不可解除");
+        }
         String accountKey = RedisKeyConstant.SYS_USER_CHANGE_ACCOUNT_KEY.replace("<userId>", userId.toString());
-        if (!sysCommonPrimaryRedisRepository.lock(accountKey))
+        if (!sysCommonPrimaryRedisRepository.lock(accountKey)) {
             return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW,"账号修改中");
+        }
         String account = String.valueOf(SnowflakeId.getInstance().nextId());
         SysUser verificationUser = sysUserSecondarydbRepository.selectUserByUserAccount(account);
         if (verificationUser!=null){
