@@ -41,6 +41,8 @@ CREATE TABLE `fusion_organ`  (
                                  `pin_code_md` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'pin码md5',
                                  `gateway_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '网关地址',
                                  `register_time` datetime(3) NOT NULL COMMENT '注册时间',
+                                 `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥',
+                                 `private_key` varchar(1000) DEFAULT NULL COMMENT '机构私钥',
                                  `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
                                  `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                  `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
