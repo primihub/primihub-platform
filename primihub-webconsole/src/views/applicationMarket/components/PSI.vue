@@ -200,9 +200,11 @@ export default {
       formData: {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
+        ownResourceName: '',
         ownKeyword: '', // 本机构关联键
         otherOrganId: 0,
         otherResourceId: '', // 其他机构资源Id
+        otherResourceName: '',
         otherKeyword: '', // 其他机构关联键
         outputFormat: 0, // 输出方式
         outputFilePathType: 0, // 输出路径
@@ -238,7 +240,7 @@ export default {
         ],
         resultName: [
           { required: true, message: '请输入结果名称' },
-          { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
+          { max: 50, message: '长度在50个字符以内' }
         ],
         outputContent: [
           { required: true, message: '请选择输出内容' }
@@ -267,39 +269,8 @@ export default {
     }
   },
   computed: {
-    // 结果获取方
-    resultOrgan() {
-      const { ownOrganId, ownOrganName, otherOrganId, otherOrganName } = this.formData
-      const options = [
-        {
-          organId: ownOrganId,
-          organName: ownOrganName
-        }
-      ]
-      if (otherOrganId) {
-        options.push({
-          organId: otherOrganId,
-          organName: otherOrganName
-        })
-      }
-      return options
-    },
     centerImg() {
       return this.formData.outputContent === 0 ? intersection : this.formData.outputContent === 1 ? diffsection : intersection
-    },
-    resultName() {
-      const currentResource = this.tableDataA.length > 0 && this.tableDataA.find(item => item.resourceId === this.formData.ownResourceId)
-      const otherResource = this.tableDataB.length > 0 && this.tableDataB.find(item => item.resourceId === this.formData.otherResourceId)
-      return `${currentResource.resourceName}-${otherResource.resourceName}`
-    }
-  },
-  watch: {
-    resultName(newVal) {
-      if (newVal) {
-        this.formData.resultName = this.resultName
-      } else {
-        this.formData.resultName = ''
-      }
     }
   },
   destroyed() {
@@ -310,51 +281,101 @@ export default {
   },
   methods: {
     async setDefault() {
-      console.log(window.location.origin.indexOf('https://test'))
-      this.formData.ownOrganId = this.$store.getters.userOrganId
-      this.formData.ownOrganName = this.$store.getters.userOrganName
-      this.formData.resultOrgan.push(this.formData.ownOrganId)
-      if (window.location.origin.indexOf('https://node1') !== -1) {
-        console.log('pro env')
-        this.formData.ownResourceId = '7'
-        this.formData.ownKeyword = 'company'
-        this.formData.otherOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
-        this.formData.otherOrganName = 'Primihub02'
-        this.formData.otherResourceId = '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff'
-        this.formData.otherKeyword = 'company'
-        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-      } else if (window.location.origin.indexOf('https://node2') !== -1) {
-        console.log('pro env')
-        this.formData.ownResourceId = '11'
-        this.formData.ownKeyword = 'company'
-        this.formData.otherOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
-        this.formData.otherOrganName = '机构A'
-        this.formData.otherResourceId = 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69'
-        this.formData.otherKeyword = 'company'
-        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-      } else if (window.location.origin.indexOf('https://node3') !== -1) {
-        console.log('pro env')
-        this.formData.ownResourceId = '3'
-        this.formData.ownKeyword = 'name'
-        this.formData.otherOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
-        this.formData.otherOrganName = '机构A'
-        this.formData.otherResourceId = 'ea5fd5f5f9f0-e6af73fe-70dc-4daa-aec4-91ef044fc9f5'
-        this.formData.otherKeyword = 'name'
-        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-      } else {
-        console.log('test env')
-        this.formData.ownResourceId = '1116'
-        this.formData.ownKeyword = 'id'
-        this.formData.otherOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
-        this.formData.otherOrganName = '机构B'
-        this.formData.otherResourceId = '2b598a7e3298-67f337ac-06fa-4a68-971e-f98bdcac97b3'
-        this.formData.otherKeyword = 'id'
-        this.formData.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
+      const data = {
+        'node1': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '7',
+          ownResourceName: '测试数据a',
+          ownKeyword: 'company',
+          otherOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
+          otherOrganName: 'Primihub02',
+          otherResourceId: '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff',
+          otherResourceName: '测试数据b',
+          otherKeyword: 'company',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node2': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '测试数据b',
+          ownKeyword: 'company',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构A',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'company',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node3': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '数据源',
+          ownKeyword: 'name',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构B',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'name',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'other': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '数据源',
+          ownKeyword: 'name',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构A',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'name',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'test1': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '1219',
+          ownResourceName: 'PSI-用户数据B',
+          ownKeyword: '姓名',
+          otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          otherOrganName: '机构B',
+          otherResourceId: '2b598a7e3298-2749c900-52dd-428c-8f14-1a472e7fec00',
+          otherResourceName: 'PSI-用户数据B',
+          otherKeyword: '姓名',
+          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+        }
       }
-      this.cascaderValue = [this.formData.serverAddress, this.formData.otherOrganId]
+      if (window.location.origin.indexOf('https://node1') !== -1) {
+        this.init(data.node1)
+      } else if (window.location.origin.indexOf('https://node2') !== -1) {
+        this.init(data.node2)
+      } else if (window.location.origin.indexOf('https://node3') !== -1) {
+        this.init(data.node3)
+      } else if (window.location.origin.indexOf('https://test1') !== -1) {
+        this.init(data.test1)
+      } else {
+        this.init(data.test1)
+      }
+    },
+    async init(data) {
+      this.formData = Object.assign(this.formData, data)
+      this.resultName = `${this.formData.ownResourceName}-${this.formData.otherResourceName}`
+      this.formData.resultName = this.resultName
+      this.cascaderValue = [data.serverAddress, data.otherOrganId]
+      this.formData.resultOrgan.push(this.formData.ownOrganId)
+      this.tableDataA = await this.getPsiResourceAllocationList({
+        resourceName: data.ownResourceName,
+        organId: data.ownOrganId,
+        serverAddress: data.serverAddress
+      })
+
       this.tableDataB = await this.getPsiResourceAllocationList({
-        organId: this.formData.otherOrganId
+        resourceName: data.resourceName,
+        organId: data.otherOrganId,
+        serverAddress: data.serverAddress
       })
     },
     openDialog() {
@@ -388,7 +409,7 @@ export default {
       const enable = this.checkParams()
       if (!enable) return
       // max size is 200
-      this.formData.resultName = this.formData.resultName.length > 200 ? this.formData.resultName.substring(0, 200) : this.formData.resultName
+      this.formData.resultName = this.resultName.length > 200 ? this.resultName.substring(0, 200) : this.resultName
       this.$refs.form.validate(async valid => {
         if (valid) {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
@@ -467,6 +488,7 @@ export default {
       this.$refs.form.resetFields()
       if (role === 'own') {
         this.tableDataA = await this.getPsiResourceAllocationList({
+          resourceName: this.formData.ownResourceName,
           organId: this.formData.ownOrganId
         })
       } else {
