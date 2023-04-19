@@ -2,6 +2,7 @@ package com.primihub.biz;
 
 import com.google.protobuf.ByteString;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
+import com.primihub.biz.util.snowflake.SnowflakeId;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
 import java_worker.PushTaskReply;
@@ -17,8 +18,8 @@ public class WorkerGrpcClientSpringTest {
         Common.ParamValue mBatchSizeParamValue=Common.ParamValue.newBuilder().setValueInt32(128).build();
         Common.ParamValue mIterationsParamValue=Common.ParamValue.newBuilder().setValueInt32(100).build();
         Common.ParamValue testNParamValue=Common.ParamValue.newBuilder().setValueInt32(100).build();
-        Common.ParamValue aliceDataParamValue=Common.ParamValue.newBuilder().setValueString("./data/input/matrix.csv").build();
-        Common.ParamValue bobDataParamValue=Common.ParamValue.newBuilder().setValueString("./data/input/matrix.csv").build();
+        Common.ParamValue aliceDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("./data/input/matrix.csv".getBytes(StandardCharsets.UTF_8))).build();
+        Common.ParamValue bobDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("./data/input/matrix.csv".getBytes(StandardCharsets.UTF_8))).build();
         Common.Params params=Common.Params.newBuilder()
                 .putParamMap("mBatchSize",mBatchSizeParamValue)
                 .putParamMap("mIterations",mIterationsParamValue)
@@ -26,14 +27,14 @@ public class WorkerGrpcClientSpringTest {
                 .putParamMap("aliceData",aliceDataParamValue)
                 .putParamMap("bobData",bobDataParamValue)
                 .build();
+        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("11212").build();
         primihub.rpc.Common.Task task= Common.Task.newBuilder()
                 .setType(Common.TaskType.ACTOR_TASK)
                 .setParams(params)
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
                 .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
-                .setJobId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                .setTaskId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                .setTaskInfo(taskBuild)
                 .build();
         PushTaskRequest request=PushTaskRequest.newBuilder()
                 .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
@@ -42,7 +43,6 @@ public class WorkerGrpcClientSpringTest {
                 .setClientProcessedUpTo(22)
                 .build();
         Channel channel= ManagedChannelBuilder
-                .forAddress("118.190.39.100",27937)
                 .forAddress("localhost",9090)
                 .usePlaintext()
                 .build();
