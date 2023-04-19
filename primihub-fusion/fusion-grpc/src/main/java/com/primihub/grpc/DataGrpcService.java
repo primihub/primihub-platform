@@ -29,39 +29,39 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         String vibility = metaInfo.getVibility().getValueDescriptor().getName();
         String operator = request.getOperator().getValueDescriptor().getName();
         if (id == null || "".equals(id)){
-            newError(responseObserver,retcode.FAIL,"param id Cannot be empty");
+            newError(responseObserver,ResultCode.FAIL,"param id Cannot be empty");
             return;
         }
+        DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
         if ("REGISTER".equals(operator)){
             if (accessInfo == null || "".equals(accessInfo)){
-                newError(responseObserver,retcode.FAIL,"param accessInfo Cannot be empty");
+                newError(responseObserver,ResultCode.FAIL,"param accessInfo Cannot be empty");
                 return;
             }
             if (driver == null || "".equals(driver)){
-                newError(responseObserver,retcode.FAIL,"param driver Cannot be empty");
+                newError(responseObserver,ResultCode.FAIL,"param driver Cannot be empty");
                 return;
             }
             if (address == null || "".equals(address)){
-                newError(responseObserver,retcode.FAIL,"param address Cannot be empty");
+                newError(responseObserver,ResultCode.FAIL,"param address Cannot be empty");
                 return;
             }
-            DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
+
             storageService.saveDataSet(dataSet);
             log.info("REGISTER ---- toString:{}", dataSet.toString());
         }else if ("UPDATE".equals(operator)){
             if (address == null || "".equals(address)){
-                newError(responseObserver,retcode.FAIL,"param address Cannot be empty");
+                newError(responseObserver,ResultCode.FAIL,"param address Cannot be empty");
                 return;
             }
-            DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
             storageService.updateDataSet(dataSet);
             log.info("REGISTER ---- toString:{}", dataSet.toString());
         }else if ("UNREGISTER".equals(operator)){
-            storageService.deleteDataSet(id);
+            storageService.deleteDataSet(dataSet);
         }else {
-            newError(responseObserver,retcode.FAIL,operator+":Operation type has no implementation");
+            newError(responseObserver,ResultCode.FAIL,operator+":Operation type has no implementation");
         }
-        NewDatasetResponse result = NewDatasetResponse.newBuilder().setRetCode(retcode.SUCCESS).setDatasetUrl("success:"+id).build();
+        NewDatasetResponse result = NewDatasetResponse.newBuilder().setRetCode(ResultCode.SUCCESS).setDatasetUrl("success:"+id).build();
         responseObserver.onNext(result);
         responseObserver.onCompleted();
     }
@@ -79,15 +79,15 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         for (DataSet dataSet : list) {
             builder.addDataSet(dataModelConvertVo(dataSet));
         }
-        responseObserver.onNext(builder.setRetCode(retcode.SUCCESS).build());
+        responseObserver.onNext(builder.setRetCode(ResultCode.SUCCESS).build());
         responseObserver.onCompleted();
     }
 
-    private void newError(StreamObserver<NewDatasetResponse> responseObserver,retcode retcode,String msg){
+    private void newError(StreamObserver<NewDatasetResponse> responseObserver,ResultCode retcode,String msg){
         responseObserver.onNext(NewDatasetResponse.newBuilder().setRetCode(retcode).setRetMsg(msg).build());
         responseObserver.onCompleted();
     }
-    private void getError(StreamObserver<GetDatasetResponse> responseObserver,retcode retcode,String msg){
+    private void getError(StreamObserver<GetDatasetResponse> responseObserver,ResultCode retcode,String msg){
         responseObserver.onNext(GetDatasetResponse.newBuilder().setRetCode(retcode).setRetMsg(msg).build());
         responseObserver.onCompleted();
     }

@@ -16,14 +16,14 @@ grpc:
   server:
     port: 9099
 db:
-#  path: /data/fusion/simple
-  path: /Users/zhongziqian/data/fusion/simple
+  path: /data/fusion/simple
+#  path: /Users/zhongziqian/data/fusion/simple
 
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
     auto-mapping-behavior: full
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   mapper-locations: classpath*:mapper/*Mapper.xml
 
-collaborate: http://127.0.0.1:8081,http://127.0.0.1:8082
+collaborate: http://127.0.0.1:7899/

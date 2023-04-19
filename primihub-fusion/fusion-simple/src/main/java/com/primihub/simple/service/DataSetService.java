@@ -25,20 +25,27 @@ public class DataSetService implements StorageService {
         }else {
             dataSetRepository.insert(dataSet);
         }
-        asyncService.syncOne(dataSet);
+        if (dataSet.getHolder() == 0){
+            asyncService.syncOne(dataSet);
+        }
     }
 
     @Override
     public void updateDataSet(DataSet dataSet) {
         dataSetRepository.updateById(dataSet);
-        asyncService.syncOne(dataSet);
+        if (dataSet.getHolder() == 0){
+            asyncService.syncOne(dataSet);
+        }
     }
 
     @Override
-    public void deleteDataSet(String id) {
+    public void deleteDataSet(DataSet dataSet) {
 //        dataSetRepository.removeById(id);
-        dataSetRepository.deleteById(id);
-        asyncService.syncDelete(id);
+        dataSetRepository.deleteById(dataSet.getId());
+        if (dataSet.getHolder() == 0){
+            asyncService.syncDelete(dataSet);
+        }
+
     }
 
     @Override

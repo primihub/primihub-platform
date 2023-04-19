@@ -20,7 +20,7 @@ message NewDatasetRequest {
 }
 
 message NewDatasetResponse {
-  retcode ret_code = 1;
+  ResultCode ret_code = 1;
   string dataset_url = 2;
   string ret_msg = 3;
 }
@@ -30,7 +30,7 @@ message GetDatasetRequest {
 }
 
 message GetDatasetResponse {
-  retcode ret_code = 1;
+  ResultCode ret_code = 1;
   string ret_msg = 2;
   repeated DatasetData data_set = 3;
 }
@@ -56,7 +56,7 @@ message MetaInfo {
   Visibility vibility = 5;  // vibility for dataset
 }
 
-enum retcode {
+enum ResultCode {
   SUCCESS = 0;
   FAIL = 1;
 }

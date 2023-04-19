@@ -26,7 +26,8 @@ public class FrontDataSetService {
 
     public BaseResultEntity delete(DataSet dataSet) {
         try {
-            dataSetService.deleteDataSet(dataSet.getId());
+            dataSet.setHolder(1);
+            dataSetService.deleteDataSet(dataSet);
             return BaseResultEntity.success();
         }catch (Exception e){
             e.printStackTrace();

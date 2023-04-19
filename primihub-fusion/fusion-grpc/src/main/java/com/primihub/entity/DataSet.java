@@ -15,7 +15,6 @@ public class DataSet {
         this.driver = driver;
         this.address = address;
         this.vibility = vibility;
-        this.available = available;
     }
 
     public DataSet(String id, String accessInfo, String driver, String address, String vibility, Integer holder) {
@@ -24,7 +23,6 @@ public class DataSet {
         this.driver = driver;
         this.address = address;
         this.vibility = vibility;
-        this.available = available;
         this.holder = holder;
     }
 
@@ -87,16 +85,16 @@ public class DataSet {
         this.holder = holder;
     }
 
-    @Override
-    public String toString() {
-        return "DatSetEntity{" +
-                "id='" + id + '\'' +
-                ", accessInfo='" + accessInfo + '\'' +
-                ", driver='" + driver + '\'' +
-                ", address='" + address + '\'' +
-                ", vibility='" + vibility + '\'' +
-                ", available='" + available + '\'' +
-                ", holder=" + holder +
-                '}';
-    }
+//    @Override
+//    public String toString() {
+//        return "DatSetEntity{" +
+//                "id='" + id + '\'' +
+//                ", accessInfo='" + accessInfo + '\'' +
+//                ", driver='" + driver + '\'' +
+//                ", address='" + address + '\'' +
+//                ", vibility='" + vibility + '\'' +
+//                ", available='" + available + '\'' +
+//                ", holder=" + holder +
+//                '}';
+//    }
 }

@@ -1,5 +1,6 @@
 package com.primihub.simple.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.primihub.entity.DataSet;
 import com.primihub.simple.base.BaseResultEntity;
 import com.primihub.simple.constant.SysConstant;
@@ -40,14 +41,14 @@ public class AsyncService {
     @Async
     public void syncMany(List<DataSet> dataSets){
         for (String collaborate : collaborates) {
-            syncGatewayApiData(dataSets,collaborate+ SysConstant.ONE_URL);
+            syncGatewayApiData(dataSets,collaborate+ SysConstant.MANY_URL);
         }
     }
 
     @Async
-    public void syncDelete(String id){
+    public void syncDelete(DataSet dataSet){
         for (String collaborate : collaborates) {
-            syncGatewayApiData(id,collaborate+ SysConstant.DELETE_URL);
+            syncGatewayApiData(dataSet,collaborate+ SysConstant.DELETE_URL);
         }
     }
 
@@ -55,19 +56,25 @@ public class AsyncService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);
+            ObjectMapper objectMapper = new ObjectMapper();
+            String json = objectMapper.writeValueAsString(data);
+            log.info(json);
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(json, headers);
             log.info(addressAndApi);
             BaseResultEntity baseResultEntity = restTemplate.postForObject(addressAndApi, request, BaseResultEntity.class);
             log.info("baseResultEntity code:{}",baseResultEntity.getCode());
         }catch (Exception e){
             log.info("addressAndApi api url:{} Exception:{}",addressAndApi,e.getMessage());
-            e.printStackTrace();
+//            e.printStackTrace();
         }
         log.info("addressAndApi api url:{} end:{}",addressAndApi,System.currentTimeMillis());
     }
     @Async
     public void startSync(){
         List<DataSet> all = dataSetService.getAll();
-        syncMany(all);
+        if (!all.isEmpty()){
+            syncMany(all);
+        }
+
     }
 }
