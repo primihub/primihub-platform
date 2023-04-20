@@ -226,14 +226,14 @@ export default {
         }
       ],
       formData: {
-        ownOrganName: '机构A',
-        ownOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
-        ownResourceId: '1134', // 本机构资源Id
-        ownKeyword: 'id', // 本机构关联键
-        otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
-        otherOrganName: '机构B',
-        otherResourceId: '2b598a7e3298-ceb049a7-e2ce-4826-9fa9-5acd07ec67e1', // 其他机构资源Id
-        otherKeyword: 'id', // 其他机构关联键
+        ownOrganId: 0,
+        ownResourceId: '', // 本机构资源Id
+        ownResourceName: '',
+        ownKeyword: '', // 本机构关联键
+        otherOrganId: 0,
+        otherResourceId: '', // 其他机构资源Id
+        otherResourceName: '',
+        otherKeyword: '', // 其他机构关联键
         outputFormat: 0, // 输出方式
         outputFilePathType: 0, // 输出路径
         outputContent: 0,
@@ -266,7 +266,7 @@ export default {
         ],
         resultName: [
           { required: true, message: '请输入结果名称' },
-          { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
+          { max: 50, message: '长度在50个字符以内' }
         ],
         outputContent: [
           { required: true, message: '请选择输出内容' }
@@ -296,7 +296,111 @@ export default {
       return this.formData.outputContent === 0 ? intersection : this.formData.outputContent === 1 ? diffsection : intersection
     }
   },
+  destroyed() {
+    clearInterval(this.taskTimer)
+  },
+  async created() {
+    this.setDefault()
+  },
   methods: {
+    async setDefault() {
+      const data = {
+        'node1': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '7',
+          ownResourceName: '测试数据a',
+          ownKeyword: 'company',
+          otherOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
+          otherOrganName: 'Primihub02',
+          otherResourceId: '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff',
+          otherResourceName: '测试数据b',
+          otherKeyword: 'company',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node2': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '测试数据b',
+          ownKeyword: 'company',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构A',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'company',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node3': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '数据源',
+          ownKeyword: 'name',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构B',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'name',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'other': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '数据源',
+          ownKeyword: 'name',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构A',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'name',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'test1': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '1219',
+          ownResourceName: 'PSI-用户数据B',
+          ownKeyword: '姓名',
+          otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          otherOrganName: '机构B',
+          otherResourceId: '2b598a7e3298-2749c900-52dd-428c-8f14-1a472e7fec00',
+          otherResourceName: 'PSI-用户数据B',
+          otherKeyword: '姓名',
+          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+        }
+      }
+      if (window.location.origin.indexOf('https://node1') !== -1) {
+        this.init(data.node1)
+      } else if (window.location.origin.indexOf('https://node2') !== -1) {
+        this.init(data.node2)
+      } else if (window.location.origin.indexOf('https://node3') !== -1) {
+        this.init(data.node3)
+      } else if (window.location.origin.indexOf('https://test1') !== -1) {
+        this.init(data.test1)
+      } else {
+        this.init(data.test1)
+      }
+    },
+    async init(data) {
+      this.formData = Object.assign(this.formData, data)
+      this.resultName = `${this.formData.ownResourceName}-${this.formData.otherResourceName}`
+      this.formData.resultName = this.resultName
+      this.cascaderValue = [data.serverAddress, data.otherOrganId]
+      this.formData.resultOrgan.push(this.formData.ownOrganId)
+      this.tableDataA = await this.getPsiResourceAllocationList({
+        resourceName: data.ownResourceName,
+        organId: data.ownOrganId,
+        serverAddress: data.serverAddress
+      })
+
+      this.tableDataB = await this.getPsiResourceAllocationList({
+        resourceName: data.resourceName,
+        organId: data.otherOrganId,
+        serverAddress: data.serverAddress
+      })
+    },
     openDialog() {
       this.dialogVisible = true
       this.loading = true
