@@ -1,6 +1,6 @@
 <template>
   <div v-loading="listLoading" class="container" :class="{'disabled': model.isDel === 1, 'model': type === 'model'}">
-    <div class="section">
+    <div v-if="hasModelSelectComponent" class="section">
       <h2 class="infos-title">模型信息</h2>
       <div class="description-container">
         <div class="desc-col">
@@ -70,7 +70,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div class="section">
+    <div v-if="hasModelSelectComponent" class="section">
       <h3>模型评估分数</h3>
       <el-table
         :data="modelQuotas"
@@ -147,11 +147,16 @@ export default {
       modelId: 0,
       modelComponent: [],
       lineChartData: [],
-      anotherQuotas: [],
+      anotherQuotas: null,
       taskState: null,
       projectId: 0,
       task: {},
       oneself: false
+    }
+  },
+  computed: {
+    hasModelSelectComponent() {
+      return this.modelComponent.find(component => component.componentCode === 'model')
     }
   },
   created() {

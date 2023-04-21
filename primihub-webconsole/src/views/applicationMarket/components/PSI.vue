@@ -110,7 +110,7 @@
       </div>
     </div>
     <div class="button-wrapper">
-      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
+      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="openDialog">提交任务</el-button>
     </div>
     <el-dialog
       :visible.sync="dialogVisible"
@@ -170,19 +170,37 @@ export default {
       taskTimer: null,
       taskData: {},
       dialogVisible: false,
-      cascaderValue: [],
+      cascaderValue: ['http://fusion.primihub.svc.cluster.local:8080/', '2cad8338-2e8c-4768-904d-2b598a7e3298'],
+      options: [
+        {
+          value: 'http://fusion.primihub.svc.cluster.local:8080/',
+          label: 'http://fusion.primihub.svc.cluster.local:8080/',
+          children: [{
+            value: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+            label: '机构B'
+          }]
+        }
+      ],
       resourceName: '',
       selectLoading: false,
-      ownOrganResourceField: [],
-      otherOrganResourceField: [],
+      ownOrganResourceField: ['id'],
+      otherOrganResourceField: ['id'],
       pageSize: 100,
       total: 0,
       pageNo: 1,
       isRun: false, // task running state
       isReset: false,
       taskId: 0,
-      tableDataA: [],
-      tableDataB: [],
+      tableDataA: [{
+        resourceId: '1134',
+        resourceName: 'psi测试数据'
+      }],
+      tableDataB: [
+        {
+          resourceId: '2b598a7e3298-ceb049a7-e2ce-4826-9fa9-5acd07ec67e1',
+          resourceName: 'psi测试数据'
+        }
+      ],
       formData: {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
@@ -195,16 +213,14 @@ export default {
         outputFormat: 0, // 输出方式
         outputFilePathType: 0, // 输出路径
         outputContent: 0,
-        resultOrgan: [],
-        resultOrganIds: '',
         outputNoRepeat: 0, // 输出内容是否去重
-        resultName: '',
+        resultName: 'psi测试数据结果',
         remarks: null,
-        serverAddress: '',
+        serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
         psiTag: 0
       },
-      ownResourceName: '',
-      otherResourceName: '',
+      ownResourceName: 'psi测试数据',
+      otherResourceName: 'psi测试数据',
       rules: {
         ownResourceId: [
           { required: true, message: '请选择资源' }
@@ -233,9 +249,6 @@ export default {
         ],
         outputFormat: [
           { required: true }
-        ],
-        resultOrgan: [
-          { required: true, message: '请选择结果获取方' }
         ],
         psiTag: [
           { required: true, message: '请选择实现协议' }

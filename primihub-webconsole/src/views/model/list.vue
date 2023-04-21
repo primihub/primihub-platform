@@ -138,6 +138,10 @@ export default {
           'val': '横向-LR'
         },
         {
+          'key': '4',
+          'val': 'MPC-LR'
+        },
+        {
           'key': '5',
           'val': '纵向-LR'
         }

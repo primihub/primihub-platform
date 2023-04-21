@@ -82,6 +82,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { resourceFilePreview } from '@/api/resource'
 import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 export default {
@@ -113,11 +114,12 @@ export default {
   },
   computed: {
     showPreviewButton() {
-      return this.data.length > 0 && this.data[0].participationIdentity === 1
+      return this.data.length > 0 && this.data[0].participationIdentity === 1 && this.userOrganId === this.data[0].organId
     },
     hasResourceDesc() {
       return this.data[0] && Object.keys(this.data[0]).includes('resourceDesc')
-    }
+    },
+    ...mapGetters(['userOrganId'])
   },
   watch: {
     selectedData(newVal) {

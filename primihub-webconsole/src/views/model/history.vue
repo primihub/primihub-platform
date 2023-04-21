@@ -50,7 +50,7 @@
           label="结束时间"
         >
           <template slot-scope="{row}">
-            <span>{{ row.taskEndDate }}</span> <br>
+            <span>{{ row.taskEndDate? row.taskEndDate:'未结束' }}</span> <br>
           </template>
         </el-table-column>
         <el-table-column

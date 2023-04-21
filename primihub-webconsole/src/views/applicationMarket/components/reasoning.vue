@@ -7,7 +7,7 @@
     <div class="task-container">
       <el-descriptions :column="1" :colon="false">
         <el-descriptions-item><i class="icon el-icon-success" />发起方： {{ createdOrgan }}</el-descriptions-item>
-        <el-descriptions-item><i class="icon el-icon-success" /> 参与方： {{ providerOrganName }}</el-descriptions-item>
+        <el-descriptions-item><i class="icon el-icon-success" /> 协作方： {{ providerOrganName }}</el-descriptions-item>
         <el-descriptions-item><i class="icon el-icon-success" /> 推理使用模型： <el-tag type="primary">{{ modelName }}</el-tag></el-descriptions-item>
         <el-descriptions-item><i class="icon el-icon-success" /> 推理服务名称：{{ reasoningName }}</el-descriptions-item>
       </el-descriptions>
@@ -41,7 +41,7 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import { saveReasoning, getReasoning } from '@/api/reasoning'
+import { saveReasoning } from '@/api/reasoning'
 import StatusIcon from '@/components/StatusIcon'
 import { parseTime } from '@/utils/index'
 
@@ -93,20 +93,6 @@ export default {
   methods: {
     closeDialog() {
       this.visible = false
-    },
-    async getReasoning() {
-      this.loading = true
-      const res = await getReasoning({ id: this.reasoningId })
-      if (res.code === 0) {
-        this.dataList = res.result
-        this.dataList.releaseDate = parseTime(new Date().getTime())
-        this.reasoningState = this.dataList.reasoningState
-        this.dataList.reasoningState = 2
-        setTimeout(() => {
-          this.dataList.reasoningState = 1
-          this.loading = false
-        }, 1500)
-      }
     },
     async setDefault() {
       const data = {

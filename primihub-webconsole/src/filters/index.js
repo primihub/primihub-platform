@@ -1,6 +1,5 @@
 
 const taskTypeFilter = (status) => {
-  // 任务类型 1、模型 2、PSI 3、PIR
   status = status || 0
   const statusMap = {
     1: '联合建模',
