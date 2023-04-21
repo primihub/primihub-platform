@@ -92,6 +92,10 @@
 </template>
 
 <script>
+import { mapActions, mapState } from 'vuex'
+import { pirSubmitTask } from '@/api/PIR'
+import { getDataResource } from '@/api/fusionResource'
+
 export default {
   data() {
     return {
@@ -117,19 +121,54 @@ export default {
       whiteList: ['邢运民', '李雪娜', '李俊', '成玉伟', '张亮', '蔡滔', '罗俊伟', '熊波', '侯嘉成', '许峰', '高严', '朱宇皓', '巫家麟', '陈状元', '刘冰齐', '代宏军', '朱龙', '马宁', '包云江', '董厅', '李文光', '高若城', '黄治顺', '胡国栋', '张凤然', '周向荣', '李俊英', '王鑫灿', '李春霞', '钟丽萍']
     }
   },
+  computed: {
+    ...mapState('application', ['origin'])
+  },
   async created() {
-    this.form.selectResources = [{
-      'resourceId': '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
-      'resourceName': 'pir测试数据',
-      'resourceDesc': '测试数据',
-      'resourceRowsCount': 30,
-      'resourceColumnCount': 2,
-      'resourceContainsY': null,
-      'resourceYRowsCount': null,
-      'resourceYRatio': null
-    }]
+    this.getLocationOrigin()
+    this.setDefaultValue()
+  },
+  destroyed() {
+    clearInterval(this.taskTimer)
   },
   methods: {
+    async setDefaultValue() {
+      const data = {
+        'node1': {
+          resourceId: '704a92e392fd-6eaa5520-16ce-49be-a80f-3ea948334c9d',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node2': {
+          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node3': {
+          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'test1': {
+          resourceId: '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
+          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+        }
+      }
+      if (this.origin !== 'other') {
+        this.resourceId = data[this.origin].resourceId
+        this.serverAddress = data[this.origin].serverAddress
+        await this.getDataResource()
+      } else {
+        this.resource = [{
+          'resourceId': '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
+          'resourceName': 'pir测试数据',
+          'resourceDesc': '测试数据',
+          'resourceRowsCount': 30,
+          'resourceColumnCount': 2,
+          'resourceContainsY': null,
+          'resourceYRowsCount': null,
+          'resourceYRatio': null
+        }]
+      }
+      this.form.selectResources = this.resource
+    },
     next() {
       this.$refs.form.validate(valid => {
         if (valid) {
@@ -153,6 +192,30 @@ export default {
               this.dialogVisible = true
             }, 1000)
           }
+          if (this.origin !== 'other') {
+            pirSubmitTask({
+              serverAddress: this.serverAddress,
+              resourceId: this.resource[0].resourceId,
+              pirParam: this.form.pirParam
+            }).then(res => {
+              if (res.code === 0) {
+                this.taskId = res.result.taskId
+              } else {
+                this.$emit('error', {
+                  taskId: this.taskId,
+                  pirParam: this.form.pirParam
+                })
+                this.$message({
+                  message: res.msg,
+                  type: 'error'
+                })
+                this.loading = false
+              }
+            }).catch(err => {
+              console.log(err)
+              this.loading = false
+            })
+          }
         } else {
           console.log('error submit!!')
           return false
@@ -161,7 +224,17 @@ export default {
     },
     handleClose() {
       this.dialogVisible = false
-    }
+    },
+    async getDataResource() {
+      const res = await getDataResource({
+        resourceId: this.resourceId,
+        serverAddress: this.serverAddress
+      })
+      if (res.code === 0) {
+        this.resource = [res.result]
+      }
+    },
+    ...mapActions('application', ['getLocationOrigin'])
   }
 }
 </script>
