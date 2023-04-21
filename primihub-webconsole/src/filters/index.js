@@ -96,7 +96,11 @@ const authStatusFilter = (status) => {
 const modelTypeFilter = (type) => {
   const typeMap = {
     2: '纵向-XGBoost',
-    3: '横向-LR'
+    3: '横向-LR',
+    4: 'MPC-LR',
+    5: '纵向-LR',
+    6: '横向-NN(分类)',
+    7: '横向-NN(回归)'
   }
   return typeMap[type]
 }
