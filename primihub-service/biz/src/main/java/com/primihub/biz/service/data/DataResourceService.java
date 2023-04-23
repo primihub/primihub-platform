@@ -153,6 +153,9 @@ public class DataResourceService {
                 dataResource.setDbId(dataSource.getId());
             }
             dataResourcePrRepository.saveResource(dataResource);
+            for (DataFileField field : dataFileFieldList) {
+                field.setResourceId(dataResource.getResourceId());
+            }
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
             List<String> tags = req.getTags();
             for (String tagName : tags) {
