@@ -204,7 +204,7 @@ public class TestService {
         List<DataResource> copyResourceList = dataResourceRepository.findCopyResourceList(0L, 5000L);
         for (DataResource dataResource : copyResourceList) {
             if (tag.contains("grpc")){
-                dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl());
+                dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl(),dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
             }else if (tag.contains("copy")){
                 if (StringUtils.isBlank(dataResource.getResourceHashCode())){
                     try {

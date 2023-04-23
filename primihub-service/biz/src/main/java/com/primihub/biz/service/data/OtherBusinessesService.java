@@ -164,6 +164,7 @@ public class OtherBusinessesService {
         try {
             Object data;
             if (StringUtils.isEmpty(publicKey)){
+                gatewayAddressAndApi = gatewayAddressAndApi+"?ignore=ignore";
                 data = vo;
             }else {
                 data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);

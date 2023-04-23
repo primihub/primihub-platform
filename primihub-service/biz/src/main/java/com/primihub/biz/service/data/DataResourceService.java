@@ -32,6 +32,7 @@ import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
+import java_data_service.DataTypeInfo;
 import java_data_service.NewDatasetRequest;
 import java_data_service.NewDatasetResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -140,8 +141,11 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!"".equals(sysLocalOrganInfo.getOrganId().trim())){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
-
-            if (!resourceSynGRPCDataSet(dataSource,dataResource)){
+            List<DataFileField> dataFileFieldList = new ArrayList<>();
+            for (DataResourceFieldReq field : fieldList) {
+                dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
+            }
+            if (!resourceSynGRPCDataSet(dataSource,dataResource,dataFileFieldList)){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
             }
             if (dataSource!=null){
@@ -149,10 +153,6 @@ public class DataResourceService {
                 dataResource.setDbId(dataSource.getId());
             }
             dataResourcePrRepository.saveResource(dataResource);
-            List<DataFileField> dataFileFieldList = new ArrayList<>();
-            for (DataResourceFieldReq field : fieldList) {
-                dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
-            }
             dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
             List<String> tags = req.getTags();
             for (String tagName : tags) {
@@ -213,14 +213,13 @@ public class DataResourceService {
         if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
+        DataSource dataSource = null;
         if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
             Long dbId = dataResource.getDbId();
-            DataSource dataSource = dataResourceRepository.queryDataSourceById(dbId);
+            dataSource = dataResourceRepository.queryDataSourceById(dbId);
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
-            resourceSynGRPCDataSet(dataSource,dataResource);
-        }else {
-            resourceSynGRPCDataSet(null,dataResource);
         }
+        resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
@@ -620,9 +619,9 @@ public class DataResourceService {
         return yRow;
     }
 
-    public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource){
+    public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource,List<DataFileField> fieldList){
         if (dataResource.getResourceSource() !=2 ){
-            return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl());
+            return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl(),fieldList);
         }
         Map<String,Object> map = new HashMap<>();
 //        map.put("dbType",dataSource.getDbType());
@@ -636,12 +635,16 @@ public class DataResourceService {
             map.put("dbName", dataSource.getDbName());
             map.putAll(DataUtil.getJDBCData(dataSource.getDbUrl()));
         }
-        return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map));
+        return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map),fieldList);
     }
 
-    public Boolean resourceSynGRPCDataSet(String suffix,String id,String url){
+    public Boolean resourceSynGRPCDataSet(String suffix,String id,String url,List<DataFileField> fieldList){
         log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",suffix,id,url,System.currentTimeMillis());
-        NewDatasetRequest request = NewDatasetRequest.newBuilder()
+        NewDatasetRequest.Builder builder = NewDatasetRequest.newBuilder();
+        for (DataFileField field : fieldList) {
+            builder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType()).getNodeTypeName())).setName(field.getFieldName()));
+        }
+        NewDatasetRequest request = builder
                 .setDriver(suffix)
                 .setFid(id)
                 .setPath(url)
