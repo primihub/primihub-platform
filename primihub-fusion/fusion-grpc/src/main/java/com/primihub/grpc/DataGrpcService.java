@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,30 +29,31 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         String address = metaInfo.getAddress();
         String vibility = metaInfo.getVibility().getValueDescriptor().getName();
         String operator = request.getOperator().getValueDescriptor().getName();
+        String fields = metaInfo.getDataTypeList().stream().map(t -> t.getName() + "," + t.getType().name()).collect(Collectors.joining(";"));
         if (id == null || "".equals(id)){
-            newError(responseObserver,ResultCode.FAIL,"param id Cannot be empty");
+            newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param id Cannot be empty");
             return;
         }
         DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
+        dataSet.setFields(fields);
         if ("REGISTER".equals(operator)){
             if (accessInfo == null || "".equals(accessInfo)){
-                newError(responseObserver,ResultCode.FAIL,"param accessInfo Cannot be empty");
+                newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param accessInfo Cannot be empty");
                 return;
             }
             if (driver == null || "".equals(driver)){
-                newError(responseObserver,ResultCode.FAIL,"param driver Cannot be empty");
+                newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param driver Cannot be empty");
                 return;
             }
             if (address == null || "".equals(address)){
-                newError(responseObserver,ResultCode.FAIL,"param address Cannot be empty");
+                newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param address Cannot be empty");
                 return;
             }
-
             storageService.saveDataSet(dataSet);
             log.info("REGISTER ---- toString:{}", dataSet.toString());
         }else if ("UPDATE".equals(operator)){
             if (address == null || "".equals(address)){
-                newError(responseObserver,ResultCode.FAIL,"param address Cannot be empty");
+                newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param address Cannot be empty");
                 return;
             }
             storageService.updateDataSet(dataSet);
@@ -59,9 +61,9 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         }else if ("UNREGISTER".equals(operator)){
             storageService.deleteDataSet(dataSet);
         }else {
-            newError(responseObserver,ResultCode.FAIL,operator+":Operation type has no implementation");
+            newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,operator+":Operation type has no implementation");
         }
-        NewDatasetResponse result = NewDatasetResponse.newBuilder().setRetCode(ResultCode.SUCCESS).setDatasetUrl("success:"+id).build();
+        NewDatasetResponse result = NewDatasetResponse.newBuilder().setRetCode(NewDatasetResponse.ResultCode.SUCCESS).setDatasetUrl("success:"+id).build();
         responseObserver.onNext(result);
         responseObserver.onCompleted();
     }
@@ -79,20 +81,22 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         for (DataSet dataSet : list) {
             builder.addDataSet(dataModelConvertVo(dataSet));
         }
-        responseObserver.onNext(builder.setRetCode(ResultCode.SUCCESS).build());
+        responseObserver.onNext(builder.setRetCode(GetDatasetResponse.ResultCode.SUCCESS).build());
         responseObserver.onCompleted();
     }
 
-    private void newError(StreamObserver<NewDatasetResponse> responseObserver,ResultCode retcode,String msg){
+    private void newError(StreamObserver<NewDatasetResponse> responseObserver,NewDatasetResponse.ResultCode retcode,String msg){
         responseObserver.onNext(NewDatasetResponse.newBuilder().setRetCode(retcode).setRetMsg(msg).build());
-        responseObserver.onCompleted();
-    }
-    private void getError(StreamObserver<GetDatasetResponse> responseObserver,ResultCode retcode,String msg){
-        responseObserver.onNext(GetDatasetResponse.newBuilder().setRetCode(retcode).setRetMsg(msg).build());
         responseObserver.onCompleted();
     }
 
     public static DatasetData dataModelConvertVo(DataSet dataSet){
+        DataTypeInfo.Builder builder = DataTypeInfo.newBuilder();
+        List<String> fields = Arrays.stream(dataSet.getFields().split(";")).collect(Collectors.toList());
+        for (String field : fields) {
+            String[] fieldAndType = field.split(",");
+            builder.setName(fieldAndType[0]).setType(DataTypeInfo.PlainDataType.valueOf(fieldAndType[1]));
+        }
         return DatasetData.newBuilder()
                 .setAvailable(DatasetData.Status.valueOf(dataSet.getAvailable()))
                 .setMetaInfo(MetaInfo.newBuilder()
@@ -100,6 +104,7 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
                         .setAccessInfo(dataSet.getAccessInfo())
                         .setDriver(dataSet.getDriver())
                         .setAddress(dataSet.getAddress())
+                        .addDataType(builder.build())
                         .setVibility(MetaInfo.Visibility.valueOf(dataSet.getVibility())).build()).build();
     }
 }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class SqLite3Initial {
+public class SqlLite3Initial {
     private final static String QUERY_TABLES_SQL = "select name from sqlite_master where type='table' order by name desc";
     @Value("${spring.datasource.url}")
     private String jdbcUrl;
@@ -61,6 +61,7 @@ public class SqLite3Initial {
                 "  \"vibility\" TEXT,\n" +
                 "  \"available\" TEXT,\n" +
                 "  \"holder\" TEXT,\n" +
+                "  \"fields\" TEXT,\n" +
                 "  PRIMARY KEY (\"id\")\n" +
                 ");";
     }

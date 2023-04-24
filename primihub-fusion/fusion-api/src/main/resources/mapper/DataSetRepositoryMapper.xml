@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.repository.DataSetRepository">
+
+
+    <insert id="insertDataSet" parameterType="com.primihub.entity.DataSet">
+        insert into data_set(id,access_info,driver,address,vibility,available,holder,is_del,c_time,u_time)
+        values (#{id},#{accessInfo},#{driver},#{address},#{vibility},#{available},#{holder},0,now(),now())
+    </insert>
+    <insert id="insertBatchDataSet" parameterType="com.primihub.entity.DataSet">
+        insert into data_set(id,access_info,driver,address,vibility,available,holder,is_del,c_time,u_time)
+        <foreach collection="list" index="index" item="item" separator=",">
+            values (#{item.id},#{item.accessInfo},#{item.driver},#{item.address},#{item.vibility},#{item.available},#{item.holder},0,now(),now())
+        </foreach>
+    </insert>
+    <update id="updateDataSet" parameterType="com.primihub.entity.DataSet">
+        update data_set
+        <set>
+            <if test="accessInfo!=null and accessInfo!=''">access_info = #{accessInfo},</if>
+            <if test="driver!=null and driver!=''">driver = #{driver},</if>
+            <if test="address!=null and address!=''">address = #{address},</if>
+            <if test="vibility!=null and vibility!=''">vibility = #{vibility},</if>
+            <if test="available!=null and vibility!=''">available = #{available},</if>
+            <if test="holder!=null and vibility!=''">holder = #{holder},</if>
+            u_time = now()
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteDataSet" parameterType="com.primihub.entity.DataSet">
+        update data_set set is_del = 1 where id = #{id}
+    </delete>
+    <select id="getDataSetByIds" resultType="com.primihub.entity.DataSet">
+        select
+            id,access_info accessInfo,driver,address,vibility,available,holder
+        from data_set where is_del = 0
+        <if test="ids!=null">
+            and id in
+            <foreach collection="ids" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+</mapper>

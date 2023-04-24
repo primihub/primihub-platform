@@ -16,8 +16,8 @@ grpc:
   server:
     port: 9099
 db:
-  path: /data/fusion/simple
-#  path: /Users/zhongziqian/data/fusion/simple
+#  path: /data/fusion/simple
+  path: /Users/zhongziqian/data/fusion/simple
 
 mybatis-plus:
   configuration:

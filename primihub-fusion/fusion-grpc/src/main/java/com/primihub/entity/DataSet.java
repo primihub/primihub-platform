@@ -1,5 +1,7 @@
 package com.primihub.entity;
 
+import java.util.List;
+
 public class DataSet {
     private String id;
     private String accessInfo;
@@ -8,6 +10,7 @@ public class DataSet {
     private String vibility;
     private String available = "Available";
     private Integer holder = 0;
+    private String fields;
 
     public DataSet(String id, String accessInfo, String driver, String address, String vibility) {
         this.id = id;
@@ -85,16 +88,24 @@ public class DataSet {
         this.holder = holder;
     }
 
-//    @Override
-//    public String toString() {
-//        return "DatSetEntity{" +
-//                "id='" + id + '\'' +
-//                ", accessInfo='" + accessInfo + '\'' +
-//                ", driver='" + driver + '\'' +
-//                ", address='" + address + '\'' +
-//                ", vibility='" + vibility + '\'' +
-//                ", available='" + available + '\'' +
-//                ", holder=" + holder +
-//                '}';
-//    }
+    public String getFields() {
+        return fields;
+    }
+
+    public void setFields(String fields) {
+        this.fields = fields;
+    }
+
+    @Override
+    public String toString() {
+        return "DatSetEntity{" +
+                "id='" + id + '\'' +
+                ", accessInfo='" + accessInfo + '\'' +
+                ", driver='" + driver + '\'' +
+                ", address='" + address + '\'' +
+                ", vibility='" + vibility + '\'' +
+                ", available='" + available + '\'' +
+                ", holder=" + holder +
+                '}';
+    }
 }
