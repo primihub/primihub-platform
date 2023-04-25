@@ -205,6 +205,9 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 }
                 fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
             }
+            log.info("data-align clientDataFileHandleField: {}",JSONObject.toJSONString(clientData.getFileHandleField()));
+            log.info("data-align serverDataFileHandleField: {}",JSONObject.toJSONString(serverData.getFileHandleField()));
+            log.info("data-align fieldList : {}",JSONObject.toJSONString(fieldList));
             clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
