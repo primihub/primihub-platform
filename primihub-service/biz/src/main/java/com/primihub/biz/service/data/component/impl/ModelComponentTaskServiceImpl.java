@@ -135,7 +135,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 //        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.equals(ModelTypeEnum.HETERO_LR.getType())){
         }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())
                 ||modelType.equals(ModelTypeEnum.HETERO_LR.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY.getType())
+                ||modelType.equals(ModelTypeEnum.HOMO_NN_MULTICLASS.getType())
                 ||modelType.equals(ModelTypeEnum.BINARY_DPSGD.getType())){
             return lr(req,taskReq,ModelTypeEnum.MODEL_TYPE_MAP.get(modelType));
         }

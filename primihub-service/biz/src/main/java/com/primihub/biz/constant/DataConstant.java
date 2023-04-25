@@ -17,7 +17,7 @@ public class DataConstant {
     public final static String FREEMARKER_PYTHON_DATA_ALIGN_PATH= "data_align.ftl";
     public final static String FREEMARKER_PYTHON_HETER_LR_INFER_PATH= "heter_lr_infer.ftl";
     public final static String FREEMARKER_PYTHON_HETERO_LR_PATH= "hetero_lr.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH= "homo_nn_binary.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_NN_MULTICLASS_PATH= "homo_nn_multiclass.ftl";
     public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_DPSGD_PATH= "homo_nn_binary_dpsgd.ftl";
     public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH= "homo_nn_binary_infer.ftl";
     public final static String[] FREEMARKER_PYTHON_PATHS = new String[]{
@@ -29,7 +29,7 @@ public class DataConstant {
             FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH,
             FREEMARKER_PYTHON_HETER_LR_INFER_PATH,
             FREEMARKER_PYTHON_HETERO_LR_PATH,
-            FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH,
+            FREEMARKER_PYTHON_HOMO_NN_MULTICLASS_PATH,
             FREEMARKER_PYTHON_HOMO_NN_BINARY_DPSGD_PATH,
             FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH
     };
