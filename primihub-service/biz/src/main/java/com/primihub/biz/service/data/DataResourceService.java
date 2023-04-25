@@ -653,7 +653,7 @@ public class DataResourceService {
                 .setPath(url)
                 .build();
         log.info("NewDatasetRequest:{}",request.toString());
-        try {
+//        try {
             NewDatasetResponse response = dataServiceGrpcClient.run(o -> o.newDataset(request));
             log.info("dataServiceGrpc Response:{}",response.toString());
             int retCode = response.getRetCode();
@@ -661,9 +661,9 @@ public class DataResourceService {
                 log.info("dataServiceGrpc success");
                 return true;
             }
-        }catch (Exception e){
-            log.info("dataServiceGrpcException:{}",e.getMessage());
-        }
+//        }catch (Exception e){
+//            log.info("dataServiceGrpcException:{}",e.getMessage());
+//        }
         log.info("end dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{}  - time:{}",suffix,id,url,System.currentTimeMillis());
         return false;
     }
