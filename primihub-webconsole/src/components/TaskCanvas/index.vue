@@ -1189,12 +1189,16 @@ export default {
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
 
+      console.log('modelComponents >>', modelComponents)
       this.modelComponents.forEach(item => {
         this.selectComponentList.push(item.componentCode)
         this.$emit('selectComponents', this.selectComponentList)
         const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
         item.componentValues.forEach(componentValue => {
           this.components[posIndex]?.componentTypes.forEach(c => {
+            if (c.typeCode === componentValue.key && componentValue.val !== '') {
+              c.inputValue = componentValue.val
+            }
             const posIndex = c.inputValues.findIndex(item => item.key === c.inputValue)
             if (posIndex !== -1) {
               const params = c.inputValues[posIndex].param
@@ -1202,9 +1206,6 @@ export default {
                 const index = item.componentValues.findIndex(item => item.key === param.typeCode)
                 param.inputValue = item.componentValues[index].val
               })
-            }
-            if (c.typeCode === componentValue.key && componentValue.val !== '') {
-              c.inputValue = componentValue.val
             }
           })
         })

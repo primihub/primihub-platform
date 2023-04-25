@@ -356,7 +356,6 @@ export default {
 ::v-deep .el-button{
   white-space: normal;
   text-align: left;
-  line-height: 1.5;
 }
 ::v-deep .el-tabs__nav{
   transform: none;

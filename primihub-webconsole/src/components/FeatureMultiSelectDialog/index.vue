@@ -6,8 +6,8 @@
     :before-close="handleClose"
   >
     <el-tabs v-model="activeName">
-      <el-tab-pane v-for="(item,index) in currentData" :key="index" :label="item.organName" :name="item.organId">
-        <checkbox :options="item" :checked="item.checked" @change="handleChange" />
+      <el-tab-pane v-for="(item,index) in selectedData" :key="index" :label="item.organName" :name="item.organId">
+        <checkbox :organ-id="item.organId" :options="item.calculationField" :checked="item.checked" @change="handleChange" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -19,7 +19,7 @@
 </template>
 
 <script>
-import checkbox from './checkboxGroup.vue'
+import checkbox from '@/components/BaseCheckbox'
 
 export default {
   name: 'FeatureMultiSelectDialog',
@@ -34,36 +34,26 @@ export default {
   },
   data() {
     return {
-      dialogVisible: false,
-      checkAll: false,
-      isIndeterminate: true,
       activeName: '',
-      currentData: [],
       selectedData: {}
     }
   },
   created() {
-    this.currentData = this.data.map(item => {
-      item.isIndeterminate = true
-      item.checkAll = false
-      item.checked = !item.checked ? [] : item.checked
-      return item
-    })
-    this.activeName = this.data && this.data[0].organId
+    this.selectedData = JSON.parse(JSON.stringify(this.data))
+    this.activeName = this.selectedData && this.selectedData[0].organId
   },
   methods: {
     handleClose() {
       this.$emit('close')
     },
     handleDialogSubmit() {
-      this.$emit('submit', this.currentData)
+      this.$emit('submit', this.selectedData)
     },
     handleChange(data) {
-      this.selectedData = data
-      const posIndex = this.currentData.findIndex(item => item.organId === this.selectedData.organId)
-      this.currentData[posIndex] = this.selectedData
+      const { organId, checked } = data
+      const posIndex = this.selectedData.findIndex(item => item.organId === organId)
+      this.selectedData[posIndex].checked = checked
     }
-
   }
 }
 </script>

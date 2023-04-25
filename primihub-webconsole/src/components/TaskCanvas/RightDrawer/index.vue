@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="listLoading" class="right-drawer" :class="{'disabled':!options.isEditable}" @click="handleClick">
+  <div v-loading="listLoading" class="right-drawer" :class="{'disabled':!options.isEditable}">
     <el-form v-if="nodeData" ref="form" :model="nodeData" :rules="rules" label-width="80px" element-loading-spinner="el-icon-loading">
       <template v-if="isDataSelect">
         <el-form-item>
@@ -34,9 +34,9 @@
           </template>
         </el-form-item>
       </template>
-      <template v-else-if="nodeData.componentCode === 'dataAlign' && nodeData.componentTypes[0].inputValue === '2'">
+      <template v-else-if="nodeData.componentCode === DATA_ALIGN">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" class="block" placeholder="请选择" @change="handleChange">
+          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
             <el-option
               v-for="(v,index) in nodeData.componentTypes[0].inputValues"
               :key="index"
@@ -45,27 +45,26 @@
             />
           </el-select>
         </el-form-item>
-        <el-row v-if="nodeData.componentCode === 'dataAlign' && nodeData.componentTypes[0].inputValue === '2'" :gutter="20">
-          <el-col :span="12">
-            <el-button @click="openFeaturesDialog(nodeData.componentCode)">选择特征({{ selectedDataAlignFeatures? 1 : 0 }}/{{ featuresOptions.length }})</el-button>
-            <div class="feature-container">
-              <el-tag v-if="selectedDataAlignFeatures" type="primary" size="mini">{{ selectedDataAlignFeatures }}</el-tag>
-            </div>
-            <el-form-item />
-          </el-col>
-          <el-col :span="12">
-            <el-select v-model="nodeData.componentTypes[2].inputValue" class="block" :placeholder="nodeData.componentTypes[2].typeName" @change="handleChange">
-              <el-option
-                v-for="(v) in nodeData.componentTypes[2].inputValues"
-                :key="v.key"
-                :label="v.val"
-                :value="v.key"
-              />
-            </el-select>
-          </el-col>
-        </el-row>
+        <el-form-item>
+          <el-row v-if="dataAlignParam">
+            <el-col v-for="(param,key) in dataAlignParam" :key="key" :span="param.inputType === 'button' ? 14: 10">
+              <el-button v-if="param.inputType === 'button'" :disabled="!options.isEditable" @click="openFeaturesDialog(nodeData.componentCode)">可多选特征({{ selectedDataAlignFeatures? selectedDataAlignFeatures.length : 0 }}/{{ featuresOptions.length }})</el-button>
+              <el-select v-if="param.inputType === 'select'" v-model="param.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+                <el-option
+                  v-for="v in param.inputValues"
+                  :key="v.key"
+                  :label="v.val"
+                  :value="v.key"
+                />
+              </el-select>
+            </el-col>
+          </el-row>
+          <div class="feature-container">
+            <el-tag v-for="tag in selectedDataAlignFeatures" :key="tag" class="tags" size="mini">{{ tag }}</el-tag>
+          </div>
+        </el-form-item>
       </template>
-      <template v-else-if="nodeData.componentCode === 'jointStatistical'">
+      <template v-else-if="nodeData.componentCode === MPC_STATISTICS">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
           <div v-for="(item,index) in featureItems" :key="index" :gutter="20" style="margin-bottom: 30px;">
             <el-row v-if="options.isEditable" :gutter="5">
@@ -97,9 +96,9 @@
           <el-button v-if="options.isEditable && nodeData.componentTypes.find(item => item.typeCode === 'addFilling')" class="block" type="primary" @click="addFilling">添加填充策略</el-button>
         </el-form-item>
       </template>
-      <template v-else-if="nodeData.componentCode === 'model'">
+      <template v-else-if="nodeData.componentCode === MODEL">
         <div v-for="(item,n) in nodeData.componentTypes" :key="n">
-          <template v-if="item.inputType === 'select' && (!item.parentValue || item.parentValue === '')">
+          <template v-if="item.inputType === 'select'">
             <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
             <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleModelChange">
               <el-option
@@ -110,7 +109,7 @@
               />
             </el-select>
           </template>
-          <template v-if="item.inputType === 'text' && (!item.parentValue || item.parentValue === '')">
+          <template v-if="item.inputType === 'text'">
             <p class="component-name"><strong v-if="item.isRequired" class="required">*</strong><span>{{ item.typeName }}</span></p>
             <el-input v-model="item.inputValue" :disabled="!options.isEditable" size="small" @change="handleChange" />
           </template>
@@ -149,7 +148,7 @@
             </el-col>
           </el-row>
         </template>
-        <el-button v-if="options.isEditable && modelParams && modelParams.find(item => item.typeCode !=='arbiterOrgan')" style="margin-top: 10px;" @click="resetModelParams">重置参数</el-button>
+        <el-button v-if="options.isEditable && modelParams && modelParams.find(item => item.typeCode !==ARBITER_ORGAN)" style="margin-top: 10px;" @click="resetModelParams">重置参数</el-button>
       </template>
       <template v-else-if="nodeData.componentCode === 'featuresPoints'">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
@@ -202,11 +201,14 @@
     </el-form>
     <!-- add resource dialog -->
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
+
     <!-- add provider organ dialog -->
     <CooperateOrganDialog v-if="providerOrganDialogVisible" :select-type="selectType" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
-    <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :has-selected-features="hasSelectedFeatures" :selected-data="selectedFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
+    <!-- DATA_ALIGN component dialog -->
+    <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedDataAlignFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
 
+    <!-- MPC_MPC_STATISTICS component dialog -->
     <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
   </div>
 </template>
@@ -218,14 +220,15 @@ import ResourceDec from '@/components/ResourceDec'
 import CooperateOrganDialog from '@/components/CooperateOrganDialog'
 import FeatureSelectDialog from '@/components/FeatureSelectDialog'
 import FeatureMultiSelectDialog from '@/components/FeatureMultiSelectDialog'
+import { DATA_SET, DATA_ALIGN, MODEL, MPC_STATISTICS, ARBITER_ORGAN, DATA_SET_SELECT_DATA, MODEL_TYPE, MULTIPLE_SELECT_FEATURE, MPC_STATISTICS_TYPE } from '@/const/componentCode.js'
 
 export default {
   components: {
     ModelTaskResourceDialog,
     ResourceDec,
+    CooperateOrganDialog,
     FeatureSelectDialog,
-    FeatureMultiSelectDialog,
-    CooperateOrganDialog
+    FeatureMultiSelectDialog
   },
   props: {
     graphData: {
@@ -266,6 +269,19 @@ export default {
       }
     }
     return {
+      DATA_SET,
+      DATA_ALIGN,
+      MODEL,
+      MPC_STATISTICS,
+      ARBITER_ORGAN,
+      DATA_SET_SELECT_DATA,
+      MODEL_TYPE,
+      MULTIPLE_SELECT_FEATURE,
+      MPC_STATISTICS_TYPE,
+      featuresOptions: [],
+      dataAlignTypeInputValues: {},
+      dataAlignTypeValue: '',
+      dataAlignParam: {},
       modelParams: [],
       defaultComponentConfig: [],
       selectType: 'radio',
@@ -289,7 +305,7 @@ export default {
       ],
       selectedFeaturesCode: '',
       selectedFeaturesIndex: '', //  exception component feature select index
-      selectedDataAlignFeatures: null,
+      selectedDataAlignFeatures: [],
       featureIndex: 0,
       selectedFeatures: null,
       selectedFeatureIndex: -1,
@@ -336,81 +352,41 @@ export default {
     }
   },
   computed: {
-    // modelParams: {
-    //   get() {
-    //     const modelType = this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')
-    //     const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
-    //     return currentData?.param
-    //   },
-    //   set() {}
-    // },
-    // defaultComponentConfig() {
-    //   if (this.defaultConfig.length > 0) {
-    //     const model = this.defaultConfig.find(item => item.componentCode === 'model')
-    //     const currentInputValues = model.componentTypes.find(item => item.typeCode === 'modelType').inputValues
-    //     const param = currentInputValues.find(item => item.key === this.modelTypeValue)?.param
-    //     return param
-    //   } else {
-    //     return []
-    //   }
-    // },
     processingType() {
-      const processingType = this.nodeData.componentTypes.find(item => item.typeCode === 'processingType')
+      const processingType = this.nodeData.componentTypes.find(item => item.typeCode === MPC_STATISTICS_TYPE)
       return processingType ? processingType.inputValues : []
     },
-    // has selected features collection, A feature can perform only one operation
-    hasSelectedFeatures() {
-      return this.exceptionItems.map((item, index) => {
-        if (item.features !== '' && this.selectedFeaturesIndex !== index) {
-          return item.features
-        }
-      })
-    },
     isDataSelect() {
-      return this.nodeData && this.nodeData.componentCode === 'dataSet'
+      return this.nodeData && this.nodeData.componentCode === DATA_SET
     },
     isModelSelect() {
-      return this.nodeData && this.nodeData.componentCode === 'model'
+      return this.nodeData && this.nodeData.componentCode === MODEL
     },
     showArbiterOrgan() {
-      if (this.nodeData && this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')?.inputValue === '3') {
+      if (this.nodeData && this.nodeData.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValue === '3') {
         return true
       } else {
         return false
       }
     },
-    featuresOptions() {
-      if (this.nodeData.componentCode === 'dataAlign') {
-        this.getDataSetComValue()
-      }
-      if (this.selectedProviderOrgans.length > 0 && this.selectedProviderOrgans[0].fileHandleField && this.initiateOrgan.fileHandleField) {
-        let fileHandleField = []
-        if (this.selectedProviderOrgans.length > 1) {
-          fileHandleField = this.selectedProviderOrgans[0].fileHandleField.concat(this.selectedProviderOrgans[1].fileHandleField)
-          fileHandleField = [...new Set(fileHandleField)]
-        } else {
-          fileHandleField = this.selectedProviderOrgans[0].fileHandleField
-        }
-        let intersection = fileHandleField.filter(v => this.initiateOrgan.fileHandleField.includes(v))
-        intersection = intersection.map((val, key) => {
-          return {
-            key: key + '',
-            val
-          }
-        })
-        return intersection
-      } else {
-        return []
-      }
-    },
     dialogTitle() {
-      return this.nodeData.componentCode === 'dataSet' ? '添加协作方' : this.nodeData.componentCode === 'model' ? '添加可信第三方' : ''
+      return this.nodeData.componentCode === DATA_SET ? '添加协作方' : this.nodeData.componentCode === MODEL ? '添加可信第三方' : ''
     },
     featureConfigIndex() {
-      return this.nodeData.componentTypes.findIndex(item => item.typeCode === 'jointStatistical')
+      return this.nodeData.componentTypes.findIndex(item => item.typeCode === MPC_STATISTICS)
     }
   },
   watch: {
+    dataAlignTypeValue: {
+      handler(newVal) {
+        if (newVal) {
+          console.log('dataAlignTypeValue newVal', newVal)
+          console.log('dataAlignTypeValue nodeData', this.nodeData)
+          this.getDataAlignParams()
+        }
+      },
+      immediate: true
+    },
     graphData(newVal) {
       if (newVal) {
         this.getDataSetComValue(newVal)
@@ -418,9 +394,10 @@ export default {
     },
     async nodeData(newVal) {
       console.log('watch newVal', newVal)
+      console.log(newVal.componentCode, MODEL)
       if (newVal) {
-        if (newVal.componentCode === 'dataSet') {
-          this.inputValue = newVal.componentTypes.find(item => item.typeCode === 'selectData').inputValue
+        if (newVal.componentCode === DATA_SET) {
+          this.inputValue = newVal.componentTypes.find(item => item.typeCode === DATA_SET_SELECT_DATA).inputValue
           if (this.inputValue !== '') {
             this.getDataSetNodeData()
           } else {
@@ -429,21 +406,16 @@ export default {
             this.providerOrganIds = []
             this.selectedResourceId = ''
           }
-        } else if (newVal.componentCode === 'model') {
+        } else if (newVal.componentCode === MODEL) {
           this.getDataSetComValue()
-          const modelType = newVal.componentTypes.find(item => item.typeCode === 'modelType')
-          this.modelParams = this.getModelParams()
-          this.modelTypeValue = modelType.inputValue
-          if (this.modelParams) {
-            this.arbiterOrganId = this.modelParams.find(item => item.typeCode === 'arbiterOrgan')?.inputValue
-            this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
-          }
-        } else if (newVal.componentCode === 'dataAlign') {
-          this.selectedDataAlignFeatures = this.nodeData.componentTypes[1]?.inputValue !== '' ? this.nodeData.componentTypes[1]?.inputValue : null
-          this.selectedFeatures = this.selectedDataAlignFeatures
-        } else if (newVal.componentCode === 'jointStatistical') {
+          this.getModelParams()
+        } else if (newVal.componentCode === DATA_ALIGN) {
           this.getDataSetComValue()
-          if (!this.graphData.cells.find(item => item.componentCode === 'dataSet') || this.inputValue === '') {
+          this.getFeaturesOptions()
+          this.getDataAlignParams()
+        } else if (newVal.componentCode === MPC_STATISTICS) {
+          this.getDataSetComValue()
+          if (!this.graphData.cells.find(item => item.componentCode === DATA_SET) || this.inputValue === '') {
             this.$message.error('请先选择数据集')
           } else {
             this.getFeaturesItem()
@@ -458,14 +430,44 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
-    // preview model drawing is not editable
-    handleClick(e) {
-      if (!this.options.isEditable) e.preventDefault()
+    getFeaturesOptions() {
+      const calculationField = this.selectedProviderOrgans[0] && this.selectedProviderOrgans[0].calculationField
+      if (this.selectedProviderOrgans.length > 0 && calculationField && this.initiateOrgan.calculationField) {
+        let fileHandleField = []
+        if (this.selectedProviderOrgans.length > 1) {
+          fileHandleField = calculationField.concat(this.selectedProviderOrgans[1].fileHandleField)
+          fileHandleField = [...new Set(fileHandleField)]
+        } else {
+          fileHandleField = calculationField
+        }
+        const intersection = fileHandleField.filter(v => this.initiateOrgan.calculationField.includes(v))
+        this.featuresOptions = intersection || []
+      }
+    },
+    getDataAlignParams() {
+      const dataAlignType = this.nodeData.componentTypes.find(item => item.typeCode === this.DATA_ALIGN)
+      this.dataAlignTypeValue = dataAlignType.inputValue
+      if (this.dataAlignTypeValue !== '') {
+        this.dataAlignTypeInputValues = dataAlignType.inputValues.find(item => item.key === this.dataAlignTypeValue)
+        this.dataAlignParam = this.dataAlignTypeInputValues?.param
+        if (this.dataAlignParam) {
+          const inputValue = this.dataAlignParam.find(item => item.typeCode === MULTIPLE_SELECT_FEATURE).inputValue
+          let selectedDataAlignFeatures = inputValue !== '' ? JSON.parse(inputValue) : []
+          // DATA_SET component resources changed, compare the difference of the selected features
+          selectedDataAlignFeatures = selectedDataAlignFeatures.length > 0 ? this.featuresOptions.filter((item) => selectedDataAlignFeatures.includes(item)) : []
+          this.selectedDataAlignFeatures = selectedDataAlignFeatures
+        }
+      }
     },
     getModelParams() {
-      const modelType = this.nodeData.componentTypes.find(item => item.typeCode === 'modelType')
+      const modelType = this.nodeData.componentTypes.find(item => item.typeCode === MODEL_TYPE)
       const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
-      return currentData?.param
+      this.modelTypeValue = modelType.inputValue
+      this.modelParams = currentData?.param ? currentData.param : []
+      if (this.modelParams) {
+        this.arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
+        this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+      }
     },
     handleModelChange(val) {
       this.modelTypeValue = val
@@ -543,7 +545,7 @@ export default {
         this.arbiterOrganId = ''
         this.arbiterOrganName = ''
       }
-      const modelTypeIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === 'modelType')
+      const modelTypeIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === MODEL_TYPE)
       const paramIndex = this.nodeData.componentTypes[modelTypeIndex].inputValues.findIndex(item => item.key === this.modelTypeValue)
       this.nodeData.componentTypes[modelTypeIndex].inputValues[paramIndex].param = this.modelParams
       this.handleChange()
@@ -560,7 +562,7 @@ export default {
       return this.selectedProviderOrgans.find(item => item.organId === organId)
     },
     getDataSetComValue() {
-      const dataSetCom = this.graphData.cells.find(item => item.componentCode === 'dataSet')
+      const dataSetCom = this.graphData.cells.find(item => item.componentCode === DATA_SET)
       if (dataSetCom) {
         const dataSetComVal = dataSetCom.data.componentTypes[0].inputValue
         this.inputValue = dataSetComVal
@@ -572,7 +574,7 @@ export default {
       }
     },
     async openProviderOrganDialog() {
-      if (this.nodeData.componentCode === 'dataSet') {
+      if (this.nodeData.componentCode === DATA_SET) {
         // multiple selection
         this.selectType = 'checkbox'
         if (this.selectedProviderOrgans.length === 2) {
@@ -582,8 +584,6 @@ export default {
           })
           return
         }
-        console.log('23e44', this.selectedProviderOrgans)
-        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
@@ -616,7 +616,7 @@ export default {
       this.providerOrganDialogVisible = false
     },
     handleProviderOrganSubmit(data) {
-      if (this.nodeData.componentCode === 'dataSet') {
+      if (this.nodeData.componentCode === DATA_SET) {
         // multiple select type
         if (Array.isArray(data)) {
           if (data.length === 0) {
@@ -640,13 +640,13 @@ export default {
         this.arbiterOrganName = data.organName
         this.arbiterOrganId = data.organId
         if (this.modelParams) {
-          const index = this.modelParams.findIndex(item => item.typeCode === 'arbiterOrgan')
+          const index = this.modelParams.findIndex(item => item.typeCode === ARBITER_ORGAN)
           this.modelParams[index].inputValue = this.arbiterOrganId
         }
       }
 
       // Reassign a value to the jointStatistical component
-      if (this.graphData.cells.find(item => item.componentCode === 'jointStatistical')) {
+      if (this.graphData.cells.find(item => item.componentCode === MPC_STATISTICS)) {
         this.getFeaturesItem()
       }
 
@@ -690,7 +690,10 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
-    handleChange() {
+    handleChange(value) {
+      if (this.nodeData.componentCode === DATA_ALIGN) {
+        this.dataAlignTypeValue = value
+      }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -731,7 +734,7 @@ export default {
       // set input value
       this.setInputValue(data)
       // Reassign a value to the jointStatistical component
-      if (this.inputValue !== '' && this.graphData.cells.find(item => item.componentCode === 'jointStatistical')) {
+      if (this.inputValue !== '' && this.graphData.cells.find(item => item.componentCode === MPC_STATISTICS)) {
         this.getFeaturesItem()
       }
       this.save()
@@ -802,35 +805,7 @@ export default {
     },
     openFeaturesDialog(code, index) {
       this.selectedFeaturesCode = code
-      if (this.selectedFeaturesCode === 'dataAlign') {
-        this.selectedFeatures = this.selectedDataAlignFeatures
-      }
       this.featuresDialogVisible = true
-    },
-    // handleFeatureDialogSubmit(data) {
-    //   if (this.selectedFeaturesCode === 'dataAlign') {
-    //     this.selectedDataAlignFeatures = data
-    //     this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
-    //     this.selectedFeatures = this.selectedDataAlignFeatures
-    //   } else if (this.selectedFeaturesCode === 'missing') {
-    //     this.selectedExceptionFeatures = data
-    //     this.nodeData.componentTypes[1].inputValue = this.selectedExceptionFeatures
-    //     this.selectedFeatures = this.selectedExceptionFeatures
-    //   }
-    // },
-    compareFeature(arr, arr2) {
-      if (!arr2) return
-      if (arr.length !== arr2.length) {
-        return true
-      } else {
-        for (let i = 0; i < arr.length; i++) {
-          if (!arr2.find(item => item === arr[i])) {
-            return true
-          } else {
-            return false
-          }
-        }
-      }
     },
     handleMultiFeatureDialogSubmit(data) {
       const features = []
@@ -855,10 +830,26 @@ export default {
       this.multiFeaturesVisible = false
       this.setFeaturesValue()
     },
+    compareFeature(arr, arr2) {
+      if (!arr2) return
+      if (arr.length !== arr2.length) {
+        return true
+      } else {
+        for (let i = 0; i < arr.length; i++) {
+          if (!arr2.find(item => item === arr[i])) {
+            return true
+          } else {
+            return false
+          }
+        }
+      }
+    },
     handleFeatureDialogSubmit(data) {
       this.selectedDataAlignFeatures = data
-      this.nodeData.componentTypes[1].inputValue = this.selectedDataAlignFeatures
-      this.selectedFeatures = this.selectedDataAlignFeatures
+      const dataAlignTypeIndex = this.dataAlignParam.findIndex(item => item.typeCode === MULTIPLE_SELECT_FEATURE)
+      this.dataAlignParam[dataAlignTypeIndex].inputValue = JSON.stringify(data)
+      console.log('selectedDataAlignFeatures', this.dataAlignParam[dataAlignTypeIndex].inputValue)
+
       this.featuresDialogVisible = false
       this.handleChange()
     },
@@ -997,7 +988,7 @@ p {
   font-size: 12px;
 }
 .tags{
-  margin: 5px 8px;
+  margin: 5px 2px;
 }
 .exception-type{
   margin-left: 10px;
