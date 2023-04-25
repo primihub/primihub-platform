@@ -10,6 +10,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>biz</artifactId>
+    <properties>
+        <os.detected.classifier>osx-x86_64</os.detected.classifier>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -195,7 +198,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-freemarker</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>5.7.1</version>
+        </dependency>
 
     </dependencies>
 

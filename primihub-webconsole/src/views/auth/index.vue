@@ -69,7 +69,7 @@ import { param2Obj } from '@/utils/index'
 import { sendVerificationCode, authRegister } from '@/api/user'
 import Footer from '@/components/Footer'
 import Verify from '@/components/Verifition'
-const phonePattern = /^[1][3,4,5,7,8][0-9]{9}$/
+const phonePattern = /^[1][\d][0-9]{9}$/
 
 export default {
   name: 'Register',

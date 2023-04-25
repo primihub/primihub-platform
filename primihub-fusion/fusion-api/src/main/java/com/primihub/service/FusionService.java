@@ -1,5 +1,6 @@
 package com.primihub.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.fusion.param.FusionOrganExtendsParam;
@@ -8,6 +9,7 @@ import com.primihub.entity.fusion.po.FusionOrgan;
 import com.primihub.entity.fusion.po.FusionOrganExtends;
 import com.primihub.repository.FusionRepository;
 import com.primihub.util.SignUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -16,6 +18,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class FusionService {
 
     @Autowired
@@ -63,6 +66,7 @@ public class FusionService {
     }
 
     public BaseResultEntity changeOrganExtends(FusionOrganExtendsParam param) {
+        log.info(JSONObject.toJSONString(param));
         FusionOrgan fusionOrgan=fusionRepository.getFusionOrganByGlobalId(param.getGlobalId());
         if (fusionOrgan==null) {
             return BaseResultEntity.failure(BaseResultEnum.CAN_NOT_ALTER,"无机构信息");

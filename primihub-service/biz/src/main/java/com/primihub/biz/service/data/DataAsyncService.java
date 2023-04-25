@@ -146,8 +146,11 @@ public class DataAsyncService implements ApplicationContextAware {
             req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
             req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
             req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-            dataTaskPrRepository.updateDataTask(req.getDataTask());
             Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
+            if (dataComponentReqMap.containsKey("jointStatistical")){
+                req.getDataTask().setTaskType(TaskTypeEnum.JOINT_STATISTICAL.getTaskType());
+            }
+            dataTaskPrRepository.updateDataTask(req.getDataTask());
             req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
             dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
             for (DataComponent dataComponent : req.getDataComponents()) {
@@ -177,7 +180,7 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(req.getDataTask());
 //        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName(),System.currentTimeMillis());
-        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+//        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
             log.info("Share model task modelId:{} modelName:{}",req.getDataModel().getModelId(),req.getDataModel().getModelName());
             ShareModelVo vo = new ShareModelVo();
             vo.setDataModel(req.getDataModel());
@@ -187,7 +190,7 @@ public class DataAsyncService implements ApplicationContextAware {
             vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
             vo.setDerivationList(req.getDerivationList());
             sendShareModelTask(vo);
-        }
+//        }
         sendModelTaskMail(req.getDataTask(),req.getDataModel().getProjectId());
         dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(req.getDataModel().getProjectId(),null));
     }
@@ -453,11 +456,18 @@ public class DataAsyncService implements ApplicationContextAware {
                 Long[] portNumber = getPortNumber();
                 map.put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
                 map.put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
+                map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
                 String freemarkerContent = "";
                 if ("2".equals(modelType.getVal())){
                     map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
                     grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
+                }else if(modelType.getVal().equals("5")){
+                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETER_LR_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
+                }else if(modelType.getVal().equals("6")||modelType.getVal().equals("7")){
+                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),1);
                 }else{
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
                     grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),1);

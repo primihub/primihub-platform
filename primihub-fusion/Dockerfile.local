@@ -1,5 +1,11 @@
 FROM ibmjava:8-jre
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update \
+  && apt install tzdata \
+  && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
 ADD fusion-api/target/*-SNAPSHOT.jar /applications/fusion.jar
 ADD fusion-simple/target/*-SNAPSHOT.jar /applications/fusion-simple.jar
 

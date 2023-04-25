@@ -3,24 +3,25 @@
     <h2>资源详情</h2>
     <div class="detail">
       <el-descriptions title="资源信息" :column="2" label-class-name="detail-title">
+        <el-descriptions-item label="资源ID">{{ resource.resourceId }}</el-descriptions-item>
         <el-descriptions-item label="资源名称">{{ resource.resourceName }}</el-descriptions-item>
-        <el-descriptions-item label="资源描述">{{ resource.resourceDesc }}</el-descriptions-item>
-        <el-descriptions-item label="关键词">
+        <el-descriptions-item label="标签">
           <el-tag v-for="tag in resource.tags" :key="tag.tagId" type="primary" size="mini">{{ tag.tagName }}</el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="授权方式">
           <span>{{ resource.resourceAuthType | authTypeFilter }}</span>
         </el-descriptions-item>
+        <el-descriptions-item label="资源描述">{{ resource.resourceDesc }}</el-descriptions-item>
       </el-descriptions>
     </div>
     <div class="detail">
       <el-descriptions title="数据信息" :column="2" label-class-name="detail-title">
-        <el-descriptions-item label="数据来源">{{ resource.resourceSource | sourceFilter }}</el-descriptions-item>
-        <el-descriptions-item label="数据大小">{{ resource.fileSize | fileSizeFilter }}</el-descriptions-item>
-        <el-descriptions-item label="特征量">{{ resource.fileColumns }}</el-descriptions-item>
         <el-descriptions-item label="样本量">{{ resource.fileRows }}</el-descriptions-item>
+        <el-descriptions-item label="特征量">{{ resource.fileColumns }}</el-descriptions-item>
         <el-descriptions-item label="正例样本数量">{{ resource.fileYRows ? resource.fileYRows : '0' }}</el-descriptions-item>
         <el-descriptions-item label="正例样本比例">{{ resource.fileYRatio ? resource.fileYRatio : '0' }}%</el-descriptions-item>
+        <el-descriptions-item label="数据来源">{{ resource.resourceSource | sourceFilter }}</el-descriptions-item>
+        <el-descriptions-item label="数据大小">{{ resource.fileSize | fileSizeFilter }}</el-descriptions-item>
       </el-descriptions>
     </div>
     <div class="detail">
@@ -113,11 +114,6 @@ export default {
 @import "~@/styles/variables.scss";
 ::v-deep .el-tag{
   margin:  0 3px;
-}
-::v-deep .detail-title{
-  width: 100px;
-  text-align: right;
-  justify-content: flex-end;
 }
 ::v-deep .el-descriptions__title, h3{
   font-size: 18px;

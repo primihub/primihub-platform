@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data.component.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
@@ -37,7 +38,6 @@ import primihub.rpc.Common;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 @Service("dataAlignComponentTaskServiceImpl")
@@ -204,8 +204,14 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 if (StringUtils.isBlank(multipleSelected)) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
                 }
-                fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
+//                fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
+                fieldList = JSONArray.parseArray(multipleSelected,String.class);
             }
+            log.info("data-align clientDataFileHandleField: {}",JSONObject.toJSONString(clientData.getFileHandleField()));
+            log.info("data-align serverDataFileHandleField: {}",JSONObject.toJSONString(serverData.getFileHandleField()));
+            log.info("data-align fieldList : {}",JSONObject.toJSONString(fieldList));
+            clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
+            serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
             serverIndex = fieldList.stream().map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0) {
@@ -272,6 +278,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             map.put(serverData.getResourceId(),serverEntity);
             return BaseResultEntity.success(map);
         } catch (Exception e) {
+            e.printStackTrace();
             log.info("grpc Exception:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI 异常:"+e.getMessage());
         }

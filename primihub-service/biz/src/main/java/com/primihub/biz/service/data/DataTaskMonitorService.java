@@ -43,7 +43,7 @@ public class DataTaskMonitorService {
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->StringUtils.isNotBlank(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
                     if (!taskStatus.isEmpty()){
-                        log.info("taskId:{} - num:{} - {}",taskBuild.getTaskId(),num,JSONObject.toJSONString(taskStatus));
+//                        log.info("taskId:{} - num:{} - {}",taskBuild.getTaskId(),num,JSONObject.toJSONString(taskStatus));
                         primaryStringRedisTemplate.opsForList().rightPushAll(key,taskStatus);
                         primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
                         if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){

@@ -1,6 +1,13 @@
 FROM ibmjava:8-jre
 
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt update \
+  && apt install tzdata \
+  && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
 ADD application/target/*-SNAPSHOT.jar /applications/application.jar
 ADD gateway/target/*-SNAPSHOT.jar /applications/gateway.jar
+
 
 ENTRYPOINT ["/bin/sh","-c","java -jar -Dfile.encoding=UTF-8 /applications/application.jar --spring.profiles.active=test --server.port=8080"]

@@ -61,7 +61,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
-            Map<String, GrpcComponentDto> exceptionEntityMap = getExceptionEntityMap(taskReq.getFusionResourceList());
+            Map<String, GrpcComponentDto> exceptionEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),null);
             log.info("exceptionEntityMap-1:{}",JSONObject.toJSONString(exceptionEntityMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
@@ -155,14 +155,9 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         return BaseResultEntity.success();
     }
 
-    public Map<String,GrpcComponentDto> getExceptionEntityMap(List<LinkedHashMap<String,Object>> maps){
-        Map<String, GrpcComponentDto> map = new HashMap<>();
-        for (LinkedHashMap<String, Object> dataMap : maps) {
-            List<LinkedHashMap<String, Object>> fieldList = (List<LinkedHashMap<String, Object>>)dataMap.get("fieldList");
-            Map<String, Integer> fieldMap = fieldList.stream().collect(Collectors.toMap(d -> d.get("fieldName").toString(), d -> Integer.parseInt(d.get("fieldType").toString())));
-            map.put(dataMap.get("resourceId").toString(),new GrpcComponentDto(fieldMap,dataMap.get("resourceId").toString()));
-        }
-        return map;
+    public static void main(String[] args) {
+        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1212").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("213123123123232").build();
+        System.out.println(JSONObject.toJSONString(taskBuild));
     }
 
     public static void main(String[] args) {

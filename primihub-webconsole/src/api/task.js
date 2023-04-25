@@ -51,3 +51,11 @@ export function getTaskData(params) {
     params
   })
 }
+
+export function updateTaskDesc(params) {
+  return request({
+    url: '/data/task/updateTaskDesc',
+    method: 'get',
+    params
+  })
+}

@@ -10,11 +10,11 @@
           <el-form ref="form" :model="formData" :rules="rules" label-width="70px">
             <div class="header">
               <div class="organ-container">
-                <div class="organ"><span>使用方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
-                <div class="organ"><span>加持方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
+                <div class="organ"><span>发起方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
+                <div class="organ"><span>协作方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
               </div>
               <div class="line">
-                <div class="line-icon">交</div>
+                <div class="line-icon">{{ taskTypeText }}</div>
               </div>
             </div>
             <div class="item-row">
@@ -23,12 +23,12 @@
                   <ResourceSelect :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="ownKeyword">
-                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" no-data-text="暂无数据" clearable placeholder="请选择" @change="handleOwnKeywordChange">
+                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" multiple no-data-text="暂无数据" clearable placeholder="请选择" @change="handleKeywordChange($event,formData.otherKeyword)">
                     <el-option
                       v-for="(item,index) in ownOrganResourceField"
                       :key="index"
-                      :label="item.name"
-                      :value="item.value"
+                      :label="item"
+                      :value="item"
                     />
                   </el-select>
                 </el-form-item>
@@ -42,12 +42,12 @@
                   <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="otherKeyword">
-                  <el-select v-model="formData.otherKeyword" no-data-text="暂无数据" placeholder="请选择" clearable @change="handleOtherKeywordChange">
+                  <el-select v-model="formData.otherKeyword" multiple no-data-text="暂无数据" placeholder="请选择" clearable @change="handleKeywordChange($event,formData.ownKeyword)">
                     <el-option
                       v-for="(item,index) in otherOrganResourceField"
                       :key="index"
-                      :label="item.name"
-                      :value="index"
+                      :label="item"
+                      :value="item"
                     />
                   </el-select>
                 </el-form-item>
@@ -69,7 +69,7 @@
             <el-row>
               <el-col :span="8">
                 <el-form-item label="输出内容" prop="outputContent">
-                  <el-select v-model="formData.outputContent" placeholder="请选择">
+                  <el-select v-model="formData.outputContent" placeholder="请选择" @change="handleTaskTypeChange">
                     <el-option label="交集" :value="0" />
                     <el-option label="差集" :value="1" />
                   </el-select>
@@ -79,13 +79,6 @@
                 <el-form-item label="输出格式" prop="outputFormat">
                   <el-select v-model="formData.outputFormat" placeholder="请选择">
                     <el-option label="资源文件(csv)" :value="0" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
-              <el-col :span="8">
-                <el-form-item label="输出资源路径" prop="outputFilePathType">
-                  <el-select v-model="formData.outputFilePathType" placeholder="请选择">
-                    <el-option label="自动生成" :value="0" />
                   </el-select>
                 </el-form-item>
               </el-col>
@@ -113,7 +106,7 @@
                 <el-checkbox v-for="(item,index) in resultOrgan" :key="index" :label="item.organId">{{ item.organName }}</el-checkbox>
               </el-checkbox-group>
             </el-form-item> -->
-            <el-form-item label="备注（可选）" prop="remarks">
+            <el-form-item label="备注" prop="remarks">
               <el-input
                 v-model="formData.remarks"
                 size="mini"
@@ -150,6 +143,7 @@ export default {
   },
   data() {
     return {
+      taskTypeText: '交',
       resourceName: '',
       selectLoading: false,
       ownOrganResourceField: [],
@@ -165,10 +159,10 @@ export default {
       formData: {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
-        ownKeyword: '', // 本机构关联键
+        ownKeyword: [], // 本机构关联键
         otherOrganId: 0,
         otherResourceId: '', // 其他机构资源Id
-        otherKeyword: '', // 其他机构关联键
+        otherKeyword: [], // 其他机构关联键
         outputFormat: 0, // 输出方式
         outputFilePathType: 0, // 输出路径
         outputContent: 0,
@@ -187,13 +181,13 @@ export default {
           { required: true, message: '请选择资源' }
         ],
         ownKeyword: [
-          { required: true, message: '请选择关联键', trigger: 'change' }
+          { required: true, message: '请选择关联键', trigger: 'blur' }
         ],
         otherResourceId: [
-          { required: true, message: '请选择资源', trigger: 'change' }
+          { required: true, message: '请选择资源', trigger: 'blur' }
         ],
         otherKeyword: [
-          { required: true, message: '请选择关联键', trigger: 'change' }
+          { required: true, message: '请选择关联键', trigger: 'blur' }
         ],
         outputFilePathType: [
           { required: true, message: '请选择输出资源路径', trigger: 'blur' }
@@ -271,6 +265,9 @@ export default {
     this.formData.resultOrgan.push(this.formData.ownOrganId)
   },
   methods: {
+    handleTaskTypeChange(value) {
+      this.taskTypeText = value === 0 ? '交' : '差'
+    },
     async getPsiResourceAllocationList(params) {
       const { resourceName, organId } = params
       const res = await getPsiResourceAllocationList({
@@ -291,8 +288,23 @@ export default {
       this.$refs.form.validate(async valid => {
         if (valid) {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
+          const ownKeyword = this.formData.ownKeyword.join(',')
+          const otherKeyword = this.formData.otherKeyword.join(',')
+          if (this.formData.ownKeyword.length !== this.formData.otherKeyword.length) {
+            this.$message.error('两方关联键需相同')
+            return
+          } else {
+            const ownKeywordData = this.formData.ownKeyword
+            const otherKeywordData = this.formData.otherKeyword
+            const difference = ownKeywordData.concat(otherKeywordData).filter(v => !ownKeywordData.includes(v) || !otherKeywordData.includes(v))
+            console.log('difference', difference)
+            if (difference.length > 0) {
+              this.$message.error('两方关联键需相同')
+              return
+            }
+          }
           this.isRun = true
-          const res = await saveDataPsi(this.formData)
+          const res = await saveDataPsi(Object.assign({}, this.formData, { ownKeyword, otherKeyword }))
           if (res.code === 0) {
             this.$message({
               message: '创建完成',
@@ -322,16 +334,16 @@ export default {
         message = '请选择求交机构'
         enable = false
       } else if (ownResourceId === '') {
-        message = '请选择使用方资源'
+        message = '请选择发起方资源'
         enable = false
       } else if (otherResourceId === '') {
-        message = '请选择加持方资源'
+        message = '请选择协作方资源'
         enable = false
       } else if (otherKeyword === '') {
-        message = '请选择加持方关联键'
+        message = '请选择协作方关联键'
         enable = false
       } else if (ownKeyword === '') {
-        message = '请选择使用方关联键'
+        message = '请选择发起方关联键'
         enable = false
       }
       if (!enable) {
@@ -352,7 +364,7 @@ export default {
       } else {
         if (this.formData.serverAddress === '') {
           this.$message({
-            message: '请选择加持方',
+            message: '请选择协作方',
             type: 'warning'
           })
           this.tableDataB = []
@@ -365,11 +377,15 @@ export default {
         })
       }
     },
-    handleOwnKeywordChange(index) {
-      this.formData.ownKeyword = this.ownOrganResourceField[index]?.name
-    },
-    handleOtherKeywordChange(index) {
-      this.formData.otherKeyword = this.otherOrganResourceField[index]?.name
+    handleKeywordChange(value, data) {
+      if (data.length > 0) {
+        for (let i = 0; i < value.length; i++) {
+          if (!data.includes(value[i])) {
+            this.$message.error('关联键配置错误！请选择相同关联键')
+            break
+          }
+        }
+      }
     },
     async handleOwnResourceSearch(resourceName) {
       this.resourceName = resourceName
@@ -398,27 +414,21 @@ export default {
     handleOwnResourceChange(resourceId) {
       this.formData.ownResourceId = resourceId
       this.ownOrganResourceField = []
-      this.formData.ownKeyword = ''
+      this.formData.ownKeyword = []
       const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
       this.ownResourceName = currentResource ? currentResource.resourceName : ''
       currentResource?.keywordList.forEach((item, index) => {
-        this.ownOrganResourceField.push({
-          value: index,
-          name: item
-        })
+        this.ownOrganResourceField.push(item)
       })
     },
     handleTargetResourceChange(resourceId) {
       this.otherOrganResourceField = []
       this.formData.otherResourceId = resourceId
-      this.formData.otherKeyword = ''
+      this.formData.otherKeyword = []
       const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
       this.otherResourceName = currentResource ? currentResource.resourceName : ''
       currentResource?.keywordList.forEach((item, index) => {
-        this.otherOrganResourceField.push({
-          value: index,
-          name: item
-        })
+        this.otherOrganResourceField.push(item)
       })
     },
     async handleOrganSelect(data) {
@@ -427,7 +437,7 @@ export default {
       this.formData.otherOrganName = data.organName
       this.otherOrganResourceField = []
       this.formData.otherResourceId = ''
-      this.formData.otherKeyword = ''
+      this.formData.otherKeyword = []
       this.formData.serverAddress = data.serverAddress
       this.tableDataB = []
       this.tableDataB = await this.getPsiResourceAllocationList({
@@ -524,7 +534,6 @@ width: 1200px;
 }
 .item-row{
   display: flex;
-  align-items: center;
   justify-content: space-between;
   width: 781px;
   margin: 0 auto;
