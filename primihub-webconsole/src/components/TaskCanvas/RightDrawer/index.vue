@@ -469,17 +469,14 @@ export default {
         this.modelParams = currentData?.param ? currentData.param : []
         console.log('modelParams', this.modelParams)
         if (this.modelParams) {
-          if (this.modelTypeValue === '3') {
-            this.arbiterOrganId = currentData.param.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
-            this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
-            const child = this.modelParams.find(item => item.typeCode === 'encryption')
-            this.modelEncryptionType = child.inputValue
-            console.log('modelEncryptionType', this.modelEncryptionType)
-            console.log('childParam', child.inputValues.find(item => item.key === this.modelEncryptionType))
-            const childParam = child.inputValues.find(item => item.key === this.modelEncryptionType)?.param
-            this.modelParams = this.modelEncryptionType !== '' && childParam ? [...this.modelParams, ...childParam] : currentData.param
-          }
-          console.log('newVal modelParams', this.modelParams)
+          this.arbiterOrganId = currentData.param.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
+          this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+          const child = this.modelParams.find(item => item.typeCode === 'encryption')
+          this.modelEncryptionType = child.inputValue
+          console.log('modelEncryptionType', this.modelEncryptionType)
+          console.log('childParam', child.inputValues.find(item => item.key === this.modelEncryptionType))
+          const childParam = child.inputValues.find(item => item.key === this.modelEncryptionType)?.param
+          this.modelParams = this.modelEncryptionType !== '' && childParam ? [...this.modelParams, ...childParam] : currentData.param
         }
       }
     },
