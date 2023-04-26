@@ -132,12 +132,12 @@
               <el-input v-model="param.inputValue" :disabled="!options.isEditable" size="mini" @change="handleChange" />
             </el-col>
             <el-col v-if="param.inputType === 'select'" :span="12">
-              <el-select v-model="param.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+              <el-select v-model="param.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleParamChange">
                 <el-option
-                  v-for="v in param.inputValues"
-                  :key="v.val"
-                  :label="v.key"
-                  :value="v.val"
+                  v-for="(v,i) in param.inputValues"
+                  :key="i"
+                  :label="v.val"
+                  :value="v.key"
                 />
               </el-select>
             </el-col>
@@ -336,6 +336,7 @@ export default {
       inputValues: [],
       inputValue: '',
       modelTypeValue: '',
+      modelEncryptionType: '',
       resourceChanged: false,
       rules: {
         modelName: [
@@ -462,17 +463,36 @@ export default {
     getModelParams() {
       const modelType = this.nodeData.componentTypes.find(item => item.typeCode === MODEL_TYPE)
       const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
-      this.modelTypeValue = modelType.inputValue
-      this.modelParams = currentData?.param ? currentData.param : []
-      if (this.modelParams) {
-        this.arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
-        this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+
+      if (currentData) {
+        this.modelTypeValue = modelType.inputValue
+        this.modelParams = currentData?.param ? currentData.param : []
+        console.log('modelParams', this.modelParams)
+        if (this.modelParams) {
+          if (this.modelTypeValue === '3') {
+            this.arbiterOrganId = currentData.param.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
+            this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
+            const child = this.modelParams.find(item => item.typeCode === 'encryption')
+            this.modelEncryptionType = child.inputValue
+            console.log('modelEncryptionType', this.modelEncryptionType)
+            console.log('childParam', child.inputValues.find(item => item.key === this.modelEncryptionType))
+            const childParam = child.inputValues.find(item => item.key === this.modelEncryptionType)?.param
+            this.modelParams = this.modelEncryptionType !== '' && childParam ? [...this.modelParams, ...childParam] : currentData.param
+          }
+          console.log('newVal modelParams', this.modelParams)
+        }
       }
     },
     handleModelChange(val) {
       this.modelTypeValue = val
       // reset before params
       this.resetModelParams()
+      this.handleChange()
+    },
+    handleParamChange(val) {
+      console.log('handleParamChange', val)
+      this.modelEncryptionType = val
+      this.getModelParams()
       this.handleChange()
     },
     getFeaturesItem() {
@@ -694,6 +714,7 @@ export default {
       if (this.nodeData.componentCode === DATA_ALIGN) {
         this.dataAlignTypeValue = value
       }
+      console.log('handleChange node data', this.nodeData)
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {

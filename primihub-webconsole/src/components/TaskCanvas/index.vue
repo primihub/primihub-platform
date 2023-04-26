@@ -435,7 +435,7 @@ export default {
       }
       this.graph = new Graph(options)
       window.graph = this.graph
-      if (this.componentsList) {
+      if (this.components.length > 0) {
         this.registerStartNode()
         this.addStartNode()
       }
@@ -1035,7 +1035,7 @@ export default {
       for (let i = 0; i < cells.length; i++) {
         const item = cells[i]
         const { position, data, size, shape } = item
-        const componentValues = []
+        let componentValues = []
         item.frontComponentId = item.id
         if (shape === 'edge') {
           modelPointComponents.push({
@@ -1051,19 +1051,14 @@ export default {
           // set model params
           if (componentTypes) {
             componentTypes.forEach(item => {
-              const params = item.inputValues.find(c => c.key === item.inputValue)?.param
-              if (params) {
-                params.forEach(v => {
-                  componentValues.push({
-                    key: v.typeCode,
-                    val: v.inputValue
-                  })
-                })
-              }
               componentValues.push({
                 key: item.typeCode,
                 val: item.inputValue
               })
+              const result = this.findParams(item, item.inputValue)
+              if (result.length > 0) {
+                componentValues = [...componentValues, ...result]
+              }
             })
           }
 
@@ -1110,6 +1105,43 @@ export default {
       }
       this.isClear = false
     },
+    findParams(list, targetVal) {
+      const result = []
+      this.formatParams(list, targetVal, result)
+      return result
+    },
+    formatParams(list, targetVal, result = []) {
+      const current = list.inputValues.find(item => item.key === targetVal)
+      const param = current && current.param
+      if (current && param) {
+        param.forEach(v => {
+          result.push({
+            key: v.typeCode,
+            val: v.inputValue
+          })
+          if (v.inputValues.length > 0) {
+            this.formatParams(v, v.inputValue, result)
+          }
+        })
+      }
+      return result
+    },
+    getDetailParams(data, target) {
+      const inputValues = data.inputValues.find(item => item.key === data.inputValue)
+      if (inputValues) {
+        const params = inputValues.param
+        params && params.map(p => {
+          const componentValue = target.componentValues.find(item => item.key === p.typeCode)
+          if (componentValue) {
+            p.inputValue = componentValue.val
+            if (p.inputValues.length > 0) {
+              this.getDetailParams(p, target)
+            }
+          }
+        })
+      }
+      return data
+    },
     checkOrder() {
       const { modelComponents } = this.saveParams.param
       const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
@@ -1135,9 +1167,7 @@ export default {
     async getModelComponentsInfo() {
       const res = await getModelComponent()
       if (res.code === 0) {
-        console.log('result', res.result)
         const { result } = res
-        // const config = [...result]
         const model = result.find(item => item.componentCode === 'model')
         this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === 'modelType')?.inputValues
         this.components = JSON.parse(JSON.stringify(result))
@@ -1170,6 +1200,7 @@ export default {
           closeOnClickModal: false,
           type: 'warning'
         }).then(() => {
+          // this.setComponentsDetail(res.result)
           this.setComponentsDetail(res.result)
         }).catch(() => {
           this.isLoadHistory = false
@@ -1188,26 +1219,14 @@ export default {
       }
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
-
-      console.log('modelComponents >>', modelComponents)
       this.modelComponents.forEach(item => {
-        this.selectComponentList.push(item.componentCode)
-        this.$emit('selectComponents', this.selectComponentList)
-        const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-        item.componentValues.forEach(componentValue => {
-          this.components[posIndex]?.componentTypes.forEach(c => {
-            if (c.typeCode === componentValue.key && componentValue.val !== '') {
-              c.inputValue = componentValue.val
-            }
-            const posIndex = c.inputValues.findIndex(item => item.key === c.inputValue)
-            if (posIndex !== -1) {
-              const params = c.inputValues[posIndex].param
-              params.forEach(param => {
-                const index = item.componentValues.findIndex(item => item.key === param.typeCode)
-                param.inputValue = item.componentValues[index].val
-              })
-            }
-          })
+        const currentData = this.components.find(c => c.componentCode === item.componentCode)
+        currentData.componentTypes.map(c => {
+          const componentValue = item.componentValues.find(item => item.key === c.typeCode)
+          if (componentValue.val !== '') {
+            c.inputValue = componentValue.val
+          }
+          this.getDetailParams(c, item)
         })
       })
       this.initGraphShape()
