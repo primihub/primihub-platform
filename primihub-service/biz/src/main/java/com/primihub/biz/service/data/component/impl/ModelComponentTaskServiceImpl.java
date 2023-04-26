@@ -129,16 +129,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
         if (modelType.equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
-//        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.equals(ModelTypeEnum.HETERO_LR.getType())){
-        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())
-                ||modelType.equals(ModelTypeEnum.HETERO_LR.getType())
-                ||modelType.equals(ModelTypeEnum.HOMO_NN_MULTICLASS.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY_DPSGD.getType())){
+        }else{
             return lr(req,taskReq,ModelTypeEnum.MODEL_TYPE_MAP.get(modelType));
         }
-        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-        taskReq.getDataTask().setTaskErrorMsg("运行失败:无法进行任务执行");
-        return BaseResultEntity.success();
     }
 
     private BaseResultEntity mpclr(DataComponentReq req, ComponentTaskReq taskReq){

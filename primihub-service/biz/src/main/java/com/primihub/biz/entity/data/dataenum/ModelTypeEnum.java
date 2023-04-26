@@ -11,7 +11,7 @@ public enum ModelTypeEnum {
     MPC_LR(4,"MPC-LR",1,null),
     HETERO_LR(5,"HETERO-LR",1,DataConstant.FREEMARKER_PYTHON_HETERO_LR_PATH),
     HOMO_NN_MULTICLASS(6,"横向-NN(分类)",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_MULTICLASS_PATH),
-    BINARY_DPSGD(7,"横向-NN(回归)",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_DPSGD_PATH),
+    HOMO_NN_REGRESSION(7,"横向-NN(回归)",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_REGRESSION_PATH),
     ;
     private Integer type;
     private String name;
