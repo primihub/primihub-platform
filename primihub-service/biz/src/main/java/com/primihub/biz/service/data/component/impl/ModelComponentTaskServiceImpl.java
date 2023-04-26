@@ -68,12 +68,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
-            String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+        String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+        if (StringUtils.isNotBlank(arbiterOrgan)){
             log.info(arbiterOrgan);
-            if (StringUtils.isBlank(arbiterOrgan)) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
-            }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
             if (dataProjectOrgans.size()<=2) {
