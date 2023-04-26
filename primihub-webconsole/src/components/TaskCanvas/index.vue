@@ -687,7 +687,7 @@ export default {
         return
       }
       // 横向lr
-      if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
+      if (modelType === '3' && (arbiterOrganId === '' || initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
