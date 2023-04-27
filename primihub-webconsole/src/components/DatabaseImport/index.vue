@@ -114,10 +114,6 @@ export default {
         {
           label: 'SQLite',
           value: 2
-        },
-        {
-          label: 'Hive',
-          value: 3
         }
       ],
       dbDriverMap: {
