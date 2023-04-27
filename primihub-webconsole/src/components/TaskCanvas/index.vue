@@ -22,6 +22,8 @@ import RightDrawer from './RightDrawer'
 
 import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan, restartTaskModel } from '@/api/model'
 
+import { DATA_SET, MODEL, ARBITER_ORGAN, MPC_STATISTICS, DATA_SET_SELECT_DATA, MODEL_TYPE, START_NODE, TASK_NAME, MODEL_NAME } from '@/const/componentCode.js'
+
 const lineAttr = { // 线样式
   'line': {
     'stroke': '#A2B1C3',
@@ -237,11 +239,10 @@ export default {
       this.graphData.cells.map(item => {
         if (item.shape === 'dag-node') {
           item.data.componentTypes.map(c => {
-            c.inputValue = ''
+            this.$set(c.inputValue, '')
           })
         }
       })
-      console.log('deleteComponentsVal', this.graphData)
     },
     // 清除画布
     clearFn() {
@@ -558,7 +559,8 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('node:removed', () => {
+        graph.on('node:removed', (a, b) => {
+          console.log('node:removed', a)
           this.needSave = true
           this.deleteNode()
         })
@@ -608,6 +610,7 @@ export default {
     },
     deleteNode() {
       const cells = this.graph.getSelectedCells()
+      console.log('deleteNode', cells)
       if (cells.length) {
         this.graph.removeCells(cells)
       }
@@ -645,18 +648,18 @@ export default {
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
-      const jointStatisticalCom = modelComponents.find(item => item.componentCode === 'jointStatistical')
+      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
 
-      const startCom = modelComponents.find(item => item.componentCode === 'start')
+      const startCom = modelComponents.find(item => item.componentCode === START_NODE)
 
-      const modelSelectCom = modelComponents.find(item => item.componentCode === 'model')
-      const taskName = startCom.componentValues.find(item => item.key === 'taskName')?.val
-      const modelName = modelSelectCom?.componentValues.find(item => item.key === 'modelName')?.val
-      const modelType = modelSelectCom?.componentValues.find(item => item.key === 'modelType')?.val
-      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === 'arbiterOrgan')?.val
+      const modelSelectCom = modelComponents.find(item => item.componentCode === MODEL)
+      const taskName = startCom.componentValues.find(item => item.key === TASK_NAME)?.val
+      const modelName = modelSelectCom?.componentValues.find(item => item.key === MODEL_NAME)?.val
+      const modelType = modelSelectCom?.componentValues.find(item => item.key === MODEL_TYPE)?.val
+      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === ARBITER_ORGAN)?.val
 
-      const dataSetCom = modelComponents.find(item => item.componentCode === 'dataSet')
-      const dataValue = dataSetCom.componentValues.find(item => item.key === 'selectData').val
+      const dataSetCom = modelComponents.find(item => item.componentCode === DATA_SET)
+      const dataValue = dataSetCom.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
       const value = dataValue !== '' ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
@@ -687,7 +690,17 @@ export default {
         return
       }
       // 横向lr
-      if (modelType === '3' && (arbiterOrganId === '' || initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
+      if ((modelType === '3' || modelType === '6' || modelType === '7') && arbiterOrganId === '') {
+        console.log('error1')
+        this.$message({
+          message: '请选择正确的可信第三方(arbiter方)',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
+      if (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId) {
+        console.log('error2')
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -1144,7 +1157,7 @@ export default {
     },
     checkOrder() {
       const { modelComponents } = this.saveParams.param
-      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
+      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === DATA_SET)
       const dataSetCom = modelComponents[dataSetIndex]
       if (dataSetIndex !== 1 && dataSetIndex !== -1) {
         this.saveParams.param.modelComponents.splice(dataSetIndex, 1)
@@ -1168,8 +1181,8 @@ export default {
       const res = await getModelComponent()
       if (res.code === 0) {
         const { result } = res
-        const model = result.find(item => item.componentCode === 'model')
-        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === 'modelType')?.inputValues
+        const model = result.find(item => item.componentCode === MODEL)
+        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
         this.components = JSON.parse(JSON.stringify(result))
         console.log('defaultComponentsConfig 1', this.defaultComponentsConfig)
         // this.componentsList = config.slice(1)

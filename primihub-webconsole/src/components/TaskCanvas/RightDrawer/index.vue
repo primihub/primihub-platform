@@ -381,8 +381,6 @@ export default {
     dataAlignTypeValue: {
       handler(newVal) {
         if (newVal) {
-          console.log('dataAlignTypeValue newVal', newVal)
-          console.log('dataAlignTypeValue nodeData', this.nodeData)
           this.getDataAlignParams()
         }
       },
@@ -395,7 +393,6 @@ export default {
     },
     async nodeData(newVal) {
       console.log('watch newVal', newVal)
-      console.log(newVal.componentCode, MODEL)
       if (newVal) {
         if (newVal.componentCode === DATA_SET) {
           this.inputValue = newVal.componentTypes.find(item => item.typeCode === DATA_SET_SELECT_DATA).inputValue
@@ -409,7 +406,7 @@ export default {
           }
         } else if (newVal.componentCode === MODEL) {
           this.getDataSetComValue()
-          this.getModelParams()
+          this.getModelParams(newVal)
         } else if (newVal.componentCode === DATA_ALIGN) {
           this.getDataSetComValue()
           this.getFeaturesOptions()
@@ -460,24 +457,23 @@ export default {
         }
       }
     },
-    getModelParams() {
-      const modelType = this.nodeData.componentTypes.find(item => item.typeCode === MODEL_TYPE)
-      const currentData = modelType.inputValues.find(item => item.key === modelType.inputValue)
-
+    getModelParams(data) {
+      const modelType = data.componentTypes.find(item => item.typeCode === MODEL_TYPE)
+      const currentData = modelType && modelType.inputValues.find(item => item.key === modelType.inputValue)
       if (currentData) {
         this.modelTypeValue = modelType.inputValue
-        this.modelParams = currentData?.param ? currentData.param : []
-        console.log('modelParams', this.modelParams)
+        this.modelParams = currentData['param'] ? currentData.param : []
         if (this.modelParams) {
-          this.arbiterOrganId = currentData.param.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
+          this.arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
           const child = this.modelParams.find(item => item.typeCode === 'encryption')
+          if (!child) return
           this.modelEncryptionType = child.inputValue
-          console.log('modelEncryptionType', this.modelEncryptionType)
-          console.log('childParam', child.inputValues.find(item => item.key === this.modelEncryptionType))
           const childParam = child.inputValues.find(item => item.key === this.modelEncryptionType)?.param
           this.modelParams = this.modelEncryptionType !== '' && childParam ? [...this.modelParams, ...childParam] : currentData.param
         }
+      } else {
+        this.modelParams.length > 0 && this.modelParams.splice(0)
       }
     },
     handleModelChange(val) {
@@ -487,9 +483,8 @@ export default {
       this.handleChange()
     },
     handleParamChange(val) {
-      console.log('handleParamChange', val)
       this.modelEncryptionType = val
-      this.getModelParams()
+      this.getModelParams(this.nodeData)
       this.handleChange()
     },
     getFeaturesItem() {
@@ -555,17 +550,19 @@ export default {
     },
     resetModelParams() {
       const defaultConfig = JSON.parse(JSON.stringify(this.defaultConfig))
-      const param = defaultConfig.find(item => item.key === this.modelTypeValue).param
-      this.defaultComponentConfig = JSON.parse(JSON.stringify(param))
-      this.modelParams = this.defaultComponentConfig && this.defaultComponentConfig.slice()
-      if (this.arbiterOrganId !== '') {
-        this.arbiterOrganId = ''
-        this.arbiterOrganName = ''
+      const param = defaultConfig.find(item => item.key === this.modelTypeValue) && defaultConfig.find(item => item.key === this.modelTypeValue).param
+      if (param) {
+        this.defaultComponentConfig = JSON.parse(JSON.stringify(param))
+        this.modelParams = this.defaultComponentConfig && this.defaultComponentConfig.slice()
+        if (this.arbiterOrganId !== '') {
+          this.arbiterOrganId = ''
+          this.arbiterOrganName = ''
+        }
+        const modelTypeIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === MODEL_TYPE)
+        const paramIndex = this.nodeData.componentTypes[modelTypeIndex].inputValues.findIndex(item => item.key === this.modelTypeValue)
+        this.nodeData.componentTypes[modelTypeIndex].inputValues[paramIndex].param = this.modelParams
+        this.handleChange()
       }
-      const modelTypeIndex = this.nodeData.componentTypes.findIndex(item => item.typeCode === MODEL_TYPE)
-      const paramIndex = this.nodeData.componentTypes[modelTypeIndex].inputValues.findIndex(item => item.key === this.modelTypeValue)
-      this.nodeData.componentTypes[modelTypeIndex].inputValues[paramIndex].param = this.modelParams
-      this.handleChange()
     },
     filterNumber(data, name) {
       const filterData = data.find(item => item.key === name)
@@ -711,7 +708,6 @@ export default {
       if (this.nodeData.componentCode === DATA_ALIGN) {
         this.dataAlignTypeValue = value
       }
-      console.log('handleChange node data', this.nodeData)
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -866,8 +862,6 @@ export default {
       this.selectedDataAlignFeatures = data
       const dataAlignTypeIndex = this.dataAlignParam.findIndex(item => item.typeCode === MULTIPLE_SELECT_FEATURE)
       this.dataAlignParam[dataAlignTypeIndex].inputValue = JSON.stringify(data)
-      console.log('selectedDataAlignFeatures', this.dataAlignParam[dataAlignTypeIndex].inputValue)
-
       this.featuresDialogVisible = false
       this.handleChange()
     },
