@@ -30,12 +30,13 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         String vibility = metaInfo.getVibility().getValueDescriptor().getName();
         String operator = request.getOperator().getValueDescriptor().getName();
         String fields = metaInfo.getDataTypeList().stream().map(t -> t.getName() + "," + t.getType().name()).collect(Collectors.joining(";"));
+        DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
+        dataSet.setFields(fields);
+        log.info("dataset ---- toString:{}", dataSet.toString());
         if (id == null || "".equals(id)){
             newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param id Cannot be empty");
             return;
         }
-        DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
-        dataSet.setFields(fields);
         if ("REGISTER".equals(operator)){
             if (accessInfo == null || "".equals(accessInfo)){
                 newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param accessInfo Cannot be empty");
