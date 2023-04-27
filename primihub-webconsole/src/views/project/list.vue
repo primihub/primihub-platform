@@ -534,7 +534,7 @@ h2 {
   margin-right: auto;
   height: 38px;
   margin-bottom: 20px;
-  // display: inline-block;
+  margin-top: 20px;
 }
 .button {
   margin: 0 3px;
