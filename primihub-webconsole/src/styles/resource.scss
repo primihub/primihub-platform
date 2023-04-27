@@ -1,4 +1,10 @@
 @import "~@/styles/variables.scss";
+
+::v-deep .resource-disabled{
+  color: gray;
+  filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);
+    -webkit-filter: grayscale(100%);
+}
 ::v-deep .el-form-item__label{
   width: auto!important;
 }

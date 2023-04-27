@@ -230,7 +230,7 @@ export default {
     },
     tableRowDisabled({ row }) {
       if (row.resourceState === 1) {
-        return 'disabled'
+        return 'resource-disabled'
       } else {
         return ''
       }

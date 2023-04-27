@@ -504,7 +504,6 @@ export default {
 </script>
 <style lang="scss" scoped>
 @import "../../styles/variables.scss";
-@import "~@/styles/resource.scss";
 h2 {
   display: block;
   font-size: 16px;
