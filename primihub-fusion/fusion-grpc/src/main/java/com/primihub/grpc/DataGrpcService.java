@@ -71,13 +71,14 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
 
 
     public void getDataset(GetDatasetRequest request, StreamObserver<GetDatasetResponse> responseObserver){
+        log.info("get ids:{}",request.getIdList().toString());
         List<ByteString> ids = request.getIdList().asByteStringList();
         GetDatasetResponse.Builder builder = GetDatasetResponse.newBuilder();
         List<DataSet> list;
         if (ids==null || ids.isEmpty()){
             list = storageService.getAll();
         }else {
-            list = storageService.getByIds(ids.stream().map(ByteString::toString).collect(Collectors.toList()));
+            list = storageService.getByIds(ids.stream().map(ByteString::toStringUtf8).collect(Collectors.toList()));
         }
         for (DataSet dataSet : list) {
             builder.addDataSet(dataModelConvertVo(dataSet));
