@@ -248,8 +248,8 @@
             or (r.resource_auth_type=3 and (select count(1) from fusion_resource_visibility_auth fsva where fsva.resource_id=r.resource_id and fsva.organ_global_id=#{globalId} )=1 )
         )
         and r.is_del=0
+        and r.organ_id != #{globalId}
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
-        <if test="organId==null and organId==''">and r.organ_id != #{globalId}</if>
         <if test="resourceId!=null and resourceId!=''">and r.resource_id = #{resourceId}</if>
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="resourceType!=null and resourceType!=0">and r.resource_type = #{resourceType}</if>
