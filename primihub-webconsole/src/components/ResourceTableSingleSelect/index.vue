@@ -32,6 +32,7 @@
           样本量：{{ row.resourceRowsCount }} <br>
           正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
           正例样本比例：{{ row.resourceYRatio || 0 }}%<br>
+          <el-tag size="mini" :type="!row.resourceContainsY? 'danger': 'primary'">{{ row.resourceContainsY? '包含Y值' : '不包含Y值' }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column
@@ -47,15 +48,6 @@
       >
         <template slot-scope="{row}">
           {{ row.auditStatus | resourceAuditStatusFilter }}
-        </template>
-      </el-table-column>
-      <el-table-column
-        label="是否包含Y值"
-        min-width="80"
-        align="center"
-      >
-        <template slot-scope="{row}">
-          {{ row.resourceContainsY? '是' : '否' }}
         </template>
       </el-table-column>
       <el-table-column
