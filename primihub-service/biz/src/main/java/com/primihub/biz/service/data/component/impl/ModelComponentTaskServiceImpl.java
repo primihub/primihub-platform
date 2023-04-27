@@ -226,6 +226,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
+            log.info(freemarkerContent);
             try {
                 String jobId = String.valueOf(taskReq.getJob());
                 StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
