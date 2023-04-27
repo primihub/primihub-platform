@@ -154,14 +154,4 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
         }
         return BaseResultEntity.success();
     }
-
-    public static void main(String[] args) {
-        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1212").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("213123123123232").build();
-        System.out.println(JSONObject.toJSONString(taskBuild));
-    }
-
-    public static void main(String[] args) {
-        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1212").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("213123123123232").build();
-        System.out.println(JSONObject.toJSONString(taskBuild));
-    }
 }

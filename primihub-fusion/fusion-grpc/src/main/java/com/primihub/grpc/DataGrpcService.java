@@ -30,13 +30,13 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         String vibility = metaInfo.getVibility().getValueDescriptor().getName();
         String operator = request.getOperator().getValueDescriptor().getName();
         String fields = metaInfo.getDataTypeList().stream().map(t -> t.getName() + "," + t.getType().name()).collect(Collectors.joining(";"));
-        DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
-        dataSet.setFields(fields);
-        log.info("dataset ---- toString:{}", dataSet.toString());
+        log.info("request ---- toString:{}", request.toString());
         if (id == null || "".equals(id)){
             newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param id Cannot be empty");
             return;
         }
+        DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
+        dataSet.setFields(fields);
         if ("REGISTER".equals(operator)){
             if (accessInfo == null || "".equals(accessInfo)){
                 newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param accessInfo Cannot be empty");
@@ -92,20 +92,19 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
     }
 
     public static DatasetData dataModelConvertVo(DataSet dataSet){
-        DataTypeInfo.Builder builder = DataTypeInfo.newBuilder();
+        MetaInfo.Builder metaInfoBuilder = MetaInfo.newBuilder()
+                .setId(dataSet.getId())
+                .setAccessInfo(dataSet.getAccessInfo())
+                .setDriver(dataSet.getDriver())
+                .setAddress(dataSet.getAddress())
+                .setVibility(MetaInfo.Visibility.valueOf(dataSet.getVibility()));
         List<String> fields = Arrays.stream(dataSet.getFields().split(";")).collect(Collectors.toList());
         for (String field : fields) {
             String[] fieldAndType = field.split(",");
-            builder.setName(fieldAndType[0]).setType(DataTypeInfo.PlainDataType.valueOf(fieldAndType[1]));
+            metaInfoBuilder.addDataType(DataTypeInfo.newBuilder().setName(fieldAndType[0]).setType(DataTypeInfo.PlainDataType.valueOf(fieldAndType[1])));
         }
         return DatasetData.newBuilder()
                 .setAvailable(DatasetData.Status.valueOf(dataSet.getAvailable()))
-                .setMetaInfo(MetaInfo.newBuilder()
-                        .setId(dataSet.getId())
-                        .setAccessInfo(dataSet.getAccessInfo())
-                        .setDriver(dataSet.getDriver())
-                        .setAddress(dataSet.getAddress())
-                        .addDataType(builder.build())
-                        .setVibility(MetaInfo.Visibility.valueOf(dataSet.getVibility())).build()).build();
+                .setMetaInfo(metaInfoBuilder.build()).build();
     }
 }
