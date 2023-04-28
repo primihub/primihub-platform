@@ -1,4 +1,4 @@
-FROM maven:3.8.6-openjdk-8 as build
+FROM maven:3.8.1-openjdk as build
 
 WORKDIR /opt
 

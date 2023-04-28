@@ -173,7 +173,7 @@ h2{
   background-color: #fafafa;
   padding: 20px 20px 10px 20px;
   font-size: 14px;
-  line-height: 35px;
+  line-height: 1.5;
   margin-bottom: 20px;
 }
 .infos-title{
@@ -187,14 +187,13 @@ h2{
   color: #606266;
   font-size: 14px;
   margin-bottom: 12px;
-  align-items: center;
-  height: 22px;
 }
 .desc-label{
   margin-right: 10px;
 }
 .desc-content{
   flex: 1;
+  padding-right: 10px;
 }
 
 ::v-deep .el-descriptions-item__container .el-descriptions-item__content{

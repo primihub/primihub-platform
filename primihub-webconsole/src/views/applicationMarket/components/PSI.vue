@@ -10,7 +10,9 @@
           <div class="header">
             <div class="organ-container">
               <div class="organ"><span>发起方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
-              <div class="organ"><span>协作方: </span><OrganCascader disabled :cascader-value="cascaderValue" placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
+              <div class="organ"><span>协作方: </span>
+                <el-select v-model="formData.otherOrganName" disabled :placeholder="formData.otherOrganName" />
+              </div>
             </div>
             <div class="line">
               <div class="line-icon">交</div>
@@ -19,17 +21,10 @@
           <div class="item-row">
             <div class="item">
               <el-form-item label="资源表" prop="ownResourceId">
-                <ResourceSelect disabled :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
+                <ResourceSelect disabled :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" />
               </el-form-item>
               <el-form-item label="关联键" prop="ownKeyword">
-                <el-select v-model="formData.ownKeyword" v-loading="selectLoading" disabled no-data-text="暂无数据" clearable placeholder="请选择" @change="handleOwnKeywordChange">
-                  <el-option
-                    v-for="(item,index) in ownOrganResourceField"
-                    :key="index"
-                    :label="item.name"
-                    :value="item.value"
-                  />
-                </el-select>
+                <el-select v-model="formData.ownKeyword" v-loading="selectLoading" disabled no-data-text="暂无数据" />
               </el-form-item>
             </div>
             <div class="center">
@@ -38,17 +33,10 @@
             </div>
             <div class="item">
               <el-form-item label="资源表" prop="otherResourceId">
-                <ResourceSelect disabled :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
+                <ResourceSelect disabled :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" />
               </el-form-item>
               <el-form-item label="关联键" prop="otherKeyword">
-                <el-select v-model="formData.otherKeyword" disabled no-data-text="暂无数据" placeholder="请选择" clearable @change="handleOtherKeywordChange">
-                  <el-option
-                    v-for="(item,index) in otherOrganResourceField"
-                    :key="index"
-                    :label="item.name"
-                    :value="index"
-                  />
-                </el-select>
+                <el-select v-model="formData.otherKeyword" disabled no-data-text="暂无数据" placeholder="请选择" />
               </el-form-item>
             </div>
           </div>
@@ -101,7 +89,6 @@
               <el-form-item label="关联键有重复值时" prop="outputNoRepeat">
                 <el-radio-group v-model="formData.outputNoRepeat">
                   <el-radio disabled :label="0">输出内容不去重</el-radio>
-                  <!-- <el-radio :label="1">输出内容去重</el-radio> -->
                 </el-radio-group>
               </el-form-item>
             </el-col>
@@ -123,7 +110,7 @@
       </div>
     </div>
     <div class="button-wrapper">
-      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
+      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="openDialog">提交任务</el-button>
     </div>
     <el-dialog
       :visible.sync="dialogVisible"
@@ -132,7 +119,7 @@
       width="700px"
     >
       <div v-loading="loading" element-loading-text="查询中">
-        <PSI-task-detail :show-download="false" :data="taskData" />
+        <PSI-task-detail :server-address="formData.serverAddress" :show-download="false" :data="taskData" />
 
         <h3>运算结果</h3>
         <div v-if="taskState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
@@ -161,9 +148,9 @@
 </template>
 
 <script>
+import { mapState, mapActions } from 'vuex'
 import { getPsiResourceAllocationList, saveDataPsi, getPsiTaskDetails } from '@/api/PSI'
 import { getTaskData } from '@/api/task'
-import OrganCascader from '@/components/OrganCascader'
 import ResourceSelect from '@/components/ResourceSelect'
 import PSITaskDetail from '@/components/PSITaskDetail'
 
@@ -173,7 +160,6 @@ const diffsection = require('@/assets/diffsection.svg')
 export default {
   name: 'PSITask',
   components: {
-    OrganCascader,
     ResourceSelect,
     PSITaskDetail
   },
@@ -184,39 +170,57 @@ export default {
       taskTimer: null,
       taskData: {},
       dialogVisible: false,
-      cascaderValue: [],
+      cascaderValue: ['http://fusion.primihub.svc.cluster.local:8080/', '2cad8338-2e8c-4768-904d-2b598a7e3298'],
+      options: [
+        {
+          value: 'http://fusion.primihub.svc.cluster.local:8080/',
+          label: 'http://fusion.primihub.svc.cluster.local:8080/',
+          children: [{
+            value: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+            label: '机构B'
+          }]
+        }
+      ],
       resourceName: '',
       selectLoading: false,
-      ownOrganResourceField: [],
-      otherOrganResourceField: [],
+      ownOrganResourceField: ['id'],
+      otherOrganResourceField: ['id'],
       pageSize: 100,
       total: 0,
       pageNo: 1,
       isRun: false, // task running state
       isReset: false,
       taskId: 0,
-      tableDataA: [],
-      tableDataB: [],
+      tableDataA: [{
+        resourceId: '1134',
+        resourceName: 'psi测试数据'
+      }],
+      tableDataB: [
+        {
+          resourceId: '2b598a7e3298-ceb049a7-e2ce-4826-9fa9-5acd07ec67e1',
+          resourceName: 'psi测试数据'
+        }
+      ],
       formData: {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
+        ownResourceName: '',
         ownKeyword: '', // 本机构关联键
         otherOrganId: 0,
         otherResourceId: '', // 其他机构资源Id
+        otherResourceName: '',
         otherKeyword: '', // 其他机构关联键
         outputFormat: 0, // 输出方式
         outputFilePathType: 0, // 输出路径
         outputContent: 0,
-        resultOrgan: [],
-        resultOrganIds: '',
         outputNoRepeat: 0, // 输出内容是否去重
-        resultName: '',
+        resultName: 'psi测试数据结果',
         remarks: null,
-        serverAddress: '',
+        serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
         psiTag: 0
       },
-      ownResourceName: '',
-      otherResourceName: '',
+      ownResourceName: 'psi测试数据',
+      otherResourceName: 'psi测试数据',
       rules: {
         ownResourceId: [
           { required: true, message: '请选择资源' }
@@ -238,16 +242,13 @@ export default {
         ],
         resultName: [
           { required: true, message: '请输入结果名称' },
-          { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
+          { max: 50, message: '长度在50个字符以内' }
         ],
         outputContent: [
           { required: true, message: '请选择输出内容' }
         ],
         outputFormat: [
           { required: true }
-        ],
-        resultOrgan: [
-          { required: true, message: '请选择结果获取方' }
         ],
         psiTag: [
           { required: true, message: '请选择实现协议' }
@@ -267,110 +268,169 @@ export default {
     }
   },
   computed: {
-    // 结果获取方
-    resultOrgan() {
-      const { ownOrganId, ownOrganName, otherOrganId, otherOrganName } = this.formData
-      const options = [
-        {
-          organId: ownOrganId,
-          organName: ownOrganName
-        }
-      ]
-      if (otherOrganId) {
-        options.push({
-          organId: otherOrganId,
-          organName: otherOrganName
-        })
-      }
-      return options
-    },
     centerImg() {
       return this.formData.outputContent === 0 ? intersection : this.formData.outputContent === 1 ? diffsection : intersection
     },
-    resultName() {
-      const currentResource = this.tableDataA.length > 0 && this.tableDataA.find(item => item.resourceId === this.formData.ownResourceId)
-      const otherResource = this.tableDataB.length > 0 && this.tableDataB.find(item => item.resourceId === this.formData.otherResourceId)
-      return `${currentResource.resourceName}-${otherResource.resourceName}`
-    }
-  },
-  watch: {
-    resultName(newVal) {
-      if (newVal) {
-        this.formData.resultName = this.resultName
-      } else {
-        this.formData.resultName = ''
-      }
-    }
+    ...mapState('application', ['origin'])
   },
   destroyed() {
     clearInterval(this.taskTimer)
   },
   async created() {
+    this.getLocationOrigin()
     this.setDefault()
   },
   methods: {
     async setDefault() {
-      console.log(window.location.origin.indexOf('https://test'))
-      this.formData.ownOrganId = this.$store.getters.userOrganId
-      this.formData.ownOrganName = this.$store.getters.userOrganName
-      this.formData.resultOrgan.push(this.formData.ownOrganId)
-      if (window.location.origin.indexOf('https://node1') !== -1) {
-        console.log('pro env')
-        this.formData.ownResourceId = '7'
-        this.formData.ownKeyword = 'company'
-        this.formData.otherOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
-        this.formData.otherOrganName = 'Primihub02'
-        this.formData.otherResourceId = '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff'
-        this.formData.otherKeyword = 'company'
-        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-      } else if (window.location.origin.indexOf('https://node2') !== -1) {
-        console.log('pro env')
-        this.formData.ownResourceId = '11'
-        this.formData.ownKeyword = 'company'
-        this.formData.otherOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
-        this.formData.otherOrganName = '机构A'
-        this.formData.otherResourceId = 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69'
-        this.formData.otherKeyword = 'company'
-        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-      } else if (window.location.origin.indexOf('https://node3') !== -1) {
-        console.log('pro env')
-        this.formData.ownResourceId = '3'
-        this.formData.ownKeyword = 'name'
-        this.formData.otherOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
-        this.formData.otherOrganName = '机构A'
-        this.formData.otherResourceId = 'ea5fd5f5f9f0-e6af73fe-70dc-4daa-aec4-91ef044fc9f5'
-        this.formData.otherKeyword = 'name'
-        this.formData.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-      } else {
-        console.log('test env')
-        this.formData.ownResourceId = '1116'
-        this.formData.ownKeyword = 'id'
-        this.formData.otherOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
-        this.formData.otherOrganName = '机构B'
-        this.formData.otherResourceId = '2b598a7e3298-67f337ac-06fa-4a68-971e-f98bdcac97b3'
-        this.formData.otherKeyword = 'id'
-        this.formData.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
+      const data = {
+        'node1': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '7',
+          ownResourceName: '测试数据a',
+          ownKeyword: 'company',
+          otherOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
+          otherOrganName: 'Primihub02',
+          otherResourceId: '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff',
+          otherResourceName: '测试数据b',
+          otherKeyword: 'company',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node2': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '测试数据b',
+          ownKeyword: 'company',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构A',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'company',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'node3': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '11',
+          ownResourceName: '数据源',
+          ownKeyword: 'name',
+          otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          otherOrganName: '机构B',
+          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
+          otherResourceName: '测试数据a',
+          otherKeyword: 'name',
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+        },
+        'other': {
+          ownOrganName: '机构A',
+          ownOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          ownResourceId: '67',
+          ownResourceName: '应用市场测试数据',
+          ownKeyword: '姓名',
+          otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          otherOrganName: '机构B',
+          otherResourceId: '4b38606341d8-bb78987c-bf07-422d-93cf-057d7f69a51e',
+          otherResourceName: '应用市场测试数据',
+          otherKeyword: '姓名',
+          serverAddress: 'http://fusion:8080/'
+        },
+        'test1': {
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '1219',
+          ownResourceName: 'PSI-用户数据B',
+          ownKeyword: '姓名',
+          otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          otherOrganName: '机构B',
+          otherResourceId: '2b598a7e3298-2749c900-52dd-428c-8f14-1a472e7fec00',
+          otherResourceName: 'PSI-用户数据B',
+          otherKeyword: '姓名',
+          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+        }
       }
-      this.cascaderValue = [this.formData.serverAddress, this.formData.otherOrganId]
+      this.init(data[this.origin])
+    },
+    async init(data) {
+      this.formData = Object.assign(this.formData, data)
+      this.resultName = `${this.formData.ownResourceName}-${this.formData.otherResourceName}`
+      this.formData.resultName = this.resultName
+      this.cascaderValue = [data.serverAddress, data.otherOrganId]
+      this.formData.resultOrgan.push(this.formData.ownOrganId)
+      if (this.origin !== 'other') {
+        this.setResourceOptions(data)
+      } else {
+        this.tableDataA = [{
+          resourceId: '67',
+          resourceName: 'psi测试数据'
+        }]
+        this.tableDataB = [{
+          resourceId: '4b38606341d8-bb78987c-bf07-422d-93cf-057d7f69a51e',
+          resourceName: 'psi测试数据'
+        }]
+      }
+    },
+    async setResourceOptions(data) {
+      this.tableDataA = await this.getPsiResourceAllocationList({
+        resourceName: data.ownResourceName,
+        organId: data.ownOrganId,
+        serverAddress: data.serverAddress
+      })
+
       this.tableDataB = await this.getPsiResourceAllocationList({
-        organId: this.formData.otherOrganId
+        resourceName: data.resourceName,
+        organId: data.otherOrganId,
+        serverAddress: data.serverAddress
       })
     },
     openDialog() {
-      getPsiTaskDetails({ taskId: this.taskId }).then(res => {
-        if (res.code === 0) {
-          this.dialogVisible = true
-          this.taskData = res.result
-
-          setTimeout(() => {
-            this.$message.success('运行成功')
-            this.taskState = 1
-            this.isRun = false
-            this.loading = false
-          }, 1500)
+      if (this.origin === 'other') {
+        this.dialogVisible = true
+        this.loading = true
+        const { otherKeyword, otherOrganId, otherOrganName, otherResourceId, ownKeyword, ownOrganId, ownOrganName, ownResourceId, resultName, ownResourceName, otherResourceName } = this.formData
+        this.taskData = {
+          taskIdName: new Date().getTime(),
+          otherKeyword,
+          otherOrganId,
+          otherOrganName,
+          otherResourceId,
+          otherResourceName,
+          outputContent: 0,
+          outputFilePathType: 0,
+          outputFormat: '0',
+          outputNoRepeat: 0,
+          ownKeyword,
+          ownOrganId,
+          ownOrganName,
+          ownResourceId,
+          ownResourceName,
+          remarks: '',
+          resultName,
+          resultOrganName: '机构A',
+          tag: 0,
+          taskState: 2
         }
-      })
+        setTimeout(() => {
+          this.$message.success('运行成功')
+          this.taskState = 1
+          this.isRun = false
+          this.loading = false
+        }, 1500)
+      } else {
+        getPsiTaskDetails({ taskId: this.taskId }).then(res => {
+          if (res.code === 0) {
+            this.dialogVisible = true
+            this.taskData = res.result
+
+            setTimeout(() => {
+              this.$message.success('运行成功')
+              this.taskState = 1
+              this.isRun = false
+              this.loading = false
+            }, 1500)
+          }
+        })
+      }
     },
     async getPsiResourceAllocationList(params) {
       const { resourceName, organId } = params
@@ -385,21 +445,24 @@ export default {
       }
     },
     handleSubmit() {
-      const enable = this.checkParams()
-      if (!enable) return
       // max size is 200
-      this.formData.resultName = this.formData.resultName.length > 200 ? this.formData.resultName.substring(0, 200) : this.formData.resultName
+      this.formData.resultName = this.resultName.length > 200 ? this.resultName.substring(0, 200) : this.resultName
       this.$refs.form.validate(async valid => {
         if (valid) {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
           this.isRun = true
-          const res = await saveDataPsi(this.formData)
-          if (res.code === 0) {
-            this.taskId = res.result.dataPsi.id
+          if (this.origin === 'other') {
             this.loading = true
             this.openDialog()
           } else {
-            this.isRun = false
+            const res = await saveDataPsi(this.formData)
+            if (res.code === 0) {
+              this.taskId = res.result.dataPsi.id
+              this.loading = true
+              this.openDialog()
+            } else {
+              this.isRun = false
+            }
           }
         } else {
           console.log('error submit!!')
@@ -429,134 +492,10 @@ export default {
         this.loading = false
       })
     },
-    toResultPage() {
-      this.$router.push({
-        name: 'PSIResult'
-      })
-    },
-    checkParams() {
-      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword } = this.formData
-      let message = ''
-      let enable = true
-      if (!otherOrganId) {
-        message = '请选择求交机构'
-        enable = false
-      } else if (ownResourceId === '') {
-        message = '请选择发起方资源'
-        enable = false
-      } else if (otherResourceId === '') {
-        message = '请选择协作方资源'
-        enable = false
-      } else if (otherKeyword === '') {
-        message = '请选择协作方关联键'
-        enable = false
-      } else if (ownKeyword === '') {
-        message = '请选择发起方关联键'
-        enable = false
-      }
-      if (!enable) {
-        this.$message({
-          message,
-          type: 'error'
-        })
-      }
-
-      return enable
-    },
-    async handleResourceFocus(role) {
-      this.$refs.form.resetFields()
-      if (role === 'own') {
-        this.tableDataA = await this.getPsiResourceAllocationList({
-          organId: this.formData.ownOrganId
-        })
-      } else {
-        if (this.formData.serverAddress === '') {
-          this.$message({
-            message: '请选择协作方',
-            type: 'warning'
-          })
-          this.tableDataB = []
-          return
-        }
-        this.tableDataB = []
-        this.tableDataB = await this.getPsiResourceAllocationList({
-          organId: this.formData.otherOrganId,
-          resourceName: this.resourceName
-        })
-      }
-    },
-    handleOwnKeywordChange(index) {
-      this.formData.ownKeyword = this.ownOrganResourceField[index]?.name
-    },
-    handleOtherKeywordChange(index) {
-      this.formData.otherKeyword = this.otherOrganResourceField[index]?.name
-    },
-    async handleOwnResourceSearch(resourceName) {
-      this.resourceName = resourceName
-      this.tableDataA = await this.getPsiResourceAllocationList({
-        organId: this.formData.organId,
-        resourceName: this.resourceName
-      })
-    },
-    async handleOtherResourceSearch(resourceName) {
-      if (resourceName !== '') {
-        this.resourceName = resourceName
-        this.tableDataB = await this.getPsiResourceAllocationList({
-          organId: this.formData.otherOrganId,
-          resourceName: this.resourceName
-        })
-      }
-    },
-    handleResourceClear(role) {
-      this.resourceName = ''
-      if (role === 'own') {
-        this.tableDataA = []
-      } else if (role === 'other') {
-        this.tableDataB = []
-      }
-    },
-    handleOwnResourceChange(resourceId) {
-      this.formData.ownResourceId = resourceId
-      this.ownOrganResourceField = []
-      this.formData.ownKeyword = ''
-      const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
-      this.ownResourceName = currentResource ? currentResource.resourceName : ''
-      currentResource?.keywordList.forEach((item, index) => {
-        this.ownOrganResourceField.push({
-          value: index,
-          name: item
-        })
-      })
-    },
-    handleTargetResourceChange(resourceId) {
-      this.otherOrganResourceField = []
-      this.formData.otherResourceId = resourceId
-      this.formData.otherKeyword = ''
-      const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
-      this.otherResourceName = currentResource ? currentResource.resourceName : ''
-      currentResource?.keywordList.forEach((item, index) => {
-        this.otherOrganResourceField.push({
-          value: index,
-          name: item
-        })
-      })
-    },
-    async handleOrganSelect(data) {
-      this.resourceName = ''
-      this.formData.otherOrganId = data.organId
-      this.formData.otherOrganName = data.organName
-      this.otherOrganResourceField = []
-      this.formData.otherResourceId = ''
-      this.formData.otherKeyword = ''
-      this.formData.serverAddress = data.serverAddress
-      this.tableDataB = []
-      this.tableDataB = await this.getPsiResourceAllocationList({
-        organId: this.formData.otherOrganId
-      })
-    },
     handleClose() {
       this.dialogVisible = false
-    }
+    },
+    ...mapActions('application', ['getLocationOrigin'])
   }
 }
 </script>

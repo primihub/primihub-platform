@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
   </div>
 </template>
 
@@ -21,6 +21,8 @@ import ToolBar from './ToolBar'
 import RightDrawer from './RightDrawer'
 
 import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan, restartTaskModel } from '@/api/model'
+
+import { DATA_SET, MODEL, ARBITER_ORGAN, MPC_STATISTICS, DATA_SET_SELECT_DATA, MODEL_TYPE, START_NODE, TASK_NAME, MODEL_NAME } from '@/const/componentCode.js'
 
 const lineAttr = { // 线样式
   'line': {
@@ -119,14 +121,12 @@ export default {
     restartRun: {
       type: Boolean,
       default: false
-    },
-    componentsDetail: {
-      type: Object,
-      default: () => null
     }
   },
   data() {
     return {
+      defaultComponentsConfig: [],
+      defaultConfig: [],
       showDataConfig: false,
       container: null,
       width: 0,
@@ -168,24 +168,22 @@ export default {
       if (newVal) {
         await this.restartTaskModel()
       }
-    },
-    async componentsDetail(newVal) {
-      if (newVal) {
-        this.graph.clearCells()
-        this.nodeData = this.startNode
-        this.graphData.cells = []
-        this.graph.fromJSON(this.graphData)
-        this.selectComponentList = []
-        this.$emit('selectComponents', this.selectComponentList)
-        this.setComponentsDetail(newVal)
-        this.$message({
-          message: '导入成功',
-          type: 'success'
-        })
-      }
-    },
-    deep: true,
-    immediate: true
+    }
+    // componentsDetail(newVal) {
+    //   if (newVal) {
+    //     this.graph.clearCells()
+    //     this.nodeData = this.startNode
+    //     this.graphData.cells = []
+    //     this.graph.fromJSON(this.graphData)
+    //     this.selectComponentList = []
+    //     this.$emit('selectComponents', this.selectComponentList)
+    //     this.setComponentsDetail(newVal)
+    //     this.$message({
+    //       message: '导入成功',
+    //       type: 'success'
+    //     })
+    //   }
+    // },
   },
   async mounted() {
     this.taskId = this.$route.params.taskId
@@ -241,11 +239,10 @@ export default {
       this.graphData.cells.map(item => {
         if (item.shape === 'dag-node') {
           item.data.componentTypes.map(c => {
-            c.inputValue = ''
+            this.$set(c.inputValue, '')
           })
         }
       })
-      console.log('deleteComponentsVal', this.graphData)
     },
     // 清除画布
     clearFn() {
@@ -333,7 +330,7 @@ export default {
       this.container = this.$refs.containerRef
       const minimapContainer = this.$refs.mapContainerRef
       this.width = this.container.scrollWidth || 800
-      const height = this.container.scrollHeight || 600
+      const height = this.container.scrollHeight || 800
       const options = {
         container: this.container,
         width: this.width,
@@ -439,7 +436,7 @@ export default {
       }
       this.graph = new Graph(options)
       window.graph = this.graph
-      if (this.componentsList) {
+      if (this.components.length > 0) {
         this.registerStartNode()
         this.addStartNode()
       }
@@ -486,16 +483,18 @@ export default {
     addStartNode() {
       // 60 = start node width
       const x = this.width * 0.5 - 90
-      this.startData = this.components.filter(item => item.componentCode === 'start')[0]
-      this.graph.addNode({
-        x: x,
-        y: 100,
-        shape: 'start-node',
-        componentCode: this.startData.componentCode,
-        label: this.startData.componentName,
-        data: this.startData,
-        ports
-      })
+      if (this.components) {
+        this.startData = this.components.find(item => item.componentCode === 'start')
+        this.startData && this.graph.addNode({
+          x: x,
+          y: 100,
+          shape: 'start-node',
+          componentCode: this.startData.componentCode,
+          label: this.startData.componentName,
+          data: this.startData,
+          ports
+        })
+      }
     },
     showPorts(ports, show) {
       for (let i = 0, len = ports.length; i < len; i = i + 1) {
@@ -560,7 +559,8 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('node:removed', () => {
+        graph.on('node:removed', (a, b) => {
+          console.log('node:removed', a)
           this.needSave = true
           this.deleteNode()
         })
@@ -610,6 +610,7 @@ export default {
     },
     deleteNode() {
       const cells = this.graph.getSelectedCells()
+      console.log('deleteNode', cells)
       if (cells.length) {
         this.graph.removeCells(cells)
       }
@@ -646,16 +647,19 @@ export default {
       const data = this.graph.toJSON()
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
-      const startCom = modelComponents.find(item => item.componentCode === 'start')
 
-      const modelSelectCom = modelComponents.find(item => item.componentCode === 'model')
-      const taskName = startCom.componentValues.find(item => item.key === 'taskName')?.val
-      const modelName = modelSelectCom?.componentValues.find(item => item.key === 'modelName')?.val
-      const modelType = modelSelectCom?.componentValues.find(item => item.key === 'modelType')?.val
-      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === 'arbiterOrgan')?.val
+      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
 
-      const dataSetCom = modelComponents.find(item => item.componentCode === 'dataSet')
-      const dataValue = dataSetCom.componentValues.find(item => item.key === 'selectData').val
+      const startCom = modelComponents.find(item => item.componentCode === START_NODE)
+
+      const modelSelectCom = modelComponents.find(item => item.componentCode === MODEL)
+      const taskName = startCom.componentValues.find(item => item.key === TASK_NAME)?.val
+      const modelName = modelSelectCom?.componentValues.find(item => item.key === MODEL_NAME)?.val
+      const modelType = modelSelectCom?.componentValues.find(item => item.key === MODEL_TYPE)?.val
+      const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === ARBITER_ORGAN)?.val
+
+      const dataSetCom = modelComponents.find(item => item.componentCode === DATA_SET)
+      const dataValue = dataSetCom.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
       const value = dataValue !== '' ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
@@ -686,7 +690,17 @@ export default {
         return
       }
       // 横向lr
-      if (modelType === '3' && (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId)) {
+      if ((modelType === '3' || modelType === '6' || modelType === '7') && arbiterOrganId === '') {
+        console.log('error1')
+        this.$message({
+          message: '请选择正确的可信第三方(arbiter方)',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
+      if (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId) {
+        console.log('error2')
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -719,7 +733,7 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
-      } else if (!modelSelectCom || modelName === '') {
+      } else if (!jointStatisticalCom && (!modelSelectCom || modelName === '')) {
         this.$message({
           message: `运行失败：请输入模型名称`,
           type: 'error'
@@ -1034,7 +1048,7 @@ export default {
       for (let i = 0; i < cells.length; i++) {
         const item = cells[i]
         const { position, data, size, shape } = item
-        const componentValues = []
+        let componentValues = []
         item.frontComponentId = item.id
         if (shape === 'edge') {
           modelPointComponents.push({
@@ -1046,15 +1060,19 @@ export default {
         } else {
           const { componentCode, componentName, componentTypes } = data
           const { input, output } = this.filterFn(item, edgeList, cells)
-
+          item.frontComponentId = item.id
+          // set model params
           if (componentTypes) {
-            for (let i = 0; i < componentTypes.length; i++) {
-              const item = componentTypes[i]
+            componentTypes.forEach(item => {
               componentValues.push({
                 key: item.typeCode,
                 val: item.inputValue
               })
-            }
+              const result = this.findParams(item, item.inputValue)
+              if (result.length > 0) {
+                componentValues = [...componentValues, ...result]
+              }
+            })
           }
 
           // format 参数
@@ -1073,8 +1091,8 @@ export default {
           })
         }
       }
-      this.saveParams.param.modelComponents = modelComponents
 
+      this.saveParams.param.modelComponents = modelComponents
       this.saveParams.param.modelPointComponents = modelPointComponents
       if (this.isClear) {
         const startParams = modelComponents.filter(item => item.componentCode === 'start')[0]
@@ -1084,7 +1102,7 @@ export default {
 
       // dataSet component in the second
       this.checkOrder()
-
+      console.log('saveParams', modelComponents)
       this.$emit('saveParams', this.saveParams.param)
       const res = await saveModelAndComponent(this.saveParams)
       if (res.code === 0) {
@@ -1100,9 +1118,46 @@ export default {
       }
       this.isClear = false
     },
+    findParams(list, targetVal) {
+      const result = []
+      this.formatParams(list, targetVal, result)
+      return result
+    },
+    formatParams(list, targetVal, result = []) {
+      const current = list.inputValues.find(item => item.key === targetVal)
+      const param = current && current.param
+      if (current && param) {
+        param.forEach(v => {
+          result.push({
+            key: v.typeCode,
+            val: v.inputValue
+          })
+          if (v.inputValues.length > 0) {
+            this.formatParams(v, v.inputValue, result)
+          }
+        })
+      }
+      return result
+    },
+    getDetailParams(data, target) {
+      const inputValues = data.inputValues.find(item => item.key === data.inputValue)
+      if (inputValues) {
+        const params = inputValues.param
+        params && params.map(p => {
+          const componentValue = target.componentValues.find(item => item.key === p.typeCode)
+          if (componentValue) {
+            p.inputValue = componentValue.val
+            if (p.inputValues.length > 0) {
+              this.getDetailParams(p, target)
+            }
+          }
+        })
+      }
+      return data
+    },
     checkOrder() {
       const { modelComponents } = this.saveParams.param
-      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === 'dataSet')
+      const dataSetIndex = modelComponents.findIndex(item => item.componentCode === DATA_SET)
       const dataSetCom = modelComponents[dataSetIndex]
       if (dataSetIndex !== 1 && dataSetIndex !== -1) {
         this.saveParams.param.modelComponents.splice(dataSetIndex, 1)
@@ -1123,10 +1178,14 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const { result, code } = await getModelComponent()
-      if (code === 0) {
-        this.components = result
-        this.componentsList = result.slice(1)
+      const res = await getModelComponent()
+      if (res.code === 0) {
+        const { result } = res
+        const model = result.find(item => item.componentCode === MODEL)
+        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        this.components = JSON.parse(JSON.stringify(result))
+        console.log('defaultComponentsConfig 1', this.defaultComponentsConfig)
+        // this.componentsList = config.slice(1)
       }
     },
     // 获取模型组件详情
@@ -1154,6 +1213,7 @@ export default {
           closeOnClickModal: false,
           type: 'warning'
         }).then(() => {
+          // this.setComponentsDetail(res.result)
           this.setComponentsDetail(res.result)
         }).catch(() => {
           this.isLoadHistory = false
@@ -1172,20 +1232,16 @@ export default {
       }
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
-      for (let index = 0; index < this.modelComponents.length; index++) {
-        const item = this.modelComponents[index]
-        // save the selected components
-        this.selectComponentList.push(item.componentCode)
-        this.$emit('selectComponents', this.selectComponentList)
-        const posIndex = this.components.findIndex(c => c.componentCode === item.componentCode)
-        item.componentValues.map(item => {
-          this.components[posIndex]?.componentTypes.map(c => {
-            if (c.typeCode === item.key && item.val !== '') {
-              c.inputValue = item.val
-            }
-          })
+      this.modelComponents.forEach(item => {
+        const currentData = this.components.find(c => c.componentCode === item.componentCode)
+        currentData.componentTypes.map(c => {
+          const componentValue = item.componentValues.find(item => item.key === c.typeCode)
+          if (componentValue.val !== '') {
+            c.inputValue = componentValue.val
+          }
+          this.getDetailParams(c, item)
         })
-      }
+      })
       this.initGraphShape()
       if (this.options.isEditable) {
         this.saveFn()
@@ -1211,6 +1267,8 @@ export default {
   position: relative;
   width: calc(100% - 300px);
   height: 100%;
+  max-height: 100%;
+  overflow-y: scroll;
 }
 .container{
   flex: 1;

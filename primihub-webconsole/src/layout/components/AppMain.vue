@@ -60,11 +60,6 @@ export default {
 
 <style lang="scss">
 @import "~@/styles/variables.scss";
-.el-popup-parent--hidden {
-  .fixed-header {
-    padding-right: 15px;
-  }
-}
 .hamburger-container {
   line-height: 46px;
   height: 100%;

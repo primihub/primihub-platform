@@ -10,7 +10,7 @@
         <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId,1)" />
       </el-form-item>
       <el-form-item v-for="(item,index) in providerOrgans" :key="index">
-        <p><strong class="required">*</strong>参与方：<span>{{ item.organName }}</span></p>
+        <p><strong class="required">*</strong>协作方：<span>{{ item.organName }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(item.organId, 2)">选择资源</el-button>
         <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId,2)" />
       </el-form-item>
@@ -146,7 +146,7 @@ export default {
       const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
       if (createdResourceId === '' || providerResourceId === '') {
         this.$message({
-          message: createdResourceId === '' ? '请输入发起方方资源' : '请输入参与方资源',
+          message: createdResourceId === '' ? '请输入发起方方资源' : '请输入协作方资源',
           type: 'warning'
         })
         return

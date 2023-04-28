@@ -56,7 +56,7 @@
           prop="dbTableName"
           label="数据表名称"
         >
-          <el-select v-model="form.dbTableName" no-data-text="暂无数据" filterable clearable placeholder="请选择" @change="handleDbTableNameChange">
+          <el-select v-model="form.dbTableName" no-data-text="暂无数据" filterable placeholder="请选择" @change="handleDbTableNameChange">
             <el-option v-for="(item,index) in tableNames" :key="index" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -114,10 +114,6 @@ export default {
         {
           label: 'SQLite',
           value: 2
-        },
-        {
-          label: 'Hive',
-          value: 3
         }
       ],
       dbDriverMap: {
@@ -227,7 +223,7 @@ export default {
       this.$refs.form.validate((valid) => {
         if (valid) {
           console.log('检测连接')
-          this.params = this.form
+          this.params = JSON.parse(JSON.stringify(this.form))
           this.params['dbType'] = this.form.dbType === 0 ? 1 : this.form.dbType
           healthConnection(this.params).then(res => {
             if (res.code === 0) {
