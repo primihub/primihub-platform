@@ -63,11 +63,6 @@ public class DataProject {
     private String providerOrganNames;
 
     /**
-     * 中心节点地址
-     */
-    private String serverAddress;
-
-    /**
      * 项目状态 0审核中 1可用 2关闭
      */
     private Integer status;

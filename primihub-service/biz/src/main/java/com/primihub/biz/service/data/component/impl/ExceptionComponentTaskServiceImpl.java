@@ -129,7 +129,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 taskReq.setNewest(derivationList);
                 // derivation resource datas
                 log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
-                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
+                BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
                 log.info(JSONObject.toJSONString(derivationResource));
                 if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

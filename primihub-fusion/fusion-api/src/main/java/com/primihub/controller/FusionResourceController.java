@@ -67,5 +67,4 @@ public class FusionResourceController {
         return resourceService.getOrganResourceList(param);
     }
 
-
 }

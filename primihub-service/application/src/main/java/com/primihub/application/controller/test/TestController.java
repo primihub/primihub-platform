@@ -47,11 +47,6 @@ public class TestController {
         return BaseResultEntity.success();
     }
 
-    @RequestMapping("/testTable")
-    public BaseResultEntity testTable(){
-        return BaseResultEntity.success(testService.testTable());
-    }
-
     @RequestMapping("/testStream")
     public BaseResultEntity testStream(){
         BaseFunctionHandleEntity entity=new BaseFunctionHandleEntity();

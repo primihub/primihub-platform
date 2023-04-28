@@ -3,8 +3,8 @@
 <mapper namespace="com.primihub.repository.FusionRepository">
 
     <insert id="insertFusionOrgan" useGeneratedKeys="true" keyProperty="id">
-        insert into fusion_organ(global_id,global_name,pin_code_md,gateway_address,register_time,public_key,private_key,is_del)
-        values(#{globalId},#{globalName},#{pinCodeMd},#{gatewayAddress},#{registerTime},#{publicKey},#{privateKey},#{isDel})
+        insert into fusion_organ(global_id,global_name,gateway_address,register_time,public_key,private_key,is_del)
+        values(#{globalId},#{globalName},#{gatewayAddress},#{registerTime},#{publicKey},#{privateKey},#{isDel})
     </insert>
     <insert id="insertFusionOrganExtends" useGeneratedKeys="true" keyProperty="id">
         insert into fusion_organ_extends(global_id, ip, lat, lon, country, is_del)
@@ -20,7 +20,7 @@
 
     <select id="getFusionOrganByGlobalId" resultType="com.primihub.entity.fusion.po.FusionOrgan">
         select
-            id,global_id globalId,global_name globalName,pin_code_md pinCodeMd,gateway_address gatewayAddress,register_time registerTime,public_key publicKey,is_del isDel,c_time cTime,u_time uTime
+            id,global_id globalId,global_name globalName,gateway_address gatewayAddress,register_time registerTime,public_key publicKey,is_del isDel,c_time cTime,u_time uTime
         from
             fusion_organ
         where global_id=#{globalId}
@@ -56,6 +56,13 @@
             fusion_organ_extends e
         WHERE
             o.id = e.global_id
+    </select>
+    <select id="selectFusionOrganAllList" resultType="com.primihub.entity.fusion.po.FusionOrgan">
+        select
+            id,global_id globalId,global_name globalName,gateway_address gatewayAddress,register_time registerTime,public_key publicKey,is_del isDel,c_time cTime,u_time uTime
+        from
+            fusion_organ
+        order by id desc
     </select>
 
 </mapper>

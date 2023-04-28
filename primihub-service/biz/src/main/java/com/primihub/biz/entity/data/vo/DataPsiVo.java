@@ -128,8 +128,4 @@ public class DataPsiVo {
      * 运行状态 0未运行 1完成 2运行中 3失败 4取消 默认0
      */
     private Integer taskState;
-    /**
-     * 中心节点地址
-     */
-    private String serverAddress;
 }

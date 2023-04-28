@@ -32,7 +32,6 @@ public class FusionService {
         fusionOrgan=new FusionOrgan();
         fusionOrgan.setGlobalName(fusionConnectionParam.getGlobalName());
         fusionOrgan.setGlobalId(fusionConnectionParam.getGlobalId());
-        fusionOrgan.setPinCodeMd(SignUtil.getMD5ValueUpperCaseByDefaultEncode(fusionConnectionParam.getPinCode()));
         fusionOrgan.setGatewayAddress(fusionConnectionParam.getGatewayAddress());
         fusionOrgan.setRegisterTime(new Date());
         fusionOrgan.setIsDel(0);
@@ -88,6 +87,10 @@ public class FusionService {
             fusionRepository.updateFusionOrganExtends(fusionOrganExtends);
         }
         return BaseResultEntity.success(fusionOrganExtends);
+    }
+
+    public BaseResultEntity getOrganAllList(){
+        return BaseResultEntity.success(fusionRepository.selectFusionOrganAllList());
     }
 
 

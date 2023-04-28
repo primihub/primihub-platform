@@ -49,8 +49,6 @@ public class ModelResourceVo {
      */
     private Integer modelParamNum;
 
-    private String serverAddress;
-
     private Integer available;
 
     private Integer takePartType;

@@ -1,4 +1,4 @@
-package com.primihub.entity.fusion.param;
+package com.primihub.biz.entity.fusion.param;
 
 import lombok.Data;
 

@@ -220,7 +220,7 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getFileHandleField();
             available = otherDataResource.getResourceState();
         }else {
-            BaseResultEntity dataResource = otherBusinessesService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            BaseResultEntity dataResource = otherBusinessesService.getDataResource(dataPsi.getOtherResourceId());
             if (dataResource.getCode()!=0) {
                 return;
             }
@@ -393,7 +393,6 @@ public class DataAsyncService implements ApplicationContextAware {
         Long projectId = vo.getDataModel().getProjectId();
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
         vo.setProjectId(dataProject.getProjectId());
-        vo.setServerAddress(dataProject.getServerAddress());
         List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
         vo.setShareOrganId(dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList()));
         sendShareModelTask(vo);

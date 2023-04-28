@@ -30,9 +30,6 @@ public class FusionController {
         if(fusionConnectionParam.getGlobalName()==null|| "".equals(fusionConnectionParam.getGlobalName().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalName");
         }
-        if(fusionConnectionParam.getPinCode()==null|| "".equals(fusionConnectionParam.getPinCode().trim())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pinCode");
-        }
         if(fusionConnectionParam.getGatewayAddress()==null|| "".equals(fusionConnectionParam.getGatewayAddress().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gatewayAddress");
         }
@@ -59,6 +56,11 @@ public class FusionController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalIdArray");
         }
         return fusionService.findOrganByGlobalId(globalIdArray);
+    }
+
+    @RequestMapping("getOrganAllList")
+    public BaseResultEntity getOrganAllList(){
+        return fusionService.getOrganAllList();
     }
 
     @RequestMapping("changeOrganExtends")

@@ -32,7 +32,7 @@
     <select id="getDataSetByIds" resultType="com.primihub.entity.DataSet">
         select
             id,access_info accessInfo,driver,address,vibility,available,holder
-        from data_set where is_del = 0
+        from data_set where is_del = 0 and holder = 0
         <if test="ids!=null">
             and id in
             <foreach collection="ids" index="index" item="item" open="("

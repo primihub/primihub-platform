@@ -1,12 +1,10 @@
 package com.primihub.service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.primihub.convert.DataResourceConvert;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.base.PageDataEntity;
 import com.primihub.entity.copy.dto.CopyResourceDto;
-import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.fusion.po.FusionOrgan;
 import com.primihub.entity.resource.enumeration.AuthTypeEnum;
 import com.primihub.entity.resource.param.OrganResourceParam;
@@ -17,7 +15,6 @@ import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.po.FusionResourceVisibilityAuth;
 import com.primihub.repository.FusionRepository;
 import com.primihub.repository.FusionResourceRepository;
-import com.primihub.repository.GroupRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -35,15 +32,8 @@ public class ResourceService {
     private FusionResourceRepository resourceRepository;
     @Autowired
     private FusionRepository fusionRepository;
-    @Autowired
-    private GroupRepository groupRepository;
 
     public BaseResultEntity getResourceList(ResourceParam param) {
-        List<Long> groupList = groupRepository.findOrganInGroup(param.getGlobalId());
-        if(groupList==null|| groupList.size()==0) {
-            return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
-        }
-        param.setGroupList(groupList);
         List<FusionResource> fusionResources = resourceRepository.selectFusionResource(param);
         if (fusionResources.isEmpty()) {
             return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
@@ -53,7 +43,7 @@ public class ResourceService {
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
         Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
-        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()),null,param.getGlobalId())).collect(Collectors.toList())));
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()),param.getGlobalId())).collect(Collectors.toList())));
     }
 
     public BaseResultEntity getDataResource(String resourceId,String globalId) {
@@ -62,9 +52,8 @@ public class ResourceService {
             return BaseResultEntity.success();
         }
         FusionOrgan fusionOrgan = fusionRepository.getFusionOrganByGlobalId(fusionResource.getOrganId());
-        Set<String> groupInOrganIds = getGroupInOrganIds(globalId);
         List<FusionResourceField> fusionResourceFields = resourceRepository.selectFusionResourceFieldById(fusionResource.getId());
-        return BaseResultEntity.success(DataResourceConvert.fusionResourcePoConvertVo(fusionResource,fusionOrgan==null?"":fusionOrgan.getGlobalName(),fusionResourceFields,groupInOrganIds,globalId));
+        return BaseResultEntity.success(DataResourceConvert.fusionResourcePoConvertVo(fusionResource,fusionOrgan==null?"":fusionOrgan.getGlobalName(),fusionResourceFields,globalId));
     }
 
 
@@ -103,18 +92,6 @@ public class ResourceService {
                 resourceRepository.updateFusionResource(fusionResource);
                 existenceTags.addAll(Arrays.asList(fr.getResourceTag().split(",")));
                 resourceRepository.deleteResourceFieldByResourceId(fr.getId());
-//                Map<String, FusionResourceField> resourceFieldMap = resourceRepository.selectFusionResourceFieldById(fr.getId()).stream().collect(Collectors.toMap(FusionResourceField::getFieldName, Function.identity()));
-//                if (copyResourceDto.getFieldList()!=null&&copyResourceDto.getFieldList().size()!=0){
-//                    for (CopyResourceFieldDto dto : copyResourceDto.getFieldList()) {
-//                        if (resourceFieldMap.get(dto.getFieldName())==null){
-//                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), null);
-//                            resourceRepository.saveResourceField(fusionResourceField);
-//                        }else {
-//                            FusionResourceField fusionResourceField = DataResourceConvert.copyResourceFieldDtoConvertPo(dto, fr.getId(), resourceFieldMap.get(dto.getFieldName()).getFieldId());
-//                            resourceRepository.updateResourceField(fusionResourceField);
-//                        }
-//                    }
-//                }
             }else {
                 resourceRepository.saveFusionResource(fusionResource);
             }
@@ -159,8 +136,7 @@ public class ResourceService {
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
         Set<Long> resourceIds = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<FusionResourceField>> resourceFielMap = resourceRepository.selectFusionResourceFieldByIds(resourceIds).stream().collect(Collectors.groupingBy(FusionResourceField::getResourceId));
-        Set<String> groupInOrganIds = getGroupInOrganIds(globalId);
-        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()),groupInOrganIds,globalId)).collect(Collectors.toList()));
+        return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),resourceFielMap.get(re.getId()),globalId)).collect(Collectors.toList()));
     }
 
     public BaseResultEntity saveOrganResourceAuth(String organId, String resourceId, String projectId, Integer auditStatus) {
@@ -195,17 +171,6 @@ public class ResourceService {
         Integer count = resourceRepository.selectOrganResourceCount(param);
         Set<String> organIds = fusionResources.stream().map(FusionResource::getOrganId).collect(Collectors.toSet());
         Map<String, String> organNameMap = fusionRepository.selectFusionOrganByGlobalIds(organIds).stream().collect(Collectors.toMap(FusionOrgan::getGlobalId, FusionOrgan::getGlobalName));
-        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),null,null,null)).collect(Collectors.toList())));
-    }
-
-    public Set<String> getGroupInOrganIds(String globalId){
-        List<Long> organInGroup = groupRepository.findOrganInGroup(globalId);
-        Set<String> organIdSet = new HashSet<>();
-        organIdSet.add(globalId);
-        if (!organInGroup.isEmpty()){
-            List<String> organIds = groupRepository.findOrganGlobalIdByGroupIdList(organInGroup);
-            organIdSet.addAll(organIds);
-        }
-        return organIdSet;
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,organNameMap.get(re.getOrganId()),null,null)).collect(Collectors.toList())));
     }
 }

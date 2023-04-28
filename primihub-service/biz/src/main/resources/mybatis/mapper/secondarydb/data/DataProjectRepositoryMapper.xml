@@ -11,7 +11,6 @@
         <result column="created_username" property="createdUsername" />
         <result column="resource_num" property="resourceNum" />
         <result column="provider_organ_names" property="providerOrganNames" />
-        <result column="server_address" property="serverAddress" />
         <result column="status" property="status" />
         <result column="is_del" property="isDel" />
         <result column="create_date" property="createDate" />
@@ -27,7 +26,6 @@
         <result column="audit_status" property="auditStatus" />
         <result column="audit_opinion" property="auditOpinion" />
         <result column="secretkey_id" property="secretkeyId" />
-        <result column="server_address" property="serverAddress" />
         <result column="is_del" property="isDel" />
         <result column="create_date" property="createDate" />
         <result column="update_date" property="updateDate" />
@@ -44,18 +42,17 @@
         <result column="audit_status" property="auditStatus" />
         <result column="audit_opinion" property="auditOpinion" />
         <result column="secretkey_id" property="secretkeyId" />
-        <result column="server_address" property="serverAddress" />
         <result column="create_date" property="createDate" />
         <result column="update_date" property="updateDate" />
     </resultMap>
     <sql id="DataProjectBaseColumnList">
-        id, project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, server_address, status, is_del, create_date, update_date
+        id, project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, status, is_del, create_date, update_date
     </sql>
     <sql id="DataProjectOrganBaseColumnList">
-        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, server_address, is_del, create_date, update_date
+        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, is_del, create_date, update_date
     </sql>
     <sql id="DataProjectResourceBaseColumnList">
-        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, secretkey_id, server_address, create_date, update_date
+        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, secretkey_id, create_date, update_date
     </sql>
     <select id="selectProjectResourceByProjectId" resultMap="DataProjectResourceBaseResultMap">
         select
@@ -174,7 +171,7 @@
     <select id="selectProjectResourceByResourceIds"
             resultType="com.primihub.biz.entity.data.po.DataProjectResource">
         select
-            DISTINCT resource_id resourceId,server_address serverAddress,organ_id  organId
+            DISTINCT resource_id resourceId,organ_id  organId
         from data_project_resource
         where resource_id in
         <foreach collection="resourceIds" index="index" item="item" open="("
@@ -186,7 +183,6 @@
             resultType="com.primihub.biz.entity.data.po.DataProjectResource">
         SELECT
             resource_id resourceId,
-            server_address serverAddress,
             max(id) maxId
         FROM
             data_project_resource

@@ -42,7 +42,7 @@ public class DataResourceConvert {
     }
 
 
-    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, String organName, List<FusionResourceField> fieldList, Set<String> groupInOrganIds,String globalId){
+    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, String organName, List<FusionResourceField> fieldList,String globalId){
         FusionResourceVo fusionResourceVo = new FusionResourceVo();
         fusionResourceVo.setResourceId(fusionResource.getResourceId());
         fusionResourceVo.setResourceName(fusionResource.getResourceName());
@@ -79,7 +79,7 @@ public class DataResourceConvert {
                     }
                 }
             }
-            if(fusionResource.getResourceAuthType().equals(AuthTypeEnum.PUBLIC.getAuthType()) && groupInOrganIds!=null && groupInOrganIds.contains(fusionResource.getOrganId())) {
+            if(fusionResource.getResourceAuthType().equals(AuthTypeEnum.PUBLIC.getAuthType())) {
                 fusionResourceVo.setAvailable(0);
             }
         }

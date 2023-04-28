@@ -18,6 +18,8 @@ public interface FusionRepository {
     FusionOrganExtends getFusionOrganExtendsByGlobalId(Long globalId);
     List<OrganExtendsVo> getFusionOrganExtends();
     List<FusionOrgan> selectFusionOrganByGlobalIds(@Param("globalIds") Set<String> globalIds);
+    List<FusionOrgan> selectFusionOrganAllList();
+
 
     void insertFusionOrganExtends(FusionOrganExtends fusionOrganExtends);
     void updateFusionOrganExtends(FusionOrganExtends fusionOrganExtends);

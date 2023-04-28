@@ -257,7 +257,7 @@
 
     <select id="findAuthOrganByResourceId" resultType="com.primihub.biz.entity.data.po.DataResourceVisibilityAuth">
         select
-            id,resource_id resourceId,organ_global_id organGlobalId,organ_name organName,organ_server_address organServerAddress,is_del isDel,c_time cTime,u_time uTime
+            id,resource_id resourceId,organ_global_id organGlobalId,organ_name organName,is_del isDel,c_time cTime,u_time uTime
         from
             data_resource_visibility_auth
         where

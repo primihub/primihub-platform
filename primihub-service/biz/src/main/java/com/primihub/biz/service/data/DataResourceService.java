@@ -689,7 +689,7 @@ public class DataResourceService {
         return BaseResultEntity.success(baseConfiguration.isDisplayDatabaseSourceType());
     }
 
-    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId, String serverAddress) {
+    public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId) {
         try {
             Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
             Set<String> resourceIds = map.keySet();
@@ -703,7 +703,7 @@ public class DataResourceService {
             if (dataResource == null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
-            BaseResultEntity result = otherBusinessesService.getResourceListById(serverAddress, resourceIds.toArray(new String[resourceIds.size()]));
+            BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
             if (result.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
             }
@@ -812,7 +812,6 @@ public class DataResourceService {
         DataDerivationResourceVo dataDerivationResourceVo = dataDerivationResourceVos.get(0);
         DataDerivationResourceDataVo dataVo= DataResourceConvert.dataDerivationResourcePoConvertDataVo(dataDerivationResourceVo);
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataVo.getProjectId(), null);
-        dataVo.setServerAddress(dataProject.getServerAddress());
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataVo.getTaskId());
         if (modelTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);

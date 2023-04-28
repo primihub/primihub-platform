@@ -28,10 +28,6 @@ public class ModelProjectOrganVo {
      */
     private Integer auditStatus;
     /**
-     * 中心节点地址
-     */
-    private String serverAddress;
-    /**
      * 资源数据
      */
     private List<ModelProjectResourceVo> resources = new ArrayList<>();

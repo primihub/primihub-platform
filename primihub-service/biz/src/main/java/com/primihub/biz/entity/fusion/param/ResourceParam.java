@@ -1,11 +1,10 @@
-package com.primihub.entity.resource.param;
+package com.primihub.biz.entity.fusion.param;
 
+import com.primihub.biz.entity.data.req.PageReq;
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-public class ResourceParam extends PageParam {
+public class ResourceParam extends PageReq {
     private String resourceId;
     private String resourceName;
     private Integer resourceType;

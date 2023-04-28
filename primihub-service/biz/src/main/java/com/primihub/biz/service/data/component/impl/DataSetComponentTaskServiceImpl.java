@@ -65,8 +65,8 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源["+mprv.getResourceName()+"]审核未通过或移除,不可使用");
                 }
             }
-            String[] modelResourceIds = resourceList.stream().map(ModelProjectResourceVo::getResourceId).toArray(String[]::new);
-            BaseResultEntity baseResult = otherBusinessesService.getResourceListById(dataProjectResources.get(0).getServerAddress(), modelResourceIds);
+            List<String> modelResourceIds = resourceList.stream().map(ModelProjectResourceVo::getResourceId).collect(Collectors.toList());
+            BaseResultEntity baseResult = otherBusinessesService.getResourceListById(modelResourceIds);
             if (baseResult.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:"+baseResult.getMsg());
             }
@@ -75,7 +75,6 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源查询失败:无数据信息");
             }
             taskReq.setFusionResourceList(voList);
-            taskReq.setServerAddress(dataProjectResources.get(0).getServerAddress());
 //            log.info("json:{}",JSONObject.toJSONString(voList));
             List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.parseInt(data.get("available").toString())==1).collect(Collectors.toList());
 //            log.info("availableList - size :{}",availableList.size());

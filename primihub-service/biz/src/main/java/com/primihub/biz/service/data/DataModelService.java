@@ -63,9 +63,9 @@ public class DataModelService {
     @Autowired
     private DataAsyncService dataAsyncService;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
-    @Autowired
     private DataResourceService dataResourceService;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
 
     public BaseResultEntity getDataModel(Long taskId,Long userId) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
@@ -81,7 +81,7 @@ public class DataModelService {
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
             List<String> resourceId = modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toList());
-            Map<String, Map> resourceListMap = dataProjectService.getResourceListMap(resourceId, dataProject.getServerAddress());
+            Map<String, Map> resourceListMap = otherBusinessesService.getResourceListMap(resourceId);
             if (resourceListMap.size()>0){
                 for (ModelResourceVo modelResourceVo : modelResourceVos) {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
@@ -96,29 +96,10 @@ public class DataModelService {
                         modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount") == null ? 0 : Integer.parseInt(map.get("resourceColumnCount").toString()));
                         modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
                         modelResourceVo.setResourceType(map.get("resourceType") == null ? 0 : Integer.parseInt(map.get("resourceType").toString()));
-                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
                         if (map.get("organId") != null) {
                             modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString()) ? 1 : 2);
                         }
                     }
-//                    }else {
-//                        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(modelResourceVo.getResourceId());
-//                        if (dataResource!=null){
-//                            modelResourceVo.setAvailable(0);
-//                            modelResourceVo.setResourceName(dataResource.getResourceName());
-//                            modelResourceVo.setOrganName(organConfiguration.getSysLocalOrganName());
-//                            modelResourceVo.setOrganId(dataProject.getCreatedOrganId());
-//                            modelResourceVo.setFileNum(dataResource.getFileRows());
-//                            modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
-//                            modelResourceVo.setPrimitiveParamNum(dataResource.getResourceNum());
-//                            modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
-//                            modelResourceVo.setResourceType(dataResource.getResourceSource());
-//                            modelResourceVo.setServerAddress(dataProject.getServerAddress());
-//                            modelResourceVo.setParticipationIdentity(1);
-//                        }else {
-//                            modelResourceVo.setResourceId(null);
-//                        }
-//                    }
                 }
             }
         }
@@ -135,7 +116,6 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-//        map.put("modelResources",modelResourceVos.stream().filter(r->r.getResourceType()!=3).collect(Collectors.toList()));
         map.put("modelResources",modelResourceVos);
         map.put("oneself",true);
         if (!baseConfiguration.getAdminUserIds().contains(userId)){
@@ -565,7 +545,7 @@ public class DataModelService {
                 dataModelResource.setModelId(vo.getDataModel().getModelId());
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
-            BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(vo.getDerivationList(), null, vo.getServerAddress());
+            BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(vo.getDerivationList(), null);
             log.info(JSONObject.toJSONString(derivationResource));
             if (derivationResource.getCode()==0){
                 List<String> resourceIds = (List<String>) derivationResource.getResult();

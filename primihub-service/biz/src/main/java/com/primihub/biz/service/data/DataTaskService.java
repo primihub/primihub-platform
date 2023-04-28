@@ -26,8 +26,6 @@ import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.repository.primarydb.data.*;
-import com.primihub.biz.repository.resourceprimarydb.data.DataResourcePrimaryRepository;
-import com.primihub.biz.repository.resourcesecondarydb.data.DataResourceSecondaryRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.service.sys.SysSseEmitterService;
 import com.primihub.biz.service.sys.SysWebSocketService;
@@ -67,14 +65,6 @@ public class DataTaskService {
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
     private DataResourceRepository dataResourceRepository;
-    @Autowired
-    private DataResourcePrimaryRepository dataResourcePrimaryRepository;
-    @Autowired
-    private DataMpcRepository dataMpcRepository;
-    @Autowired
-    private DataMpcPrRepository dataMpcPrRepository;
-    @Autowired
-    private DataResourceSecondaryRepository dataResourceSecondaryRepository;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -126,88 +116,6 @@ public class DataTaskService {
         return fileFieldList;
     }
 
-    public Map<String, Object> initializeTableStructure(SysFile sysFile, List<DataFileField> dataFileFieldList) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("tableName", sysFile.getFileName());
-        List<String> columnList = new ArrayList<>();
-        for (DataFileField dataFileField : dataFileFieldList) {
-            if (StringUtils.isNotBlank(dataFileField.getFieldAs())) {
-                columnList.add(dataFileField.getFieldAs());
-            } else {
-                columnList.add(dataFileField.getFieldName());
-            }
-        }
-        map.put("columnList", columnList);
-        dataResourcePrimaryRepository.dropDataTable(sysFile.getFileName());
-        dataResourcePrimaryRepository.createDataTable(map);
-        return map;
-    }
-
-    public void initializeTableData(Map<String, Object> map, List<String> fileContent) {
-        List<String> columnList = (List<String>) map.get("columnList");
-        List<List<Object>> dataList = new ArrayList();
-        List<Object> lineContenList = null;
-        fileContent.remove(0);
-        for (String lineContent : fileContent) {
-            String[] lineContentSplit = lineContent.split(",");
-            if (lineContentSplit.length > 0) {
-                lineContenList = new ArrayList<>();
-                for (int i = 0; i < columnList.size(); i++) {
-                    String val = "";
-                    try {
-                        val = lineContentSplit[i];
-                    } catch (Exception e) {
-                        log.info("解析:{} - index:{} - lineContent:{} - 异常：{}", map.get("tableName"), i, lineContent, e.getMessage());
-                    }
-                    lineContenList.add(val);
-                }
-                dataList.add(lineContenList);
-            }
-        }
-        int totalPage = dataList.size() % DataConstant.INSERT_DATA_TABLE_PAGESIZE == 0 ? dataList.size() / DataConstant.INSERT_DATA_TABLE_PAGESIZE : dataList.size() / DataConstant.INSERT_DATA_TABLE_PAGESIZE + 1;
-        for (int i = 0; i < totalPage; i++) {
-            map.put("dataList", dataList.stream().skip(i * DataConstant.INSERT_DATA_TABLE_PAGESIZE).limit(DataConstant.INSERT_DATA_TABLE_PAGESIZE).collect(Collectors.toList()));
-            dataResourcePrimaryRepository.insertDataTable(map);
-        }
-    }
-
-    public void handleRunSql(String paramStr) {
-        JSONObject jsonObject = JSONObject.parseObject(paramStr);
-        Long taskId = jsonObject.getLong("taskId");
-        String scriptSqlContent = jsonObject.getString("scriptSqlContent");
-        DataMpcTask dataMpcTask = dataMpcRepository.selectDataMpcTaskById(taskId);
-        dataMpcTask.setTaskStatus(2);
-        this.dataMpcPrRepository.updateDataMpcTask(dataMpcTask);
-        try {
-            List<Map> all = dataResourceSecondaryRepository.findAll(scriptSqlContent);
-            if (all != null && all.size() > 0) {
-                Set columnSet = new TreeSet(all.get(0).keySet());
-                if (columnSet.size()>0){
-                    List<String> dataList = new ArrayList<>();
-                    dataList.add(StringUtils.join(columnSet.toArray(),","));
-                    StringBuilder sb=new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append("mpc").append("/").append(DateUtil.formatDate(new Date(),DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat()));
-                    String filePath = sb.toString();
-                    List<String> dataValList = null;
-                    for (Map map : all) {
-                        dataValList = new ArrayList<>();
-                        for (Object key : columnSet) {
-                            dataValList.add(map.get(key)==null?"":map.get(key).toString());
-                        }
-                        dataList.add(StringUtils.join(dataValList.toArray(),","));
-                    }
-                    sb.append("/").append(dataMpcTask.getTaskIdName()).append(".csv");
-                    dataMpcTask.setResultFilePath(sb.toString());
-                    FileUtil.writeFile(filePath,dataMpcTask.getResultFilePath(),dataList);
-                }
-            }
-            dataMpcTask.setTaskStatus(1);
-        } catch (Exception e) {
-            dataMpcTask.setResultFilePath(null);
-            dataMpcTask.setLogData(e.getMessage());
-            dataMpcTask.setTaskStatus(3);
-        }
-        this.dataMpcPrRepository.updateDataMpcTask(dataMpcTask);
-    }
 
     public void batchDataFusionResource(String paramStr){
 //        log.info(paramStr);
@@ -279,40 +187,38 @@ public class DataTaskService {
         if (shareProjectVo.getProjectResources().size()==0) {
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         }
-        if(StringUtils.isNotBlank(shareProjectVo.getServerAddress())){
-            List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
-            if (dataProjectOrgans.size()==0) {
-                return;
-            }
-            List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-            Map<String, Map> organListMap = dataProjectService.getOrganListMap(organIds, shareProjectVo.getServerAddress());
-            List<String> organNames = new ArrayList<>();
-            for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
-                if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
-                    if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
-                        Map map = organListMap.get(dataProjectOrgan.getOrganId());
-                        Object gatewayAddress = map==null?null:map.get("gatewayAddress");
-                        if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
-                            log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
-                            return;
-                        }
-                        String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
-                        String publicKey = (String) map.get("publicKey");
-                        if (publicKey==null){
-                            url = url+"?ignore=ignore";
-                        }
-                        organNames.add(map.get("globalName").toString());
-                        log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
-                        otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
-                        log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
+        List<DataProjectOrgan> dataProjectOrgans = shareProjectVo.getProjectOrgans();
+        if (dataProjectOrgans.size()==0) {
+            return;
+        }
+        List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
+        Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(organIds);
+        List<String> organNames = new ArrayList<>();
+        for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
+            if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
+                if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
+                    Map map = organListMap.get(dataProjectOrgan.getOrganId());
+                    Object gatewayAddress = map==null?null:map.get("gatewayAddress");
+                    if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
+                        log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
+                        return;
                     }
+                    String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
+                    String publicKey = (String) map.get("publicKey");
+                    if (publicKey==null){
+                        url = url+"?ignore=ignore";
+                    }
+                    organNames.add(map.get("globalName").toString());
+                    log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
+                    otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
+                    log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                 }
             }
-            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
-            dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
-            dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
-            dataProjectPrRepository.updateDataProject(dataProject);
         }
+        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
+        dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
+        dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
+        dataProjectPrRepository.updateDataProject(dataProject);
     }
 
     public void spreadModelData(String paramStr){
@@ -330,7 +236,7 @@ public class DataTaskService {
             }
             shareModelVo.init(dataProject);
             shareModelVo.getDataModel().setProjectId(null);
-            Map<String, Map> organListMap = dataProjectService.getOrganListMap(shareModelVo.getShareOrganId(), shareModelVo.getServerAddress());
+            Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(shareModelVo.getShareOrganId());
             for (String organId : shareModelVo.getShareOrganId()) {
                 if (!organId.equals(organConfiguration.getSysLocalOrganId())&&organListMap.containsKey(organId)){
                     Map map = organListMap.get(organId);

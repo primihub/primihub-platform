@@ -87,7 +87,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             DataFResourceReq fresourceReq = new DataFResourceReq();
             fresourceReq.setOrganId(arbiterOrgan);
-            fresourceReq.setServerAddress(dataProject.getServerAddress());
             BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
             if (resourceList.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码1");

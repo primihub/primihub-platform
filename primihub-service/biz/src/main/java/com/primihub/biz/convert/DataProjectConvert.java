@@ -29,7 +29,6 @@ public class DataProjectConvert {
         dataProject.setCreatedUsername(userName);
         dataProject.setResourceNum(0);
         dataProject.setProviderOrganNames("");
-        dataProject.setServerAddress(req.getServerAddress());
         dataProject.setStatus(0);
         return dataProject;
     }
@@ -77,7 +76,6 @@ public class DataProjectConvert {
         dataProjectDetailsVo.setUserName(dataProject.getCreatedUsername());
         dataProjectDetailsVo.setStatus(dataProject.getStatus());
         dataProjectDetailsVo.setCreateDate(dataProject.getCreateDate());
-        dataProjectDetailsVo.setServerAddress(dataProject.getServerAddress());
         return dataProjectDetailsVo;
     }
 

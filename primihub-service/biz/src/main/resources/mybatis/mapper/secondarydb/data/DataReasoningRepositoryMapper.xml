@@ -45,8 +45,7 @@
             reasoning_id reasoningId,
             resource_id resourceId,
             organ_id organId,
-            participation_identity participationIdentity,
-            server_address serverAddress
+            participation_identity participationIdentity
         from
              data_reasoning_resource
         where reasoning_id = #{reasoningId}

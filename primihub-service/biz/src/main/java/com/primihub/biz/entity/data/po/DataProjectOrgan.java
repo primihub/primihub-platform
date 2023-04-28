@@ -19,14 +19,13 @@ public class DataProjectOrgan {
     public DataProjectOrgan() {
     }
 
-    public DataProjectOrgan(String poId, String projectId, String organId, String initiateOrganId, Integer participationIdentity, String serverAddress) {
+    public DataProjectOrgan(String poId, String projectId, String organId, String initiateOrganId, Integer participationIdentity) {
         this.poId = poId;
         this.projectId = projectId;
         this.organId = organId;
         this.initiateOrganId = initiateOrganId;
         this.participationIdentity = participationIdentity;
         this.auditStatus = 0;
-        this.serverAddress = serverAddress;
     }
 
     /**
@@ -75,11 +74,6 @@ public class DataProjectOrgan {
      * 秘钥ID
      */
     private String secretkeyId;
-
-    /**
-     * 中心节点地址
-     */
-    private String serverAddress;
 
     /**
      * 是否删除

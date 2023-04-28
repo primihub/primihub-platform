@@ -1,5 +1,8 @@
 server:
   port: 8099
+grpc:
+  server:
+    port: 9099
 
 nacos:
   addr: localhost:8848
@@ -34,6 +37,3 @@ mybatis:
 logging:
   level:
     root: info
-grpc:
-  server:
-    port: 9099

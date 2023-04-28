@@ -9,7 +9,6 @@ public class FusionOrgan {
     private Long id;
     private String globalId;
     private String globalName;
-    private String pinCodeMd;
     private String gatewayAddress;
     private Date registerTime;
     private String publicKey;

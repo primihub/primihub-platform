@@ -142,7 +142,6 @@
             resource_state resourceState,resource_hash_code resourceHashCode,
             resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
         from fusion_resource r
-        left join fusion_go go on go.organ_global_id =r.organ_id
         <include refid="fusionResourceCondition"></include>
         order by r.id desc
         limit #{offset},#{pageSize}
@@ -237,11 +236,6 @@
         where
         r.resource_state = 0
         and r.resource_type != 3
-        and go.group_id in
-            <foreach collection="groupList" index="index" item="item" open="("
-                     separator="," close=")">
-                #{item}
-            </foreach>
         and (
             r.resource_auth_type=1
             or r.organ_id=#{globalId}

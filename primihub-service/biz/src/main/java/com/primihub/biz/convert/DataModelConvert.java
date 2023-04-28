@@ -133,7 +133,6 @@ public class DataModelConvert {
         if (resourceVo!=null) {
             modelProjectOrganVo.getResources().add(resourceVo);
         }
-        modelProjectOrganVo.setServerAddress(organ.getServerAddress());
         return modelProjectOrganVo;
     }
 

@@ -19,13 +19,12 @@ public class DataProjectResource {
     public DataProjectResource() {
     }
 
-    public DataProjectResource(String prId, String projectId, String initiateOrganId, String organId, Integer participationIdentity, String serverAddress) {
+    public DataProjectResource(String prId, String projectId, String initiateOrganId, String organId, Integer participationIdentity) {
         this.prId = prId;
         this.projectId = projectId;
         this.initiateOrganId = initiateOrganId;
         this.organId = organId;
         this.participationIdentity = participationIdentity;
-        this.serverAddress = serverAddress;
         this.auditStatus = 0;
     }
 
@@ -85,11 +84,6 @@ public class DataProjectResource {
      * 秘钥ID
      */
     private String secretkeyId;
-
-    /**
-     * 中心节点地址
-     */
-    private String serverAddress;
 
     /**
      * 创建时间

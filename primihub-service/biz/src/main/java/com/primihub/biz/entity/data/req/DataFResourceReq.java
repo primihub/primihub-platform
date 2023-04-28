@@ -9,6 +9,5 @@ public class DataFResourceReq extends PageReq {
     private Integer resourceSource;
     private String organId;
     private String tagName;
-    private String serverAddress;
     private Integer fileContainsY;
 }

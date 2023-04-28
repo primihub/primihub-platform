@@ -1,5 +1,6 @@
 package com.primihub.entity.copy.dto;
 
+import com.primihub.entity.DataSet;
 import lombok.Data;
 import org.springframework.util.StringUtils;
 
@@ -92,4 +93,6 @@ public class CopyResourceDto {
      * 资源状态 目前有 0上线 1下线
      */
     private Integer resourceState;
+
+    private DataSet dataSet;
 }
