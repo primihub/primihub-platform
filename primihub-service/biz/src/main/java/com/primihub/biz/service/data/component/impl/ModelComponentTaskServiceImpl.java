@@ -68,12 +68,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
-            String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+        String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+        if (StringUtils.isNotBlank(arbiterOrgan)){
             log.info(arbiterOrgan);
-            if (StringUtils.isBlank(arbiterOrgan)) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
-            }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
             if (dataProjectOrgans.size()<=2) {
@@ -132,16 +129,9 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
         if (modelType.equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
-//        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.equals(ModelTypeEnum.HETERO_LR.getType())){
-        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())
-                ||modelType.equals(ModelTypeEnum.HETERO_LR.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY_DPSGD.getType())){
+        }else{
             return lr(req,taskReq,ModelTypeEnum.MODEL_TYPE_MAP.get(modelType));
         }
-        taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-        taskReq.getDataTask().setTaskErrorMsg("运行失败:无法进行任务执行");
-        return BaseResultEntity.success();
     }
 
     private BaseResultEntity mpclr(DataComponentReq req, ComponentTaskReq taskReq){
@@ -236,6 +226,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
+            log.info(freemarkerContent);
             try {
                 String jobId = String.valueOf(taskReq.getJob());
                 StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());

@@ -1,14 +1,15 @@
 import primihub as ph
 from primihub.FL.model.neural_network.homo_nn_dev import run_party
 
-from primihub.FL.model.neural_network.mlp_binary import NeuralNetwork
+from primihub.FL.model.neural_network.mlp_multiclass import NeuralNetwork
 
 
 config = {
     'mode': 'Plaintext',
     'nn_model': NeuralNetwork,
-    'task': 'regression',
-    'learning_rate': 3e-2,
+    'task': 'classification',
+    'class_type': 'multiclass',
+    'learning_rate': 1e-2,
     'alpha': 1e-4,
     'optimizer': 'adam',
     'batch_size': 100,
@@ -17,7 +18,7 @@ config = {
 }
 
 
-# regression dataset
+# multiclass classification dataset
 @ph.context.function(role='arbiter',
                      protocol='nn',
                      datasets=['${arbiter_dataset}'],

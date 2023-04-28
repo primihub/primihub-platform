@@ -39,11 +39,12 @@ public class DataTaskMonitorService {
             String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
             while (isContinue){
                 TaskStatusReply taskStatusReply = workGrpcClient.run(o -> o.fetchTaskStatus(taskBuild));
-                log.info(taskStatusReply.toString());
+                Thread.sleep(1000L);
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->StringUtils.isNotBlank(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
                     if (!taskStatus.isEmpty()){
-                        log.info("taskId:{} - num:{} - {}",taskBuild.getTaskId(),num,JSONObject.toJSONString(taskStatus));
+                        log.info(taskStatusReply.toString());
+//                        log.info("taskId:{} - num:{} - {}",taskBuild.getTaskId(),num,JSONObject.toJSONString(taskStatus));
                         primaryStringRedisTemplate.opsForList().rightPushAll(key,taskStatus);
                         primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
                         if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){
@@ -77,7 +78,6 @@ public class DataTaskMonitorService {
                         }
                     }
                 }
-                Thread.sleep(1000L);
             }
             primaryStringRedisTemplate.delete(key);
         }catch (Exception e){
