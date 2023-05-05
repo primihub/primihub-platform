@@ -12,8 +12,11 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
+import com.primihub.biz.repository.primarydb.sys.SysOrganPrimarydbRepository;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
+import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
@@ -31,6 +34,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 
 @Slf4j
@@ -47,6 +51,10 @@ public class SysOrganService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private SysAsyncService sysAsyncService;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
+    @Autowired
+    private SysOrganPrimarydbRepository sysOrganPrimarydbRepository;
 
     public BaseResultEntity getLocalOrganInfo() {
         String group = environment.getProperty("nacos.config.group");
@@ -175,4 +183,61 @@ public class SysOrganService {
         return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
     }
 
+    public BaseResultEntity joiningPartners(String gateway, String publicKey) {
+        SysOrgan sysOrgan = new SysOrgan();
+        sysOrgan.setApplyId(UUID.randomUUID().toString());
+        sysOrgan.setOrganGateway(gateway);
+        sysOrgan.setPublicKey(publicKey);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        Map<String,Object> map = new HashMap<>();
+        map.put("organId",sysLocalOrganInfo.getOrganId());
+        map.put("organName",sysLocalOrganInfo.getOrganName());
+        map.put("gateway",sysLocalOrganInfo.getGatewayAddress());
+        map.put("publicKey",sysLocalOrganInfo.getPublicKey());
+        if (sysLocalOrganInfo.getAddressInfo()!=null){
+            map.put("country",sysLocalOrganInfo.getAddressInfo().getCountry());
+            map.put("lat",sysLocalOrganInfo.getAddressInfo().getLat());
+            map.put("lon",sysLocalOrganInfo.getAddressInfo().getLon());
+        }
+        map.put("applyId",sysOrgan.getApplyId());
+        try {
+            BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/shareData/apply", publicKey);
+            if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+            }
+            Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
+            sysOrgan.setOrganId(resultMap.get("organId").toString());
+            sysOrgan.setOrganName(resultMap.get("organName").toString());
+            sysOrgan.setExamineState(0);
+            sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+        }catch (Exception e){
+            e.printStackTrace();
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
+        SysOrgan sysOrgan = new SysOrgan();
+        sysOrgan.setApplyId(info.get("applyId").toString());
+        sysOrgan.setOrganGateway(info.get("gateway").toString());
+        sysOrgan.setPublicKey(info.get("publicKey").toString());
+        sysOrgan.setOrganId(info.get("organId").toString());
+        sysOrgan.setOrganName(info.get("organName").toString());
+        sysOrgan.setExamineState(0);
+        sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        Map<String,Object> map = new HashMap<>();
+        map.put("organId",sysLocalOrganInfo.getOrganId());
+        map.put("organName",sysLocalOrganInfo.getOrganName());
+        map.put("gateway",sysLocalOrganInfo.getGatewayAddress());
+        map.put("publicKey",sysLocalOrganInfo.getPublicKey());
+        map.put("applyId",sysOrgan.getApplyId());
+        if (sysLocalOrganInfo.getAddressInfo()!=null){
+            map.put("country",sysLocalOrganInfo.getAddressInfo().getCountry());
+            map.put("lat",sysLocalOrganInfo.getAddressInfo().getLat());
+            map.put("lon",sysLocalOrganInfo.getAddressInfo().getLon());
+        }
+        return BaseResultEntity.success(map);
+    }
 }

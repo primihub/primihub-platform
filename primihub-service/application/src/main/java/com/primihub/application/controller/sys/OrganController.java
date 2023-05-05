@@ -4,6 +4,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
 import com.primihub.biz.service.sys.SysOrganService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,5 +46,16 @@ public class OrganController {
     @RequestMapping("getHomepage")
     public BaseResultEntity getHomepage(){
         return sysOrganService.getHomepage();
+    }
+
+    @RequestMapping("joiningPartners")
+    public BaseResultEntity joiningPartners(String gateway,String publicKey){
+        if (StringUtils.isBlank(gateway)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
+        }
+        if (StringUtils.isBlank(publicKey)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
+        }
+        return sysOrganService.joiningPartners(gateway,publicKey);
     }
 }
