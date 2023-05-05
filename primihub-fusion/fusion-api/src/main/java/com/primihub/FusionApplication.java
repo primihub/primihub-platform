@@ -1,12 +1,11 @@
 package com.primihub;
 
-import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
-import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@NacosPropertySources({@NacosPropertySource(dataId = "fusion.yaml" ,autoRefreshed = true)})
 @SpringBootApplication
+@EnableDiscoveryClient
 public class FusionApplication {
     public static void main(String[] args){
         SpringApplication.run(FusionApplication.class, args);
