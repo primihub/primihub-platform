@@ -1,5 +1,6 @@
 package com.primihub.biz.repository.secondarydb.sys;
 
+import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import org.springframework.stereotype.Repository;
 
@@ -12,4 +13,7 @@ public interface SysOrganSecondarydbRepository {
     List<SysOrgan> selectSysOrganByExamine();
     List<SysOrgan> selectSysOrganByOrganIds(Set<String> organIds);
     SysOrgan selectSysOrganByApplyId(String applyId);
+
+    List<SysOrgan> selectSysOrganByParam(OrganParam param);
+    Integer selectSysOrganByParamCount(OrganParam param);
 }

@@ -10,12 +10,15 @@ import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
+import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.repository.primarydb.sys.SysOrganPrimarydbRepository;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
@@ -55,6 +58,8 @@ public class SysOrganService {
     private OtherBusinessesService otherBusinessesService;
     @Autowired
     private SysOrganPrimarydbRepository sysOrganPrimarydbRepository;
+    @Autowired
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
 
     public BaseResultEntity getLocalOrganInfo() {
         String group = environment.getProperty("nacos.config.group");
@@ -201,7 +206,7 @@ public class SysOrganService {
         }
         map.put("applyId",sysOrgan.getApplyId());
         try {
-            BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/shareData/apply", publicKey);
+            BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
             if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
             }
@@ -239,5 +244,14 @@ public class SysOrganService {
             map.put("lon",sysLocalOrganInfo.getAddressInfo().getLon());
         }
         return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity getOrganList(OrganParam param) {
+        List<SysOrgan> list = sysOrganSecondarydbRepository.selectSysOrganByParam(param);
+        if (list.size()==0){
+            return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
+        }
+        Integer count = sysOrganSecondarydbRepository.selectSysOrganByParamCount(param);
+        return BaseResultEntity.success(new PageDataEntity(count,param.getPageSize(),param.getPageNo(),list));
     }
 }

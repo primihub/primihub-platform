@@ -33,4 +33,47 @@
         where
             is_del = 0 and examine_state = 1
     </select>
+    <select id="selectSysOrganByParam" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0 and examine_state = 1
+        <include refid="sysOrganWhere"/>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="selectSysOrganByParamCount" resultType="java.lang.Integer">
+        select
+               count(id)
+        from
+        sys_organ
+        where
+        is_del = 0 and examine_state = 1
+        <include refid="sysOrganWhere"/>
+    </select>
+    <select id="selectSysOrganByOrganIds" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0 and examine_state = 1 and organ_id in
+        <foreach collection="organIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <sql id="sysOrganWhere">
+        <if test="organId!=null and organId!=''">and organ_id like CONCAT('%',#{organId,jdbcType=VARCHAR},'%')</if>
+        <if test="organName!=null and organName!=''">and organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
+        <if test="examineState!=null">and examine_state = #{examineState}</if>
+    </sql>
 </mapper>
