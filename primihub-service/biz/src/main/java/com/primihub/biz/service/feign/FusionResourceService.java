@@ -1,10 +1,11 @@
-package com.primihub.biz.feign;
+package com.primihub.biz.service.feign;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -14,16 +15,16 @@ public interface FusionResourceService {
     BaseResultEntity getResourceList(ResourceParam resourceParam);
 
     @RequestMapping("/fusionResource/getResourceListById")
-    BaseResultEntity getResourceListById(List<String> resourceIdArray, String globalId);
+    BaseResultEntity getResourceListById(@RequestParam("resourceIdArray") List<String> resourceIdArray, @RequestParam("globalId") String globalId);
 
     @RequestMapping("/fusionResource/getResourceTagList")
     BaseResultEntity getResourceTagList();
 
     @RequestMapping("/fusionResource/getDataResource")
-    BaseResultEntity getDataResource(String resourceId,String globalId);
+    BaseResultEntity getDataResource(@RequestParam("resourceId") String resourceId,@RequestParam("globalId") String globalId);
 
     @RequestMapping("/fusionResource/saveOrganResourceAuth")
-    BaseResultEntity saveOrganResourceAuth(String organId,String resourceId,String projectId,Integer auditStatus);
+    BaseResultEntity saveOrganResourceAuth(@RequestParam("organId") String organId,@RequestParam("resourceId") String resourceId,@RequestParam("projectId") String projectId,@RequestParam("auditStatus") Integer auditStatus);
 
     @RequestMapping("/fusionResource/getOrganResourceList")
     BaseResultEntity getOrganResourceList(OrganResourceParam param);

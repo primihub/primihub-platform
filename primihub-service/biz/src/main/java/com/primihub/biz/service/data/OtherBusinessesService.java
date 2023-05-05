@@ -2,7 +2,6 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
-import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.DataFResourceReq;
@@ -11,8 +10,7 @@ import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.feign.FusionOrganService;
-import com.primihub.biz.feign.FusionResourceService;
+import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.crypt.CryptUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -21,13 +19,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 

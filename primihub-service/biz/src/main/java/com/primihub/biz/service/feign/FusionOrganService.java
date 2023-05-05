@@ -1,7 +1,6 @@
-package com.primihub.biz.feign;
+package com.primihub.biz.service.feign;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
-import com.primihub.biz.entity.fusion.param.FusionConnectionParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.RequestMapping;
 
