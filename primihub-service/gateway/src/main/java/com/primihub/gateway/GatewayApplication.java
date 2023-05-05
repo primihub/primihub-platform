@@ -2,7 +2,6 @@ package com.primihub.gateway;
 
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
-//import com.primihub.biz.config.base.NodeDataConfig;
 import com.primihub.biz.config.base.TemplatesConfig;
 import com.primihub.biz.config.grpc.GrpcServerConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
@@ -14,8 +13,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
 @NacosPropertySources({
-//        @NacosPropertySource(dataId = "test", autoRefreshed = true),
-//        @NacosPropertySource(dataId = "test.yaml", autoRefreshed = true),
         @NacosPropertySource(dataId = "base.json" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "database.yaml" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "redis.yaml" ,autoRefreshed = true)})
@@ -28,9 +25,7 @@ import org.springframework.context.annotation.FilterType;
                 value = {
                         GrpcServerConfiguration.class,
                         SingleTaskChannelConsumer.class,
-                        SysFusionService.class ,
                         ThreadPoolConfig.class,
-//                        NodeDataConfig.class,
                         TemplatesConfig.class,
                         SysCaptchaCacheServiceImpl.class,
                         SysUserService.class,

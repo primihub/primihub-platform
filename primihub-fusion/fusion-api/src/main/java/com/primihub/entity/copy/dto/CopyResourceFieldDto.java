@@ -1,11 +1,18 @@
 package com.primihub.entity.copy.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
 
 @Data
 public class CopyResourceFieldDto {
+
+    /**
+     * 资源id
+     */
+    @JsonIgnore
+    private Long resourceId;
 
     /**
      * 字段名称
@@ -26,21 +33,6 @@ public class CopyResourceFieldDto {
      * 字段描述
      */
     private String fieldDesc;
-
-    /**
-     * 关键字 0否 1是
-     */
-    private Integer relevance;
-
-    /**
-     * 分组 0否 1是
-     */
-    private Integer grouping;
-
-    /**
-     * 保护开关 0关闭 1开启
-     */
-    private Integer protectionStatus;
 
 
 }

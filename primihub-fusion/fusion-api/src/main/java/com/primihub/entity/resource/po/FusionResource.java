@@ -92,6 +92,8 @@ public class FusionResource {
      */
     private Integer resourceState;
 
+    private String userName;
+
     /**
      * 是否删除
      */

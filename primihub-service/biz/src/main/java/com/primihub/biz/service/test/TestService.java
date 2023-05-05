@@ -12,12 +12,14 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.test.TestPrimaryRepository;
 import com.primihub.biz.repository.primaryredis.test.TestRedisRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.test.TestSecondaryRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.util.FileUtil;
@@ -61,6 +63,8 @@ public class TestService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
 
     @Resource
     private Environment environment;
@@ -160,16 +164,9 @@ public class TestService {
             }
         }
         if (tag.contains("copy")){
-            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo!=null){
-                Map<String, SysOrganFusion> fusionMap = sysLocalOrganInfo.getFusionMap();
-                if (fusionMap!=null){
-                    Iterator<Map.Entry<String, SysOrganFusion>> iterator = fusionMap.entrySet().iterator();
-                    while (iterator.hasNext()){
-                        Map.Entry<String, SysOrganFusion> next = iterator.next();
-                        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),next.getValue()))).build());
-                    }
-                }
+            List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+            for (SysOrgan sysOrgan : sysOrgans) {
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
             }
         }
     }

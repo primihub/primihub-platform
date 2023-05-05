@@ -38,4 +38,11 @@ public class ShareDataController {
         return dataModelService.syncModel(vo);
     }
 
+    @RequestMapping("apply")
+    public BaseResultEntity applyForJoinNode(){
+        return BaseResultEntity.success();
+    }
+
+
+
 }

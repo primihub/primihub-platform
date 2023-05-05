@@ -1,6 +1,5 @@
 package com.primihub.entity;
 
-import java.util.List;
 
 public class DataSet {
     private String id;

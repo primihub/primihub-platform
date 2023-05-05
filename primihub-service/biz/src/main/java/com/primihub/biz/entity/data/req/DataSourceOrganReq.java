@@ -10,7 +10,5 @@ import lombok.NoArgsConstructor;
 public class DataSourceOrganReq {
     private String organGlobalId;
     private String organName;
-    private String organServerAddress;
-
 
 }

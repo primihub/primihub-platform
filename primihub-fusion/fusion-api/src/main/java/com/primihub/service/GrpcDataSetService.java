@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class GrpcDataSetService implements StorageService{
@@ -33,7 +34,7 @@ public class GrpcDataSetService implements StorageService{
     }
 
     @Override
-    public List<DataSet> getByIds(List<String> ids) {
+    public List<DataSet> getByIds(Set<String> ids) {
         return dataSetRepository.getDataSetByIds(ids);
     }
 

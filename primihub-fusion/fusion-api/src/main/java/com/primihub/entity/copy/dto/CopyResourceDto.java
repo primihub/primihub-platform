@@ -94,5 +94,7 @@ public class CopyResourceDto {
      */
     private Integer resourceState;
 
+    private String userName;
+
     private DataSet dataSet;
 }

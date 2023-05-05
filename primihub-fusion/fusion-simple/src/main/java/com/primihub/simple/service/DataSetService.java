@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DataSetService implements StorageService {
@@ -57,7 +58,7 @@ public class DataSetService implements StorageService {
     }
 
     @Override
-    public List<DataSet> getByIds(List<String> ids) {
+    public List<DataSet> getByIds(Set<String> ids) {
         return dataSetRepository.selectBatchIds(ids);
 //        return dataSetRepository.listByIds(ids);
     }

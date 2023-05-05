@@ -1,5 +1,6 @@
 package com.primihub.convert;
 
+import com.primihub.entity.DataSet;
 import com.primihub.entity.copy.dto.CopyResourceDto;
 import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.resource.enumeration.AuthTypeEnum;
@@ -40,9 +41,34 @@ public class DataResourceConvert {
         return fusionResource;
 
     }
+    public static CopyResourceDto FusionResourceConvertCopyResourceDto(FusionResource po,List<CopyResourceFieldDto> fieldDtoList,DataSet dataSet){
+        CopyResourceDto copyResourceDto = new CopyResourceDto();
+        copyResourceDto.setResourceId(po.getResourceId());
+        copyResourceDto.setResourceName(po.getResourceName());
+        copyResourceDto.setResourceDesc(po.getResourceDesc());
+        copyResourceDto.setResourceType(po.getResourceType());
+        copyResourceDto.setResourceAuthType(po.getResourceAuthType());
+        copyResourceDto.setResourceRowsCount(po.getResourceRowsCount());
+        copyResourceDto.setResourceColumnCount(po.getResourceColumnCount());
+        copyResourceDto.setResourceColumnNameList(Arrays.toString(po.getResourceColumnNameList()));
+        copyResourceDto.setResourceContainsY(po.getResourceContainsY());
+        copyResourceDto.setResourceYRowsCount(po.getResourceYRowsCount());
+        copyResourceDto.setResourceYRatio(po.getResourceYRatio());
+        copyResourceDto.setResourceTag(po.getResourceTag());
+        copyResourceDto.setOrganId(po.getOrganId());
+        copyResourceDto.setAuthOrganList(StringUtils.isEmpty(po.getAuthOrgans())?null: Arrays.asList(po.getAuthOrgans().split(",")));
+        copyResourceDto.setFieldList(fieldDtoList);
+        copyResourceDto.setIsDel(po.getIsDel());
+        copyResourceDto.setResourceHashCode(po.getResourceHashCode());
+        copyResourceDto.setResourceState(po.getResourceState());
+        copyResourceDto.setUserName(po.getUserName());
+        dataSet.setAddress(null);
+        copyResourceDto.setDataSet(dataSet);
+        return copyResourceDto;
+    }
 
 
-    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, String organName, List<FusionResourceField> fieldList,String globalId){
+    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, List<FusionResourceField> fieldList,String globalId){
         FusionResourceVo fusionResourceVo = new FusionResourceVo();
         fusionResourceVo.setResourceId(fusionResource.getResourceId());
         fusionResourceVo.setResourceName(fusionResource.getResourceName());
@@ -60,7 +86,6 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceYRatio(fusionResource.getResourceYRatio());
         fusionResourceVo.setResourceTag(Arrays.asList(fusionResource.getResourceTag().split(",")));
         fusionResourceVo.setOrganId(fusionResource.getOrganId());
-        fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setCreateDate(fusionResource.getCTime());
         if (fieldList!=null&&fieldList.size()!=0){
             fusionResourceVo.setOpenColumnNameList(fieldList.stream().map(field-> StringUtils.isEmpty(field.getFieldAs())?field.getFieldName():field.getFieldAs()).collect(Collectors.joining(",")));
@@ -96,9 +121,16 @@ public class DataResourceConvert {
         fusionResourceField.setFieldAs(dto.getFieldAs());
         fusionResourceField.setFieldType(dto.getFieldType());
         fusionResourceField.setFieldDesc(dto.getFieldDesc());
-        fusionResourceField.setRelevance(dto.getRelevance());
-        fusionResourceField.setGrouping(dto.getGrouping());
-        fusionResourceField.setProtectionStatus(dto.getProtectionStatus());
         return fusionResourceField;
+    }
+
+    public static CopyResourceFieldDto fusionResourceFieldConvertCopyResourceFieldDto(FusionResourceField po){
+        CopyResourceFieldDto copyResourceFieldDto = new CopyResourceFieldDto();
+        copyResourceFieldDto.setFieldName(po.getFieldName());
+        copyResourceFieldDto.setFieldAs(po.getFieldAs());
+        copyResourceFieldDto.setFieldType(po.getFieldType());
+        copyResourceFieldDto.setFieldDesc(po.getFieldDesc());
+        return copyResourceFieldDto;
+
     }
 }

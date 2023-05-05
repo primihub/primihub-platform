@@ -763,3 +763,26 @@ CREATE TABLE `data_visiting_users` (
                                        `update_date` DATETIME ( 3 ) NOT NULL DEFAULT CURRENT_TIMESTAMP ( 3 ) ON UPDATE CURRENT_TIMESTAMP ( 3 ) COMMENT '修改时间',
                                        PRIMARY KEY ( `id` )
 ) ENGINE = INNODB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC COMMENT = '应用市场来访用户';
+
+DROP TABLE IF EXISTS `sys_organ`;
+CREATE TABLE `sys_organ`  (
+                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '机构id',
+                              `apply_id` varchar(255) DEFAULT NULL COMMENT '申请加入ID',
+                              `organ_id` varchar(255) DEFAULT NULL COMMENT '申请加入机构ID',
+                              `organ_name` varchar(255) DEFAULT NULL COMMENT '申请加入机构名称',
+                              `organ_gateway` varchar(255) DEFAULT NULL COMMENT '申请加入机构网关地址',
+                              `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥',
+                              `examine_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0待审批 1同意 2拒绝)',
+                              `examine_msg` blob COMMENT '审批信息',
+                              `node_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
+                              `fusion_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
+                              `platform_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
+                              `lat` decimal(18,14) DEFAULT NULL COMMENT '纬度',
+                              `lon` decimal(18,14) DEFAULT NULL COMMENT '经度',
+                              `country` varchar(255) DEFAULT NULL COMMENT '区域',
+                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
+                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+                              PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '机构信息' ROW_FORMAT = Dynamic;
+

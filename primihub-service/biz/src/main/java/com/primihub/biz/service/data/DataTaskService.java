@@ -10,7 +10,6 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
-import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.LokiDto;
@@ -22,14 +21,14 @@ import com.primihub.biz.entity.data.vo.DataTaskVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.config.LokiConfig;
-import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.sys.SysSseEmitterService;
 import com.primihub.biz.service.sys.SysWebSocketService;
-import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.comm.CommStorageUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
@@ -77,8 +76,6 @@ public class DataTaskService {
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataProjectPrRepository dataProjectPrRepository;
-    @Autowired
-    private DataProjectService dataProjectService;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
     @Autowired
@@ -91,6 +88,8 @@ public class DataTaskService {
     private DataAsyncService dataAsyncService;
     @Autowired
     private OtherBusinessesService otherBusinessesService;
+    @Autowired
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
 
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
@@ -132,51 +131,15 @@ public class DataTaskService {
     public void singleDataFusionResource(String paramStr){
 //        log.info(paramStr);
         DataResource dataResource = JSONObject.parseObject(paramStr, DataResource.class);
-        Iterator<Map.Entry<String, SysOrganFusion>> iterator = organConfiguration.getSysLocalOrganInfo().getFusionMap().entrySet().iterator();
-        while (iterator.hasNext()){
-            SysOrganFusion sysOrganFusion = iterator.next().getValue();
-            if (sysOrganFusion.isRegistered()){
-                DataFusionCopyTask task = new DataFusionCopyTask(2,-1L,dataResource.getResourceId(), DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress());
-                dataCopyPrimarydbRepository.saveCopyInfo(task);
-                dataCopyService.handleFusionCopyTask(task);
-            }
+        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+        for (SysOrgan sysOrgan : sysOrgans) {
+            DataFusionCopyTask task = new DataFusionCopyTask(2,-1L,dataResource.getResourceId(), DataFusionCopyEnum.RESOURCE.getTableName(), sysOrgan.getOrganGateway());
+            dataCopyPrimarydbRepository.saveCopyInfo(task);
+            dataCopyService.handleFusionCopyTask(task);
         }
+
     }
 
-    public void compareAndFixLocalOrganName(String paramStr){
-        List<DataResourceVisibilityAuth> list=JSONObject.parseArray(paramStr, DataResourceVisibilityAuth.class);
-        Map<String,List<DataResourceVisibilityAuth>> groupMap=list.stream().collect(Collectors.groupingBy(DataResourceVisibilityAuth::getOrganServerAddress,Collectors.toList()));
-        Iterator<String> it=groupMap.keySet().iterator();
-        SysLocalOrganInfo sysLocalOrganInfo=organConfiguration.getSysLocalOrganInfo();
-        while(it.hasNext()){
-            String key=it.next();
-            List<DataResourceVisibilityAuth> currentList=groupMap.get(key);
-            List<String> organGlobalIdList=currentList.stream().map(item->item.getOrganGlobalId()).collect(Collectors.toList());
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            MultiValueMap map = new LinkedMultiValueMap<>();
-            map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
-            map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
-            map.put("globalIdArray", organGlobalIdList);
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-            BaseResultEntity<Map<String,Object>> resultEntity=restTemplate.postForObject(key+"/fusion/findOrganByGlobalId",request, BaseResultEntity.class);
-            if(resultEntity!=null&& resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode()) &&resultEntity.getResult()!=null){
-                Map resultMap=resultEntity.getResult();
-                if(resultMap.get("organList")!=null) {
-                    List<Map<String,String>> organDtoList = (List<Map<String,String>>)  resultMap.get("organList");
-                    if(organDtoList.size()!=0) {
-                        Map<String, String> organDtoMap = organDtoList.stream().collect(Collectors.toMap(item->item.get("globalId"), item->item.get("globalName")));
-                        for (DataResourceVisibilityAuth auth : currentList) {
-                            String currentName=organDtoMap.get(auth.getOrganGlobalId());
-                            if(currentName!=null&&!currentName.equals(auth.getOrganName())){
-                                dataResourcePrRepository.updateVisibilityAuthName(currentName, auth.getOrganGlobalId());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
     public void spreadProjectData(String paramStr){
         String sysLocalOrganId = organConfiguration.getSysLocalOrganId();
@@ -192,23 +155,23 @@ public class DataTaskService {
             return;
         }
         List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-        Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(organIds);
+        Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(organIds);
         List<String> organNames = new ArrayList<>();
         for (DataProjectOrgan dataProjectOrgan : dataProjectOrgans) {
             if (!sysLocalOrganId.equals(dataProjectOrgan.getOrganId())){
                 if (organListMap.containsKey(dataProjectOrgan.getOrganId())){
-                    Map map = organListMap.get(dataProjectOrgan.getOrganId());
-                    Object gatewayAddress = map==null?null:map.get("gatewayAddress");
+                    SysOrgan sysOrgan = organListMap.get(dataProjectOrgan.getOrganId());
+                    Object gatewayAddress = sysOrgan==null?null:sysOrgan.getOrganGateway();
                     if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
                         log.info("projectId:{} - OrganId:{} gatewayAddress null",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId());
                         return;
                     }
                     String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
-                    String publicKey = (String) map.get("publicKey");
+                    String publicKey = sysOrgan.getPublicKey();
                     if (publicKey==null){
                         url = url+"?ignore=ignore";
                     }
-                    organNames.add(map.get("globalName").toString());
+                    organNames.add(sysOrgan.getOrganName());
                     log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                     otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
                     log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
@@ -236,18 +199,18 @@ public class DataTaskService {
             }
             shareModelVo.init(dataProject);
             shareModelVo.getDataModel().setProjectId(null);
-            Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(shareModelVo.getShareOrganId());
+            Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(shareModelVo.getShareOrganId());
             for (String organId : shareModelVo.getShareOrganId()) {
                 if (!organId.equals(organConfiguration.getSysLocalOrganId())&&organListMap.containsKey(organId)){
-                    Map map = organListMap.get(organId);
-                    Object gatewayAddress = map==null?null:map.get("gatewayAddress");
+                    SysOrgan sysOrgan = organListMap.get(organId);
+                    Object gatewayAddress = sysOrgan==null?null:sysOrgan.getOrganGateway();
                     if (gatewayAddress==null&&StringUtils.isBlank(gatewayAddress.toString())){
                         log.info("OrganId:{} gatewayAddress null",organId);
                         return;
                     }
                     log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
                     String url = CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
-                    String publicKey = (String) map.get("publicKey");
+                    String publicKey = sysOrgan.getPublicKey();
                     if (publicKey==null){
                         url = url+"?ignore=ignore";
                     }

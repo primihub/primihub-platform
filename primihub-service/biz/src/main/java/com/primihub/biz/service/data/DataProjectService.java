@@ -13,6 +13,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
@@ -154,14 +155,12 @@ public class DataProjectService {
             List<String> organIds = organList.stream().map(DataProjectOrganReq::getOrganId).collect(Collectors.toList());
             organIds.remove(localOrganId);
             if (!organIds.isEmpty()){
-                Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(organIds);
+                Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(organIds);
                 for (String organId : organIds) {
-                    Map organMap = organListMap.get(organId);
-                    if (organMap!=null){
-                        if(organMap.get("globalName")!=null){
-                            if (!organNames.contains(organMap.get("globalName").toString())){
-                                organNames.add(organMap.get("globalName").toString());
-                            }
+                    SysOrgan organ = organListMap.get(organId);
+                    if (organ!=null){
+                        if (!organNames.contains(organ.getOrganName())){
+                            organNames.add(organ.getOrganName());
                         }
                     }
                 }
@@ -200,7 +199,7 @@ public class DataProjectService {
         Map<String, List<DataProjectResource>> organResourceMap = dataProjectResources.stream().collect(Collectors.groupingBy(DataProjectResource::getOrganId));
         List<String> resourceIds = dataProjectResources.stream().map(DataProjectResource::getResourceId).collect(Collectors.toList());
         Map<String, Map> resourceListMap = otherBusinessesService.getResourceListMap(resourceIds);
-        Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(organIds);
+        Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(organIds);
         List<DataProjectOrganVo> organs = new ArrayList<>();
         for (DataProjectOrgan projectOrgan : dataProjectOrgans) {
             DataProjectOrganVo dataProjectOrganVo = DataProjectConvert.DataProjectOrganConvertVo(projectOrgan, dataProject.getCreatedOrganId().equals(projectOrgan.getOrganId()), sysLocalOrganInfo,organListMap.get(projectOrgan.getOrganId()));
@@ -462,7 +461,7 @@ public class DataProjectService {
             BaseResultEntity.success(dataProjectOrgans);
         }
         List<String> organIds = dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList());
-        Map<String, Map> organListMap = otherBusinessesService.getOrganListMap(organIds);
+        Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(organIds);
         Map<String, ModelProjectResourceVo> resourceVoMap = new HashMap<>();
         if (modelId!=null&&modelId!=0L){
             DataModelAndComponentReq modelComponentReq = dataModelService.getModelComponentReq(modelId, null,null);

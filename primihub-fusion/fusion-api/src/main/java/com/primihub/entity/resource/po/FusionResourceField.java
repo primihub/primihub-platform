@@ -20,6 +20,8 @@ public class FusionResourceField {
     @JsonIgnore
     private Long resourceId;
 
+    private Integer fieldIndex;
+
     /**
      * 字段名称
      */
@@ -39,21 +41,6 @@ public class FusionResourceField {
      * 字段描述
      */
     private String fieldDesc;
-
-    /**
-     * 关键字 0否 1是
-     */
-    private Integer relevance;
-
-    /**
-     * 分组 0否 1是
-     */
-    private Integer grouping;
-
-    /**
-     * 保护开关 0关闭 1开启
-     */
-    private Integer protectionStatus;
 
     /**
      * 是否删除

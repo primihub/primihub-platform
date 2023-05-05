@@ -67,10 +67,6 @@ public class OrganConfiguration {
         return getLocalOrganShortCode()+"-"+ UUID.randomUUID().toString();
     }
 
-    public List<SysCollectOrgan> getCollectOrganList() {
-        return collectOrganList == null?new ArrayList():collectOrganList;
-    }
-
     @PostConstruct
     public void init(){
         readNacosConfigOrganInfo();

@@ -2,7 +2,6 @@ package com.primihub.controller;
 
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
-import com.primihub.entity.resource.param.OrganResourceParam;
 import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,30 +40,6 @@ public class FusionResourceController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
         return resourceService.getDataResource(resourceId,globalId);
-    }
-    @RequestMapping("saveOrganResourceAuth")
-    public BaseResultEntity saveOrganResourceAuth(String organId,String resourceId,String projectId,Integer auditStatus){
-        if (StringUtils.isEmpty(organId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        if (StringUtils.isEmpty(resourceId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        }
-        if (StringUtils.isEmpty(projectId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        if (auditStatus==null) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
-        }
-        return resourceService.saveOrganResourceAuth(organId,resourceId,projectId,auditStatus);
-    }
-
-    @RequestMapping("getOrganResourceList")
-    public BaseResultEntity getOrganResourceList(OrganResourceParam param){
-        if (StringUtils.isEmpty(param.getOrganId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        return resourceService.getOrganResourceList(param);
     }
 
 }

@@ -96,12 +96,8 @@ public class DataCopyService implements ApplicationContextAware {
                 if(!"[]".equals(copyDto.getCopyPart())) {
                     try {
                         HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                        MultiValueMap map = new LinkedMultiValueMap<>();
-                        map.put("copyPart", new ArrayList() {{add(JSON.toJSONString(copyDto));}});
-                        map.put("globalId", new ArrayList() {{add(sysLocalOrganInfo.getOrganId());}});
-                        map.put("pinCode", new ArrayList() {{add(sysLocalOrganInfo.getPinCode());}});
-                        HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+                        headers.setContentType(MediaType.APPLICATION_JSON);
+                        HttpEntity<HashMap<String, Object>> request = new HttpEntity(JSON.toJSONString(copyDto), headers);
                         BaseResultEntity resultEntity = restTemplate.postForObject(task.getFusionServerAddress() + "/copy/batchSave", request, BaseResultEntity.class);
                         if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                             isSuccess = false;

@@ -27,6 +27,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.sys.SysUserService;
 import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
@@ -74,6 +75,8 @@ public class DataResourceService {
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataModelRepository dataModelRepository;
+    @Autowired
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -166,15 +169,13 @@ public class DataResourceService {
             if(req.getResourceAuthType().equals(DataResourceAuthType.ASSIGN.getAuthType())&&req.getFusionOrganList()!=null&&req.getFusionOrganList().size()!=0){
                 List<DataResourceVisibilityAuth> authList=new ArrayList<>();
                 for(DataSourceOrganReq organ:req.getFusionOrganList()){
-                    DataResourceVisibilityAuth dataResourceVisibilityAuth=new DataResourceVisibilityAuth(dataResource.getResourceId(),organ.getOrganGlobalId(),organ.getOrganName(),organ.getOrganServerAddress());
+                    DataResourceVisibilityAuth dataResourceVisibilityAuth=new DataResourceVisibilityAuth(dataResource.getResourceId(),organ.getOrganGlobalId(),organ.getOrganName());
                     authList.add(dataResourceVisibilityAuth);
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
 
-            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
-            }
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
             map.put("resourceName",dataResource.getResourceName());
@@ -206,16 +207,13 @@ public class DataResourceService {
             if(req.getResourceAuthType().equals(DataResourceAuthType.ASSIGN.getAuthType())&&req.getFusionOrganList()!=null&&req.getFusionOrganList().size()!=0){
                 List<DataResourceVisibilityAuth> authList=new ArrayList<>();
                 for(DataSourceOrganReq organ:req.getFusionOrganList()){
-                    DataResourceVisibilityAuth dataResourceVisibilityAuth=new DataResourceVisibilityAuth(dataResource.getResourceId(),organ.getOrganGlobalId(),organ.getOrganName(),organ.getOrganServerAddress());
+                    DataResourceVisibilityAuth dataResourceVisibilityAuth=new DataResourceVisibilityAuth(dataResource.getResourceId(),organ.getOrganGlobalId(),organ.getOrganName());
                     authList.add(dataResourceVisibilityAuth);
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
         }
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
-            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
-        }
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         DataSource dataSource = null;
         if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
             Long dbId = dataResource.getDbId();
@@ -262,11 +260,6 @@ public class DataResourceService {
             log.info("资源id:{}-文件读取失败：{}",dataResource.getResourceId(),e.getMessage());
             map.put("dataList",new ArrayList());
         }
-        if(dataResource.getResourceAuthType().equals(DataResourceAuthType.ASSIGN.getAuthType())){
-            List<DataResourceVisibilityAuth> authOrganList=dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(resourceId);}});
-            map.put("authOrganList",authOrganList);
-            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.COMPARE_AND_FIX_LOCAL_ORGAN_NAME_TASK.getHandleType(),authOrganList))).build());
-        }
         map.put("resource",dataResourceVo);
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
@@ -296,11 +289,8 @@ public class DataResourceService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该资源已关联项目");
         }
         dataResourcePrRepository.deleteResource(resourceId);
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
-            dataResource.setIsDel(1);
-            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
-        }
+        dataResource.setIsDel(1);
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         return BaseResultEntity.success("删除资源成功");
     }
 
@@ -449,7 +439,7 @@ public class DataResourceService {
         return BaseResultEntity.success(dataResourceRepository.queryAllResourceTag());
     }
 
-    public List<DataResourceCopyVo> findCopyResourceList(Long startOffset, Long endOffset, String organId, String fusionServerAddress){
+    public List<DataResourceCopyVo> findCopyResourceList(Long startOffset, Long endOffset, String organId){
         String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
         List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
         if (resourceList.isEmpty()) {
@@ -461,7 +451,7 @@ public class DataResourceService {
         Map<Long, List<DataResourceVisibilityAuth>> resourceAuthMap=new HashMap<>();
         if(filterIdList!=null&&filterIdList.size()!=0) {
             List<DataResourceVisibilityAuth> authList=dataResourceRepository.findAuthOrganByResourceId(filterIdList);
-            resourceAuthMap=authList.stream().filter(item->item.getOrganServerAddress().equals(fusionServerAddress)).collect(Collectors.groupingBy(DataResourceVisibilityAuth::getResourceId));
+            resourceAuthMap=authList.stream().collect(Collectors.groupingBy(DataResourceVisibilityAuth::getResourceId));
         }
         List<DataFileField> fileFieldList = dataResourceRepository.queryDataFileField(new HashMap() {{
             put("resourceIds", resourceIds);
@@ -482,7 +472,6 @@ public class DataResourceService {
                 }
             }
             List<String> tags = Optional.ofNullable(resourceTagMap.get(dataResource.getResourceId())).map(list -> list.stream().map(ResourceTagListVo::getTagName).collect(Collectors.toList())).orElse(null);
-            resourceAuthMap.get(dataResource.getResourceId());
             List<String> authOrganList = Optional.ofNullable(resourceAuthMap.get(dataResource.getResourceId())).map(list -> list.stream().map(DataResourceVisibilityAuth::getOrganGlobalId).collect(Collectors.toList())).orElse(null);
             copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organId,StringUtils.join(tags,","),authOrganList,fileFieldListMap.get(dataResource.getResourceId())));
         }
@@ -678,9 +667,7 @@ public class DataResourceService {
             dataResource.setResourceState(resourceState);
             dataResourcePrRepository.editResource(dataResource);
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
-            }
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         }
         return BaseResultEntity.success();
     }
@@ -770,9 +757,7 @@ public class DataResourceService {
                 DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-                if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getFusionMap()!=null&&!sysLocalOrganInfo.getFusionMap().isEmpty()){
-                    singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
-                }
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
         }catch (Exception e){

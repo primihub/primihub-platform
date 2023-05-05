@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository">
+
+    <select id="selectSysOrgan" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+               id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+               examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+               platform_state platformState,lat,lon,country,is_del isDel,c_time cTime,u_time uTime
+        from
+             sys_organ
+        where
+              is_del = 0
+    </select>
+    <select id="selectSysOrganByApplyId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0
+            and apply_id = #{applyId}
+    </select>
+    <select id="selectSysOrganByExamine" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0 and examine_state = 1
+    </select>
+</mapper>

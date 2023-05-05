@@ -45,6 +45,8 @@ public class SysOrganService {
     private SysCommonPrimaryRedisRepository sysCommonPrimaryRedisRepository;
     @Autowired
     private OrganConfiguration organConfiguration;
+    @Autowired
+    private SysAsyncService sysAsyncService;
 
     public BaseResultEntity getLocalOrganInfo() {
         String group = environment.getProperty("nacos.config.group");
@@ -58,16 +60,6 @@ public class SysOrganService {
             configService = NacosFactory.createConfigService(properties);
             String organInfoContent = configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, 3000);
             SysLocalOrganInfo sysLocalOrganInfo = JSON.parseObject(organInfoContent, SysLocalOrganInfo.class);
-            if (sysLocalOrganInfo != null) {
-                List<SysOrganFusion> fusionList = new ArrayList<>();
-                if (sysLocalOrganInfo.getFusionMap() != null) {
-                    Iterator<String> iterator = sysLocalOrganInfo.getFusionMap().keySet().iterator();
-                    while (iterator.hasNext()) {
-                        fusionList.add(sysLocalOrganInfo.getFusionMap().get(iterator.next()));
-                    }
-                }
-                sysLocalOrganInfo.setFusionList(fusionList);
-            }
             Map result = new HashMap();
             result.put("sysLocalOrganInfo", sysLocalOrganInfo);
             return BaseResultEntity.success(result);
@@ -100,10 +92,6 @@ public class SysOrganService {
                 sysLocalOrganInfo.setOrganId(UUID.randomUUID().toString());
                 flag |= 1;
             }
-            if (sysLocalOrganInfo.getPinCode() == null || "".equals(sysLocalOrganInfo.getPinCode().trim())) {
-                sysLocalOrganInfo.setPinCode(RandomStringUtils.randomAlphanumeric(16));
-                flag |= 1;
-            }
             if (changeLocalOrganInfoParam.getOrganName() != null && !"".equals(changeLocalOrganInfoParam.getOrganName().trim())) {
                 sysLocalOrganInfo.setOrganName(changeLocalOrganInfoParam.getOrganName());
                 flag |= 1;
@@ -134,47 +122,8 @@ public class SysOrganService {
                     }
                 }
                 configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
-                if (sysLocalOrganInfo.getFusionMap() != null && sysLocalOrganInfo.getFusionMap().size() > 0) {
-                    String organId = sysLocalOrganInfo.getOrganId();
-                    String organName = sysLocalOrganInfo.getOrganName();
-                    String gatewayAddress = sysLocalOrganInfo.getGatewayAddress();
-                    String pinCode = sysLocalOrganInfo.getPinCode();
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                    Iterator<Map.Entry<String, SysOrganFusion>> iterator = sysLocalOrganInfo.getFusionMap().entrySet().iterator();
-                    while (iterator.hasNext()) {
-                        SysOrganFusion sysOrganFusion = iterator.next().getValue();
-                        try {
-                            MultiValueMap map = new LinkedMultiValueMap<>();
-                            map.put("globalId", new ArrayList() {{
-                                add(organId);
-                            }});
-                            map.put("globalName", new ArrayList() {{
-                                add(organName);
-                            }});
-                            map.put("pinCode", new ArrayList() {{
-                                add(pinCode);
-                            }});
-                            map.put("gatewayAddress", new ArrayList() {{
-                                add(gatewayAddress);
-                            }});
-                            SysLocalOrganInfo finalSysLocalOrganInfo = sysLocalOrganInfo;
-                            map.put("publicKey", new ArrayList() {{
-                                add(finalSysLocalOrganInfo.getPublicKey());
-                            }});
-                            map.put("privateKey", new ArrayList() {{
-                                add(finalSysLocalOrganInfo.getPrivateKey());
-                            }});
-                            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-                            BaseResultEntity resultEntity = restTemplate.postForObject(sysOrganFusion.getServerAddress() + "/fusion/changeConnection", request, BaseResultEntity.class);
-                            log.info("changeOrganInfo serverAddress:{} | param -- organId:{},globalName:{}  | result -- code:{},msg:{},result:{}", sysOrganFusion.getServerAddress(), organId, organName, resultEntity.getCode(), resultEntity.getMsg(), resultEntity.getResult());
-                        } catch (Exception e) {
-                            log.info("changeOrganInfoException serverAddress:{} | param -- organId:{},globalName:{} | message:{}", sysOrganFusion.getServerAddress(), organId, organName, e.getMessage());
-                        }
-                    }
-                }
+                sysAsyncService.collectBaseData();
             }
-
             Map result = new HashMap();
             result.put("sysLocalOrganInfo", sysLocalOrganInfo);
             return BaseResultEntity.success(result);
@@ -226,28 +175,4 @@ public class SysOrganService {
         return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
     }
 
-
-    public void collectBaseData() {
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (sysLocalOrganInfo==null)
-            return;
-        if (sysLocalOrganInfo.getAddressInfo()==null)
-            return;
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            MultiValueMap map = new LinkedMultiValueMap<>();
-            map.put("key", new ArrayList() {{add(SysConstant.SYS_COLLECT_KEY);}});
-            map.put("globalId", new ArrayList() {{add(sysLocalOrganInfo.getOrganId());}});
-            map.put("globalName", new ArrayList() {{add(sysLocalOrganInfo.getOrganName());}});
-            map.put("country", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getCountry());}});
-            map.put("lat", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getLat());}});
-            map.put("lon", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getLon());}});
-            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-            BaseResultEntity resultEntity = restTemplate.postForObject(SysConstant.SYS_COLLECT_URL, request, BaseResultEntity.class);
-            log.info(JSONObject.toJSONString(resultEntity));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

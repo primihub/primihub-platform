@@ -46,14 +46,4 @@ public class OrganController {
     public BaseResultEntity getHomepage(){
         return sysOrganService.getHomepage();
     }
-
-    /**
-     * 上报节点信息
-     * @return
-     */
-    @RequestMapping("collectBaseData")
-    public BaseResultEntity collectBaseData(){
-        sysOrganService.collectBaseData();
-        return BaseResultEntity.success();
-    }
 }

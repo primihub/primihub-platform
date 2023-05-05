@@ -10,8 +10,10 @@ import com.primihub.biz.entity.data.req.OrganResourceReq;
 import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.feign.FusionOrganService;
 import com.primihub.biz.feign.FusionResourceService;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.crypt.CryptUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,7 @@ public class OtherBusinessesService {
     @Autowired
     private FusionResourceService fusionResourceService;
     @Autowired
-    private FusionOrganService fusionOrganService;
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
 
 
     public BaseResultEntity getResourceList(DataFResourceReq req) {
@@ -121,17 +123,15 @@ public class OtherBusinessesService {
         }
     }
 
-    public Map<String, Map> getOrganListMap(List<String> organId){
-        BaseResultEntity resultEntity = fusionOrganService.findOrganByGlobalId(organId.toArray(new String[]{}));
-        Map<String,Map> organMap = new HashMap<>();
-        if (resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
-            Map<String,Object> result = (Map<String, Object>) resultEntity.getResult();
-            if (result!=null && result.size()!=0){
-                List<Map> list =(List<Map>) result.get("organList");
-                organMap = list.stream().collect(Collectors.toMap(map1 -> map1.get("globalId").toString(), Function.identity()));
-            }
-        }
-        return organMap;
+    public Map<String, SysOrgan> getOrganListMap(List<String> organId){
+        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+        Map<String, SysOrgan> map = sysOrgans.stream().collect(Collectors.toMap(SysOrgan::getOrganId, Function.identity()));
+        SysOrgan o = new SysOrgan();
+        o.setOrganId(organConfiguration.getSysLocalOrganId());
+        o.setOrganName(organConfiguration.getSysLocalOrganName());
+        o.setOrganGateway(organConfiguration.getSysLocalOrganInfo().getGatewayAddress());
+        map.put(organConfiguration.getSysLocalOrganId(),o);
+        return map;
     }
 
     public Map<String,Map> getResourceListMap(List<String> resourceIds){

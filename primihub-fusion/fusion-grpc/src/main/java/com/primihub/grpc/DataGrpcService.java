@@ -78,7 +78,7 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         if (ids==null || ids.isEmpty()){
             list = storageService.getAll();
         }else {
-            list = storageService.getByIds(ids.stream().map(ByteString::toStringUtf8).collect(Collectors.toList()));
+            list = storageService.getByIds(ids.stream().map(ByteString::toStringUtf8).collect(Collectors.toSet()));
         }
         for (DataSet dataSet : list) {
             builder.addDataSet(dataModelConvertVo(dataSet));

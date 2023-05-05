@@ -1,57 +1,5 @@
 use fusion;
 -- ----------------------------
--- Table structure for fusion_go
--- ----------------------------
-DROP TABLE IF EXISTS `fusion_go`;
-CREATE TABLE `fusion_go`  (
-                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-                              `group_id` bigint(20) NOT NULL COMMENT '群组id',
-                              `organ_global_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构唯一id',
-                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                              PRIMARY KEY (`id`) USING BTREE,
-                              UNIQUE INDEX `group_id_and global_id_ix`(`group_id`, `organ_global_id`) USING BTREE,
-                              INDEX `group_id_ix`(`group_id`) USING BTREE,
-                              INDEX `global_id_ix`(`organ_global_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Table structure for fusion_group
--- ----------------------------
-DROP TABLE IF EXISTS `fusion_group`;
-CREATE TABLE `fusion_group`  (
-                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                 `group_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '群组名称',
-                                 `group_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '群主id',
-                                 `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                                 `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                 PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Table structure for fusion_organ
--- ----------------------------
-DROP TABLE IF EXISTS `fusion_organ`;
-CREATE TABLE `fusion_organ`  (
-                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
-                                 `global_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '唯一id',
-                                 `global_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构名称',
-                                 `pin_code_md` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT 'pin码md5',
-                                 `gateway_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '网关地址',
-                                 `register_time` datetime(3) NOT NULL COMMENT '注册时间',
-                                 `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥',
-                                 `private_key` varchar(1000) DEFAULT NULL COMMENT '机构私钥',
-                                 `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                                 `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                 PRIMARY KEY (`id`) USING BTREE,
-                                 INDEX `global_id_ix`(`global_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-alter table `fusion_organ` Add column `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥';
-alter table `fusion_organ` Add column `private_key` varchar(1000) DEFAULT NULL COMMENT '机构私钥';
--- ----------------------------
 -- Table structure for fusion_resource
 -- ----------------------------
 DROP TABLE IF EXISTS `fusion_resource`;
@@ -146,25 +94,6 @@ CREATE TABLE `fusion_organ_resource_auth`  (
                                                PRIMARY KEY (`id`) USING BTREE,
                                                INDEX `resource_id_ix`(`resource_id`) USING BTREE,
                                                INDEX `organ_id_ix`(`organ_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Table structure for fusion_organ_extends
--- ----------------------------
-
-DROP TABLE IF EXISTS `fusion_organ_extends`;
-CREATE TABLE `fusion_organ_extends` (
-                                        `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                        `global_id` bigint NOT NULL COMMENT '机构id',
-                                        `ip` varchar(255) NOT NULL COMMENT '机构ip地址',
-                                        `lat` decimal(18,14) DEFAULT NULL COMMENT '纬度',
-                                        `lon` decimal(18,14) DEFAULT NULL COMMENT '经度',
-                                        `country` varchar(255) DEFAULT NULL COMMENT '区域',
-                                        `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                                        `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                        `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                        PRIMARY KEY (`id`),
-                                        INDEX `global_id_ix`(`global_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
 
 

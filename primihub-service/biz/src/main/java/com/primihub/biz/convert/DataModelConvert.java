@@ -14,6 +14,7 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.req.DataModelReq;
 import com.primihub.biz.entity.data.vo.*;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.ObjectUtils;
@@ -122,14 +123,14 @@ public class DataModelConvert {
         return dataComponentVo;
     }
 
-    public static ModelProjectOrganVo projectOrganPoCovertProjectOrganVo(DataProjectOrgan organ,Map<String,Object> organMap,ModelProjectResourceVo resourceVo,String sysLocalOrganId){
+    public static ModelProjectOrganVo projectOrganPoCovertProjectOrganVo(DataProjectOrgan organ, SysOrgan sysOrgan, ModelProjectResourceVo resourceVo, String sysLocalOrganId){
         ModelProjectOrganVo modelProjectOrganVo = new ModelProjectOrganVo();
         modelProjectOrganVo.setParticipationIdentity(organ.getParticipationIdentity());
         modelProjectOrganVo.setOrganId(organ.getOrganId());
 
         modelProjectOrganVo.setAuditStatus(organ.getAuditStatus());
         modelProjectOrganVo.setCreator(sysLocalOrganId.equals(organ.getOrganId()));
-        modelProjectOrganVo.setOrganName(organMap==null?"":organMap.get("globalName")==null?"":organMap.get("globalName").toString());
+        modelProjectOrganVo.setOrganName(sysOrgan==null?"":sysOrgan.getOrganName());
         if (resourceVo!=null) {
             modelProjectOrganVo.getResources().add(resourceVo);
         }
