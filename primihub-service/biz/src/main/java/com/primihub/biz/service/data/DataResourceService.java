@@ -34,6 +34,7 @@ import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
 import java_data_service.DataTypeInfo;
+import java_data_service.MetaInfo;
 import java_data_service.NewDatasetRequest;
 import java_data_service.NewDatasetResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -633,20 +634,21 @@ public class DataResourceService {
     public Boolean resourceSynGRPCDataSet(String suffix,String id,String url,List<DataFileField> fieldList){
         log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",suffix,id,url,System.currentTimeMillis());
         NewDatasetRequest.Builder builder = NewDatasetRequest.newBuilder();
-        for (DataFileField field : fieldList) {
-            builder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType()).getNodeTypeName())).setName(field.getFieldName()));
-        }
-        NewDatasetRequest request = builder
+        MetaInfo.Builder metaInfoBuilder = MetaInfo.newBuilder()
+                .setId(id)
+                .setAccessInfo(url)
                 .setDriver(suffix)
-                .setFid(id)
-                .setPath(url)
-                .build();
+                .setVibility(MetaInfo.Visibility.PUBLIC);
+        for (DataFileField field : fieldList) {
+            metaInfoBuilder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType()).getNodeTypeName())).setName(field.getFieldName()));
+        }
+        NewDatasetRequest request = builder.setMetaInfo(metaInfoBuilder).setOperator(NewDatasetRequest.Operator.REGISTER).build();
         log.info("NewDatasetRequest:{}",request.toString());
         try {
             NewDatasetResponse response = dataServiceGrpcClient.run(o -> o.newDataset(request));
             log.info("dataServiceGrpc Response:{}",response.toString());
-            int retCode = response.getRetCode();
-            if (retCode==0){
+            NewDatasetResponse.ResultCode retCode = response.getRetCode();
+            if (retCode.getValueDescriptor().getName().equals(NewDatasetResponse.ResultCode.SUCCESS.getValueDescriptor().getName())){
                 log.info("dataServiceGrpc success");
                 return true;
             }

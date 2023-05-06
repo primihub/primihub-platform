@@ -4,23 +4,66 @@ option java_package = "java_data_service";
 option java_multiple_files = true;
 package primihub.rpc;
 
-service DataService {
-    rpc NewDataset(NewDatasetRequest) returns (NewDatasetResponse);
+service DataSetService {
+  rpc NewDataset(NewDatasetRequest) returns (NewDatasetResponse);
+  rpc GetDataset(GetDatasetRequest) returns (GetDatasetResponse);
 }
 
 message NewDatasetRequest {
-    string driver = 1;
-    string path = 2;
-    string fid = 3;
-    repeated DataTypeInfo data_type = 4;
+  enum Operator {
+    REGISTER = 0;
+    UNREGISTER = 1;
+    UPDATE = 2;
+  }
+  Operator operator = 1;
+  MetaInfo meta_info = 2;
 }
-
 
 message NewDatasetResponse {
-    int32 ret_code = 1;
-    string dataset_url = 2;
+    enum ResultCode {
+      SUCCESS = 0;
+      FAIL = 1;
+    }
+  ResultCode ret_code = 1;
+  string dataset_url = 2;
+  string ret_msg = 3;
 }
 
+message GetDatasetRequest {
+  repeated string id = 1;    // dataset id for request meta info, empty to accquire all dataset
+}
+
+message GetDatasetResponse {
+    enum ResultCode {
+      SUCCESS = 0;
+      FAIL = 1;
+    }
+  ResultCode ret_code = 1;
+  string ret_msg = 2;
+  repeated DatasetData data_set = 3;
+}
+
+message DatasetData{
+  enum Status {
+    Available = 0;
+    Unavailable = 1;
+  }
+  Status available = 1;
+  MetaInfo meta_info = 2;
+}
+
+message MetaInfo {
+  enum Visibility {
+    PUBLIC = 0;
+    PRIVATE = 1;
+  }
+  string id = 1;            // global unique
+  string driver = 2;        // dataset type
+  string access_info = 3;   // dataset access info
+  string address = 4;       // location of dataset
+  Visibility vibility = 5;  // vibility for dataset
+  repeated DataTypeInfo data_type = 6;
+}
 
 message DataTypeInfo {
     enum PlainDataType {
@@ -107,4 +150,3 @@ message DataTypeInfo {
   string name = 1;
   PlainDataType type = 2;
 }
-
