@@ -14,4 +14,5 @@ public interface DataSetRepository {
     void updateDataSet(DataSet dataSet);
     void deleteDataSet(DataSet dataSet);
     List<DataSet> getDataSetByIds(@Param("ids") Set<String> ids);
+    DataSet getDataSetById(String id);
 }

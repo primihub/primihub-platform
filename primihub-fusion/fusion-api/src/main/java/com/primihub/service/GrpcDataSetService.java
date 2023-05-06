@@ -15,7 +15,12 @@ public class GrpcDataSetService implements StorageService{
 
     @Override
     public void saveDataSet(DataSet dataSet) {
-        dataSetRepository.insertDataSet(dataSet);
+        DataSet d = dataSetRepository.getDataSetById(dataSet.getId());
+        if (d==null){
+            dataSetRepository.insertDataSet(dataSet);
+        }else {
+            dataSetRepository.updateDataSet(dataSet);
+        }
     }
 
     @Override
