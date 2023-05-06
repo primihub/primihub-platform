@@ -633,7 +633,6 @@ public class DataResourceService {
 
     public Boolean resourceSynGRPCDataSet(String suffix,String id,String url,List<DataFileField> fieldList){
         log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",suffix,id,url,System.currentTimeMillis());
-        NewDatasetRequest.Builder builder = NewDatasetRequest.newBuilder();
         MetaInfo.Builder metaInfoBuilder = MetaInfo.newBuilder()
                 .setId(id)
                 .setAccessInfo(url)
@@ -642,7 +641,7 @@ public class DataResourceService {
         for (DataFileField field : fieldList) {
             metaInfoBuilder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType()).getNodeTypeName())).setName(field.getFieldName()));
         }
-        NewDatasetRequest request = builder.setMetaInfo(metaInfoBuilder).setOperator(NewDatasetRequest.Operator.REGISTER).build();
+        NewDatasetRequest request = NewDatasetRequest.newBuilder().setMetaInfo(metaInfoBuilder).setOperatorValue(NewDatasetRequest.Operator.REGISTER.getNumber()).build();
         log.info("NewDatasetRequest:{}",request.toString());
         try {
             NewDatasetResponse response = dataServiceGrpcClient.run(o -> o.newDataset(request));
