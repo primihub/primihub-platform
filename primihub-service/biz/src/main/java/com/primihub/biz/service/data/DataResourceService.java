@@ -28,6 +28,7 @@ import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
+import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.service.sys.SysUserService;
 import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
@@ -78,6 +79,8 @@ public class DataResourceService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
+    @Autowired
+    private FusionResourceService fusionResourceService;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -175,7 +178,10 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
-
+            BaseResultEntity baseResultEntity = fusionResourceService.batchSave(organConfiguration.getSysLocalOrganId(), JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId(), organConfiguration.getSysLocalOrganId())));
+            if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,baseResultEntity.getMsg());
+            }
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
@@ -222,6 +228,10 @@ public class DataResourceService {
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
         resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+        BaseResultEntity baseResultEntity = fusionResourceService.batchSave(organConfiguration.getSysLocalOrganId(), JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId(), organConfiguration.getSysLocalOrganId())));
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,baseResultEntity.getMsg());
+        }
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());

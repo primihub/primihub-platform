@@ -28,4 +28,6 @@ public interface FusionResourceService {
 
     @RequestMapping("/fusionResource/getOrganResourceList")
     BaseResultEntity getOrganResourceList(OrganResourceParam param);
+    @RequestMapping("/copy/batchSave")
+    BaseResultEntity batchSave(String globalId,String copyPart);
 }
