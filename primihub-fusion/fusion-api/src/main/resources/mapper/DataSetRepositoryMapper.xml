@@ -4,13 +4,13 @@
 
 
     <insert id="insertDataSet" parameterType="com.primihub.entity.DataSet">
-        insert into data_set(id,access_info,driver,address,vibility,available,holder,is_del,c_time,u_time)
-        values (#{id},#{accessInfo},#{driver},#{address},#{vibility},#{available},#{holder},0,now(),now())
+        insert into data_set(id,access_info,driver,address,vibility,available,holder,fields,is_del,c_time,u_time)
+        values (#{id},#{accessInfo},#{driver},#{address},#{vibility},#{available},#{holder},#{fields},0,now(),now())
     </insert>
     <insert id="insertBatchDataSet" parameterType="com.primihub.entity.DataSet">
-        insert into data_set(id,access_info,driver,address,vibility,available,holder,is_del,c_time,u_time)
+        insert into data_set(id,access_info,driver,address,vibility,available,holder,fields,is_del,c_time,u_time)
         <foreach collection="list" index="index" item="item" separator=",">
-            values (#{item.id},#{item.accessInfo},#{item.driver},#{item.address},#{item.vibility},#{item.available},#{item.holder},0,now(),now())
+            values (#{item.id},#{item.accessInfo},#{item.driver},#{item.address},#{item.vibility},#{item.available},#{item.holder},#{fields,0,now(),now())
         </foreach>
     </insert>
     <update id="updateDataSet" parameterType="com.primihub.entity.DataSet">
@@ -22,6 +22,7 @@
             <if test="vibility!=null and vibility!=''">vibility = #{vibility},</if>
             <if test="available!=null and vibility!=''">available = #{available},</if>
             <if test="holder!=null and vibility!=''">holder = #{holder},</if>
+            <if test="fields!=null and fields!=''">fields = #{fields},</if>
             u_time = now()
         </set>
         where id = #{id}
@@ -31,7 +32,7 @@
     </delete>
     <select id="getDataSetByIds" resultType="com.primihub.entity.DataSet">
         select
-            id,access_info accessInfo,driver,address,vibility,available,holder
+            id,access_info accessInfo,driver,address,vibility,available,holder,fields
         from data_set where is_del = 0 and holder = 0
         <if test="ids!=null">
             and id in

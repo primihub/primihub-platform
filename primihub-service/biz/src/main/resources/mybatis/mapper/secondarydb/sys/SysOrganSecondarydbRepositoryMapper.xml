@@ -41,7 +41,7 @@
         from
             sys_organ
         where
-            is_del = 0 and examine_state = 1
+            is_del = 0
         <include refid="sysOrganWhere"/>
         ORDER BY id desc
         LIMIT #{offset},#{pageSize}
@@ -51,9 +51,9 @@
         select
                count(id)
         from
-        sys_organ
+            sys_organ
         where
-        is_del = 0 and examine_state = 1
+            is_del = 0
         <include refid="sysOrganWhere"/>
     </select>
     <select id="selectSysOrganByOrganIds" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
