@@ -21,6 +21,8 @@ public class SysOrgan {
     private String country;
     private BigDecimal lat;
     private BigDecimal lon;
+    private Integer enable;
+    private Integer identity = 1;
     private Integer isDel;
     private Date cTime;
     private Date uTime;

@@ -75,4 +75,42 @@ public class OrganController {
     public BaseResultEntity getOrganList(OrganParam param){
         return sysOrganService.getOrganList(param);
     }
+
+    /**
+     * 审核申请的机构
+     * @param id                申请数字ID
+     * @param examineState      审核状态    1同意 2拒绝
+     * @param examineMsg        审核意见
+     * @return
+     */
+    @RequestMapping("examineJoining")
+    public BaseResultEntity examineJoining(Long id,Integer examineState,String examineMsg){
+        if (id==null || id==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
+        if (examineState==null) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"examineState");
+        }
+        if (examineState!=1 &&examineState!=2) {
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"examineState");
+        }
+        return sysOrganService.examineJoining(id,examineState,examineMsg);
+    }
+
+    /**
+     * 开启状态修改
+     * @param id
+     * @param status
+     * @return
+     */
+    @RequestMapping("enableStatus")
+    public BaseResultEntity enableStatus(Long id,Integer status){
+        if (id==null || id==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
+        if (status!=1 &&status!=0) {
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"status");
+        }
+        return sysOrganService.enableStatus(id,status);
+    }
 }

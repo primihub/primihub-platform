@@ -6,6 +6,7 @@ import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -33,12 +34,13 @@ public class SysAsyncService {
 
     @Async
     public void collectBaseData() {
-        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        if (sysLocalOrganInfo==null)
-            return;
-        if (sysLocalOrganInfo.getAddressInfo()==null)
-            return;
         try {
+            Thread.sleep(5000L);
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            if (sysLocalOrganInfo==null)
+                return;
+            if (sysLocalOrganInfo.getAddressInfo()==null)
+                return;
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             MultiValueMap map = new LinkedMultiValueMap<>();
@@ -53,6 +55,15 @@ public class SysAsyncService {
             log.info(JSONObject.toJSONString(resultEntity));
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    @Async
+    public void applyForJoinNode(SysOrgan sysOrgan) {
+        log.info(JSONObject.toJSONString(sysOrgan));
+        if (sysOrgan.getEnable()==1){
+            // TODO 该机构下的数据进行下线处理
+        }else if (sysOrgan.getExamineState()==1){
+            // TODO 进行数据传输
         }
     }
 }

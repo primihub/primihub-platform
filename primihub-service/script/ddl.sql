@@ -780,6 +780,7 @@ CREATE TABLE `sys_organ`  (
                               `lat` decimal(18,14) DEFAULT NULL COMMENT '纬度',
                               `lon` decimal(18,14) DEFAULT NULL COMMENT '经度',
                               `country` varchar(255) DEFAULT NULL COMMENT '区域',
+                              `enable` tinyint(4) NOT NULL COMMENT '是否启用 0启用 1禁用',
                               `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
                               `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                               `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
