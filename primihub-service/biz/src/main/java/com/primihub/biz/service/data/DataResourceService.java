@@ -77,10 +77,6 @@ public class DataResourceService {
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataModelRepository dataModelRepository;
-    @Autowired
-    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
-    @Autowired
-    private FusionResourceService fusionResourceService;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -461,6 +457,8 @@ public class DataResourceService {
             put("resourceIds", resourceIds);
         }});
         Map<Long, List<DataFileField>> fileFieldListMap = fileFieldList.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
+        Set<Long> userids = resourceList.stream().map(DataResource::getUserId).collect(Collectors.toSet());
+        Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userids);
         List<DataResourceCopyVo> copyVolist = new ArrayList();
         for (DataResource dataResource : resourceList) {
 //            if (dataResource.getResourceSource() == 3)
@@ -477,7 +475,7 @@ public class DataResourceService {
             }
             List<String> tags = Optional.ofNullable(resourceTagMap.get(dataResource.getResourceId())).map(list -> list.stream().map(ResourceTagListVo::getTagName).collect(Collectors.toList())).orElse(null);
             List<String> authOrganList = Optional.ofNullable(resourceAuthMap.get(dataResource.getResourceId())).map(list -> list.stream().map(DataResourceVisibilityAuth::getOrganGlobalId).collect(Collectors.toList())).orElse(null);
-            copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organId,StringUtils.join(tags,","),authOrganList,fileFieldListMap.get(dataResource.getResourceId())));
+            copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organId,StringUtils.join(tags,","),authOrganList,fileFieldListMap.get(dataResource.getResourceId()),sysUserMap.get(dataResource.getUserId())));
         }
         return copyVolist;
     }
