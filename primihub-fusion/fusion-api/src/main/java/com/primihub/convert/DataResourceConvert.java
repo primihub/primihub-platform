@@ -38,6 +38,7 @@ public class DataResourceConvert {
         fusionResource.setIsDel(dto.getIsDel());
         fusionResource.setResourceState(dto.getResourceState());
         fusionResource.setResourceHashCode(dto.getResourceHashCode());
+        fusionResource.setUserName(dto.getUserName());
         return fusionResource;
 
     }
