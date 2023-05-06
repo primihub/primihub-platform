@@ -178,10 +178,6 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
-            BaseResultEntity baseResultEntity = fusionResourceService.batchSave(organConfiguration.getSysLocalOrganId(), JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId(), organConfiguration.getSysLocalOrganId())));
-            if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-                return BaseResultEntity.failure(BaseResultEnum.FAILURE,baseResultEntity.getMsg());
-            }
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
@@ -228,10 +224,7 @@ public class DataResourceService {
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
         resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
-        BaseResultEntity baseResultEntity = fusionResourceService.batchSave(organConfiguration.getSysLocalOrganId(), JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId(), organConfiguration.getSysLocalOrganId())));
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-            return BaseResultEntity.failure(BaseResultEnum.FAILURE,baseResultEntity.getMsg());
-        }
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());

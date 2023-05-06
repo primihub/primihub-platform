@@ -11,6 +11,7 @@ import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.po.DataFusionCopyTask;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository;
+import com.primihub.biz.service.feign.FusionResourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +49,8 @@ public class DataCopyService implements ApplicationContextAware {
     private DataCopySecondarydbRepository dataCopySecondarydbRepository;
     @Autowired
     private DataCopyPrimarydbRepository dataCopyPrimarydbRepository;
+    @Autowired
+    private FusionResourceService fusionResourceService;
 
     public List<DataFusionCopyTask> selectNotFinishedTask(Date threeDayAgo, Date tenMinuteAgo){
         return dataCopySecondarydbRepository.selectNotFinishedTask(threeDayAgo,tenMinuteAgo);
@@ -95,10 +98,15 @@ public class DataCopyService implements ApplicationContextAware {
                 String errorMsg="";
                 if(!"[]".equals(copyDto.getCopyPart())) {
                     try {
-                        HttpHeaders headers = new HttpHeaders();
-                        headers.setContentType(MediaType.APPLICATION_JSON);
-                        HttpEntity<HashMap<String, Object>> request = new HttpEntity(JSON.toJSONString(copyDto), headers);
-                        BaseResultEntity resultEntity = restTemplate.postForObject(task.getFusionServerAddress() + "/copy/batchSave", request, BaseResultEntity.class);
+                        BaseResultEntity resultEntity;
+                        if (task.getTransmissionType()==1){
+                            HttpHeaders headers = new HttpHeaders();
+                            headers.setContentType(MediaType.APPLICATION_JSON);
+                            HttpEntity<HashMap<String, Object>> request = new HttpEntity(JSON.toJSONString(copyDto), headers);
+                            resultEntity = restTemplate.postForObject(task.getFusionServerAddress() + "/copy/batchSave", request, BaseResultEntity.class);
+                        }else {
+                            resultEntity = fusionResourceService.batchSave(organConfiguration.getSysLocalOrganId(),JSON.toJSONString(copyDto));
+                        }
                         if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                             isSuccess = false;
                             if (++errorCount >= 3) {

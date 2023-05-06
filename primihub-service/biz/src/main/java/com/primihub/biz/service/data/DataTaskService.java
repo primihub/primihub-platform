@@ -117,13 +117,13 @@ public class DataTaskService {
 
 
     public void batchDataFusionResource(String paramStr){
-//        log.info(paramStr);
+        log.info(paramStr);
         SysOrganFusion sysOrganFusion = JSONObject.parseObject(paramStr, SysOrganFusion.class);
         Long maxId=dataResourceRepository.findMaxDataResource();
         if (maxId==null) {
             return;
         }
-        DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress());
+        DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.RESOURCE.getTableName(), sysOrganFusion.getServerAddress(),1);
         dataCopyPrimarydbRepository.saveCopyInfo(task);
         dataCopyService.handleFusionCopyTask(task);
     }
@@ -131,9 +131,12 @@ public class DataTaskService {
     public void singleDataFusionResource(String paramStr){
 //        log.info(paramStr);
         DataResource dataResource = JSONObject.parseObject(paramStr, DataResource.class);
+        DataFusionCopyTask task = new DataFusionCopyTask(2,-1L,dataResource.getResourceId(), DataFusionCopyEnum.RESOURCE.getTableName(), null,2);
+        dataCopyPrimarydbRepository.saveCopyInfo(task);
+        dataCopyService.handleFusionCopyTask(task);
         List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
         for (SysOrgan sysOrgan : sysOrgans) {
-            DataFusionCopyTask task = new DataFusionCopyTask(2,-1L,dataResource.getResourceId(), DataFusionCopyEnum.RESOURCE.getTableName(), sysOrgan.getOrganGateway());
+            task= new DataFusionCopyTask(2,-1L,dataResource.getResourceId(), DataFusionCopyEnum.RESOURCE.getTableName(), sysOrgan.getOrganGateway(),1);
             dataCopyPrimarydbRepository.saveCopyInfo(task);
             dataCopyService.handleFusionCopyTask(task);
         }
