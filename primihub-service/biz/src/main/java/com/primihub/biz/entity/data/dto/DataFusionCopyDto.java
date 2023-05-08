@@ -7,4 +7,5 @@ public class DataFusionCopyDto {
     private String tableName;
     private Long maxOffset;
     private String copyPart;
+    private String organId;
 }

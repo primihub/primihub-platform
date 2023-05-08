@@ -13,6 +13,7 @@ public interface SysOrganSecondarydbRepository {
     List<SysOrgan> selectSysOrganByExamine();
     List<SysOrgan> selectSysOrganByOrganIds(Set<String> organIds);
     SysOrgan selectSysOrganByApplyId(String applyId);
+    SysOrgan selectSysOrganByOrganId(String organId);
     SysOrgan selectSysOrganById(Long id);
 
     List<SysOrgan> selectSysOrganByParam(OrganParam param);

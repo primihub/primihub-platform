@@ -14,6 +14,7 @@ import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
 import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
+import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
@@ -77,6 +78,8 @@ public class DataResourceService {
     private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataModelRepository dataModelRepository;
+    @Autowired
+    private FusionResourceService fusionResourceService;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -174,6 +177,7 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
+            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId()));
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
@@ -439,7 +443,14 @@ public class DataResourceService {
         return BaseResultEntity.success(dataResourceRepository.queryAllResourceTag());
     }
 
-    public List<DataResourceCopyVo> findCopyResourceList(Long startOffset, Long endOffset, String organId){
+    public Object findFusionCopyResourceList(Long startOffset, Long endOffset){
+        List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
+        Set<String> ids = resourceList.stream().map(DataResource::getResourceFusionId).collect(Collectors.toSet());
+        BaseResultEntity result = fusionResourceService.getCopyResource(ids);
+        return result.getResult();
+    }
+
+    public List<DataResourceCopyVo> findCopyResourceList(Long startOffset, Long endOffset){
         String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
         List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
         if (resourceList.isEmpty()) {
@@ -475,7 +486,7 @@ public class DataResourceService {
             }
             List<String> tags = Optional.ofNullable(resourceTagMap.get(dataResource.getResourceId())).map(list -> list.stream().map(ResourceTagListVo::getTagName).collect(Collectors.toList())).orElse(null);
             List<String> authOrganList = Optional.ofNullable(resourceAuthMap.get(dataResource.getResourceId())).map(list -> list.stream().map(DataResourceVisibilityAuth::getOrganGlobalId).collect(Collectors.toList())).orElse(null);
-            copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organId,StringUtils.join(tags,","),authOrganList,fileFieldListMap.get(dataResource.getResourceId()),sysUserMap.get(dataResource.getUserId())));
+            copyVolist.add(DataResourceConvert.dataResourcePoConvertCopyVo(dataResource,organConfiguration.getSysLocalOrganId(),StringUtils.join(tags,","),authOrganList,fileFieldListMap.get(dataResource.getResourceId()),sysUserMap.get(dataResource.getUserId())));
         }
         return copyVolist;
     }
@@ -836,6 +847,17 @@ public class DataResourceService {
             dataVo.setUserName(sysUser.getUserName());
         }
         return BaseResultEntity.success(dataVo);
+    }
+
+    public BaseResultEntity saveFusionResource(DataFusionCopyDto dto) {
+        try {
+            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
+            fusionResourceService.saveResource(dto.getOrganId(), dataResourceCopyVos);
+        }catch (Exception e){
+            e.printStackTrace();
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
+        }
+        return BaseResultEntity.success();
     }
 }
 

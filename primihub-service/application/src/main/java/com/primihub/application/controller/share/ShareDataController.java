@@ -3,13 +3,16 @@ package com.primihub.application.controller.share;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.service.data.DataModelService;
 import com.primihub.biz.service.data.DataProjectService;
+import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.sys.SysOrganService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,6 +29,8 @@ public class ShareDataController {
     private DataModelService dataModelService;
     @Autowired
     private SysOrganService sysOrganService;
+    @Autowired
+    private DataResourceService dataResourceService;
 
     /**
      * 创建编辑项目接口
@@ -66,6 +71,20 @@ public class ShareDataController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
         }
         return sysOrganService.applyForJoinNode(info);
+    }
+
+    @RequestMapping("saveFusionResource")
+    public BaseResultEntity saveFusionResource(@RequestBody DataFusionCopyDto dto){
+        if (dto==null){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dto null");
+        }
+        if (StringUtils.isEmpty(dto.getOrganId())){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
+        if (StringUtils.isEmpty(dto.getCopyPart())){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"CopyPart");
+        }
+        return dataResourceService.saveFusionResource(dto);
     }
 
 

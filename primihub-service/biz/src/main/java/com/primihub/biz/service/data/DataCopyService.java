@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.secondarydb.data.DataCopySecondarydbRepository;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -11,6 +12,7 @@ import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.po.DataFusionCopyTask;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
@@ -51,6 +53,10 @@ public class DataCopyService implements ApplicationContextAware {
     private DataCopyPrimarydbRepository dataCopyPrimarydbRepository;
     @Autowired
     private FusionResourceService fusionResourceService;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
+    @Autowired
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
 
     public List<DataFusionCopyTask> selectNotFinishedTask(Date threeDayAgo, Date tenMinuteAgo){
         return dataCopySecondarydbRepository.selectNotFinishedTask(threeDayAgo,tenMinuteAgo);
@@ -82,11 +88,12 @@ public class DataCopyService implements ApplicationContextAware {
                 DataFusionCopyDto copyDto = new DataFusionCopyDto();
                 copyDto.setTableName(task.getTaskTable());
                 copyDto.setMaxOffset(endOffset);
+                copyDto.setOrganId(organConfiguration.getSysLocalOrganId());
                 Object object = context.getBean(enu.getBeanName());
                 Class<? extends Object> clazz = object.getClass();
                 try {
-                    Method method = clazz.getMethod(enu.getFunctionName(), Long.class,Long.class,String.class);
-                    Object result = method.invoke(object,task.getTaskType()==1?startOffset:endOffset,endOffset,sysLocalOrganInfo.getOrganId());
+                    Method method = clazz.getMethod(enu.getFunctionName(), Long.class,Long.class);
+                    Object result = method.invoke(object,task.getTaskType()==1?startOffset:endOffset,endOffset);
                     copyDto.setCopyPart(JSON.toJSONString(result));
 //                    log.info(copyDto.getCopyPart());
                 } catch (Exception e) {
@@ -97,22 +104,22 @@ public class DataCopyService implements ApplicationContextAware {
                 boolean isSuccess=true;
                 String errorMsg="";
                 if(!"[]".equals(copyDto.getCopyPart())) {
+
                     try {
-                        BaseResultEntity resultEntity;
-                        if (task.getTransmissionType()==1){
-                            HttpHeaders headers = new HttpHeaders();
-                            headers.setContentType(MediaType.APPLICATION_JSON);
-                            HttpEntity<HashMap<String, Object>> request = new HttpEntity(JSON.toJSONString(copyDto), headers);
-                            resultEntity = restTemplate.postForObject(task.getFusionServerAddress() + "/copy/batchSave", request, BaseResultEntity.class);
-                        }else {
-                            resultEntity = fusionResourceService.batchSave(organConfiguration.getSysLocalOrganId(),JSON.toJSONString(copyDto));
-                        }
-                        if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(task.getOrganId());
+                        if (sysOrgan==null){
                             isSuccess = false;
-                            if (++errorCount >= 3) {
-                                errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
+                            errorMsg = "机构信息查询null";
+                        }else {
+                            BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress()+"/share/shareData/saveFusionResource", sysOrgan.getPublicKey());
+                            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                                isSuccess = false;
+                                if (++errorCount >= 3) {
+                                    errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
+                                }
                             }
                         }
+
                     } catch (Exception e) {
                         isSuccess = false;
                         if (++errorCount >= 3) {

@@ -107,6 +107,10 @@ public class ResourceService {
             if (!StringUtils.isEmpty(copyResourceDto.getResourceTag())) {
                 saveTags.addAll(Arrays.asList(copyResourceDto.getResourceTag().split(",")));
             }
+            DataSet dataSet = copyResourceDto.getDataSet();
+            if (dataSet!=null && !StringUtils.isEmpty(dataSet.getId())){
+                dataSetService.saveDataSet(dataSet);
+            }
         }
         saveTags.removeAll(existenceTags);
         if (!saveTags.isEmpty()) {
