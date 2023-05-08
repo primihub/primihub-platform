@@ -37,7 +37,7 @@ public interface FusionResourceService {
     BaseResultEntity batchSave(@RequestParam("globalId")String globalId,@RequestParam("copyPart")String copyPart);
 
     @PostMapping("/fusionResource/saveResource")
-    BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList") List<DataResourceCopyVo> copyResourceDtoList);
+    BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList") String copyResourceDtoList);
 
     @RequestMapping("/fusionResource/getCopyResource")
     BaseResultEntity getCopyResource(@RequestParam("resourceIds")Set<String> resourceIds);

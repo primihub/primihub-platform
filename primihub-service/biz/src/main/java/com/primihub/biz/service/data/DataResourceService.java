@@ -177,7 +177,7 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
-            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId()));
+            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId())));
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
@@ -851,8 +851,8 @@ public class DataResourceService {
 
     public BaseResultEntity saveFusionResource(DataFusionCopyDto dto) {
         try {
-            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
-            fusionResourceService.saveResource(dto.getOrganId(), dataResourceCopyVos);
+//            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
+            fusionResourceService.saveResource(dto.getOrganId(), dto.getCopyPart());
         }catch (Exception e){
             e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
