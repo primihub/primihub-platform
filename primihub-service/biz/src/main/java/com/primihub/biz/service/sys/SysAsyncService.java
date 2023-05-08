@@ -13,7 +13,6 @@ import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
