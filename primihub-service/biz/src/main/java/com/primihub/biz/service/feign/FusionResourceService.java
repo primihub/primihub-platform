@@ -6,6 +6,7 @@ import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.SpringQueryMap;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -32,11 +33,11 @@ public interface FusionResourceService {
     @RequestMapping("/fusionResource/getOrganResourceList")
     BaseResultEntity getOrganResourceList(OrganResourceParam param);
 
-    @RequestMapping("/copy/batchSave")
+    @PostMapping("/copy/batchSave")
     BaseResultEntity batchSave(@RequestParam("globalId")String globalId,@RequestParam("copyPart")String copyPart);
 
-    @RequestMapping("/fusionResource/saveResource")
-    BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList")@SpringQueryMap List<DataResourceCopyVo> copyResourceDtoList);
+    @PostMapping("/fusionResource/saveResource")
+    BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList") List<DataResourceCopyVo> copyResourceDtoList);
 
     @RequestMapping("/fusionResource/getCopyResource")
     BaseResultEntity getCopyResource(@RequestParam("resourceIds")Set<String> resourceIds);

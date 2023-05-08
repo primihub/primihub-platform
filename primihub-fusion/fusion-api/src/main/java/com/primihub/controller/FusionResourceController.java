@@ -7,6 +7,7 @@ import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,7 +53,7 @@ public class FusionResourceController {
         }
         return resourceService.getDataResource(resourceId,globalId);
     }
-    @RequestMapping("saveResource")
+    @PostMapping("saveResource")
     public BaseResultEntity saveResource(String globalId, List<CopyResourceDto> copyResourceDtoList){
         if (StringUtils.isEmpty(globalId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId");
