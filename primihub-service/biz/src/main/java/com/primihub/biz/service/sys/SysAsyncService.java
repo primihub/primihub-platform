@@ -1,9 +1,13 @@
 package com.primihub.biz.service.sys;
 
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.SysConstant;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
@@ -13,6 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -31,6 +36,8 @@ public class SysAsyncService {
     private RestTemplate restTemplate;
     @Autowired
     private OrganConfiguration organConfiguration;
+    @Autowired
+    private SingleTaskChannel singleTaskChannel;
 
     @Async
     public void collectBaseData() {
@@ -63,7 +70,7 @@ public class SysAsyncService {
         if (sysOrgan.getEnable()==1){
             // TODO 该机构下的数据进行下线处理
         }else if (sysOrgan.getExamineState()==1){
-            // TODO 进行数据传输
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
         }
     }
 }
