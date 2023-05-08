@@ -1,5 +1,6 @@
 package com.primihub.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.copy.dto.CopyResourceDto;
@@ -54,14 +55,22 @@ public class FusionResourceController {
         return resourceService.getDataResource(resourceId,globalId);
     }
     @PostMapping("saveResource")
-    public BaseResultEntity saveResource(String globalId, List<CopyResourceDto> copyResourceDtoList){
+    public BaseResultEntity saveResource(String globalId, String copyResourceDtoList){
         if (StringUtils.isEmpty(globalId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId");
         }
-        if (copyResourceDtoList==null || copyResourceDtoList.size()==0) {
+        if (StringUtils.isEmpty(copyResourceDtoList)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
         }
-        return resourceService.batchSaveResource(globalId,copyResourceDtoList);
+        try {
+            List<CopyResourceDto> list = JSONArray.parseArray(copyResourceDtoList,CopyResourceDto.class);
+            if (list==null || list.size()==0) {
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
+            }
+            return resourceService.batchSaveResource(globalId,list);
+        }catch (Exception e){
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
+        }
     }
 
 }
