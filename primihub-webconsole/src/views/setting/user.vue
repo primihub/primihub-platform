@@ -155,9 +155,9 @@ export default {
         if (res.code === 0) {
           const { sysUserList, pageParam } = res.result
           this.list = sysUserList
-          this.pageCount = pageParam.pageCount
-          this.pageNum = pageParam.pageNum
-          this.itemTotalCount = pageParam.itemTotalCount
+          this.pageCount = Number(pageParam.pageCount)
+          this.pageNum = Number(pageParam.pageNum)
+          this.itemTotalCount = Number(pageParam.itemTotalCount)
         }
       })
     },
