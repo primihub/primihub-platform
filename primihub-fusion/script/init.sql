@@ -99,7 +99,7 @@ CREATE TABLE `fusion_organ_resource_auth`  (
 DROP TABLE IF EXISTS `data_set`;
 CREATE TABLE `data_set` (
                                         `id` varchar(255) NOT NULL COMMENT '主键',
-                                        `access_info` varchar(255) NOT NULL COMMENT '访问信息',
+                                        `access_info` varchar(255) COMMENT '访问信息',
                                         `driver` varchar(255) NOT NULL COMMENT '资源类型',
                                         `address` varchar(255) NOT NULL COMMENT '资源地址',
                                         `visibility` varchar(255) NOT NULL COMMENT '可见性',
