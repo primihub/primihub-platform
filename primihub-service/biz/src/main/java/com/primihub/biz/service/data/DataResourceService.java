@@ -216,6 +216,7 @@ public class DataResourceService {
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
         }
+        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         DataSource dataSource = null;
         if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
             Long dbId = dataResource.getDbId();
@@ -223,7 +224,6 @@ public class DataResourceService {
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
         resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
-        fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId())));
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
@@ -445,8 +445,7 @@ public class DataResourceService {
 
     public Object findFusionCopyResourceList(Long startOffset, Long endOffset){
         List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
-        String[] ids = resourceList.stream().map(DataResource::getResourceFusionId).toArray(String[]::new);
-        log.info(JSONObject.toJSONString(ids));
+        Set<String> ids = resourceList.stream().map(DataResource::getResourceFusionId).collect(Collectors.toSet());
         BaseResultEntity result = fusionResourceService.getCopyResource(ids);
         log.info(JSONObject.toJSONString(result));
         return result.getResult();
