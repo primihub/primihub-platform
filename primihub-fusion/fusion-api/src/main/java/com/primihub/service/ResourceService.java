@@ -42,6 +42,7 @@ public class ResourceService {
 
 
     public BaseResultEntity getResourceList(ResourceParam param) {
+        log.info(JSONObject.toJSONString(param));
         List<FusionResource> fusionResources = resourceRepository.selectFusionResource(param);
         if (fusionResources.isEmpty()) {
             return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
