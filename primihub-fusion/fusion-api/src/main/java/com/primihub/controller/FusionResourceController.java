@@ -9,7 +9,10 @@ import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
@@ -22,19 +25,19 @@ public class FusionResourceController {
     @Autowired
     private ResourceService resourceService;
 
-    @GetMapping("getResourceList")
-    public BaseResultEntity getResourceList(ResourceParam resourceParam){
+    @RequestMapping("getResourceList")
+    public BaseResultEntity getResourceList(@RequestBody ResourceParam resourceParam){
         return resourceService.getResourceList(resourceParam);
     }
 
-    @GetMapping("getResourceListById")
+    @RequestMapping("getResourceListById")
     public BaseResultEntity getResourceListById(String[] resourceIdArray,String globalId){
         if(resourceIdArray==null||resourceIdArray.length==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIdArray");
         }
         return resourceService.getResourceListById(resourceIdArray,globalId);
     }
-    @GetMapping("getCopyResource")
+    @RequestMapping("getCopyResource")
     public BaseResultEntity getCopyResource(String[] resourceIds){
         if(resourceIds==null||resourceIds.length==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIds");
@@ -42,12 +45,12 @@ public class FusionResourceController {
         return resourceService.getCopyResource(resourceIds);
     }
 
-    @GetMapping("getResourceTagList")
+    @RequestMapping("getResourceTagList")
     public BaseResultEntity getResourceTagList(){
         return resourceService.getResourceTagList();
     }
 
-    @GetMapping("getDataResource")
+    @RequestMapping("getDataResource")
     public BaseResultEntity getDataResource(String resourceId,String globalId){
         if (StringUtils.isEmpty(resourceId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
@@ -73,7 +76,7 @@ public class FusionResourceController {
         }
     }
 
-    @GetMapping("getTestDataSet")
+    @RequestMapping("getTestDataSet")
     public BaseResultEntity getTestDataSet(){
         return resourceService.getTestDataSet();
     }

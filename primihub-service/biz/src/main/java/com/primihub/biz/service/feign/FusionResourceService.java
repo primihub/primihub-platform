@@ -4,7 +4,10 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 import java.util.Map;
@@ -12,22 +15,22 @@ import java.util.Set;
 
 @FeignClient(name = "fusion",contextId = "resource")
 public interface FusionResourceService {
-    @GetMapping("/fusionResource/getResourceList")
-    BaseResultEntity getResourceList(ResourceParam resourceParam);
+    @RequestMapping("/fusionResource/getResourceList")
+    BaseResultEntity getResourceList(@RequestBody ResourceParam resourceParam);
 
-    @GetMapping("/fusionResource/getResourceListById")
+    @RequestMapping("/fusionResource/getResourceListById")
     BaseResultEntity getResourceListById(@RequestParam("resourceIdArray") List<String> resourceIdArray, @RequestParam("globalId") String globalId);
 
-    @GetMapping("/fusionResource/getResourceTagList")
+    @RequestMapping("/fusionResource/getResourceTagList")
     BaseResultEntity getResourceTagList();
 
-    @GetMapping("/fusionResource/getDataResource")
+    @RequestMapping("/fusionResource/getDataResource")
     BaseResultEntity getDataResource(@RequestParam("resourceId") String resourceId,@RequestParam("globalId") String globalId);
 
-    @PostMapping("/fusionResource/saveOrganResourceAuth")
+    @RequestMapping("/fusionResource/saveOrganResourceAuth")
     BaseResultEntity saveOrganResourceAuth(@RequestParam("organId") String organId,@RequestParam("resourceId") String resourceId,@RequestParam("projectId") String projectId,@RequestParam("auditStatus") Integer auditStatus);
 
-    @GetMapping("/fusionResource/getOrganResourceList")
+    @RequestMapping("/fusionResource/getOrganResourceList")
     BaseResultEntity getOrganResourceList(OrganResourceParam param);
 
     @PostMapping("/copy/batchSave")
@@ -36,10 +39,10 @@ public interface FusionResourceService {
     @PostMapping("/fusionResource/saveResource")
     BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList") String copyResourceDtoList);
 
-    @GetMapping("/fusionResource/getCopyResource")
+    @RequestMapping("/fusionResource/getCopyResource")
     BaseResultEntity getCopyResource(@RequestParam("resourceIds")Set<String> resourceIds);
 
-    @GetMapping("/fusionResource/getTestDataSet")
+    @RequestMapping("/fusionResource/getTestDataSet")
     BaseResultEntity getTestDataSet();
 
     @PostMapping("/fusionResource/batchSaveTestDataSet")
