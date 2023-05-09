@@ -12,8 +12,10 @@ import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,6 +24,7 @@ import java.util.Map;
 
 @RequestMapping("shareData")
 @RestController
+@Slf4j
 public class ShareDataController {
 
     @Autowired
@@ -90,9 +93,10 @@ public class ShareDataController {
         return dataResourceService.saveFusionResource(dto);
     }
 
-    @RequestMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(String dataSets){
-        if (org.springframework.util.StringUtils.isEmpty(dataSets)) {
+    @PostMapping("batchSaveTestDataSet")
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody String dataSets){
+        log.info(dataSets);
+        if (StringUtils.isEmpty(dataSets)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
         }
         return testService.batchSaveTestDataSet(dataSets);
