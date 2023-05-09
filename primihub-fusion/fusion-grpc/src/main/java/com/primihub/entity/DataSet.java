@@ -6,25 +6,25 @@ public class DataSet {
     private String accessInfo;
     private String driver;
     private String address;
-    private String vibility;
+    private String visibility;
     private String available = "Available";
     private Integer holder = 0;
     private String fields;
 
-    public DataSet(String id, String accessInfo, String driver, String address, String vibility) {
+    public DataSet(String id, String accessInfo, String driver, String address, String visibility) {
         this.id = id;
         this.accessInfo = accessInfo;
         this.driver = driver;
         this.address = address;
-        this.vibility = vibility;
+        this.visibility = visibility;
     }
 
-    public DataSet(String id, String accessInfo, String driver, String address, String vibility, Integer holder) {
+    public DataSet(String id, String accessInfo, String driver, String address, String visibility, Integer holder) {
         this.id = id;
         this.accessInfo = accessInfo;
         this.driver = driver;
         this.address = address;
-        this.vibility = vibility;
+        this.visibility = visibility;
         this.holder = holder;
     }
 
@@ -63,14 +63,6 @@ public class DataSet {
         this.address = address;
     }
 
-    public String getVibility() {
-        return vibility;
-    }
-
-    public void setVibility(String vibility) {
-        this.vibility = vibility;
-    }
-
     public String getAvailable() {
         return available;
     }
@@ -95,6 +87,14 @@ public class DataSet {
         this.fields = fields;
     }
 
+    public String getVisibility() {
+        return visibility;
+    }
+
+    public void setVisibility(String visibility) {
+        this.visibility = visibility;
+    }
+
     @Override
     public String toString() {
         return "DatSetEntity{" +
@@ -102,7 +102,7 @@ public class DataSet {
                 ", accessInfo='" + accessInfo + '\'' +
                 ", driver='" + driver + '\'' +
                 ", address='" + address + '\'' +
-                ", vibility='" + vibility + '\'' +
+                ", visibility='" + visibility + '\'' +
                 ", available='" + available + '\'' +
                 ", holder=" + holder +
                 '}';

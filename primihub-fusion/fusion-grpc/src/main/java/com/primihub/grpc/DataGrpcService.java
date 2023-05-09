@@ -27,15 +27,15 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         String accessInfo = metaInfo.getAccessInfo();
         String driver = metaInfo.getDriver();
         String address = metaInfo.getAddress();
-        String vibility = metaInfo.getVibility().getValueDescriptor().getName();
-        String operator = request.getOperator().getValueDescriptor().getName();
+        String visibility = metaInfo.getVisibility().getValueDescriptor().getName();
+        String operator = request.getOpType().getValueDescriptor().getName();
         String fields = metaInfo.getDataTypeList().stream().map(t -> t.getName() + "," + t.getType().name()).collect(Collectors.joining(";"));
         log.info("request ---- toString:{}", request.toString());
         if (id == null || "".equals(id)){
             newError(responseObserver,NewDatasetResponse.ResultCode.FAIL,"param id Cannot be empty");
             return;
         }
-        DataSet dataSet = new DataSet(id, accessInfo, driver, address, vibility);
+        DataSet dataSet = new DataSet(id, accessInfo, driver, address, visibility);
         dataSet.setFields(fields);
         if ("REGISTER".equals(operator)){
             if (accessInfo == null || "".equals(accessInfo)){
@@ -98,7 +98,7 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
                 .setAccessInfo(dataSet.getAccessInfo())
                 .setDriver(dataSet.getDriver())
                 .setAddress(dataSet.getAddress())
-                .setVibility(MetaInfo.Visibility.valueOf(dataSet.getVibility()));
+                .setVisibility(MetaInfo.Visibility.valueOf(dataSet.getVisibility()));
         List<String> fields = Arrays.stream(dataSet.getFields().split(";")).collect(Collectors.toList());
         for (String field : fields) {
             String[] fieldAndType = field.split(",");

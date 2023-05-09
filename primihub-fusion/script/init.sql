@@ -102,7 +102,7 @@ CREATE TABLE `data_set` (
                                         `access_info` varchar(255) NOT NULL COMMENT '访问信息',
                                         `driver` varchar(255) NOT NULL COMMENT '资源类型',
                                         `address` varchar(255) NOT NULL COMMENT '资源地址',
-                                        `vibility` varchar(255) NOT NULL COMMENT '可见性',
+                                        `visibility` varchar(255) NOT NULL COMMENT '可见性',
                                         `available` varchar(255) NOT NULL COMMENT '可获得',
                                         `holder` tinyint(4) DEFAULT '0' COMMENT '是否持有 0持有 1不持有',
                                         `fields` blob COMMENT '字段列表',
