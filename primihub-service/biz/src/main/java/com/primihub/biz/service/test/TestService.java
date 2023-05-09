@@ -182,15 +182,18 @@ public class TestService {
         BaseResultEntity testDataSet = fusionResourceService.getTestDataSet();
         log.info(JSONObject.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            Map<String,Object> map = new HashMap<>();
+            map.put("dataSets",JSONObject.toJSONString(testDataSet.getResult()));
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {
-                otherBusinessesService.syncGatewayApiData(testDataSet.getResult(),sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",sysOrgan.getPublicKey());
+                otherBusinessesService.syncGatewayApiData(map,sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",sysOrgan.getPublicKey());
             }
         }
         return BaseResultEntity.success();
     }
 
     public BaseResultEntity batchSaveTestDataSet(String dataSets) {
+        log.info(JSONObject.toJSONString(dataSets));
         fusionResourceService.batchSaveTestDataSet(dataSets);
         return BaseResultEntity.success();
     }
