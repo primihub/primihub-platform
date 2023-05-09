@@ -81,7 +81,7 @@ public class FusionResourceController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(@RequestBody String dataSets){
+    public BaseResultEntity batchSaveTestDataSet(String dataSets){
         if (StringUtils.isEmpty(dataSets)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
         }

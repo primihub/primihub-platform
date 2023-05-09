@@ -94,12 +94,11 @@ public class ShareDataController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(@RequestBody String dataSets){
-        log.info(dataSets);
-        if (StringUtils.isEmpty(dataSets)) {
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody Map<String,String> dataSets){
+        if (dataSets == null || !dataSets.containsKey("dataSets")) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
         }
-        return testService.batchSaveTestDataSet(dataSets);
+        return testService.batchSaveTestDataSet(dataSets.get("dataSets"));
     }
 
 

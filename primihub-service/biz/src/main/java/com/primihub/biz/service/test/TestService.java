@@ -194,7 +194,6 @@ public class TestService {
 
     public BaseResultEntity batchSaveTestDataSet(String dataSets) {
         log.info(JSONObject.toJSONString(dataSets));
-        fusionResourceService.batchSaveTestDataSet(dataSets);
-        return BaseResultEntity.success();
+        return fusionResourceService.batchSaveTestDataSet(dataSets);
     }
 }
