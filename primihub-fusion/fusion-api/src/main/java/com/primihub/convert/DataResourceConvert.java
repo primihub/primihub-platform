@@ -131,6 +131,7 @@ public class DataResourceConvert {
         copyResourceFieldDto.setFieldAs(po.getFieldAs());
         copyResourceFieldDto.setFieldType(po.getFieldType());
         copyResourceFieldDto.setFieldDesc(po.getFieldDesc());
+        copyResourceFieldDto.setResourceId(po.getResourceId());
         return copyResourceFieldDto;
 
     }
