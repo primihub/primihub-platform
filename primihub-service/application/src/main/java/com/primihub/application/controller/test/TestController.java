@@ -24,6 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 测试接口
+ */
 @Slf4j
 @RestController
 public class TestController {
@@ -120,6 +123,10 @@ public class TestController {
         return BaseResultEntity.success(FileUtil.md5HashCode(new File(filePath)));
     }
 
+    /**
+     * 注册后端node上的测试资源
+     * @return
+     */
     @RequestMapping("/testDataSet")
     public BaseResultEntity testDataSet(){
         return testService.testDataSet();
