@@ -300,6 +300,7 @@ public class SysOrganService {
         }
         sysOrgan.setExamineState(examineState);
         sysOrgan.setExamineMsg(examineMsg);
+        sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
