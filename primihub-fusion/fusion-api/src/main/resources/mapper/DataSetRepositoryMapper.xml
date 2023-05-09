@@ -48,4 +48,9 @@
         from data_set where is_del = 0
             and id = #{id}
     </select>
+    <select id="getTestDataSet" resultType="com.primihub.entity.DataSet">
+        select
+            id,driver,address,visibility,available,holder,fields
+        from data_set where is_del = 0 and length(id) != 49
+    </select>
 </mapper>

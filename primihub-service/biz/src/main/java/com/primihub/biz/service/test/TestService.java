@@ -10,6 +10,8 @@ import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
+import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
@@ -22,6 +24,8 @@ import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.test.TestSecondaryRepository;
 import com.primihub.biz.service.data.DataResourceService;
+import com.primihub.biz.service.data.OtherBusinessesService;
+import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
@@ -60,11 +64,13 @@ public class TestService {
     @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
-    private OrganConfiguration organConfiguration;
+    private FusionResourceService fusionResourceService;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
 
     @Resource
     private Environment environment;
@@ -169,5 +175,21 @@ public class TestService {
                 singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
             }
         }
+    }
+
+    public BaseResultEntity testDataSet() {
+        BaseResultEntity testDataSet = fusionResourceService.getTestDataSet();
+        if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+            for (SysOrgan sysOrgan : sysOrgans) {
+                otherBusinessesService.syncGatewayApiData(testDataSet.getResult(),sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",sysOrgan.getPublicKey());
+            }
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity batchSaveTestDataSet(String dataSets) {
+        fusionResourceService.batchSaveTestDataSet(dataSets);
+        return BaseResultEntity.success();
     }
 }

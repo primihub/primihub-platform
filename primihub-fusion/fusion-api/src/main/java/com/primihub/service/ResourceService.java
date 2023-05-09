@@ -1,5 +1,6 @@
 package com.primihub.service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.convert.DataResourceConvert;
 import com.primihub.entity.DataSet;
@@ -13,6 +14,7 @@ import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.entity.resource.po.FusionResource;
 import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.po.FusionResourceVisibilityAuth;
+import com.primihub.repository.DataSetRepository;
 import com.primihub.repository.FusionResourceRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ public class ResourceService {
     private FusionResourceRepository resourceRepository;
     @Autowired
     private GrpcDataSetService dataSetService;
+    @Autowired
+    private DataSetRepository dataSetRepository;
 
 
     public BaseResultEntity getResourceList(ResourceParam param) {
@@ -110,6 +114,7 @@ public class ResourceService {
             }
             DataSet dataSet = copyResourceDto.getDataSet();
             if (dataSet!=null && !StringUtils.isEmpty(dataSet.getId())){
+                dataSet.setHolder(1);
                 dataSetService.saveDataSet(dataSet);
             }
         }
@@ -145,5 +150,21 @@ public class ResourceService {
         Set<Long> ids = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<CopyResourceFieldDto>> fieldMap = resourceRepository.selectFusionResourceFieldByIds(ids).stream().map(DataResourceConvert::fusionResourceFieldConvertCopyResourceFieldDto).collect(Collectors.groupingBy(CopyResourceFieldDto::getResourceId));
         return BaseResultEntity.success(fusionResources.stream().map(d -> DataResourceConvert.FusionResourceConvertCopyResourceDto(d, fieldMap.get(d.getId()), dataSetMap.get(d.getResourceId()))).collect(Collectors.toList()));
+    }
+
+    public BaseResultEntity getTestDataSet(){
+        return BaseResultEntity.success(dataSetRepository.getTestDataSet());
+    }
+
+    public BaseResultEntity batchSaveTestDataSet(String dataSets){
+        try {
+            List<DataSet> dataSetList = JSONArray.parseArray(dataSets, DataSet.class);
+            dataSetService.saveBatch(dataSetList);
+            return BaseResultEntity.success();
+        }catch (Exception e){
+            e.printStackTrace();
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
+        }
+
     }
 }

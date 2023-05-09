@@ -1,6 +1,7 @@
 package com.primihub.controller;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONValidator;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.copy.dto.CopyResourceDto;
@@ -71,6 +72,19 @@ public class FusionResourceController {
         }catch (Exception e){
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
         }
+    }
+
+    @RequestMapping("getTestDataSet")
+    public BaseResultEntity getTestDataSet(){
+        return resourceService.getTestDataSet();
+    }
+
+    @PostMapping("batchSaveTestDataSet")
+    public BaseResultEntity batchSaveTestDataSet(String dataSets){
+        if (StringUtils.isEmpty(dataSets)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
+        }
+        return resourceService.batchSaveTestDataSet(dataSets);
     }
 
 }

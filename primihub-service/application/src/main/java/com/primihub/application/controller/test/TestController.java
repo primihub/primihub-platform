@@ -120,6 +120,13 @@ public class TestController {
         return BaseResultEntity.success(FileUtil.md5HashCode(new File(filePath)));
     }
 
+    @RequestMapping("/testDataSet")
+    public BaseResultEntity testDataSet(){
+        return testService.testDataSet();
+    }
+
+
+
 
 
 

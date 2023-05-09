@@ -11,6 +11,7 @@ import com.primihub.biz.service.data.DataModelService;
 import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.sys.SysOrganService;
+import com.primihub.biz.service.test.TestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,6 +32,8 @@ public class ShareDataController {
     private SysOrganService sysOrganService;
     @Autowired
     private DataResourceService dataResourceService;
+    @Autowired
+    private TestService testService;
 
     /**
      * 创建编辑项目接口
@@ -85,6 +88,14 @@ public class ShareDataController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"CopyPart");
         }
         return dataResourceService.saveFusionResource(dto);
+    }
+
+    @RequestMapping("batchSaveTestDataSet")
+    public BaseResultEntity batchSaveTestDataSet(String dataSets){
+        if (org.springframework.util.StringUtils.isEmpty(dataSets)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
+        }
+        return testService.batchSaveTestDataSet(dataSets);
     }
 
 
