@@ -447,6 +447,7 @@ public class DataResourceService {
         List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
         Set<String> ids = resourceList.stream().map(DataResource::getResourceFusionId).collect(Collectors.toSet());
         BaseResultEntity result = fusionResourceService.getCopyResource(ids);
+        log.info(JSONObject.toJSONString(result));
         return result.getResult();
     }
 
