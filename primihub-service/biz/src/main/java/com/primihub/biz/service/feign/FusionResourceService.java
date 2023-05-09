@@ -40,5 +40,5 @@ public interface FusionResourceService {
     BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList") String copyResourceDtoList);
 
     @RequestMapping("/fusionResource/getCopyResource")
-    BaseResultEntity getCopyResource(@RequestParam("resourceIds")Set<String> resourceIds);
+    BaseResultEntity getCopyResource(@RequestParam("resourceIds")String[] resourceIds);
 }
