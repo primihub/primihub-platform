@@ -852,6 +852,7 @@ public class DataResourceService {
 
     public BaseResultEntity saveFusionResource(DataFusionCopyDto dto) {
         try {
+            log.info(dto.getCopyPart());
 //            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
             fusionResourceService.saveResource(dto.getOrganId(), dto.getCopyPart());
         }catch (Exception e){
