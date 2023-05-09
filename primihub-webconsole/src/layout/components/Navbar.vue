@@ -2,7 +2,7 @@
   <div class="navbar">
     <div class="logo">
       <template v-if="loaded">
-        <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
+        <img v-if="isShowLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
         <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
       </template>
       <div class="secondary-title" @click="toPath">
@@ -89,12 +89,11 @@ export default {
     ...mapState('settings', [
       'loaded',
       'logoUrl',
-      'sidebarLogo',
+      'isShowLogo',
       'isHideFadeBack',
       'isHideAppMarket',
       'logoTitle',
-      'showLogoTitle',
-      'settingChanged'
+      'showLogoTitle'
     ]),
     ...mapGetters([
       'sidebar',
@@ -122,11 +121,6 @@ export default {
     userAccount(newVal) {
       if (phonePattern.test(newVal)) {
         this.isBound = true
-      }
-    },
-    async settingChanged(newVal) {
-      if (newVal) {
-        await this.getHomepage()
       }
     }
   },

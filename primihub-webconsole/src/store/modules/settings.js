@@ -1,7 +1,7 @@
 import defaultSettings from '@/settings'
 import { getHomepage, changeHomepage } from '@/api/system'
 
-const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, isHideAppMarket } = defaultSettings
+const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, isHideAppMarket, isShowLogo } = defaultSettings
 
 const baseUrl = '/'
 
@@ -27,15 +27,20 @@ const state = {
   isHideFadeBack,
   isHideAppMarket,
   isHideFooterVersion,
-  showLogoTitle: 1, // 1: 添加 2:不添加
+  showLogoTitle: true, // 1: 添加 2:不添加
   settingChanged: false,
   footerText,
-  loaded: false
+  loaded: false,
+  isShowLogo
 }
 
 const mutations = {
   CHANGE_SETTING: (state, { key, value }) => {
     state[key] = value
+  },
+  SET_LOGO_STATUS: (state, status) => {
+    console.log('SET_LOGO_STATUS', status)
+    state.isShowLogo = status
   },
   SET_CHANGE_STATUS: (state, status) => {
     state.settingChanged = status
@@ -90,40 +95,30 @@ const actions = {
   async getHomepage({ commit }) {
     const res = await getHomepage()
     if (res.code === 0 && res.result && Object.keys(res.result).length > 0) {
-      const { title = '', favicon, logoUrl, loginDescription = '', isHideFadeBack = state.true, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl, footerText, isHideAppMarket } = res.result
-
-      commit('SET_TITLE', title || state.title)
-      commit('SET_FAVICON', favicon || defaultSettings.favicon)
-      commit('SET_LOGO_URL', logoUrl || state.logoUrl)
-      commit('SET_LOGIN_LOGO_URL', loginLogoUrl || state.loginLogoUrl)
-      commit('SET_DESCRIPTION', loginDescription || state.loginDescription)
-      commit('SET_FADE_BACK_STATUS', isHideFadeBack === undefined ? state.isHideFadeBack : isHideFadeBack)
-      commit('SET_APP_MARKET_STATUS', isHideAppMarket === undefined ? state.isHideAppMarket : isHideAppMarket)
-      commit('SET_VERSION_STATUS', isHideFooterVersion === undefined ? state.isHideFooterVersion : isHideFooterVersion)
+      const { title = state.title, favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo } = res.result
+      commit('SET_LOGO_STATUS', isShowLogo)
+      commit('SET_TITLE', title)
+      commit('SET_FAVICON', favicon)
+      commit('SET_LOGO_URL', logoUrl)
+      commit('SET_LOGIN_LOGO_URL', loginLogoUrl)
+      commit('SET_DESCRIPTION', loginDescription)
+      commit('SET_FADE_BACK_STATUS', isHideFadeBack)
+      commit('SET_APP_MARKET_STATUS', isHideAppMarket)
+      commit('SET_VERSION_STATUS', isHideFooterVersion)
       commit('SET_LOGO_TITLE', logoTitle)
-      commit('SET_SHOW_LOGO_STATUS', showLogoTitle === undefined ? state.showLogoTitle : showLogoTitle)
-      commit('SET_FOOTER_TEXT', footerText || state.footerText)
+      commit('SET_SHOW_LOGO_STATUS', showLogoTitle)
+      commit('SET_FOOTER_TEXT', footerText)
     }
     commit('SET_REQUEST_STATUS', true)
   },
-  changeHomepage({ commit }, { state, mutation, value }) {
-    return new Promise((resolve, reject) => {
-      const params = {}
-      if (!params[state]) {
-        params[state] = ''
-      }
-      params[state] = value
-      changeHomepage(params).then(res => {
-        if (res.code === 0) {
-          commit(mutation, value)
-          commit('SET_CHANGE_STATUS', true)
-          resolve()
-        }
-      }).catch(error => {
-        console.log(error)
-        reject(error)
-      })
-    })
+  async changeHomepage({ commit }, { state, mutation, value }) {
+    const params = {}
+    params[state] = value
+    const res = await changeHomepage(params)
+    if (res.code === 0) {
+      commit(mutation, value)
+      commit('SET_CHANGE_STATUS', true)
+    }
   }
 }
 

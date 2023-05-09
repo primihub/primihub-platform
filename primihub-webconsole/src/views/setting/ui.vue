@@ -5,6 +5,12 @@
         <el-descriptions-item label="页面标题">
           <ConfirmInput name="title" :default-value="title" @submit="handleInputSubmit" />
         </el-descriptions-item>
+        <el-descriptions-item label="是否显示logo">
+          <el-radio-group v-model="isShowLogo" @input="handleShowLogoChange">
+            <el-radio :label="true">是</el-radio>
+            <el-radio :label="false">否</el-radio>
+          </el-radio-group>
+        </el-descriptions-item>
         <el-descriptions-item label="favicon">
           <span class="favicon">
             <PHUpload :image-url="favicon" type="favicon" @success="handleAvatarSuccess" @remove="handleRemove" />
@@ -18,8 +24,8 @@
         </el-descriptions-item>
         <el-descriptions-item :content-style="{'flex-direction': 'column'}" label="是否添加logo文字">
           <el-radio-group v-model="showLogoTitle" @input="handleShowLogoTitleChange">
-            <el-radio :label="1">是</el-radio>
-            <el-radio :label="2">否</el-radio>
+            <el-radio :label="true">是</el-radio>
+            <el-radio :label="false">否</el-radio>
           </el-radio-group>
           <div v-if="showLogoTitle === 1" class="logo-title">
             <el-input v-model="logoText" size="small" placeholder="请输入logo文字" clearable @clear="handleLogoTitleClear" @input="handleLogoTitleChange" />
@@ -64,8 +70,7 @@ export default {
       loading: false,
       params: {},
       logoText: '',
-      theFooterText: '',
-      isShowLogoTitle: 1
+      theFooterText: ''
     }
   },
   computed: {
@@ -83,6 +88,15 @@ export default {
     showLogoTitle: {
       get() {
         return this.$store.state.settings.showLogoTitle
+      },
+      set(val) {
+        return val
+      }
+    },
+    isShowLogo: {
+      get() {
+        console.log('store value', this.$store.state.settings.isShowLogo)
+        return this.$store.state.settings.isShowLogo
       },
       set(val) {
         return val
@@ -114,9 +128,8 @@ export default {
     }
   },
   async created() {
-    await this.getHomepage()
+    // await this.getHomepage()
     this.logoText = this.logoTitle
-    console.log(this.logoText)
     this.theFooterText = this.footerText
     this.params = {
       title: this.title,
@@ -127,7 +140,8 @@ export default {
       favicon: this.favicon,
       logoTitle: this.logoTitle,
       loginLogoUrl: this.loginLogoUrl,
-      showLogoTitle: this.showLogoTitle
+      showLogoTitle: this.showLogoTitle,
+      isShowLogo: this.isShowLogo
     }
   },
   methods: {
@@ -144,6 +158,10 @@ export default {
     handleFadeBackChange(val) {
       this.params.isHideFadeBack = val
       this.changeSettings({ state: 'isHideFadeBack', mutation: 'SET_FADE_BACK_STATUS', value: val })
+    },
+    handleShowLogoChange(val) {
+      this.params.isShowLogo = val
+      this.changeSettings({ state: 'isShowLogo', mutation: 'SET_LOGO_STATUS', value: val })
     },
     handleAppMarketChange(val) {
       this.params.isHideAppMarket = val
@@ -215,15 +233,6 @@ export default {
           break
       }
     },
-    // changeSettings() {
-    //   this.loading = true
-    //   this.changeHomepage(this.params).then(() => {
-    //     this.$message.success('更新成功')
-    //     setTimeout(() => {
-    //       this.loading = false
-    //     }, 300)
-    //   })
-    // },
     async changeSettings(data) {
       this.loading = true
       await this.changeHomepage(data)
