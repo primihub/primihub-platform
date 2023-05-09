@@ -77,6 +77,15 @@ public class OrganController {
     }
 
     /**
+     * 查询可用合作机构列表
+     * @return
+     */
+    @RequestMapping("getAvailableOrganList")
+    public BaseResultEntity getAvailableOrganList(){
+        return sysOrganService.getAvailableOrganList();
+    }
+
+    /**
      * 审核申请的机构
      * @param id                申请数字ID
      * @param examineState      审核状态    1同意 2拒绝

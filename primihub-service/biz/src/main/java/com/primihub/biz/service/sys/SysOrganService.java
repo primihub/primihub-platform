@@ -8,6 +8,7 @@ import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.SysConstant;
+import com.primihub.biz.convert.SysBaseConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
@@ -39,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -342,5 +344,9 @@ public class SysOrganService {
         }
         sysAsyncService.applyForJoinNode(sysOrgan);
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity getAvailableOrganList() {
+        return BaseResultEntity.success(sysOrganSecondarydbRepository.selectSysOrganByExamine().stream().map(SysBaseConvert::SysOrganConvertVo).collect(Collectors.toList()));
     }
 }
