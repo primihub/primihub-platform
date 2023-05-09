@@ -88,6 +88,8 @@ public class FusionResourceVo {
      * 机构ID
      */
     private String organId;
+
+    private String organName;
     /**
      * 创建时间
      */

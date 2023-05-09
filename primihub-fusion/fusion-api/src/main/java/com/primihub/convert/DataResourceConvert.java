@@ -69,7 +69,7 @@ public class DataResourceConvert {
     }
 
 
-    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, List<FusionResourceField> fieldList,String globalId){
+    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource,String organName, List<FusionResourceField> fieldList,String globalId){
         FusionResourceVo fusionResourceVo = new FusionResourceVo();
         fusionResourceVo.setResourceId(fusionResource.getResourceId());
         fusionResourceVo.setResourceName(fusionResource.getResourceName());
@@ -109,6 +109,7 @@ public class DataResourceConvert {
                 fusionResourceVo.setAvailable(0);
             }
         }
+        fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setResourceState(fusionResource.getResourceState());
         fusionResourceVo.setResourceHashCode(fusionResource.getResourceHashCode());
         return fusionResourceVo;

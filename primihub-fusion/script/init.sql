@@ -111,3 +111,16 @@ CREATE TABLE `data_set` (
                                         `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
                                         PRIMARY KEY (`id`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;
+
+DROP TABLE IF EXISTS `fusion_organ`;
+CREATE TABLE `fusion_organ`  (
+                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增id',
+                                 `global_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '唯一id',
+                                 `global_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构名称',
+                                 `register_time` datetime(3) NOT NULL COMMENT '注册时间',
+                                 `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
+                                 `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                 `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+                                 PRIMARY KEY (`id`) USING BTREE,
+                                 INDEX `global_id_ix`(`global_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8 COLLATE = utf8_general_ci ROW_FORMAT = DYNAMIC;

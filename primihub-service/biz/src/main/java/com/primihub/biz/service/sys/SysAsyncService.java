@@ -11,6 +11,7 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
+import com.primihub.biz.service.feign.FusionOrganService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -37,6 +38,8 @@ public class SysAsyncService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private FusionOrganService fusionOrganService;
 
     @Async
     public void collectBaseData() {
@@ -69,6 +72,7 @@ public class SysAsyncService {
         if (sysOrgan.getEnable()==1){
             // TODO 该机构下的数据进行下线处理
         }else if (sysOrgan.getExamineState()==1){
+            fusionOrganService.organData(sysOrgan.getOrganId(),sysOrgan.getOrganName());
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
         }
     }
