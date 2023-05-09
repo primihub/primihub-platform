@@ -216,7 +216,6 @@ public class DataResourceService {
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
         }
-        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         DataSource dataSource = null;
         if(dataResource.getDbId()!=null && dataResource.getDbId()!=0L){
             Long dbId = dataResource.getDbId();
