@@ -63,7 +63,7 @@ public class DataResourceConvert {
         copyResourceDto.setResourceHashCode(po.getResourceHashCode());
         copyResourceDto.setResourceState(po.getResourceState());
         copyResourceDto.setUserName(po.getUserName());
-        dataSet.setAddress(null);
+        dataSet.setAccessInfo(null);
         copyResourceDto.setDataSet(dataSet);
         return copyResourceDto;
     }
