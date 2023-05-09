@@ -81,11 +81,6 @@ public class DataProjectResource {
     private String auditOpinion;
 
     /**
-     * 秘钥ID
-     */
-    private String secretkeyId;
-
-    /**
      * 创建时间
      */
     @JsonIgnore

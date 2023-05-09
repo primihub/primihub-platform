@@ -42,29 +42,27 @@
         </where>
     </delete>
     <insert id="saveDataProjcetOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
-        insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, is_del, create_date, update_date)
-        values (#{poId},#{projectId},#{organId},#{initiateOrganId},#{participationIdentity},#{auditStatus},#{auditOpinion},#{secretkeyId},0,now(),now())
+        insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date)
+        values (#{poId},#{projectId},#{organId},#{initiateOrganId},#{participationIdentity},#{auditStatus},#{auditOpinion},0,now(),now())
     </insert>
     <update id="updateDataProjcetOrgan" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         update data_project_organ
         <set>
             <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
             <if test="auditOpinion!=null">audit_opinion = #{auditOpinion},</if>
-            <if test="secretkeyId!=null">secretkey_id = #{secretkeyId},</if>
             update_date = now()
         </set>
         where id = #{id}
     </update>
     <insert id="saveDataProjectResource" parameterType="com.primihub.biz.entity.data.po.DataProjectResource">
-        insert into data_project_resource (pr_id, project_id, initiate_organ_id, organ_id, participation_identity, resource_id, audit_status, audit_opinion, secretkey_id, is_del, create_date, update_date)
-        values (#{prId},#{projectId},#{initiateOrganId},#{organId},#{participationIdentity},#{resourceId},#{auditStatus},#{auditOpinion},#{serverAddress},0,now(),now())
+        insert into data_project_resource (pr_id, project_id, initiate_organ_id, organ_id, participation_identity, resource_id, audit_status, audit_opinion, is_del, create_date, update_date)
+        values (#{prId},#{projectId},#{initiateOrganId},#{organId},#{participationIdentity},#{resourceId},#{auditStatus},#{auditOpinion},0,now(),now())
     </insert>
     <update id="updateDataProjectResource" parameterType="com.primihub.biz.entity.data.po.DataProjectResource">
         update data_project_resource
         <set>
             <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
             <if test="auditOpinion!=null">audit_opinion = #{auditOpinion},</if>
-            <if test="secretkeyId!=null">secretkey_id = #{secretkeyId},</if>
             update_date = now()
         </set>
         where id = #{id}

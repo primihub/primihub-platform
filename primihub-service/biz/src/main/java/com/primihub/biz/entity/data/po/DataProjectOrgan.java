@@ -71,11 +71,6 @@ public class DataProjectOrgan {
     private String auditOpinion;
 
     /**
-     * 秘钥ID
-     */
-    private String secretkeyId;
-
-    /**
      * 是否删除
      */
     private Integer isDel;
