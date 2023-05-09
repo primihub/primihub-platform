@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import primihub.rpc.Common;
 
 import javax.annotation.Resource;
@@ -192,8 +193,8 @@ public class TestService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity batchSaveTestDataSet(String dataSets) {
-        log.info(JSONObject.toJSONString(dataSets));
+    public BaseResultEntity batchSaveTestDataSet(Map<String,String> dataSets) {
+        log.info(JSONObject.toJSONString(dataSets.get("dataSets")));
         return fusionResourceService.batchSaveTestDataSet(dataSets);
     }
 }

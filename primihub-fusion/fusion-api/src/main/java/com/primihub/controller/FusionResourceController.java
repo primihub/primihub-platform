@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RequestMapping("fusionResource")
@@ -81,9 +82,9 @@ public class FusionResourceController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(String dataSets){
-        if (StringUtils.isEmpty(dataSets)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody Map<String,String> dataSets){
+        if (dataSets == null || !dataSets.containsKey("dataSets")) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
         }
         return resourceService.batchSaveTestDataSet(dataSets);
     }

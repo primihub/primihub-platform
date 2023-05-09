@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @FeignClient(name = "fusion",contextId = "resource")
@@ -47,5 +48,5 @@ public interface FusionResourceService {
     BaseResultEntity getTestDataSet();
 
     @PostMapping("/fusionResource/batchSaveTestDataSet")
-    BaseResultEntity batchSaveTestDataSet(String dataSets);
+    BaseResultEntity batchSaveTestDataSet(@RequestBody Map<String,String> dataSets);
 }

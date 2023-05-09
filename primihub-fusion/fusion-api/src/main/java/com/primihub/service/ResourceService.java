@@ -156,9 +156,9 @@ public class ResourceService {
         return BaseResultEntity.success(dataSetRepository.getTestDataSet());
     }
 
-    public BaseResultEntity batchSaveTestDataSet(String dataSets){
+    public BaseResultEntity batchSaveTestDataSet(Map<String,String> dataSets){
         try {
-            List<DataSet> dataSetList = JSONArray.parseArray(dataSets, DataSet.class);
+            List<DataSet> dataSetList = JSONArray.parseArray(dataSets.get("dataSets"), DataSet.class);
             for (DataSet dataSet : dataSetList) {
                 dataSet.setHolder(1);
                 dataSetService.saveDataSet(dataSet);
