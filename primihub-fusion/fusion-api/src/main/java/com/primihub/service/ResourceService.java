@@ -1,5 +1,6 @@
 package com.primihub.service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.convert.DataResourceConvert;
 import com.primihub.entity.DataSet;
 import com.primihub.entity.base.BaseResultEntity;
@@ -138,6 +139,7 @@ public class ResourceService {
     }
 
     public BaseResultEntity getCopyResource(String[] resourceIds){
+        log.info(JSONObject.toJSONString(resourceIds));
         Set<String> resourceIdArray = Arrays.stream(resourceIds).collect(Collectors.toSet());
         List<FusionResource> fusionResources = resourceRepository.selectFusionResourceByResourceIds(resourceIdArray);
         Map<String, DataSet> dataSetMap = dataSetService.getByIds(resourceIdArray).stream().collect(Collectors.toMap(DataSet::getId, Function.identity()));
