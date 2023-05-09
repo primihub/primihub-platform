@@ -35,8 +35,8 @@ public class FusionResourceController {
         return resourceService.getResourceListById(resourceIdArray,globalId);
     }
     @RequestMapping("getCopyResource")
-    public BaseResultEntity getCopyResource(Set<String> resourceIds){
-        if(resourceIds==null||resourceIds.size()==0) {
+    public BaseResultEntity getCopyResource(String[] resourceIds){
+        if(resourceIds==null||resourceIds.length==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIds");
         }
         return resourceService.getCopyResource(resourceIds);

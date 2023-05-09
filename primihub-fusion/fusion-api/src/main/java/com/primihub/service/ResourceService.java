@@ -137,9 +137,10 @@ public class ResourceService {
         return BaseResultEntity.success(fusionResources.stream().map(re-> DataResourceConvert.fusionResourcePoConvertVo(re,resourceFielMap.get(re.getId()),globalId)).collect(Collectors.toList()));
     }
 
-    public BaseResultEntity getCopyResource(Set<String> resourceIds){
-        List<FusionResource> fusionResources = resourceRepository.selectFusionResourceByResourceIds(resourceIds);
-        Map<String, DataSet> dataSetMap = dataSetService.getByIds(resourceIds).stream().collect(Collectors.toMap(DataSet::getId, Function.identity()));
+    public BaseResultEntity getCopyResource(String[] resourceIds){
+        Set<String> resourceIdArray = Arrays.stream(resourceIds).collect(Collectors.toSet());
+        List<FusionResource> fusionResources = resourceRepository.selectFusionResourceByResourceIds(resourceIdArray);
+        Map<String, DataSet> dataSetMap = dataSetService.getByIds(resourceIdArray).stream().collect(Collectors.toMap(DataSet::getId, Function.identity()));
         Set<Long> ids = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<CopyResourceFieldDto>> fieldMap = resourceRepository.selectFusionResourceFieldByIds(ids).stream().map(DataResourceConvert::fusionResourceFieldConvertCopyResourceFieldDto).collect(Collectors.groupingBy(CopyResourceFieldDto::getResourceId));
         return BaseResultEntity.success(fusionResources.stream().map(d -> DataResourceConvert.FusionResourceConvertCopyResourceDto(d, fieldMap.get(d.getId()), dataSetMap.get(d.getResourceId()))).collect(Collectors.toList()));
