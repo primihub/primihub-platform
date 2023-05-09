@@ -22,6 +22,7 @@ public class OrganService {
             fusionOrgan.setGlobalId(organId);
             fusionOrgan.setGlobalName(organName);
             fusionOrgan.setRegisterTime(new Date());
+            fusionOrgan.setIsDel(0);
             fusionRepository.insertFusionOrgan(fusionOrgan);
         }else {
             fusionOrgan.setGlobalName(organName);

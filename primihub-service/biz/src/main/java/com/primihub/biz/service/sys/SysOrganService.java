@@ -300,7 +300,6 @@ public class SysOrganService {
         }
         sysOrgan.setExamineState(examineState);
         sysOrgan.setExamineMsg(examineMsg);
-        sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
@@ -314,6 +313,7 @@ public class SysOrganService {
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
         }
+        sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         sysAsyncService.applyForJoinNode(sysOrgan);
         return BaseResultEntity.success();
     }
