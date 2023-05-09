@@ -56,6 +56,7 @@ public class OtherBusinessesService {
             param.setTagName(req.getTagName());
             param.setPageNo(req.getPageNo());
             param.setPageSize(req.getPageSize());
+            log.info(JSONObject.toJSONString(param));
             BaseResultEntity resultEntity= fusionResourceService.getResourceList(param);
             return BaseResultEntity.success(resultEntity.getResult());
         }catch (Exception e){
