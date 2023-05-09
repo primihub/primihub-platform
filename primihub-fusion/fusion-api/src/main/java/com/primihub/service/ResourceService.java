@@ -159,7 +159,10 @@ public class ResourceService {
     public BaseResultEntity batchSaveTestDataSet(String dataSets){
         try {
             List<DataSet> dataSetList = JSONArray.parseArray(dataSets, DataSet.class);
-            dataSetService.saveBatch(dataSetList);
+            for (DataSet dataSet : dataSetList) {
+                dataSet.setHolder(1);
+                dataSetService.saveDataSet(dataSet);
+            }
             return BaseResultEntity.success();
         }catch (Exception e){
             e.printStackTrace();
