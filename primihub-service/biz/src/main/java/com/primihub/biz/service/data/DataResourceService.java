@@ -649,11 +649,11 @@ public class DataResourceService {
                 .setId(id)
                 .setAccessInfo(url)
                 .setDriver(suffix)
-                .setVibility(MetaInfo.Visibility.PUBLIC);
+                .setVisibility(MetaInfo.Visibility.PUBLIC);
         for (DataFileField field : fieldList) {
             metaInfoBuilder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType()).getNodeTypeName())).setName(field.getFieldName()));
         }
-        NewDatasetRequest request = NewDatasetRequest.newBuilder().setMetaInfo(metaInfoBuilder).setOperatorValue(NewDatasetRequest.Operator.REGISTER.getNumber()).build();
+        NewDatasetRequest request = NewDatasetRequest.newBuilder().setMetaInfo(metaInfoBuilder).setOpTypeValue(NewDatasetRequest.Operator.REGISTER.getNumber()).build();
         log.info("NewDatasetRequest:{}",request.toString());
         try {
             NewDatasetResponse response = dataServiceGrpcClient.run(o -> o.newDataset(request));

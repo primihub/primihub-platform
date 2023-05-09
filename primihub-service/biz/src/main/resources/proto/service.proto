@@ -15,7 +15,7 @@ message NewDatasetRequest {
     UNREGISTER = 1;
     UPDATE = 2;
   }
-  Operator operator = 1;
+  Operator op_type = 1;
   MetaInfo meta_info = 2;
 }
 
@@ -61,7 +61,7 @@ message MetaInfo {
   string driver = 2;        // dataset type
   string access_info = 3;   // dataset access info
   string address = 4;       // location of dataset
-  Visibility vibility = 5;  // vibility for dataset
+  Visibility visibility = 5;  // vibility for dataset
   repeated DataTypeInfo data_type = 6;
 }
 
