@@ -9,13 +9,14 @@ public class DataFusionCopyTask {
     public DataFusionCopyTask() {
     }
 
-    public DataFusionCopyTask(Integer taskType, Long currentOffset, Long targetOffset, String taskTable, String serverAddress) {
+    public DataFusionCopyTask(Integer taskType, Long currentOffset, Long targetOffset, String taskTable, String serverAddress,String organId) {
         this.taskType = taskType;
         this.currentOffset = currentOffset;
         this.targetOffset = targetOffset;
         this.taskTable = taskTable;
         this.serverAddress = serverAddress;
         this.latestErrorMsg="";
+        this.organId = organId;
     }
 
     private Long id;

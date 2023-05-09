@@ -111,6 +111,7 @@ public class DataCopyService implements ApplicationContextAware {
                             isSuccess = false;
                             errorMsg = "机构信息查询null";
                         }else {
+                            
                             BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress()+"/share/shareData/saveFusionResource", sysOrgan.getPublicKey());
                             if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                                 isSuccess = false;
