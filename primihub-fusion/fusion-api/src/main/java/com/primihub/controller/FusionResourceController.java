@@ -10,6 +10,7 @@ import com.primihub.service.ResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -80,7 +81,7 @@ public class FusionResourceController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(String dataSets){
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody String dataSets){
         if (StringUtils.isEmpty(dataSets)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSets");
         }
