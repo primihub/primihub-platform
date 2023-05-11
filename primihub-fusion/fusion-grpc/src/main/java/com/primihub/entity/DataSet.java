@@ -40,6 +40,9 @@ public class DataSet {
     }
 
     public String getAccessInfo() {
+        if (this.getAccessInfo()==null){
+            return "";
+        }
         return accessInfo;
     }
 
