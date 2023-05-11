@@ -132,7 +132,7 @@ public class TestService {
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
                 .setTaskInfo(taskBuild)
-                .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+//                .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskRequest request=PushTaskRequest.newBuilder()
                 .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))

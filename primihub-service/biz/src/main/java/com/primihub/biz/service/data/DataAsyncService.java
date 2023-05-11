@@ -279,7 +279,7 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setName("testTask")
                         .setTaskInfo(taskBuild)
                         .setLanguage(Common.Language.PROTO)
-                        .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+//                        .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                         .addInputDatasets("clientData")
                         .addInputDatasets("serverData")
                         .build();
@@ -356,7 +356,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setName("testTask")
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PROTO)
-                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
+//                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("serverData")
                     .build();
             log.info("grpc Common.Task :\n{}",task.toString());
@@ -593,7 +593,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setName("modelTask")
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PYTHON)
-                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+//                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
