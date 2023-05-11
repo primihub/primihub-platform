@@ -9,7 +9,6 @@ import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.vo.FusionResourceVo;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -29,7 +28,7 @@ public class DataResourceConvert {
         fusionResource.setResourceAuthType(dto.getResourceAuthType());
         fusionResource.setResourceRowsCount(dto.getResourceRowsCount());
         fusionResource.setResourceColumnCount(dto.getResourceColumnCount());
-        fusionResource.setResourceColumnNameList(dto.getResourceColumnNameList().getBytes(Charset.forName("UTF-8")));
+        fusionResource.setResourceColumnNameList(dto.getResourceColumnNameList());
         fusionResource.setResourceContainsY(dto.getResourceContainsY());
         fusionResource.setResourceYRowsCount(dto.getResourceYRowsCount());
         fusionResource.setResourceYRatio(dto.getResourceYRatio());
@@ -51,7 +50,7 @@ public class DataResourceConvert {
         copyResourceDto.setResourceAuthType(po.getResourceAuthType());
         copyResourceDto.setResourceRowsCount(po.getResourceRowsCount());
         copyResourceDto.setResourceColumnCount(po.getResourceColumnCount());
-        copyResourceDto.setResourceColumnNameList(Arrays.toString(po.getResourceColumnNameList()));
+        copyResourceDto.setResourceColumnNameList(po.getResourceColumnNameList());
         copyResourceDto.setResourceContainsY(po.getResourceContainsY());
         copyResourceDto.setResourceYRowsCount(po.getResourceYRowsCount());
         copyResourceDto.setResourceYRatio(po.getResourceYRatio());
@@ -78,8 +77,8 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceAuthType(fusionResource.getResourceAuthType());
         fusionResourceVo.setResourceRowsCount(fusionResource.getResourceRowsCount());
         fusionResourceVo.setResourceColumnCount(fusionResource.getResourceColumnCount());
-        if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList().length>=0) {
-            fusionResourceVo.setResourceColumnNameList(new String(fusionResource.getResourceColumnNameList(),Charset.forName("UTF-8")));
+        if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList()!="") {
+            fusionResourceVo.setResourceColumnNameList(fusionResource.getResourceColumnNameList());
         }
         fusionResourceVo.setFieldList(fieldList);
         fusionResourceVo.setResourceContainsY(fusionResource.getResourceContainsY());
