@@ -124,6 +124,9 @@ public class DataTaskService {
         if (maxId==null) {
             return;
         }
+        if (maxId==1L){
+            maxId++;
+        }
         DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.FUSION_RESOURCE.getTableName(), sysOrgan.getOrganGateway(),sysOrgan.getOrganId());
         dataCopyPrimarydbRepository.saveCopyInfo(task);
         dataCopyService.handleFusionCopyTask(task);
