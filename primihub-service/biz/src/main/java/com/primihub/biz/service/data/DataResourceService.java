@@ -225,6 +225,9 @@ public class DataResourceService {
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
         resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+        String jsonString = JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
+        log.info(jsonString);
+        fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),jsonString);
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
