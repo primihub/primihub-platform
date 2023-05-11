@@ -306,6 +306,7 @@ public class DataAsyncService implements ApplicationContextAware {
             } catch (Exception e) {
                 psiTask.setTaskState(3);
                 log.info("grpc Exception:{}",e.getMessage());
+                e.printStackTrace();
             }
             log.info("grpc end dataPsiId:{} - psiTaskId:{} - outputFilePath{} - time:{}",dataPsi.getId(),psiTask.getId(),psiTask.getFilePath(),System.currentTimeMillis());
         }else {
@@ -379,6 +380,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}",e.getMessage());
+            e.printStackTrace();
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
