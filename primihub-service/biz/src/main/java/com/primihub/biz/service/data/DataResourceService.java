@@ -177,7 +177,9 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
-            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId())));
+            String jsonString = JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
+            log.info(jsonString);
+            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),jsonString);
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
