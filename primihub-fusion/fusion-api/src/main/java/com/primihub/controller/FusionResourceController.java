@@ -1,6 +1,7 @@
 package com.primihub.controller;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONValidator;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
@@ -44,7 +45,9 @@ public class FusionResourceController {
         if(resourceIds==null||resourceIds.length==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIds");
         }
-        return resourceService.getCopyResource(resourceIds);
+        BaseResultEntity copyResource = resourceService.getCopyResource(resourceIds);
+        log.info(JSONObject.toJSONString(copyResource));
+        return copyResource;
     }
 
     @RequestMapping("getResourceTagList")

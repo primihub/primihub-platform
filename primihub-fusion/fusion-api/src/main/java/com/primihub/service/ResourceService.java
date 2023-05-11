@@ -157,6 +157,7 @@ public class ResourceService {
     public BaseResultEntity getCopyResource(String[] resourceIds){
         Set<String> resourceIdArray = Arrays.stream(resourceIds).collect(Collectors.toSet());
         List<FusionResource> fusionResources = resourceRepository.selectFusionResourceByResourceIds(resourceIdArray);
+        log.info(JSONObject.toJSONString(fusionResources));
         Map<String, DataSet> dataSetMap = dataSetService.getByIds(resourceIdArray).stream().collect(Collectors.toMap(DataSet::getId, Function.identity()));
         Set<Long> ids = fusionResources.stream().map(FusionResource::getId).collect(Collectors.toSet());
         Map<Long, List<CopyResourceFieldDto>> fieldMap = resourceRepository.selectFusionResourceFieldByIds(ids).stream().map(DataResourceConvert::fusionResourceFieldConvertCopyResourceFieldDto).collect(Collectors.groupingBy(CopyResourceFieldDto::getResourceId));
