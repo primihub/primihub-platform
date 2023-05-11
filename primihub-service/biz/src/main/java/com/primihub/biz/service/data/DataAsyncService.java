@@ -358,6 +358,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setLanguage(Common.Language.PROTO)
 //                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                     .addInputDatasets("serverData")
+                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", resourceId).build())
                     .build();
             log.info("grpc Common.Task :\n{}",task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
