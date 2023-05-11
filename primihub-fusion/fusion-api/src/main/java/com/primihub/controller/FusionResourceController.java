@@ -7,6 +7,7 @@ import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.copy.dto.CopyResourceDto;
 import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.service.ResourceService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import java.util.Set;
 
 @RequestMapping("fusionResource")
 @RestController
+@Slf4j
 public class FusionResourceController {
 
     @Autowired
@@ -66,6 +68,7 @@ public class FusionResourceController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
         }
         try {
+            log.info(copyResourceDtoList);
             List<CopyResourceDto> list = JSONArray.parseArray(copyResourceDtoList,CopyResourceDto.class);
             if (list==null || list.size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
