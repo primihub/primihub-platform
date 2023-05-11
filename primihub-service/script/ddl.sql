@@ -15,7 +15,7 @@ CREATE TABLE `data_model` (
                               `is_draft` tinyint(4) DEFAULT '0' COMMENT '是否草稿 0是 1不是 默认是',
                               `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
                               `organ_id` varchar(255) DEFAULT NULL COMMENT '机构id',
-                              `component_json` blob COMMENT '组件json',
+                              `component_json` text COMMENT '组件json',
                               `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                               `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                               `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -43,8 +43,8 @@ CREATE TABLE `data_component_draft` (
                                         `draft_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
                                         `draft_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '草稿名称',
                                         `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                        `component_json` blob COMMENT '组件json',
-                                        `component_image` blob COMMENT '组件图',
+                                        `component_json` text COMMENT '组件json',
+                                        `component_image` text COMMENT '组件图',
                                         `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -79,7 +79,7 @@ CREATE TABLE `data_component` (
                                   `height` int(11) DEFAULT '0' COMMENT '高度',
                                   `coordinate_y` int(11) DEFAULT '0' COMMENT '坐标y',
                                   `coordinate_x` int(11) DEFAULT '0' COMMENT '坐标x',
-                                  `data_json` blob COMMENT '组件参数json',
+                                  `data_json` text COMMENT '组件参数json',
                                   `start_time` bigint(20) DEFAULT '0' COMMENT '开始时间戳',
                                   `end_time` bigint(20) DEFAULT '0' COMMENT '结束时间戳',
                                   `component_state` tinyint(4) DEFAULT '0' COMMENT '组件运行状态 0初始 1成功 2运行中 3失败',
@@ -116,8 +116,8 @@ CREATE TABLE `data_model_task` (
                                    `model_id` bigint DEFAULT NULL COMMENT '模型id',
                                    `task_id` bigint DEFAULT NULL COMMENT '任务id',
                                    `predict_file` varchar(255) DEFAULT NULL COMMENT '预测文件路径',
-                                   `predict_content` blob COMMENT '预测文件内容',
-                                   `component_json` blob COMMENT '模型运行组件列表json',
+                                   `predict_content` text COMMENT '预测文件内容',
+                                   `component_json` text COMMENT '模型运行组件列表json',
                                    `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -245,7 +245,7 @@ CREATE TABLE `data_psi_task`  (
                                   `ascription` varchar(255) DEFAULT NULL COMMENT '结果归属',
                                   `file_rows` int(11) DEFAULT '0' COMMENT '文件行数',
                                   `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
-                                  `file_content` blob COMMENT '文件内容',
+                                  `file_content` text COMMENT '文件内容',
                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -281,7 +281,7 @@ CREATE TABLE `data_resource`  (
                                   `file_rows` int(8) DEFAULT NULL COMMENT '文件行数',
                                   `file_columns` int(8) DEFAULT NULL COMMENT '文件列数',
                                   `file_handle_status` tinyint(4) DEFAULT NULL COMMENT '文件处理状态',
-                                  `file_handle_field` blob COMMENT '文件头字段',
+                                  `file_handle_field` text COMMENT '文件头字段',
                                   `file_contains_y` tinyint(4) DEFAULT '0' COMMENT '文件字段是否包含y字段 0否 1是',
                                   `file_y_rows` int(11) DEFAULT '0' COMMENT '文件字段y值内容不为空的行数',
                                   `file_y_ratio` decimal(8,4) DEFAULT '0.0000' COMMENT '文件字段y值内容不为空的行数在总行的占比',
@@ -338,39 +338,6 @@ CREATE TABLE `data_file_field` (
                                    PRIMARY KEY (`field_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源字段表' ROW_FORMAT = Dynamic;
 
-DROP TABLE IF EXISTS `data_mpc_task`;
-CREATE TABLE `data_mpc_task` (
-                                 `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
-                                 `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id对外展示',
-                                 `script_id` bigint(20) DEFAULT NULL COMMENT '脚本id',
-                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                 `task_status` int(11) DEFAULT '0' COMMENT '任务状态 0未运行 1成功 2运行中 3失败',
-                                 `task_desc` varchar(255) DEFAULT NULL COMMENT '任务备注',
-                                 `log_data` blob COMMENT '日志信息',
-                                 `result_file_path` varchar(255) DEFAULT NULL COMMENT '结果文件地址',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`task_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci  COMMENT = 'mpc任务表' ROW_FORMAT=DYNAMIC;
-
-DROP TABLE IF EXISTS `data_script`;
-CREATE TABLE `data_script`  (
-                                `script_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '脚本id',
-                                `name` varchar(255) DEFAULT NULL COMMENT '文件名称或文件夹名称',
-                                `catalogue` int(11) DEFAULT '0' COMMENT '是否目录 0否 1是',
-                                `p_script_id` bigint(20) DEFAULT NULL COMMENT '上级id',
-                                `script_type` int(11) DEFAULT NULL COMMENT '脚本类型 0sql 1python',
-                                `script_status` int(11) DEFAULT NULL COMMENT '脚本状态 0打开 1关闭 默认打开',
-                                `script_content` blob COMMENT '脚本内容',
-                                `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                PRIMARY KEY (`script_id`) USING BTREE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
 DROP TABLE IF EXISTS `data_task`;
 CREATE TABLE `data_task` (
                              `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
@@ -380,11 +347,11 @@ CREATE TABLE `data_task` (
                              `task_state` int(11) DEFAULT '0' COMMENT '任务状态(0未开始 1成功 2运行中 3失败 4取消)',
                              `task_type` int(11) DEFAULT NULL COMMENT '任务类型 1、模型 2、PSI 3、PIR',
                              `task_result_path` varchar(255) DEFAULT NULL COMMENT '文件返回路径',
-                             `task_result_content` blob COMMENT '文件返回内容',
+                             `task_result_content` text COMMENT '文件返回内容',
                              `task_start_time` bigint(20) DEFAULT NULL COMMENT '任务开始时间',
                              `task_end_time` bigint(20) DEFAULT NULL COMMENT '任务结束时间',
                              `task_user_id` bigint(20) DEFAULT NULL COMMENT '任务创建人',
-                             `task_error_msg` blob COMMENT '任务异常信息',
+                             `task_error_msg` text COMMENT '任务异常信息',
                              `is_cooperation` tinyint(4) DEFAULT '0' COMMENT '是否协作任务0否 1是',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -772,7 +739,7 @@ CREATE TABLE `sys_organ`  (
                               `organ_gateway` varchar(255) DEFAULT NULL COMMENT '申请加入机构网关地址',
                               `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥',
                               `examine_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0待审批 1同意 2拒绝)',
-                              `examine_msg` blob COMMENT '审批信息',
+                              `examine_msg` text COMMENT '审批信息',
                               `node_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
                               `fusion_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
                               `platform_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
