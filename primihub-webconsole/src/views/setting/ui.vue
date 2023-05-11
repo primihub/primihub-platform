@@ -27,7 +27,7 @@
             <el-radio :label="true">是</el-radio>
             <el-radio :label="false">否</el-radio>
           </el-radio-group>
-          <div v-if="showLogoTitle === 1" class="logo-title">
+          <div v-if="showLogoTitle" class="logo-title">
             <el-input v-model="logoText" size="small" placeholder="请输入logo文字" clearable @clear="handleLogoTitleClear" @input="handleLogoTitleChange" />
             <el-button class="logo-button" type="primary" size="small" @click="saveLogoTitle">保存</el-button>
           </div>

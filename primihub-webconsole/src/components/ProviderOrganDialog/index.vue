@@ -37,22 +37,13 @@
 </template>
 
 <script>
-import { findMyGroupOrgan } from '@/api/center'
+import { getAvailableOrganList } from '@/api/center'
 
 export default {
   props: {
-    // data: {
-    //   type: Array,
-    //   default: () => []
-    // },
     selectedData: {
       type: Array,
       default: () => []
-    },
-    serverAddress: {
-      type: String,
-      default: '',
-      require: true
     },
     visible: {
       type: Boolean,
@@ -72,7 +63,7 @@ export default {
   watch: {
     visible(newVal) {
       if (newVal) {
-        this.findMyGroupOrgan()
+        this.getAvailableOrganList()
       } else {
         this.organList = []
       }
@@ -121,10 +112,10 @@ export default {
       const res = !(this.selectedData.length > 0 && this.selectedData.filter(item => item.globalId === row.globalId).length > 0)
       return res
     },
-    async findMyGroupOrgan() {
+    async getAvailableOrganList() {
       this.loading = true
-      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
-      this.organList = result.dataList.organList
+      const { result } = await getAvailableOrganList()
+      this.organList = result
       console.log('selectedData', this.selectedData)
       this.selectedRows = this.selectedData.map(item => {
         return this.organList.filter(o => o.globalId === item.globalId)[0]

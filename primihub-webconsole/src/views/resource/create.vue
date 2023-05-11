@@ -60,18 +60,14 @@
           <el-radio-group v-model="dataForm.resourceAuthType" @change="handleAuthTypeChange">
             <el-radio :label="1">公开</el-radio>
             <el-radio :label="2">私有</el-radio>
-            <el-radio :label="3">指定机构可见</el-radio>
+            <el-radio :label="3">
+              指定机构可见
+              <template v-if="dataForm.resourceAuthType === 3">
+                <OrganSelect style="display:inline-block;" size="small" @change="handleOrganChange" />
+              </template>
+            </el-radio>
           </el-radio-group>
-          <template v-if="dataForm.resourceAuthType === 3">
-            <Cascader
-              v-if="showCascader"
-              ref="connectRef"
-              :show-all-levels="false"
-              clearable
-              :value="cascaderValue"
-              @change="handleOrganChange"
-            />
-          </template>
+
         </div>
       </el-form-item>
       <template v-if="!isEditPage">
@@ -134,6 +130,7 @@ import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import Cascader from '@/components/Cascader'
 import DatabaseImport from '@/components/DatabaseImport'
+import OrganSelect from '@/components/OrganSelect'
 
 export default {
   components: {
@@ -141,7 +138,8 @@ export default {
     EditResourceTable,
     ResourcePreviewTable,
     Cascader,
-    DatabaseImport
+    DatabaseImport,
+    OrganSelect
   },
   data() {
     return {

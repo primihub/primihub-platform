@@ -1,5 +1,35 @@
 import request from '@/utils/request'
 
+export function examineJoining(params) {
+  return request({
+    url: '/sys/organ/examineJoining',
+    method: 'get',
+    params
+  })
+}
+
+export function joiningPartners(params) {
+  return request({
+    url: '/sys/organ/joiningPartners',
+    method: 'get',
+    params
+  })
+}
+export function getOrganList(params) {
+  return request({
+    url: '/sys/organ/getOrganList',
+    method: 'get',
+    params
+  })
+}
+export function getAvailableOrganList(params) {
+  return request({
+    url: '/sys/organ/getAvailableOrganList',
+    method: 'get',
+    params
+  })
+}
+
 export function getLocalOrganInfo(params) {
   return request({
     url: '/sys/organ/getLocalOrganInfo',

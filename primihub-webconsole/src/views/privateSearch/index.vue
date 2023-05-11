@@ -2,23 +2,13 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="中心节点">
-          <el-select v-model="query.serverAddress" v-loading="serverAddressLoading" size="small" clearable placeholder="请选择" @change="handleServerAddressChange" @focus="handleServerAddressFocus" @clear="handleClear('serverAddress')">
-            <el-option
-              v-for="item in serverAddressList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item label="参与机构">
-          <el-select v-model="query.organName" v-loading="organLoading" size="small" placeholder="请选择" clearable @change="handleOrganCascaderChange" @focus="handleOrganFocus" @clear="handleClear('organName')">
+          <el-select v-model="query.organName" v-loading="organLoading" size="small" placeholder="请选择" clearable @change="handleOrganChange" @focus="handleOrganFocus" @clear="handleClear('organName')">
             <el-option
-              v-for="item in organOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="item in organList"
+              :key="item.globalId"
+              :label="item.globalName"
+              :value="item.globalId"
             />
           </el-select>
         </el-form-item>
@@ -53,14 +43,6 @@
         :data="dataList"
       >
         <el-table-column
-          prop="serverAddress"
-          label="中心节点"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.serverAddress" placement="top"><span>{{ row.serverAddress }}</span></el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column
           prop="organName"
           label="参与机构"
           align="center"
@@ -75,7 +57,7 @@
         />
         <el-table-column
           prop="resourceId"
-          label="联邦资源ID"
+          label="被查询资源ID"
           min-width="120"
         >
           <template slot-scope="{row}">
@@ -87,7 +69,7 @@
         <el-table-column
           prop="resourceName"
           label="被查询资源名"
-          min-width="100"
+          min-width="120"
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
@@ -159,7 +141,7 @@
 </template>
 
 <script>
-import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
+import { getAvailableOrganList } from '@/api/center'
 import { getPirTaskList } from '@/api/PIR'
 import Pagination from '@/components/Pagination'
 import StatusIcon from '@/components/StatusIcon'
@@ -183,15 +165,11 @@ export default {
   },
   data() {
     return {
-      serverAddressLoading: false,
       organLoading: false,
-      organOptions: [],
-      serverAddressList: [],
       sysLocalOrganInfo: null,
       fusionList: [],
       organList: [],
       query: {
-        serverAddress: '',
         organName: '',
         retrievalId: '',
         resourceName: '',
@@ -254,19 +232,17 @@ export default {
       this.query[name] = ''
       this.fetchData()
     },
-    toResourceDetail({ resourceId, serverAddress }) {
+    toResourceDetail({ resourceId }) {
       this.$router.push({
         name: 'UnionResourceDetail',
-        params: { id: resourceId },
-        query: { serverAddress }
+        params: { id: resourceId }
       })
     },
     async fetchData() {
-      const { taskState, serverAddress, organName, resourceName, retrievalId, taskId } = this.query
+      const { taskState, organName, resourceName, retrievalId, taskId } = this.query
       const params = {
         taskId,
         taskState,
-        serverAddress,
         organName,
         resourceName,
         retrievalId,
@@ -290,57 +266,16 @@ export default {
       this.pageNo = data.page
       this.fetchData()
     },
-    async handleServerAddressChange(value) {
-      this.query.serverAddress = this.serverAddressList.filter(item => item.value === value)[0]?.label
-    },
-    handleOrganCascaderChange(value) {
-      this.query.organName = this.organOptions.filter(item => item.value === value)[0]?.label
+    handleOrganChange(value) {
+      this.query.organName = this.organList.find(item => item.globalId === value)?.globalName
     },
     async handleOrganFocus() {
-      if (this.query.serverAddress === '') {
-        this.$message({
-          message: '请先选择中心节点',
-          type: 'warning'
-        })
-        return
-      }
-      if (this.organList.length < 1) {
-        await this.findMyGroupOrgan()
-      }
+      await this.getAvailableOrganList()
     },
-    async handleServerAddressFocus() {
-      if (this.serverAddressList.length < 1) {
-        this.serverAddressList = []
-        await this.getLocalOrganInfo()
-      }
-    },
-    async getLocalOrganInfo() {
-      this.serverAddressLoading = true
-      const { result } = await getLocalOrganInfo()
-      this.sysLocalOrganInfo = result.sysLocalOrganInfo
-      if (!result.sysLocalOrganInfo) return
-      this.fusionList = result.sysLocalOrganInfo?.fusionList
-      this.fusionList && this.fusionList.map((item, index) => {
-        this.serverAddressList.push({
-          label: item.serverAddress,
-          value: index,
-          registered: item.registered,
-          show: item.show
-        })
-      })
-      this.serverAddressLoading = false
-    },
-    async findMyGroupOrgan() {
+    async getAvailableOrganList() {
       this.organLoading = true
-      const { result } = await findMyGroupOrgan({ serverAddress: this.query.serverAddress })
-      this.organList = result.dataList.organList
-      this.organOptions = this.organList && this.organList.map((item) => {
-        return {
-          label: item.globalName,
-          value: item.globalId,
-          leaf: true
-        }
-      })
+      const { result } = await getAvailableOrganList()
+      this.organList = result
       this.organLoading = false
     },
     async download(taskId) {

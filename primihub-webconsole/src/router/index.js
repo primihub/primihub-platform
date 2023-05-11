@@ -348,7 +348,7 @@ export const asyncRoutes = [
         path: 'center',
         name: 'CenterManage',
         component: () => import('@/views/setting/center'),
-        meta: { title: '中心管理' }
+        meta: { title: '节点管理' }
       },
       {
         path: 'ui',
