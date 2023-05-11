@@ -858,7 +858,8 @@ public class DataResourceService {
         try {
             log.info(dto.getCopyPart());
 //            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
-            fusionResourceService.saveResource(dto.getOrganId(), dto.getCopyPart());
+            BaseResultEntity resultEntity = fusionResourceService.saveResource(dto.getOrganId(), dto.getCopyPart());
+            log.info(JSONObject.toJSONString(resultEntity));
         }catch (Exception e){
             e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
