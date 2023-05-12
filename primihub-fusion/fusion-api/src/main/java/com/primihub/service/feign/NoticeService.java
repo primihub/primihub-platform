@@ -4,7 +4,7 @@ import com.primihub.entity.base.BaseResultEntity;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 
-@FeignClient(name = "application",contextId = "resource")
+@FeignClient(name = "platform",contextId = "resource")
 public interface NoticeService {
 
     @PostMapping("/resource/noticeResource")
