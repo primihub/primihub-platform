@@ -188,7 +188,7 @@ public class TestService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity batchSaveTestDataSet(List<Map<String,String>> dataSets) {
+    public BaseResultEntity batchSaveTestDataSet(List<Map<String,Object>> dataSets) {
         log.info(JSONObject.toJSONString(dataSets));
         return fusionResourceService.batchSaveTestDataSet(dataSets);
     }

@@ -95,7 +95,7 @@ public class ShareDataController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<Map<String,String>> dataSets){
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<Map<String,Object>> dataSets){
         if (dataSets == null || dataSets.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
         }
