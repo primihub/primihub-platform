@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -127,7 +128,7 @@ public class TestController {
      * 注册后端node上的测试资源
      * @return
      */
-    @RequestMapping("/testDataSet")
+    @PostMapping("/testDataSet")
     public BaseResultEntity testDataSet(String id){
         return testService.testDataSet(id);
     }
