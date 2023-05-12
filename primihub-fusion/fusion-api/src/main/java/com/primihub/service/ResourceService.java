@@ -168,7 +168,9 @@ public class ResourceService {
         if (StringUtils.isEmpty(id)){
             return BaseResultEntity.success(dataSetRepository.getTestDataSet());
         }else {
-            return BaseResultEntity.success(dataSetRepository.getDataSetById(id));
+            List<DataSet> list = new ArrayList<>();
+            list.add(dataSetRepository.getDataSetById(id));
+            return BaseResultEntity.success(list);
         }
     }
 
