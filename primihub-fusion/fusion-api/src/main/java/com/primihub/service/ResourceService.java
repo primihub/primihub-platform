@@ -164,8 +164,12 @@ public class ResourceService {
         return BaseResultEntity.success(fusionResources.stream().map(d -> DataResourceConvert.FusionResourceConvertCopyResourceDto(d, fieldMap.get(d.getId()), dataSetMap.get(d.getResourceId()))).collect(Collectors.toList()));
     }
 
-    public BaseResultEntity getTestDataSet(){
-        return BaseResultEntity.success(dataSetRepository.getTestDataSet());
+    public BaseResultEntity getTestDataSet(String id){
+        if (StringUtils.isEmpty(id)){
+            return BaseResultEntity.success(dataSetRepository.getTestDataSet());
+        }else {
+            return BaseResultEntity.success(dataSetRepository.getDataSetById(id));
+        }
     }
 
     public BaseResultEntity batchSaveTestDataSet(Map<String,String> dataSets){

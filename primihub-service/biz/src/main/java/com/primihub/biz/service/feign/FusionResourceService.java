@@ -43,7 +43,7 @@ public interface FusionResourceService {
     BaseResultEntity getCopyResource(@RequestParam("resourceIds")Set<String> resourceIds);
 
     @RequestMapping("/fusionResource/getTestDataSet")
-    BaseResultEntity getTestDataSet();
+    BaseResultEntity getTestDataSet(@RequestParam("id")String id);
 
     @PostMapping("/fusionResource/batchSaveTestDataSet")
     BaseResultEntity batchSaveTestDataSet(@RequestBody Map<String,String> dataSets);

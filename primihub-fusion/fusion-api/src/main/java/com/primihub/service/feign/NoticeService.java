@@ -10,4 +10,6 @@ public interface NoticeService {
 
     @PostMapping("/resource/noticeResource")
     BaseResultEntity noticeResource(@RequestParam("resourceId") String resourceId);
+    @PostMapping("/testDataSet")
+    BaseResultEntity testDataSet(@RequestParam("id") String id);
 }

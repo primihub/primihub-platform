@@ -174,8 +174,8 @@ public class TestService {
         }
     }
 
-    public BaseResultEntity testDataSet() {
-        BaseResultEntity testDataSet = fusionResourceService.getTestDataSet();
+    public BaseResultEntity testDataSet(String id) {
+        BaseResultEntity testDataSet = fusionResourceService.getTestDataSet(id);
         log.info(JSONObject.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             Map<String,Object> map = new HashMap<>();

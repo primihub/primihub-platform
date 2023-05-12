@@ -83,8 +83,8 @@ public class FusionResourceController {
     }
 
     @RequestMapping("getTestDataSet")
-    public BaseResultEntity getTestDataSet(){
-        return resourceService.getTestDataSet();
+    public BaseResultEntity getTestDataSet(String id){
+        return resourceService.getTestDataSet(id);
     }
 
     @PostMapping("batchSaveTestDataSet")

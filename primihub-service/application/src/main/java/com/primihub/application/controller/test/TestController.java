@@ -128,8 +128,8 @@ public class TestController {
      * @return
      */
     @RequestMapping("/testDataSet")
-    public BaseResultEntity testDataSet(){
-        return testService.testDataSet();
+    public BaseResultEntity testDataSet(String id){
+        return testService.testDataSet(id);
     }
 
 
