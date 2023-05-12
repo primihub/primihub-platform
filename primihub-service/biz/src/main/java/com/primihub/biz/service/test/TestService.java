@@ -13,6 +13,7 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.sys.po.DataSet;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
@@ -188,7 +189,7 @@ public class TestService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity batchSaveTestDataSet(List<Map<String,Object>> dataSets) {
+    public BaseResultEntity batchSaveTestDataSet(List<DataSet> dataSets) {
         log.info(JSONObject.toJSONString(dataSets));
         return fusionResourceService.batchSaveTestDataSet(dataSets);
     }

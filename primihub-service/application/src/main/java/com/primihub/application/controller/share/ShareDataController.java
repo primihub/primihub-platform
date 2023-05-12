@@ -6,6 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
+import com.primihub.biz.entity.sys.po.DataSet;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.service.data.DataModelService;
 import com.primihub.biz.service.data.DataProjectService;
@@ -95,7 +96,7 @@ public class ShareDataController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<Map<String,Object>> dataSets){
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<DataSet> dataSets){
         if (dataSets == null || dataSets.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
         }

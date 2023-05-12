@@ -3,6 +3,7 @@ package com.primihub.biz.service.feign;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
+import com.primihub.biz.entity.sys.po.DataSet;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,5 +47,5 @@ public interface FusionResourceService {
     BaseResultEntity getTestDataSet(@RequestParam("id")String id);
 
     @PostMapping("/fusionResource/batchSaveTestDataSet")
-    BaseResultEntity batchSaveTestDataSet(@RequestBody List<Map<String,Object>> dataSets);
+    BaseResultEntity batchSaveTestDataSet(@RequestBody List<DataSet> dataSets);
 }
