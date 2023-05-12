@@ -22,10 +22,11 @@ public class AsyncService {
         int nd = newDataSet.toString().hashCode();
         if (d!=nd){
             BaseResultEntity baseResultEntity = noticeService.noticeResource(dataSet.getId());
-            log.info(JSONObject.toJSONString(baseResultEntity));
-            if (baseResultEntity.getCode().equals("1003")){
+            log.info("{} - {}",dataSet.getId(),JSONObject.toJSONString(baseResultEntity));
+            if (!"0".equals(baseResultEntity.getCode())){
+                log.info("进入{}",dataSet.getId());
                 baseResultEntity = noticeService.testDataSet(dataSet.getId());
-                log.info(JSONObject.toJSONString(baseResultEntity));
+                log.info("{} - {}",dataSet.getId(),JSONObject.toJSONString(baseResultEntity));
             }
         }
     }
