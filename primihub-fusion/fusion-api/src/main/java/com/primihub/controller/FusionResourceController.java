@@ -3,6 +3,7 @@ package com.primihub.controller;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONValidator;
+import com.primihub.entity.DataSet;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.copy.dto.CopyResourceDto;
@@ -88,8 +89,8 @@ public class FusionResourceController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(@RequestBody Map<String,String> dataSets){
-        if (dataSets == null || !dataSets.containsKey("dataSets")) {
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<DataSet> dataSets){
+        if (dataSets == null || dataSets.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
         }
         return resourceService.batchSaveTestDataSet(dataSets);

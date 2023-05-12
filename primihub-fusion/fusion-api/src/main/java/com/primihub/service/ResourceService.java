@@ -172,10 +172,9 @@ public class ResourceService {
         }
     }
 
-    public BaseResultEntity batchSaveTestDataSet(Map<String,String> dataSets){
+    public BaseResultEntity batchSaveTestDataSet(List<DataSet> dataSets){
         try {
-            List<DataSet> dataSetList = JSONArray.parseArray(dataSets.get("dataSets"), DataSet.class);
-            for (DataSet dataSet : dataSetList) {
+            for (DataSet dataSet : dataSets) {
                 dataSet.setHolder(1);
                 dataSetService.saveDataSet(dataSet);
             }

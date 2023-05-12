@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Map;
 
 @RequestMapping("shareData")
@@ -94,8 +95,8 @@ public class ShareDataController {
     }
 
     @PostMapping("batchSaveTestDataSet")
-    public BaseResultEntity batchSaveTestDataSet(@RequestBody Map<String,String> dataSets){
-        if (dataSets == null || !dataSets.containsKey("dataSets")) {
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<Map<String,String>> dataSets){
+        if (dataSets == null || dataSets.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
         }
         return testService.batchSaveTestDataSet(dataSets);
