@@ -12,6 +12,8 @@ import java.util.Set;
 public class GrpcDataSetService implements StorageService{
     @Autowired
     private DataSetRepository dataSetRepository;
+    @Autowired
+    private AsyncService asyncService;
 
     @Override
     public void saveDataSet(DataSet dataSet) {
@@ -20,12 +22,15 @@ public class GrpcDataSetService implements StorageService{
             dataSetRepository.insertDataSet(dataSet);
         }else {
             dataSetRepository.updateDataSet(dataSet);
+            asyncService.noticeResource(d,dataSet);
         }
     }
 
     @Override
     public void updateDataSet(DataSet dataSet) {
+        DataSet d = dataSetRepository.getDataSetById(dataSet.getId());
         dataSetRepository.updateDataSet(dataSet);
+        asyncService.noticeResource(d,dataSet);
     }
 
     @Override
