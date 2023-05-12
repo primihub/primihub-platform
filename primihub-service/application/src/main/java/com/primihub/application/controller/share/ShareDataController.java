@@ -80,7 +80,7 @@ public class ShareDataController {
         return sysOrganService.applyForJoinNode(info);
     }
 
-    @RequestMapping("saveFusionResource")
+    @PostMapping("saveFusionResource")
     public BaseResultEntity saveFusionResource(@RequestBody DataFusionCopyDto dto){
         if (dto==null){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dto null");

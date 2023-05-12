@@ -105,7 +105,7 @@ CREATE TABLE `data_set` (
                                         `visibility` varchar(255) NOT NULL COMMENT '可见性',
                                         `available` varchar(255) NOT NULL COMMENT '可获得',
                                         `holder` tinyint(4) DEFAULT '0' COMMENT '是否持有 0持有 1不持有',
-                                        `fields` text COMMENT '字段列表',
+                                        `fields` text CHARACTER SET utf8 COLLATE utf8_general_ci COMMENT '字段列表',
                                         `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                         `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                         `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
