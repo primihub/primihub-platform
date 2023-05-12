@@ -23,7 +23,7 @@ public class AsyncService {
         if (d!=nd){
             BaseResultEntity baseResultEntity = noticeService.noticeResource(dataSet.getId());
             log.info(JSONObject.toJSONString(baseResultEntity));
-            if (baseResultEntity.getCode().equals("100")){
+            if (baseResultEntity.getCode().equals("1003")){
                 baseResultEntity = noticeService.testDataSet(dataSet.getId());
                 log.info(JSONObject.toJSONString(baseResultEntity));
             }
