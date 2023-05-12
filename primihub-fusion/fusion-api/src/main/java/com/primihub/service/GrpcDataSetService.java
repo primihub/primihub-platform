@@ -40,7 +40,7 @@ public class GrpcDataSetService implements StorageService{
 
     @Override
     public List<DataSet> getAll() {
-        return getByIds(null);
+        return dataSetRepository.getDataSetOwnAll();
     }
 
     @Override

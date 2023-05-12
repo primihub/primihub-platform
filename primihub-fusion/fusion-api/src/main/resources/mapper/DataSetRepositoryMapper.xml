@@ -42,6 +42,12 @@
             </foreach>
         </if>
     </select>
+
+    <select id="getDataSetOwnAll" resultType="com.primihub.entity.DataSet">
+        select
+        id,access_info accessInfo,driver,address,visibility,available,holder,fields
+        from data_set where is_del = 0 and holder = 0
+    </select>
     <select id="getDataSetById" resultType="com.primihub.entity.DataSet">
         select
             id,access_info accessInfo,driver,address,visibility,available,holder,fields
