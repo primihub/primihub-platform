@@ -144,7 +144,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     private BaseResultEntity mpclr(DataComponentReq req, ComponentTaskReq taskReq){
         try {
-            Set<String> resourceIds = new HashSet<>();
+            List<String> resourceIds = new ArrayList<>();
             if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
                 resourceIds.addAll(taskReq.getNewest().stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toSet()));
             }else {
@@ -168,23 +168,24 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(batchSize).build();
             Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(numlters).build();
-            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(resourceIds.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("BatchSize", batchSizeParamValue)
                     .putParamMap("NumIters", numItersParamValue)
-                    .putParamMap("Data_File", dataFileParamValue)
                     .putParamMap("modelName", modelNameeParamValue)
                     .build();
+            Map<String, Common.Dataset> values = new HashMap<>();
+            for (int i = 0; i < resourceIds.size(); i++) {
+                values.put("PARTY"+i,Common.Dataset.newBuilder().putData("Data_File",resourceIds.get(i)).build());
+            }
             Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
                     .setName("logistic_regression")
                     .setLanguage(Common.Language.PROTO)
-//                    .setCode(ByteString.copyFrom("logistic_regression".getBytes(StandardCharsets.UTF_8)))
                     .setTaskInfo(taskBuild)
-                    .addInputDatasets("Data_File")
+                    .putAllPartyDatasets(values)
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
