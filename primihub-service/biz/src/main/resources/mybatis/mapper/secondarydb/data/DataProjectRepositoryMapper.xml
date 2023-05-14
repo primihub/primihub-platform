@@ -25,7 +25,6 @@
         <result column="participation_identity" property="participationIdentity" />
         <result column="audit_status" property="auditStatus" />
         <result column="audit_opinion" property="auditOpinion" />
-        <result column="secretkey_id" property="secretkeyId" />
         <result column="is_del" property="isDel" />
         <result column="create_date" property="createDate" />
         <result column="update_date" property="updateDate" />
@@ -41,7 +40,6 @@
         <result column="resource_id" property="resourceId" />
         <result column="audit_status" property="auditStatus" />
         <result column="audit_opinion" property="auditOpinion" />
-        <result column="secretkey_id" property="secretkeyId" />
         <result column="create_date" property="createDate" />
         <result column="update_date" property="updateDate" />
     </resultMap>
@@ -49,10 +47,10 @@
         id, project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, status, is_del, create_date, update_date
     </sql>
     <sql id="DataProjectOrganBaseColumnList">
-        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, is_del, create_date, update_date
+        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date
     </sql>
     <sql id="DataProjectResourceBaseColumnList">
-        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, secretkey_id, create_date, update_date
+        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, create_date, update_date
     </sql>
     <select id="selectProjectResourceByProjectId" resultMap="DataProjectResourceBaseResultMap">
         select

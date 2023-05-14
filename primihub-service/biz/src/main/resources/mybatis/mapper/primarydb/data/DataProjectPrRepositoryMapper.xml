@@ -74,11 +74,11 @@
 
 
     <sql id="DataProjcetOrganBaseColumnList">
-        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, secretkey_id, is_del, create_date, update_date
+        id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date
     </sql>
 
     <sql id="DataProjectResourceBaseColumnList">
-        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, secretkey_id, create_date, update_date
+        id, pr_id, project_id, initiate_organ_id, organ_id, participation_identity, is_del, resource_id, audit_status, audit_opinion, create_date, update_date
     </sql>
 
 </mapper>
