@@ -246,8 +246,6 @@ public class DataAsyncService implements ApplicationContextAware {
             PushTaskReply reply = null;
             try {
                 log.info("grpc run dataPsiId:{} - psiTaskId:{} - outputFilePath{} - time:{}",dataPsi.getId(),psiTask.getId(),psiTask.getFilePath(),System.currentTimeMillis());
-                Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ownDataResource.getResourceFusionId().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(resourceId.getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(dataPsi.getOutputContent()).build();
                 Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(dataPsi.getTag()).build();
                 List<String> clientFields = Arrays.asList(ownDataResource.getFileHandleField().split(","));
@@ -264,8 +262,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(serverFieldsBuilder.build()).build();
                 Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(psiTask.getFilePath().getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params=Common.Params.newBuilder()
-                        .putParamMap("clientData",clientDataParamValue)
-                        .putParamMap("serverData",serverDataParamValue)
                         .putParamMap("psiType",psiTypeParamValue)
                         .putParamMap("psiTag",psiTagParamValue)
                         .putParamMap("clientIndex",clientIndexParamValue)
@@ -276,12 +272,11 @@ public class DataAsyncService implements ApplicationContextAware {
                 Common.Task task= Common.Task.newBuilder()
                         .setType(Common.TaskType.PSI_TASK)
                         .setParams(params)
-                        .setName("testTask")
+                        .setName("psiTask")
                         .setTaskInfo(taskBuild)
                         .setLanguage(Common.Language.PROTO)
-//                        .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
-                        .addInputDatasets("clientData")
-                        .addInputDatasets("serverData")
+                        .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", resourceId).build())
+                        .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", ownDataResource.getResourceFusionId()).build())
                         .build();
                 log.info("grpc Common.Task : \n{}",task.toString());
                 PushTaskRequest request=PushTaskRequest.newBuilder()
@@ -289,7 +284,6 @@ public class DataAsyncService implements ApplicationContextAware {
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
-                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:"+reply);

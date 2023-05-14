@@ -224,8 +224,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
             ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex,serverData.getResourceId());
-            Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientData.getResourceId().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverData.getResourceId().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(0).build();
             Common.ParamValue syncResultToServerParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
@@ -238,8 +236,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue serverOutputFullFilnameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params=Common.Params.newBuilder()
-                    .putParamMap("clientData",clientDataParamValue)
-                    .putParamMap("serverData",serverDataParamValue)
                     .putParamMap("psiType",psiTypeParamValue)
                     .putParamMap("psiTag",psiTagParamValue)
                     .putParamMap("clientIndex",clientIndexParamValue)
@@ -254,10 +250,9 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setParams(params)
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
-//                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                     .setTaskInfo(taskBuild)
-                    .addInputDatasets("clientData")
-                    .addInputDatasets("serverData")
+                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", clientData.getResourceId()).build())
+                    .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", serverData.getResourceId()).build())
                     .build();
             log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()
