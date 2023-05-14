@@ -68,37 +68,37 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
-            String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
-            log.info(arbiterOrgan);
-            if (StringUtils.isBlank(arbiterOrgan)) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
-            }
-            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
-            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
-            if (dataProjectOrgans.size()<=2) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"项目参与方少于3方");
-            }
-            List<ModelProjectResourceVo> resourceLists = JSONObject.parseArray(taskReq.getValueMap().get("selectData"), ModelProjectResourceVo.class);
-            Set<String> organIdSet = resourceLists.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
-            log.info(organIdSet.toString());
-            if (organIdSet.contains(arbiterOrgan)) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方不可以和数据集机构重复");
-            }
-            DataFResourceReq fresourceReq = new DataFResourceReq();
-            fresourceReq.setOrganId(arbiterOrgan);
-            BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
-            if (resourceList.getCode()!=0) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码1");
-            }
-            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
-            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
-            if (resourceDataList==null || resourceDataList.size()==0) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码2");
-            }
-            taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET,resourceDataList.get(0).get("resourceId").toString());
-            taskReq.getFusionResourceList().add(resourceDataList.get(0));
-        }
+//        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
+//            String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
+//            log.info(arbiterOrgan);
+//            if (StringUtils.isBlank(arbiterOrgan)) {
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
+//            }
+//            DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
+//            List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+//            if (dataProjectOrgans.size()<=2) {
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"项目参与方少于3方");
+//            }
+//            List<ModelProjectResourceVo> resourceLists = JSONObject.parseArray(taskReq.getValueMap().get("selectData"), ModelProjectResourceVo.class);
+//            Set<String> organIdSet = resourceLists.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+//            log.info(organIdSet.toString());
+//            if (organIdSet.contains(arbiterOrgan)) {
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方不可以和数据集机构重复");
+//            }
+//            DataFResourceReq fresourceReq = new DataFResourceReq();
+//            fresourceReq.setOrganId(arbiterOrgan);
+//            BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
+//            if (resourceList.getCode()!=0) {
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码1");
+//            }
+//            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
+//            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
+//            if (resourceDataList==null || resourceDataList.size()==0) {
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码2");
+//            }
+//            taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET,resourceDataList.get(0).get("resourceId").toString());
+//            taskReq.getFusionResourceList().add(resourceDataList.get(0));
+//        }
         return baseResultEntity;
     }
 
