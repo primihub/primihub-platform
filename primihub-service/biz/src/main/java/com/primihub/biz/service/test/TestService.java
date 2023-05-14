@@ -7,6 +7,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.google.protobuf.ByteString;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
@@ -69,6 +70,8 @@ public class TestService {
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
     @Autowired
     private OtherBusinessesService otherBusinessesService;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     @Resource
     private Environment environment;
@@ -83,10 +86,6 @@ public class TestService {
         } catch (NacosException e) {
             e.printStackTrace();
         }
-    }
-
-    public void testTask(String param){
-        log.info("-----test task and param is "+param+" -----");
     }
 
     public Map test(){
@@ -133,14 +132,12 @@ public class TestService {
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
                 .setTaskInfo(taskBuild)
-//                .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskRequest request=PushTaskRequest.newBuilder()
                 .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                 .setTask(task)
                 .setSequenceNumber(11)
                 .setClientProcessedUpTo(22)
-//                .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
         log.info("grpc结果:"+reply);
@@ -152,6 +149,7 @@ public class TestService {
         for (DataResource dataResource : copyResourceList) {
             if (tag.contains("grpc")){
                 dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl(),dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),JSONObject.toJSONString(dataResourceService.findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId())));
             }else if (tag.contains("copy")){
                 if (StringUtils.isBlank(dataResource.getResourceHashCode())){
                     try {

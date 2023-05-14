@@ -69,7 +69,6 @@ CREATE TABLE `fusion_resource_field` (
                                          `field_as` varchar(255) DEFAULT NULL COMMENT '字段别名',
                                          `field_type` int(11) DEFAULT '0' COMMENT '字段类型 默认0 string',
                                          `field_desc` varchar(255) DEFAULT NULL COMMENT '字段描述',
-                                         `field_index` int(11) DEFAULT '0' COMMENT '顺序',
                                          `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                          `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                          `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',

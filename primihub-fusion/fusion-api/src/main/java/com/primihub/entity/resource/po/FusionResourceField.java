@@ -20,8 +20,6 @@ public class FusionResourceField {
     @JsonIgnore
     private Long resourceId;
 
-    private Integer fieldIndex;
-
     /**
      * 字段名称
      */

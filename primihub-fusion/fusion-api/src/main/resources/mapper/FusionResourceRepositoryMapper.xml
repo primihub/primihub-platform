@@ -45,7 +45,7 @@
     </sql>
 
     <sql id="Fusion_Resource_Field_Base_Column_List">
-        field_id,resource_id,field_index,field_name,field_as,field_type,field_desc,is_del,c_time,u_time
+        field_id,resource_id,field_name,field_as,field_type,field_desc,is_del,c_time,u_time
     </sql>
 
     <insert id="saveFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource" keyProperty="id" useGeneratedKeys="true">
@@ -62,16 +62,16 @@
     </insert>
 
     <insert id="saveBatchResourceField" parameterType="com.primihub.entity.resource.po.FusionResourceField">
-        insert into fusion_resource_field (resource_id,field_index,field_name,field_as,field_type,field_desc,is_del,c_time,u_time)
+        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,is_del,c_time,u_time)
         values
         <foreach collection="fields" index="index" item="item" separator=",">
-            (#{item.resourceId},#{item.fieldIndex},#{item.fieldName},#{item.fieldAs},#{item.fieldType},#{item.fieldDesc},0,now(),now())
+            (#{item.resourceId},#{item.fieldName},#{item.fieldAs},#{item.fieldType},#{item.fieldDesc},0,now(),now())
         </foreach>
     </insert>
 
     <insert id="saveResourceField" parameterType="com.primihub.entity.resource.po.FusionResourceField">
-        insert into fusion_resource_field (resource_id,field_index,field_name,field_as,field_type,field_desc,is_del,c_time,u_time)
-        values (#{resourceId},#{fieldIndex},#{fieldName},#{fieldAs},#{fieldType},#{fieldDesc},0,now(),now())
+        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,is_del,c_time,u_time)
+        values (#{resourceId},#{fieldName},#{fieldAs},#{fieldType},#{fieldDesc},0,now(),now())
     </insert>
 
     <update id="updateFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource">
