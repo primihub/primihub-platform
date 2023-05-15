@@ -43,7 +43,7 @@
                 :this-institution="thisInstitution"
                 :creator="creator"
                 :show-preview-button="thisInstitution"
-
+                :show-delete-button="thisInstitution"
                 :selected-data="selectedData"
                 row-key="resourceId"
                 :data="resourceList[selectedOrganId]"
