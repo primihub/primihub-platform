@@ -177,9 +177,7 @@ public class DataResourceService {
                 }
                 dataResourcePrRepository.saveVisibilityAuth(authList);
             }
-            String jsonString = JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
-            log.info(jsonString);
-            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),jsonString);
+            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
             map.put("resourceId",dataResource.getResourceId());
             map.put("resourceFusionId",dataResource.getResourceFusionId());
@@ -225,9 +223,7 @@ public class DataResourceService {
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
         resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
-        String jsonString = JSONObject.toJSONString(findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
-        log.info(jsonString);
-        fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),jsonString);
+        fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         Map<String,Object> map = new HashMap<>();
         map.put("resourceId",dataResource.getResourceId());
@@ -857,8 +853,8 @@ public class DataResourceService {
     public BaseResultEntity saveFusionResource(DataFusionCopyDto dto) {
         try {
             log.info(dto.getCopyPart());
-//            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
-            BaseResultEntity resultEntity = fusionResourceService.saveResource(dto.getOrganId(), dto.getCopyPart());
+            List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
+            BaseResultEntity resultEntity = fusionResourceService.saveResource(dto.getOrganId(), dataResourceCopyVos);
             log.info(JSONObject.toJSONString(resultEntity));
         }catch (Exception e){
             e.printStackTrace();

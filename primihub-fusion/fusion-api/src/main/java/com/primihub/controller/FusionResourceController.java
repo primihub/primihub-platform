@@ -64,23 +64,14 @@ public class FusionResourceController {
         return resourceService.getDataResource(resourceId,globalId);
     }
     @PostMapping("saveResource")
-    public BaseResultEntity saveResource(String globalId, String copyResourceDtoList){
+    public BaseResultEntity saveResource(String globalId, @RequestBody List<CopyResourceDto> copyResourceDtoList){
         if (StringUtils.isEmpty(globalId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId");
         }
-        if (StringUtils.isEmpty(copyResourceDtoList)) {
+        if (copyResourceDtoList==null || copyResourceDtoList.size()==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
         }
-        try {
-            log.info(copyResourceDtoList);
-            List<CopyResourceDto> list = JSONArray.parseArray(copyResourceDtoList,CopyResourceDto.class);
-            if (list==null || list.size()==0) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
-            }
-            return resourceService.batchSaveResource(globalId,list);
-        }catch (Exception e){
-            return BaseResultEntity.failure(BaseResultEnum.FAILURE,e.getMessage());
-        }
+        return resourceService.batchSaveResource(globalId,copyResourceDtoList);
     }
 
     @RequestMapping("getTestDataSet")

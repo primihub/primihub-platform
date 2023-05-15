@@ -1,6 +1,7 @@
 package com.primihub.biz.service.feign;
 
 import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.data.vo.DataResourceCopyVo;
 import com.primihub.biz.entity.fusion.param.OrganResourceParam;
 import com.primihub.biz.entity.fusion.param.ResourceParam;
 import com.primihub.biz.entity.sys.po.DataSet;
@@ -38,7 +39,7 @@ public interface FusionResourceService {
     BaseResultEntity batchSave(@RequestParam("globalId")String globalId,@RequestParam("copyPart")String copyPart);
 
     @PostMapping("/fusionResource/saveResource")
-    BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestParam("copyResourceDtoList") String copyResourceDtoList);
+    BaseResultEntity saveResource(@RequestParam("globalId") String globalId,@RequestBody List<DataResourceCopyVo> copyResourceDtoList);
 
     @RequestMapping("/fusionResource/getCopyResource")
     BaseResultEntity getCopyResource(@RequestParam("resourceIds")Set<String> resourceIds);

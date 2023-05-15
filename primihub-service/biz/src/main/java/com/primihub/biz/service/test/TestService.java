@@ -149,7 +149,7 @@ public class TestService {
         for (DataResource dataResource : copyResourceList) {
             if (tag.contains("grpc")){
                 dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl(),dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
-                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),JSONObject.toJSONString(dataResourceService.findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId())));
+                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),dataResourceService.findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId()));
             }else if (tag.contains("copy")){
                 if (StringUtils.isBlank(dataResource.getResourceHashCode())){
                     try {
