@@ -44,7 +44,7 @@ public class DataResourceVo {
     /**
      * 文件大小
      */
-    private Integer fileSize;
+    private Long fileSize;
     /**
      * 文件后缀
      */

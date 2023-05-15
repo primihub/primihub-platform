@@ -40,7 +40,7 @@ public class DataResourceConvert {
         po.setUserId(userId);
         po.setOrganId(organId);
         po.setFileId(sysFile.getFileId());
-        po.setFileSize(sysFile.getFileSize().intValue());
+        po.setFileSize(sysFile.getFileSize().longValue());
         po.setFileSuffix(sysFile.getFileSuffix());
         po.setFileColumns(0);
         po.setFileRows(0);
@@ -63,7 +63,7 @@ public class DataResourceConvert {
         po.setUserId(userId);
         po.setOrganId(organId);
         po.setFileId(0L);
-        po.setFileSize(0);
+        po.setFileSize(0L);
         po.setFileSuffix("");
         po.setFileColumns(0);
         po.setFileRows(0);

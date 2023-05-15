@@ -749,7 +749,7 @@ public class DataResourceService {
                 }
                 derivationDataResource.setOrganId(0L);
                 derivationDataResource.setFileId(0L);
-                derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
+                derivationDataResource.setFileSize(file.length());
                 derivationDataResource.setFileSuffix("csv");
                 derivationDataResource.setFileColumns(0);
                 derivationDataResource.setFileRows(0);
