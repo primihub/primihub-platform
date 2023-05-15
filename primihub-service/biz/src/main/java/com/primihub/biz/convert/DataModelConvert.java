@@ -150,7 +150,8 @@ public class DataModelConvert {
         modelProjectResourceVo.setParticipationIdentity(resource.getParticipationIdentity());
         String resourceColumnNameList = resourceMap==null?null: ObjectUtils.isEmpty(resourceMap.get("resourceColumnNameList"))?null:resourceMap.get("resourceColumnNameList").toString();
         if (StringUtils.isNotBlank(resourceColumnNameList)){
-            modelProjectResourceVo.setFileHandleField((List<DataFileFieldVo>)resourceMap.get("fieldList"));
+            modelProjectResourceVo.setFileHandleField(Arrays.asList(resourceColumnNameList.split(",")));
+            modelProjectResourceVo.setResourceField((List<DataFileFieldVo>)resourceMap.get("fieldList"));
         }
         return modelProjectResourceVo;
     }

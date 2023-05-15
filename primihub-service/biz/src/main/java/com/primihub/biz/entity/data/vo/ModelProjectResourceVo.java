@@ -44,7 +44,9 @@ public class ModelProjectResourceVo {
      */
     private Integer participationIdentity;
 
-    private List<DataFileFieldVo> fileHandleField;
+    private List<String> fileHandleField;
+
+    private List<DataFileFieldVo> resourceField;
 
     private String calculationField;
 
