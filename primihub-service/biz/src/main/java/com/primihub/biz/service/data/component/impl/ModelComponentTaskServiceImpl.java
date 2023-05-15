@@ -183,6 +183,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
                     .setName("logistic_regression")
+                    .setCode(ByteString.copyFrom("logistic_regression".getBytes(StandardCharsets.UTF_8)))
                     .setLanguage(Common.Language.PROTO)
                     .setTaskInfo(taskBuild)
                     .putAllPartyDatasets(values)
@@ -255,7 +256,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-//                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
@@ -339,7 +340,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-//                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());

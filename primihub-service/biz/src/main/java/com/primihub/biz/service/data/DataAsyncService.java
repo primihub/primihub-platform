@@ -308,6 +308,7 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         dataTask.setTaskState(psiTask.getTaskState());
+        dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
     }
     public void psiTaskOutputFileHandle(DataPsiTask task){

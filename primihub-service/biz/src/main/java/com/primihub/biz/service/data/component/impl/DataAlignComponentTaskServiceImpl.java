@@ -93,7 +93,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         .setParams(params)
                         .setName("runAssemblyData")
                         .setLanguage(Common.Language.PYTHON)
-//                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());

@@ -93,7 +93,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setParams(params)
                     .setName("AbnormalProcessTask")
                     .setLanguage(Common.Language.PROTO)
-//                    .setCode(ByteString.copyFrom("AbnormalProcessTask".getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom("AbnormalProcessTask".getBytes(StandardCharsets.UTF_8)))
                     .setTaskInfo(taskBuild)
                     .addInputDatasets("Data_File")
                     .build();
