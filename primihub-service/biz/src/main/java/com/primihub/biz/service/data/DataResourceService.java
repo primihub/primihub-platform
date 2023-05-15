@@ -779,6 +779,7 @@ public class DataResourceService {
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
         }catch (Exception e){
             log.info("衍生数据异常:{}",e.getMessage());
+            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据异常:"+e.getMessage());
         }
     }
