@@ -62,6 +62,7 @@ public class DataTaskMonitorService {
                             if (num <= success){
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                 if (StringUtils.isNotBlank(path)){
+                                    Thread.sleep(1500L);
                                     if (!FileUtil.isFileExists(path)){
                                         log.info("path:{} 不存在",path);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
