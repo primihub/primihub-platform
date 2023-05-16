@@ -124,7 +124,12 @@ public class ResourceService {
             DataSet dataSet = copyResourceDto.getDataSet();
             if (dataSet!=null && !StringUtils.isEmpty(dataSet.getId())){
                 dataSet.setHolder(1);
-                dataSetService.saveDataSet(dataSet);
+                DataSet d = dataSetRepository.getDataSetById(dataSet.getId());
+                if (d==null){
+                    dataSetRepository.insertDataSet(dataSet);
+                }else {
+                    dataSetRepository.updateDataSet(dataSet);
+                }
             }
         }
         saveTags.removeAll(existenceTags);
@@ -178,7 +183,12 @@ public class ResourceService {
         try {
             for (DataSet dataSet : dataSets) {
                 dataSet.setHolder(1);
-                dataSetService.saveDataSet(dataSet);
+                DataSet d = dataSetRepository.getDataSetById(dataSet.getId());
+                if (d==null){
+                    dataSetRepository.insertDataSet(dataSet);
+                }else {
+                    dataSetRepository.updateDataSet(dataSet);
+                }
             }
             return BaseResultEntity.success();
         }catch (Exception e){
