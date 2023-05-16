@@ -84,10 +84,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     Iterator<Map.Entry<String, GrpcComponentDto>> iterator = jointStatisticalMap.entrySet().iterator();
                     while (iterator.hasNext()){
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
-                        String outputFilePath = next.getValue().getOutputFilePath();
-                        outputFilePath = outputFilePath.replace(".csv", "-" + MAP_TYPE.get(jsonObject.getString("type")) + ".csv");
-                        next.getValue().setOutputFilePath(outputFilePath);
-                        log.info(next.getValue().getOutputFilePath());
+                        next.getValue().setJointStatisticalType(MAP_TYPE.get(jsonObject.getString("type")));
                     }
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();

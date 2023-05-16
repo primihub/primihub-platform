@@ -18,19 +18,20 @@ public class GrpcComponentDto {
 
     @JsonIgnore
     private Map<String, Integer> columns;
+    @JsonIgnore
+    private String jointStatisticalType;
     private String newDataSetId;
     private String dataSetId;
     private String outputFilePath;
 
-    public String getOutputFilePath() {
-        return outputFilePath;
-    }
 
-    public void setOutputFilePath(String outputFilePath) {
-        if (!outputFilePath.contains(".csv")){
-            this.outputFilePath = outputFilePath + File.separator + newDataSetId+".csv";
-        }else {
-            this.outputFilePath = outputFilePath;
+    public String getOutputFilePath() {
+        if (outputFilePath == null){
+            return null;
         }
+        if (jointStatisticalType!=null){
+            return outputFilePath + File.separator + newDataSetId + "-" +this.jointStatisticalType +".csv";
+        }
+        return outputFilePath + File.separator + newDataSetId+".csv";
     }
 }
