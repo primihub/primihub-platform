@@ -72,9 +72,6 @@ export default {
         value: 3,
         label: 'Long'
       }, {
-        value: 4,
-        label: 'Enum'
-      }, {
         value: 5,
         label: 'Boolean'
       }]

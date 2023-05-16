@@ -7,7 +7,7 @@
     <div class="task-container">
       <el-descriptions :column="1" :colon="false">
         <el-descriptions-item><i class="icon el-icon-success" />发起方： {{ createdOrgan }}</el-descriptions-item>
-        <el-descriptions-item><i class="icon el-icon-success" /> 参与方： {{ providerOrganName }}</el-descriptions-item>
+        <el-descriptions-item><i class="icon el-icon-success" /> 协作方： {{ providerOrganName }}</el-descriptions-item>
         <el-descriptions-item><i class="icon el-icon-success" /> 推理使用模型： <el-tag type="primary">{{ modelName }}</el-tag></el-descriptions-item>
         <el-descriptions-item><i class="icon el-icon-success" /> 推理服务名称：{{ reasoningName }}</el-descriptions-item>
       </el-descriptions>
@@ -23,7 +23,7 @@
       :before-close="closeDialog"
       title="隐私计算反欺诈结果"
     >
-      <div class="desc-container">
+      <div v-loading="resultLoading" class="desc-container">
         <el-descriptions :column="1">
           <el-descriptions-item label="推理服务名称">{{ dataList.reasoningName }}</el-descriptions-item>
           <el-descriptions-item label="推理服务ID">{{ dataList.reasoningId }}</el-descriptions-item>
@@ -32,32 +32,16 @@
           <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
         </el-descriptions>
         <div v-if="dataList.reasoningState === 1" class="result">
-          <!-- <h3>运算结果</h3> -->
-          <!-- <p class="el-icon-error icon-error" />
-          <p>存在欺诈</p> -->
           <img src="../../../assets/result-img.png" width="200" alt="" srcset="">
         </div>
-
-        <!-- <div v-if="dataList.reasoningState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
-          <table>
-            <tbody>
-              <tr>
-                <td>pred_y</td>
-                <td>0.719003345484603</td>
-                <td>0.738941730799224</td>
-                <td>0.43052668344885</td>
-                <td>0.43052668344885</td>
-              </tr>
-            </tbody>
-          </table>
-        </div> -->
       </div>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { saveReasoning, getReasoning } from '@/api/reasoning'
+import { mapActions, mapState } from 'vuex'
+import { saveReasoning } from '@/api/reasoning'
 import StatusIcon from '@/components/StatusIcon'
 import { parseTime } from '@/utils/index'
 
@@ -82,6 +66,7 @@ export default {
   },
   data() {
     return {
+      resultLoading: false,
       active: 0,
       taskState: '',
       taskTimer: null,
@@ -98,105 +83,119 @@ export default {
       serverAddress: ''
     }
   },
+  computed: {
+    ...mapState('application', ['origin'])
+  },
   async created() {
+    this.getLocationOrigin()
     await this.setDefault()
   },
   methods: {
     closeDialog() {
       this.visible = false
     },
-    async getReasoning() {
-      this.loading = true
-      const res = await getReasoning({ id: this.reasoningId })
-      if (res.code === 0) {
-        this.dataList = res.result
-        this.dataList.releaseDate = parseTime(new Date().getTime())
-        this.reasoningState = this.dataList.reasoningState
-        this.dataList.reasoningState = 2
-        setTimeout(() => {
-          this.dataList.reasoningState = 1
-          this.loading = false
-        }, 1500)
-      }
-    },
     async setDefault() {
+      const data = {
+        'node1': {
+          taskId: 299,
+          providerOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
+          projectId: 51,
+          modelId: 161,
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/',
+          createdResourceId: 'ea5fd5f5f9f0-00bccdeb-d400-4498-b609-8985e84effd6',
+          providerResourceId: '704a92e392fd-c49f9170-9d6c-4c4e-bf21-eadafdb5bb2c'
+        },
+        'node2': {
+          taskId: 90,
+          providerOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          projectId: 51,
+          modelId: 71,
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/',
+          createdResourceId: '704a92e392fd-383fd8fa-4fb8-4a46-b4b3-dfffa69ef10f',
+          providerResourceId: 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
+        },
+        'node3': {
+          taskId: 28,
+          providerOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
+          projectId: 22,
+          modelId: 7,
+          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/',
+          createdResourceId: '794e41ba0e63-f7f15a33-435a-4518-bf6c-706dcc229927',
+          providerResourceId: 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
+        },
+        'test1': {
+          taskId: 1706,
+          providerOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          projectId: 409,
+          modelId: 1185,
+          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
+          createdResourceId: 'ece67278c395-4501b886-9d9c-4f90-afa9-488b0f4dc90d',
+          providerResourceId: '2b598a7e3298-7fecfced-0e44-4212-920f-e1efc14e43df'
+        },
+        'other': {
+          providerOrganName: '互联网公司B',
+          createdOrgan: '电信运营商A',
+          modelName: 'XGB',
+          reasoningName: '隐私计算反欺诈应用',
+          reasoningDesc: '隐私计算反欺诈应用'
+        }
+      }
+      const { taskId, providerOrganId, projectId, modelId, serverAddress, createdResourceId, providerResourceId } = data[this.origin]
       this.createdOrganId = this.$store.getters.userOrganId
       this.providerOrganName = '互联网公司B'
       this.createdOrgan = '电信运营商A'
       this.modelName = 'XGB'
       this.reasoningName = '隐私计算反欺诈应用'
       this.reasoningDesc = '隐私计算反欺诈应用'
-      if (window.location.origin.indexOf('https://node1') !== -1) {
-        console.log('pro env node1')
-        this.taskId = 299
-        this.providerOrganId = '3abfcb2a-8335-4bcc-b6f9-704a92e392fd'
-        this.projectId = 51
-        this.modelId = 161
-        this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-        this.createdResourceId = 'ea5fd5f5f9f0-00bccdeb-d400-4498-b609-8985e84effd6'
-        this.providerResourceId = '704a92e392fd-c49f9170-9d6c-4c4e-bf21-eadafdb5bb2c'
-      } else if (window.location.origin.indexOf('https://node2') !== -1) {
-        console.log('pro env node2')
-        this.taskId = 90
-        this.providerOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
-        this.projectId = 51
-        this.modelId = 71
-        this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-        this.createdResourceId = '704a92e392fd-383fd8fa-4fb8-4a46-b4b3-dfffa69ef10f'
-        this.providerResourceId = 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
-      } else if (window.location.origin.indexOf('https://node3') !== -1) {
-        console.log('pro env node3')
-        this.taskId = 28
-        this.providerOrganId = '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0'
-        this.projectId = 22
-        this.modelId = 7
-        this.serverAddress = 'http://fusion.primihub-demo.svc.cluster.local:8080/'
-        this.createdResourceId = '794e41ba0e63-f7f15a33-435a-4518-bf6c-706dcc229927'
-        this.providerResourceId = 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
-      } else {
-        console.log('test env')
-        this.taskId = 1706
-        this.providerOrganId = '2cad8338-2e8c-4768-904d-2b598a7e3298'
-        this.projectId = 409
-        this.modelId = 1185
-        this.serverAddress = 'http://fusion.primihub.svc.cluster.local:8080/'
-        this.createdResourceId = 'ece67278c395-4501b886-9d9c-4f90-afa9-488b0f4dc90d'
-        this.providerResourceId = '2b598a7e3298-7fecfced-0e44-4212-920f-e1efc14e43df'
-      }
-    },
-    reset() {
-      this.form.modelName = ''
-      this.form.taskId = ''
-      this.form.createdResourceId = ''
-      this.form.providerResourceId = ''
-      this.form.reasoningName = ''
-      this.form.reasoningDesc = ''
-      this.resourceList = []
-      this.selectedResource = []
-      this.$refs.form.resetFields()
+      this.taskId = taskId
+      this.providerOrganId = providerOrganId
+      this.projectId = projectId
+      this.modelId = modelId
+      this.serverAddress = serverAddress
+      this.createdResourceId = createdResourceId
+      this.providerResourceId = providerResourceId
     },
     async onSubmit() {
-      this.active = 1
-      this.resourceList = [
-        {
-          participationIdentity: 1,
-          resourceId: this.createdResourceId
-        }, {
-          participationIdentity: 2,
-          resourceId: this.providerResourceId
-        }
-      ]
-      const { code, result } = await saveReasoning({
-        taskId: this.taskId,
-        resourceList: this.resourceList,
-        reasoningName: this.reasoningName,
-        reasoningDesc: this.reasoningDesc
-      })
-      if (code === 0) {
-        this.reasoningId = result.id
-        this.visible = true
-        this.getReasoning()
+      if (this.origin === 'other') {
+        this.resultLoading = true
         this.active = 2
+        this.visible = true
+        setTimeout(() => {
+          this.dataList = {
+            reasoningId: 'f313210c-e82d-4a80-8675-5e5224746348',
+            reasoningName: '隐私计算反欺诈应用',
+            reasoningDesc: '隐私计算反欺诈应用',
+            reasoningType: 2,
+            reasoningState: 1,
+            runTaskId: 2185,
+            taskId: 1706,
+            releaseDate: parseTime(new Date().getTime())
+          }
+
+          this.resultLoading = false
+        }, 1500)
+      } else {
+        this.resourceList = [
+          {
+            participationIdentity: 1,
+            resourceId: this.createdResourceId
+          }, {
+            participationIdentity: 2,
+            resourceId: this.providerResourceId
+          }
+        ]
+        const { code, result } = await saveReasoning({
+          taskId: this.taskId,
+          resourceList: this.resourceList,
+          reasoningName: this.reasoningName,
+          reasoningDesc: this.reasoningDesc
+        })
+        if (code === 0) {
+          this.reasoningId = result.id
+          this.visible = true
+          this.getReasoning()
+          this.active = 2
+        }
       }
     },
     handleClose() {
@@ -204,7 +203,8 @@ export default {
     },
     openModelDialog() {
       this.dialogVisible = true
-    }
+    },
+    ...mapActions('application', ['getLocationOrigin'])
   }
 }
 </script>

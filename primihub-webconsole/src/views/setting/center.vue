@@ -22,8 +22,8 @@
           <el-button type="primary" size="small" @click="addConnect">添加中心节点</el-button>
         </template>
         <el-descriptions-item>
-          <div v-if="sysLocalOrganInfo.fusionList" class="tree">
-            <ConnectTree :fusion-list="sysLocalOrganInfo.fusionList" :organ-id="organId" :organ-name="organName" />
+          <div v-if="fusionList" class="tree">
+            <ConnectTree :fusion-list="fusionList" :organ-id="organId" :organ-name="organName" />
           </div>
         </el-descriptions-item>
       </el-descriptions>
@@ -74,7 +74,6 @@
 import { getLocalOrganInfo, changeLocalOrganInfo, healthConnection, registerConnection } from '@/api/center'
 import ConnectTree from '@/components/ConnectTree'
 
-const connectIcon = require('@/assets/connect-icon.svg')
 const USER_INFO = 'userInfo'
 
 export default {
@@ -84,6 +83,7 @@ export default {
   },
   data() {
     return {
+      fusionList: [],
       sysLocalOrganInfo: null,
       organDialogVisible: false,
       connectDialogVisible: false,
@@ -127,11 +127,14 @@ export default {
   },
   methods: {
     async getLocalOrganInfo() {
+      this.treeDataLoading = true
       const { result = {}} = await getLocalOrganInfo()
       this.sysLocalOrganInfo = result.sysLocalOrganInfo
+      this.fusionList = this.sysLocalOrganInfo?.fusionList
       this.organId = this.sysLocalOrganInfo?.organId
       this.organName = this.sysLocalOrganInfo?.organName
       console.log('sysLocalOrganInfo', this.sysLocalOrganInfo)
+      this.treeDataLoading = false
     },
     addOrgan() {
       this.dialogType = 'add'
@@ -200,14 +203,12 @@ export default {
       if (code === 0) {
         const { result } = await registerConnection({ serverAddress: this.serverAddress })
         if (result.isRegistered) {
-          const index = this.treeData.length
-          this.treeData.push({
+          const index = this.fusionList.length
+          this.fusionList.push({
             id: index,
-            label: `中心节点${index + 1}: ${this.connectForm.serverAddress}`,
-            serverAddress: this.connectForm.serverAddress,
-            registered: result.isRegistered,
-            show: result.show || true,
-            icon: connectIcon
+            registered: true,
+            serverAddress: this.serverAddress,
+            show: true
           })
           this.$message({
             type: 'success',

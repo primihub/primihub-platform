@@ -15,6 +15,10 @@ export default {
     cascaderValue: {
       type: Array,
       default: () => []
+    },
+    options: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -61,13 +65,6 @@ export default {
             })
             this.showCascader = true
             resolve(data)
-          } else {
-            this.$message({
-              message: '当前机构未加入群组，请前往系统设置-中心节点加入群组'
-            })
-            const index = this.cascaderOptions.findIndex(item => item.label === node.label)
-            this.cascaderOptions[index].disabled = true
-            resolve([])
           }
         })
       } else {
@@ -86,8 +83,12 @@ export default {
               leaf: true
             }
           })
-          const posIndex = this.cascaderOptions.findIndex(item => item.label === this.serverAddress)
-          this.$set(this.cascaderOptions[posIndex], 'children', data)
+          if (this.options.length > 0) {
+            this.cascaderOptions = this.options
+          } else {
+            const posIndex = this.cascaderOptions.findIndex(item => item.label === this.serverAddress)
+            this.$set(this.cascaderOptions[posIndex], 'children', data)
+          }
         }
       })
     },

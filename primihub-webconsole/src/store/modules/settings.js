@@ -89,7 +89,7 @@ const actions = {
   },
   async getHomepage({ commit }) {
     const res = await getHomepage()
-    if (res.code === 0 && Object.keys(res.result).length > 0) {
+    if (res.code === 0 && res.result && Object.keys(res.result).length > 0) {
       const { title = '', favicon, logoUrl, loginDescription = '', isHideFadeBack = state.true, isHideFooterVersion, logoTitle, showLogoTitle, loginLogoUrl, footerText, isHideAppMarket } = res.result
 
       commit('SET_TITLE', title || state.title)

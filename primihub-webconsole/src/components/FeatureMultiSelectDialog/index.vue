@@ -1,14 +1,15 @@
 <template>
   <el-dialog
-    title="选择特征"
+    title="选择多方特征列"
     width="50%"
     v-bind="$attrs"
     :before-close="handleClose"
   >
-    <el-checkbox-group v-if="data.length>0" v-model="checkList">
-      <el-checkbox v-for="item in data" :key="item.key" :label="item.val" />
-    </el-checkbox-group>
-    <NoData v-else />
+    <el-tabs v-model="activeName">
+      <el-tab-pane v-for="(item,index) in selectedData" :key="index" :label="item.organName" :name="item.organId">
+        <checkbox :organ-id="item.organId" :options="item.calculationField" :checked="item.checked" @change="handleChange" />
+      </el-tab-pane>
+    </el-tabs>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" @click="handleClose">取 消</el-button>
       <el-button size="small" type="primary" @click="handleDialogSubmit">确 定</el-button>
@@ -18,44 +19,41 @@
 </template>
 
 <script>
-import NoData from '@/components/NoData'
+import checkbox from '@/components/BaseCheckbox'
 
 export default {
-  name: '',
+  name: 'FeatureMultiSelectDialog',
   components: {
-    NoData
+    checkbox
   },
   props: {
     data: {
-      type: Array,
-      default: () => []
-    },
-    selectedData: {
       type: Array,
       default: () => []
     }
   },
   data() {
     return {
-      dialogVisible: false,
-      checkList: this.selectedData
+      activeName: '',
+      selectedData: {}
     }
   },
-  watch: {
-    selectedData(newVal) {
-      if (newVal) {
-        this.checkList = newVal
-      }
-    }
+  created() {
+    this.selectedData = JSON.parse(JSON.stringify(this.data))
+    this.activeName = this.selectedData && this.selectedData[0].organId
   },
   methods: {
     handleClose() {
       this.$emit('close')
     },
     handleDialogSubmit() {
-      this.$emit('submit', this.checkList)
+      this.$emit('submit', this.selectedData)
+    },
+    handleChange(data) {
+      const { organId, checked } = data
+      const posIndex = this.selectedData.findIndex(item => item.organId === organId)
+      this.selectedData[posIndex].checked = checked
     }
-
   }
 }
 </script>

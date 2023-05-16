@@ -12,7 +12,8 @@
         <el-table-column align="left" label="账户名" prop="userAccount" />
         <el-table-column align="left" label="昵称" prop="userName" />
         <el-table-column align="left" label="角色名称" prop="roleIdListDesc" />
-        <el-table-column v-if="hasEditPermission || hasDeletePermission || hasResetPermission" label="操作" fixed="right" width="250">
+        <el-table-column align="center" label="注册时间" prop="cTime" />
+        <el-table-column v-if="hasEditPermission || hasDeletePermission || hasResetPermission" align="center" label="操作" fixed="right" width="250">
           <template slot-scope="scope">
             <el-button v-if="hasEditPermission" type="text" icon="edit" @click="openEdit(scope.row)"><i class="el-icon-edit" type="primary" />编辑</el-button>
             <el-button v-if="hasDeletePermission" type="text" icon="magic-stick" @click="handleDeleteUser(scope.row)"><i class="el-icon-delete" />删除</el-button>

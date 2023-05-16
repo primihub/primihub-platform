@@ -14,3 +14,4 @@ RUN npm install -g npm@8.15.1 \
 FROM nginx:1.20
 
 COPY --from=builder /opt/dist/ /usr/local/nginx/html/
+COPY --from=builder /opt/default.conf /etc/nginx/conf.d/default.conf

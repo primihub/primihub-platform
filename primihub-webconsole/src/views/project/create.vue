@@ -296,7 +296,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "~@/styles/resource.scss";
+@import "~@/styles/variables.scss";
   p{
     margin-block-start: 0;
       margin-block-end: 0;

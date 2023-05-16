@@ -6,7 +6,8 @@ const state = {
   appTitle: '',
   appDescription: '',
   detailImg: '',
-  type: ''
+  type: '',
+  origin: ''
 }
 
 const mutations = {
@@ -24,6 +25,9 @@ const mutations = {
   },
   SET_DATA: (state, data) => {
     state.data = data
+  },
+  SET_ORIGIN: (state, origin) => {
+    state.origin = origin
   }
 }
 
@@ -56,6 +60,19 @@ const actions = {
         reject(error)
       })
     })
+  },
+  getLocationOrigin({ commit }) {
+    /**
+     *  https://node1.primihub.com/
+     *  https://node2.primihub.com/
+     *  https://node3.primihub.com/
+     *  http://test1.primihub.com/
+     *  host = 'node1' or 'node2' or 'node3' or 'test1'
+     **/
+    const host = window.location.host
+    const origin = host.indexOf('.com') !== -1 ? host : 'other'
+    console.log('origin', origin)
+    commit('SET_ORIGIN', origin)
   }
 }
 
