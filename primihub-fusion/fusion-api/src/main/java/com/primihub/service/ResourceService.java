@@ -122,6 +122,7 @@ public class ResourceService {
                 saveTags.addAll(Arrays.asList(copyResourceDto.getResourceTag().split(",")));
             }
             DataSet dataSet = copyResourceDto.getDataSet();
+            log.info(JSONObject.toJSONString(dataSet));
             if (dataSet!=null && !StringUtils.isEmpty(dataSet.getId())){
                 dataSet.setHolder(1);
                 DataSet d = dataSetRepository.getDataSetById(dataSet.getId());
