@@ -85,7 +85,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     while (iterator.hasNext()){
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         String outputFilePath = next.getValue().getOutputFilePath();
-                        outputFilePath = outputFilePath.replace(".csv", "-" + MAP_TYPE.get(jsonObject.getString("type") + ".csv"));
+                        outputFilePath = outputFilePath.replace(".csv", "-" + MAP_TYPE.get(jsonObject.getString("type")) + ".csv");
                         next.getValue().setOutputFilePath(outputFilePath);
                         log.info(next.getValue().getOutputFilePath());
                     }
