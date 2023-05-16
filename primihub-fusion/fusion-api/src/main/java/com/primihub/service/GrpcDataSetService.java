@@ -22,8 +22,8 @@ public class GrpcDataSetService implements StorageService{
             dataSetRepository.insertDataSet(dataSet);
         }else {
             dataSetRepository.updateDataSet(dataSet);
-            asyncService.noticeResource(d,dataSet);
         }
+        asyncService.noticeResource(d,dataSet);
     }
 
     @Override

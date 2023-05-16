@@ -18,7 +18,10 @@ public class AsyncService {
 
     @Async
     public void noticeResource(DataSet dataSet,DataSet newDataSet){
-        int d = dataSet.toString().hashCode();
+        int d = 0;
+        if (dataSet!=null){
+            d = dataSet.toString().hashCode();
+        }
         int nd = newDataSet.toString().hashCode();
         if (d!=nd){
             BaseResultEntity baseResultEntity = noticeService.noticeResource(dataSet.getId());
