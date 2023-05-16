@@ -183,6 +183,7 @@ public class ResourceService {
 
     public BaseResultEntity getOrganResourceList(OrganResourceParam param) {
         log.info(param.toString());
+        log.info(JSONObject.toJSONString(param));
         FusionOrgan fusionOrgan = fusionRepository.getFusionOrganByGlobalId(param.getOrganId());
         if (fusionOrgan == null) {
             return BaseResultEntity.success(new PageDataEntity(0,param.getPageSize(),param.getPageNo(),new ArrayList()));
