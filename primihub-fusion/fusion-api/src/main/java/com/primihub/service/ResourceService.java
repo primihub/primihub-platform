@@ -171,13 +171,13 @@ public class ResourceService {
     }
 
     public BaseResultEntity getTestDataSet(String id){
+        List<DataSet> list = new ArrayList<>();
         if (StringUtils.isEmpty(id)){
-            return BaseResultEntity.success(dataSetRepository.getTestDataSet());
+            list = dataSetRepository.getTestDataSet();
         }else {
-            List<DataSet> list = new ArrayList<>();
             list.add(dataSetRepository.getDataSetById(id));
-            return BaseResultEntity.success(list);
         }
+        return BaseResultEntity.success(list);
     }
 
     public BaseResultEntity batchSaveTestDataSet(List<DataSet> dataSets){
