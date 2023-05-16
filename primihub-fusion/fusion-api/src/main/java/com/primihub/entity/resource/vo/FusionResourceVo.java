@@ -107,4 +107,6 @@ public class FusionResourceVo {
 
     private List<FusionResourceField> fieldList;
 
+    private String userName;
+
 }

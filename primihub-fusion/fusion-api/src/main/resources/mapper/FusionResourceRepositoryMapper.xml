@@ -189,6 +189,7 @@
         )
         and r.is_del=0
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
+        <if test="globalId!=null and globalId!=''">and r.organ_id != #{globalId}</if>
         <if test="resourceId!=null and resourceId!=''">and r.resource_id = #{resourceId}</if>
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="resourceType!=null and resourceType!=0">and r.resource_type = #{resourceType}</if>

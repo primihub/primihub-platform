@@ -111,6 +111,7 @@ public class DataResourceConvert {
         fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setResourceState(fusionResource.getResourceState());
         fusionResourceVo.setResourceHashCode(fusionResource.getResourceHashCode());
+        fusionResourceVo.setUserName(fusionResource.getUserName());
         return fusionResourceVo;
     }
 
