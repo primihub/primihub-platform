@@ -23,9 +23,14 @@ public class GrpcComponentDto {
     private String outputFilePath;
 
     public String getOutputFilePath() {
-        if (outputFilePath == null){
-            return null;
+        return outputFilePath;
+    }
+
+    public void setOutputFilePath(String outputFilePath) {
+        if (!outputFilePath.contains(".csv")){
+            this.outputFilePath = outputFilePath + File.separator + newDataSetId+".csv";
+        }else {
+            this.outputFilePath = outputFilePath;
         }
-        return outputFilePath + File.separator + newDataSetId+".csv";
     }
 }

@@ -16,6 +16,7 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
+import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
@@ -24,8 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import primihub.rpc.Common;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +36,12 @@ import java.util.stream.Collectors;
 @Service("jointStatisticalComponentTaskServiceImpl")
 @Slf4j
 public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
+    private static final Map<String,String> MAP_TYPE = new HashMap(){{
+        put("1","average");
+        put("2","sum");
+        put("3","max");
+        put("4","min");
+    }};
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -55,7 +64,8 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
-            Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName());
+            String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "mpc";
+            Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
             log.info("jointStatisticalMap-1:{}", JSONObject.toJSONString(jointStatisticalMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
@@ -70,10 +80,15 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(jointStatisticalMap));
             String jointStatistical = taskReq.getValueMap().get("jointStatistical");
             if (jointStatistical!=null){
-                taskReq.getDataTask().setTaskResultPath(jointStatisticalMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET)).getOutputFilePath());
+                log.info(jointStatistical);
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
+                    for (Map.Entry<String, GrpcComponentDto> stringGrpcComponentDtoEntry : jointStatisticalMap.entrySet()) {
+                        String outputFilePath = stringGrpcComponentDtoEntry.getValue().getOutputFilePath();
+                        outputFilePath.replace(".csv","-"+MAP_TYPE.get(jsonObject.getString("type")+".csv"));
+                        stringGrpcComponentDtoEntry.getValue().setOutputFilePath(outputFilePath);
+                    }
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))).build();
@@ -107,43 +122,10 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
                     }else {
                         dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
-//                        List<ModelDerivationDto> derivationList = new ArrayList<>();
-//                        log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(jointStatisticalMap));
-//                        Iterator<String> keyi = jointStatisticalMap.keySet().iterator();
-//                        while (keyi.hasNext()){
-//                            String key = keyi.next();
-//                            GrpcComponentDto value = jointStatisticalMap.get(key);
-//                            if (value==null) {
-//                                continue;
-//                            }
-//                            log.info("value:{}",JSONObject.toJSONString(value));
-//                            derivationList.add(new ModelDerivationDto(key,"jointStatistical","联合统计-"+jsonObject.getString("type"),value.getNewDataSetId(),value.getOutputFilePath(),value.getDataSetId()));
-//                            log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
-//                        }
-//                        taskReq.getDerivationList().addAll(derivationList);
-//                        taskReq.setNewest(derivationList);
-//                        // derivation resource datas
-//                        log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
-//                        BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
-//                        log.info(JSONObject.toJSONString(derivationResource));
-//                        if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-//                            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-//                            taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+derivationResource.getMsg());
-//                        }else {
-//                            Map<String, ModelDerivationDto> dtoMap = derivationList.stream().collect(Collectors.toMap(ModelDerivationDto::getNewResourceId, Function.identity()));
-//                            List<String> resourceIdLst = (List<String>)derivationResource.getResult();
-//                            for (String resourceId : resourceIdLst) {
-//                                DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
-//                                dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
-//                                dataModelResource.setResourceId(resourceId);
-//                                dataModelResource.setTakePartType(1);
-//                                dataModelPrRepository.saveDataModelResource(dataModelResource);
-//                                taskReq.getDmrList().add(dataModelResource);
-////                                taskReq.getDataTask().setTaskResultPath(dtoMap.get(resourceId).getPath());
-//                            }
-//                        }
                     }
                 }
+                ZipUtils.pathFileTOZipFile(path,path+".zip",null);
+                taskReq.getDataTask().setTaskResultPath(path+".zip");
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:jointStatistical不可以为null");
