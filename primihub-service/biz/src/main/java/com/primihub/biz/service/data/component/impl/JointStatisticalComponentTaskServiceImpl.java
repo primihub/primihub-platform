@@ -27,10 +27,7 @@ import primihub.rpc.Common;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("jointStatisticalComponentTaskServiceImpl")
@@ -84,10 +81,13 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
-                    for (Map.Entry<String, GrpcComponentDto> stringGrpcComponentDtoEntry : jointStatisticalMap.entrySet()) {
-                        String outputFilePath = stringGrpcComponentDtoEntry.getValue().getOutputFilePath();
+                    Iterator<Map.Entry<String, GrpcComponentDto>> iterator = jointStatisticalMap.entrySet().iterator();
+                    while (iterator.hasNext()){
+                        Map.Entry<String, GrpcComponentDto> next = iterator.next();
+                        String outputFilePath = next.getValue().getOutputFilePath();
                         outputFilePath.replace(".csv","-"+MAP_TYPE.get(jsonObject.getString("type")+".csv"));
-                        stringGrpcComponentDtoEntry.getValue().setOutputFilePath(outputFilePath);
+                        next.getValue().setOutputFilePath(outputFilePath);
+                        log.info(next.getValue().getOutputFilePath());
                     }
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
