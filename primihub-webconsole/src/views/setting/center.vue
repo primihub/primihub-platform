@@ -45,7 +45,8 @@
           label="状态"
         >
           <template slot-scope="{row}">
-            <div :class="statusStyle(row.examineState)">
+            <div>
+              <span :class="statusStyle(row.examineState)" />
               {{ filterState(row, 1) }}
             </div>
             <p style="font-size: 12px;color: #909399;">{{ filterState(row, 2) }}</p>
@@ -65,6 +66,8 @@
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleAgree(row)">同意</el-link>
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
               <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link>
+              <el-link v-if="row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
+              <el-link v-if="row.enable === 1" size="mini" type="primary" @click="handleConnect(row)">重新连接</el-link>
             </div>
           </template>
         </el-table-column>
@@ -117,7 +120,7 @@
 
 <script>
 import clip from '@/utils/clipboard'
-import { getLocalOrganInfo, changeLocalOrganInfo, joiningPartners, getOrganList, examineJoining } from '@/api/center'
+import { getLocalOrganInfo, changeLocalOrganInfo, joiningPartners, getOrganList, examineJoining, enableStatus } from '@/api/center'
 
 const USER_INFO = 'userInfo'
 
@@ -191,7 +194,10 @@ export default {
   },
   methods: {
     filterState(row, type) {
-      const { examineState, identity } = row
+      const { examineState, identity, enable } = row
+      if (type === 1) {
+        return enable === 0 ? '已连接' : '连接断开'
+      }
       if (examineState === 0) {
         if (type === 1) {
           return identity === 0 ? '待审核' : '对方正在审核中'
@@ -204,10 +210,6 @@ export default {
         } else {
           return identity === 0 ? '申请已被对方拒绝，您可继续发起申请添加' : '已拒绝对方申请'
         }
-      } else if (examineState === 1) {
-        if (type === 1) {
-          return '已连接'
-        }
       }
     },
     handleCopy(text, event) {
@@ -215,6 +217,17 @@ export default {
     },
     statusStyle(state) {
       return state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
+    },
+    handleConnect({ id, examineState }) {
+      this.enableStatus(id, examineState === 1 ? 1 : 0)
+    },
+    enableStatus(id, status) {
+      enableStatus({ id, status }).then(res => {
+        if (res.code === 0) {
+          const msg = status === 1 ? '已断开连接' : '连接成功'
+          this.$message.success(msg)
+        }
+      })
     },
     handleApply({ publicKey, organGateway, id }) {
       this.joiningPartners(publicKey, organGateway, id)

@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export function enableStatus(params) {
+  return request({
+    url: '/sys/organ/enableStatus',
+    method: 'get',
+    params
+  })
+}
 export function examineJoining(params) {
   return request({
     url: '/sys/organ/examineJoining',
