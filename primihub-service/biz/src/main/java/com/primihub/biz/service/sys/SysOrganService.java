@@ -330,6 +330,8 @@ public class SysOrganService {
         if (sysOrgan.getEnable().equals(status)){
             return BaseResultEntity.success();
         }
+        sysOrgan.setEnable(status);
+        sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
