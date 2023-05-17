@@ -1,5 +1,5 @@
 module.exports = {
-  title: 'PrimiHub Platform',
+  title: '隐私计算平台',
 
   /**
    * @type {string} html string
