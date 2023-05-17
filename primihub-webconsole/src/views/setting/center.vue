@@ -46,7 +46,7 @@
         >
           <template slot-scope="{row}">
             <div>
-              <span :class="statusStyle(row.examineState)" />
+              <span :class="statusStyle(row.examineState, row.enable)" />
               {{ filterState(row, 1) }}
             </div>
             <p style="font-size: 12px;color: #909399;">{{ filterState(row, 2) }}</p>
@@ -215,8 +215,8 @@ export default {
     handleCopy(text, event) {
       clip(text, event)
     },
-    statusStyle(state) {
-      return state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
+    statusStyle(state, enable) {
+      return state === 1 && enable === 1 ? 'state-error el-icon-error' : state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
     },
     handleConnect({ id, examineState }) {
       this.enableStatus(id, examineState === 1 ? 1 : 0)
@@ -225,6 +225,8 @@ export default {
       enableStatus({ id, status }).then(res => {
         if (res.code === 0) {
           const msg = status === 1 ? '已断开连接' : '连接成功'
+          const current = this.organList.find(item => item.id === id)
+          current.enable = status
           this.$message.success(msg)
         }
       })
