@@ -128,7 +128,6 @@ import { saveResource, getResourceDetail, resourceFilePreview, displayDatabaseSo
 import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
-import Cascader from '@/components/Cascader'
 import DatabaseImport from '@/components/DatabaseImport'
 import OrganSelect from '@/components/OrganSelect'
 
@@ -137,7 +136,6 @@ export default {
     Upload,
     EditResourceTable,
     ResourcePreviewTable,
-    Cascader,
     DatabaseImport,
     OrganSelect
   },
