@@ -57,6 +57,13 @@ export const constantRoutes = [
     meta: { title: '应用市场' }
   },
   {
+    path: '/bigModel',
+    name: 'BigModel',
+    hidden: true,
+    component: () => import('@/views/bigModel/index'),
+    meta: { title: 'PrimiHub隐私计算大模型' }
+  },
+  {
     path: '/applicationIndex/detail/:name',
     name: 'ApplicationDetail',
     hidden: true,

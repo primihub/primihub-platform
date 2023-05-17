@@ -49,6 +49,9 @@
             <el-button class="logo-button" type="primary" size="small" @click="saveFooterText">保存</el-button>
           </div>
         </el-descriptions-item>
+        <el-descriptions-item label="隐藏大模型">
+          <el-switch v-model="isHideBigModel" @change="handleBigModelChange" />
+        </el-descriptions-item>
       </el-descriptions>
     </div>
   </div>
@@ -125,6 +128,14 @@ export default {
       set(val) {
         return val
       }
+    },
+    isHideBigModel: {
+      get() {
+        return this.$store.state.settings.isHideBigModel
+      },
+      set(val) {
+        return val
+      }
     }
   },
   async created() {
@@ -166,6 +177,10 @@ export default {
     handleAppMarketChange(val) {
       this.params.isHideAppMarket = val
       this.changeSettings({ state: 'isHideAppMarket', mutation: 'SET_APP_MARKET_STATUS', value: val })
+    },
+    handleBigModelChange(val) {
+      this.params.isHideBigModel = val
+      this.changeSettings({ state: 'isHideBigModel', mutation: 'SET_BIG_MODEL_STATUS', value: val })
     },
     handleLogoTitleClear() {
       this.logoText = ''

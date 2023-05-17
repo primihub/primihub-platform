@@ -9,12 +9,13 @@
         <navbar />
       </div>
       <app-main />
+      <fade-back />
     </div>
   </div>
 </template>
 
 <script>
-import { Navbar, Sidebar, AppMain } from './components'
+import { Navbar, Sidebar, AppMain, FadeBack } from './components'
 import ResizeMixin from './mixin/ResizeHandler'
 
 export default {
@@ -22,7 +23,8 @@ export default {
   components: {
     Navbar,
     Sidebar,
-    AppMain
+    AppMain,
+    FadeBack
   },
   mixins: [ResizeMixin],
   computed: {
