@@ -139,7 +139,6 @@
         select
             count(distinct r.id)
         from fusion_resource r
-        left join fusion_go go on go.organ_global_id =r.organ_id
         <include refid="fusionResourceCondition"></include>
     </select>
 
