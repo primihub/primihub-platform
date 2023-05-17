@@ -323,10 +323,10 @@ public class SysOrganService {
         if (sysOrgan==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到机构信息");
         }
-        String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
-        if (sysOrgan.getApplyId().contains(localOrganShortCode)){
-            return BaseResultEntity.failure(BaseResultEnum.NO_AUTH,"发起申请者不能进行状态变更");
-        }
+//        String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
+//        if (sysOrgan.getApplyId().contains(localOrganShortCode)){
+//            return BaseResultEntity.failure(BaseResultEnum.NO_AUTH,"发起申请者不能进行状态变更");
+//        }
         if (sysOrgan.getEnable().equals(status)){
             return BaseResultEntity.success();
         }
