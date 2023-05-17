@@ -46,6 +46,7 @@ const sortTypeFilter = (type) => {
 }
 
 const fileSizeFilter = (limit) => {
+  limit = Number(limit)
   let size = ''
   if (limit < 0.1 * 1024) { // 如果小于0.1KB转化成B
     size = limit.toFixed(2) + 'B'
