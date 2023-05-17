@@ -9,7 +9,7 @@
         <img src="https://primihub.com/img/qrcode1.78d466ad.png" width="100%">
         <p>原语科技小助手</p>
       </div>
-      <el-link slot="reference" :underline="false" class="text"><img src="../../assets/logo2.png" alt="" srcset=""><p>建议与反馈</p></el-link>
+      <div slot="reference" class="contact-icon"><svg-icon icon-class="contact" /></div>
     </el-popover>
   </div>
 </template>
@@ -25,24 +25,34 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+::v-deep .svg-icon{
+  width: 25px!important;
+  height: 25px!important;
+  vertical-align: middle;
+  color: #fff;
+}
 .feedback{
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 75px;
-  height: 75px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background-color: #fff;
   position: fixed;
-  right: 0;
+  right: 5px;
   z-index: 100;
   bottom: 20%;
   text-align: center;
   box-shadow: 5px 5px 5px rgba($color: #000000, $alpha: 0.1);
+  background-color: #409EFF;
   .text{
     font-size: 12px;
     color: #333;
+  }
+  .contact-icon{
+    cursor: pointer;
   }
 }
 </style>
