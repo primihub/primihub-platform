@@ -71,6 +71,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
     <!-- create organ dialog -->
     <el-dialog
@@ -118,6 +119,7 @@
 </template>
 
 <script>
+import Pagination from '@/components/Pagination'
 import clip from '@/utils/clipboard'
 import { getLocalOrganInfo, changeLocalOrganInfo, joiningPartners, getOrganList, examineJoining, enableStatus } from '@/api/center'
 
@@ -125,8 +127,16 @@ const USER_INFO = 'userInfo'
 
 export default {
   name: 'Center',
+  components: {
+    Pagination
+  },
   data() {
     return {
+      reconnect: false,
+      pageNo: 1,
+      pageSize: 10,
+      pageCount: 1,
+      total: 0,
       loading: false,
       applyId: '',
       sysLocalOrganInfo: null,
@@ -172,6 +182,10 @@ export default {
     await this.getOrganList()
   },
   methods: {
+    async handlePagination(data) {
+      this.pageNo = data.page
+      await this.getOrganList()
+    },
     filterState(row, type) {
       const { examineState, identity, enable } = row
       if (examineState === 1 && type === 1) {
@@ -179,7 +193,7 @@ export default {
       }
       if (examineState === 0) {
         if (type === 1) {
-          return identity === 1 ? '待审核' : '对方正在审核中'
+          return identity === 1 ? '待审核' : '审核中'
         } else {
           return identity === 1 ? '正在申请成为关系节点，请尽快确认' : '对方正在审核中'
         }
@@ -197,19 +211,28 @@ export default {
     statusStyle(state, enable) {
       return state === 1 && enable === 1 ? 'state-error el-icon-error' : state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
     },
-    handleConnect({ id, enable }) {
-      console.log('enable', enable)
-      this.enableStatus(id, enable === 1 ? 0 : 1)
-    },
-    enableStatus(id, status) {
-      enableStatus({ id, status }).then(res => {
-        if (res.code === 0) {
-          const msg = status === 1 ? '已断开连接' : '连接成功'
-          const current = this.organList.find(item => item.id === id)
-          current.enable = status
-          this.$message.success(msg)
+    async handleConnect({ id, enable, publicKey, organGateway }) {
+      const status = enable === 1 ? 0 : 1
+      const res = await enableStatus({ id, status })
+      if (res.code === 0) {
+        const msg = status === 1 ? '已断开连接' : '连接成功'
+        if (status === 0) {
+          this.partnersForm.publicKey = publicKey
+          this.partnersForm.gateway = organGateway
+          this.reconnect = true
+          this.applyId = id
+          this.connectDialogVisible = true
         }
-      })
+        this.setConnectionStatus(id, status)
+        this.$message.success(msg)
+      }
+    },
+    setConnectionStatus(id, status) {
+      const current = this.organList.find(item => item.id === id)
+      current.enable = status
+    },
+    async enableStatus(id, status) {
+      await enableStatus({ id, status })
     },
     handleApply({ publicKey, organGateway, id }) {
       this.joiningPartners(publicKey, organGateway, id)
@@ -235,7 +258,6 @@ export default {
           id: this.applyId,
           examineState: this.examineState
         })
-        console.log('res', res)
         if (res.code === 0) {
           const msg = this.examineState === 1 ? '已同意对方申请' : '已拒绝对方申请'
           this.$message.success(msg)
@@ -248,7 +270,6 @@ export default {
         this.loading = false
       })
     },
-    handleExit() {},
     async examineJoining() {
       await examineJoining({
         id: this.applyId,
@@ -257,11 +278,16 @@ export default {
     },
     async getOrganList() {
       this.loading = true
-      const res = await getOrganList()
+      const res = await getOrganList({
+        pageSize: this.pageSize,
+        pageNo: this.pageNo
+      })
       if (res.code === 0) {
         this.loading = false
         const { result } = res
         this.organList = result.data
+        this.total = res.result.total || 0
+        this.pageCount = res.result.totalPage
       }
     },
     async getLocalOrganInfo() {
@@ -327,7 +353,15 @@ export default {
     connectConfirmDialog() {
       this.$refs['partnersForm'].validate(async valid => {
         if (valid) {
-          this.joiningPartners(this.partnersForm.publicKey, this.partnersForm.gateway)
+          if (this.reconnect) {
+            const res = await enableStatus({ id: this.applyId, status: 0 })
+            if (res.code === 0) {
+              this.setConnectionStatus(this.applyId, 0)
+            }
+          } else {
+            this.joiningPartners(this.partnersForm.publicKey, this.partnersForm.gateway)
+          }
+
           this.closeConnectDialog()
         }
       })
