@@ -26,6 +26,7 @@ import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -39,10 +40,10 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
     private WorkGrpcClient workGrpcClient;
     @Autowired
     private DataTaskMonitorService dataTaskMonitorService;
-    @Autowired
-    private DataResourceService dataResourceService;
-    @Autowired
-    private DataModelPrRepository dataModelPrRepository;
+//    @Autowired
+//    private DataResourceService dataResourceService;
+//    @Autowired
+//    private DataModelPrRepository dataModelPrRepository;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -75,22 +76,24 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
-                    Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(ids.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))).build();
                     Common.Params params = Common.Params.newBuilder()
                             .putParamMap("ColumnInfo", columnInfoParamValue)
-                            .putParamMap("Data_File", dataFileParamValue)
                             .putParamMap("TaskDetail", taskDetailParamValue)
                             .build();
+                    Map<String, Common.Dataset> values = new HashMap<>();
+                    for (String id : jointStatisticalMap.keySet()) {
+                        values.put("PARTY"+i,Common.Dataset.newBuilder().putData("Data_File",id).build());
+                    }
                     Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(String.valueOf(taskReq.getJob())).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                     Common.Task task = Common.Task.newBuilder()
                             .setType(Common.TaskType.ACTOR_TASK)
                             .setParams(params)
                             .setName("mpc_statistics")
                             .setLanguage(Common.Language.PROTO)
-//                            .setCode(ByteString.copyFrom("mpc_statistics".getBytes(StandardCharsets.UTF_8)))
+                            .setCode(ByteString.copyFrom("mpc_statistics".getBytes(StandardCharsets.UTF_8)))
                             .setTaskInfo(taskBuild)
-                            .addInputDatasets("Data_File")
+                            .putAllPartyDatasets(values)
                             .build();
                     log.info("grpc Common.Task :\n{}", task.toString());
                     PushTaskRequest request = PushTaskRequest.newBuilder()
