@@ -1,6 +1,5 @@
 <template>
   <div v-loading="loading" class="container">
-    <h2>中心管理</h2>
     <div class="info-container">
       <el-descriptions title="节点信息" :column="1" border :label-style="{width: '120px'}">
         <template v-if="!sysLocalOrganInfo" slot="extra">
@@ -195,14 +194,14 @@ export default {
   methods: {
     filterState(row, type) {
       const { examineState, identity, enable } = row
-      if (type === 1) {
+      if (examineState === 1 && enable === 0 && type === 1) {
         return enable === 0 ? '已连接' : '连接断开'
       }
       if (examineState === 0) {
         if (type === 1) {
-          return identity === 0 ? '待审核' : '对方正在审核中'
+          return identity === 1 ? '待审核' : '对方正在审核中'
         } else {
-          return identity === 0 ? '正在申请成为关系节点，请尽快确认' : '对方正在审核中'
+          return identity === 1 ? '正在申请成为关系节点，请尽快确认' : '对方正在审核中'
         }
       } else if (examineState === 2) {
         if (type === 1) {

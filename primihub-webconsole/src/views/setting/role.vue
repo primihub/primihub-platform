@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <h2>角色管理</h2>
     <el-button v-if="hasAddPermission" type="primary" icon="el-icon-plus" @click="addRole">新增角色</el-button>
     <el-table
       v-loading="listLoading"

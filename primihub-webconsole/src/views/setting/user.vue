@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    <h2>用户管理</h2>
     <el-button v-if="hasAddPermission" type="primary" icon="el-icon-plus" @click="addUser">新增用户</el-button>
     <div class="main">
       <el-table
