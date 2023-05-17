@@ -37,7 +37,7 @@
         />
         <el-table-column
           prop="organName"
-          label="节点名称"
+          label="机构名称"
         />
         <el-table-column
           prop="examineState"
@@ -65,8 +65,8 @@
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleAgree(row)">同意</el-link>
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
               <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link>
-              <el-link v-if="row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
-              <el-link v-if="row.enable === 1" size="mini" type="primary" @click="handleConnect(row)">重新连接</el-link>
+              <el-link v-if="row.examineState === 1 && row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
+              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="handleConnect(row)">重新连接</el-link>
             </div>
           </template>
         </el-table-column>
@@ -125,26 +125,6 @@ const USER_INFO = 'userInfo'
 
 export default {
   name: 'Center',
-  filters: {
-    examineStateFilter(state) {
-      const statusMap = {
-        0: '待审核',
-        1: '已连接',
-        2: '已拒绝',
-        3: '连接断开'
-      }
-      return statusMap[state]
-    },
-    examineStateMsgFilter(state) {
-      const statusMap = {
-        0: '正在申请成为关系节点，请尽快确认',
-        1: '',
-        2: '已拒绝',
-        3: '连接断开'
-      }
-      return statusMap[state]
-    }
-  },
   data() {
     return {
       loading: false,
@@ -194,7 +174,7 @@ export default {
   methods: {
     filterState(row, type) {
       const { examineState, identity, enable } = row
-      if (examineState === 1 && enable === 0 && type === 1) {
+      if (examineState === 1 && type === 1) {
         return enable === 0 ? '已连接' : '连接断开'
       }
       if (examineState === 0) {
@@ -217,8 +197,9 @@ export default {
     statusStyle(state, enable) {
       return state === 1 && enable === 1 ? 'state-error el-icon-error' : state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
     },
-    handleConnect({ id, examineState }) {
-      this.enableStatus(id, examineState === 1 ? 1 : 0)
+    handleConnect({ id, enable }) {
+      console.log('enable', enable)
+      this.enableStatus(id, enable === 1 ? 0 : 1)
     },
     enableStatus(id, status) {
       enableStatus({ id, status }).then(res => {
