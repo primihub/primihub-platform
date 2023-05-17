@@ -47,7 +47,11 @@ public class OtherBusinessesService {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         try{
             ResourceParam param = new ResourceParam();
-            param.setGlobalId(sysLocalOrganInfo.getOrganId());
+            if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
+                param.setGlobalId("1");
+            }else {
+                param.setGlobalId(sysLocalOrganInfo.getOrganId());
+            }
             param.setResourceId(req.getResourceId());
             param.setResourceName(req.getResourceName());
             param.setResourceType(req.getResourceSource());
