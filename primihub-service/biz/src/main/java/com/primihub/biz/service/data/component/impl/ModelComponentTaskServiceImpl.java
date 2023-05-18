@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
@@ -327,7 +328,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.parseObject(freemarkerContent).toJSONString().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent),SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("predictFileName", predictFileNameParamValue)
                         .putParamMap("indicatorFileName", indicatorFileNameParamValue)
