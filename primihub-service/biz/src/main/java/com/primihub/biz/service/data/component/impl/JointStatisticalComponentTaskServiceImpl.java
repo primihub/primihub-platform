@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -49,6 +50,8 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
     private DataResourceService dataResourceService;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -121,14 +124,24 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
                     }
                 }
-                GrpcComponentDto grpcComponentDto = jointStatisticalMap.get(DataConstant.PYTHON_LABEL_DATASET);
-                Set<String> paths = new HashSet<>();
-                for (Map.Entry<String, String> stringStringEntry : MAP_TYPE.entrySet()) {
-                    paths.add(grpcComponentDto.getDataSetId()+"-"+stringStringEntry.getValue()+".csv");
+                String newId = null;
+                String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
+                for (String resourceId : jointStatisticalMap.keySet()) {
+                    if (resourceId.contains(localOrganShortCode)){
+                        newId = jointStatisticalMap.get(resourceId).getNewDataSetId();
+                    }
                 }
-//
-                ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
-                taskReq.getDataTask().setTaskResultPath(path+".zip");
+                if (newId==null){
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:未匹配到数据集ID无法打包zip");
+                }else {
+                    Set<String> paths = new HashSet<>();
+                    for (Map.Entry<String, String> stringStringEntry : MAP_TYPE.entrySet()) {
+                        paths.add(newId+"-"+stringStringEntry.getValue()+".csv");
+                    }
+                    ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
+                    taskReq.getDataTask().setTaskResultPath(path+".zip");
+                }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:jointStatistical不可以为null");
