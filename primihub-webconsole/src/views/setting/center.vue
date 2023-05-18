@@ -66,7 +66,7 @@
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
               <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link>
               <el-link v-if="row.examineState === 1 && row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
-              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="handleConnect(row)">重新连接</el-link>
+              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply (row)">重新连接</el-link>
             </div>
           </template>
         </el-table-column>
@@ -96,17 +96,17 @@
     </el-dialog>
     <!-- add center fusion connect -->
     <el-dialog
-      title="添加合作节点"
+      :title="organDialogTitle"
       :visible.sync="connectDialogVisible"
       width="600px"
       :before-close="closeConnectDialog"
     >
       <el-form ref="partnersForm" :model="partnersForm" :rules="partnersFormRules">
         <el-form-item label="节点网关地址" prop="gateway">
-          <el-input v-model="partnersForm.gateway" autocomplete="off" />
+          <el-input v-model="partnersForm.gateway" />
         </el-form-item>
         <el-form-item label="节点publicKey" prop="publicKey">
-          <el-input v-model="partnersForm.publicKey" autocomplete="off" />
+          <el-input v-model="partnersForm.publicKey" type="textarea" :rows="4" />
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
@@ -144,6 +144,7 @@ export default {
       connectDialogVisible: false,
       dialogType: 'add',
       dialogTitle: '创建节点',
+      organDialogTitle: '添加节点',
       organForm: {
         organId: '',
         organName: '',
@@ -211,21 +212,21 @@ export default {
     statusStyle(state, enable) {
       return state === 1 && enable === 1 ? 'state-error el-icon-error' : state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
     },
-    async handleConnect({ id, enable, publicKey, organGateway }) {
+    reconnectApply({ id, publicKey, organGateway }) {
+      this.partnersForm.publicKey = publicKey
+      this.partnersForm.gateway = organGateway
+      this.reconnect = true
+      this.applyId = id
+      this.organDialogTitle = '重新连接节点'
+      this.connectDialogVisible = true
+    },
+    async handleConnect({ id, enable }) {
       const status = enable === 1 ? 0 : 1
       const res = await enableStatus({ id, status })
       if (res.code === 0) {
         const msg = status === 1 ? '已断开连接' : '连接成功'
-        if (status === 0) {
-          this.partnersForm.publicKey = publicKey
-          this.partnersForm.gateway = organGateway
-          this.reconnect = true
-          this.applyId = id
-          this.connectDialogVisible = true
-        } else {
-          this.setConnectionStatus(id, status)
-          this.$message.success(msg)
-        }
+        this.setConnectionStatus(id, status)
+        this.$message.success(msg)
       }
     },
     setConnectionStatus(id, status) {
@@ -357,15 +358,10 @@ export default {
       this.$refs['partnersForm'].validate(async valid => {
         if (valid) {
           if (this.reconnect) {
-            const res = await enableStatus({ id: this.applyId, status: 0 })
-            if (res.code === 0) {
-              this.setConnectionStatus(this.applyId, 0)
-              this.$message.success('连接成功')
-            }
+            this.handleConnect({ id: this.applyId, enable: 1 })
           } else {
             this.joiningPartners(this.partnersForm.publicKey, this.partnersForm.gateway)
           }
-
           this.closeConnectDialog()
         }
       })
