@@ -327,7 +327,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.parseObject(freemarkerContent).toJSONString().getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("predictFileName", predictFileNameParamValue)
                         .putParamMap("indicatorFileName", indicatorFileNameParamValue)
@@ -428,4 +428,5 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return port;
     }
+
 }
