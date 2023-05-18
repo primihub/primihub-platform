@@ -121,7 +121,13 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
                     }
                 }
-                ZipUtils.pathFileTOZipFile(path,path+".zip",null);
+                GrpcComponentDto grpcComponentDto = jointStatisticalMap.get(DataConstant.PYTHON_LABEL_DATASET);
+                Set<String> paths = new HashSet<>();
+                for (Map.Entry<String, String> stringStringEntry : MAP_TYPE.entrySet()) {
+                    paths.add(grpcComponentDto.getDataSetId()+"-"+stringStringEntry.getValue()+".csv");
+                }
+//
+                ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
                 taskReq.getDataTask().setTaskResultPath(path+".zip");
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
