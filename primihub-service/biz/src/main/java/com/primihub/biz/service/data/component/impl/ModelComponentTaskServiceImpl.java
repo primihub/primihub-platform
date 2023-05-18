@@ -312,9 +312,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     }
 
     public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
-        Long[] portNumber = getPortNumber();
-        taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
-        taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
@@ -400,34 +397,4 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         return BaseResultEntity.success();
     }
-
-    public Long[] getPortNumber(){
-        Long[] port = new Long[2];
-        String hostKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "h");
-        String guestKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "g");
-        // 递增还是递减
-        String squareKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "s");
-        String squareVal = stringRedisTemplate.opsForValue().get(squareKey);
-        String hostVal = stringRedisTemplate.opsForValue().get(hostKey);
-        if (StringUtils.isBlank(hostVal)){
-            stringRedisTemplate.opsForValue().set(squareKey,"0");
-            stringRedisTemplate.opsForValue().set(hostKey,DataConstant.HOST_PORT_RANGE[0].toString());
-            stringRedisTemplate.opsForValue().set(guestKey,DataConstant.GUEST_PORT_RANGE[0].toString());
-        }
-        if (StringUtils.isBlank(squareVal) || "0".equals(squareVal)){
-            port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
-            port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0])) {
-                stringRedisTemplate.opsForValue().set(squareKey,"1");
-            }
-        }else {
-            port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
-            port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0])) {
-                stringRedisTemplate.opsForValue().set(squareKey,"0");
-            }
-        }
-        return port;
-    }
-
 }
