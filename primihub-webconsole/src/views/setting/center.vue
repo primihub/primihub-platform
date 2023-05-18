@@ -222,9 +222,10 @@ export default {
           this.reconnect = true
           this.applyId = id
           this.connectDialogVisible = true
+        } else {
+          this.setConnectionStatus(id, status)
+          this.$message.success(msg)
         }
-        this.setConnectionStatus(id, status)
-        this.$message.success(msg)
       }
     },
     setConnectionStatus(id, status) {
@@ -318,6 +319,8 @@ export default {
       this.organDialogVisible = false
     },
     addPartners() {
+      this.partnersForm.publicKey = ''
+      this.partnersForm.gateway = ''
       this.connectDialogVisible = true
     },
     closeConnectDialog() {
@@ -357,6 +360,7 @@ export default {
             const res = await enableStatus({ id: this.applyId, status: 0 })
             if (res.code === 0) {
               this.setConnectionStatus(this.applyId, 0)
+              this.$message.success('连接成功')
             }
           } else {
             this.joiningPartners(this.partnersForm.publicKey, this.partnersForm.gateway)
