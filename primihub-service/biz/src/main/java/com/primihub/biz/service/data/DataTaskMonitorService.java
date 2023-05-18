@@ -61,6 +61,8 @@ public class DataTaskMonitorService {
                             log.info("num:{} - success:{}",num,success);
                             if (num <= success){
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                // 暂停2秒 在k8s中文件同步存在一定的延迟性
+                                Thread.sleep(2000L);
                                 if (StringUtils.isNotBlank(path)){
                                     if (!FileUtil.isFileExists(path)){
                                         log.info("path:{} 不存在",path);
