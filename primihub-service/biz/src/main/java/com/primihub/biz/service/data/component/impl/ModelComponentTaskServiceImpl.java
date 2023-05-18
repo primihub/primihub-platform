@@ -327,21 +327,27 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("predictFileName", predictFileNameParamValue)
                         .putParamMap("indicatorFileName", indicatorFileNameParamValue)
                         .putParamMap("hostLookupTable", hostLookupTableParamValue)
                         .putParamMap("guestLookupTable", guestLookupTableParamValue)
                         .putParamMap("modelFileName", modelFileNameParamValue)
+                        .putParamMap("component_params", componentParamsParamValue)
                         .build();
+                Map<String, Common.Dataset> values = new HashMap<>();
+                values.put("Bob",Common.Dataset.newBuilder().putData("Data_File",taskReq.getFreemarkerMap().get("label_dataset")).build());
+                values.put("Charlie",Common.Dataset.newBuilder().putData("Data_File",taskReq.getFreemarkerMap().get("guest_dataset")).build());
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+//                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
+                        .putAllPartyDatasets(values)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
