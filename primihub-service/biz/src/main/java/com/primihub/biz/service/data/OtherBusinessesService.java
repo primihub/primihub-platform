@@ -127,8 +127,8 @@ public class OtherBusinessesService {
     }
 
     public Map<String, SysOrgan> getOrganListMap(List<String> organId){
-        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
-        Map<String, SysOrgan> map = sysOrgans.stream().collect(Collectors.toMap(SysOrgan::getOrganId, Function.identity()));
+        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrgan();
+        Map<String, SysOrgan> map = sysOrgans.stream().collect(Collectors.toMap(SysOrgan::getOrganId, Function.identity(),(key1, key2) -> key1));
         SysOrgan o = new SysOrgan();
         o.setOrganId(organConfiguration.getSysLocalOrganId());
         o.setOrganName(organConfiguration.getSysLocalOrganName());

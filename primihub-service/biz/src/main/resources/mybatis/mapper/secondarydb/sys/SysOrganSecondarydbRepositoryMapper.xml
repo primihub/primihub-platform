@@ -10,7 +10,7 @@
         from
              sys_organ
         where
-              is_del = 0 and enable = 0
+              is_del = 0
     </select>
     <select id="selectSysOrganByApplyId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
         select
