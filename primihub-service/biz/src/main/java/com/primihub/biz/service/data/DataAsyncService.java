@@ -569,7 +569,7 @@ public class DataAsyncService implements ApplicationContextAware {
             StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
             dataTask.setTaskResultPath(filePath.toString());
             log.info(dataTask.getTaskResultPath());
-            Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(dataTask.getTaskResultPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = null;
             if ("2".equals(modelType)){

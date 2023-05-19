@@ -169,7 +169,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(batchSize).build();
             Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(numlters).build();
-            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("BatchSize", batchSizeParamValue)
                     .putParamMap("NumIters", numItersParamValue)
@@ -244,7 +244,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
                 taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
                 Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("predictFileName", predictFileNameParamValue)
@@ -320,18 +320,14 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
                 taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
                 taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
-                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                taskReq.getFreemarkerMap().put("predictFileName",outputPathDto.getPredictFileName());
+                taskReq.getFreemarkerMap().put("indicatorFileName",outputPathDto.getIndicatorFileName());
+                taskReq.getFreemarkerMap().put("hostLookupTable",outputPathDto.getHostLookupTable());
+                taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getHostLookupTable());
+                taskReq.getFreemarkerMap().put("hostModelFileName",outputPathDto.getHostModelFileName());
+                taskReq.getFreemarkerMap().put("guestModelFileName",outputPathDto.getGuestModelFileName());
                 Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent),SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("predictFileName", predictFileNameParamValue)
-                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
-                        .putParamMap("hostLookupTable", hostLookupTableParamValue)
-                        .putParamMap("guestLookupTable", guestLookupTableParamValue)
-                        .putParamMap("modelFileName", modelFileNameParamValue)
                         .putParamMap("component_params", componentParamsParamValue)
                         .build();
                 Map<String, Common.Dataset> values = new HashMap<>();

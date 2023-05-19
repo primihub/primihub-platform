@@ -6,7 +6,8 @@ import lombok.Data;
 public class ModelOutputPathDto {
     private String hostLookupTable;
     private String guestLookupTable;
-    private String modelFileName;
+    private String guestModelFileName;
+    private String hostModelFileName;
     private String predictFileName;
     private String indicatorFileName;
     private String modelRunZipFilePath;
@@ -19,7 +20,8 @@ public class ModelOutputPathDto {
         this.taskPath = path;
         this.hostLookupTable = path + "/hostLookupTable";
         this.guestLookupTable = path + "/guestLookupTable";
-        this.modelFileName = path + "/modelFileName";
+        this.guestModelFileName = path + "/modelFileName.guest";
+        this.hostModelFileName = path + "/modelFileName.host";
         this.predictFileName = path + "/predictFileName.csv";
         this.indicatorFileName = path + "/indicatorFileName.json";
         this.modelRunZipFilePath = path + ".zip";

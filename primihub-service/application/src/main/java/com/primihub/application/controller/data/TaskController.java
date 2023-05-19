@@ -172,7 +172,7 @@ public class TaskController {
         if (StringUtils.isNotBlank(taskResultContent)){
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
             boolean isCooperation = dataTask.getIsCooperation() == 1;
-            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelFileName());
+            File file = new File(isCooperation?modelOutputPathDto.getGuestModelFileName():modelOutputPathDto.getHostModelFileName());
             if (file.exists()){
                 // 获得文件输入流
                 FileInputStream inputStream = new FileInputStream(file);
@@ -190,7 +190,7 @@ public class TaskController {
                 outputStream.close();
                 inputStream.close();
             }else {
-                file = new File(modelOutputPathDto.getModelFileName()+".host");
+                file = new File(modelOutputPathDto.getHostModelFileName());
                 if (file.exists()){
                     FileInputStream inputStream = new FileInputStream(file);
                     response.setHeader("content-Type","application/vnd.ms-excel");
