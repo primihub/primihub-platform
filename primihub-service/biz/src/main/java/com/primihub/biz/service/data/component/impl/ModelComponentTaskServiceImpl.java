@@ -312,20 +312,20 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     }
 
     public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
+        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
+        ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
+        taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
+        taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
+        taskReq.getFreemarkerMap().put("predictFileName",outputPathDto.getPredictFileName());
+        taskReq.getFreemarkerMap().put("indicatorFileName",outputPathDto.getIndicatorFileName());
+        taskReq.getFreemarkerMap().put("hostLookupTable",outputPathDto.getHostLookupTable());
+        taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getHostLookupTable());
+        taskReq.getFreemarkerMap().put("hostModelFileName",outputPathDto.getHostModelFileName());
+        taskReq.getFreemarkerMap().put("guestModelFileName",outputPathDto.getGuestModelFileName());
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
-                StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
-                ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
-                taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-                taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
-                taskReq.getFreemarkerMap().put("predictFileName",outputPathDto.getPredictFileName());
-                taskReq.getFreemarkerMap().put("indicatorFileName",outputPathDto.getIndicatorFileName());
-                taskReq.getFreemarkerMap().put("hostLookupTable",outputPathDto.getHostLookupTable());
-                taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getHostLookupTable());
-                taskReq.getFreemarkerMap().put("hostModelFileName",outputPathDto.getHostModelFileName());
-                taskReq.getFreemarkerMap().put("guestModelFileName",outputPathDto.getGuestModelFileName());
                 Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent),SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
                         .putParamMap("component_params", componentParamsParamValue)
