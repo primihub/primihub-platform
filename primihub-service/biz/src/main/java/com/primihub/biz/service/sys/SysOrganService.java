@@ -217,7 +217,7 @@ public class SysOrganService {
             sysOrgan.setOrganId(resultMap.get("organId").toString());
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
             if (sysOrgan1!=null){
-                sysOrgan1.setExamineMsg(sysOrgan1.getExamineMsg()+DateUtil.formatDate(new Date(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat())+"重新申请\n");
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方已存在,不可重复提交申请！");
             }else {
                 sysOrgan.setOrganName(resultMap.get("organName").toString());
                 sysOrgan.setExamineState(0);
@@ -298,14 +298,14 @@ public class SysOrganService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到审核机构信息");
         }
         String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
-        if (sysOrgan.getApplyId().contains(localOrganShortCode)){
+        if (sysOrgan.getApplyId().contains(localOrganShortCode)&&sysOrgan.getExamineState()==0){
             return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"发起申请者不能进行审核");
         }
-        if (sysOrgan.getExamineState()!=0){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"已审核无法重新审核");
+        if (sysOrgan.getEnable()!=0){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"机构禁用，请启用后再次申请！");
         }
         sysOrgan.setExamineState(examineState);
-        sysOrgan.setExamineMsg(examineMsg);
+        sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
