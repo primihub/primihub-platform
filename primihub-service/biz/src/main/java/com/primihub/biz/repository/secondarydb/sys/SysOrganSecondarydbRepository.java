@@ -2,6 +2,7 @@ package com.primihub.biz.repository.secondarydb.sys;
 
 import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.entity.sys.po.SysOrgan;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,6 +14,7 @@ public interface SysOrganSecondarydbRepository {
     List<SysOrgan> selectSysOrganByExamine();
     List<SysOrgan> selectSysOrganByOrganIds(Set<String> organIds);
     SysOrgan selectSysOrganByApplyId(String applyId);
+    SysOrgan selectSysOrganByApplyIdOrOrganId(@Param("applyId") String applyId,@Param("organId") String organId);
     SysOrgan selectSysOrganByOrganId(String organId);
     SysOrgan selectSysOrganById(Long id);
 

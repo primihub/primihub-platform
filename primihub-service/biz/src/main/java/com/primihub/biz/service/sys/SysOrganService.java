@@ -24,6 +24,7 @@ import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
+import com.primihub.biz.util.crypt.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -214,10 +215,15 @@ public class SysOrganService {
             }
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
-            sysOrgan.setOrganName(resultMap.get("organName").toString());
-            sysOrgan.setExamineState(0);
-            sysOrgan.setEnable(0);
-            sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+            SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
+            if (sysOrgan1!=null){
+                sysOrgan1.setExamineMsg(sysOrgan1.getExamineMsg()+DateUtil.formatDate(new Date(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat())+"重新申请\n");
+            }else {
+                sysOrgan.setOrganName(resultMap.get("organName").toString());
+                sysOrgan.setExamineState(0);
+                sysOrgan.setEnable(0);
+                sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+            }
         }catch (Exception e){
             e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
@@ -226,7 +232,7 @@ public class SysOrganService {
     }
 
     public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyIdOrOrganId(info.get("applyId").toString(),info.get("organId").toString());
         if (sysOrgan==null){
             sysOrgan = new SysOrgan();
             sysOrgan.setApplyId(info.get("applyId").toString());
@@ -246,7 +252,7 @@ public class SysOrganService {
                 sysOrgan.setExamineState((Integer) info.get("examineState"));
             }
             if (info.containsKey("examineMsg")){
-                sysOrgan.setExamineMsg(info.get("examineMsg").toString());
+                sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+ info.get("examineMsg").toString());
             }
             if (info.containsKey("enable")){
                 sysOrgan.setEnable((Integer) info.get("enable"));
