@@ -301,8 +301,12 @@ public class SysOrganService {
         if (sysOrgan.getApplyId().contains(localOrganShortCode)&&sysOrgan.getExamineState()==0){
             return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"发起申请者不能进行审核");
         }
-        if (sysOrgan.getEnable()!=0){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"机构禁用，请启用后再次申请！");
+        if (examineState!=0){
+            if (sysOrgan.getEnable()!=0){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_APPROVAL,"机构禁用，请启用后再次申请！");
+            }
+        }else {
+            sysOrgan.setEnable(0);
         }
         sysOrgan.setExamineState(examineState);
         sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
