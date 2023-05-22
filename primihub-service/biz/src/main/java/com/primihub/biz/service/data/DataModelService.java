@@ -27,6 +27,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
@@ -123,10 +124,11 @@ public class DataModelService {
                 map.put("oneself",false);
             }
         }
-        if (StringUtils.isBlank(modelTask.getPredictContent())){
+        String fileContent = FileUtil.getFileContent(modelTask.getPredictFile());
+        if (StringUtils.isBlank(fileContent)){
             map.put("anotherQuotas",new HashMap());
         }else {
-            map.put("anotherQuotas",JSONObject.parseObject(modelTask.getPredictContent()));
+            map.put("anotherQuotas",JSONObject.parseObject(fileContent));
         }
         return BaseResultEntity.success(map);
     }

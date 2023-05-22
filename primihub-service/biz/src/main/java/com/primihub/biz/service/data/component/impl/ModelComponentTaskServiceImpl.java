@@ -73,7 +73,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
             log.info(arbiterOrgan);
             if (StringUtils.isBlank(arbiterOrgan)) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方选择不可以为空");
             }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
