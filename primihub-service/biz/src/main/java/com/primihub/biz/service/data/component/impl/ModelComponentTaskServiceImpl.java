@@ -235,22 +235,22 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         return BaseResultEntity.success();
     }
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
+        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
+        ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
+        putPath(outputPathDto,taskReq);
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
-                StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
-                ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
                 taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
                 taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
-                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent),SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("predictFileName", predictFileNameParamValue)
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
+                        .putParamMap("component_params", componentParamsParamValue)
                         .build();
+                Map<String, Common.Dataset> values = new HashMap<>();
+                values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
+                values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
@@ -259,6 +259,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setLanguage(Common.Language.PYTHON)
                         .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
+                        .putAllPartyDatasets(values)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -311,10 +312,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
-        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
-        ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
-        taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
+    public void putPath(ModelOutputPathDto outputPathDto,ComponentTaskReq taskReq){
         taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
         taskReq.getFreemarkerMap().put("predictFileName",outputPathDto.getPredictFileName());
         taskReq.getFreemarkerMap().put("indicatorFileName",outputPathDto.getIndicatorFileName());
@@ -322,6 +320,13 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getHostLookupTable());
         taskReq.getFreemarkerMap().put("hostModelFileName",outputPathDto.getHostModelFileName());
         taskReq.getFreemarkerMap().put("guestModelFileName",outputPathDto.getGuestModelFileName());
+    }
+
+    public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
+        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
+        ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
+        putPath(outputPathDto,taskReq);
+        taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
             try {
