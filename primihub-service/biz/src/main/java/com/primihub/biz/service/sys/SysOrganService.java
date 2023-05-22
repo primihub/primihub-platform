@@ -321,6 +321,9 @@ public class SysOrganService {
         map.put("enable",sysOrgan.getEnable());
         BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, sysOrgan.getOrganGateway() + "/share/shareData/apply", sysOrgan.getPublicKey());
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            if (baseResultEntity!=null && baseResultEntity.getCode().equals(BaseResultEnum.DECRYPTION_FAILED.getReturnCode())){
+                return BaseResultEntity.failure(BaseResultEnum.DECRYPTION_FAILED,"合作方publicKey已更换");
+            }
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
         }
         sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
