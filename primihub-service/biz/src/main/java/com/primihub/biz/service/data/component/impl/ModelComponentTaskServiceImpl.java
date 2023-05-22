@@ -251,6 +251,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 Map<String, Common.Dataset> values = new HashMap<>();
                 values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
                 values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
+                values.put("Alice",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("arbiter_dataset")).build());
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
