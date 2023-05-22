@@ -88,7 +88,7 @@ public class OrganController {
     /**
      * 审核申请的机构
      * @param id                申请数字ID
-     * @param examineState      审核状态    1同意 2拒绝
+     * @param examineState      审核状态    0再次申请 1同意 2拒绝
      * @param examineMsg        审核意见
      * @return
      */
@@ -100,7 +100,7 @@ public class OrganController {
         if (examineState==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"examineState");
         }
-        if (examineState!=1 &&examineState!=2) {
+        if (examineState!=0 &&examineState!=1 &&examineState!=2) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"examineState");
         }
         return sysOrganService.examineJoining(id,examineState,examineMsg);
