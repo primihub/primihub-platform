@@ -69,7 +69,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
+        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.getType().equals(ModelTypeEnum.BINARY.getType())){
             String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
             log.info(arbiterOrgan);
             if (StringUtils.isBlank(arbiterOrgan)) {
