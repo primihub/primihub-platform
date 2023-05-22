@@ -173,7 +173,6 @@ public class TaskController {
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
             boolean isCooperation = dataTask.getIsCooperation() == 1;
             File file = new File(isCooperation?modelOutputPathDto.getGuestModelFileName():modelOutputPathDto.getHostModelFileName());
-            log.info(file.getPath());
             if (file.exists()){
                 FileInputStream inputStream = new FileInputStream(file);
                 response.setHeader("content-Type","application/vnd.ms-excel");
@@ -186,6 +185,8 @@ public class TaskController {
                 }
                 outputStream.close();
                 inputStream.close();
+            }else {
+                downloadTaskError(response,"无文件");
             }
         }else {
             downloadTaskError(response,"无文件");
