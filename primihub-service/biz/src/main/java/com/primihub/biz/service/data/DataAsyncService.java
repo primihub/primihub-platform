@@ -417,10 +417,16 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
 
+    /**
+     * 运行推理
+     * @param dataReasoning  推理
+     * @param dataReasoningResourceList  推理资源
+     * @param modelTask  推理所得
+     */
     @Async
     public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
-        String labelDataset = "";
-        String guestDataset = "";
+        String labelDataset = "";    // 发起者资源
+        String guestDataset = "";    // 协助方资源
         for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
             if (dataReasoningResource.getParticipationIdentity() == 1){
                 labelDataset = dataReasoningResource.getResourceId();
@@ -442,7 +448,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String,String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);
+        map.put(DataConstant.PYTHON_LABEL_DATASET,labelDataset);  // 放入发起方资源
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model==null){
@@ -456,23 +462,22 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskErrorMsg("未能获取到模型类型信息");
             }else {
                 Long[] portNumber = getPortNumber();
-                map.put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
-                map.put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
-                map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
+                map.put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());  // 发起方端口
+                map.put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());  // 协作放端口
+                map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);  // 放入合作方资源
                 String freemarkerContent = "";
                 if ("2".equals(modelType.getVal())){
-                    map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
                 }else if(modelType.getVal().equals("5")){
-                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETER_LR_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),2);
+                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
                 }else if(modelType.getVal().equals("6")||modelType.getVal().equals("7")){
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),1);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
                 }else{
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal(),1);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
                 }
             }
         }
@@ -556,9 +561,14 @@ public class DataAsyncService implements ApplicationContextAware {
         return port;
     }
 
-
-
-    public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType,int size){
+    /**
+     *
+     * @param dataReasoning  推理实体
+     * @param dataTask       推理任务
+     * @param freemarkerContent 推理模板
+     * @param modelType      推理类型
+     */
+    public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent, String modelType){
         try {
             log.info(freemarkerContent);
             DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
@@ -569,24 +579,49 @@ public class DataAsyncService implements ApplicationContextAware {
             StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
             dataTask.setTaskResultPath(filePath.toString());
             log.info(dataTask.getTaskResultPath());
-            Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(dataTask.getTaskResultPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = null;
+            Map<String, Common.Dataset> values = new HashMap<>();
+            // todo 获取数据集参数
+            //values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
+            //values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
             if ("2".equals(modelType)){
+                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue guestModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestModelFileName().getBytes(StandardCharsets.UTF_8))).build();
                 params = Common.Params.newBuilder()
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("predictFileName", predictFileNameeParamValue)
+                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
+                        .putParamMap("predictFileName", predictFileNameParamValue)
                         .putParamMap("hostLookupTable", hostLookupTableParamValue)
                         .putParamMap("guestLookupTable", guestLookupTableParamValue)
+                        .putParamMap("hostModelFileName", hostModelFileNameParamValue)
+                        .putParamMap("guestModelFileName", guestModelFileNameParamValue)
                         .build();
-            }else {
+            }else if("5".equals(modelType)){
+                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue guestModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestModelFileName().getBytes(StandardCharsets.UTF_8))).build();
                 params = Common.Params.newBuilder()
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("predictFileName", predictFileNameeParamValue)
+                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
+                        .putParamMap("predictFileName", predictFileNameParamValue)
+                        .putParamMap("hostModelFileName", hostModelFileNameParamValue)
+                        .putParamMap("guestModelFileName", guestModelFileNameParamValue)
+                        .build();
+            }else if("6".equals(modelType) || "7".equals(modelType)){
+                Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                params = Common.Params.newBuilder()
+                        .putParamMap("hostModelFileName", hostModelFileNameParamValue)
+                        .build();
+            } else {
+                Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                params = Common.Params.newBuilder()
+                        .putParamMap("hostModelFileName", hostModelFileNameParamValue)
                         .build();
             }
+
             Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(dataTask.getTaskIdName()).build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
@@ -595,6 +630,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PYTHON)
 //                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
+                    .putAllPartyDatasets(values)
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -602,9 +638,10 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
+                    //.setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
-            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc结果:{}", reply.toString());
+            //PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+            /*log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
             dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
             if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
@@ -613,7 +650,7 @@ public class DataAsyncService implements ApplicationContextAware {
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
-            }
+            }*/
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
