@@ -54,6 +54,8 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.primihub.biz.constant.DataConstant.PYTHON_LABEL_DATASET;
+
 /**
  * psi 异步调用实现
  */
@@ -451,7 +453,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
+        map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model == null) {
@@ -649,6 +651,7 @@ public class DataAsyncService implements ApplicationContextAware {
         ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
         log.info("模板参数-------"+modelOutputPathDto.toString());
         String freemarkerContent = "";
+        Map<String, Common.Dataset> values = new HashMap<>();
         if ("2".equals(modelType)) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
@@ -670,11 +673,12 @@ public class DataAsyncService implements ApplicationContextAware {
         } else {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
+            //values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
+            //values.put("Alice",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("arbiter_dataset")).build());*/
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
         }
         try {
-            log.info(freemarkerContent);
-
             Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent), SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("component_params", componentParamsParamValue)
@@ -686,6 +690,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setName("modelTask")
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PYTHON)
+                    .putAllPartyDatasets(values)
 //                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
