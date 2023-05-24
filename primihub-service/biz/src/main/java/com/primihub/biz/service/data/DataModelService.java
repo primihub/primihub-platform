@@ -124,11 +124,15 @@ public class DataModelService {
                 map.put("oneself",false);
             }
         }
-        String fileContent = FileUtil.getFileContent(modelTask.getPredictFile());
-        if (StringUtils.isBlank(fileContent)){
+        if (StringUtils.isNotBlank(modelTask.getPredictFile())){
+            String fileContent = FileUtil.getFileContent(modelTask.getPredictFile());
+            if (StringUtils.isBlank(fileContent)){
+                map.put("anotherQuotas",new HashMap());
+            }else {
+                map.put("anotherQuotas",JSONObject.parseObject(fileContent));
+            }
+        } else {
             map.put("anotherQuotas",new HashMap());
-        }else {
-            map.put("anotherQuotas",JSONObject.parseObject(fileContent));
         }
         return BaseResultEntity.success(map);
     }
