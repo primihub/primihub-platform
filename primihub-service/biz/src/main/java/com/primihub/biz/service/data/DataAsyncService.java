@@ -672,22 +672,22 @@ public class DataAsyncService implements ApplicationContextAware {
         String freemarkerContent = "";
         Common.Params params = null;
         if ("2".equals(modelType)) {
-            /*map.put("indicatorFileName", indicatorFileNameParamValue);
-            map.put("predictFileName", predictFileNameParamValue);
-            map.put("hostLookupTable", hostLookupTableParamValue);
-            map.put("guestLookupTable", guestLookupTableParamValue);
-            map.put("hostModelFileName", hostModelFileNameParamValue);
-            map.put("guestModelFileName", guestModelFileNameParamValue);
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);*/
+            map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
+            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
+            map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
+            map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
+            map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
+            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("5".equals(modelType)) {
-           /* map.put("indicatorFileName", indicatorFileNameParamValue);
-            map.put("predictFileName", predictFileNameParamValue);
-            map.put("hostModelFileName", hostModelFileNameParamValue);
-            map.put("guestModelFileName", guestModelFileNameParamValue);
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);*/
+            map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
+            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
+            map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
+            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("6".equals(modelType) || "7".equals(modelType)) {
-            /*map.put("hostModelFileName", "");
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);*/
+            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
+            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
         } else {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
@@ -695,10 +695,6 @@ public class DataAsyncService implements ApplicationContextAware {
         try {
             log.info(freemarkerContent);
             Map<String, Common.Dataset> values = new HashMap<>();
-            // todo 获取数据集参数
-            //values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
-            //values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
-
             Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(dataTask.getTaskIdName()).build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
@@ -717,8 +713,8 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setClientProcessedUpTo(22)
                     //.setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
-            //PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-            /*log.info("grpc结果:{}", reply.toString());
+            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
+            log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
             dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
             if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
@@ -727,7 +723,7 @@ public class DataAsyncService implements ApplicationContextAware {
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
-            }*/
+            }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
