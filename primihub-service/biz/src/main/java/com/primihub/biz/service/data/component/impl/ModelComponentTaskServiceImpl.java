@@ -316,7 +316,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         taskReq.getFreemarkerMap().put("predictFileName",outputPathDto.getPredictFileName());
         taskReq.getFreemarkerMap().put("indicatorFileName",outputPathDto.getIndicatorFileName());
         taskReq.getFreemarkerMap().put("hostLookupTable",outputPathDto.getHostLookupTable());
-        taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getHostLookupTable());
+        taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getGuestLookupTable());
         taskReq.getFreemarkerMap().put("hostModelFileName",outputPathDto.getHostModelFileName());
         taskReq.getFreemarkerMap().put("guestModelFileName",outputPathDto.getGuestModelFileName());
     }
