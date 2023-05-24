@@ -54,6 +54,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.primihub.biz.constant.DataConstant.PYTHON_GUEST_DATASET;
 import static com.primihub.biz.constant.DataConstant.PYTHON_LABEL_DATASET;
 
 /**
@@ -469,7 +470,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 Long[] portNumber = getPortNumber();
                 map.put(DataConstant.PYTHON_LABEL_PORT, portNumber[0].toString());  // 发起方端口
                 map.put(DataConstant.PYTHON_GUEST_PORT, portNumber[1].toString());  // 协作放端口
-                map.put(DataConstant.PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
                 grpc(dataReasoning, dataTask, modelType.getVal(), map);
                 //String freemarkerContent = "";
                 /*if ("2".equals(modelType.getVal())){
@@ -659,23 +660,26 @@ public class DataAsyncService implements ApplicationContextAware {
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
             map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
             map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
+            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
+            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET)).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("5".equals(modelType)) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
+            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
+            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET)).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("6".equals(modelType) || "7".equals(modelType)) {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
         } else {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
             values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
-            //values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
-            //values.put("Alice",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("arbiter_dataset")).build());*/
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
         }
         try {
