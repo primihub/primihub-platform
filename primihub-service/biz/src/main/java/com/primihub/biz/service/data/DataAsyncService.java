@@ -424,7 +424,7 @@ public class DataAsyncService implements ApplicationContextAware {
      * @param modelTask  推理所得
      */
     @Async
-    public void runReasoning(DataReasoning dataReasoning,List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
+    public void runReasoning(DataReasoning dataReasoning, List<DataReasoningResource> dataReasoningResourceList, DataModelTask modelTask){
         String labelDataset = "";    // 发起者资源
         String guestDataset = "";    // 协助方资源
         for (DataReasoningResource dataReasoningResource : dataReasoningResourceList) {
@@ -467,15 +467,16 @@ public class DataAsyncService implements ApplicationContextAware {
                 map.put(DataConstant.PYTHON_GUEST_DATASET,guestDataset);  // 放入合作方资源
                 String freemarkerContent = "";
                 if ("2".equals(modelType.getVal())){
-                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
+                    /*freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());*/
                 }else if(modelType.getVal().equals("5")){
-                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
+                    /*freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());*/
                 }else if(modelType.getVal().equals("6")||modelType.getVal().equals("7")){
-                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
+                    /*freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
+                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());*/
                 }else{
+                    map.put("hostModelFileName", dataTask.getTaskResultPath());
                     freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
                     grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
                 }
@@ -576,16 +577,13 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info(modelTask.getTaskResultContent());
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
             log.info(modelOutputPathDto.toString());
-            StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
-            dataTask.setTaskResultPath(filePath.toString());
-            log.info(dataTask.getTaskResultPath());
             Common.Params params = null;
             Map<String, Common.Dataset> values = new HashMap<>();
             // todo 获取数据集参数
             //values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
             //values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
             if ("2".equals(modelType)){
-                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
+                /*Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
@@ -598,9 +596,9 @@ public class DataAsyncService implements ApplicationContextAware {
                         .putParamMap("guestLookupTable", guestLookupTableParamValue)
                         .putParamMap("hostModelFileName", hostModelFileNameParamValue)
                         .putParamMap("guestModelFileName", guestModelFileNameParamValue)
-                        .build();
+                        .build();*/
             }else if("5".equals(modelType)){
-                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
+                /*Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
                 Common.ParamValue guestModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestModelFileName().getBytes(StandardCharsets.UTF_8))).build();
@@ -609,12 +607,12 @@ public class DataAsyncService implements ApplicationContextAware {
                         .putParamMap("predictFileName", predictFileNameParamValue)
                         .putParamMap("hostModelFileName", hostModelFileNameParamValue)
                         .putParamMap("guestModelFileName", guestModelFileNameParamValue)
-                        .build();
+                        .build();*/
             }else if("6".equals(modelType) || "7".equals(modelType)){
-                Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                /*Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
                 params = Common.Params.newBuilder()
                         .putParamMap("hostModelFileName", hostModelFileNameParamValue)
-                        .build();
+                        .build();*/
             } else {
                 Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
                 params = Common.Params.newBuilder()
