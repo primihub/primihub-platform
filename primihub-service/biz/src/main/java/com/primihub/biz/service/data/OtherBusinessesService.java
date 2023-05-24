@@ -71,14 +71,11 @@ public class OtherBusinessesService {
 
     public BaseResultEntity getOrganResourceList(OrganResourceReq req) {
         try{
-            OrganResourceParam param = new OrganResourceParam();
-            param.setResourceName(req.getResourceName());
-            param.setColumnStr(req.getColumnStr());
+            ResourceParam param = new ResourceParam();
             param.setOrganId(req.getOrganId());
-            param.setAuditStatus(req.getAuditStatus());
             param.setPageNo(req.getPageNo());
             param.setPageSize(req.getPageSize());
-            BaseResultEntity resultEntity= fusionResourceService.getOrganResourceList(param);
+            BaseResultEntity resultEntity= fusionResourceService.getResourceList(param);
             return BaseResultEntity.success(resultEntity.getResult());
         }catch (Exception e){
             log.info("元数据资源数据异常:{}",e.getMessage());
