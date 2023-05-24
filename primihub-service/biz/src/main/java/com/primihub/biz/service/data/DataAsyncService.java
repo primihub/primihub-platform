@@ -665,9 +665,11 @@ public class DataAsyncService implements ApplicationContextAware {
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("6".equals(modelType) || "7".equals(modelType)) {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
+            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
         } else {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
+            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
         }
         try {
@@ -697,10 +699,10 @@ public class DataAsyncService implements ApplicationContextAware {
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
-            dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
-            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
-                dataReasoning.setReleaseDate(new Date());
-            }
+                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
+                if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+                    dataReasoning.setReleaseDate(new Date());
+                }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());

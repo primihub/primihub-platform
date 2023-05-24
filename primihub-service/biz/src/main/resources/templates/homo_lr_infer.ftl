@@ -11,7 +11,7 @@
     "Bob": {
       "data_set": "${label_dataset}",
       "model_path": "${hostModelFileName}",
-      "predict_path": "Bob_predict.csv"
+      "predict_path": "${predictFileName}"
     }
   }
 }
