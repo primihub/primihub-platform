@@ -710,15 +710,19 @@ public class DataAsyncService implements ApplicationContextAware {
             if (reply.getRetCode()==0){
                 dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
                 if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+                    dataTask.setTaskResultPath(modelOutputPathDto.getPredictFileName());
                     dataReasoning.setReleaseDate(new Date());
+                    dataTaskPrRepository.updateDataTask(dataTask);
                 }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                dataTaskPrRepository.updateDataTask(dataTask);
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
+            dataTaskPrRepository.updateDataTask(dataTask);
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }
