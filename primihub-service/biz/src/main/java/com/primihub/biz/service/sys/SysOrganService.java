@@ -1,7 +1,6 @@
 package com.primihub.biz.service.sys;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
@@ -13,10 +12,10 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
+import com.primihub.biz.entity.sys.param.ChangeOrganInfoParam;
 import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.entity.sys.po.SysOrganFusion;
 import com.primihub.biz.repository.primarydb.sys.SysOrganPrimarydbRepository;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
@@ -24,22 +23,14 @@ import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
-import com.primihub.biz.util.crypt.DateUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -364,5 +355,35 @@ public class SysOrganService {
 
     public BaseResultEntity getAvailableOrganList() {
         return BaseResultEntity.success(sysOrganSecondarydbRepository.selectSysOrganByExamine().stream().map(SysBaseConvert::SysOrganConvertVo).collect(Collectors.toList()));
+    }
+
+    public BaseResultEntity updateOrganInfo(ChangeOrganInfoParam changeOrganInfoParam) {
+        // 查询机构信息
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganById(Long.parseLong(changeOrganInfoParam.getOrganId()));
+        if (sysOrgan==null){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到机构信息");
+        }
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        Map<String,Object> map = new HashMap<>();
+        map.put("organId",sysLocalOrganInfo.getOrganId());
+        map.put("organName",sysLocalOrganInfo.getOrganName());
+        map.put("gateway",sysLocalOrganInfo.getGatewayAddress());
+        map.put("publicKey",sysLocalOrganInfo.getPublicKey());
+        map.put("applyId",sysOrgan.getApplyId());
+        map.put("examineState",sysOrgan.getExamineState());
+        map.put("enable",sysOrgan.getEnable());
+        // 通过修改的 网关 和 公钥 测试连接
+        BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map,
+                changeOrganInfoParam.getGatewayAddress() + "/share/shareData/apply", changeOrganInfoParam.getPublicKey());
+        if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            if (baseResultEntity!=null && baseResultEntity.getCode().equals(BaseResultEnum.DECRYPTION_FAILED.getReturnCode())){
+                return BaseResultEntity.failure(BaseResultEnum.DECRYPTION_FAILED,"合作方publicKey已更换");
+            }
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+        }
+        sysOrgan.setOrganGateway(changeOrganInfoParam.getGatewayAddress());
+        sysOrgan.setPublicKey(changeOrganInfoParam.getPublicKey());
+        sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
+        return BaseResultEntity.success("修改成功");
     }
 }

@@ -3,6 +3,7 @@ package com.primihub.application.controller.sys;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
+import com.primihub.biz.entity.sys.param.ChangeOrganInfoParam;
 import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.service.sys.SysOrganService;
 import org.apache.commons.lang3.StringUtils;
@@ -85,6 +86,14 @@ public class OrganController {
         return sysOrganService.getAvailableOrganList();
     }
 
+    /**
+     * 修改合作机构网关和公钥
+     * @return
+     */
+    @RequestMapping("updateOrganInfo")
+    public BaseResultEntity updateOrganInfo(ChangeOrganInfoParam changeOrganInfoParam){
+        return sysOrganService.updateOrganInfo(changeOrganInfoParam);
+    }
     /**
      * 审核申请的机构
      * @param id                申请数字ID
