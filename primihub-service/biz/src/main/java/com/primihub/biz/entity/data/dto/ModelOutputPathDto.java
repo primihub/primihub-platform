@@ -12,6 +12,7 @@ public class ModelOutputPathDto {
     private String indicatorFileName;
     private String modelRunZipFilePath;
     private String taskPath;
+    private String taskNNType;
 
     public ModelOutputPathDto() {
     }

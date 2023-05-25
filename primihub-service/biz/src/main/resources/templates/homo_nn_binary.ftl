@@ -11,7 +11,7 @@
       "method": "Plaintext",
       "process": "train",
       "task_name": "HFL_NN",
-      "task": "classification",
+      "task": "${taskNNType}",
       "delta": 1e-3,
       "l2_norm_clip": 1.0,
       "noise_multiplier": 2.0,
