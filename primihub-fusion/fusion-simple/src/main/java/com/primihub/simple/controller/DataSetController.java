@@ -6,6 +6,7 @@ import com.primihub.simple.base.BaseResultEnum;
 import com.primihub.simple.constant.SysConstant;
 import com.primihub.simple.service.FrontDataSetService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +40,10 @@ public class DataSetController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM);
         }
         return frontDataSetService.delete(dataSet);
+    }
+
+    @GetMapping("/health")
+    public BaseResultEntity getHealth(){
+        return BaseResultEntity.success();
     }
 }
