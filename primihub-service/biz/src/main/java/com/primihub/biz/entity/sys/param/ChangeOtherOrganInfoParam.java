@@ -3,7 +3,7 @@ package com.primihub.biz.entity.sys.param;
 import lombok.Data;
 
 @Data
-public class ChangeOrganInfoParam {
+public class ChangeOtherOrganInfoParam {
     private String organId;
     private String organName;
     private String gatewayAddress;

@@ -12,7 +12,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
-import com.primihub.biz.entity.sys.param.ChangeOrganInfoParam;
+import com.primihub.biz.entity.sys.param.ChangeOtherOrganInfoParam;
 import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
@@ -357,9 +357,9 @@ public class SysOrganService {
         return BaseResultEntity.success(sysOrganSecondarydbRepository.selectSysOrganByExamine().stream().map(SysBaseConvert::SysOrganConvertVo).collect(Collectors.toList()));
     }
 
-    public BaseResultEntity updateOrganInfo(ChangeOrganInfoParam changeOrganInfoParam) {
+    public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam) {
         // 查询机构信息
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganById(Long.parseLong(changeOrganInfoParam.getOrganId()));
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganById(Long.parseLong(changeOtherOrganInfoParam.getOrganId()));
         if (sysOrgan==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到机构信息");
         }
@@ -374,15 +374,15 @@ public class SysOrganService {
         map.put("enable",sysOrgan.getEnable());
         // 通过修改的 网关 和 公钥 测试连接
         BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map,
-                changeOrganInfoParam.getGatewayAddress() + "/share/shareData/apply", changeOrganInfoParam.getPublicKey());
+                changeOtherOrganInfoParam.getGatewayAddress() + "/share/shareData/apply", changeOtherOrganInfoParam.getPublicKey());
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             if (baseResultEntity!=null && baseResultEntity.getCode().equals(BaseResultEnum.DECRYPTION_FAILED.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.DECRYPTION_FAILED,"合作方publicKey已更换");
             }
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
         }
-        sysOrgan.setOrganGateway(changeOrganInfoParam.getGatewayAddress());
-        sysOrgan.setPublicKey(changeOrganInfoParam.getPublicKey());
+        sysOrgan.setOrganGateway(changeOtherOrganInfoParam.getGatewayAddress());
+        sysOrgan.setPublicKey(changeOtherOrganInfoParam.getPublicKey());
         sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         return BaseResultEntity.success("修改成功");
     }
