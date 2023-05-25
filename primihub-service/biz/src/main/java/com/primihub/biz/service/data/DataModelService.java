@@ -233,6 +233,8 @@ public class DataModelService {
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
 //                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
+                log.info("-----------------模型参数"+ JSONObject.toJSONString(paramValuesMap));
+                //dataModel.setModelType(paramValuesMap.get());
                 dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null));
             }
             dataModel.setProjectId(params.getProjectId());
@@ -405,6 +407,7 @@ public class DataModelService {
         modelTask.setModelId(dataModel.getModelId());
         dataModelPrRepository.saveDataModelTask(modelTask);
         taskReq.setDataModelTask(modelTask);
+        taskReq.getDataModel().setModelType(dataModel.getModelType());
         dataAsyncService.runModelTask(taskReq);
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",modelId);

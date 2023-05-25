@@ -237,10 +237,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
         ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
         putPath(outputPathDto,taskReq);
-        if ("6".equals(taskReq.getDataModel().getModelType())){
+        if (taskReq.getDataModel().getModelType() == 6){
             // 横向 -NN (分类)
             outputPathDto.setTaskNNType("classification");
-        } else if ("7".equals(taskReq.getDataModel().getModelType())){
+        } else if (taskReq.getDataModel().getModelType() == 7){
             // 横向 -NN (回归)
             outputPathDto.setTaskNNType("regression");
         }
