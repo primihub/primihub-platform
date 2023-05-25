@@ -41,9 +41,4 @@ public class DataSetController {
         }
         return frontDataSetService.delete(dataSet);
     }
-
-    @GetMapping("/health")
-    public BaseResultEntity getHealth(){
-        return BaseResultEntity.success();
-    }
 }
