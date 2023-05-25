@@ -12,7 +12,7 @@ FROM openjdk:8-jre
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update \
-  && apt install tzdata \
+  && apt install tzdata telnet \
   && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 COPY --from=build /opt/fusion-api/target/*-SNAPSHOT.jar /applications/fusion.jar
