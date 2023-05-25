@@ -239,10 +239,10 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         putPath(outputPathDto,taskReq);
         if (taskReq.getDataModel().getModelType() == 6){
             // 横向 -NN (分类)
-            outputPathDto.setTaskNNType("classification");
+            taskReq.getFreemarkerMap().put("taskNNType","classification");
         } else if (taskReq.getDataModel().getModelType() == 7){
             // 横向 -NN (回归)
-            outputPathDto.setTaskNNType("regression");
+            taskReq.getFreemarkerMap().put("taskNNType","classification");
         }
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
