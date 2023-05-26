@@ -359,7 +359,7 @@ public class SysOrganService {
 
     public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam) {
         // 查询机构信息
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyIdOrOrganId(changeOtherOrganInfoParam.getApplyId(), changeOtherOrganInfoParam.getOrganId());
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(changeOtherOrganInfoParam.getApplyId());
         if (sysOrgan == null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到机构信息");
         }
