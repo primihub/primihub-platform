@@ -10,7 +10,8 @@ public enum ModelTypeEnum {
     TRANSVERSE_LR(3,"横向LR",1,DataConstant.FREEMARKER_PYTHON_HOMO_LR_PATH),
     MPC_LR(4,"MPC-LR",1,null),
     HETERO_LR(5,"HETERO-LR",1,DataConstant.FREEMARKER_PYTHON_HETERO_LR_PATH),
-    BINARY(6,"binary",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH),
+    REGRESSION_BINARY(6,"binary",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH), // nn-回归
+    CLASSIFICATION_BINARY(7,"binary",1,DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH), // nn-分类
     ;
     private Integer type;
     private String name;

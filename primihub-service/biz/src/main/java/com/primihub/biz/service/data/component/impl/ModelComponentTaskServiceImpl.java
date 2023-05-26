@@ -70,7 +70,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.getType().equals(ModelTypeEnum.BINARY.getType())){
+        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())|| modelType.getType().equals(ModelTypeEnum.REGRESSION_BINARY.getType()) || modelType.getType().equals(ModelTypeEnum.CLASSIFICATION_BINARY.getType()) ){
             String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
             log.info(arbiterOrgan);
             if (StringUtils.isBlank(arbiterOrgan)) {
@@ -136,7 +136,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             return xgb(req,taskReq);
         }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())
                 ||modelType.equals(ModelTypeEnum.HETERO_LR.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY.getType())){
+                ||modelType.equals(ModelTypeEnum.REGRESSION_BINARY.getType())
+                ||modelType.equals(ModelTypeEnum.CLASSIFICATION_BINARY.getType())){
             return lr(req,taskReq,ModelTypeEnum.MODEL_TYPE_MAP.get(modelType));
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
