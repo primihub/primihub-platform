@@ -70,26 +70,26 @@ export const constantRoutes = [
     component: () => import('@/views/applicationMarket/application'),
     meta: { title: '应用页' }
   },
-  {
-    path: '/map',
-    component: Layout,
-    name: 'Map',
-    hidden: true,
-    redirect: '/map/index',
-    meta: { title: '地图' },
-    children: [
-      {
-        path: 'index',
-        name: 'mapIndex',
-        meta: { title: '地图', breadcrumb: false },
-        component: () => import('@/views/map/index')
-      }
-    ]
-  },
+  // {
+  //   path: '/map',
+  //   component: Layout,
+  //   name: 'Map',
+  //   hidden: true,
+  //   redirect: '/map/index',
+  //   meta: { title: '地图' },
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'mapIndex',
+  //       meta: { title: '地图', breadcrumb: false },
+  //       component: () => import('@/views/map/index')
+  //     }
+  //   ]
+  // },
   {
     path: '/',
     component: Layout,
-    redirect: '/map/index'
+    redirect: '/project'
   }
 ]
 
