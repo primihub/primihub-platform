@@ -358,11 +358,26 @@ export default {
       this.$refs['partnersForm'].validate(async valid => {
         if (valid) {
           if (this.reconnect) {
-            this.handleConnect({ id: this.applyId, enable: 1 })
+            this.loading = true
+            this.examineState = 0
+            const res = await examineJoining({
+              id: this.applyId,
+              examineState: this.examineState
+            })
+            if (res.code === 0) {
+              this.$message.success('已申请重新连接')
+              const index = this.organList.findIndex(item => item.id === this.applyId)
+              this.organList[index].examineState = this.examineState
+              this.closeConnectDialog()
+            } else {
+              // TODO 修改publicKey
+
+            }
+            this.loading = false
           } else {
             this.joiningPartners(this.partnersForm.publicKey, this.partnersForm.gateway)
+            this.closeConnectDialog()
           }
-          this.closeConnectDialog()
         }
       })
     },
