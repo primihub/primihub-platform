@@ -106,7 +106,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
-        log.info("------- 执行任务");
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.MPC_LR.getType())){
             return mpclr(req,taskReq);
         }
@@ -132,6 +131,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getFreemarkerMap().put("feature_names",field);
         }
         Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
+        log.info("modelType:{}",modelType);
         if (modelType.equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
         }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())
@@ -237,6 +237,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         return BaseResultEntity.success();
     }
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
+        log.info("------- 执行任务");
         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
         ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
         putPath(outputPathDto,taskReq);
