@@ -70,8 +70,15 @@ public class OtherBusinessesService {
     }
 
     public BaseResultEntity getOrganResourceList(OrganResourceReq req) {
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         try{
             ResourceParam param = new ResourceParam();
+            if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
+                param.setGlobalId("1");
+            }else {
+                param.setGlobalId(sysLocalOrganInfo.getOrganId());
+            }
+            param.setResourceName(req.getResourceName());
             param.setOrganId(req.getOrganId());
             param.setPageNo(req.getPageNo());
             param.setPageSize(req.getPageSize());
