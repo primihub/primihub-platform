@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -106,19 +107,25 @@ public class DataCopyService implements ApplicationContextAware {
                 if(!"[]".equals(copyDto.getCopyPart())) {
 
                     try {
-                        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(task.getOrganId());
-                        if (sysOrgan==null){
+                        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectOrganByOrganId(task.getOrganId());
+                        if (sysOrgans ==null || sysOrgans.size() <= 0){
                             isSuccess = false;
                             errorMsg = "机构信息查询null";
                         }else {
-                            
-                            BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress()+"/share/shareData/saveFusionResource", sysOrgan.getPublicKey());
-                            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
-                                isSuccess = false;
-                                if (++errorCount >= 3) {
-                                    errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
+                            for (int i=0; i<sysOrgans.size() -1; i++){
+                                SysOrgan organ = sysOrgans.get(i);
+                                if (organ.getExamineState().intValue() == 1) {
+                                    BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress()+"/share/shareData/saveFusionResource", organ.getPublicKey());
+                                    if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                                        isSuccess = false;
+                                        if (++errorCount >= 3) {
+                                            errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
+                                        }
+                                    }
+                                    break;
                                 }
                             }
+
                         }
 
                     } catch (Exception e) {

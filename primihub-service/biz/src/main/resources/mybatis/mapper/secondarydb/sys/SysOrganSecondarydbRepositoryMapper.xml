@@ -33,6 +33,17 @@
             organ_id = #{organId}
     </select>
 
+    <select id="selectOrganByOrganId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            organ_id = #{organId}
+    </select>
+
     <select id="selectSysOrganById" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
         select
             id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,

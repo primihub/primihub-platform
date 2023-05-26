@@ -16,6 +16,8 @@ public interface SysOrganSecondarydbRepository {
     SysOrgan selectSysOrganByApplyId(String applyId);
     SysOrgan selectSysOrganByApplyIdOrOrganId(@Param("applyId") String applyId,@Param("organId") String organId);
     SysOrgan selectSysOrganByOrganId(String organId);
+    List<SysOrgan> selectOrganByOrganId(String organId);
+
     SysOrgan selectSysOrganById(Long id);
 
     List<SysOrgan> selectSysOrganByParam(OrganParam param);
