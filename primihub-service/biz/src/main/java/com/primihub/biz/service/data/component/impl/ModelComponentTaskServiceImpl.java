@@ -237,14 +237,14 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         return BaseResultEntity.success();
     }
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
-        log.info("------- 执行任务");
+        log.info("------- 执行任务, modelType:{}", modelType);
         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
         ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
         putPath(outputPathDto,taskReq);
-        if ("6".equals(modelType.getType())){
+        if (6 == modelType.getType().intValue()){
             // 横向 -NN (分类)
             taskReq.getFreemarkerMap().put("taskNNType","classification");
-        } else if ("7".equals(modelType.getType())){
+        } else if (7 == modelType.getType().intValue()){
             // 横向 -NN (回归)
             taskReq.getFreemarkerMap().put("taskNNType","regression");
         }
