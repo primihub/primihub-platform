@@ -121,7 +121,7 @@
 <script>
 import Pagination from '@/components/Pagination'
 import clip from '@/utils/clipboard'
-import { getLocalOrganInfo, changeLocalOrganInfo, joiningPartners, getOrganList, examineJoining, enableStatus } from '@/api/center'
+import { getLocalOrganInfo, changeLocalOrganInfo, changeOtherOrganInfo, joiningPartners, getOrganList, examineJoining, enableStatus } from '@/api/center'
 
 const USER_INFO = 'userInfo'
 
@@ -140,6 +140,7 @@ export default {
       total: 0,
       loading: false,
       applyId: '',
+      connectApplyId: '',
       sysLocalOrganInfo: null,
       organDialogVisible: false,
       connectDialogVisible: false,
@@ -156,7 +157,8 @@ export default {
         organId: '',
         organName: '',
         publicKey: '',
-        gateway: ''
+        gateway: '',
+        applyId: ''
       },
       organFormRules: {
         organName: [
@@ -215,13 +217,15 @@ export default {
     statusStyle(state, enable) {
       return state === 1 && enable === 1 ? 'state-error el-icon-error' : state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
     },
-    reconnectApply({ id, publicKey, organGateway, organId, organName }) {
+    reconnectApply({ id, publicKey, organGateway, organId, organName, applyId }) {
+      console.log('reconnectApply ====>>', organId)
       this.partnersForm.publicKey = publicKey
       this.partnersForm.gateway = organGateway
       this.partnersForm.organId = organId
       this.partnersForm.organName = organName
       this.reconnect = true
       this.applyId = id
+      this.connectApplyId = applyId
       this.organDialogTitle = '重新连接节点'
       this.connectDialogVisible = true
     },
@@ -233,17 +237,19 @@ export default {
         this.setConnectionStatus(id, status)
         this.$message.success(msg)
       } else {
-        this.message.error(res.msg)
+        this.$message.error(res.msg)
       }
     },
-    async changeLocalOrganInfo() {
+    async changeOtherOrganInfo() {
+      console.log('this.applyId=====>', this.connectApplyId)
       const params = {
+        applyId: this.connectApplyId,
         organId: this.partnersForm.organId,
         organName: this.partnersForm.organName,
         gatewayAddress: this.partnersForm.gateway,
         publicKey: this.partnersForm.publicKey
       }
-      const res = await changeLocalOrganInfo(params)
+      const res = await changeOtherOrganInfo(params)
       if (res.code === 0) {
         this.setExamineState()
         this.$message.success('已重新申请连接')
@@ -378,15 +384,18 @@ export default {
 
             if (this.organInfoChanged) {
               const params = {
+                applyId: this.connectApplyId,
                 organId: this.partnersForm.organId,
                 organName: this.partnersForm.organName,
                 gatewayAddress: this.partnersForm.gateway,
                 publicKey: this.partnersForm.publicKey
               }
-              const res = await changeLocalOrganInfo(params)
+              const res = await changeOtherOrganInfo(params)
               if (res.code === 0) {
                 this.organInfoChanged = false
                 this.reExamineJoining()
+              } else {
+                this.$message.error(res.msg)
               }
             } else {
               this.reExamineJoining()

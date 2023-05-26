@@ -52,6 +52,13 @@ export function changeLocalOrganInfo(data) {
     data
   })
 }
+export function changeOtherOrganInfo(data) {
+  return request({
+    url: '/sys/organ/changeOtherOrganInfo',
+    method: 'post',
+    data
+  })
+}
 
 export function healthConnection(params) {
   return request({
