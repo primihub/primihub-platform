@@ -33,7 +33,7 @@ public class AsyncService {
 
     @Async
     public void syncOne(DataSet dataSet){
-        dataSet.setAddress(null);
+        //dataSet.setAddress(null);
         for (String collaborate : collaborates) {
             syncGatewayApiData(dataSet,collaborate+ SysConstant.ONE_URL);
         }
@@ -41,9 +41,9 @@ public class AsyncService {
 
     @Async
     public void syncMany(List<DataSet> dataSets){
-        for (DataSet dataSet : dataSets) {
+        /*for (DataSet dataSet : dataSets) {
             dataSet.setAddress(null);
-        }
+        }*/
         for (String collaborate : collaborates) {
             syncGatewayApiData(dataSets,collaborate+ SysConstant.MANY_URL);
         }
@@ -51,7 +51,7 @@ public class AsyncService {
 
     @Async
     public void syncDelete(DataSet dataSet){
-        dataSet.setAddress(null);
+        //dataSet.setAddress(null);
         for (String collaborate : collaborates) {
             syncGatewayApiData(dataSet,collaborate+ SysConstant.DELETE_URL);
         }
