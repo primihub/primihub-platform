@@ -100,7 +100,7 @@ CREATE TABLE `data_set` (
                                         `id` varchar(255) NOT NULL COMMENT '主键',
                                         `access_info` varchar(255) COMMENT '访问信息',
                                         `driver` varchar(255) NOT NULL COMMENT '资源类型',
-                                        `address` varchar(255) NOT NULL COMMENT '资源地址',
+                                        `address` varchar(255) COMMENT '资源地址',
                                         `visibility` varchar(255) NOT NULL COMMENT '可见性',
                                         `available` varchar(255) NOT NULL COMMENT '可获得',
                                         `holder` tinyint(4) DEFAULT '0' COMMENT '是否持有 0持有 1不持有',
