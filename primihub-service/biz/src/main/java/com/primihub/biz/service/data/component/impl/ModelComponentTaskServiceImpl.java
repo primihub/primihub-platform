@@ -240,12 +240,12 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
         ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
         putPath(outputPathDto,taskReq);
-        if (taskReq.getDataModel().getModelType() == 6){
+        if ("6".equals(modelType.getType())){
             // 横向 -NN (分类)
             taskReq.getFreemarkerMap().put("taskNNType","classification");
-        } else if (taskReq.getDataModel().getModelType() == 7){
+        } else if ("7".equals(modelType.getType())){
             // 横向 -NN (回归)
-            taskReq.getFreemarkerMap().put("taskNNType","classification");
+            taskReq.getFreemarkerMap().put("taskNNType","regression");
         }
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
         if (freemarkerContent != null) {
