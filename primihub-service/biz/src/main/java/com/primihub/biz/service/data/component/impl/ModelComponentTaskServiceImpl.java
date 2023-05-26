@@ -62,6 +62,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
+        log.info("------- 执行校验");
         BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
         if (baseResultEntity.getCode()!=0) {
             return baseResultEntity;
@@ -105,6 +106,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
+        log.info("------- 执行任务");
         if (Integer.valueOf(taskReq.getValueMap().get("modelType")).equals(ModelTypeEnum.MPC_LR.getType())){
             return mpclr(req,taskReq);
         }
