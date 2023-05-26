@@ -57,7 +57,7 @@ public class SqlLite3Initial {
                 "  \"id\" text NOT NULL,\n" +
                 "  \"access_info\" text,\n" +
                 "  \"driver\" TEXT,\n" +
-                "  \"address\" TEXT NOT NULL,\n" +
+                "  \"address\" TEXT,\n" +
                 "  \"visibility\" TEXT,\n" +
                 "  \"available\" TEXT,\n" +
                 "  \"holder\" TEXT,\n" +
