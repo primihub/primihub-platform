@@ -132,6 +132,7 @@ export default {
   },
   data() {
     return {
+      organInfoChanged: false,
       reconnect: false,
       pageNo: 1,
       pageSize: 10,
@@ -152,6 +153,8 @@ export default {
       },
       serverAddress: '',
       partnersForm: {
+        organId: '',
+        organName: '',
         publicKey: '',
         gateway: ''
       },
@@ -212,21 +215,39 @@ export default {
     statusStyle(state, enable) {
       return state === 1 && enable === 1 ? 'state-error el-icon-error' : state === 0 ? 'state-default el-icon-loading' : state === 2 ? 'state-error el-icon-error' : state === 1 ? 'state-success el-icon-success' : 'state-default'
     },
-    reconnectApply({ id, publicKey, organGateway }) {
+    reconnectApply({ id, publicKey, organGateway, organId, organName }) {
       this.partnersForm.publicKey = publicKey
       this.partnersForm.gateway = organGateway
+      this.partnersForm.organId = organId
+      this.partnersForm.organName = organName
       this.reconnect = true
       this.applyId = id
       this.organDialogTitle = '重新连接节点'
       this.connectDialogVisible = true
     },
-    async handleConnect({ id, enable }) {
+    async handleConnect({ id, enable, organId, gateway: gatewayAddress, publicKey }) {
       const status = enable === 1 ? 0 : 1
       const res = await enableStatus({ id, status })
       if (res.code === 0) {
         const msg = status === 1 ? '已断开连接' : '连接成功'
         this.setConnectionStatus(id, status)
         this.$message.success(msg)
+      } else {
+        this.message.error(res.msg)
+      }
+    },
+    async changeLocalOrganInfo() {
+      const params = {
+        organId: this.partnersForm.organId,
+        organName: this.partnersForm.organName,
+        gatewayAddress: this.partnersForm.gateway,
+        publicKey: this.partnersForm.publicKey
+      }
+      const res = await changeLocalOrganInfo(params)
+      if (res.code === 0) {
+        this.setExamineState()
+        this.$message.success('已重新申请连接')
+        this.closeConnectDialog()
       }
     },
     setConnectionStatus(id, status) {
@@ -270,12 +291,6 @@ export default {
       }).catch(err => {
         console.log(err)
         this.loading = false
-      })
-    },
-    async examineJoining() {
-      await examineJoining({
-        id: this.applyId,
-        examineState: this.examineState
       })
     },
     async getOrganList() {
@@ -360,19 +375,23 @@ export default {
           if (this.reconnect) {
             this.loading = true
             this.examineState = 0
-            const res = await examineJoining({
-              id: this.applyId,
-              examineState: this.examineState
-            })
-            if (res.code === 0) {
-              this.$message.success('已申请重新连接')
-              const index = this.organList.findIndex(item => item.id === this.applyId)
-              this.organList[index].examineState = this.examineState
-              this.closeConnectDialog()
-            } else {
-              // TODO 修改publicKey
 
+            if (this.organInfoChanged) {
+              const params = {
+                organId: this.partnersForm.organId,
+                organName: this.partnersForm.organName,
+                gatewayAddress: this.partnersForm.gateway,
+                publicKey: this.partnersForm.publicKey
+              }
+              const res = await changeLocalOrganInfo(params)
+              if (res.code === 0) {
+                this.organInfoChanged = false
+                this.reExamineJoining()
+              }
+            } else {
+              this.reExamineJoining()
             }
+
             this.loading = false
           } else {
             this.joiningPartners(this.partnersForm.publicKey, this.partnersForm.gateway)
@@ -380,6 +399,24 @@ export default {
           }
         }
       })
+    },
+    async reExamineJoining() {
+      const result = await examineJoining({
+        id: this.applyId,
+        examineState: this.examineState
+      })
+      if (result.code === 0) {
+        this.setExamineState()
+        this.$message.success('已重新申请连接')
+        this.closeConnectDialog()
+      } else if (result.code === 1013) {
+        this.organInfoChanged = true
+        this.$message.error(result.msg)
+      }
+    },
+    setExamineState() {
+      const index = this.organList.findIndex(item => item.id === this.applyId)
+      this.organList[index].examineState = this.examineState
     },
     joiningPartners(publicKey, gateway, id) {
       this.loading = true
