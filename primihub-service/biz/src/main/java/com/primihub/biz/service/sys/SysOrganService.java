@@ -359,8 +359,8 @@ public class SysOrganService {
 
     public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam) {
         // 查询机构信息
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(changeOtherOrganInfoParam.getOrganId());
-        if (sysOrgan==null){
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyIdOrOrganId(changeOtherOrganInfoParam.getApplyId(), changeOtherOrganInfoParam.getOrganId());
+        if (sysOrgan == null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到机构信息");
         }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -370,8 +370,6 @@ public class SysOrganService {
         map.put("gateway",sysLocalOrganInfo.getGatewayAddress());
         map.put("publicKey",sysLocalOrganInfo.getPublicKey());
         map.put("applyId",sysOrgan.getApplyId());
-        map.put("examineState",sysOrgan.getExamineState());
-        map.put("enable",sysOrgan.getEnable());
         // 通过修改的 网关 和 公钥 测试连接
         BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map,
                 changeOtherOrganInfoParam.getGatewayAddress() + "/share/shareData/apply", changeOtherOrganInfoParam.getPublicKey());

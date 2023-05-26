@@ -8,4 +8,5 @@ public class ChangeOtherOrganInfoParam {
     private String organName;
     private String gatewayAddress;
     private String publicKey;
+    private String applyId;
 }
