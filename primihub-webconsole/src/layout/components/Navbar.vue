@@ -5,9 +5,9 @@
         <img v-if="sidebarLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
         <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
       </template>
-      <div class="secondary-title" @click="toPath">
+      <!-- <div class="secondary-title" @click="toPath">
         {{ routePath ? '首页' : '分布式隐私计算服务网络' }}
-      </div>
+      </div> -->
     </div>
     <div class="right-menu">
       <div v-if="!isHideFadeBack" class="feedback">
