@@ -41,4 +41,9 @@ public class DataSetController {
         }
         return frontDataSetService.delete(dataSet);
     }
+
+    @GetMapping(SysConstant.HEALTH_URL)
+    public BaseResultEntity health(){
+        return BaseResultEntity.success("success");
+    }
 }
