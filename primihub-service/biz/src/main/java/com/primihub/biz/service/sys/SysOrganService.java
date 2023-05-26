@@ -223,7 +223,7 @@ public class SysOrganService {
     }
 
     public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyIdOrOrganId(info.get("applyId").toString(),info.get("organId").toString());
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
         if (sysOrgan==null){
             sysOrgan = new SysOrgan();
             sysOrgan.setApplyId(info.get("applyId").toString());
