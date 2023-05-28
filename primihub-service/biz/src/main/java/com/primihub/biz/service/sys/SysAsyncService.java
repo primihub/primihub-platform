@@ -44,12 +44,13 @@ public class SysAsyncService {
     @Async
     public void collectBaseData() {
         try {
-            Thread.sleep(5000L);
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             if (sysLocalOrganInfo==null)
                 return;
             if (sysLocalOrganInfo.getAddressInfo()==null)
                 return;
+            fusionOrganService.organData(sysLocalOrganInfo.getOrganId(),sysLocalOrganInfo.getOrganName());
+            Thread.sleep(5000L);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             MultiValueMap map = new LinkedMultiValueMap<>();

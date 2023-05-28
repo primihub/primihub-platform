@@ -9,7 +9,6 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
-import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -467,9 +466,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("未能获取到模型类型信息");
             } else {
-                Long[] portNumber = getPortNumber();
-                map.put(DataConstant.PYTHON_LABEL_PORT, portNumber[0].toString());  // 发起方端口
-                map.put(DataConstant.PYTHON_GUEST_PORT, portNumber[1].toString());  // 协作放端口
                 map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
                 grpc(dataReasoning, dataTask, modelType.getVal(), map);
                 //String freemarkerContent = "";
@@ -541,34 +537,6 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
 
-    public Long[] getPortNumber() {
-        Long[] port = new Long[2];
-        String hostKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "h");
-        String guestKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "g");
-        // 递增还是递减
-        String squareKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "s");
-        String squareVal = stringRedisTemplate.opsForValue().get(squareKey);
-        String hostVal = stringRedisTemplate.opsForValue().get(hostKey);
-        if (org.apache.commons.lang.StringUtils.isBlank(hostVal)) {
-            stringRedisTemplate.opsForValue().set(squareKey, "0");
-            stringRedisTemplate.opsForValue().set(hostKey, DataConstant.HOST_PORT_RANGE[0].toString());
-            stringRedisTemplate.opsForValue().set(guestKey, DataConstant.GUEST_PORT_RANGE[0].toString());
-        }
-        if (org.apache.commons.lang.StringUtils.isBlank(squareVal) || "0".equals(squareVal)) {
-            port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
-            port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0])) {
-                stringRedisTemplate.opsForValue().set(squareKey, "1");
-            }
-        } else {
-            port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
-            port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0])) {
-                stringRedisTemplate.opsForValue().set(squareKey, "0");
-            }
-        }
-        return port;
-    }
 
     /**
      * @param dataReasoning     推理实体
@@ -695,7 +663,6 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PYTHON)
                     .putAllPartyDatasets(values)
-//                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -703,7 +670,6 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
-                    //.setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());

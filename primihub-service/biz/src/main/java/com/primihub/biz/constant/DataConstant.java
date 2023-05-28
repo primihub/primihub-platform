@@ -36,9 +36,6 @@ public class DataConstant {
     public final static String PYTHON_GUEST_DATASET = "guest_dataset";
     public final static String PYTHON_ARBITER_DATASET = "arbiter_dataset";
     public final static String PYTHON_CALCULATION_FIELD = "label_field";
-    public final static String PYTHON_LABEL_PORT = "label_port";
-    public final static String PYTHON_GUEST_PORT = "guest_port";
-
     public final static Pattern RESOURCE_PATTERN_INTEGER = Pattern.compile("^-?\\d{1,9}$");
     public final static Pattern RESOURCE_PATTERN_LONG = Pattern.compile("^-?\\d{10,}$");
     public final static Pattern RESOURCE_PATTERN_DOUBLE = Pattern.compile("^-?\\d+\\.\\d+$");
