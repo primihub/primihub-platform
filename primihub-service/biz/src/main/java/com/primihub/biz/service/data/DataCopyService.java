@@ -107,25 +107,18 @@ public class DataCopyService implements ApplicationContextAware {
                 if(!"[]".equals(copyDto.getCopyPart())) {
 
                     try {
-                        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectOrganByOrganId(task.getOrganId());
-                        if (sysOrgans ==null || sysOrgans.size() <= 0){
+                        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(task.getOrganId());
+                        if (sysOrgan ==null){
                             isSuccess = false;
                             errorMsg = "机构信息查询null";
                         }else {
-                            for (int i=0; i<sysOrgans.size() -1; i++){
-                                SysOrgan organ = sysOrgans.get(i);
-                                if (organ.getExamineState().intValue() == 1) {
-                                    BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress()+"/share/shareData/saveFusionResource", organ.getPublicKey());
-                                    if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
-                                        isSuccess = false;
-                                        if (++errorCount >= 3) {
-                                            errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
-                                        }
-                                    }
-                                    break;
+                            BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress() + "/share/shareData/saveFusionResource", sysOrgan.getPublicKey());
+                            if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                                isSuccess = false;
+                                if (++errorCount >= 3) {
+                                    errorMsg = resultEntity.getMsg().substring(0, Math.min(1000, resultEntity.getMsg().length()));
                                 }
                             }
-
                         }
 
                     } catch (Exception e) {
