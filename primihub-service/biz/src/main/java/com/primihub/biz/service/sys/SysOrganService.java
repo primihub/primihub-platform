@@ -182,7 +182,7 @@ public class SysOrganService {
         return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
     }
 
-    public BaseResultEntity joiningPartners(String applyId,String gateway, String publicKey) {
+    public BaseResultEntity joiningPartners(String gateway, String publicKey,String applyId) {
         boolean isUpdate = false;
         SysOrgan sysOrgan = new SysOrgan();
         if (StringUtils.isNotBlank(applyId)){
