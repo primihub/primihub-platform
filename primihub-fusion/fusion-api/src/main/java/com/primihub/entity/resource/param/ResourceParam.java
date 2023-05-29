@@ -10,6 +10,7 @@ public class ResourceParam extends PageParam {
     private String resourceName;
     private Integer resourceType;
     private String organId;
+    private List<String> organIds;
     private String tagName;
     private Integer fileContainsY;
     private String globalId;

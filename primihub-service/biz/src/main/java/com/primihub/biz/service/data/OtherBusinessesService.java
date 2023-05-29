@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.req.DataFResourceReq;
 import com.primihub.biz.entity.data.req.OrganResourceReq;
 import com.primihub.biz.entity.fusion.param.OrganResourceParam;
@@ -23,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,11 @@ public class OtherBusinessesService {
     public BaseResultEntity getResourceList(DataFResourceReq req) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         try{
+            List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+            if (sysOrgans.size()==0){
+                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+            }
+            req.setOrganIds(sysOrgans.stream().map(SysOrgan::getOrganId).collect(Collectors.toList()));
             ResourceParam param = new ResourceParam();
             if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
                 param.setGlobalId("1");
