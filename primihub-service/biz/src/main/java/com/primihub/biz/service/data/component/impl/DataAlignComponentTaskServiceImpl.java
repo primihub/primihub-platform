@@ -251,8 +251,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
                     .setTaskInfo(taskBuild)
-                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", clientData.getResourceId()).build())
-                    .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", serverData.getResourceId()).build())
+                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", serverData.getResourceId()).build())
+                    .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", clientData.getResourceId()).build())
                     .build();
             log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()
