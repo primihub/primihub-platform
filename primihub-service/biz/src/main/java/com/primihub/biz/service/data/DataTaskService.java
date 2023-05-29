@@ -141,7 +141,6 @@ public class DataTaskService {
             dataCopyPrimarydbRepository.saveCopyInfo(task);
             dataCopyService.handleFusionCopyTask(task);
         }
-
     }
 
 

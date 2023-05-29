@@ -65,7 +65,6 @@ public class DataCopyService implements ApplicationContextAware {
 
     public void handleFusionCopyTask(DataFusionCopyTask task){
         DataFusionCopyEnum enu=DataFusionCopyEnum.FUSION_COPY_MAP.get(task.getTaskTable());
-
         Long startOffset,endOffset;
         if (task.getTaskType() == 1) {
             startOffset=task.getCurrentOffset();
@@ -76,14 +75,12 @@ public class DataCopyService implements ApplicationContextAware {
         } else {
             return;
         }
-
         if(enu!=null) {
             int errorCount=0;
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             if (sysLocalOrganInfo==null||sysLocalOrganInfo.getOrganId()==null|| "".equals(sysLocalOrganInfo.getOrganId().trim())) {
                 return;
             }
-
             while(startOffset<endOffset) {
                 log.info(startOffset+"-"+endOffset);
                 DataFusionCopyDto copyDto = new DataFusionCopyDto();
@@ -98,14 +95,13 @@ public class DataCopyService implements ApplicationContextAware {
                     copyDto.setCopyPart(JSON.toJSONString(result));
 //                    log.info(copyDto.getCopyPart());
                 } catch (Exception e) {
+                    e.printStackTrace();
                     log.info("handleFusionCopyTask", e);
                     return ;
                 }
-
                 boolean isSuccess=true;
                 String errorMsg="";
                 if(!"[]".equals(copyDto.getCopyPart())) {
-
                     try {
                         SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(task.getOrganId());
                         if (sysOrgan ==null){
@@ -120,15 +116,14 @@ public class DataCopyService implements ApplicationContextAware {
                                 }
                             }
                         }
-
                     } catch (Exception e) {
+                        e.printStackTrace();
                         isSuccess = false;
                         if (++errorCount >= 3) {
                             errorMsg = e.getMessage().substring(0, Math.min(1000, e.getMessage().length()));
                         }
                     }
                 }
-
                 if(isSuccess) {
                     dataCopyPrimarydbRepository.updateCopyInfo(task.getId(),endOffset,"success");
                     if (task.getTaskType() == 1) {
