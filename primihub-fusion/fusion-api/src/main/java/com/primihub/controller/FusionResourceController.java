@@ -46,6 +46,7 @@ public class FusionResourceController {
         if(resourceIds==null||resourceIds.length==0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIds");
         }
+        log.info(JSONObject.toJSONString(resourceIds));
         BaseResultEntity copyResource = resourceService.getCopyResource(resourceIds);
         log.info(JSONObject.toJSONString(copyResource));
         return copyResource;
