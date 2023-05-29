@@ -24,13 +24,11 @@ public class AsyncService {
         }
         int nd = newDataSet.toString().hashCode();
         if (d!=nd){
-            log.info("dataSet:{}",dataSet.toString());
-            log.info("newDataSet:{}",newDataSet.toString());
-            BaseResultEntity baseResultEntity = noticeService.noticeResource(dataSet.getId());
+            BaseResultEntity baseResultEntity = noticeService.noticeResource(newDataSet.getId());
             log.info("{} - {}",dataSet.getId(),JSONObject.toJSONString(baseResultEntity));
             if (!"0".equals(baseResultEntity.getCode())){
                 log.info("进入{}",dataSet.getId());
-                baseResultEntity = noticeService.testDataSet(dataSet.getId());
+                baseResultEntity = noticeService.testDataSet(newDataSet.getId());
                 log.info("{} - {}",dataSet.getId(),JSONObject.toJSONString(baseResultEntity));
             }
         }
