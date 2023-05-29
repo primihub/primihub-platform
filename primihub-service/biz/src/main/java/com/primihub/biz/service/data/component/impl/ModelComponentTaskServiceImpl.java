@@ -248,7 +248,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             // 横向 -NN (回归)
             taskReq.getFreemarkerMap().put("taskNNType","regression");
         }
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer,new HashMap<String, Object>(taskReq.getFreemarkerMap()));
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
@@ -343,7 +343,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
         putPath(outputPathDto,taskReq);
         taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, new HashMap<>(taskReq.getFreemarkerMap()));
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
@@ -360,7 +360,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-//                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
                         .putAllPartyDatasets(values)
                         .build();

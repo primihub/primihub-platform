@@ -2,6 +2,7 @@ package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
@@ -74,27 +75,31 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     }
 
     public BaseResultEntity runAssemblyData(Map<String, ModelEntity> map,DataComponentReq req, ComponentTaskReq taskReq){
-        Map<String, String> freemarkerMap = new HashMap<>();
+        Map<String, Object> freemarkerMap = new HashMap<>();
         freemarkerMap.put(DataConstant.PYTHON_LABEL_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
         freemarkerMap.put(DataConstant.PYTHON_GUEST_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
+        freemarkerMap.put("detail",map);
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_DATA_ALIGN_PATH, freeMarkerConfigurer, freemarkerMap);
         log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
                 log.info("runAssemblyDatamap:{}", JSONObject.toJSONString(map));
-                Common.ParamValue detailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(map).getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent), SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("detail", detailParamValue)
+                        .putParamMap("component_params", componentParamsParamValue)
                         .build();
+                Map<String, Common.Dataset> values = new HashMap<>();
+                values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
+                values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
-                        .setName("runAssemblyData")
+                        .setName("assemblyData")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
+                        .putAllPartyDatasets(values)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -159,7 +164,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     }
 
     @Data
-    public class ModelEntity {
+    public static class ModelEntity {
         public ModelEntity(String psiPath, List<Integer> index,String resourceId) {
             this.newDataSetId= resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
             this.psiPath = psiPath + newDataSetId +".csv";

@@ -452,7 +452,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setRunTaskId(dataTask.getTaskId());
         dataReasoning.setReasoningState(dataTask.getTaskState());
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
-        Map<String, String> map = new HashMap<>();
+        Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
@@ -611,7 +611,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoning.setReasoningState(dataTask.getTaskState());
     }
 
-    private void grpc(DataReasoning dataReasoning, DataTask dataTask, String modelType, Map<String, String> map) {
+    private void grpc(DataReasoning dataReasoning, DataTask dataTask, String modelType, Map<String, Object> map) {
         // 推理任务
         DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
         log.info(modelTask.toString());
@@ -621,6 +621,7 @@ public class DataAsyncService implements ApplicationContextAware {
         log.info("模板参数-------"+modelOutputPathDto.toString());
         String freemarkerContent = "";
         Map<String, Common.Dataset> values = new HashMap<>();
+        values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET).toString()).build());
         if ("2".equals(modelType)) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
@@ -628,26 +629,22 @@ public class DataAsyncService implements ApplicationContextAware {
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
             map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
             map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
-            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
-            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET)).build());
+            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET).toString()).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("5".equals(modelType)) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
-            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET)).build());
+            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET).toString()).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
         } else if ("6".equals(modelType) || "7".equals(modelType)) {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
-            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
         } else {
             map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("predictFileName", modelOutputPathDto.getPredictFileName());
-            values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET)).build());
             freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
         }
         try {
