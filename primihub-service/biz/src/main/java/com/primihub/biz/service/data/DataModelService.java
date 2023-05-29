@@ -68,6 +68,13 @@ public class DataModelService {
     private DataResourceService dataResourceService;
 
     public BaseResultEntity getDataModel(Long taskId,Long userId) {
+        DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (task==null){
+            task = dataTaskRepository.selectDataTaskByTaskIdName(String.valueOf(taskId));
+            if (task!=null){
+                taskId = task.getTaskId();
+            }
+        }
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -76,7 +83,6 @@ public class DataModelService {
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
-        DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
         List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId).stream().filter(v->v.getTakePartType()==0).collect(Collectors.toList());
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
