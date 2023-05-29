@@ -201,9 +201,15 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             }
             List<Integer> clientIndex;
             List<Integer> serverIndex;
+            clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
+            serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             List<String> fieldList = null;
             if ("1".equals(dataAlign)){
-                fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
+                if (clientData.getFileHandleField().contains("id")&&serverData.getFileHandleField().contains("id")){
+                    fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
+                }else {
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐特征中无ID/id属性");
+                }
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected)) {
@@ -215,8 +221,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             log.info("data-align clientDataFileHandleField: {}",JSONObject.toJSONString(clientData.getFileHandleField()));
             log.info("data-align serverDataFileHandleField: {}",JSONObject.toJSONString(serverData.getFileHandleField()));
             log.info("data-align fieldList : {}",JSONObject.toJSONString(fieldList));
-            clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
-            serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
             serverIndex = fieldList.stream().map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0) {
