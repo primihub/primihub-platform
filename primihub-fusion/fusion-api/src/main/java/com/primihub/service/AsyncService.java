@@ -24,6 +24,8 @@ public class AsyncService {
         }
         int nd = newDataSet.toString().hashCode();
         if (d!=nd){
+            log.info("dataSet:{}",dataSet.toString());
+            log.info("newDataSet:{}",newDataSet.toString());
             BaseResultEntity baseResultEntity = noticeService.noticeResource(dataSet.getId());
             log.info("{} - {}",dataSet.getId(),JSONObject.toJSONString(baseResultEntity));
             if (!"0".equals(baseResultEntity.getCode())){
