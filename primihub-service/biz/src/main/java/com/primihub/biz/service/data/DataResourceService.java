@@ -771,6 +771,7 @@ public class DataResourceService {
                 DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
+                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
                 singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
