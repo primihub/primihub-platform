@@ -154,7 +154,7 @@ public class DataPsiService {
                 Map map = organListMap.get(dataPsi.getOwnOrganId());
                 String gatewayAddress = map.get("gatewayAddress").toString();
                 String publicKey = (String) map.get("publicKey");
-                otherBusinessesService.syncGatewayApiData(new DataPsiTaskSyncReq(task,dataPsi,dataTask),CommonConstant.DISPATCH_RUN_PSI.replace("<address>", gatewayAddress),publicKey);
+                otherBusinessesService.syncGatewayApiData(new DataPsiTaskSyncReq(task,dataPsi,dataTask),CommonConstant.DISPATCH_RUN_PSI.replace("<address>", gatewayAddress),null);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
                 e.printStackTrace();

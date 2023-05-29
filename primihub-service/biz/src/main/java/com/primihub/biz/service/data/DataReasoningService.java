@@ -109,7 +109,7 @@ public class DataReasoningService {
                 Map map = organListMap.get(organId);
                 String gatewayAddress = map.get("gatewayAddress").toString();
                 String publicKey = (String) map.get("publicKey");
-                otherBusinessesService.syncGatewayApiData(new DataReasoningTaskSyncReq(dataReasoning,dataReasoningResourceList,modelTask,dataTask),CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress),publicKey);
+                otherBusinessesService.syncGatewayApiData(new DataReasoningTaskSyncReq(dataReasoning,dataReasoningResourceList,modelTask,dataTask),CommonConstant.DISPATCH_RUN_REASONING.replace("<address>", gatewayAddress),null);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
             }

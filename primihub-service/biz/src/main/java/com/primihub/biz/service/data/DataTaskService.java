@@ -301,7 +301,7 @@ public class DataTaskService {
                         String publicKey = (String) map.get("publicKey");
                         organNames.add(map.get("globalName").toString());
                         log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
-                        otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
+                        otherBusinessesService.syncGatewayApiData(shareProjectVo,url,null);
                         log.info("projectId:{} - OrganId:{} gatewayAddress api end:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                     }
                 }
@@ -340,7 +340,7 @@ public class DataTaskService {
                     log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
                     String url = CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                     String publicKey = (String) map.get("publicKey");
-                    otherBusinessesService.syncGatewayApiData(shareModelVo,url,publicKey);
+                    otherBusinessesService.syncGatewayApiData(shareModelVo,url,null);
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }
             }

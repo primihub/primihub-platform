@@ -466,7 +466,7 @@ public class DataModelService {
                 Map map = organListMap.get(dataProjectOrgan.getOrganId());
                 String gatewayAddress = map.get("gatewayAddress").toString();
                 String publicKey = (String) map.get("publicKey");
-                otherBusinessesService.syncGatewayApiData(taskReq,CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress),publicKey);
+                otherBusinessesService.syncGatewayApiData(taskReq,CommonConstant.DISPATCH_RUN_TASK_MODEL.replace("<address>", gatewayAddress),null);
             }catch (Exception e){
                 log.info("Dispatch gatewayAddress api Exception:{}",e.getMessage());
             }
