@@ -10,7 +10,6 @@ public class DataFResourceReq extends PageReq {
     private String resourceName;
     private Integer resourceSource;
     private String organId;
-    private List<String> organIds;
     private String tagName;
     private Integer fileContainsY;
 }

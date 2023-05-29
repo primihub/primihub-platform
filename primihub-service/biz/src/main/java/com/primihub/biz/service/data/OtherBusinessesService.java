@@ -52,8 +52,8 @@ public class OtherBusinessesService {
             if (sysOrgans.size()==0){
                 return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
             }
-            req.setOrganIds(sysOrgans.stream().map(SysOrgan::getOrganId).collect(Collectors.toList()));
             ResourceParam param = new ResourceParam();
+            param.setOrganIds(sysOrgans.stream().map(SysOrgan::getOrganId).collect(Collectors.toList()));
             if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
                 param.setGlobalId("1");
             }else {
