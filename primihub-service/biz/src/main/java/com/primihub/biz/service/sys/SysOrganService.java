@@ -182,9 +182,18 @@ public class SysOrganService {
         return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
     }
 
-    public BaseResultEntity joiningPartners(String gateway, String publicKey) {
+    public BaseResultEntity joiningPartners(String applyId,String gateway, String publicKey) {
+        boolean isUpdate = false;
         SysOrgan sysOrgan = new SysOrgan();
-        sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
+        if (StringUtils.isNotBlank(applyId)){
+            sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(applyId);
+            if (sysOrgan==null){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "查询机构失败");
+            }
+            isUpdate = true;
+        }else {
+            sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
+        }
         sysOrgan.setOrganGateway(gateway);
         sysOrgan.setPublicKey(publicKey);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -206,9 +215,8 @@ public class SysOrganService {
             }
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
-            SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
-            if (sysOrgan1!=null){
-                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方已存在,不可重复提交申请！");
+            if (isUpdate){
+                sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }else {
                 sysOrgan.setOrganName(resultMap.get("organName").toString());
                 sysOrgan.setExamineState(0);
