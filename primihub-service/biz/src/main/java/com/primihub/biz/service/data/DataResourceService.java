@@ -865,7 +865,9 @@ public class DataResourceService {
     }
 
     public BaseResultEntity noticeResource(String resourceId) {
+        log.info(resourceId);
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+        log.info(JSONObject.toJSONString(dataResource));
         if (dataResource==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"找不到资源信息");
         }
