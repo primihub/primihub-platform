@@ -352,13 +352,6 @@ public class SysOrganService {
         if (sysOrgan.getEnable().equals(status)){
             return BaseResultEntity.success();
         }
-        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectOrganByOrganId(sysOrgan.getOrganId());
-        if (sysOrgans != null && sysOrgans.size() > 0){
-            for (SysOrgan organ : sysOrgans){
-                organ.setEnable(status);
-                sysOrganPrimarydbRepository.updateSysOrgan(organ);
-            }
-        }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
@@ -371,6 +364,13 @@ public class SysOrganService {
         BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, sysOrgan.getOrganGateway() + "/share/shareData/apply", sysOrgan.getPublicKey());
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+        }
+        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectOrganByOrganId(sysOrgan.getOrganId());
+        if (sysOrgans != null && sysOrgans.size() > 0){
+            for (SysOrgan organ : sysOrgans){
+                organ.setEnable(status);
+                sysOrganPrimarydbRepository.updateSysOrgan(organ);
+            }
         }
         sysAsyncService.applyForJoinNode(sysOrgan);
         return BaseResultEntity.success();
