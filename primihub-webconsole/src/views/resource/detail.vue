@@ -21,7 +21,7 @@
         <el-descriptions-item label="正例样本数量">{{ resource.fileYRows ? resource.fileYRows : '0' }}</el-descriptions-item>
         <el-descriptions-item label="正例样本比例">{{ resource.fileYRatio ? resource.fileYRatio : '0' }}%</el-descriptions-item>
         <el-descriptions-item label="数据来源">{{ resource.resourceSource | sourceFilter }}</el-descriptions-item>
-        <el-descriptions-item label="数据大小">{{ resource.fileSize | fileSizeFilter }}</el-descriptions-item>
+        <el-descriptions-item v-if="resource.resourceSource === 1" label="数据大小">{{ resource.fileSize | fileSizeFilter }}</el-descriptions-item>
       </el-descriptions>
     </div>
     <div class="detail">

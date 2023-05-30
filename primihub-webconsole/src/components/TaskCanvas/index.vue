@@ -121,6 +121,10 @@ export default {
     restartRun: {
       type: Boolean,
       default: false
+    },
+    componentsDetail: {
+      type: Object,
+      default: () => null
     }
   },
   data() {
@@ -168,22 +172,22 @@ export default {
       if (newVal) {
         await this.restartTaskModel()
       }
+    },
+    componentsDetail(newVal) {
+      if (newVal) {
+        this.graph.clearCells()
+        this.nodeData = this.startNode
+        this.graphData.cells = []
+        this.graph.fromJSON(this.graphData)
+        this.selectComponentList = []
+        this.$emit('selectComponents', this.selectComponentList)
+        this.setComponentsDetail(newVal)
+        this.$message({
+          message: '导入成功',
+          type: 'success'
+        })
+      }
     }
-    // componentsDetail(newVal) {
-    //   if (newVal) {
-    //     this.graph.clearCells()
-    //     this.nodeData = this.startNode
-    //     this.graphData.cells = []
-    //     this.graph.fromJSON(this.graphData)
-    //     this.selectComponentList = []
-    //     this.$emit('selectComponents', this.selectComponentList)
-    //     this.setComponentsDetail(newVal)
-    //     this.$message({
-    //       message: '导入成功',
-    //       type: 'success'
-    //     })
-    //   }
-    // },
   },
   async mounted() {
     this.taskId = this.$route.params.taskId

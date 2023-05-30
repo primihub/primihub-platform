@@ -2,23 +2,13 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="中心节点">
-          <el-select v-model="query.serverAddressValue" size="small" placeholder="请选择" @change="handleServerAddressChange">
-            <el-option
-              v-for="item in serverAddressList"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
         <el-form-item label="机构">
-          <el-select v-model="query.organId" size="small" placeholder="请选择" clearable @change="handleOrganCascaderChange" @clear="handleClear">
+          <el-select v-model="query.organId" size="small" placeholder="请选择" clearable @change="handleOrganChange" @clear="handleClear">
             <el-option
-              v-for="item in cascaderOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+              v-for="item in organList"
+              :key="item.globalId"
+              :label="item.globalName"
+              :value="item.globalId"
             />
           </el-select>
         </el-form-item>
@@ -149,7 +139,7 @@
 
 <script>
 import { getResourceList, getResourceTagList } from '@/api/fusionResource'
-import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
+import { getAvailableOrganList } from '@/api/center'
 import Pagination from '@/components/Pagination'
 import TagsSelect from '@/components/TagsSelect'
 
@@ -164,14 +154,12 @@ export default {
       fusionList: [],
       groupList: [],
       organList: [],
-      serverAddressList: [],
       query: {
         resourceId: '',
         resourceName: '',
         tagName: '',
         userName: '',
         resourceSource: '',
-        serverAddressValue: '',
         groupId: 0,
         organId: '',
         resourceAuthType: '',
@@ -200,7 +188,6 @@ export default {
       resourceName: '',
       resourceSortType: 0,
       resourceAuthType: 0,
-      serverAddress: null,
       groupId: 0,
       organId: 0,
       isReset: false
@@ -212,10 +199,9 @@ export default {
     }
   },
   async created() {
-    await this.initData()
-    if (this.sysLocalOrganInfo) {
-      await this.fetchData()
-    }
+    await this.getAvailableOrganList()
+    await this.getResourceTagList()
+    await this.fetchData()
   },
   methods: {
     handleClear() {
@@ -224,26 +210,17 @@ export default {
     reset() {
       this.isReset = true
       for (const key in this.query) {
-        if (key !== 'serverAddressValue') {
-          this.query[key] = ''
-        }
+        this.query[key] = ''
       }
       this.pageNo = 1
       this.fetchData()
     },
     async search() {
       this.pageNo = 1
-      if (!this.serverAddress) {
-        this.$message({
-          message: '中心节点为空，请前往系统设置-中心管理，添加节点',
-          type: 'warning'
-        })
-        return
-      }
       await this.fetchData()
     },
     async getResourceTagList() {
-      const { result } = await getResourceTagList({ serverAddress: this.serverAddress })
+      const { result } = await getResourceTagList()
       this.tags = result && result.map((item, index) => {
         return {
           value: index,
@@ -255,10 +232,6 @@ export default {
       this.query.tagName = tagName
       this.query.selectTag = 0
       this.fetchData()
-    },
-    async handleServerAddressChange(value) {
-      this.serverAddress = this.serverAddressList.filter(item => item.value === value)[0]?.label
-      await this.findMyGroupOrgan()
     },
     searchResource(tagName) {
       this.pageNo = 1
@@ -276,7 +249,6 @@ export default {
       this.resourceList = []
       const { resourceId, resourceName, tagName, organId, resourceSource, fileContainsY } = this.query
       const params = {
-        serverAddress: this.serverAddress,
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         resourceId,
@@ -312,50 +284,16 @@ export default {
         name: 'UnionResourceDetail',
         params: {
           id
-        },
-        query: {
-          serverAddress: this.serverAddress
         }
       })
     },
-
-    async getLocalOrganInfo() {
-      const { result } = await getLocalOrganInfo()
-      this.sysLocalOrganInfo = result.sysLocalOrganInfo
-      if (!result.sysLocalOrganInfo) return
-      this.fusionList = result.sysLocalOrganInfo?.fusionList
-      this.fusionList && this.fusionList.map((item, index) => {
-        this.serverAddressList.push({
-          label: item.serverAddress,
-          value: index,
-          registered: item.registered,
-          show: item.show
-        })
-      })
-      this.query.serverAddressValue = 0
-      this.serverAddress = this.serverAddressList[this.query.serverAddressValue].label
-    },
-    async findMyGroupOrgan() {
-      const { result } = await findMyGroupOrgan({ serverAddress: this.serverAddress })
-      this.organList = result.dataList.organList
-      this.cascaderOptions = this.organList && this.organList.map((item) => {
-        return {
-          label: item.globalName,
-          value: item.globalId,
-          leaf: true
-        }
-      })
+    async getAvailableOrganList() {
+      const { result } = await getAvailableOrganList()
+      this.organList = result
     },
 
-    async handleOrganCascaderChange(value) {
+    async handleOrganChange(value) {
       this.query.organId = value
-    },
-    async initData() {
-      await this.getLocalOrganInfo()
-      if (this.sysLocalOrganInfo) {
-        await this.findMyGroupOrgan()
-        await this.getResourceTagList()
-      }
     }
   }
 }

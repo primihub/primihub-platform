@@ -1,20 +1,18 @@
 <template>
   <div class="organ-select">
-    <el-select v-model="organId" v-loading="loading" element-loading-spinner="el-icon-loading" placeholder="请选择求交机构" @change="handleChange">
+    <el-select v-model="organId" v-loading="loading" v-bind="$attrs" element-loading-spinner="el-icon-loading" placeholder="请选择机构" @change="handleChange">
       <el-option
         v-for="item in organList"
-        :key="item.organId"
-        :label="item.organName"
-        :value="item.organId"
+        :key="item.globalId"
+        :label="item.globalName"
+        :value="item.globalId"
       />
     </el-select>
   </div>
 </template>
 
 <script>
-import { getOrgans } from '@/api/organ'
-
-const ORGAN_KEY = 'priOrgan'
+import { getAvailableOrganList } from '@/api/center'
 
 export default {
   name: 'OrganSelect',
@@ -29,23 +27,22 @@ export default {
     }
   },
   async created() {
-    await this.getOrgans()
+    await this.getAvailableOrganList()
   },
   methods: {
-    async getOrgans() {
+    async getAvailableOrganList() {
       this.loading = true
-      const res = await getOrgans()
+      const res = await getAvailableOrganList()
       if (res.code === 0) {
         this.loading = false
-        const { sysOrganList } = res.result
-        this.organList = sysOrganList
+        const { result } = res
+        this.organList = result
       }
     },
     handleChange(val) {
       this.organId = val
-      const selectOrgan = this.organList.find(item => item.organId === val)
+      const selectOrgan = this.organList.find(item => item.globalId === val)
       this.organName = selectOrgan.organName
-      localStorage.setItem(ORGAN_KEY, JSON.stringify({ organId: val, organName: this.organName }))
       this.$emit('change', {
         organId: this.organId,
         organName: this.organName

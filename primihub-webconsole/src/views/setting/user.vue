@@ -1,6 +1,5 @@
 <template>
   <div class="container">
-    <h2>用户管理</h2>
     <el-button v-if="hasAddPermission" type="primary" icon="el-icon-plus" @click="addUser">新增用户</el-button>
     <div class="main">
       <el-table
@@ -155,9 +154,9 @@ export default {
         if (res.code === 0) {
           const { sysUserList, pageParam } = res.result
           this.list = sysUserList
-          this.pageCount = pageParam.pageCount
-          this.pageNum = pageParam.pageNum
-          this.itemTotalCount = pageParam.itemTotalCount
+          this.pageCount = Number(pageParam.pageCount)
+          this.pageNum = Number(pageParam.pageNum)
+          this.itemTotalCount = Number(pageParam.itemTotalCount)
         }
       })
     },
