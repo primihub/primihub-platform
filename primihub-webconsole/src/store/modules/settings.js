@@ -31,7 +31,8 @@ const state = {
   settingChanged: false,
   footerText,
   loaded: false,
-  isShowLogo
+  isShowLogo,
+  isHideBigModel: true
 }
 
 const mutations = {
@@ -80,6 +81,9 @@ const mutations = {
   SET_APP_MARKET_STATUS: (state, status) => {
     state.isHideAppMarket = status
   },
+  SET_BIG_MODEL_STATUS: (state, status) => {
+    state.isHideBigModel = status
+  },
   SET_VERSION_STATUS: (state, status) => {
     state.isHideFooterVersion = status
   },
@@ -95,7 +99,7 @@ const actions = {
   async getHomepage({ commit }) {
     const res = await getHomepage()
     if (res.code === 0 && res.result && Object.keys(res.result).length > 0) {
-      const { favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo } = res.result
+      const { favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo, isHideBigModel = state.isHideBigModel } = res.result
       commit('SET_LOGO_STATUS', isShowLogo)
       commit('SET_FAVICON', favicon)
       commit('SET_LOGO_URL', logoUrl)
@@ -103,6 +107,7 @@ const actions = {
       commit('SET_DESCRIPTION', loginDescription)
       commit('SET_FADE_BACK_STATUS', isHideFadeBack)
       commit('SET_APP_MARKET_STATUS', isHideAppMarket)
+      commit('SET_BIG_MODEL_STATUS', isHideBigModel)
       commit('SET_VERSION_STATUS', isHideFooterVersion)
       commit('SET_LOGO_TITLE', logoTitle)
       commit('SET_SHOW_LOGO_STATUS', showLogoTitle)
