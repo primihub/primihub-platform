@@ -1,6 +1,7 @@
 package com.primihub.biz.service.sys;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
@@ -218,6 +219,7 @@ public class SysOrganService {
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
+            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
             if (sysOrgan1!=null){
                 sysOrgan.setId(sysOrgan1.getId());
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
