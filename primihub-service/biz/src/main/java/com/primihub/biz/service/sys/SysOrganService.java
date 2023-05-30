@@ -190,6 +190,8 @@ public class SysOrganService {
             if (sysOrgan==null){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "查询机构失败");
             }
+            sysOrgan.setExamineState(0);
+            sysOrgan.setEnable(0);
             isUpdate = true;
         }else {
             sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
