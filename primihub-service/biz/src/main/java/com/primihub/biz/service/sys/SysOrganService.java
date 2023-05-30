@@ -219,7 +219,7 @@ public class SysOrganService {
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
-            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
+//            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
             if (sysOrgan1!=null){
                 sysOrgan.setId(sysOrgan1.getId());
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
@@ -241,7 +241,8 @@ public class SysOrganService {
     }
 
     public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
-        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
+//        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
+        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(info.get("organId").toString());
         if (sysOrgan==null){
             sysOrgan = new SysOrgan();
             sysOrgan.setApplyId(info.get("applyId").toString());
