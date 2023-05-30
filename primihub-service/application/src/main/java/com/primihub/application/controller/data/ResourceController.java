@@ -245,6 +245,14 @@ public class ResourceController {
         return dataResourceService.displayDatabaseSourceType();
     }
 
+    @PostMapping("noticeResource")
+    public BaseResultEntity noticeResource(String resourceId){
+        if (StringUtils.isBlank(resourceId)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        }
+        return dataResourceService.noticeResource(resourceId);
+    }
+
     @RequestMapping("download")
     public void download(HttpServletResponse response, Long resourceId) throws Exception{
         DataResource dataResource = dataResourceService.getDataResourceUrl(resourceId);
@@ -281,5 +289,8 @@ public class ResourceController {
         response.setCharacterEncoding("utf-8");
         response.getWriter().println(JSONObject.toJSONString(BaseResultEntity.failure(BaseResultEnum.DATA_DOWNLOAD_TASK_ERROR_FAIL,message)));
     }
+
+
+
 
 }

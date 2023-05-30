@@ -7,11 +7,11 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-        namespace:
+        namespace: dev
 nacos:
   config:
     server-addr: localhost:8848
-    namespace:
+    namespace: dev
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000

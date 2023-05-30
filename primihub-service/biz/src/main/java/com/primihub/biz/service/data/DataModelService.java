@@ -27,6 +27,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
@@ -63,11 +64,18 @@ public class DataModelService {
     @Autowired
     private DataAsyncService dataAsyncService;
     @Autowired
-    private DataResourceRepository dataResourceRepository;
-    @Autowired
     private DataResourceService dataResourceService;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
 
     public BaseResultEntity getDataModel(Long taskId,Long userId) {
+        DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (task==null){
+            task = dataTaskRepository.selectDataTaskByTaskIdName(String.valueOf(taskId));
+            if (task!=null){
+                taskId = task.getTaskId();
+            }
+        }
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -76,12 +84,11 @@ public class DataModelService {
         if (modelVo==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
-        DataTask task = dataTaskRepository.selectDataTaskByTaskId(taskId);
         List<ModelResourceVo> modelResourceVos = dataModelRepository.queryModelResource(modelVo.getModelId(),taskId).stream().filter(v->v.getTakePartType()==0).collect(Collectors.toList());
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(modelVo.getProjectId(), null);
         if (dataProject!=null){
             List<String> resourceId = modelResourceVos.stream().map(ModelResourceVo::getResourceId).collect(Collectors.toList());
-            Map<String, Map> resourceListMap = dataProjectService.getResourceListMap(resourceId, dataProject.getServerAddress());
+            Map<String, Map> resourceListMap = otherBusinessesService.getResourceListMap(resourceId);
             if (resourceListMap.size()>0){
                 for (ModelResourceVo modelResourceVo : modelResourceVos) {
                     Map map = resourceListMap.get(modelResourceVo.getResourceId());
@@ -96,29 +103,10 @@ public class DataModelService {
                         modelResourceVo.setPrimitiveParamNum(map.get("resourceColumnCount") == null ? 0 : Integer.parseInt(map.get("resourceColumnCount").toString()));
                         modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
                         modelResourceVo.setResourceType(map.get("resourceType") == null ? 0 : Integer.parseInt(map.get("resourceType").toString()));
-                        modelResourceVo.setServerAddress(dataProject.getServerAddress());
                         if (map.get("organId") != null) {
                             modelResourceVo.setParticipationIdentity(dataProject.getCreatedOrganId().equals(map.get("organId").toString()) ? 1 : 2);
                         }
                     }
-//                    }else {
-//                        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(modelResourceVo.getResourceId());
-//                        if (dataResource!=null){
-//                            modelResourceVo.setAvailable(0);
-//                            modelResourceVo.setResourceName(dataResource.getResourceName());
-//                            modelResourceVo.setOrganName(organConfiguration.getSysLocalOrganName());
-//                            modelResourceVo.setOrganId(dataProject.getCreatedOrganId());
-//                            modelResourceVo.setFileNum(dataResource.getFileRows());
-//                            modelResourceVo.setAlignmentNum(modelResourceVo.getFileNum());
-//                            modelResourceVo.setPrimitiveParamNum(dataResource.getResourceNum());
-//                            modelResourceVo.setModelParamNum(modelResourceVo.getPrimitiveParamNum());
-//                            modelResourceVo.setResourceType(dataResource.getResourceSource());
-//                            modelResourceVo.setServerAddress(dataProject.getServerAddress());
-//                            modelResourceVo.setParticipationIdentity(1);
-//                        }else {
-//                            modelResourceVo.setResourceId(null);
-//                        }
-//                    }
                 }
             }
         }
@@ -135,7 +123,6 @@ public class DataModelService {
         map.put("project", DataProjectConvert.dataProjectConvertDetailsVo(dataProject));
         map.put("model",modelVo);
         map.put("task", DataTaskConvert.dataTaskPoConvertDataModelTaskList(task));
-//        map.put("modelResources",modelResourceVos.stream().filter(r->r.getResourceType()!=3).collect(Collectors.toList()));
         map.put("modelResources",modelResourceVos);
         map.put("oneself",true);
         if (!baseConfiguration.getAdminUserIds().contains(userId)){
@@ -143,10 +130,15 @@ public class DataModelService {
                 map.put("oneself",false);
             }
         }
-        if (StringUtils.isBlank(modelTask.getPredictContent())){
+        if (StringUtils.isNotBlank(modelTask.getPredictFile())){
+            String fileContent = FileUtil.getFileContent(modelTask.getPredictFile());
+            if (StringUtils.isBlank(fileContent)){
+                map.put("anotherQuotas",new HashMap());
+            }else {
+                map.put("anotherQuotas",JSONObject.parseObject(fileContent));
+            }
+        } else {
             map.put("anotherQuotas",new HashMap());
-        }else {
-            map.put("anotherQuotas",JSONObject.parseObject(modelTask.getPredictContent()));
         }
         return BaseResultEntity.success(map);
     }
@@ -247,6 +239,7 @@ public class DataModelService {
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
 //                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
+                dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
                 dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null));
             }
             dataModel.setProjectId(params.getProjectId());
@@ -419,6 +412,8 @@ public class DataModelService {
         modelTask.setModelId(dataModel.getModelId());
         dataModelPrRepository.saveDataModelTask(modelTask);
         taskReq.setDataModelTask(modelTask);
+        log.info("------------- 模型类型" + dataModel.getModelType());
+        taskReq.getDataModel().setModelType(dataModel.getModelType());
         dataAsyncService.runModelTask(taskReq);
         Map<String,Object> returnMap = new HashMap<>();
         returnMap.put("modelId",modelId);
@@ -565,7 +560,7 @@ public class DataModelService {
                 dataModelResource.setModelId(vo.getDataModel().getModelId());
                 dataModelResource.setTaskId(vo.getDataTask().getTaskId());
             }
-            BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(vo.getDerivationList(), null, vo.getServerAddress());
+            BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(vo.getDerivationList(), null);
             log.info(JSONObject.toJSONString(derivationResource));
             if (derivationResource.getCode()==0){
                 List<String> resourceIds = (List<String>) derivationResource.getResult();

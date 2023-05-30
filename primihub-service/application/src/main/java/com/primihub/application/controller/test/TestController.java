@@ -14,9 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -24,6 +22,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 测试接口
+ */
 @Slf4j
 @RestController
 public class TestController {
@@ -45,11 +46,6 @@ public class TestController {
     public BaseResultEntity testPublish(){
         testService.testPublish();
         return BaseResultEntity.success();
-    }
-
-    @RequestMapping("/testTable")
-    public BaseResultEntity testTable(){
-        return BaseResultEntity.success(testService.testTable());
     }
 
     @RequestMapping("/testStream")
@@ -124,6 +120,17 @@ public class TestController {
         }
         return BaseResultEntity.success(FileUtil.md5HashCode(new File(filePath)));
     }
+
+    /**
+     * 注册后端node上的测试资源
+     * @return
+     */
+    @GetMapping("/testDataSet")
+    public BaseResultEntity testDataSet(String id){
+        return testService.testDataSet(id);
+    }
+
+
 
 
 

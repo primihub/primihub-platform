@@ -3,7 +3,10 @@ package com.primihub.application.controller.sys;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
+import com.primihub.biz.entity.sys.param.ChangeOtherOrganInfoParam;
+import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.service.sys.SysOrganService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,12 +51,84 @@ public class OrganController {
     }
 
     /**
-     * 上报节点信息
+     * 加入合作方
+     * @param gateway
+     * @param publicKey
      * @return
      */
-    @RequestMapping("collectBaseData")
-    public BaseResultEntity collectBaseData(){
-        sysOrganService.collectBaseData();
-        return BaseResultEntity.success();
+    @RequestMapping("joiningPartners")
+    public BaseResultEntity joiningPartners(String gateway,String publicKey,String applyId){
+        if (StringUtils.isBlank(gateway)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
+        }
+        if (StringUtils.isBlank(publicKey)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
+        }
+        return sysOrganService.joiningPartners(gateway,publicKey,applyId);
+    }
+
+    /**
+     * 查询合作列表
+     * @param param
+     * @return
+     */
+    @RequestMapping("getOrganList")
+    public BaseResultEntity getOrganList(OrganParam param){
+        return sysOrganService.getOrganList(param);
+    }
+
+    /**
+     * 查询可用合作机构列表
+     * @return
+     */
+    @RequestMapping("getAvailableOrganList")
+    public BaseResultEntity getAvailableOrganList(){
+        return sysOrganService.getAvailableOrganList();
+    }
+
+    /**
+     * 修改合作机构网关和公钥
+     * @return
+     */
+    @RequestMapping("changeOtherOrganInfo")
+    public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam){
+        return sysOrganService.changeOtherOrganInfo(changeOtherOrganInfoParam);
+    }
+    /**
+     * 审核申请的机构
+     * @param id                申请数字ID
+     * @param examineState      审核状态    0再次申请 1同意 2拒绝
+     * @param examineMsg        审核意见
+     * @return
+     */
+    @RequestMapping("examineJoining")
+    public BaseResultEntity examineJoining(Long id,Integer examineState,String examineMsg){
+        if (id==null || id==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
+        if (examineState==null) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"examineState");
+        }
+        if (examineState!=0 &&examineState!=1 &&examineState!=2) {
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"examineState");
+        }
+        return sysOrganService.examineJoining(id,examineState,examineMsg);
+    }
+
+    /**
+     * 开启状态修改
+     * @param id
+     * @param status
+     * @return
+     */
+    @RequestMapping("enableStatus")
+    public BaseResultEntity enableStatus(Long id,Integer status){
+        if (id==null || id==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
+        }
+        if (status!=1 &&status!=0) {
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"status");
+        }
+        return sysOrganService.enableStatus(id,status);
     }
 }

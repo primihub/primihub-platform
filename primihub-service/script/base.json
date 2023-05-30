@@ -63,102 +63,94 @@
         "job":"primihub/application1",
         "container":"application1"
     },
-    "model_components":[
+    "model_components": [
         {
-            "component_code":"start",
-            "component_name":"开始",
-            "is_show":0,
-            "is_mandatory":0,
-            "component_types":[
+            "component_code": "start",
+            "component_name": "开始",
+            "is_show": 0,
+            "is_mandatory": 0,
+            "component_types": [
                 {
-                    "is_show":0,
-                    "is_required":1,
-                    "type_code":"taskName",
-                    "type_name":"任务名称",
-                    "input_type":"text",
-                    "input_value":"",
-                    "input_values":[
-
-                    ]
+                    "is_show": 0,
+                    "is_required": 1,
+                    "type_code": "taskName",
+                    "type_name": "任务名称",
+                    "input_type": "text",
+                    "input_value": "",
+                    "input_values": []
                 },
                 {
-                    "is_show":0,
-                    "is_required":0,
-                    "type_code":"taskDesc",
-                    "type_name":"任务描述",
-                    "input_type":"textarea",
-                    "input_value":"",
-                    "input_values":[
-
-                    ]
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "taskDesc",
+                    "type_name": "任务描述",
+                    "input_type": "textarea",
+                    "input_value": "",
+                    "input_values": []
                 }
             ]
         },
         {
-            "component_code":"dataSet",
-            "component_name":"选择数据集",
-            "is_show":0,
-            "is_mandatory":0,
-            "component_types":[
+            "component_code": "dataSet",
+            "component_name": "选择数据集",
+            "is_show": 0,
+            "is_mandatory": 0,
+            "component_types": [
                 {
-                    "is_show":0,
-                    "is_required":1,
-                    "type_code":"selectData",
-                    "type_name":"选择数据",
-                    "input_type":"none",
-                    "input_value":"",
-                    "input_values":[
-
-                    ]
+                    "is_show": 0,
+                    "is_required": 1,
+                    "type_code": "selectData",
+                    "type_name": "选择数据",
+                    "input_type": "none",
+                    "input_value": "",
+                    "input_values": []
                 }
             ]
         },
         {
-            "component_code":"dataAlign",
-            "component_name":"数据对齐",
-            "is_show":0,
-            "is_mandatory":1,
-            "component_types":[
+            "component_code": "dataAlign",
+            "component_name": "数据对齐",
+            "is_show": 0,
+            "is_mandatory": 1,
+            "component_types": [
                 {
-                    "is_show":0,
-                    "is_required":0,
-                    "type_code":"dataAlign",
-                    "type_name":"数据对齐",
-                    "input_type":"select",
-                    "input_value":"",
-                    "input_values":[
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "dataAlign",
+                    "type_name": "数据对齐",
+                    "input_type": "select",
+                    "input_value": "",
+                    "input_values": [
                         {
-                            "key":"1",
-                            "val":"样本对齐"
+                            "key": "1",
+                            "val": "样本对齐"
                         },
                         {
-                            "key":"2",
-                            "val":"特征对齐"
+                            "key": "2",
+                            "val": "特征对齐"
                         }
                     ]
                 },
                 {
-                    "is_show":0,
-                    "is_required":0,
-                    "type_code":"MultipleSelected",
-                    "type_name":"可多选特征",
-                    "input_type":"none",
-                    "input_value":"",
-                    "input_values":[
-
-                    ]
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "MultipleSelected",
+                    "type_name": "可多选特征",
+                    "input_type": "none",
+                    "input_value": "",
+                    "input_values": []
                 },
                 {
-                    "is_show":0,
-                    "is_required":0,
-                    "type_code":"encryption",
-                    "type_name":"加密方式",
-                    "input_type":"none",
-                    "input_value":"1",
-                    "input_values":[
+                    "is_show": 0,
+                    "is_required": 0,
+                    "type_code": "encryption",
+                    "type_name": "加密方式",
+                    "input_type": "none",
+                    "input_value": "1",
+                    "input_values": [
                         {
-                            "key":"1",
-                            "val":"MD5"
+                            "key": "1",
+                            "val": "MD5"
                         }
                     ]
                 }
@@ -183,80 +175,6 @@
                             "val": "异常值处理"
                         }
                     ]
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "replaceType",
-                    "type_name": "替换类型",
-                    "input_type": "select",
-                    "input_value": "1",
-                    "input_values": [
-                        {
-                            "key": "MAX",
-                            "val": "MAX"
-                        },{
-                            "key": "MIN",
-                            "val": "MIN"
-                        },{
-                            "key": "AVG",
-                            "val": "AVG"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "component_code":"featureCoding",
-            "component_name":"特征编码",
-            "is_show":0,
-            "is_mandatory":1,
-            "component_types":[
-                {
-                    "is_show":0,
-                    "is_required":0,
-                    "type_code":"featureCoding",
-                    "type_name":"特征编码",
-                    "input_type":"select",
-                    "input_value":"",
-                    "input_values":[
-                        {
-                            "key":"1",
-                            "val":"标签编码"
-                        },
-                        {
-                            "key":"2",
-                            "val":"哈希编码"
-                        },
-                        {
-                            "key":"3",
-                            "val":"独热编码"
-                        },
-                        {
-                            "key":"4",
-                            "val":"计数编码"
-                        },
-                        {
-                            "key":"5",
-                            "val":"直方图编码"
-                        },
-                        {
-                            "key":"6",
-                            "val":"WOE编码"
-                        },
-                        {
-                            "key":"7",
-                            "val":"目标编码"
-                        },
-                        {
-                            "key":"8",
-                            "val":"平均编码"
-                        },
-                        {
-                            "key":"9",
-                            "val":"模型编码"
-                        }
-                    ]
                 }
             ]
         },
@@ -276,11 +194,911 @@
                     "input_values": [
                         {
                             "key": "2",
-                            "val": "纵向-XGBoost"
+                            "val": "纵向-XGBoost",
+                            "param": [
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "numTree",
+                                    "type_name": "Params.NumTree",
+                                    "input_type": "number",
+                                    "input_value": 5,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 3
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 10
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "maxDepth",
+                                    "type_name": "Params.MaxDepth",
+                                    "input_type": "number",
+                                    "input_value": 5,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 3
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 10
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "regLambda",
+                                    "type_name": "Params.RegLambda",
+                                    "input_type": "text",
+                                    "input_value": 1,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "minChildWeight",
+                                    "type_name": "Params.MinChildWeight",
+                                    "input_type": "number",
+                                    "input_value": 3,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 100
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "isEncrypted",
+                                    "type_name": "Params.IsEncrypted",
+                                    "input_type": "radio",
+                                    "input_value": "true",
+                                    "input_values": [
+                                        {
+                                            "key": "true",
+                                            "val": "true"
+                                        },
+                                        {
+                                            "key": "false",
+                                            "val": "false"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "mergeGh",
+                                    "type_name": "Params.MergeGh",
+                                    "input_type": "radio",
+                                    "input_value": "true",
+                                    "input_values": [
+                                        {
+                                            "key": "true",
+                                            "val": "true"
+                                        },
+                                        {
+                                            "key": "false",
+                                            "val": "false"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "featureSample",
+                                    "type_name": "Params.FeatureSample",
+                                    "input_type": "radio",
+                                    "input_value": "true",
+                                    "input_values": [
+                                        {
+                                            "key": "true",
+                                            "val": "true"
+                                        },
+                                        {
+                                            "key": "false",
+                                            "val": "false"
+                                        }
+                                    ]
+                                }
+                            ]
                         },
                         {
                             "key": "3",
-                            "val": "横向-LR"
+                            "val": "横向-LR",
+                            "param": [
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "arbiterOrgan",
+                                    "type_name": "可信第三方选择",
+                                    "input_type": "button",
+                                    "input_value": "",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "encryption",
+                                    "type_name": "加密方式",
+                                    "input_type": "select",
+                                    "input_value": "Plaintext",
+                                    "input_values": [
+                                        {
+                                            "key": "Plaintext",
+                                            "val": "明文"
+                                        },
+                                        {
+                                            "key": "DPSGD",
+                                            "val": "DPSGD",
+                                            "param": [
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "delta",
+                                                    "type_name": "Params.Delta",
+                                                    "input_type": "text",
+                                                    "input_value": "0.0001",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "noiseMultiplier",
+                                                    "type_name": "Params.NoiseMultiplier",
+                                                    "input_type": "text",
+                                                    "input_value": "2.0",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "l2NormClip",
+                                                    "type_name": "Params.L2NormClip",
+                                                    "input_type": "text",
+                                                    "input_value": "1.0",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "secureMode",
+                                                    "type_name": "Params.SecureMode",
+                                                    "input_type": "radio",
+                                                    "input_value": "true",
+                                                    "input_values": [
+                                                        {
+                                                            "key": "true",
+                                                            "val": "true"
+                                                        },
+                                                        {
+                                                            "key": "false",
+                                                            "val": "false"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "key": "Paillier",
+                                            "val": "Paillier",
+                                            "param": [
+                                                {
+                                                    "is_show": 0,
+                                                    "is_required": 0,
+                                                    "type_code": "nLength",
+                                                    "type_name": "Params.NLength",
+                                                    "input_type": "select",
+                                                    "input_value": "1024",
+                                                    "input_values": [
+                                                        {
+                                                            "key": "512",
+                                                            "val": "512"
+                                                        },
+                                                        {
+                                                            "key": "1024",
+                                                            "val": "1024"
+                                                        },
+                                                        {
+                                                            "key": "2048",
+                                                            "val": "2048"
+                                                        },
+                                                        {
+                                                            "key": "3072",
+                                                            "val": "3072"
+                                                        },
+                                                        {
+                                                            "key": "4096",
+                                                            "val": "4096"
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "alpha",
+                                    "type_name": "Params.Alpha",
+                                    "input_type": "text",
+                                    "input_value": "0.0001",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "batchSize",
+                                    "type_name": "Params.BatchSize",
+                                    "input_type": "number",
+                                    "input_value": "1",
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 2000
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "globalEpoch",
+                                    "type_name": "Params.GlobalEpoch",
+                                    "input_type": "number",
+                                    "input_value": 5,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1000
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "localEpoch",
+                                    "type_name": "Params.LocalEpoch",
+                                    "input_type": "number",
+                                    "input_value": 1,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 10
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "maxIter",
+                                    "type_name": "Params.MaxIter",
+                                    "input_type": "number",
+                                    "input_value": "5",
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1000
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key": "4",
+                            "val": "MPC-LR",
+                            "param": [
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "batchSize",
+                                    "type_name": "Params.BatchSize",
+                                    "input_type": "number",
+                                    "input_value": 128,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 128
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1024
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "numlters",
+                                    "type_name": "Params.Numlters",
+                                    "input_type": "number",
+                                    "input_value": "",
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 5
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 5000
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key": "5",
+                            "val": "纵向-LR",
+                            "param": [
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "learningRate",
+                                    "type_name": "Params.LearningRate",
+                                    "input_type": "text",
+                                    "input_value": "1.0",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "alpha",
+                                    "type_name": "Params.Alpha",
+                                    "input_type": "text",
+                                    "input_value": "0.0",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "epochs",
+                                    "type_name": "Params.Epochs",
+                                    "input_type": "number",
+                                    "input_value": 1,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1000
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "penalty",
+                                    "type_name": "Params.Penalty",
+                                    "input_type": "select",
+                                    "input_value": "l2",
+                                    "input_values": [
+                                        {
+                                            "key": "l1",
+                                            "val": "l1"
+                                        },
+                                        {
+                                            "key": "l2",
+                                            "val": "l2"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "pptimalMethod",
+                                    "type_name": "Params.OptimalMethod",
+                                    "input_type": "select",
+                                    "input_value": "momentum",
+                                    "input_values": [
+                                        {
+                                            "key": "simple",
+                                            "val": "simple"
+                                        },
+                                        {
+                                            "key": "momentum",
+                                            "val": "momentum"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "momentum",
+                                    "type_name": "Params.Momentum",
+                                    "input_type": "text",
+                                    "input_value": "0.7",
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 0.1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "randomState",
+                                    "type_name": "Params.RandomState",
+                                    "input_type": "number",
+                                    "input_value": 2023,
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "scaleType",
+                                    "type_name": "Params.ScaleType",
+                                    "input_type": "select",
+                                    "input_value": "z-score",
+                                    "input_values": [
+                                        {
+                                            "key": "z-score",
+                                            "val": "z-score"
+                                        },
+                                        {
+                                            "key": "std",
+                                            "val": "std"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "batchSize",
+                                    "type_name": "Params.BatchSize",
+                                    "input_type": "number",
+                                    "input_value": 512,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1024
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "sampleMethod",
+                                    "type_name": "Params.SampleMethod",
+                                    "input_type": "select",
+                                    "input_value": "random",
+                                    "input_values": [
+                                        {
+                                            "key": "random",
+                                            "val": "random"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "sampleRatio",
+                                    "type_name": "Params.SampleRatio",
+                                    "input_type": "text",
+                                    "input_value": 0.3,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 0
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "lossType",
+                                    "type_name": "Params.LossType",
+                                    "input_type": "select",
+                                    "input_value": "log",
+                                    "input_values": [
+                                        {
+                                            "key": "log",
+                                            "val": "log"
+                                        },
+                                        {
+                                            "key": "linear",
+                                            "val": "linear"
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "tol",
+                                    "type_name": "Params.Tol",
+                                    "input_type": "text",
+                                    "input_value": 0.001,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 0
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 0.1
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key": "6",
+                            "val": "横向-NN(分类)",
+                            "param": [
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "arbiterOrgan",
+                                    "type_name": "可信第三方选择",
+                                    "input_type": "button",
+                                    "input_value": "",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "encryption",
+                                    "type_name": "加密方式",
+                                    "input_type": "select",
+                                    "input_value": "Plaintext",
+                                    "input_values": [
+                                        {
+                                            "key": "Plaintext",
+                                            "val": "明文"
+                                        },
+                                        {
+                                            "key": "DPSGD",
+                                            "val": "DPSGD",
+                                            "param": [
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "delta",
+                                                    "type_name": "Params.Delta",
+                                                    "input_type": "text",
+                                                    "input_value": "0.0001",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "maxGradNorm",
+                                                    "type_name": "Params.MaxGradNorm",
+                                                    "input_type": "text",
+                                                    "input_value": "1.0",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "noiseMultiplier",
+                                                    "type_name": "Params.NoiseMultiplier",
+                                                    "input_type": "text",
+                                                    "input_value": "2.0",
+                                                    "input_values": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "learningRate",
+                                    "type_name": "Params.LearningRate",
+                                    "input_type": "text",
+                                    "input_value": "1.0",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "alpha",
+                                    "type_name": "Params.Alpha",
+                                    "input_type": "text",
+                                    "input_value": "0.0",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "batchSize",
+                                    "type_name": "Params.BatchSize",
+                                    "input_type": "number",
+                                    "input_value": 1,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1024
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "epoch",
+                                    "type_name": "Params.Epoch",
+                                    "input_type": "number",
+                                    "input_value": 100,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1000
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "optimizer",
+                                    "type_name": "Params.Optimizer",
+                                    "input_type": "select",
+                                    "input_value": "adam",
+                                    "input_values": [
+                                        {
+                                            "key": "adadelta",
+                                            "val": "adadelta"
+                                        },
+                                        {
+                                            "key": "adagrad",
+                                            "val": "adagrad"
+                                        },
+                                        {
+                                            "key": "adam",
+                                            "val": "adam"
+                                        },
+                                        {
+                                            "key": "adamw",
+                                            "val": "adamw"
+                                        },
+                                        {
+                                            "key": "adamax",
+                                            "val": "adamax"
+                                        },
+                                        {
+                                            "key": "asgd",
+                                            "val": "asgd"
+                                        },
+                                        {
+                                            "key": "nadam",
+                                            "val": "nadam"
+                                        },
+                                        {
+                                            "key": "radam",
+                                            "val": "radam"
+                                        },
+                                        {
+                                            "key": "rmsprop",
+                                            "val": "rmsprop"
+                                        },
+                                        {
+                                            "key": "sgd",
+                                            "val": "sgd"
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "key": "7",
+                            "val": "横向-NN(回归)",
+                            "param": [
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "arbiterOrgan",
+                                    "type_name": "可信第三方选择",
+                                    "input_type": "button",
+                                    "input_value": "",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "encryption",
+                                    "type_name": "加密方式",
+                                    "input_type": "select",
+                                    "input_value": "Plaintext",
+                                    "input_values": [
+                                        {
+                                            "key": "Plaintext",
+                                            "val": "明文"
+                                        },
+                                        {
+                                            "key": "DPSGD",
+                                            "val": "DPSGD",
+                                            "param": [
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "delta",
+                                                    "type_name": "Params.Delta",
+                                                    "input_type": "text",
+                                                    "input_value": "0.0001",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "maxGradNorm",
+                                                    "type_name": "Params.MaxGradNorm",
+                                                    "input_type": "text",
+                                                    "input_value": "1.0",
+                                                    "input_values": []
+                                                },
+                                                {
+                                                    "is_show": 1,
+                                                    "is_required": 0,
+                                                    "type_code": "noiseMultiplier",
+                                                    "type_name": "Params.NoiseMultiplier",
+                                                    "input_type": "text",
+                                                    "input_value": "2.0",
+                                                    "input_values": []
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "learningRate",
+                                    "type_name": "Params.LearningRate",
+                                    "input_type": "text",
+                                    "input_value": "1.0",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 1,
+                                    "is_required": 0,
+                                    "type_code": "alpha",
+                                    "type_name": "Params.Alpha",
+                                    "input_type": "text",
+                                    "input_value": "0.0",
+                                    "input_values": []
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "batchSize",
+                                    "type_name": "Params.BatchSize",
+                                    "input_type": "number",
+                                    "input_value": 1,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1024
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "epoch",
+                                    "type_name": "Params.Epoch",
+                                    "input_type": "number",
+                                    "input_value": 100,
+                                    "input_values": [
+                                        {
+                                            "key": "min",
+                                            "val": 1
+                                        },
+                                        {
+                                            "key": "max",
+                                            "val": 1000
+                                        }
+                                    ]
+                                },
+                                {
+                                    "is_show": 0,
+                                    "is_required": 0,
+                                    "type_code": "optimizer",
+                                    "type_name": "Params.Optimizer",
+                                    "input_type": "select",
+                                    "input_value": "adam",
+                                    "input_values": [
+                                        {
+                                            "key": "adadelta",
+                                            "val": "adadelta"
+                                        },
+                                        {
+                                            "key": "adagrad",
+                                            "val": "adagrad"
+                                        },
+                                        {
+                                            "key": "adam",
+                                            "val": "adam"
+                                        },
+                                        {
+                                            "key": "adamw",
+                                            "val": "adamw"
+                                        },
+                                        {
+                                            "key": "adamax",
+                                            "val": "adamax"
+                                        },
+                                        {
+                                            "key": "asgd",
+                                            "val": "asgd"
+                                        },
+                                        {
+                                            "key": "nadam",
+                                            "val": "nadam"
+                                        },
+                                        {
+                                            "key": "radam",
+                                            "val": "radam"
+                                        },
+                                        {
+                                            "key": "rmsprop",
+                                            "val": "rmsprop"
+                                        },
+                                        {
+                                            "key": "sgd",
+                                            "val": "sgd"
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 },
@@ -301,25 +1119,7 @@
                     "input_type": "textarea",
                     "input_value": "",
                     "input_values": []
-                },
-                {
-                    "is_show": 0,
-                    "is_required": 0,
-                    "type_code": "arbiterOrgan",
-                    "type_name": "可信第三方选择",
-                    "input_type": "button",
-                    "input_value": "",
-                    "input_values": []
                 }
-            ]
-        },
-        {
-            "component_code":"assessment",
-            "component_name":"评估模型",
-            "is_show":0,
-            "is_mandatory":1,
-            "component_types":[
-
             ]
         }
     ]

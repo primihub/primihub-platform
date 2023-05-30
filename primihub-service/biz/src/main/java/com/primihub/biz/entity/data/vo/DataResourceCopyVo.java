@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 资源表
@@ -96,4 +97,8 @@ public class DataResourceCopyVo {
      * 资源状态 目前有 0上线 1下线
      */
     private Integer resourceState;
+
+    private String userName;
+
+    private Map<String,Object> dataSet;
 }

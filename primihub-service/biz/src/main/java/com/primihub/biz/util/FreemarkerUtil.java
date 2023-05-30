@@ -17,7 +17,7 @@ import java.util.Map;
 @Slf4j
 public class FreemarkerUtil {
 
-    public static String configurerCreateFreemarkerContent(String ftlName, FreeMarkerConfigurer freeMarkerConfigurer, Map<String, String> map){
+    public static String configurerCreateFreemarkerContent(String ftlName, FreeMarkerConfigurer freeMarkerConfigurer, Map<String, Object> map){
         if (TemplatesHelper.getTemplatesMap().containsKey(ftlName)){
             return stringTemplateLoaderFreemarkerContent(ftlName,map);
         }
@@ -32,7 +32,7 @@ public class FreemarkerUtil {
         return null;
     }
 
-    public static  String stringTemplateLoaderFreemarkerContent(String ftlName, Map<String, String> map){
+    public static  String stringTemplateLoaderFreemarkerContent(String ftlName, Map<String, Object> map){
         try {
             Configuration configuration = new Configuration(Configuration.getVersion());
             StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
@@ -47,7 +47,7 @@ public class FreemarkerUtil {
     }
 
 
-    public static String configurerCreateFreemarker(String path, String fileName,String ftlName, FreeMarkerConfigurer freeMarkerConfigurer, Map<String, String> map){
+    public static String configurerCreateFreemarker(String path, String fileName,String ftlName, FreeMarkerConfigurer freeMarkerConfigurer, Map<String, Object> map){
         if (TemplatesHelper.getTemplatesMap().containsKey(ftlName)){
             return stringTemplateLoaderFreemarkerContent(ftlName,map);
         }
@@ -72,7 +72,7 @@ public class FreemarkerUtil {
         return null;
     }
 
-    public static String createFreemarker(String path,String fileName,String packagePaht,String ftlName, Map<String, String> map){
+    public static String createFreemarker(String path,String fileName,String packagePaht,String ftlName, Map<String, Object> map){
         if (TemplatesHelper.getTemplatesMap().containsKey(ftlName)){
             return stringTemplateLoaderFreemarkerContent(ftlName,map);
         }
@@ -96,14 +96,5 @@ public class FreemarkerUtil {
                     path,fileName,e.getMessage());
         }
         return null;
-    }
-
-    public static void main(String[] args) {
-        Map<String, String> map = new HashMap<>();
-        map.put(DataConstant.PYTHON_GUEST_DATASET,"1118");
-        map.put(DataConstant.PYTHON_LABEL_DATASET,"1119");
-//        String pythonFreemarker = createFreemarker("/Users/zhongziqian/data/freemarker", "ceshi.py", DataConstant.FREEMARKER_PACKAGE_PAHT,DataConstant.FREEMARKER_PYTHON_PAHT, map);
-//        String pythonFreemarker = configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PACKAGE_PAHT,DataConstant.FREEMARKER_PYTHON_PAHT, map);
-//        System.out.println(pythonFreemarker);
     }
 }

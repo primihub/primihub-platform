@@ -18,28 +18,19 @@ public class FusionResourceController {
 
     @RequestMapping("getResourceList")
     public BaseResultEntity getResourceList(DataFResourceReq req){
-        if (StringUtils.isBlank(req.getServerAddress())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-        }
         return otherBusinessesService.getResourceList(req);
     }
 
     @RequestMapping("getDataResource")
-    public BaseResultEntity getDataResource(String serverAddress,String resourceId){
-        if (StringUtils.isBlank(serverAddress)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-        }
+    public BaseResultEntity getDataResource(String resourceId){
         if (StringUtils.isBlank(resourceId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
-        return otherBusinessesService.getDataResource(serverAddress,resourceId);
+        return otherBusinessesService.getDataResource(resourceId);
     }
 
     @RequestMapping("getResourceTagList")
-    public BaseResultEntity getResourceTagList(String serverAddress){
-        if (StringUtils.isBlank(serverAddress)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-        }
-        return otherBusinessesService.getResourceTagList(serverAddress);
+    public BaseResultEntity getResourceTagList(){
+        return otherBusinessesService.getResourceTagList();
     }
 }

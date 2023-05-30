@@ -15,7 +15,7 @@ CREATE TABLE `data_model` (
                               `is_draft` tinyint(4) DEFAULT '0' COMMENT '是否草稿 0是 1不是 默认是',
                               `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
                               `organ_id` varchar(255) DEFAULT NULL COMMENT '机构id',
-                              `component_json` blob COMMENT '组件json',
+                              `component_json` mediumtext COMMENT '组件json',
                               `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                               `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                               `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -43,8 +43,8 @@ CREATE TABLE `data_component_draft` (
                                         `draft_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
                                         `draft_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '草稿名称',
                                         `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                        `component_json` blob COMMENT '组件json',
-                                        `component_image` blob COMMENT '组件图',
+                                        `component_json` mediumtext COMMENT '组件json',
+                                        `component_image` mediumtext COMMENT '组件图',
                                         `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -79,7 +79,7 @@ CREATE TABLE `data_component` (
                                   `height` int(11) DEFAULT '0' COMMENT '高度',
                                   `coordinate_y` int(11) DEFAULT '0' COMMENT '坐标y',
                                   `coordinate_x` int(11) DEFAULT '0' COMMENT '坐标x',
-                                  `data_json` blob COMMENT '组件参数json',
+                                  `data_json` mediumtext COMMENT '组件参数json',
                                   `start_time` bigint(20) DEFAULT '0' COMMENT '开始时间戳',
                                   `end_time` bigint(20) DEFAULT '0' COMMENT '结束时间戳',
                                   `component_state` tinyint(4) DEFAULT '0' COMMENT '组件运行状态 0初始 1成功 2运行中 3失败',
@@ -116,8 +116,8 @@ CREATE TABLE `data_model_task` (
                                    `model_id` bigint DEFAULT NULL COMMENT '模型id',
                                    `task_id` bigint DEFAULT NULL COMMENT '任务id',
                                    `predict_file` varchar(255) DEFAULT NULL COMMENT '预测文件路径',
-                                   `predict_content` blob COMMENT '预测文件内容',
-                                   `component_json` blob COMMENT '模型运行组件列表json',
+                                   `predict_content` mediumtext COMMENT '预测文件内容',
+                                   `component_json` mediumtext COMMENT '模型运行组件列表json',
                                    `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -151,7 +151,6 @@ CREATE TABLE `data_project` (
                                 `created_username` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建者名称',
                                 `resource_num` int DEFAULT '0' COMMENT '资源数',
                                 `provider_organ_names` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '协作方机构名称 保存三个',
-                                `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
                                 `status` tinyint DEFAULT '0' COMMENT '项目状态 0审核中 1可用 2关闭',
                                 `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -171,8 +170,6 @@ CREATE TABLE `data_project_organ` (
                                       `participation_identity` tinyint DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
                                       `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
                                       `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
-                                      `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
-                                      `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
                                       `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
                                       `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                       `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -193,8 +190,6 @@ CREATE TABLE `data_project_resource` (
                                          `resource_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '0' COMMENT '资源ID',
                                          `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
                                          `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
-                                         `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
-                                         `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
                                          `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                          `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
                                          PRIMARY KEY (`id`) USING BTREE,
@@ -217,7 +212,6 @@ CREATE TABLE `data_psi`  (
                              `output_content` int(11) DEFAULT '0' COMMENT '输出内容 默认0 0交集 1差集',
                              `output_format` varchar(255) DEFAULT NULL COMMENT '输出格式',
                              `result_organ_ids` varchar(255) DEFAULT NULL COMMENT '结果获取方 多机构","号间隔',
-                             `server_address` varchar(255) DEFAULT NULL COMMENT '其他机构中心节点地址',
                              `remarks` varchar(255) DEFAULT NULL COMMENT '备注',
                              `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
@@ -251,7 +245,7 @@ CREATE TABLE `data_psi_task`  (
                                   `ascription` varchar(255) DEFAULT NULL COMMENT '结果归属',
                                   `file_rows` int(11) DEFAULT '0' COMMENT '文件行数',
                                   `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
-                                  `file_content` blob COMMENT '文件内容',
+                                  `file_content` mediumtext COMMENT '文件内容',
                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -262,7 +256,6 @@ DROP TABLE IF EXISTS `data_pir_task`;
 CREATE TABLE `data_pir_task` (
                                  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'pir任务id',
                                  `task_id` bigint(20) DEFAULT NULL COMMENT '任务ID',
-                                 `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
                                  `provider_organ_name` varchar(255) DEFAULT NULL COMMENT '协作方机构名称',
                                  `resource_id` varchar(64) DEFAULT null COMMENT '资源ID',
                                  `resource_name` varchar(64) DEFAULT null COMMENT '资源名称',
@@ -288,7 +281,7 @@ CREATE TABLE `data_resource`  (
                                   `file_rows` int(8) DEFAULT NULL COMMENT '文件行数',
                                   `file_columns` int(8) DEFAULT NULL COMMENT '文件列数',
                                   `file_handle_status` tinyint(4) DEFAULT NULL COMMENT '文件处理状态',
-                                  `file_handle_field` blob COMMENT '文件头字段',
+                                  `file_handle_field` mediumtext COMMENT '文件头字段',
                                   `file_contains_y` tinyint(4) DEFAULT '0' COMMENT '文件字段是否包含y字段 0否 1是',
                                   `file_y_rows` int(11) DEFAULT '0' COMMENT '文件字段y值内容不为空的行数',
                                   `file_y_ratio` decimal(8,4) DEFAULT '0.0000' COMMENT '文件字段y值内容不为空的行数在总行的占比',
@@ -345,39 +338,6 @@ CREATE TABLE `data_file_field` (
                                    PRIMARY KEY (`field_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源字段表' ROW_FORMAT = Dynamic;
 
-DROP TABLE IF EXISTS `data_mpc_task`;
-CREATE TABLE `data_mpc_task` (
-                                 `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
-                                 `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id对外展示',
-                                 `script_id` bigint(20) DEFAULT NULL COMMENT '脚本id',
-                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                 `task_status` int(11) DEFAULT '0' COMMENT '任务状态 0未运行 1成功 2运行中 3失败',
-                                 `task_desc` varchar(255) DEFAULT NULL COMMENT '任务备注',
-                                 `log_data` blob COMMENT '日志信息',
-                                 `result_file_path` varchar(255) DEFAULT NULL COMMENT '结果文件地址',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`task_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci  COMMENT = 'mpc任务表' ROW_FORMAT=DYNAMIC;
-
-DROP TABLE IF EXISTS `data_script`;
-CREATE TABLE `data_script`  (
-                                `script_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '脚本id',
-                                `name` varchar(255) DEFAULT NULL COMMENT '文件名称或文件夹名称',
-                                `catalogue` int(11) DEFAULT '0' COMMENT '是否目录 0否 1是',
-                                `p_script_id` bigint(20) DEFAULT NULL COMMENT '上级id',
-                                `script_type` int(11) DEFAULT NULL COMMENT '脚本类型 0sql 1python',
-                                `script_status` int(11) DEFAULT NULL COMMENT '脚本状态 0打开 1关闭 默认打开',
-                                `script_content` blob COMMENT '脚本内容',
-                                `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                PRIMARY KEY (`script_id`) USING BTREE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
 DROP TABLE IF EXISTS `data_task`;
 CREATE TABLE `data_task` (
                              `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
@@ -387,11 +347,11 @@ CREATE TABLE `data_task` (
                              `task_state` int(11) DEFAULT '0' COMMENT '任务状态(0未开始 1成功 2运行中 3失败 4取消)',
                              `task_type` int(11) DEFAULT NULL COMMENT '任务类型 1、模型 2、PSI 3、PIR',
                              `task_result_path` varchar(255) DEFAULT NULL COMMENT '文件返回路径',
-                             `task_result_content` blob COMMENT '文件返回内容',
+                             `task_result_content` mediumtext COMMENT '文件返回内容',
                              `task_start_time` bigint(20) DEFAULT NULL COMMENT '任务开始时间',
                              `task_end_time` bigint(20) DEFAULT NULL COMMENT '任务结束时间',
                              `task_user_id` bigint(20) DEFAULT NULL COMMENT '任务创建人',
-                             `task_error_msg` blob COMMENT '任务异常信息',
+                             `task_error_msg` mediumtext COMMENT '任务异常信息',
                              `is_cooperation` tinyint(4) DEFAULT '0' COMMENT '是否协作任务0否 1是',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -424,7 +384,6 @@ CREATE TABLE `data_reasoning_resource` (
                                            `resource_id` varchar(64) DEFAULT NULL COMMENT '资源ID',
                                            `organ_id` varchar(64) DEFAULT NULL COMMENT '机构ID',
                                            `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
-                                           `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
                                            `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
                                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
@@ -630,6 +589,7 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1100, 1, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1101, 1000, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1102, 1, 1063, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1103, 1, 1058, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (
@@ -702,7 +662,8 @@ CREATE TABLE `data_fusion_copy_task` (
                                          `current_offset` bigint(20) NOT NULL COMMENT '当前偏移量',
                                          `target_offset` bigint(20) NOT NULL COMMENT '目标便宜量',
                                          `task_table` varchar(64) NOT NULL COMMENT '复制任务表名',
-                                         `fusion_server_address` varchar(64) NOT NULL COMMENT '连接中心地址',
+                                         `server_address` varchar(64) COMMENT '发送地址',
+                                         `organ_id` varchar(64) COMMENT '机构ID',
                                          `latest_error_msg` varchar(1024) NOT NULL COMMENT '最近一次复制失败原因',
                                          `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
                                          `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
@@ -768,3 +729,27 @@ CREATE TABLE `data_visiting_users` (
                                        `update_date` DATETIME ( 3 ) NOT NULL DEFAULT CURRENT_TIMESTAMP ( 3 ) ON UPDATE CURRENT_TIMESTAMP ( 3 ) COMMENT '修改时间',
                                        PRIMARY KEY ( `id` )
 ) ENGINE = INNODB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = DYNAMIC COMMENT = '应用市场来访用户';
+
+DROP TABLE IF EXISTS `sys_organ`;
+CREATE TABLE `sys_organ`  (
+                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '机构id',
+                              `apply_id` varchar(255) DEFAULT NULL COMMENT '申请加入ID',
+                              `organ_id` varchar(255) DEFAULT NULL COMMENT '申请加入机构ID',
+                              `organ_name` varchar(255) DEFAULT NULL COMMENT '申请加入机构名称',
+                              `organ_gateway` varchar(255) DEFAULT NULL COMMENT '申请加入机构网关地址',
+                              `public_key` varchar(1000) DEFAULT NULL COMMENT '机构公钥',
+                              `examine_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0待审批 1同意 2拒绝)',
+                              `examine_msg` mediumtext COMMENT '审批信息',
+                              `node_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
+                              `fusion_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
+                              `platform_state` tinyint(4) DEFAULT '0' COMMENT '可用状态(0不在线 1在线)',
+                              `lat` decimal(18,14) DEFAULT NULL COMMENT '纬度',
+                              `lon` decimal(18,14) DEFAULT NULL COMMENT '经度',
+                              `country` varchar(255) DEFAULT NULL COMMENT '区域',
+                              `enable` tinyint(4) NOT NULL COMMENT '是否启用 0启用 1禁用',
+                              `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
+                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+                              PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '机构信息' ROW_FORMAT = Dynamic;
+

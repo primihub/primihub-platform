@@ -41,21 +41,6 @@ public class FusionResourceField {
     private String fieldDesc;
 
     /**
-     * 关键字 0否 1是
-     */
-    private Integer relevance;
-
-    /**
-     * 分组 0否 1是
-     */
-    private Integer grouping;
-
-    /**
-     * 保护开关 0关闭 1开启
-     */
-    private Integer protectionStatus;
-
-    /**
      * 是否删除
      */
     @JsonIgnore

@@ -20,6 +20,7 @@
         <result column="resource_state" property="resourceState" />
         <result column="resource_hash_code" property="resourceHashCode" />
         <result column="organ_id" property="organId" />
+        <result column="user_name" property="userName" />
         <result column="is_del" property="isDel" />
         <result column="c_time" property="cTime" />
         <result column="u_time" property="uTime" />
@@ -32,9 +33,6 @@
         <result column="field_as" property="fieldAs" />
         <result column="field_type" property="fieldType" />
         <result column="field_desc" property="fieldDesc" />
-        <result column="relevance" property="relevance" />
-        <result column="grouping" property="grouping" />
-        <result column="protection_status" property="protectionStatus" />
         <result column="is_del" property="isDel" />
         <result column="c_time" property="cTime" />
         <result column="u_time" property="uTime" />
@@ -43,16 +41,16 @@
     <!-- 通用查询结果列 -->
     <sql id="Fusion_Resource_Base_Column_List">
         id, resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count,resource_state resourceState,
-        resource_hash_code resourceHashCode, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id, is_del, c_time, u_time
+        resource_hash_code resourceHashCode, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag, organ_id,user_name, is_del, c_time, u_time
     </sql>
 
     <sql id="Fusion_Resource_Field_Base_Column_List">
-        field_id,resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time
+        field_id,resource_id,field_name,field_as,field_type,field_desc,is_del,c_time,u_time
     </sql>
 
     <insert id="saveFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource" keyProperty="id" useGeneratedKeys="true">
-        insert into fusion_resource (resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag,resource_state,resource_hash_code, organ_id, is_del, c_time, u_time)
-        values (#{resourceId},#{resourceName},#{resourceDesc},#{resourceType},#{resourceAuthType},#{resourceRowsCount},#{resourceColumnCount},#{resourceColumnNameList},#{resourceContainsY},#{resourceYRowsCount},#{resourceYRatio},#{resourceTag},#{resourceState},#{resourceHashCode},#{organId},0,now(),now())
+        insert into fusion_resource (resource_id, resource_name, resource_desc, resource_type, resource_auth_type, resource_rows_count, resource_column_count, resource_column_name_list, resource_contains_y, resource_y_rows_count, resource_y_ratio, resource_tag,resource_state,resource_hash_code, organ_id,user_name, is_del, c_time, u_time)
+        values (#{resourceId},#{resourceName},#{resourceDesc},#{resourceType},#{resourceAuthType},#{resourceRowsCount},#{resourceColumnCount},#{resourceColumnNameList},#{resourceContainsY},#{resourceYRowsCount},#{resourceYRatio},#{resourceTag},#{resourceState},#{resourceHashCode},#{organId},#{userName},0,now(),now())
     </insert>
 
     <insert id="saveBatchResourceTag" parameterType="java.lang.String">
@@ -64,16 +62,16 @@
     </insert>
 
     <insert id="saveBatchResourceField" parameterType="com.primihub.entity.resource.po.FusionResourceField">
-        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time)
+        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,is_del,c_time,u_time)
         values
         <foreach collection="fields" index="index" item="item" separator=",">
-            (#{item.resourceId},#{item.fieldName},#{item.fieldAs},#{item.fieldType},#{item.fieldDesc},#{item.relevance},#{item.grouping},#{item.protectionStatus},0,now(),now())
+            (#{item.resourceId},#{item.fieldName},#{item.fieldAs},#{item.fieldType},#{item.fieldDesc},0,now(),now())
         </foreach>
     </insert>
 
     <insert id="saveResourceField" parameterType="com.primihub.entity.resource.po.FusionResourceField">
-        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,relevance,`grouping`,protection_status,is_del,c_time,u_time)
-        values (#{resourceId},#{fieldName},#{fieldAs},#{fieldType},#{fieldDesc},#{relevance},#{grouping},#{protectionStatus},0,now(),now())
+        insert into fusion_resource_field (resource_id,field_name,field_as,field_type,field_desc,is_del,c_time,u_time)
+        values (#{resourceId},#{fieldName},#{fieldAs},#{fieldType},#{fieldDesc},0,now(),now())
     </insert>
 
     <update id="updateFusionResource" parameterType="com.primihub.entity.resource.po.FusionResource">
@@ -94,6 +92,7 @@
             <if test="isDel!=null">is_del = #{isDel},</if>
             <if test="resourceState!=null">resource_state = #{resourceState},</if>
             <if test="resourceHashCode!=null">resource_hash_code = #{resourceHashCode},</if>
+            <if test="userName!=null">user_name = #{userName},</if>
             u_time = now()
         </set>
         where id = #{id}
@@ -105,20 +104,9 @@
             <if test="fieldAs!=null">field_as = #{fieldAs},</if>
             <if test="fieldType!=null">field_type = #{fieldType},</if>
             <if test="fieldDesc!=null">field_desc = #{fieldDesc},</if>
-            <if test="relevance!=null">relevance = #{relevance},</if>
-            <if test="grouping!=null">`grouping` = #{grouping},</if>
-            <if test="protectionStatus!=null">`protection_status` = #{protectionStatus},</if>
             u_time = now()
         </set>
         where field_id = #{fieldId}
-    </update>
-    <update id="updateFusionOrganResourceAuth" parameterType="com.primihub.entity.resource.po.FusionOrganResourceAuth">
-        update fusion_organ_resource_auth
-        <set>
-            <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
-            u_time = now()
-        </set>
-        where id = #{id}
     </update>
 
     <select id="selectFusionResourceById" resultMap="FusionResourceBaseResultMap">
@@ -140,9 +128,8 @@
             resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
             resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
             resource_state resourceState,resource_hash_code resourceHashCode,
-            resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
+            resource_y_ratio resourceYRatio,resource_tag resourceTag,organ_id organId,user_name userName,r.is_del isDel,r.c_time cTime,r.u_time uTime
         from fusion_resource r
-        left join fusion_go go on go.organ_global_id =r.organ_id
         <include refid="fusionResourceCondition"></include>
         order by r.id desc
         limit #{offset},#{pageSize}
@@ -152,7 +139,6 @@
         select
             count(distinct r.id)
         from fusion_resource r
-        left join fusion_go go on go.organ_global_id =r.organ_id
         <include refid="fusionResourceCondition"></include>
     </select>
 
@@ -189,59 +175,12 @@
             #{item}
         </foreach>
     </select>
-    <select id="selectOrganResourcePage" resultType="com.primihub.entity.resource.po.FusionResource">
-        select
-            distinct r.id,r.resource_id resourceId,r.resource_name resourceName,resource_desc resourceDesc,resource_type resourceType,
-                     resource_auth_type resourceAuthType,resource_rows_count resourceRowsCount,resource_column_count resourceColumnCount,
-                     resource_state resourceState,resource_hash_code resourceHashCode,
-                     resource_column_name_list resourceColumnNameList,resource_contains_y resourceContainsY,resource_y_rows_count resourceYRowsCount,
-                     resource_y_ratio resourceYRatio,resource_tag resourceTag,r.organ_id organId,r.is_del isDel,r.c_time cTime,r.u_time uTime
-        from fusion_organ_resource_auth ora
-                 left join fusion_resource r on ora.resource_id = r.id
-                 left join fusion_organ fo on fo.global_id =r.organ_id
-        where
-        ora.organ_id = #{authOrganId}
-            and r.is_del=0
-        and r.resource_state = 0
-        and r.resource_auth_type != 2
-        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
-        <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
-        <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
-        <if test="columnStr!=null and columnStr!=''">
-            and cast(r.resource_column_name_list as char) = #{columnStr}
-        </if>
-        order by r.id desc
-        limit #{offset},#{pageSize}
-    </select>
-    <select id="selectOrganResourceCount" resultType="java.lang.Integer">
-        select
-        count(distinct r.id)
-        from fusion_organ_resource_auth ora
-        left join fusion_resource r on ora.resource_id = r.id
-        left join fusion_organ fo on fo.global_id =r.organ_id
-        where
-        ora.organ_id = #{authOrganId}
-        and r.is_del=0
-        and r.resource_state = 0
-        and r.resource_auth_type != 2
-        <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
-        <if test="auditStatus!=null">and ora.audit_status = #{auditStatus}</if>
-        <if test="projectId!=null and projectId!=''">and ora.project_id = #{projectId}</if>
-        <if test="columnStr!=null and columnStr!=''">
-            and cast(r.resource_column_name_list as char) = #{columnStr}
-        </if>
-        order by r.id desc
-    </select>
+
 
     <sql id="fusionResourceCondition">
         where
         r.resource_state = 0
         and r.resource_type != 3
-        and go.group_id in
-            <foreach collection="groupList" index="index" item="item" open="("
-                     separator="," close=")">
-                #{item}
-            </foreach>
         and (
             r.resource_auth_type=1
             or r.organ_id=#{globalId}
@@ -249,6 +188,13 @@
         )
         and r.is_del=0
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
+        <if test="globalId!=null and globalId!=''">and r.organ_id != #{globalId}</if>
+        <if test="organIds!=null">
+            and r.organ_id in
+            <foreach collection="organIds" index="index" item="item" separator="," open="(" close=")" >
+                #{item}
+            </foreach>
+        </if>
         <if test="resourceId!=null and resourceId!=''">and r.resource_id = #{resourceId}</if>
         <if test="resourceName!=null and resourceName!=''">and r.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
         <if test="resourceType!=null and resourceType!=0">and r.resource_type = #{resourceType}</if>
@@ -276,10 +222,6 @@
         <foreach collection="authOrganList" index="index" item="item" separator=",">
             (#{item.resourceId},#{item.organGlobalId},0)
         </foreach>
-    </insert>
-    <insert id="saveFusionOrganResourceAuth" parameterType="com.primihub.entity.resource.po.FusionOrganResourceAuth">
-        insert into fusion_organ_resource_auth (resource_id,organ_id,project_id,audit_status,is_del,c_time,u_time)
-        values (#{resourceId},#{organId},#{projectId},#{auditStatus},0,now(),now())
     </insert>
 
 

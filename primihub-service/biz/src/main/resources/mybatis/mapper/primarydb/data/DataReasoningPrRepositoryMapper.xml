@@ -8,10 +8,10 @@
     </insert>
 
     <insert id="saveDataReasoningResources" parameterType="com.primihub.biz.entity.data.po.DataReasoningResource">
-        insert into data_reasoning_resource(reasoning_id,resource_id,participation_identity,server_address,is_del,create_date,update_date)
+        insert into data_reasoning_resource(reasoning_id,resource_id,participation_identity,is_del,create_date,update_date)
         values
         <foreach collection="list" index="index" item="item" separator=",">
-            (#{item.reasoningId},#{item.resourceId},#{item.participationIdentity},#{item.serverAddress},0,now(),now())
+            (#{item.reasoningId},#{item.resourceId},#{item.participationIdentity},0,now(),now())
         </foreach>
     </insert>
 

@@ -1,9 +1,7 @@
 package com.primihub.repository;
 
 
-import com.primihub.entity.resource.param.OrganResourceParam;
 import com.primihub.entity.resource.param.ResourceParam;
-import com.primihub.entity.resource.po.FusionOrganResourceAuth;
 import com.primihub.entity.resource.po.FusionResource;
 import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.po.FusionResourceVisibilityAuth;
@@ -46,12 +44,4 @@ public interface FusionResourceRepository {
     void saveBatchResourceAuthOrgan(@Param("authOrganList")List<FusionResourceVisibilityAuth> authOrganList);
 
     void deleteResourceAuthOrgan(@Param("resourceId")String resourceId);
-
-    void saveFusionOrganResourceAuth(FusionOrganResourceAuth fusionOrganResourceAuth);
-
-    void updateFusionOrganResourceAuth(FusionOrganResourceAuth fusionOrganResourceAuth);
-
-    List<FusionResource> selectOrganResourcePage(OrganResourceParam param);
-
-    Integer selectOrganResourceCount(OrganResourceParam param);
 }

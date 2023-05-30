@@ -6,6 +6,7 @@ import com.primihub.biz.config.mq.SingleTaskChannel;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.scheduling.annotation.EnableAsync;
 
@@ -19,6 +20,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableAsync
 @ServletComponentScan(basePackages = {"com.primihub.biz.filter"})
 @EnableBinding({SingleTaskChannel.class})
+@EnableFeignClients(basePackages = {"com.primihub"})
 public class PlatformApplication {
 
     public static void main(String[] args) {
