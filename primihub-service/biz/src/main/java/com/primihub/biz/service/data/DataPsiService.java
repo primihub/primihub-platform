@@ -47,7 +47,7 @@ public class DataPsiService {
         return dataResourceService.getDataResourceList(req,null);
     }
 
-    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String serverAddress,String resourceName) {
+    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId,String resourceName) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         String localOrganId = organConfiguration.getSysLocalOrganId();
         if(StringUtils.isBlank(organId) || sysLocalOrganInfo==null || StringUtils.isBlank(sysLocalOrganInfo.getOrganId()) || sysLocalOrganInfo.getOrganId().equals(organId)){
@@ -70,13 +70,9 @@ public class DataPsiService {
             Map<Long, List<DataFileField>> fileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
             return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.DataResourcePoConvertAllocationVo(re,fileFieldMap.get(re.getResourceId()),localOrganId)).collect(Collectors.toList())));
         }else if (!sysLocalOrganInfo.getOrganId().equals(organId)){
-            if (StringUtils.isBlank(serverAddress)) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-            }
             DataFResourceReq fResourceReq = new DataFResourceReq();
             fResourceReq.setPageNo(req.getPageNo());
             fResourceReq.setPageSize(req.getPageSize());
-            fResourceReq.setServerAddress(serverAddress);
             fResourceReq.setOrganId(organId);
             fResourceReq.setResourceName(resourceName);
             BaseResultEntity baseResult = otherBusinessesService.getResourceList(fResourceReq);
@@ -92,29 +88,21 @@ public class DataPsiService {
     }
 
     public BaseResultEntity saveDataPsi(DataPsiReq req, Long userId) {
-        if (StringUtils.isBlank(req.getServerAddress())){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-        }
         DataPsi dataPsi = DataPsiConvert.DataPsiReqConvertPo(req);
         dataPsi.setUserId(userId);
         dataPsiPrRepository.saveDataPsi(dataPsi);
         DataPsiTask task = new DataPsiTask();
         task.setPsiId(dataPsi.getId());
-//        task.setTaskId(UUID.randomUUID().toString());
         task.setTaskId(Long.toString(SnowflakeId.getInstance().nextId()));
         task.setTaskState(0);
         if (dataPsi.getResultOrganIds().indexOf(",")!=-1){
-//            task.setAscription("双方获取");
             task.setAscriptionType(1);
         }else {
-//            task.setAscription("一方获取");
             task.setAscriptionType(0);
         }
         if (dataPsi.getOutputContent()==0){
-//            task.setAscription(task.getAscription()+"交集");
             task.setAscription("求交集");
         }else {
-//            task.setAscription(task.getAscription()+"差集");
             task.setAscription("求差集");
         }
         task.setCreateDate(new Date());
@@ -170,7 +158,7 @@ public class DataPsiService {
             otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
             otherDataResource.put("resourceName",otherResource.getResourceName());
         }else {
-            BaseResultEntity baseResult = otherBusinessesService.getDataResource(dataPsi.getServerAddress(), dataPsi.getOtherResourceId());
+            BaseResultEntity baseResult = otherBusinessesService.getDataResource(dataPsi.getOtherResourceId());
             if (baseResult.getCode()==0){
                 otherDataResource = (LinkedHashMap)baseResult.getResult();
             }

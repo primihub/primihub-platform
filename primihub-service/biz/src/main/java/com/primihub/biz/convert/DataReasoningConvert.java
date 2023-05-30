@@ -22,12 +22,11 @@ public class DataReasoningConvert {
         return dataReasoning;
     }
 
-    public static DataReasoningResource dataReasoningResourceReqConvertPo(DataReasoningResourceReq req,Long reasoningId,String serverAddress){
+    public static DataReasoningResource dataReasoningResourceReqConvertPo(DataReasoningResourceReq req,Long reasoningId){
         DataReasoningResource dataReasoningResource = new DataReasoningResource();
         dataReasoningResource.setReasoningId(reasoningId);
         dataReasoningResource.setResourceId(req.getResourceId());
         dataReasoningResource.setParticipationIdentity(req.getParticipationIdentity());
-        dataReasoningResource.setServerAddress(serverAddress);
         return dataReasoningResource;
     }
 

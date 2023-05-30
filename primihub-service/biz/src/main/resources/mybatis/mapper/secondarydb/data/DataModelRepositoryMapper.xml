@@ -309,7 +309,6 @@
             dp.project_name projectName,
             dp.created_organ_id createdOrganId,
             dp.created_organ_name createdOrgan,
-            dp.server_address serverAddress,
             dp.provider_organ_names providerOrganNames,
             (select count(id) from data_mr where task_id = dt.task_id) resourceNum
         FROM

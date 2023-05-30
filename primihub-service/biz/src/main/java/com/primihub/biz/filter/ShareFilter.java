@@ -66,7 +66,7 @@ public class ShareFilter implements Filter {
     private void writeJsonToResponse(ServletResponse response, String message) throws IOException {
         response.setContentType(MediaType.APPLICATION_JSON.toString());
         response.setCharacterEncoding("utf-8");
-        response.getWriter().println(JSON.toJSONString(BaseResultEntity.failure(BaseResultEnum.FAILURE,message)));
+        response.getWriter().println(JSON.toJSONString(BaseResultEntity.failure(BaseResultEnum.DECRYPTION_FAILED,message)));
     }
 
     private String getBodytxt(ServletRequest request) throws IOException {

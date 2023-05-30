@@ -1,7 +1,7 @@
 package com.primihub.biz.grpc.client;
 
 import io.grpc.Channel;
-import java_data_service.DataServiceGrpc;
+import java_data_service.DataSetServiceGrpc;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
@@ -13,13 +13,13 @@ public class DataServiceGrpcClient {
     @Resource(name="grpcClientChannel")
     private Channel channel;
 
-    public <Result> Result run(Functional<DataServiceGrpc.DataServiceBlockingStub,Result> functional){
-        DataServiceGrpc.DataServiceBlockingStub dataServiceBlockingStub = DataServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
+    public <Result> Result run(Functional<DataSetServiceGrpc.DataSetServiceBlockingStub,Result> functional){
+        DataSetServiceGrpc.DataSetServiceBlockingStub dataServiceBlockingStub = DataSetServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
         return functional.run(dataServiceBlockingStub);
     }
 
-    public <Result> Result run(Functional<DataServiceGrpc.DataServiceBlockingStub,Result> functional, Channel channel){
-        DataServiceGrpc.DataServiceBlockingStub dataServiceBlockingStub = DataServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
+    public <Result> Result run(Functional<DataSetServiceGrpc.DataSetServiceBlockingStub,Result>  functional, Channel channel){
+        DataSetServiceGrpc.DataSetServiceBlockingStub dataServiceBlockingStub = DataSetServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
         return functional.run(dataServiceBlockingStub);
     }
 }

@@ -39,7 +39,7 @@ public class DataTaskMonitorService {
             String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
             while (isContinue){
                 TaskStatusReply taskStatusReply = workGrpcClient.run(o -> o.fetchTaskStatus(taskBuild));
-                log.info(taskStatusReply.toString());
+//                log.info(taskStatusReply.toString());
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->StringUtils.isNotBlank(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
                     if (!taskStatus.isEmpty()){
@@ -61,6 +61,8 @@ public class DataTaskMonitorService {
                             log.info("num:{} - success:{}",num,success);
                             if (num <= success){
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                                // 暂停2秒 在k8s中文件同步存在一定的延迟性
+                                Thread.sleep(2000L);
                                 if (StringUtils.isNotBlank(path)){
                                     Thread.sleep(1500L);
                                     if (!FileUtil.isFileExists(path)){

@@ -38,10 +38,6 @@ public class DataProjectDetailsVo {
      */
     private Integer status;
     /**
-     * 中心节点地址
-     */
-    private String serverAddress;
-    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

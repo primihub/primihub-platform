@@ -9,6 +9,7 @@ import com.primihub.biz.entity.data.vo.DataProjectListVo;
 import com.primihub.biz.entity.data.vo.DataProjectOrganVo;
 import com.primihub.biz.entity.data.vo.DataProjectResourceVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
@@ -29,7 +30,6 @@ public class DataProjectConvert {
         dataProject.setCreatedUsername(userName);
         dataProject.setResourceNum(0);
         dataProject.setProviderOrganNames("");
-        dataProject.setServerAddress(req.getServerAddress());
         dataProject.setStatus(0);
         return dataProject;
     }
@@ -77,11 +77,10 @@ public class DataProjectConvert {
         dataProjectDetailsVo.setUserName(dataProject.getCreatedUsername());
         dataProjectDetailsVo.setStatus(dataProject.getStatus());
         dataProjectDetailsVo.setCreateDate(dataProject.getCreateDate());
-        dataProjectDetailsVo.setServerAddress(dataProject.getServerAddress());
         return dataProjectDetailsVo;
     }
 
-    public static DataProjectOrganVo DataProjectOrganConvertVo(DataProjectOrgan dataProjectOrgan,boolean creator,SysLocalOrganInfo organInfo,Map<String,Object> organMap){
+    public static DataProjectOrganVo DataProjectOrganConvertVo(DataProjectOrgan dataProjectOrgan, boolean creator, SysLocalOrganInfo organInfo, SysOrgan organ){
         DataProjectOrganVo dataProjectOrganVo = new DataProjectOrganVo();
         dataProjectOrganVo.setId(dataProjectOrgan.getId());
         dataProjectOrganVo.setProjectId(dataProjectOrgan.getProjectId());
@@ -89,7 +88,7 @@ public class DataProjectConvert {
         dataProjectOrganVo.setThisInstitution(dataProjectOrgan.getOrganId().equals(organInfo.getOrganId()));
         dataProjectOrganVo.setParticipationIdentity(dataProjectOrgan.getParticipationIdentity());
         dataProjectOrganVo.setOrganId(dataProjectOrgan.getOrganId());
-        dataProjectOrganVo.setOrganName(organMap==null?"":organMap.get("globalName")==null?"":organMap.get("globalName").toString());
+        dataProjectOrganVo.setOrganName(organ==null?"":organ.getOrganName());
         dataProjectOrganVo.setAuditStatus(dataProjectOrgan.getAuditStatus());
         dataProjectOrganVo.setAuditOpinion(dataProjectOrgan.getAuditOpinion());
         dataProjectOrganVo.setResources(new ArrayList<>());

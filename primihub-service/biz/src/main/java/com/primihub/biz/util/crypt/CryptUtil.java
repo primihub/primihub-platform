@@ -1,5 +1,6 @@
 package com.primihub.biz.util.crypt;
 
+import com.google.common.io.BaseEncoding;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
@@ -43,7 +44,8 @@ public class CryptUtil {
      * 分段RSA公钥加密
      */
     public static String multipartEncrypt( String str, String publicKey ) throws Exception{
-        byte[] decoded = Base64.decodeBase64(publicKey);
+//        byte[] decoded = Base64.decodeBase64(publicKey);
+        byte[] decoded = BaseEncoding.base64().decode(publicKey);
         RSAPublicKey pubKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.ENCRYPT_MODE, pubKey);
@@ -84,7 +86,8 @@ public class CryptUtil {
      * 分段RSA私钥解密
      */
     public static String multipartDecrypt(String str, String privateKey) throws Exception{
-        byte[] decoded = Base64.decodeBase64(privateKey);
+//        byte[] decoded = Base64.decodeBase64(privateKey);
+        byte[] decoded = BaseEncoding.base64().decode(privateKey);
         RSAPrivateKey priKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
         Cipher cipher = Cipher.getInstance("RSA");
         cipher.init(Cipher.DECRYPT_MODE, priKey);

@@ -1,21 +1,35 @@
 package com.primihub.biz.entity.data.dataenum;
 
+
+import java.util.HashMap;
+import java.util.Map;
+
 public enum FieldTypeEnum {
-    STRING(0,"String"),
-    INTEGER(1,"Integer"),
-    DOUBLE(2,"Double"),
-    LONG(3,"Long"),
-    ENUM(4,"Enum"),
-    BOOLEAN(5,"Boolean"),
+    STRING(0,"String","STRING"),
+    INTEGER(1,"Integer","INT32"),
+    DOUBLE(2,"Double","DOUBLE"),
+    LONG(3,"Long","INT64"),
+//    ENUM(4,"Enum"),
+    BOOLEAN(5,"Boolean","BOOL"),
     ;
 
     private Integer code;
     private String typeName;
+    private String nodeTypeName;
 
-    FieldTypeEnum(Integer code, String typeName) {
+    FieldTypeEnum(Integer code, String typeName,String nodeTypeName) {
         this.code = code;
         this.typeName = typeName;
+        this.nodeTypeName = nodeTypeName;
     }
+
+    public static Map<Integer, FieldTypeEnum> FIELD_TYPE_MAP=new HashMap(){
+        {
+            for (FieldTypeEnum e:FieldTypeEnum.values()){
+                put(e.code,e);
+            }
+        }
+    };
 
     public static String getTypeName(Integer code){
         for (FieldTypeEnum value : values()) {
@@ -49,5 +63,13 @@ public enum FieldTypeEnum {
 
     public void setTypeName(String typeName) {
         this.typeName = typeName;
+    }
+
+    public String getNodeTypeName() {
+        return nodeTypeName;
+    }
+
+    public void setNodeTypeName(String nodeTypeName) {
+        this.nodeTypeName = nodeTypeName;
     }
 }

@@ -14,14 +14,12 @@ public class ShareModelVo {
 
     public ShareModelVo(DataProject project) {
         this.projectId = project.getProjectId();
-        this.serverAddress = project.getServerAddress();
     }
 
     public ShareModelVo() {
     }
 
     private String projectId;
-    private String serverAddress;
     private DataModel dataModel;
     private DataTask dataTask;
     private DataModelTask dataModelTask;
@@ -33,7 +31,6 @@ public class ShareModelVo {
 
     public void init(DataProject project){
         this.projectId = project.getProjectId();
-        this.serverAddress = project.getServerAddress();
     }
 
     public void supplement(){

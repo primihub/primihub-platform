@@ -25,10 +25,6 @@ public class DataProjectReq{
      */
     private String projectDesc;
     /**
-     * 中心地址
-     */
-    private String serverAddress;
-    /**
      * 项目机构列表
      */
     private List<DataProjectOrganReq> projectOrgans;

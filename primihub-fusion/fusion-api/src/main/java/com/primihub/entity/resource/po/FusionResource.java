@@ -53,7 +53,7 @@ public class FusionResource {
     /**
      * 字段列表
      */
-    private byte[] resourceColumnNameList;
+    private String resourceColumnNameList;
 
     /**
      * 资源字段中是否包含y字段 0否 1是
@@ -91,6 +91,8 @@ public class FusionResource {
      * 资源状态 目前有 0上线 1下线
      */
     private Integer resourceState;
+
+    private String userName;
 
     /**
      * 是否删除

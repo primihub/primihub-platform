@@ -16,6 +16,8 @@ and have a clear directory:
     ├─primihub-platform
         ├─primihub-fusion
         │   ├─fusion-api
+        │   ├─fusion-grpc
+        │   ├─fusion-simple
         │   └─script
         ├─primihub-service
         │   ├─application
@@ -29,7 +31,7 @@ Before we start, please refer to [primihub](https://github.com/primihub/primihub
 
 then we can get started from those projects.
 
-- [primihub-fusion](./primihub-fusion/README.md) : connect different primihub-service and have the right data access.
+- [primihub-fusion](./primihub-fusion/README.md) : connect primihub-service and have the right data access.
 - [primihub-service](./primihub-service/README.md) : provide all most of service capabilities and api.
 - [primihub-webconsole](./primihub-webconsole/README.md) : you can operate specific functions and have a clear view.
 

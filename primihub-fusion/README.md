@@ -54,7 +54,7 @@ As long as the finished infos show up, the project have been compiled and packag
 ## How to run
 Before run, make sure that your service dependencies are available and the configuration is correct.
 
-    java -jar -Dfile.encoding=UTF-8 ./fusion-api/target/*-SNAPSHOT.jar --server.port=8099
+    java -jar -Dfile.encoding=UTF-8 ./fusion-api/target/*-SNAPSHOT.jar --server.port=8099 --spring.cloud.nacos.discovery.server-addr=nacos:8848 --spring.cloud.nacos.discovery.namespace=demo --spring.cloud.nacos.config.server-addr=nacos:8848 --spring.cloud.nacos.config.namespace=demo
 
 execute that the command,you can check the url:
     

@@ -172,14 +172,10 @@ public class TaskController {
         if (StringUtils.isNotBlank(taskResultContent)){
             ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(taskResultContent, ModelOutputPathDto.class);
             boolean isCooperation = dataTask.getIsCooperation() == 1;
-            File file = new File(isCooperation?modelOutputPathDto.getGuestLookupTable():modelOutputPathDto.getModelFileName());
+            File file = new File(isCooperation?modelOutputPathDto.getGuestModelFileName():modelOutputPathDto.getHostModelFileName());
             if (file.exists()){
-                // 获得文件输入流
                 FileInputStream inputStream = new FileInputStream(file);
-                // 设置响应头、以附件形式打开文件
-                if (!isCooperation) {
-                    response.setContentType("application/zip");
-                }
+                response.setHeader("content-Type","application/vnd.ms-excel");
                 response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
                 ServletOutputStream outputStream = response.getOutputStream();
                 int len = 0;
@@ -190,22 +186,7 @@ public class TaskController {
                 outputStream.close();
                 inputStream.close();
             }else {
-                file = new File(modelOutputPathDto.getModelFileName()+".host");
-                if (file.exists()){
-                    FileInputStream inputStream = new FileInputStream(file);
-                    response.setHeader("content-Type","application/vnd.ms-excel");
-                    response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
-                    ServletOutputStream outputStream = response.getOutputStream();
-                    int len = 0;
-                    byte[] data = new byte[1024];
-                    while ((len = inputStream.read(data)) != -1) {
-                        outputStream.write(data, 0, len);
-                    }
-                    outputStream.close();
-                    inputStream.close();
-                }else {
-                    downloadTaskError(response,"无文件");
-                }
+                downloadTaskError(response,"无文件");
             }
         }else {
             downloadTaskError(response,"无文件");

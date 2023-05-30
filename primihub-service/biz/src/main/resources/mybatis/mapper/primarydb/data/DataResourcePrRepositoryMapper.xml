@@ -125,10 +125,10 @@
     </delete>
 
     <insert id="saveVisibilityAuth">
-        insert into data_resource_visibility_auth (resource_id,organ_global_id,organ_name,organ_server_address,is_del)
+        insert into data_resource_visibility_auth (resource_id,organ_global_id,organ_name,is_del)
         values
         <foreach collection="list" index="index" item="item" separator=",">
-            (#{item.resourceId},#{item.organGlobalId},#{item.organName},#{item.organServerAddress},#{item.isDel})
+            (#{item.resourceId},#{item.organGlobalId},#{item.organName},#{item.isDel})
         </foreach>
     </insert>
     <insert id="saveSource" parameterType="com.primihub.biz.entity.data.po.DataSource" keyProperty="id" useGeneratedKeys="true">
