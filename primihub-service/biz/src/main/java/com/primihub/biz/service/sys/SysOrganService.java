@@ -217,13 +217,19 @@ public class SysOrganService {
             }
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
-            if (isUpdate){
+            SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
+            if (sysOrgan1!=null){
+                sysOrgan.setId(sysOrgan1.getId());
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }else {
-                sysOrgan.setOrganName(resultMap.get("organName").toString());
-                sysOrgan.setExamineState(0);
-                sysOrgan.setEnable(0);
-                sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+                if (isUpdate){
+                    sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
+                }else {
+                    sysOrgan.setOrganName(resultMap.get("organName").toString());
+                    sysOrgan.setExamineState(0);
+                    sysOrgan.setEnable(0);
+                    sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
