@@ -110,11 +110,11 @@ export default {
         {
           label: 'MYSQL5.7+',
           value: 1
-        },
-        {
-          label: 'SQLite',
-          value: 2
         }
+        // {
+        //   label: 'SQLite',
+        //   value: 2
+        // }
       ],
       dbDriverMap: {
         // MySQL 数据库

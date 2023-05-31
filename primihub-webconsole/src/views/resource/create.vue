@@ -63,7 +63,7 @@
             <el-radio :label="3">
               指定机构可见
               <template v-if="dataForm.resourceAuthType === 3">
-                <OrganSelect style="display:inline-block;" size="small" @change="handleOrganChange" />
+                <OrganSelect :value="authOrganList" style="display:inline-block; margin-left: 5px;" size="small" @change="handleOrganChange" />
               </template>
             </el-radio>
           </el-radio-group>
@@ -318,7 +318,6 @@ export default {
             })
           }
           this.loading = true
-          console.log(this.dataForm)
           saveResource(this.dataForm).then(res => {
             this.loading = false
             if (res.code === 0) {
@@ -350,7 +349,7 @@ export default {
     async getResourceDetail() {
       this.loading = true
       const { result = {}} = await getResourceDetail(this.resourceId)
-      const { resource, dataList, fieldList, authOrganList } = result
+      const { resource, dataList, fieldList, fusionOrganList } = result
       const { resourceName, resourceDesc, resourceAuthType, resourceSource, tags, fileId, url } = resource
       this.resource = resource
       this.dataForm.resourceName = resourceName
@@ -360,7 +359,7 @@ export default {
       this.dataForm.fileId = fileId
       this.dataList = dataList || []
       this.fieldList = fieldList || []
-      this.authOrganList = authOrganList || []
+      this.authOrganList = fusionOrganList.map(item => item.organGlobalId)
       this.dataForm.fieldList = this.formatParams()
       tags.forEach(item => {
         this.dataForm.tags.push(item.tagName)
@@ -396,8 +395,7 @@ export default {
       this.listLoading = false
     },
     handleOrganChange(data) {
-      this.cascaderValue = data.valueList
-      this.dataForm.fusionOrganList = data.fusionOrganList
+      this.dataForm.fusionOrganList = data
     }
   }
 }
