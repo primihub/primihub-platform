@@ -242,6 +242,7 @@ public class SysOrganService {
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
         }else {
+            sysOrgan.setApplyId(info.get("applyId").toString());
             sysOrgan.setOrganGateway(info.get("gateway").toString());
             sysOrgan.setPublicKey(info.get("publicKey").toString());
             sysOrgan.setOrganId(info.get("organId").toString());
