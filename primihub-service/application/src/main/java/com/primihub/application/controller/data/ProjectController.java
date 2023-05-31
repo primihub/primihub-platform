@@ -34,9 +34,6 @@ public class ProjectController {
             if (StringUtils.isBlank(req.getProjectName())) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectName");
             }
-            if (StringUtils.isBlank(req.getServerAddress())) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
-            }
             if (req.getProjectOrgans()==null||req.getProjectOrgans().isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectOrgans");
             }
@@ -172,9 +169,6 @@ public class ProjectController {
     public BaseResultEntity getResourceList(OrganResourceReq req){
         if (StringUtils.isBlank(req.getOrganId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        if (StringUtils.isBlank(req.getServerAddress())){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"serverAddress");
         }
         if (req.getModelId()==null || req.getModelId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");

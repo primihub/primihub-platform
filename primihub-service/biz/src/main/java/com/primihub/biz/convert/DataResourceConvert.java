@@ -8,6 +8,7 @@ import com.primihub.biz.entity.data.req.DataResourceFieldReq;
 import com.primihub.biz.entity.data.req.DataResourceReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
+import com.primihub.biz.entity.sys.po.SysUser;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.data.relational.core.sql.In;
 
@@ -174,7 +175,7 @@ public class DataResourceConvert {
         return vo;
     }
 
-    public static DataResourceCopyVo dataResourcePoConvertCopyVo(DataResource dataResource, String organId, String tags, List<String> authOrganList,List<DataFileField> fieldList){
+    public static DataResourceCopyVo dataResourcePoConvertCopyVo(DataResource dataResource, String organId, String tags, List<String> authOrganList, List<DataFileField> fieldList, SysUser sysUser){
         DataResourceCopyVo dataResourceCopyVo = new DataResourceCopyVo();
         dataResourceCopyVo.setResourceId(dataResource.getResourceFusionId());
         dataResourceCopyVo.setResourceName(dataResource.getResourceName());
@@ -201,6 +202,7 @@ public class DataResourceConvert {
         }
         dataResourceCopyVo.setResourceState(dataResource.getResourceState());
         dataResourceCopyVo.setResourceHashCode(dataResource.getResourceHashCode());
+        dataResourceCopyVo.setUserName(sysUser.getUserName());
         return dataResourceCopyVo;
     }
 

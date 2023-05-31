@@ -12,7 +12,6 @@ public enum BaseFunctionHandleEnum {
     SINGLE_DATA_FUSION_RESOURCE_TASK("singleDataFusionResource","dataTaskService","singleDataFusionResource"),
     SPREAD_PROJECT_DATA_TASK("spreadProjectData","dataTaskService","spreadProjectData"),
     SPREAD_MODEL_DATA_TASK("spreadModelData","dataTaskService","spreadModelData"),
-    COMPARE_AND_FIX_LOCAL_ORGAN_NAME_TASK("compareAndFixLocalOrganName","dataTaskService","compareAndFixLocalOrganName"),
     ;
 
     private String handleType;

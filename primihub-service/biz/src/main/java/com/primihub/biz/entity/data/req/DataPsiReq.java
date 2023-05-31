@@ -76,8 +76,6 @@ public class DataPsiReq {
      */
     private String remarks;
 
-    private String serverAddress;
-
     /**
      * 0、ECDH
      * 1、KKRT

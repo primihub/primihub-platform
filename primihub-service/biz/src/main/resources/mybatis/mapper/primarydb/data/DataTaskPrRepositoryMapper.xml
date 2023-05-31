@@ -7,8 +7,8 @@
         values (#{taskIdName},#{taskName},#{taskDesc},#{taskState},#{taskType},#{taskResultPath},#{taskResultContent},#{taskStartTime},#{taskEndTime},#{taskUserId},#{taskErrorMsg},#{isCooperation},0,now(),now())
     </insert>
     <insert id="saveDataPirTask" parameterType="com.primihub.biz.entity.data.po.DataPirTask">
-        insert into data_pir_task (task_id,server_address,provider_organ_name,resource_id,resource_name,retrieval_id,is_del,create_date,update_date)
-        values (#{taskId},#{serverAddress},#{providerOrganName},#{resourceId},#{resourceName},#{retrievalId},0,now(),now())
+        insert into data_pir_task (task_id,provider_organ_name,resource_id,resource_name,retrieval_id,is_del,create_date,update_date)
+        values (#{taskId},#{providerOrganName},#{resourceId},#{resourceName},#{retrievalId},0,now(),now())
     </insert>
     <update id="updateDataTask" parameterType="com.primihub.biz.entity.data.po.DataTask">
         update data_task

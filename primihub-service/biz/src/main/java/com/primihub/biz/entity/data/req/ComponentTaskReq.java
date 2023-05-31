@@ -27,7 +27,6 @@ public class  ComponentTaskReq {
     private List<LinkedHashMap<String,Object>> fusionResourceList;
     private List<ModelDerivationDto> derivationList = new ArrayList<>();
     private List<ModelDerivationDto> newest;
-    private String serverAddress;
     private int job = 0;
 
     public ComponentTaskReq(DataModel dataModel) {

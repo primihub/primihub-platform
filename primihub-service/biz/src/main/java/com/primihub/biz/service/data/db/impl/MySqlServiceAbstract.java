@@ -25,7 +25,8 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
 
 
 
-    protected static final String QUERY_TABLES_SQL = "select table_name as tableName from information_schema.tables where table_schema = ? order by table_name desc";
+    protected static final String QUERY_TABLES_SQL = "select table_name as tableName from information_schema.tables where table_schema = ? order by table_name asc";
+    protected static final String QUERY_TABLES_COLUMNS_SQL = "select column_name as columnName from information_schema.columns where table_name = ? and table_schema = ? order by table_name asc";
     protected static final String QUERY_DETAILS_SQL = "select * from <tableName> limit 0,50";
     protected static final String QUERY_COUNT_SQL = "select count(*) total from <tableName>";
     protected static final String QUERY_COUNT_Y_SQL = "select count(*) ytotal from <tableName>";
@@ -78,8 +79,10 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
             if (details.isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到数据信息");
             }
-            TreeSet<String> treeSet = new TreeSet(details.get(0).keySet());
-            List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(treeSet, details.get(0));
+            List<Map<String, Object>> columnsNames = jdbcTemplate.queryForList(QUERY_TABLES_COLUMNS_SQL,dbSource.getDbTableName(),dbSource.getDbName());
+            List<String> columnName = columnsNames.stream().map(m -> m.get("columnName").toString()).collect(Collectors.toList());
+//            TreeSet<String> treeSet = new TreeSet(details.get(0).keySet());
+            List<DataFileField> dataFileFields = dataResourceService.batchInsertDataDataSourceField(columnName, details.get(0));
             Map<String,Object> map = new HashMap<>();
             map.put("fieldList",dataFileFields.stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
             map.put("dataList",details);

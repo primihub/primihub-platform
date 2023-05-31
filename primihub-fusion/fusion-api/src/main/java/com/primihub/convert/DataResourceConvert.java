@@ -1,5 +1,6 @@
 package com.primihub.convert;
 
+import com.primihub.entity.DataSet;
 import com.primihub.entity.copy.dto.CopyResourceDto;
 import com.primihub.entity.copy.dto.CopyResourceFieldDto;
 import com.primihub.entity.resource.enumeration.AuthTypeEnum;
@@ -8,7 +9,6 @@ import com.primihub.entity.resource.po.FusionResourceField;
 import com.primihub.entity.resource.vo.FusionResourceVo;
 import org.springframework.util.StringUtils;
 
-import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +28,7 @@ public class DataResourceConvert {
         fusionResource.setResourceAuthType(dto.getResourceAuthType());
         fusionResource.setResourceRowsCount(dto.getResourceRowsCount());
         fusionResource.setResourceColumnCount(dto.getResourceColumnCount());
-        fusionResource.setResourceColumnNameList(dto.getResourceColumnNameList().getBytes(Charset.forName("UTF-8")));
+        fusionResource.setResourceColumnNameList(dto.getResourceColumnNameList());
         fusionResource.setResourceContainsY(dto.getResourceContainsY());
         fusionResource.setResourceYRowsCount(dto.getResourceYRowsCount());
         fusionResource.setResourceYRatio(dto.getResourceYRatio());
@@ -37,12 +37,38 @@ public class DataResourceConvert {
         fusionResource.setIsDel(dto.getIsDel());
         fusionResource.setResourceState(dto.getResourceState());
         fusionResource.setResourceHashCode(dto.getResourceHashCode());
+        fusionResource.setUserName(dto.getUserName());
         return fusionResource;
 
     }
+    public static CopyResourceDto FusionResourceConvertCopyResourceDto(FusionResource po,List<CopyResourceFieldDto> fieldDtoList,DataSet dataSet){
+        CopyResourceDto copyResourceDto = new CopyResourceDto();
+        copyResourceDto.setResourceId(po.getResourceId());
+        copyResourceDto.setResourceName(po.getResourceName());
+        copyResourceDto.setResourceDesc(po.getResourceDesc());
+        copyResourceDto.setResourceType(po.getResourceType());
+        copyResourceDto.setResourceAuthType(po.getResourceAuthType());
+        copyResourceDto.setResourceRowsCount(po.getResourceRowsCount());
+        copyResourceDto.setResourceColumnCount(po.getResourceColumnCount());
+        copyResourceDto.setResourceColumnNameList(po.getResourceColumnNameList());
+        copyResourceDto.setResourceContainsY(po.getResourceContainsY());
+        copyResourceDto.setResourceYRowsCount(po.getResourceYRowsCount());
+        copyResourceDto.setResourceYRatio(po.getResourceYRatio());
+        copyResourceDto.setResourceTag(po.getResourceTag());
+        copyResourceDto.setOrganId(po.getOrganId());
+        copyResourceDto.setAuthOrganList(StringUtils.isEmpty(po.getAuthOrgans())?null: Arrays.asList(po.getAuthOrgans().split(",")));
+        copyResourceDto.setFieldList(fieldDtoList);
+        copyResourceDto.setIsDel(po.getIsDel());
+        copyResourceDto.setResourceHashCode(po.getResourceHashCode());
+        copyResourceDto.setResourceState(po.getResourceState());
+        copyResourceDto.setUserName(po.getUserName());
+//        dataSet.setAccessInfo(null);
+        copyResourceDto.setDataSet(dataSet);
+        return copyResourceDto;
+    }
 
 
-    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource, String organName, List<FusionResourceField> fieldList, Set<String> groupInOrganIds,String globalId){
+    public static FusionResourceVo fusionResourcePoConvertVo(FusionResource fusionResource,String organName, List<FusionResourceField> fieldList,String globalId){
         FusionResourceVo fusionResourceVo = new FusionResourceVo();
         fusionResourceVo.setResourceId(fusionResource.getResourceId());
         fusionResourceVo.setResourceName(fusionResource.getResourceName());
@@ -51,8 +77,8 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceAuthType(fusionResource.getResourceAuthType());
         fusionResourceVo.setResourceRowsCount(fusionResource.getResourceRowsCount());
         fusionResourceVo.setResourceColumnCount(fusionResource.getResourceColumnCount());
-        if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList().length>=0) {
-            fusionResourceVo.setResourceColumnNameList(new String(fusionResource.getResourceColumnNameList(),Charset.forName("UTF-8")));
+        if (fusionResource.getResourceColumnNameList()!=null&&fusionResource.getResourceColumnNameList()!="") {
+            fusionResourceVo.setResourceColumnNameList(fusionResource.getResourceColumnNameList());
         }
         fusionResourceVo.setFieldList(fieldList);
         fusionResourceVo.setResourceContainsY(fusionResource.getResourceContainsY());
@@ -60,7 +86,6 @@ public class DataResourceConvert {
         fusionResourceVo.setResourceYRatio(fusionResource.getResourceYRatio());
         fusionResourceVo.setResourceTag(Arrays.asList(fusionResource.getResourceTag().split(",")));
         fusionResourceVo.setOrganId(fusionResource.getOrganId());
-        fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setCreateDate(fusionResource.getCTime());
         if (fieldList!=null&&fieldList.size()!=0){
             fusionResourceVo.setOpenColumnNameList(fieldList.stream().map(field-> StringUtils.isEmpty(field.getFieldAs())?field.getFieldName():field.getFieldAs()).collect(Collectors.joining(",")));
@@ -79,12 +104,14 @@ public class DataResourceConvert {
                     }
                 }
             }
-            if(fusionResource.getResourceAuthType().equals(AuthTypeEnum.PUBLIC.getAuthType()) && groupInOrganIds!=null && groupInOrganIds.contains(fusionResource.getOrganId())) {
+            if(fusionResource.getResourceAuthType().equals(AuthTypeEnum.PUBLIC.getAuthType())) {
                 fusionResourceVo.setAvailable(0);
             }
         }
+        fusionResourceVo.setOrganName(organName);
         fusionResourceVo.setResourceState(fusionResource.getResourceState());
         fusionResourceVo.setResourceHashCode(fusionResource.getResourceHashCode());
+        fusionResourceVo.setUserName(fusionResource.getUserName());
         return fusionResourceVo;
     }
 
@@ -96,9 +123,17 @@ public class DataResourceConvert {
         fusionResourceField.setFieldAs(dto.getFieldAs());
         fusionResourceField.setFieldType(dto.getFieldType());
         fusionResourceField.setFieldDesc(dto.getFieldDesc());
-        fusionResourceField.setRelevance(dto.getRelevance());
-        fusionResourceField.setGrouping(dto.getGrouping());
-        fusionResourceField.setProtectionStatus(dto.getProtectionStatus());
         return fusionResourceField;
+    }
+
+    public static CopyResourceFieldDto fusionResourceFieldConvertCopyResourceFieldDto(FusionResourceField po){
+        CopyResourceFieldDto copyResourceFieldDto = new CopyResourceFieldDto();
+        copyResourceFieldDto.setFieldName(po.getFieldName());
+        copyResourceFieldDto.setFieldAs(po.getFieldAs());
+        copyResourceFieldDto.setFieldType(po.getFieldType());
+        copyResourceFieldDto.setFieldDesc(po.getFieldDesc());
+        copyResourceFieldDto.setResourceId(po.getResourceId());
+        return copyResourceFieldDto;
+
     }
 }

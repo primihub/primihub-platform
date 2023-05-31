@@ -11,25 +11,21 @@ import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
+import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataResource;
-import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
-import com.primihub.biz.entity.sys.po.SysOrganFusion;
+import com.primihub.biz.entity.sys.po.DataSet;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.test.TestPrimaryRepository;
 import com.primihub.biz.repository.primaryredis.test.TestRedisRepository;
-import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.test.TestSecondaryRepository;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.DataTaskService;
-import com.primihub.biz.entity.data.vo.ModelComponentJson;
-//import com.primihub.biz.entity.feign.FedlearnerJobApi;
-//import com.primihub.biz.entity.feign.FedlearnerJobApiResource;
-import com.primihub.biz.entity.sys.po.SysFile;
-import com.primihub.biz.repository.resourceprimarydb.test.TestResourcePrimaryRepository;
-import com.primihub.biz.repository.resourcesecondarydb.test.TestResourceSecondaryRepository;
+import com.primihub.biz.service.data.OtherBusinessesService;
+import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
@@ -37,21 +33,17 @@ import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.core.env.Environment;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 import primihub.rpc.Common;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -65,19 +57,21 @@ public class TestService {
     @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
-    private TestResourcePrimaryRepository testResourcePrimaryRepository;
-    @Autowired
-    private TestResourceSecondaryRepository testResourceSecondaryRepository;
-    @Autowired
     private DataResourceService dataResourceService;
     @Autowired
     private DataResourceRepository dataResourceRepository;
     @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
-    private OrganConfiguration organConfiguration;
+    private FusionResourceService fusionResourceService;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
+    @Autowired
+    private OtherBusinessesService otherBusinessesService;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     @Resource
     private Environment environment;
@@ -94,19 +88,6 @@ public class TestService {
         }
     }
 
-    public List<Map> testTable(){
-        testResourcePrimaryRepository.dropTestTable();
-        testResourcePrimaryRepository.createTestTable();
-        for(int i=0;i<10;i++){
-            testResourcePrimaryRepository.insertTestTable();
-        }
-        return testResourceSecondaryRepository.findAll();
-    }
-
-    public void testTask(String param){
-        log.info("-----test task and param is "+param+" -----");
-    }
-
     public Map test(){
         testPrimaryRepository.insertTest();
         testRedisRepository.testIncr();
@@ -114,41 +95,6 @@ public class TestService {
     }
 
     public Map runFeign(){
-
-//        ModelComponentJson modelComponent = dataModelRepository.queryModelComponenJsonByUserId(null,0,1L,null);
-//        FedlearnerJobApi fedlearnerJobApi = null;
-//        if (modelComponent!=null) {
-//            if (StringUtils.isNotBlank(modelComponent.getComponentJson())) {
-//                fedlearnerJobApi  = JSONObject.parseObject(modelComponent.getComponentJson(), FedlearnerJobApi.class);
-//            }
-//        }
-//        if (fedlearnerJobApi!=null){
-//            List<FedlearnerJobApiResource> resources = new ArrayList();
-//            resources.add(new FedlearnerJobApiResource(1L,"/data/upload/1/2022042910/a72bffc9-d36e-461f-8612-e2d54e69c96a.csv"));
-//            resources.add(new FedlearnerJobApiResource(2L,"/data/upload/1/2022042910/d4e792cc-46d1-4167-8e60-bb7450dbab53.csv"));
-//            fedlearnerJobApi.setResources(resources);
-//            HttpHeaders headers = new HttpHeaders();
-//            // 以表单的方式提交
-//            headers.setContentType(MediaType.APPLICATION_JSON);
-//            //将请求头部和参数合成一个请求
-//            String apiJson = JSONObject.toJSONString(fedlearnerJobApi);
-//            log.info(apiJson);
-//            HttpEntity<String> requestEntity = new HttpEntity<>(apiJson, headers);
-//            try{
-//                BaseResultEntity result=restTemplate.getForObject("http://fedlearner/job_api/run",BaseResultEntity.class);
-//                log.info(result.getMsg());
-//                log.info(result.getCode().toString());
-//            }catch (Exception e){
-//                log.info(e.getMessage());
-//            }
-//            try{
-//                ResponseEntity<String> a = restTemplate.postForEntity("http://fedlearner/job_api/run", requestEntity, String.class);
-//                log.info(a.getBody());
-//            }catch (Exception e){
-//                log.info(e.getMessage());
-//            }
-//            return new HashMap(){{put("feignResult", "");}};
-//        }
         return new HashMap();
     }
 
@@ -186,14 +132,12 @@ public class TestService {
                 .setName("testTask")
                 .setLanguage(Common.Language.PROTO)
                 .setTaskInfo(taskBuild)
-                .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskRequest request=PushTaskRequest.newBuilder()
                 .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                 .setTask(task)
                 .setSequenceNumber(11)
                 .setClientProcessedUpTo(22)
-//                .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                 .build();
         PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
         log.info("grpc结果:"+reply);
@@ -204,7 +148,8 @@ public class TestService {
         List<DataResource> copyResourceList = dataResourceRepository.findCopyResourceList(0L, 5000L);
         for (DataResource dataResource : copyResourceList) {
             if (tag.contains("grpc")){
-                dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl());
+                dataResourceService.resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(), dataResource.getUrl(),dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),dataResourceService.findCopyResourceList(dataResource.getResourceId(),dataResource.getResourceId()));
             }else if (tag.contains("copy")){
                 if (StringUtils.isBlank(dataResource.getResourceHashCode())){
                     try {
@@ -221,17 +166,28 @@ public class TestService {
             }
         }
         if (tag.contains("copy")){
-            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo!=null){
-                Map<String, SysOrganFusion> fusionMap = sysLocalOrganInfo.getFusionMap();
-                if (fusionMap!=null){
-                    Iterator<Map.Entry<String, SysOrganFusion>> iterator = fusionMap.entrySet().iterator();
-                    while (iterator.hasNext()){
-                        Map.Entry<String, SysOrganFusion> next = iterator.next();
-                        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),next.getValue()))).build());
-                    }
-                }
+            List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+            for (SysOrgan sysOrgan : sysOrgans) {
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
             }
         }
     }
+
+    public BaseResultEntity testDataSet(String id) {
+        BaseResultEntity testDataSet = fusionResourceService.getTestDataSet(id);
+        log.info(JSONObject.toJSONString(testDataSet));
+        if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+            for (SysOrgan sysOrgan : sysOrgans) {
+                otherBusinessesService.syncGatewayApiData(testDataSet.getResult(),sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",null);
+            }
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity batchSaveTestDataSet(List<DataSet> dataSets) {
+        log.info(JSONObject.toJSONString(dataSets));
+        return fusionResourceService.batchSaveTestDataSet(dataSets);
+    }
+
 }

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository">
+
+    <select id="selectSysOrgan" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+               id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+               examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+               platform_state platformState,lat,lon,country,enable,is_del isDel,c_time cTime,u_time uTime
+        from
+             sys_organ
+        where
+              is_del = 0
+    </select>
+    <select id="selectSysOrganByApplyId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            apply_id = #{applyId}
+    </select>
+    <select id="selectSysOrganByOrganId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            organ_id = #{organId}
+    </select>
+
+    <select id="selectOrganByOrganId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            organ_id = #{organId}
+    </select>
+
+    <select id="selectSysOrganById" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+           id = #{id}
+    </select>
+    <select id="selectSysOrganByExamine" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0 and examine_state = 1 and enable = 0
+    </select>
+    <select id="selectSysOrganByParam" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0
+        <include refid="sysOrganWhere"/>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="selectSysOrganByParamCount" resultType="java.lang.Integer">
+        select
+               count(id)
+        from
+            sys_organ
+        where
+            is_del = 0
+        <include refid="sysOrganWhere"/>
+    </select>
+    <select id="selectSysOrganByOrganIds" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            is_del = 0 and examine_state = 1 and organ_id in
+        <foreach collection="organIds" index="index" item="item" open="("
+                 separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectSysOrganByApplyIdOrOrganId" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
+        select
+            id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,
+            examine_state examineState,examine_msg examineMsg,node_state nodeState,fusion_state fusionState,
+            platform_state platformState,lat,lon,country,is_del isDel,enable,c_time cTime,u_time uTime
+        from
+            sys_organ
+        where
+            apply_id = #{applyId} or organ_id = #{organId}
+    </select>
+
+    <sql id="sysOrganWhere">
+        <if test="organId!=null and organId!=''">and organ_id like CONCAT('%',#{organId,jdbcType=VARCHAR},'%')</if>
+        <if test="organName!=null and organName!=''">and organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
+        <if test="examineState!=null">and examine_state = #{examineState}</if>
+    </sql>
+</mapper>

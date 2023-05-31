@@ -30,7 +30,6 @@ public class DataPsiConvert {
         dataPsi.setOutputFormat(StringUtils.isBlank(req.getOutputFormat())?"csv":req.getOutputFormat());
         dataPsi.setResultOrganIds(req.getResultOrganIds());
         dataPsi.setRemarks(req.getRemarks());
-        dataPsi.setServerAddress(req.getServerAddress());
         return dataPsi;
     }
 
@@ -82,7 +81,6 @@ public class DataPsiConvert {
         dataPsiVo.setTaskId(task.getId());
         dataPsiVo.setTaskIdName(task.getTaskId());
         dataPsiVo.setTaskState(task.getTaskState());
-        dataPsiVo.setServerAddress(dataPsi.getServerAddress());
         return dataPsiVo;
     }
 }

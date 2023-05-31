@@ -126,6 +126,4 @@ public class DataDerivationResourceDataVo {
     private String initiateOrganResource;
 
     private String providerOrganResource;
-
-    private String serverAddress;
 }

@@ -11,16 +11,10 @@ import java.util.Map;
 public class SysLocalOrganInfo {
     private String organId;
     private String organName;
-    private String pinCode;
     private String gatewayAddress;
-
-    private Map<String,SysOrganFusion> fusionMap;
-    private List<SysOrganFusion> fusionList;
     private AddressInfoEntity addressInfo;
-
     private Map<String,Object> homeMap;
-
     private String publicKey;
-//    @JsonIgnore
+    @JsonIgnore
     private String privateKey;
 }

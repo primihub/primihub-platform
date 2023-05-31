@@ -68,8 +68,7 @@ public class DataReasoningService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源信息");
         }
         dataReasoningPrRepository.saveDataReasoning(dataReasoning);
-        Map<String, String> resourceMap = dataProjectResources.stream().collect(Collectors.toMap(DataProjectResource::getResourceId, DataProjectResource::getServerAddress,(key1, key2) -> key2));
-        List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId(), resourceMap.get(r.getResourceId()))).collect(Collectors.toList());
+        List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId())).collect(Collectors.toList());
         dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
         dataAsyncService.runReasoning(dataReasoning,dataReasoningResourceList,modelTask);
         Map<String,Object> map = new HashMap<>();

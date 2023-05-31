@@ -10,7 +10,6 @@ public class DataResourceVisibilityAuth {
     private Long resourceId;
     private String organGlobalId;
     private String organName;
-    private String organServerAddress;
     private Integer isDel;
     private Date cTime;
     private Date uTime;
@@ -18,11 +17,10 @@ public class DataResourceVisibilityAuth {
     public DataResourceVisibilityAuth() {
     }
 
-    public DataResourceVisibilityAuth(Long resourceId, String organGlobalId, String organName, String organServerAddress) {
+    public DataResourceVisibilityAuth(Long resourceId, String organGlobalId, String organName) {
         this.resourceId = resourceId;
         this.organGlobalId = organGlobalId;
         this.organName = organName;
-        this.organServerAddress = organServerAddress;
         this.isDel = 0;
     }
 }

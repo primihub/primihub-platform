@@ -1,24 +1,36 @@
 package com.primihub.controller;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONValidator;
+import com.primihub.entity.DataSet;
 import com.primihub.entity.base.BaseResultEntity;
 import com.primihub.entity.base.BaseResultEnum;
-import com.primihub.entity.resource.param.OrganResourceParam;
+import com.primihub.entity.copy.dto.CopyResourceDto;
 import com.primihub.entity.resource.param.ResourceParam;
 import com.primihub.service.ResourceService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 @RequestMapping("fusionResource")
 @RestController
+@Slf4j
 public class FusionResourceController {
 
     @Autowired
     private ResourceService resourceService;
 
     @RequestMapping("getResourceList")
-    public BaseResultEntity getResourceList(ResourceParam resourceParam){
+    public BaseResultEntity getResourceList(@RequestBody ResourceParam resourceParam){
         return resourceService.getResourceList(resourceParam);
     }
 
@@ -28,6 +40,16 @@ public class FusionResourceController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIdArray");
         }
         return resourceService.getResourceListById(resourceIdArray,globalId);
+    }
+    @RequestMapping("getCopyResource")
+    public BaseResultEntity getCopyResource(String[] resourceIds){
+        if(resourceIds==null||resourceIds.length==0) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceIds");
+        }
+        log.info(JSONObject.toJSONString(resourceIds));
+        BaseResultEntity copyResource = resourceService.getCopyResource(resourceIds);
+        log.info(JSONObject.toJSONString(copyResource));
+        return copyResource;
     }
 
     @RequestMapping("getResourceTagList")
@@ -42,30 +64,28 @@ public class FusionResourceController {
         }
         return resourceService.getDataResource(resourceId,globalId);
     }
-    @RequestMapping("saveOrganResourceAuth")
-    public BaseResultEntity saveOrganResourceAuth(String organId,String resourceId,String projectId,Integer auditStatus){
-        if (StringUtils.isEmpty(organId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+    @PostMapping("saveResource")
+    public BaseResultEntity saveResource(String globalId, @RequestBody List<CopyResourceDto> copyResourceDtoList){
+        if (StringUtils.isEmpty(globalId)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"globalId");
         }
-        if (StringUtils.isEmpty(resourceId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        if (copyResourceDtoList==null || copyResourceDtoList.size()==0) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"copyResourceDtoList");
         }
-        if (StringUtils.isEmpty(projectId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectId");
-        }
-        if (auditStatus==null) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"auditStatus");
-        }
-        return resourceService.saveOrganResourceAuth(organId,resourceId,projectId,auditStatus);
+        return resourceService.batchSaveResource(globalId,copyResourceDtoList);
     }
 
-    @RequestMapping("getOrganResourceList")
-    public BaseResultEntity getOrganResourceList(OrganResourceParam param){
-        if (StringUtils.isEmpty(param.getOrganId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        return resourceService.getOrganResourceList(param);
+    @RequestMapping("getTestDataSet")
+    public BaseResultEntity getTestDataSet(String id){
+        return resourceService.getTestDataSet(id);
     }
 
+    @PostMapping("batchSaveTestDataSet")
+    public BaseResultEntity batchSaveTestDataSet(@RequestBody List<DataSet> dataSets){
+        if (dataSets == null || dataSets.size()==0) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
+        }
+        return resourceService.batchSaveTestDataSet(dataSets);
+    }
 
 }

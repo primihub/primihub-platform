@@ -8,6 +8,7 @@ import java.util.Map;
 @Getter
 public enum DataFusionCopyEnum {
     RESOURCE("data_resource","dataResourceService","findCopyResourceList"),
+    FUSION_RESOURCE("fusion_resource","dataResourceService","findFusionCopyResourceList"),
     ;
 
     private String tableName;

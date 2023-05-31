@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.sys.SysOrganPrimarydbRepository">
+
+    <insert id="insertSysOrgan" useGeneratedKeys="true" keyProperty="id" parameterType="com.primihub.biz.entity.sys.po.SysOrgan">
+        insert into sys_organ (apply_id,organ_id,organ_name,organ_gateway,public_key,examine_state,examine_msg,node_state,fusion_state,platform_state,lat,lon,country,enable,is_del,c_time,u_time)
+        values (#{applyId},#{organId},#{organName},#{organGateway},#{publicKey},#{examineState},#{examineMsg},#{nodeState},#{fusionState},#{platformState},#{lat},#{lon},#{country},#{enable},0,now(),now())
+    </insert>
+    <update id="updateSysOrgan" parameterType="com.primihub.biz.entity.sys.po.SysOrgan">
+        update sys_organ
+        <set>
+            <if test="organId!=null and organId!=''">organ_id=#{organId},</if>
+            <if test="organName!=null and organName!=''">organ_name=#{organName},</if>
+            <if test="applyId!=null and applyId!=''">apply_id=#{applyId},</if>
+            <if test="organGateway!=null and organGateway!=''">organ_gateway=#{organGateway},</if>
+            <if test="publicKey!=null and publicKey!=''">public_key=#{publicKey},</if>
+            <if test="examineState!=null">examine_state=#{examineState},</if>
+            <if test="examineMsg!=null and examineMsg!=''">examine_msg=#{examineMsg},</if>
+            <if test="nodeState!=null">node_state=#{nodeState},</if>
+            <if test="fusionState!=null">fusion_state=#{fusionState},</if>
+            <if test="platformState!=null">platform_state=#{platformState},</if>
+            <if test="enable!=null">enable=#{enable},</if>
+            u_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>

@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.DataConstant;
@@ -61,6 +62,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
+        log.info("------- 执行校验");
         BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
         if (baseResultEntity.getCode()!=0) {
             return baseResultEntity;
@@ -68,11 +70,11 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
         taskReq.getDataModel().setTrainType(modelType.getTrainType());
         taskReq.getDataModel().setModelType(modelType.getType());
-        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())){
+        if (modelType.getType().equals(ModelTypeEnum.TRANSVERSE_LR.getType())|| modelType.getType().equals(ModelTypeEnum.REGRESSION_BINARY.getType()) || modelType.getType().equals(ModelTypeEnum.CLASSIFICATION_BINARY.getType()) ){
             String arbiterOrgan = taskReq.getValueMap().get("arbiterOrgan");
             log.info(arbiterOrgan);
             if (StringUtils.isBlank(arbiterOrgan)) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"横向LR模型 可信第三方选择不可以为空");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方选择不可以为空");
             }
             DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null);
             List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
@@ -87,7 +89,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             DataFResourceReq fresourceReq = new DataFResourceReq();
             fresourceReq.setOrganId(arbiterOrgan);
-            fresourceReq.setServerAddress(dataProject.getServerAddress());
             BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
             if (resourceList.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"可信第三方检索失败-代码1");
@@ -130,13 +131,13 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getFreemarkerMap().put("feature_names",field);
         }
         Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
+        log.info("modelType:{}",modelType);
         if (modelType.equals(ModelTypeEnum.V_XGBOOST.getType())){
             return xgb(req,taskReq);
-//        }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())||modelType.equals(ModelTypeEnum.HETERO_LR.getType())){
         }else if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR.getType())
                 ||modelType.equals(ModelTypeEnum.HETERO_LR.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY.getType())
-                ||modelType.equals(ModelTypeEnum.BINARY_DPSGD.getType())){
+                ||modelType.equals(ModelTypeEnum.REGRESSION_BINARY.getType())
+                ||modelType.equals(ModelTypeEnum.CLASSIFICATION_BINARY.getType())){
             return lr(req,taskReq,ModelTypeEnum.MODEL_TYPE_MAP.get(modelType));
         }
         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -146,7 +147,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     private BaseResultEntity mpclr(DataComponentReq req, ComponentTaskReq taskReq){
         try {
-            Set<String> resourceIds = new HashSet<>();
+            List<String> resourceIds = new ArrayList<>();
             if (taskReq.getNewest()!=null && taskReq.getNewest().size()!=0){
                 resourceIds.addAll(taskReq.getNewest().stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toSet()));
             }else {
@@ -170,23 +171,25 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(batchSize).build();
             Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(numlters).build();
-            Common.ParamValue dataFileParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(resourceIds.stream().collect(Collectors.joining(";")).getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("BatchSize", batchSizeParamValue)
                     .putParamMap("NumIters", numItersParamValue)
-                    .putParamMap("Data_File", dataFileParamValue)
                     .putParamMap("modelName", modelNameeParamValue)
                     .build();
+            Map<String, Common.Dataset> values = new HashMap<>();
+            for (int i = 0; i < resourceIds.size(); i++) {
+                values.put("PARTY"+i,Common.Dataset.newBuilder().putData("Data_File",resourceIds.get(i)).build());
+            }
             Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
                     .setName("logistic_regression")
-                    .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("logistic_regression".getBytes(StandardCharsets.UTF_8)))
+                    .setLanguage(Common.Language.PROTO)
                     .setTaskInfo(taskBuild)
-                    .addInputDatasets("Data_File")
+                    .putAllPartyDatasets(values)
                     .build();
             log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -223,7 +226,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getMsgInfo().toStringUtf8());
             }
         } catch (Exception e) {
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -234,30 +237,45 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         return BaseResultEntity.success();
     }
     private BaseResultEntity lr(DataComponentReq req, ComponentTaskReq taskReq,ModelTypeEnum modelType) {
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        log.info("------- 执行任务, modelType:{}", modelType);
+        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
+        ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
+        putPath(outputPathDto,taskReq);
+        if (6 == modelType.getType().intValue()){
+            // 横向 -NN (分类)
+            taskReq.getFreemarkerMap().put("taskNNType","classification");
+        } else if (7 == modelType.getType().intValue()){
+            // 横向 -NN (回归)
+            taskReq.getFreemarkerMap().put("taskNNType","regression");
+        }
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(modelType.getFtlName(), freeMarkerConfigurer,new HashMap<String, Object>(taskReq.getFreemarkerMap()));
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
-                StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
-                ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
                 taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
                 taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
-                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent),SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("predictFileName", predictFileNameParamValue)
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
+                        .putParamMap("component_params", componentParamsParamValue)
                         .build();
+                Map<String, Common.Dataset> values = new HashMap<>();
+                if (StringUtils.isNotBlank(taskReq.getFreemarkerMap().get("label_dataset"))){
+                    values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
+                }
+                if (StringUtils.isNotBlank(taskReq.getFreemarkerMap().get("guest_dataset"))){
+                    values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
+                }
+                if (StringUtils.isNotBlank(taskReq.getFreemarkerMap().get("arbiter_dataset"))){
+                    values.put("Alice",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("arbiter_dataset")).build());
+                }
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
+                        .putAllPartyDatasets(values)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -295,7 +313,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getMsgInfo().toStringUtf8());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -308,40 +326,42 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:创建模板失败null");
         }
         return BaseResultEntity.success();
+    }
+
+    public void putPath(ModelOutputPathDto outputPathDto,ComponentTaskReq taskReq){
+        taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
+        taskReq.getFreemarkerMap().put("predictFileName",outputPathDto.getPredictFileName());
+        taskReq.getFreemarkerMap().put("indicatorFileName",outputPathDto.getIndicatorFileName());
+        taskReq.getFreemarkerMap().put("hostLookupTable",outputPathDto.getHostLookupTable());
+        taskReq.getFreemarkerMap().put("guestLookupTable",outputPathDto.getGuestLookupTable());
+        taskReq.getFreemarkerMap().put("hostModelFileName",outputPathDto.getHostModelFileName());
+        taskReq.getFreemarkerMap().put("guestModelFileName",outputPathDto.getGuestModelFileName());
     }
 
     public BaseResultEntity xgb(DataComponentReq req, ComponentTaskReq taskReq){
-        Long[] portNumber = getPortNumber();
-        taskReq.getFreemarkerMap().put(DataConstant.PYTHON_LABEL_PORT,portNumber[0].toString());
-        taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_PORT,portNumber[1].toString());
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, taskReq.getFreemarkerMap());
+        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
+        ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
+        putPath(outputPathDto,taskReq);
+        taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
+        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_EN_PATH, freeMarkerConfigurer, new HashMap<>(taskReq.getFreemarkerMap()));
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
-                StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
-                ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
-                taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-                taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
-                Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent),SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("predictFileName", predictFileNameParamValue)
-                        .putParamMap("indicatorFileName", indicatorFileNameParamValue)
-                        .putParamMap("hostLookupTable", hostLookupTableParamValue)
-                        .putParamMap("guestLookupTable", guestLookupTableParamValue)
-                        .putParamMap("modelFileName", modelFileNameParamValue)
+                        .putParamMap("component_params", componentParamsParamValue)
                         .build();
+                Map<String, Common.Dataset> values = new HashMap<>();
+                values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
+                values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
                         .setName("modelTask")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
+                        .putAllPartyDatasets(values)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -379,7 +399,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getMsgInfo().toStringUtf8());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -392,34 +412,5 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:创建模板失败null");
         }
         return BaseResultEntity.success();
-    }
-
-    public Long[] getPortNumber(){
-        Long[] port = new Long[2];
-        String hostKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "h");
-        String guestKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "g");
-        // 递增还是递减
-        String squareKey = RedisKeyConstant.REQUEST_PORT_NUMBER.replace("<square>", "s");
-        String squareVal = stringRedisTemplate.opsForValue().get(squareKey);
-        String hostVal = stringRedisTemplate.opsForValue().get(hostKey);
-        if (StringUtils.isBlank(hostVal)){
-            stringRedisTemplate.opsForValue().set(squareKey,"0");
-            stringRedisTemplate.opsForValue().set(hostKey,DataConstant.HOST_PORT_RANGE[0].toString());
-            stringRedisTemplate.opsForValue().set(guestKey,DataConstant.GUEST_PORT_RANGE[0].toString());
-        }
-        if (StringUtils.isBlank(squareVal) || "0".equals(squareVal)){
-            port[0] = stringRedisTemplate.opsForValue().increment(hostKey);
-            port[1] = stringRedisTemplate.opsForValue().increment(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[1].equals(port[0])) {
-                stringRedisTemplate.opsForValue().set(squareKey,"1");
-            }
-        }else {
-            port[0] = stringRedisTemplate.opsForValue().decrement(hostKey);
-            port[1] = stringRedisTemplate.opsForValue().decrement(guestKey);
-            if (DataConstant.HOST_PORT_RANGE[0].equals(port[0])) {
-                stringRedisTemplate.opsForValue().set(squareKey,"0");
-            }
-        }
-        return port;
     }
 }
