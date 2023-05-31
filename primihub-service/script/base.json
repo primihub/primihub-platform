@@ -110,7 +110,7 @@
         {
             "component_code": "dataAlign",
             "component_name": "数据对齐",
-            "is_show": 0,
+            "is_show": 1,
             "is_mandatory": 1,
             "component_types": [
                 {
