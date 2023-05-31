@@ -305,6 +305,7 @@ public class SysOrganService {
             }
         }else {
             sysOrgan.setEnable(0);
+            sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         }
         sysOrgan.setExamineState(examineState);
         sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
