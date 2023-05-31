@@ -70,11 +70,11 @@ public class SysAsyncService {
     @Async
     public void applyForJoinNode(SysOrgan sysOrgan) {
         log.info(JSONObject.toJSONString(sysOrgan));
-//        if (sysOrgan.getEnable()==1){
-//            // TODO 该机构下的数据进行下线处理
-//        }else if (sysOrgan.getExamineState()==1){
-//            fusionOrganService.organData(sysOrgan.getOrganId(),sysOrgan.getOrganName());
-//            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
-//        }
+        if (sysOrgan.getEnable()==1){
+            // TODO 该机构下的数据进行下线处理
+        }else if (sysOrgan.getExamineState()==1){
+            fusionOrganService.organData(sysOrgan.getOrganId(),sysOrgan.getOrganName());
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
+        }
     }
 }
