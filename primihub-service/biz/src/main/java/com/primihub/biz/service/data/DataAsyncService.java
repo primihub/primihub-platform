@@ -378,7 +378,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask, taskBuild, reply.getPartyCount(), dataTask.getTaskResultPath());
             } else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:" + reply.getRetCode());
+                dataTask.setTaskErrorMsg("运行失败:" + reply.getMsgInfo());
             }
             log.info("grpc end pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{} - reply:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis(), reply.toString());
         } catch (Exception e) {
@@ -600,7 +600,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 }
             } else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:" + reply.getRetCode());
+                dataTask.setTaskErrorMsg("运行失败:" + reply.getMsgInfo());
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -679,7 +679,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:"+reply.getRetCode());
+                dataTask.setTaskErrorMsg("运行失败:"+reply.getMsgInfo());
                 dataTaskPrRepository.updateDataTask(dataTask);
             }
         } catch (Exception e) {
