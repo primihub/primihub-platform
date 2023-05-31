@@ -91,25 +91,6 @@ CREATE TABLE `data_component` (
                                   PRIMARY KEY (`component_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='组件表';
 
-DROP TABLE IF EXISTS `data_model_quota`;
-CREATE TABLE `data_model_quota` (
-                                    `quota_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '指标id',
-                                    `quota_type` int(2) DEFAULT NULL COMMENT '样本集类型（训练样本集，测试样本集）',
-                                    `quota_images` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '样本集图片',
-                                    `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                                    `component_id` bigint(20) DEFAULT NULL COMMENT '组件id',
-                                    `auc` decimal(12,6) DEFAULT NULL COMMENT 'auc',
-                                    `ks` decimal(12,6) DEFAULT NULL COMMENT 'ks',
-                                    `gini` decimal(12,6) DEFAULT NULL COMMENT 'gini',
-                                    `precision` decimal(12,6) DEFAULT NULL COMMENT 'precision',
-                                    `recall` decimal(12,6) DEFAULT NULL COMMENT 'recall',
-                                    `f1_score` decimal(12,6) DEFAULT NULL COMMENT 'f1_score',
-                                    `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                    PRIMARY KEY (`quota_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='模板指标入参';
-
 DROP TABLE IF EXISTS `data_model_task`;
 CREATE TABLE `data_model_task` (
                                    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
