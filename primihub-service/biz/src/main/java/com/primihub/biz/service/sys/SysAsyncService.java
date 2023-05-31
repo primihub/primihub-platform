@@ -49,7 +49,6 @@ public class SysAsyncService {
                 return;
             if (sysLocalOrganInfo.getAddressInfo()==null)
                 return;
-            fusionOrganService.organData(sysLocalOrganInfo.getOrganId(),sysLocalOrganInfo.getOrganName());
             Thread.sleep(5000L);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

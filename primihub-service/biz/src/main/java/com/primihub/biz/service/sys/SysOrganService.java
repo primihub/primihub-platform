@@ -21,6 +21,7 @@ import com.primihub.biz.repository.primarydb.sys.SysOrganPrimarydbRepository;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.data.OtherBusinessesService;
+import com.primihub.biz.service.feign.FusionOrganService;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
@@ -55,6 +56,8 @@ public class SysOrganService {
     private SysOrganPrimarydbRepository sysOrganPrimarydbRepository;
     @Autowired
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
+    @Autowired
+    private FusionOrganService fusionOrganService;
 
     public BaseResultEntity getLocalOrganInfo() {
         String group = environment.getProperty("nacos.config.group");
@@ -132,6 +135,7 @@ public class SysOrganService {
                 configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
                 sysAsyncService.collectBaseData();
             }
+            fusionOrganService.organData(sysLocalOrganInfo.getOrganId(),sysLocalOrganInfo.getOrganName());
             Map result = new HashMap();
             result.put("sysLocalOrganInfo", sysLocalOrganInfo);
             return BaseResultEntity.success(result);
