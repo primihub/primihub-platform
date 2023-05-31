@@ -79,7 +79,11 @@
         <el-table-column
           prop="modelType"
           label="模型"
-        />
+        >
+          <template scoped="{scope}">
+            {{ model.modelType | modelTypeFilter }}
+          </template>
+        </el-table-column>
         <el-table-column
           prop="quotaType"
           label="数据集"
