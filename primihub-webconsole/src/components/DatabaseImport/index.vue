@@ -40,7 +40,7 @@
         >
           <el-input v-model="form.dbPassword" type="password" placeholder="请输入密码" />
           <div class="test-connect">
-            <span class="margin-right-10" :class="Style(connectState)"><i class="state-icon" />{{ connectState | connectStateFilter }}</span>
+            <span class="margin-right-10" :class="statusStyle(connectState)"><i class="state-icon" />{{ connectState | connectStateFilter }}</span>
             <el-button type="primary" size="small" @click="handleDBConnect">检测连接</el-button>
           </div>
         </el-form-item>
@@ -110,11 +110,11 @@ export default {
         {
           label: 'MYSQL5.7+',
           value: 1
-        },
-        {
-          label: 'SQLite',
-          value: 2
         }
+        // {
+        //   label: 'SQLite',
+        //   value: 2
+        // }
       ],
       dbDriverMap: {
         // MySQL 数据库
