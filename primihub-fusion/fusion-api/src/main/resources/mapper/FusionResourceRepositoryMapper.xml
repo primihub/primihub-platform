@@ -188,7 +188,7 @@
         )
         and r.is_del=0
         <if test="organId!=null and organId!=''">and r.organ_id = #{organId}</if>
-        <if test="globalId!=null and globalId!=''">and r.organ_id != #{globalId}</if>
+        <if test="globalId!=null and globalId!='' and organId!=globalId">and r.organ_id != #{globalId}</if>
         <if test="organIds!=null">
             and r.organ_id in
             <foreach collection="organIds" index="index" item="item" separator="," open="(" close=")" >

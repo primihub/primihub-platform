@@ -55,11 +55,11 @@ public class OtherBusinessesService {
             ResourceParam param = new ResourceParam();
             param.setOrganIds(sysOrgans.stream().map(SysOrgan::getOrganId).collect(Collectors.toList()));
             param.getOrganIds().add(organConfiguration.getSysLocalOrganId());
-//            if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
-//                param.setGlobalId("1");
-//            }else {
+            if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
+                param.setGlobalId("1");
+            }else {
                 param.setGlobalId(sysLocalOrganInfo.getOrganId());
-//            }
+            }
             param.setResourceId(req.getResourceId());
             param.setResourceName(req.getResourceName());
             param.setResourceType(req.getResourceSource());
