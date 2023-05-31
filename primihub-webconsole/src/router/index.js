@@ -57,6 +57,13 @@ export const constantRoutes = [
     meta: { title: '应用市场' }
   },
   {
+    path: '/bigModel',
+    name: 'BigModel',
+    hidden: true,
+    component: () => import('@/views/bigModel/index'),
+    meta: { title: 'PrimiHub隐私计算大模型' }
+  },
+  {
     path: '/applicationIndex/detail/:name',
     name: 'ApplicationDetail',
     hidden: true,
@@ -70,26 +77,26 @@ export const constantRoutes = [
     component: () => import('@/views/applicationMarket/application'),
     meta: { title: '应用页' }
   },
-  {
-    path: '/map',
-    component: Layout,
-    name: 'Map',
-    hidden: true,
-    redirect: '/map/index',
-    meta: { title: '地图' },
-    children: [
-      {
-        path: 'index',
-        name: 'mapIndex',
-        meta: { title: '地图', breadcrumb: false },
-        component: () => import('@/views/map/index')
-      }
-    ]
-  },
+  // {
+  //   path: '/map',
+  //   component: Layout,
+  //   name: 'Map',
+  //   hidden: true,
+  //   redirect: '/map/index',
+  //   meta: { title: '地图' },
+  //   children: [
+  //     {
+  //       path: 'index',
+  //       name: 'mapIndex',
+  //       meta: { title: '地图', breadcrumb: false },
+  //       component: () => import('@/views/map/index')
+  //     }
+  //   ]
+  // },
   {
     path: '/',
     component: Layout,
-    redirect: '/map/index'
+    redirect: '/project'
   }
 ]
 
@@ -348,7 +355,7 @@ export const asyncRoutes = [
         path: 'center',
         name: 'CenterManage',
         component: () => import('@/views/setting/center'),
-        meta: { title: '中心管理' }
+        meta: { title: '节点管理' }
       },
       {
         path: 'ui',

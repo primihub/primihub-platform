@@ -48,6 +48,7 @@ export default {
     getData() {
       getOrgInfo().then((res) => {
         const fusionMap = res.result.sysLocalOrganInfo.fusionMap
+        if (!fusionMap) return
         const fusionMapKeys = Object.keys(fusionMap)
         getCoordinates({
           serverAddress: fusionMapKeys[0]

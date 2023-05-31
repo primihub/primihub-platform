@@ -8,7 +8,6 @@
     <ResourceTable
       v-if="resourceList"
       v-loading="listLoading"
-      :server-address="serverAddress"
       :show-delete-button="showDeleteButton"
       :show-preview-button="showPreviewButton"
       :show-status="false"
@@ -53,11 +52,6 @@ export default {
       default: '',
       require: true
     },
-    serverAddress: {
-      type: String,
-      default: '',
-      require: true
-    },
     selectedData: {
       type: Array,
       default: () => []
@@ -97,7 +91,6 @@ export default {
       this.listLoading = true
       this.resourceList = []
       const params = {
-        serverAddress: this.serverAddress,
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         organId: this.organId,

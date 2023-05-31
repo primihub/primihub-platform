@@ -43,7 +43,7 @@
                 :this-institution="thisInstitution"
                 :creator="creator"
                 :show-preview-button="thisInstitution"
-                :server-address="serverAddress"
+                :show-delete-button="thisInstitution"
                 :selected-data="selectedData"
                 row-key="resourceId"
                 :data="resourceList[selectedOrganId]"
@@ -72,7 +72,6 @@
       width="800px"
       :selected-data="resourceList[selectedOrganId]"
       title="选择资源"
-      :server-address="serverAddress"
       :organ-id="selectedOrganId"
       :show-preview-button="thisInstitution"
       :visible="dialogVisible"
@@ -81,7 +80,7 @@
       @preview="handlePreview"
     />
     <!-- add provider organ dialog -->
-    <ProviderOrganDialog v-show="providerOrganDialogVisible" :server-address="serverAddress" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" @delete="handleProviderOrganDelete" />
+    <ProviderOrganDialog v-show="providerOrganDialogVisible" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" title="添加协作方" :data="organList" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" @delete="handleProviderOrganDelete" />
     <!-- resource refused dialog-->
     <ResourceApprovalDialog v-if="resourceApprovalDialogVisible" :visible="resourceApprovalDialogVisible" :resource-id="localResourceId" @close="handleResourceApprovalDialogClose" @submit="handleResourceApprovalDialogSubmit" />
     <!-- preview dialog -->

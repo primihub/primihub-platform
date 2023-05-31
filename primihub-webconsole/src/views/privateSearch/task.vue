@@ -5,6 +5,7 @@
         <el-step title="查询条件" />
         <el-step title="查询结果" />
       </el-steps>
+
       <step-first v-if="active === 0" :has-permission="hasSearchPermission" />
     </div>
 
