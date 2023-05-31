@@ -118,15 +118,12 @@
             {{ row.resourceAuthType | authTypeFilter }}
           </template>
         </el-table-column>
-        <!-- <el-table-column
-          prop="userName"
-          label="上传者"
-        /> -->
         <el-table-column
-          label="上传时间"
+          label="上传者"
           min-width="160"
         >
           <template slot-scope="{row}">
+            {{ row.userName }} <br>
             {{ row.createDate }}
           </template>
         </el-table-column>
