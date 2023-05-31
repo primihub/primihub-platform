@@ -183,20 +183,11 @@ public class SysOrganService {
         return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
     }
 
-    public BaseResultEntity joiningPartners(String gateway, String publicKey,String applyId) {
-        boolean isUpdate = false;
+    public BaseResultEntity joiningPartners(String gateway, String publicKey) {
         SysOrgan sysOrgan = new SysOrgan();
-        if (StringUtils.isNotBlank(applyId)){
-            sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(applyId);
-            if (sysOrgan==null){
-                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "查询机构失败");
-            }
-            sysOrgan.setExamineState(0);
-            sysOrgan.setEnable(0);
-            isUpdate = true;
-        }else {
-            sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
-        }
+        sysOrgan.setExamineState(0);
+        sysOrgan.setEnable(0);
+        sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         sysOrgan.setOrganGateway(gateway);
         sysOrgan.setPublicKey(publicKey);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -222,16 +213,13 @@ public class SysOrganService {
 //            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
             if (sysOrgan1!=null){
                 sysOrgan.setId(sysOrgan1.getId());
+                sysOrgan.setApplyId(resultMap.get("applyId").toString());
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }else {
-                if (isUpdate){
-                    sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
-                }else {
-                    sysOrgan.setOrganName(resultMap.get("organName").toString());
-                    sysOrgan.setExamineState(0);
-                    sysOrgan.setEnable(0);
-                    sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
-                }
+                sysOrgan.setOrganName(resultMap.get("organName").toString());
+                sysOrgan.setExamineState(0);
+                sysOrgan.setEnable(0);
+                sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
             }
         }catch (Exception e){
             e.printStackTrace();

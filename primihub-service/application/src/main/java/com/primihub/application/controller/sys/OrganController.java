@@ -57,14 +57,14 @@ public class OrganController {
      * @return
      */
     @RequestMapping("joiningPartners")
-    public BaseResultEntity joiningPartners(String gateway,String publicKey,String applyId){
+    public BaseResultEntity joiningPartners(String gateway,String publicKey){
         if (StringUtils.isBlank(gateway)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
         }
         if (StringUtils.isBlank(publicKey)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
         }
-        return sysOrganService.joiningPartners(gateway,publicKey,applyId);
+        return sysOrganService.joiningPartners(gateway,publicKey);
     }
 
     /**

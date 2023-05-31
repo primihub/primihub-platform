@@ -11,6 +11,7 @@
         <set>
             <if test="organId!=null and organId!=''">organ_id=#{organId},</if>
             <if test="organName!=null and organName!=''">organ_name=#{organName},</if>
+            <if test="applyId!=null and applyId!=''">apply_id=#{applyId},</if>
             <if test="organGateway!=null and organGateway!=''">organ_gateway=#{organGateway},</if>
             <if test="publicKey!=null and publicKey!=''">public_key=#{publicKey},</if>
             <if test="examineState!=null">examine_state=#{examineState},</if>
