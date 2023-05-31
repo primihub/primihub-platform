@@ -55,7 +55,7 @@ export default {
     handleChange(val) {
       this.organIds = val
       const selectOrgans = []
-      for (let index = 0; index < this.organId.length; index++) {
+      for (let index = 0; index < this.organIds.length; index++) {
         const organId = this.organIds[index]
         const selectOrgan = this.organList.find(item => item.globalId === organId)
         selectOrgans.push({
