@@ -1,6 +1,6 @@
 <template>
   <div class="organ-select">
-    <el-select v-model="organId" v-loading="loading" v-bind="$attrs" element-loading-spinner="el-icon-loading" placeholder="请选择机构" @change="handleChange">
+    <el-select v-model="organIds" v-loading="loading" multiple v-bind="$attrs" element-loading-spinner="el-icon-loading" placeholder="请选择机构" @change="handleChange">
       <el-option
         v-for="item in organList"
         :key="item.globalId"
@@ -16,14 +16,27 @@ import { getAvailableOrganList } from '@/api/center'
 
 export default {
   name: 'OrganSelect',
+  props: {
+    value: {
+      type: Array,
+      default: () => []
+    }
+  },
   data() {
     return {
-      organId: '',
+      organIds: this.value,
       organName: '',
       organList: [],
       pageSize: 20,
       pageNo: 1,
       loading: false
+    }
+  },
+  watch: {
+    value(newVal) {
+      if (newVal) {
+        this.organIds = newVal
+      }
     }
   },
   async created() {
@@ -40,13 +53,17 @@ export default {
       }
     },
     handleChange(val) {
-      this.organId = val
-      const selectOrgan = this.organList.find(item => item.globalId === val)
-      this.organName = selectOrgan.organName
-      this.$emit('change', {
-        organId: this.organId,
-        organName: this.organName
-      })
+      this.organIds = val
+      const selectOrgans = []
+      for (let index = 0; index < this.organId.length; index++) {
+        const organId = this.organIds[index]
+        const selectOrgan = this.organList.find(item => item.globalId === organId)
+        selectOrgans.push({
+          organGlobalId: organId,
+          organName: selectOrgan.globalName
+        })
+      }
+      this.$emit('change', selectOrgans)
     }
   }
 }
