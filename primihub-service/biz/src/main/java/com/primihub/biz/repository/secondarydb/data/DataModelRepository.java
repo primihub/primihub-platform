@@ -29,9 +29,6 @@ public interface DataModelRepository {
 
     List<ModelResourceVo> queryModelResource(@Param("modelId") Long modelId,@Param("taskId") Long taskId);
 
-    List<ModelQuotaVo> queryModelQuotaVoList(Long modelId);
-
-
     List<ModelListVo> queryModelList(Map<String,Object> paramMap);
 
     Integer queryModelListCount(Map<String,Object> paramMap);

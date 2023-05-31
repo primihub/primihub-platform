@@ -54,11 +54,12 @@ public class OtherBusinessesService {
             }
             ResourceParam param = new ResourceParam();
             param.setOrganIds(sysOrgans.stream().map(SysOrgan::getOrganId).collect(Collectors.toList()));
-            if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
-                param.setGlobalId("1");
-            }else {
+            param.getOrganIds().add(organConfiguration.getSysLocalOrganId());
+//            if(sysLocalOrganInfo.getOrganId().equals(req.getOrganId())) {
+//                param.setGlobalId("1");
+//            }else {
                 param.setGlobalId(sysLocalOrganInfo.getOrganId());
-            }
+//            }
             param.setResourceId(req.getResourceId());
             param.setResourceName(req.getResourceName());
             param.setResourceType(req.getResourceSource());
@@ -67,7 +68,7 @@ public class OtherBusinessesService {
             param.setTagName(req.getTagName());
             param.setPageNo(req.getPageNo());
             param.setPageSize(req.getPageSize());
-//            log.info(JSONObject.toJSONString(param));
+            log.info(JSONObject.toJSONString(param));
             BaseResultEntity resultEntity= fusionResourceService.getResourceList(param);
             return BaseResultEntity.success(resultEntity.getResult());
         }catch (Exception e){

@@ -110,7 +110,7 @@
         {
             "component_code": "dataAlign",
             "component_name": "数据对齐",
-            "is_show": 0,
+            "is_show": 1,
             "is_mandatory": 1,
             "component_types": [
                 {
@@ -512,48 +512,6 @@
                                         {
                                             "key": "max",
                                             "val": 1000
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
-                            "key": "4",
-                            "val": "MPC-LR",
-                            "param": [
-                                {
-                                    "is_show": 0,
-                                    "is_required": 0,
-                                    "type_code": "batchSize",
-                                    "type_name": "Params.BatchSize",
-                                    "input_type": "number",
-                                    "input_value": 128,
-                                    "input_values": [
-                                        {
-                                            "key": "min",
-                                            "val": 128
-                                        },
-                                        {
-                                            "key": "max",
-                                            "val": 1024
-                                        }
-                                    ]
-                                },
-                                {
-                                    "is_show": 0,
-                                    "is_required": 0,
-                                    "type_code": "numlters",
-                                    "type_name": "Params.Numlters",
-                                    "input_type": "number",
-                                    "input_value": "",
-                                    "input_values": [
-                                        {
-                                            "key": "min",
-                                            "val": 5
-                                        },
-                                        {
-                                            "key": "max",
-                                            "val": 5000
                                         }
                                     ]
                                 }

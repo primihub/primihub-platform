@@ -21,6 +21,7 @@ import com.primihub.biz.repository.primarydb.sys.SysOrganPrimarydbRepository;
 import com.primihub.biz.repository.primaryredis.sys.SysCommonPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.data.OtherBusinessesService;
+import com.primihub.biz.service.feign.FusionOrganService;
 import com.primihub.biz.tool.nodedata.AddressInfoEntity;
 import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
 import com.primihub.biz.util.crypt.CryptUtil;
@@ -55,6 +56,8 @@ public class SysOrganService {
     private SysOrganPrimarydbRepository sysOrganPrimarydbRepository;
     @Autowired
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
+    @Autowired
+    private FusionOrganService fusionOrganService;
 
     public BaseResultEntity getLocalOrganInfo() {
         String group = environment.getProperty("nacos.config.group");
@@ -132,6 +135,7 @@ public class SysOrganService {
                 configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
                 sysAsyncService.collectBaseData();
             }
+            fusionOrganService.organData(sysLocalOrganInfo.getOrganId(),sysLocalOrganInfo.getOrganName());
             Map result = new HashMap();
             result.put("sysLocalOrganInfo", sysLocalOrganInfo);
             return BaseResultEntity.success(result);
@@ -183,20 +187,11 @@ public class SysOrganService {
         return BaseResultEntity.success(organConfiguration.getSysLocalOrganInfo().getHomeMap());
     }
 
-    public BaseResultEntity joiningPartners(String gateway, String publicKey,String applyId) {
-        boolean isUpdate = false;
+    public BaseResultEntity joiningPartners(String gateway, String publicKey) {
         SysOrgan sysOrgan = new SysOrgan();
-        if (StringUtils.isNotBlank(applyId)){
-            sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(applyId);
-            if (sysOrgan==null){
-                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "查询机构失败");
-            }
-            sysOrgan.setExamineState(0);
-            sysOrgan.setEnable(0);
-            isUpdate = true;
-        }else {
-            sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
-        }
+        sysOrgan.setExamineState(0);
+        sysOrgan.setEnable(0);
+        sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         sysOrgan.setOrganGateway(gateway);
         sysOrgan.setPublicKey(publicKey);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -212,26 +207,21 @@ public class SysOrganService {
         }
         map.put("applyId",sysOrgan.getApplyId());
         try {
+            log.info(JSONObject.toJSONString(map));
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
             if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
             }
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
+            sysOrgan.setOrganName(resultMap.get("organName").toString());
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
 //            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
             if (sysOrgan1!=null){
                 sysOrgan.setId(sysOrgan1.getId());
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }else {
-                if (isUpdate){
-                    sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
-                }else {
-                    sysOrgan.setOrganName(resultMap.get("organName").toString());
-                    sysOrgan.setExamineState(0);
-                    sysOrgan.setEnable(0);
-                    sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
-                }
+                sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -241,6 +231,7 @@ public class SysOrganService {
     }
 
     public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
+        log.info(JSONObject.toJSONString(info));
 //        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
         SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(info.get("organId").toString());
         if (sysOrgan==null){
@@ -254,6 +245,7 @@ public class SysOrganService {
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
         }else {
+            sysOrgan.setApplyId(info.get("applyId").toString());
             sysOrgan.setOrganGateway(info.get("gateway").toString());
             sysOrgan.setPublicKey(info.get("publicKey").toString());
             sysOrgan.setOrganId(info.get("organId").toString());
@@ -317,9 +309,12 @@ public class SysOrganService {
             }
         }else {
             sysOrgan.setEnable(0);
+            sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         }
         sysOrgan.setExamineState(examineState);
-        sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
+        if (StringUtils.isNotBlank(examineMsg)){
+            sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
+        }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
@@ -329,6 +324,7 @@ public class SysOrganService {
         map.put("applyId",sysOrgan.getApplyId());
         map.put("examineState",sysOrgan.getExamineState());
         map.put("enable",sysOrgan.getEnable());
+        log.info(JSONObject.toJSONString(map));
         BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, sysOrgan.getOrganGateway() + "/share/shareData/apply", sysOrgan.getPublicKey());
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             if (baseResultEntity!=null && baseResultEntity.getCode().equals(BaseResultEnum.DECRYPTION_FAILED.getReturnCode())){
@@ -361,6 +357,7 @@ public class SysOrganService {
         if (sysOrgan.getEnable().equals(status)){
             return BaseResultEntity.success();
         }
+        sysOrgan.setEnable(status);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
@@ -374,13 +371,7 @@ public class SysOrganService {
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
         }
-        List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectOrganByOrganId(sysOrgan.getOrganId());
-        if (sysOrgans != null && sysOrgans.size() > 0){
-            for (SysOrgan organ : sysOrgans){
-                organ.setEnable(status);
-                sysOrganPrimarydbRepository.updateSysOrgan(organ);
-            }
-        }
+        sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         sysAsyncService.applyForJoinNode(sysOrgan);
         return BaseResultEntity.success();
     }

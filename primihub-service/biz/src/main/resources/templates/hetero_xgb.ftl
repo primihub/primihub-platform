@@ -14,8 +14,8 @@
         "max_depth": ${maxDepth!5},
         "reg_lambda": ${regLambda!1},
         "merge_gh": ${mergeGh!true},
-        "ray_group": ${rayGroup!true},
-        "sample_type": "${sampleType!random}",
+        "ray_group": true,
+        "sample_type": "random",
         "feature_sample": ${featureSample!true},
         "learning_rate":${learningRate!0.1},
         "gamma": ${gamma!0},
@@ -34,7 +34,7 @@
     "role_params": {
         "Bob": {
             "data_set": "${label_dataset}",
-            "id": null,
+            "id": "id",
             "secure_bits": 112,
             "selected_column": null,
             "objective": "linear",
@@ -46,7 +46,7 @@
         },
         "Charlie": {
             "data_set": "${guest_dataset}",
-            "id": null,
+            "id": "id",
             "model_path": "${guestModelFileName}",
             "selected_column": null,
             "lookup_table": "${guestLookupTable}",

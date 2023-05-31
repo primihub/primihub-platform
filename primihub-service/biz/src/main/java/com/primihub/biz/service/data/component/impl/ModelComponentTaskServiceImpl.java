@@ -226,7 +226,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getMsgInfo().toStringUtf8());
             }
         } catch (Exception e) {
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -313,7 +313,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getMsgInfo().toStringUtf8());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -399,7 +399,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     }
                 }else {
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getRetCode());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"运行失败:"+reply.getMsgInfo().toStringUtf8());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

@@ -91,25 +91,6 @@ CREATE TABLE `data_component` (
                                   PRIMARY KEY (`component_id`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='组件表';
 
-DROP TABLE IF EXISTS `data_model_quota`;
-CREATE TABLE `data_model_quota` (
-                                    `quota_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '指标id',
-                                    `quota_type` int(2) DEFAULT NULL COMMENT '样本集类型（训练样本集，测试样本集）',
-                                    `quota_images` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '样本集图片',
-                                    `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                                    `component_id` bigint(20) DEFAULT NULL COMMENT '组件id',
-                                    `auc` decimal(12,6) DEFAULT NULL COMMENT 'auc',
-                                    `ks` decimal(12,6) DEFAULT NULL COMMENT 'ks',
-                                    `gini` decimal(12,6) DEFAULT NULL COMMENT 'gini',
-                                    `precision` decimal(12,6) DEFAULT NULL COMMENT 'precision',
-                                    `recall` decimal(12,6) DEFAULT NULL COMMENT 'recall',
-                                    `f1_score` decimal(12,6) DEFAULT NULL COMMENT 'f1_score',
-                                    `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                    PRIMARY KEY (`quota_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='模板指标入参';
-
 DROP TABLE IF EXISTS `data_model_task`;
 CREATE TABLE `data_model_task` (
                                    `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
@@ -275,10 +256,10 @@ CREATE TABLE `data_resource`  (
                                   `resource_auth_type` int(1) DEFAULT NULL COMMENT '授权类型（公开，私有）',
                                   `resource_source` int(1) DEFAULT NULL COMMENT '资源来源（文件上传，数据库链接）',
                                   `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
-                                  `file_id` int(8) DEFAULT NULL COMMENT '文件id',
-                                  `file_size` int(32) DEFAULT NULL COMMENT '文件大小',
+                                  `file_id` bigint(20) DEFAULT NULL COMMENT '文件id',
+                                  `file_size` bigint(20) DEFAULT NULL COMMENT '文件大小',
                                   `file_suffix` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '文件后缀',
-                                  `file_rows` int(8) DEFAULT NULL COMMENT '文件行数',
+                                  `file_rows` bigint(20) DEFAULT NULL COMMENT '文件行数',
                                   `file_columns` int(8) DEFAULT NULL COMMENT '文件列数',
                                   `file_handle_status` tinyint(4) DEFAULT NULL COMMENT '文件处理状态',
                                   `file_handle_field` mediumtext COMMENT '文件头字段',
@@ -681,7 +662,6 @@ CREATE TABLE `data_resource_visibility_auth`  (
                                                   `resource_id` bigint(20) NOT NULL COMMENT '资源id',
                                                   `organ_global_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构唯一id',
                                                   `organ_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源名称',
-                                                  `organ_server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '服务地址',
                                                   `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
                                                   `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                                   `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',

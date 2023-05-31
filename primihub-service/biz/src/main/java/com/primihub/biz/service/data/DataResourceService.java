@@ -265,6 +265,7 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(dataResource.getResourceId());}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }
@@ -772,7 +773,7 @@ public class DataResourceService {
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
                 fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId()));
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+//                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
         }catch (Exception e){
