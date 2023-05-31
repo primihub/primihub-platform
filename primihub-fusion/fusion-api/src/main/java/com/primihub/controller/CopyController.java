@@ -6,6 +6,7 @@ import com.primihub.entity.base.BaseResultEnum;
 import com.primihub.entity.copy.dto.DataFusionCopyDto;
 import com.primihub.service.CopyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +17,7 @@ public class CopyController {
     @Autowired
     private CopyService copyService;
 
-    @RequestMapping("batchSave")
+    @PostMapping("batchSave")
     public BaseResultEntity batchSave(String globalId,String copyPart){
         DataFusionCopyDto copyDto=JSON.parseObject(copyPart, DataFusionCopyDto.class);
         if(copyDto.getTableName()==null|| "".equals(copyDto.getTableName())) {

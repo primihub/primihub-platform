@@ -14,19 +14,16 @@ public class ShareProjectVo {
     public ShareProjectVo() {
     }
 
-    public ShareProjectVo(String projectId, String serverAddress) {
+    public ShareProjectVo(String projectId) {
         this.projectId = projectId;
-        this.serverAddress = serverAddress;
     }
 
     public ShareProjectVo(DataProject project) {
         this.projectId = project.getProjectId();
-        this.serverAddress = project.getServerAddress();
         this.project = project;
     }
 
     private String projectId;
-    private String serverAddress;
     private DataProject project;
     private List<DataProjectOrgan> projectOrgans = new ArrayList<>();
     private List<DataProjectResource> projectResources = new ArrayList<>();

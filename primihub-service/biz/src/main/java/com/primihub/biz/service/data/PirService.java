@@ -40,8 +40,8 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(String serverAddress,String resourceId, String pirParam) {
-        BaseResultEntity dataResource = otherBusinessesService.getDataResource(serverAddress, resourceId);
+    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam) {
+        BaseResultEntity dataResource = otherBusinessesService.getDataResource(resourceId);
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
         }
@@ -60,7 +60,6 @@ public class PirService {
         dataTaskPrRepository.saveDataTask(dataTask);
         DataPirTask dataPirTask = new DataPirTask();
         dataPirTask.setTaskId(dataTask.getTaskId());
-        dataPirTask.setServerAddress(serverAddress);
         dataPirTask.setRetrievalId(pirParam);
         dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
@@ -79,17 +78,12 @@ public class PirService {
         }
         Integer tolal = dataTaskRepository.selectDataPirTaskCount(req);
         Map<String,LinkedHashMap<String, Object>> resourceMap= new HashMap<>();
-        Map<String, List<DataPirTaskVo>> resourceMapList = dataPirTaskVos.stream().collect(Collectors.groupingBy(DataPirTaskVo::getServerAddress));
-        Iterator<Map.Entry<String, List<DataPirTaskVo>>> it = resourceMapList.entrySet().iterator();
-        while (it.hasNext()){
-            Map.Entry<String, List<DataPirTaskVo>> next = it.next();
-            String[] ids = next.getValue().stream().map(DataPirTaskVo::getResourceId).toArray(String[]::new);
-            BaseResultEntity baseResult = otherBusinessesService.getResourceListById(next.getKey(), ids);
-            if (baseResult.getCode()==0){
-                List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
-                if (voList != null && voList.size()!=0){
-                    resourceMap.putAll(voList.stream().collect(Collectors.toMap(data -> data.get("resourceId").toString(), Function.identity())));
-                }
+        List<String> ids = dataPirTaskVos.stream().map(DataPirTaskVo::getResourceId).collect(Collectors.toList());
+        BaseResultEntity baseResult = otherBusinessesService.getResourceListById(ids);
+        if (baseResult.getCode()==0){
+            List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)baseResult.getResult();
+            if (voList != null && voList.size()!=0){
+                resourceMap.putAll(voList.stream().collect(Collectors.toMap(data -> data.get("resourceId").toString(), Function.identity())));
             }
         }
         for (DataPirTaskVo dataPirTaskVo : dataPirTaskVos) {

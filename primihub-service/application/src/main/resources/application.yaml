@@ -11,6 +11,11 @@ spring:
       max-file-size: 10MB
       max-request-size: 10MB
       file-size-threshold: 1MB
+  datasource:
+    druid:
+      filter:
+        config:
+          enabled: true
   rabbitmq:
     host: localhost
     port: 5672
@@ -27,11 +32,11 @@ spring:
     nacos:
       discovery:
         server-addr: localhost:8848
-        namespace:
+        namespace: dev
 nacos:
   config:
     server-addr: localhost:8848
-    namespace:
+    namespace: dev
     max-retry: 3
     config-long-poll-timeout: 1000
     config-retry-time: 1000
@@ -46,6 +51,7 @@ rest:
     connection:
       connect-timeout: 30000
       read-timeout: 30000
+
 logging:
   level:
     root: info

@@ -116,11 +116,8 @@ public class PsiController {
     @GetMapping("getPsiResourceAllocationList")
     public BaseResultEntity getPsiResourceDataList(PageReq req,
                                                    String organId,
-                                                   String serverAddress,
                                                    String resourceName){
-//        if (StringUtils.isBlank(organId))
-//            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        return dataPsiService.getPsiResourceAllocationList(req,organId,serverAddress,resourceName);
+        return dataPsiService.getPsiResourceAllocationList(req,organId,resourceName);
     }
 
     /**

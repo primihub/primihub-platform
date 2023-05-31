@@ -113,7 +113,6 @@ public class DataPsi {
      */
     @JsonIgnore
     private Date updateDate;
-    private String serverAddress;
 
 
 }

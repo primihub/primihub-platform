@@ -12,8 +12,6 @@ public class DataPirTask {
 
     private Long taskId;
 
-    private String serverAddress;
-
     private String providerOrganName;
 
     private String resourceId;

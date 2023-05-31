@@ -3,21 +3,21 @@ package com.primihub.biz.service.sys;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.ConfigType;
-import com.alibaba.nacos.api.exception.NacosException;
+import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.SysConstant;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
-import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
-import com.primihub.biz.tool.nodedata.AddressInfoEntity;
-import com.primihub.biz.tool.nodedata.BasicIPInfoHelper;
+import com.primihub.biz.entity.sys.po.SysOrgan;
+import com.primihub.biz.service.feign.FusionOrganService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -25,83 +25,55 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @Service
 @Slf4j
 public class SysAsyncService {
+
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
-    @Resource
-    private Environment environment;
+    @Autowired
+    private OrganConfiguration organConfiguration;
+    @Autowired
+    private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private FusionOrganService fusionOrganService;
 
     @Async
-    public void changeExtends(){
-        BasicIPInfoHelper basicIPInfoHelper = new BasicIPInfoHelper(restTemplate);
-        AddressInfoEntity addressInfoEntity = basicIPInfoHelper.getAddressInfo();
-        if (addressInfoEntity==null){
-            log.info("获取ip信息失败 - null");
-            return;
-        }
-        String group=environment.getProperty("nacos.config.group");
-        String serverAddr=environment.getProperty("nacos.config.server-addr");
-        String namespace=environment.getProperty("nacos.config.namespace");
-        ConfigService configService;
-        SysLocalOrganInfo sysLocalOrganInfo;
+    public void collectBaseData() {
         try {
-            Properties properties = new Properties();
-            properties.put("serverAddr",serverAddr);
-            properties.put("namespace",namespace);
-            configService= NacosFactory.createConfigService(properties);
-            String organInfoContent=configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,3000);
-            sysLocalOrganInfo = JSON.parseObject(organInfoContent,SysLocalOrganInfo.class);
-        } catch (NacosException e) {
-            log.info("nacos-get",e);
-            return;
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            if (sysLocalOrganInfo==null)
+                return;
+            if (sysLocalOrganInfo.getAddressInfo()==null)
+                return;
+            Thread.sleep(5000L);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            MultiValueMap map = new LinkedMultiValueMap<>();
+            map.put("key", new ArrayList() {{add(SysConstant.SYS_COLLECT_KEY);}});
+            map.put("globalId", new ArrayList() {{add(sysLocalOrganInfo.getOrganId());}});
+            map.put("globalName", new ArrayList() {{add(sysLocalOrganInfo.getOrganName());}});
+            map.put("country", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getCountry());}});
+            map.put("lat", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getLat());}});
+            map.put("lon", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getLon());}});
+            HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+            BaseResultEntity resultEntity = restTemplate.postForObject(SysConstant.SYS_COLLECT_URL, request, BaseResultEntity.class);
+            log.info(JSONObject.toJSONString(resultEntity));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        if(sysLocalOrganInfo==null
-                ||(sysLocalOrganInfo.getOrganId()==null&& "".equals(sysLocalOrganInfo.getOrganId()))
-                ||(sysLocalOrganInfo.getOrganName()==null&& "".equals(sysLocalOrganInfo.getOrganName()))
-                ||(sysLocalOrganInfo.getPinCode()==null&& "".equals(sysLocalOrganInfo.getPinCode()))){
-            log.info("没有机构信息请重新生成");
-            return;
-        }
-//        if (sysLocalOrganInfo.getAddressInfo()!=null && sysLocalOrganInfo.getAddressInfo().getIp()!=null && sysLocalOrganInfo.getAddressInfo().getIp().equals(addressInfoEntity.getIp())){
-//            log.info("ip 一致不需要更改");
-//            return;
-//        }
-
-        if(sysLocalOrganInfo.getFusionMap()==null){
-            log.info("没有中心节点map信息");
-            return;
-        }
-        Set<String> serverAddressKeys = sysLocalOrganInfo.getFusionMap().keySet();
-        Iterator<String> iterator = serverAddressKeys.iterator();
-        while (iterator.hasNext()){
-            String serverAddress = iterator.next();
-            try{
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                MultiValueMap map = new LinkedMultiValueMap<>();
-                map.put("globalId", new ArrayList(){{add(sysLocalOrganInfo.getOrganId());}});
-                map.put("pinCode", new ArrayList(){{add(sysLocalOrganInfo.getPinCode());}});
-                map.put("ip", new ArrayList(){{add(addressInfoEntity.getIp());}});
-                map.put("lat", new ArrayList(){{add(addressInfoEntity.getLat());}});
-                map.put("lon", new ArrayList(){{add(addressInfoEntity.getLon());}});
-                map.put("country", new ArrayList(){{add(addressInfoEntity.getCountry());}});
-                HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-                BaseResultEntity resultEntity=restTemplate.postForObject(serverAddress+"/fusion/changeOrganExtends",request, BaseResultEntity.class);
-                log.info("serverAddress:{} - ip update return Json:{}",serverAddress, JSONObject.toJSONString(resultEntity));
-            }catch (Exception e){
-                log.info("serverAddress:{} - e:{}",serverAddress,e.getMessage());
-            }
-        }
-        try {
-            sysLocalOrganInfo.setAddressInfo(addressInfoEntity);
-            configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME,group,JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
-        } catch (NacosException e) {
-            log.info("nacos-publish",e);
+    }
+    @Async
+    public void applyForJoinNode(SysOrgan sysOrgan) {
+        log.info(JSONObject.toJSONString(sysOrgan));
+        if (sysOrgan.getEnable()==1){
+            // TODO 该机构下的数据进行下线处理
+        }else if (sysOrgan.getExamineState()==1){
+            fusionOrganService.organData(sysOrgan.getOrganId(),sysOrgan.getOrganName());
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
         }
     }
 }

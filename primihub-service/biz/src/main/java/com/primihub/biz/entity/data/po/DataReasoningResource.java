@@ -15,8 +15,6 @@ public class DataReasoningResource {
 
     private Integer participationIdentity;
 
-    private String serverAddress;
-
     /**
      * 是否删除
      */

@@ -24,11 +24,6 @@
         insert into data_mr (model_id,resource_id,task_id,take_part_type,alignment_num,primitive_param_num,modelParam_num,is_del,create_date,update_date)
         values (#{modelId},#{resourceId},#{taskId},#{takePartType},#{alignmentNum},#{primitiveParamNum},#{modelParamNum},0,now(),now())
     </insert>
-
-    <insert id="saveDataModelQuota" keyProperty="quota_id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataModelQuota">
-        insert into data_model_quota (quota_type,quota_images,model_id,auc,ks,gini,`precision`,recall,f1_score,create_date,update_date)
-        values (#{quotaType},#{quotaImage},#{modelId},#{auc},#{ks},#{gini},#{precision},#{recall},#{f1Score},now(),now())
-    </insert>
     <insert id="saveDataComponent" keyProperty="componentId" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataComponent">
         insert into data_component (front_component_id,model_id,task_id,component_code,component_name,shape,width,height,coordinate_y,coordinate_x,data_json,start_time,end_time,is_del,create_date,update_date)
         values (#{frontComponentId},#{modelId},#{taskId},#{componentCode},#{componentName},#{shape},#{width},#{height},#{coordinateY},#{coordinateX},#{dataJson},0,0,0,now(),now())

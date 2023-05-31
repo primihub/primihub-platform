@@ -1,6 +1,8 @@
 package com.primihub.biz.service.data.component.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
@@ -73,27 +75,31 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     }
 
     public BaseResultEntity runAssemblyData(Map<String, ModelEntity> map,DataComponentReq req, ComponentTaskReq taskReq){
-        Map<String, String> freemarkerMap = new HashMap<>();
+        Map<String, Object> freemarkerMap = new HashMap<>();
         freemarkerMap.put(DataConstant.PYTHON_LABEL_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
         freemarkerMap.put(DataConstant.PYTHON_GUEST_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
+        freemarkerMap.put("detail",map);
         String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_DATA_ALIGN_PATH, freeMarkerConfigurer, freemarkerMap);
         log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {
                 String jobId = String.valueOf(taskReq.getJob());
                 log.info("runAssemblyDatamap:{}", JSONObject.toJSONString(map));
-                Common.ParamValue detailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(map).getBytes(StandardCharsets.UTF_8))).build();
+                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent), SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
                 Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("detail", detailParamValue)
+                        .putParamMap("component_params", componentParamsParamValue)
                         .build();
+                Map<String, Common.Dataset> values = new HashMap<>();
+                values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
+                values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
                 Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                 Common.Task task = Common.Task.newBuilder()
                         .setType(Common.TaskType.ACTOR_TASK)
                         .setParams(params)
-                        .setName("runAssemblyData")
+                        .setName("assemblyData")
                         .setLanguage(Common.Language.PYTHON)
-                        .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
                         .setTaskInfo(taskBuild)
+                        .putAllPartyDatasets(values)
                         .build();
                 log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
@@ -127,7 +133,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     taskReq.setNewest(derivationList);
                     // derivation resource datas
                     log.info(JSONObject.toJSONString(taskReq.getDerivationList()));
-                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId(),taskReq.getServerAddress());
+                    BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
                     log.info(JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -158,7 +164,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     }
 
     @Data
-    public class ModelEntity {
+    public static class ModelEntity {
         public ModelEntity(String psiPath, List<Integer> index,String resourceId) {
             this.newDataSetId= resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
             this.psiPath = psiPath + newDataSetId +".csv";
@@ -195,18 +201,26 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             }
             List<Integer> clientIndex;
             List<Integer> serverIndex;
+            clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
+            serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             List<String> fieldList = null;
             if ("1".equals(dataAlign)){
-                fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
+                if (clientData.getFileHandleField().contains("id")&&serverData.getFileHandleField().contains("id")){
+                    fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
+                }else {
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐特征中无ID/id属性");
+                }
             }else {
                 String multipleSelected = componentVals.get("MultipleSelected");
                 if (StringUtils.isBlank(multipleSelected)) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐选择特征为空");
                 }
-                fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
+//                fieldList = Arrays.stream(multipleSelected.split(",")).collect(Collectors.toList());
+                fieldList = JSONArray.parseArray(multipleSelected,String.class);
             }
-            clientData.setFileHandleField(clientData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
-            serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
+            log.info("data-align clientDataFileHandleField: {}",JSONObject.toJSONString(clientData.getFileHandleField()));
+            log.info("data-align serverDataFileHandleField: {}",JSONObject.toJSONString(serverData.getFileHandleField()));
+            log.info("data-align fieldList : {}",JSONObject.toJSONString(fieldList));
             clientIndex = fieldList.stream().map(clientData.getFileHandleField()::indexOf).collect(Collectors.toList());
             serverIndex = fieldList.stream().map(serverData.getFileHandleField()::indexOf).collect(Collectors.toList());
             if (clientIndex.size()<0) {
@@ -219,8 +233,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
             ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex,serverData.getResourceId());
-            Common.ParamValue clientDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientData.getResourceId().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue serverDataParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverData.getResourceId().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(0).build();
             Common.ParamValue syncResultToServerParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
@@ -233,8 +245,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue serverOutputFullFilnameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params=Common.Params.newBuilder()
-                    .putParamMap("clientData",clientDataParamValue)
-                    .putParamMap("serverData",serverDataParamValue)
                     .putParamMap("psiType",psiTypeParamValue)
                     .putParamMap("psiTag",psiTagParamValue)
                     .putParamMap("clientIndex",clientIndexParamValue)
@@ -249,10 +259,9 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setParams(params)
                     .setName("testTask")
                     .setLanguage(Common.Language.PROTO)
-                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
                     .setTaskInfo(taskBuild)
-                    .addInputDatasets("clientData")
-                    .addInputDatasets("serverData")
+                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", serverData.getResourceId()).build())
+                    .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", clientData.getResourceId()).build())
                     .build();
             log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()

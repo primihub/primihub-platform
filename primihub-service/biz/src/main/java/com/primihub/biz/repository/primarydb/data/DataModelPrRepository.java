@@ -22,8 +22,6 @@ public interface DataModelPrRepository {
 
     void saveDataModelResource(DataModelResource dataModelResource);
 
-    void saveDataModelQuota(DataModelQuota modelQuota);
-
     void saveDataComponent(DataComponent dataComponent);
 
     void saveDataModelComponent(DataModelComponent dataModelComponent);

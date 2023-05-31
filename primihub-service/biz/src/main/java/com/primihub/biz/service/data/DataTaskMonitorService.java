@@ -39,7 +39,7 @@ public class DataTaskMonitorService {
             String key = RedisKeyConstant.TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
             while (isContinue){
                 TaskStatusReply taskStatusReply = workGrpcClient.run(o -> o.fetchTaskStatus(taskBuild));
-                log.info(taskStatusReply.toString());
+//                log.info(taskStatusReply.toString());
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->StringUtils.isNotBlank(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
                     if (!taskStatus.isEmpty()){
@@ -62,6 +62,8 @@ public class DataTaskMonitorService {
                             if (num <= success){
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                 if (StringUtils.isNotBlank(path)){
+                                    // 暂停10秒 在k8s中文件同步存在一定的延迟性 TODO 物理机可以注释
+                                    Thread.sleep(10000L);
                                     if (!FileUtil.isFileExists(path)){
                                         log.info("path:{} 不存在",path);
                                         dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());

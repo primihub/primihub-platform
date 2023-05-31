@@ -10,6 +10,7 @@
             r.reasoning_desc reasoningDesc,
             r.reasoning_type reasoningType,
             r.reasoning_state reasoningState,
+            /*(select m.model_name from data_model m,data_model_task mt,data_task dt where m.model_id=mt.model_id and r.task_id = dt.task_id_name and mt.task_id = dt.task_id) modelName,*/
             (select m.model_name from data_model m,data_model_task mt where m.model_id=mt.model_id and mt.task_id = r.task_id) modelName,
             r.task_id taskId,
             r.run_task_id runTaskId,
@@ -45,8 +46,7 @@
             reasoning_id reasoningId,
             resource_id resourceId,
             organ_id organId,
-            participation_identity participationIdentity,
-            server_address serverAddress
+            participation_identity participationIdentity
         from
              data_reasoning_resource
         where reasoning_id = #{reasoningId}

@@ -1,46 +1,43 @@
-import primihub as ph
-from primihub.FL.model.neural_network.homo_nn_dev import run_party
-
-from primihub.FL.model.neural_network.mlp_binary import NeuralNetwork
-
-
-config = {
-    'mode': 'Plaintext',
-    'nn_model': NeuralNetwork,
-    'task': 'classification',
-    'class_type': 'binary',
-    'learning_rate': 1e-2,
-    'alpha': 1e-4,
-    'optimizer': 'adam',
-    'batch_size': 100,
-    'epoch': 100,
-    'feature_names': None,
+{
+	"roles": {
+	  "server": "Alice",
+	  "client": [
+		"Bob",
+		"Charlie"
+	  ]
+	},
+	"common_params": {
+	  "model": "HFL_neural_network",
+	  "method": "Plaintext",
+	  "process": "train",
+	  "task_name": "HFL_NN",
+	  "task": "${taskNNType}",
+	  "delta": 1e-3,
+	  "l2_norm_clip": 1.0,
+	  "noise_multiplier": 2.0,
+	  "learning_rate": 1e-2,
+	  "alpha": 1e-4,
+	  "optimizer": "adam",
+	  "batch_size": 100,
+	  "global_epoch": 100,
+	  "local_epoch": 1,
+	  "selected_column": null,
+	  "id": "id",
+	  "label": "y",
+	  "print_metrics": true,
+	  "metric_path": "${indicatorFileName}"
+	},
+	"role_params": {
+	  "Bob": {
+		"data_set": "${label_dataset}",
+		"model_path": "${hostModelFileName}"
+	  },
+	  "Charlie": {
+		"data_set": "${guest_dataset}",
+		"model_path": "${guestModelFileName}"
+	  },
+	  "Alice": {
+		"data_set": "${arbiter_dataset}"
+	  }
+	}
 }
-
-
-# binary classification dataset
-@ph.context.function(role='arbiter',
-                     protocol='nn',
-                     datasets=['${arbiter_dataset}'],
-                     port='9010',
-                     task_type="nn-train")
-def run_arbiter_party():
-    run_party('arbiter', config)
-
-
-@ph.context.function(role='host',
-                     protocol='nn',
-                     datasets=['${label_dataset}'],
-                     port='9020',
-                     task_type="nn-train")
-def run_host_party():
-    run_party('host', config)
-
-
-@ph.context.function(role='guest',
-                     protocol='nn',
-                     datasets=['${guest_dataset}'],
-                     port='9030',
-                     task_type="nn-train")
-def run_guest_party():
-    run_party('guest', config)

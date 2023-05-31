@@ -72,7 +72,6 @@
             dt.task_id_name taskIdName,
             dt.task_start_time as taskStart,
             dt.task_end_time as taskEnd,
-            dpt.server_address serverAddress,
             dpt.provider_organ_name organName,
             dpt.resource_id resourceId,
             dpt.resource_name resourceName,

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.repository.DataSetRepository">
+
+
+    <insert id="insertDataSet" parameterType="com.primihub.entity.DataSet">
+        insert into data_set(id,access_info,driver,address,visibility,available,holder,fields,is_del,c_time,u_time)
+        values (#{id},#{accessInfo},#{driver},#{address},#{visibility},#{available},#{holder},#{fields},0,now(),now())
+    </insert>
+    <insert id="insertBatchDataSet" parameterType="com.primihub.entity.DataSet">
+        insert into data_set(id,access_info,driver,address,visibility,available,holder,fields,is_del,c_time,u_time)
+        <foreach collection="list" index="index" item="item" separator=",">
+            values (#{item.id},#{item.accessInfo},#{item.driver},#{item.address},#{item.visibility},#{item.available},#{item.holder},#{fields,0,now(),now())
+        </foreach>
+    </insert>
+    <update id="updateDataSet" parameterType="com.primihub.entity.DataSet">
+        update data_set
+        <set>
+            <if test="accessInfo!=null and accessInfo!=''">access_info = #{accessInfo},</if>
+            <if test="driver!=null and driver!=''">driver = #{driver},</if>
+            <if test="address!=null and address!=''">address = #{address},</if>
+            <if test="visibility!=null and visibility!=''">visibility = #{visibility},</if>
+            <if test="available!=null and available!=''">available = #{available},</if>
+            <if test="holder!=null and holder!=''">holder = #{holder},</if>
+            <if test="fields!=null and fields!=''">fields = #{fields},</if>
+            u_time = now()
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteDataSet" parameterType="com.primihub.entity.DataSet">
+        update data_set set is_del = 1 where id = #{id}
+    </delete>
+    <select id="getDataSetByIds" resultType="com.primihub.entity.DataSet">
+        select
+            id,access_info accessInfo,driver,address,visibility,available,holder,fields
+        from data_set where is_del = 0
+        <if test="ids!=null">
+            and id in
+            <foreach collection="ids" index="index" item="item" open="("
+                     separator="," close=")">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="getDataSetOwnAll" resultType="com.primihub.entity.DataSet">
+        select
+        id,access_info accessInfo,driver,address,visibility,available,holder,fields
+        from data_set where is_del = 0 and holder = 0
+    </select>
+    <select id="getDataSetById" resultType="com.primihub.entity.DataSet">
+        select
+            id,access_info accessInfo,driver,address,visibility,available,holder,fields
+        from data_set where is_del = 0
+            and id = #{id}
+    </select>
+    <select id="getTestDataSet" resultType="com.primihub.entity.DataSet">
+        select
+            id,driver,address,visibility,available,holder,fields
+        from data_set where is_del = 0 and length(id) != 49
+    </select>
+</mapper>

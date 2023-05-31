@@ -84,23 +84,6 @@
             <if test="modelId!=null and modelId!=0">and model_id = #{modelId}</if>
             <if test="taskId!=null and taskId!=0">and task_id = #{taskId}</if>
     </select>
-
-    <select id="queryModelQuotaVoList" resultType="com.primihub.biz.entity.data.vo.ModelQuotaVo">
-        SELECT
-            quota_id as quotaId,
-            quota_type as quotaType,
-            quota_images as quotaImage,
-            auc as auc,
-            ks as ks,
-            gini as gini,
-            `precision` as `precision`,
-            recall as recall,
-            f1_score as f1Score
-        FROM
-            data_model_quota
-        WHERE
-            model_id = #{modelId}
-    </select>
     <select id="queryModelCountByProjectId" resultType="com.primihub.biz.entity.data.vo.ProjectModelNumVo">
         select project_id projectId,count(model_id) modeNum from data_model
         where project_id in
@@ -309,7 +292,6 @@
             dp.project_name projectName,
             dp.created_organ_id createdOrganId,
             dp.created_organ_name createdOrgan,
-            dp.server_address serverAddress,
             dp.provider_organ_names providerOrganNames,
             (select count(id) from data_mr where task_id = dt.task_id) resourceNum
         FROM
