@@ -1,23 +1,13 @@
 <template>
   <div class="container">
     <el-form :inline="true" :model="searchForm" class="search-area">
-      <el-form-item label="中心节点">
-        <el-select v-model="searchForm.serverAddress" size="small" clearable placeholder="请选择" @change="handleServerAddressChange" @clear="handleServerAddressClear">
-          <el-option
-            v-for="center in fusionList"
-            :key="center.serverAddress"
-            :label="center.serverAddress"
-            :value="center.serverAddress"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item label="参与机构">
-        <el-select v-model="searchForm.organId" size="small" placeholder="请选择" clearable @focus="handleOrganSelect">
+        <el-select v-model="searchForm.organId" size="small" placeholder="请选择" clearable>
           <el-option
             v-for="organ in organList"
-            :key="organ.organId"
-            :label="organ.organName"
-            :value="organ.organId"
+            :key="organ.globalId"
+            :label="organ.globalName"
+            :value="organ.globalId"
           />
         </el-select>
       </el-form-item>
@@ -198,7 +188,7 @@ import { getProjectList, getListStatistics, closeProject, openProject } from '@/
 import ProjectItem from '@/components/ProjectItem'
 import NoData from '@/components/NoData'
 import Pagination from '@/components/Pagination'
-import { getLocalOrganInfo, findMyGroupOrgan } from '@/api/center'
+import { getAvailableOrganList } from '@/api/center'
 
 export default {
   components: { ProjectItem, NoData, Pagination },
@@ -241,7 +231,6 @@ export default {
       searchForm: {
         projectId: '',
         projectName: '',
-        serverAddress: '',
         organId: '',
         status: '',
         createDate: [],
@@ -283,12 +272,11 @@ export default {
   async created() {
     this.projectType = localStorage.getItem('projectType') || this.projectType
     this.pageSize = this.projectType === 'table' ? 10 : 12
-    await this.getLocalOrganInfo()
     this.fetchData()
     this.getListStatistics()
+    this.getAvailableOrganList()
   },
   methods: {
-    handleClose() {},
     handleProjectCancel() {
       this.dialogVisible = false
     },
@@ -376,59 +364,17 @@ export default {
         this.own = result?.own
       })
     },
-    async getLocalOrganInfo() {
-      const { result = {}} = await getLocalOrganInfo()
-      this.sysLocalOrganInfo = result.sysLocalOrganInfo
-      this.fusionList = this.sysLocalOrganInfo?.fusionList
-      if (this.$store.getters.userOrganId === '') {
-        console.log(this.$store.getters.permissionList)
-        if (this.$store.getters.permissionList.filter(item => item.authCode === 'CenterManage').length > 0) {
-          this.$message({
-            message: '暂无机构信息，请前往中心管理页面创建机构',
-            duration: 2000
-          })
-          this.$router.push({
-            name: 'CenterManage'
-          })
-        } else {
-          this.$message({
-            message: '请联系管理员创建机构信息'
-          })
-        }
-      }
-      console.log(this.$store.getters.userOrganId)
-    },
     toProjectCreatePage() {
       this.$router.push({
         name: 'ProjectCreate'
       })
     },
-    handleServerAddressChange(value) {
-      console.log(value)
-    },
-    handleServerAddressClear() {
-      this.searchForm.serverAddress = ''
-      this.searchForm.organId = ''
-      this.organList = []
-    },
     handleOrganSelect() {
-      this.findMyGroupOrgan()
+      this.getAvailableOrganList()
     },
-    findMyGroupOrgan() {
-      if (this.searchForm.serverAddress === '') {
-        this.$message({
-          message: '请先选择中心节点',
-          type: 'warning'
-        })
-        return
-      }
-      findMyGroupOrgan({ serverAddress: this.searchForm.serverAddress }).then(res => {
-        this.organList = res.result.dataList.organList && res.result.dataList.organList.map((item) => {
-          return {
-            organName: item.globalName,
-            organId: item.globalId
-          }
-        })
+    getAvailableOrganList() {
+      getAvailableOrganList().then(res => {
+        this.organList = res.result
       })
     },
     searchProject() {
@@ -438,7 +384,6 @@ export default {
     reset() {
       this.searchForm.projectId = ''
       this.searchForm.projectName = ''
-      this.searchForm.serverAddress = ''
       this.searchForm.organId = ''
       this.searchForm.queryType = ''
       this.searchForm.status = ''
@@ -452,11 +397,10 @@ export default {
     fetchData(type) {
       this.listLoading = true
       this.projectList = []
-      const { projectName, serverAddress, organId, status, createDate, projectId, queryType } = this.searchForm
+      const { projectName, organId, status, createDate, projectId, queryType } = this.searchForm
       const params = {
         projectId,
         projectName,
-        serverAddress,
         organId,
         queryType: type || queryType,
         status,

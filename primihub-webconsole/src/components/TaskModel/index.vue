@@ -70,7 +70,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </div>
-    <div v-if="hasModelSelectComponent && (model.modelType === 3 || model.modelType === 4 )" class="section">
+    <div v-if="hasModelSelectComponent" class="section">
       <h3>模型评估分数</h3>
       <el-table
         :data="modelQuotas"

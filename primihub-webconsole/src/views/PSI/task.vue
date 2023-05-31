@@ -10,8 +10,21 @@
           <el-form ref="form" :model="formData" :rules="rules" label-width="70px">
             <div class="header">
               <div class="organ-container">
-                <div class="organ"><span>发起方: </span><el-select v-model="formData.ownOrganName" disabled :placeholder="formData.ownOrganName" /></div>
-                <div class="organ"><span>协作方: </span><OrganCascader placeholder="请选择求交机构" :show-all-levels="false" @change="handleOrganSelect" /></div>
+                <div class="organ">
+                  <span>发起方: </span>
+                  <el-select v-model="formData.ownOrganName" style="display:inline-block;" disabled :placeholder="formData.ownOrganName" />
+                </div>
+                <div class="organ">
+                  <span>协作方: </span>
+                  <el-select v-model="formData.otherOrganId" placeholder="请选择">
+                    <el-option
+                      v-for="item in organList"
+                      :key="item.globalId"
+                      :label="item.globalName"
+                      :value="item.globalId"
+                    />
+                  </el-select>
+                </div>
               </div>
               <div class="line">
                 <div class="line-icon">{{ taskTypeText }}</div>
@@ -129,7 +142,7 @@
 
 <script>
 import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
-import OrganCascader from '@/components/OrganCascader'
+import { getAvailableOrganList } from '@/api/center'
 import ResourceSelect from '@/components/ResourceSelect'
 
 const intersection = require('@/assets/intersection.svg')
@@ -138,11 +151,11 @@ const diffsection = require('@/assets/diffsection.svg')
 export default {
   name: 'PSITask',
   components: {
-    OrganCascader,
     ResourceSelect
   },
   data() {
     return {
+      organList: [],
       taskTypeText: '交',
       resourceName: '',
       selectLoading: false,
@@ -160,7 +173,7 @@ export default {
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
         ownKeyword: [], // 本机构关联键
-        otherOrganId: 0,
+        otherOrganId: '',
         otherResourceId: '', // 其他机构资源Id
         otherKeyword: [], // 其他机构关联键
         outputFormat: 0, // 输出方式
@@ -263,8 +276,19 @@ export default {
     this.formData.ownOrganId = this.$store.getters.userOrganId
     this.formData.ownOrganName = this.$store.getters.userOrganName
     this.formData.resultOrgan.push(this.formData.ownOrganId)
+    await this.getAvailableOrganList()
   },
   methods: {
+    async getAvailableOrganList() {
+      console.log('11222')
+      this.loading = true
+      const res = await getAvailableOrganList()
+      if (res.code === 0) {
+        this.loading = false
+        const { result } = res
+        this.organList = result
+      }
+    },
     handleTaskTypeChange(value) {
       this.taskTypeText = value === 0 ? '交' : '差'
     },
@@ -362,14 +386,6 @@ export default {
           organId: this.formData.ownOrganId
         })
       } else {
-        if (this.formData.serverAddress === '') {
-          this.$message({
-            message: '请选择协作方',
-            type: 'warning'
-          })
-          this.tableDataB = []
-          return
-        }
         this.tableDataB = []
         this.tableDataB = await this.getPsiResourceAllocationList({
           organId: this.formData.otherOrganId,
