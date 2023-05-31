@@ -213,7 +213,6 @@ public class SysOrganService {
 //            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
             if (sysOrgan1!=null){
                 sysOrgan.setId(sysOrgan1.getId());
-                sysOrgan.setApplyId(resultMap.get("applyId").toString());
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }else {
                 sysOrgan.setOrganName(resultMap.get("organName").toString());
