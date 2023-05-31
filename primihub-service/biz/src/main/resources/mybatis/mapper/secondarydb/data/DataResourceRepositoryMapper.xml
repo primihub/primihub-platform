@@ -245,7 +245,7 @@
         select
         <include refid="resourceColumns"></include>
         from data_resource
-        where resource_id>=#{startOffset} and <![CDATA[ resource_id<=#{endOffset} ]]> and resource_source !=3
+        where resource_id>=#{startOffset} and <![CDATA[ resource_id<=#{endOffset} ]]>
     </select>
     <select id="queryDataResourceIds" resultType="java.lang.Long">
         select resource_id from data_resource where resource_id > #{pId} ORDER BY resource_id asc LIMIT #{pageSize}
