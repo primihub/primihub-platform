@@ -203,6 +203,7 @@ public class SysOrganService {
         }
         map.put("applyId",sysOrgan.getApplyId());
         try {
+            log.info(JSONObject.toJSONString(map));
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
             if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
@@ -226,6 +227,7 @@ public class SysOrganService {
     }
 
     public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
+        log.info(JSONObject.toJSONString(info));
 //        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
         SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(info.get("organId").toString());
         if (sysOrgan==null){
