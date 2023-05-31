@@ -308,7 +308,9 @@ public class SysOrganService {
             sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         }
         sysOrgan.setExamineState(examineState);
-        sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
+        if (StringUtils.isNotBlank(examineMsg)){
+            sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
+        }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
@@ -318,6 +320,7 @@ public class SysOrganService {
         map.put("applyId",sysOrgan.getApplyId());
         map.put("examineState",sysOrgan.getExamineState());
         map.put("enable",sysOrgan.getEnable());
+        log.info(JSONObject.toJSONString(map));
         BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, sysOrgan.getOrganGateway() + "/share/shareData/apply", sysOrgan.getPublicKey());
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             if (baseResultEntity!=null && baseResultEntity.getCode().equals(BaseResultEnum.DECRYPTION_FAILED.getReturnCode())){
