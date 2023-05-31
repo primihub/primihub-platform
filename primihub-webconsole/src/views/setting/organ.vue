@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <h2>机构管理</h2>
     <el-button type="primary" icon="el-icon-plus" @click="addOrgan">新增机构</el-button>
     <el-table
       v-loading="listLoading"

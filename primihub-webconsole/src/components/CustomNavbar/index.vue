@@ -1,35 +1,19 @@
 <template>
   <div class="navbar">
-    <div class="logo">
+    <div class="logo" @click="toPage('/')">
       <template v-if="loaded">
-        <img v-if="isShowLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
+        <img v-if="showLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
         <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
       </template>
-      <!-- <div class="secondary-title" @click="toPath">
-        {{ routePath ? '首页' : '分布式隐私计算服务网络' }}
-      </div> -->
     </div>
-    <div class="right-menu">
-      <el-link v-if="!isHideBigModel" slot="reference" type="primary" style="margin-right: 10px;" @click="toBigModelPage">PrimiHub隐私计算大模型</el-link>
-      <el-button v-if="!isHideAppMarket" type="primary" size="small" style="margin-right: 10px;" @click="toApplicationPage">应用市场</el-button>
-      <el-dropdown class="avatar-container" trigger="click">
-        <div class="avatar-wrapper">
-          <!-- <img :src="avatar+'?imageView2/1/w/80/h/80'" class="user-avatar"> -->
-          <img src="/images/avatar.png" class="user-avatar">
-          <div class="user-info">
-            <p>{{ userOrganName }}</p>
-            <p>{{ userName }}</p>
-          </div>
-          <i class="el-icon-arrow-down el-icon--right" />
+    <div class="right-menu avatar-container">
+      <div class="avatar-wrapper">
+        <img src="/images/avatar.png" class="user-avatar">
+        <div class="user-info">
+          <p>{{ userOrganName }}</p>
+          <p>{{ userName }}</p>
         </div>
-        <el-dropdown-menu slot="dropdown" class="user-dropdown">
-          <el-dropdown-item @click.native="showUpdatePwd">修改密码</el-dropdown-item>
-          <el-dropdown-item v-if="registerType === 4" divided @click.native="openAddPhoneDialog">{{ isBound ? '更换手机号': '添加手机号' }}</el-dropdown-item>
-          <el-dropdown-item divided @click.native="logout">
-            <span style="display:block;">退出登录</span>
-          </el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      </div>
     </div>
     <el-dialog
       class="dialog"
@@ -77,12 +61,11 @@ export default {
     ...mapState('settings', [
       'loaded',
       'logoUrl',
-      'isShowLogo',
+      'showLogo',
       'isHideFadeBack',
-      'isHideAppMarket',
-      'isHideBigModel',
       'logoTitle',
-      'showLogoTitle'
+      'showLogoTitle',
+      'settingChanged'
     ]),
     ...mapGetters([
       'sidebar',
@@ -92,14 +75,7 @@ export default {
       'userName',
       'userAccount',
       'registerType'
-    ]),
-    routePath() {
-      const path = this.$store.state.watchRouter.currentPath
-      if (path.search('/map/index') > -1) {
-        return true
-      }
-      return false
-    }
+    ])
   },
   watch: {
     organChange(newVal) {
@@ -111,6 +87,11 @@ export default {
       if (phonePattern.test(newVal)) {
         this.isBound = true
       }
+    },
+    async settingChanged(newVal) {
+      if (newVal) {
+        await this.getHomepage()
+      }
     }
   },
   created() {
@@ -120,15 +101,8 @@ export default {
     })
   },
   methods: {
-    toBigModelPage() {
-      this.$router.push({
-        path: '/bigModel'
-      })
-    },
-    toApplicationPage() {
-      this.$router.push({
-        path: '/applicationIndex'
-      })
+    toPage(path) {
+      this.$router.push(path)
     },
     openAddPhoneDialog() {
       this.phoneDialogVisible = true
@@ -160,14 +134,7 @@ export default {
       this.$router.push(`/login?redirect=${this.$route.fullPath}`)
     },
     ...mapActions('user', ['getInfo']),
-    ...mapActions('settings', ['getHomepage']),
-    toPath() {
-      if (this.routePath) {
-        this.$router.push('/project/list')
-      } else {
-        this.$router.push('/map/index')
-      }
-    }
+    ...mapActions('settings', ['getHomepage'])
   }
 }
 </script>
@@ -178,19 +145,28 @@ export default {
 }
 .navbar {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   height: 50px;
   overflow: hidden;
   background: #3e4555;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
   color: #838790;
   width: 100%;
+  .middle-container{
+    flex: 1;
+    color: #fff;
+    span{
+      margin: 0 10px;
+      display: inline-block;
+      cursor: pointer;
+    }
+  }
   .logo{
     padding: 5px 20px;
-    line-height: 36px;
     height: 100%;
-    flex: 1;
+    line-height: 36px;
+    cursor: pointer;
     h1.logo-title{
       color: #fff;
       font-size: 16px;
@@ -201,45 +177,10 @@ export default {
     img{
       max-height: 100%;
       vertical-align: middle;
-    }
-    .secondary-title{
-      display: inline-block;
-      color:#409EFF;
-      margin-left: 45px;
-      font-size:14px;
-      cursor: pointer;
-      user-select: none;
+      height: 100%;
     }
   }
-
-  .right-menu {
-    float: right;
-    height: 100%;
-    line-height: 50px;
-
-    &:focus {
-      outline: none;
-    }
-
-    .right-menu-item {
-      display: inline-block;
-      padding: 0 8px;
-      height: 100%;
-      font-size: 18px;
-      color: #5a5e66;
-      vertical-align: text-bottom;
-
-      &.hover-effect {
-        cursor: pointer;
-        transition: background .3s;
-
-        &:hover {
-          background: rgba(0, 0, 0, .025)
-        }
-      }
-    }
-
-    .avatar-container {
+  .avatar-container {
       margin-right: 30px;
       cursor: pointer;
 
@@ -271,6 +212,37 @@ export default {
           font-size: 12px;
         }
       }
+    }
+  .right-menu {
+    float: right;
+    height: 100%;
+    line-height: 50px;
+
+    &:focus {
+      outline: none;
+    }
+
+    .right-menu-item {
+      display: inline-block;
+      padding: 0 8px;
+      height: 100%;
+      font-size: 18px;
+      color: #5a5e66;
+      vertical-align: text-bottom;
+
+      &.hover-effect {
+        cursor: pointer;
+        transition: background .3s;
+
+        &:hover {
+          background: rgba(0, 0, 0, .025)
+        }
+      }
+    }
+
+    .feedback{
+      display: inline-block;
+      margin-right: 10px;
     }
   }
 }

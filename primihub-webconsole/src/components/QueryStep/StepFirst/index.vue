@@ -11,7 +11,14 @@
         </div>
         <div v-else class="dialog-con">
           <el-form-item label="选择查询资源" prop="resourceName">
-            <OrganCascader v-model="cascaderValue" placeholder="请选择" :show-all-levels="false" @change="handleOrganSelect" />
+            <el-select v-model="form.organId" style="width: 100%" placeholder="请选择" clearable @change="handleOrganChange" @clear="handleClear('organId')">
+              <el-option
+                v-for="item in organList"
+                :key="item.globalId"
+                :label="item.globalName"
+                :value="item.globalId"
+              />
+            </el-select>
           </el-form-item>
         </div>
         <el-form-item label="关键词" prop="pirParam">
@@ -32,8 +39,7 @@
         :show-delete-button="false"
         :center="false"
         :selected-data="selectResources"
-        :server-address="serverAddress"
-        :organ-id="organId"
+        :organ-id="form.organId"
         :visible="dialogVisible"
         @close="handleDialogCancel"
         @submit="handleDialogSubmit"
@@ -43,18 +49,17 @@
 </template>
 
 <script>
+import { getAvailableOrganList } from '@/api/center'
 import { pirSubmitTask } from '@/api/PIR'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceItemCreate from '@/components/ResourceItemCreate'
 import ProjectResourceDialog from '@/components/ProjectResourceDialog'
-import OrganCascader from '@/components/OrganCascader'
 
 export default {
   components: {
     ResourceItemSimple,
     ResourceItemCreate,
-    ProjectResourceDialog,
-    OrganCascader
+    ProjectResourceDialog
   },
   props: {
     hasPermission: {
@@ -64,8 +69,10 @@ export default {
   },
   data() {
     return {
+      organList: [],
       noData: false,
       form: {
+        organId: '',
         resourceName: '',
         pirParam: '',
         selectResources: []
@@ -82,7 +89,6 @@ export default {
       dialogVisible: false,
       listLoading: false,
       selectResources: [], // selected resource id list
-      serverAddress: '',
       organId: '',
       isReset: false,
       cascaderValue: [],
@@ -96,10 +102,26 @@ export default {
       return this.selectResources && this.selectResources.length > 0
     }
   },
+  async created() {
+    await this.getAvailableOrganList()
+  },
   destroyed() {
     clearInterval(this.timer)
   },
   methods: {
+    handleClear(name) {
+      this.form[name] = ''
+    },
+    async getAvailableOrganList() {
+      this.organLoading = true
+      const { result } = await getAvailableOrganList()
+      this.organList = result
+      this.organLoading = false
+    },
+    handleOrganChange(value) {
+      this.organName = this.organList.find(item => item.globalId === value)?.globalName
+      this.openDialog()
+    },
     next() {
       if (this.selectResources.length === 0) {
         this.$message({
@@ -118,9 +140,8 @@ export default {
             return
           }
           pirSubmitTask({
-            serverAddress: this.serverAddress,
             resourceId: this.selectResources[0].resourceId,
-            pirParam: this.form.pirParam
+            pirParam: this.form.pirParam.replace(/(\s|;)+$/g, '')
           }).then(res => {
             if (res.code === 0) {
               this.listLoading = false
@@ -151,13 +172,6 @@ export default {
     },
     openDialog(isAdd) {
       this.type = isAdd ? 'add' : ''
-      if (!this.serverAddress) {
-        this.$message({
-          message: '请先选择机构',
-          type: 'warning'
-        })
-        return
-      }
       this.dialogVisible = true
     },
     handleDialogCancel() {
@@ -165,8 +179,9 @@ export default {
       this.cascaderValue = this.type === 'add' ? this.cascaderValue : []
     },
     handleDialogSubmit(data) {
+      console.log(data)
       if (data.length > 0) {
-        this.selectResources = data.filter(item => item.organId === this.organId)
+        this.selectResources = data.filter(item => item.organId === this.form.organId)
         this.dialogVisible = false
       } else {
         this.$message({
@@ -179,12 +194,6 @@ export default {
       const index = this.selectResources.findIndex(item => item.resourceId === data.id)
       this.selectResources.splice(index, 1)
       this.cascaderValue = []
-    },
-    handleOrganSelect(data) {
-      this.serverAddress = data.serverAddress
-      this.organId = data.organId
-      this.cascaderValue = data.cascaderValue
-      this.openDialog(false)
     }
   }
 }
