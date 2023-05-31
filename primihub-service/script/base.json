@@ -518,48 +518,6 @@
                             ]
                         },
                         {
-                            "key": "4",
-                            "val": "MPC-LR",
-                            "param": [
-                                {
-                                    "is_show": 0,
-                                    "is_required": 0,
-                                    "type_code": "batchSize",
-                                    "type_name": "Params.BatchSize",
-                                    "input_type": "number",
-                                    "input_value": 128,
-                                    "input_values": [
-                                        {
-                                            "key": "min",
-                                            "val": 128
-                                        },
-                                        {
-                                            "key": "max",
-                                            "val": 1024
-                                        }
-                                    ]
-                                },
-                                {
-                                    "is_show": 0,
-                                    "is_required": 0,
-                                    "type_code": "numlters",
-                                    "type_name": "Params.Numlters",
-                                    "input_type": "number",
-                                    "input_value": "",
-                                    "input_values": [
-                                        {
-                                            "key": "min",
-                                            "val": 5
-                                        },
-                                        {
-                                            "key": "max",
-                                            "val": 5000
-                                        }
-                                    ]
-                                }
-                            ]
-                        },
-                        {
                             "key": "5",
                             "val": "纵向-LR",
                             "param": [
