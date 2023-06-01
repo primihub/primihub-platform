@@ -1,21 +1,15 @@
 package com.primihub.biz.service.data.component.impl;
 
-import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.convert.DataModelConvert;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
-import com.primihub.biz.entity.base.BaseResultEnum;
-import com.primihub.biz.entity.data.po.DataModel;
-import com.primihub.biz.entity.data.po.DataModelComponent;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
-import com.primihub.biz.entity.data.req.DataComponentRelationReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Map;
 
 @Service("startComponentTaskServiceImpl")
@@ -24,7 +18,7 @@ public class StartComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
 
     @Autowired
-    private BaseConfiguration baseConfiguration;
+    private ComponentsConfiguration componentsConfiguration;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -37,7 +31,7 @@ public class StartComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             dataTask.setTaskDesc(componentVals.get("taskDesc"));
         }
         taskReq.setDataTask(dataTask);
-        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
+        return componentTypeVerification(req,componentsConfiguration.getModelComponents(),taskReq);
     }
 
     @Override

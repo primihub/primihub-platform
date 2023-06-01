@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -37,17 +38,15 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
+    private ComponentsConfiguration componentsConfiguration;
+    @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
     private DataTaskMonitorService dataTaskMonitorService;
-//    @Autowired
-//    private DataResourceService dataResourceService;
-//    @Autowired
-//    private DataModelPrRepository dataModelPrRepository;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
-        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
+        return componentTypeVerification(req,componentsConfiguration.getModelComponents(),taskReq);
     }
 
     @Override

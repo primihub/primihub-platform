@@ -30,7 +30,6 @@ public class BaseConfiguration {
     private String uploadUrlDirPrefix;
     private String resultUrlDirPrefix;
     private String runModelFileUrlDirPrefix;
-    private List<ModelComponent> modelComponents;
     private String usefulToken;
     private String taskEmailSubject;
     // resource

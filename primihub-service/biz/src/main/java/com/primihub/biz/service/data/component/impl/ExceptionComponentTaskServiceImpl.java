@@ -1,10 +1,8 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
-import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -18,16 +16,13 @@ import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
@@ -38,9 +33,7 @@ import java.util.stream.Collectors;
 @Service("exceptionComponentTaskServiceImpl")
 public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
-    private BaseConfiguration baseConfiguration;
-    @Autowired
-    private FreeMarkerConfigurer freeMarkerConfigurer;
+    private ComponentsConfiguration componentsConfiguration;
     @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
@@ -52,7 +45,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
-        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
+        return componentTypeVerification(req,componentsConfiguration.getModelComponents(),taskReq);
     }
 
     @Override
@@ -105,7 +98,6 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());

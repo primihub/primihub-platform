@@ -5,6 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.PropertyNamingStrategy;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
@@ -52,9 +53,9 @@ public class DataModelService {
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
-    private DataProjectService dataProjectService;
-    @Autowired
     private BaseConfiguration baseConfiguration;
+    @Autowired
+    private ComponentsConfiguration componentsConfiguration;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
@@ -187,7 +188,7 @@ public class DataModelService {
     }
 
     public BaseResultEntity getModelComponent() {
-        List<ModelComponent> modelComponents  = baseConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow()==0).collect(Collectors.toList());
+        List<ModelComponent> modelComponents  = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow()==0).collect(Collectors.toList());
         return BaseResultEntity.success(modelComponents);
     }
 
@@ -381,7 +382,7 @@ public class DataModelService {
         if (modelComponentReq==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
         }
-        Set<String> mandatorySet = baseConfiguration.getModelComponents().stream()
+        Set<String> mandatorySet = componentsConfiguration.getModelComponents().stream()
                 .filter(modelComponent -> modelComponent.getIsMandatory() == 0)
                 .map(ModelComponent::getComponentCode)
                 .collect(Collectors.toSet());

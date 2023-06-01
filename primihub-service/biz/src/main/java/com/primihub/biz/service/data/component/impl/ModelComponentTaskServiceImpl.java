@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.constant.DataConstant;
-import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
@@ -31,7 +31,6 @@ import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private ComponentsConfiguration componentsConfiguration;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -63,7 +62,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
         log.info("------- 执行校验");
-        BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
+        BaseResultEntity baseResultEntity = componentTypeVerification(req, componentsConfiguration.getModelComponents(), taskReq);
         if (baseResultEntity.getCode()!=0) {
             return baseResultEntity;
         }
