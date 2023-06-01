@@ -184,7 +184,6 @@ export default {
         outputNoRepeat: 0, // 输出内容是否去重
         resultName: '',
         remarks: null,
-        serverAddress: '',
         psiTag: 0
       },
       ownResourceName: '',
@@ -280,7 +279,6 @@ export default {
   },
   methods: {
     async getAvailableOrganList() {
-      console.log('11222')
       this.loading = true
       const res = await getAvailableOrganList()
       if (res.code === 0) {
@@ -297,8 +295,7 @@ export default {
       const res = await getPsiResourceAllocationList({
         resourceName,
         organId,
-        pageSize: this.pageSize,
-        serverAddress: this.formData.serverAddress
+        pageSize: this.pageSize
       })
       if (res.code === 0) {
         return res.result.data
@@ -454,7 +451,6 @@ export default {
       this.otherOrganResourceField = []
       this.formData.otherResourceId = ''
       this.formData.otherKeyword = []
-      this.formData.serverAddress = data.serverAddress
       this.tableDataB = []
       this.tableDataB = await this.getPsiResourceAllocationList({
         organId: this.formData.otherOrganId

@@ -95,7 +95,6 @@ export default {
         createdResourceId: '',
         providerResourceId: ''
       },
-      serverAddress: '',
       participationIdentity: 1,
       selectedResource: [], // 选中
       rules: {
@@ -203,7 +202,6 @@ export default {
         this.projectId = data.projectId
         this.form.modelName = data.modelName
         this.modelId = data.modelId
-        this.serverAddress = data.serverAddress
       }
       this.dialogVisible = false
     },
@@ -232,7 +230,6 @@ export default {
       this.resourceList = []
       const res = await getResourceList({
         modelId: this.modelId,
-        serverAddress: this.serverAddress,
         organId: this.selectedOrganId,
         pageSize: this.paginationOptions.pageSize,
         pageNo: this.paginationOptions.pageNo })

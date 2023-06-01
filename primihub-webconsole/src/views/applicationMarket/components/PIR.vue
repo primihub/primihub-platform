@@ -135,25 +135,21 @@ export default {
     async setDefaultValue() {
       const data = {
         'node1': {
-          resourceId: '704a92e392fd-6eaa5520-16ce-49be-a80f-3ea948334c9d',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          resourceId: '704a92e392fd-6eaa5520-16ce-49be-a80f-3ea948334c9d'
         },
         'node2': {
-          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3'
         },
         'node3': {
-          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3'
         },
         'test1': {
-          resourceId: '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
-          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+          resourceId: '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591'
         }
       }
       if (this.origin !== 'other') {
+        console.log('this.origin', this.origin)
         this.resourceId = data[this.origin].resourceId
-        this.serverAddress = data[this.origin].serverAddress
         await this.getDataResource()
       } else {
         this.resource = [{
@@ -194,7 +190,6 @@ export default {
           }
           if (this.origin !== 'other') {
             pirSubmitTask({
-              serverAddress: this.serverAddress,
               resourceId: this.resource[0].resourceId,
               pirParam: this.form.pirParam
             }).then(res => {
@@ -227,8 +222,7 @@ export default {
     },
     async getDataResource() {
       const res = await getDataResource({
-        resourceId: this.resourceId,
-        serverAddress: this.serverAddress
+        resourceId: this.resourceId
       })
       if (res.code === 0) {
         this.resource = [res.result]

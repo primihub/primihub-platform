@@ -91,8 +91,7 @@ export default {
     },
     async getDataResource() {
       const res = await getDataResource({
-        resourceId: this.resourceId,
-        serverAddress: this.$route.query.serverAddress
+        resourceId: this.resourceId
       })
       if (res.code === 0) {
         this.result = res.result

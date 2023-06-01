@@ -119,7 +119,7 @@
       width="700px"
     >
       <div v-loading="loading" element-loading-text="查询中">
-        <PSI-task-detail :server-address="formData.serverAddress" :show-download="false" :data="taskData" />
+        <PSI-task-detail :show-download="false" :data="taskData" />
 
         <h3>运算结果</h3>
         <div v-if="taskState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
@@ -170,7 +170,6 @@ export default {
       taskTimer: null,
       taskData: {},
       dialogVisible: false,
-      cascaderValue: ['http://fusion.primihub.svc.cluster.local:8080/', '2cad8338-2e8c-4768-904d-2b598a7e3298'],
       options: [
         {
           value: 'http://fusion.primihub.svc.cluster.local:8080/',
@@ -217,7 +216,6 @@ export default {
         outputNoRepeat: 0, // 输出内容是否去重
         resultName: 'psi测试数据结果',
         remarks: null,
-        serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
         psiTag: 0
       },
       ownResourceName: 'psi测试数据',
@@ -294,8 +292,7 @@ export default {
           otherOrganName: 'Primihub02',
           otherResourceId: '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff',
           otherResourceName: '测试数据b',
-          otherKeyword: 'company',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          otherKeyword: 'company'
         },
         'node2': {
           ownOrganId: this.$store.getters.userOrganId,
@@ -307,8 +304,7 @@ export default {
           otherOrganName: '机构A',
           otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
           otherResourceName: '测试数据a',
-          otherKeyword: 'company',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          otherKeyword: 'company'
         },
         'node3': {
           ownOrganId: this.$store.getters.userOrganId,
@@ -320,8 +316,7 @@ export default {
           otherOrganName: '机构B',
           otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
           otherResourceName: '测试数据a',
-          otherKeyword: 'name',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          otherKeyword: 'name'
         },
         'other': {
           ownOrganName: '机构A',
@@ -333,8 +328,7 @@ export default {
           otherOrganName: '机构B',
           otherResourceId: '4b38606341d8-bb78987c-bf07-422d-93cf-057d7f69a51e',
           otherResourceName: '应用市场测试数据',
-          otherKeyword: '姓名',
-          serverAddress: 'http://fusion:8080/'
+          otherKeyword: '姓名'
         },
         'test1': {
           ownOrganId: this.$store.getters.userOrganId,
@@ -346,8 +340,7 @@ export default {
           otherOrganName: '机构B',
           otherResourceId: '2b598a7e3298-2749c900-52dd-428c-8f14-1a472e7fec00',
           otherResourceName: 'PSI-用户数据B',
-          otherKeyword: '姓名',
-          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+          otherKeyword: '姓名'
         }
       }
       this.init(data[this.origin])
@@ -356,7 +349,6 @@ export default {
       this.formData = Object.assign(this.formData, data)
       this.resultName = `${this.formData.ownResourceName}-${this.formData.otherResourceName}`
       this.formData.resultName = this.resultName
-      this.cascaderValue = [data.serverAddress, data.otherOrganId]
       this.formData.resultOrgan.push(this.formData.ownOrganId)
       if (this.origin !== 'other') {
         this.setResourceOptions(data)
@@ -374,14 +366,12 @@ export default {
     async setResourceOptions(data) {
       this.tableDataA = await this.getPsiResourceAllocationList({
         resourceName: data.ownResourceName,
-        organId: data.ownOrganId,
-        serverAddress: data.serverAddress
+        organId: data.ownOrganId
       })
 
       this.tableDataB = await this.getPsiResourceAllocationList({
         resourceName: data.resourceName,
-        organId: data.otherOrganId,
-        serverAddress: data.serverAddress
+        organId: data.otherOrganId
       })
     },
     openDialog() {
@@ -438,8 +428,7 @@ export default {
       const res = await getPsiResourceAllocationList({
         resourceName,
         organId,
-        pageSize: this.pageSize,
-        serverAddress: this.formData.serverAddress
+        pageSize: this.pageSize
       })
       if (res.code === 0) {
         return res.result.data
