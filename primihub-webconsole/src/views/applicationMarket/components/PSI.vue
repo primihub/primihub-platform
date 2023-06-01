@@ -202,6 +202,7 @@ export default {
         }
       ],
       formData: {
+        resultOrgan: [],
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
         ownResourceName: '',

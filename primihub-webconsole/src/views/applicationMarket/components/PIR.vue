@@ -63,7 +63,7 @@
             <el-input v-model="form.pirParam" placeholder="请输入关键词" maxlength="50" show-word-limit />
           </el-form-item>
           <el-form-item>
-            <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用;分隔。例: a;b;c</p>
+            <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用英文,分隔。例: a,b,c</p>
           </el-form-item>
           <el-form-item style="text-align: center">
             <el-button style="margin: 12px auto;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
@@ -172,8 +172,8 @@ export default {
     next() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1) {
-            this.$message.error('多条件查询请使用英文;分隔')
+          if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1 || this.form.pirParam.indexOf(';') !== -1) {
+            this.$message.error('多条件查询请使用英文,分隔')
             return
           }
           this.loading = true
