@@ -110,7 +110,7 @@
       </div>
     </div>
     <div class="button-wrapper">
-      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="openDialog">提交任务</el-button>
+      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
     </div>
     <el-dialog
       :visible.sync="dialogVisible"

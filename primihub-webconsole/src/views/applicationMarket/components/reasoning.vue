@@ -187,7 +187,6 @@ export default {
         if (code === 0) {
           this.reasoningId = result.id
           this.visible = true
-          this.getReasoning()
           this.active = 2
         }
       }
