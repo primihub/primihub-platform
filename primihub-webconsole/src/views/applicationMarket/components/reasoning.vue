@@ -44,6 +44,7 @@ import { mapActions, mapState } from 'vuex'
 import { saveReasoning } from '@/api/reasoning'
 import StatusIcon from '@/components/StatusIcon'
 import { parseTime } from '@/utils/index'
+import { getReasoning } from '@/api/reasoning'
 
 export default {
   name: 'ModelInferenceTask',
@@ -187,8 +188,21 @@ export default {
         if (code === 0) {
           this.reasoningId = result.id
           this.visible = true
+          this.getReasoning()
           this.active = 2
         }
+      }
+    },
+    async getReasoning() {
+      this.listLoading = true
+      const res = await getReasoning({ id: this.reasoningId })
+      if (res.code === 0) {
+        this.dataList = res.result
+        setTimeout(() => {
+          this.dataList.reasoningState = 1
+          this.dataList.releaseDate = parseTime(new Date().getTime())
+          this.listLoading = false
+        }, 1000)
       }
     },
     handleClose() {
