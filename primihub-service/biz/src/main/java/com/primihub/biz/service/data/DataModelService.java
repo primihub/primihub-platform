@@ -492,7 +492,7 @@ public class DataModelService {
 
 
     public BaseResultEntity syncModel(ShareModelVo vo) {
-        log.info(JSONObject.toJSONString(vo));
+//        log.info(JSONObject.toJSONString(vo));
         if (vo.getDataModel()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModel");
         }
