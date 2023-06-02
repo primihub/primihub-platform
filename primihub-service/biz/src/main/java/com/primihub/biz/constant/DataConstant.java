@@ -45,10 +45,6 @@ public class DataConstant {
     // ModelComponentService impl bean name suffix
     public final static String COMPONENT_BEAN_NAME_SUFFIX = "ComponentTaskServiceImpl";
 
-    // Port number Range
-    public final static Long[] GUEST_PORT_RANGE = new Long[]{20000L,30000L};
-    public final static Long[] HOST_PORT_RANGE = new Long[]{40000L,50000L};
-
     public final static String TASK_LOG_FILE_NAME = "taskLog.log";
 
 }

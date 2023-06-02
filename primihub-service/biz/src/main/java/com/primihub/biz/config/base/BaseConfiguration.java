@@ -32,14 +32,28 @@ public class BaseConfiguration {
     private String runModelFileUrlDirPrefix;
     private String usefulToken;
     private String taskEmailSubject;
-    // resource
+    /**
+     * resource
+     */
     private boolean displayDatabaseSourceType = false;
-    // auth
+    /**
+     * auth
+     */
     private Map<String, BaseAuthConfig> authConfigs;
-    // mail
+    /**
+     * mail
+     */
     private MailProperties mailProperties;
-    // Use in mail text content
+    /**
+     * Use in mail text content
+     */
     private String systemDomainName;
-    // loki
+    /**
+     * loki
+     */
     private LokiConfig lokiConfig;
+    /**
+     * Open the nacos template for debugging
+     */
+    private Boolean openDynamicTuning = false;
 }

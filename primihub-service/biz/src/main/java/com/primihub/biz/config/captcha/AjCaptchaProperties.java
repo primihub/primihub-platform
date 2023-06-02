@@ -30,7 +30,7 @@ public class AjCaptchaProperties {
     /**
      * 右下角水印文字(我的水印).
      */
-    private String waterMark = "我的水印";
+    private String waterMark = "Primihub";
 
     /**
      * 右下角水印字体(文泉驿正黑).

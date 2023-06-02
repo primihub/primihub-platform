@@ -25,13 +25,10 @@ import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.grpc.client.DataServiceGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
-import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.service.sys.SysUserService;
-import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
@@ -45,7 +42,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,8 +74,6 @@ public class DataResourceService {
     private DataSourceService dataSourceService;
     @Autowired
     private BaseConfiguration baseConfiguration;
-    @Autowired
-    private DataProjectRepository dataProjectRepository;
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
@@ -718,7 +716,6 @@ public class DataResourceService {
                 }
             }
             List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
-            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
             for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
                 String url = dataResource.getUrl();
                 if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
@@ -812,7 +809,6 @@ public class DataResourceService {
         }
         DataDerivationResourceVo dataDerivationResourceVo = dataDerivationResourceVos.get(0);
         DataDerivationResourceDataVo dataVo= DataResourceConvert.dataDerivationResourcePoConvertDataVo(dataDerivationResourceVo);
-        DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(dataVo.getProjectId(), null);
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataVo.getTaskId());
         if (modelTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);

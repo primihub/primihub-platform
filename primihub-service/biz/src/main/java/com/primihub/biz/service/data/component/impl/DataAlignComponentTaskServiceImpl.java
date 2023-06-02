@@ -100,13 +100,13 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         .setTaskInfo(taskBuild)
                         .putAllPartyDatasets(values)
                         .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
                         .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
                         .build();
+                log.info("grpc PushTaskRequest :\n{}", request.toString());
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode() == 2) {
@@ -261,13 +261,13 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", serverData.getResourceId()).build())
                     .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", clientData.getResourceId()).build())
                     .build();
-            log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()
                     .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
                     .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:"+reply);
             dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),clientEntity.getPsiPath());
