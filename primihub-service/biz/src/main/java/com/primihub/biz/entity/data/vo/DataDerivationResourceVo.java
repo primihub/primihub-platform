@@ -47,7 +47,7 @@ public class DataDerivationResourceVo {
     /**
      * 文件大小
      */
-    private Integer fileSize;
+    private Long fileSize;
     /**
      * 文件后缀
      */
@@ -55,7 +55,7 @@ public class DataDerivationResourceVo {
     /**
      * 文件行数
      */
-    private Integer fileRows;
+    private Long fileRows;
     /**
      * 文件列数
      */
