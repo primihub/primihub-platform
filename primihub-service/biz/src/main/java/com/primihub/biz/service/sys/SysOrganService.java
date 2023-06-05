@@ -207,13 +207,16 @@ public class SysOrganService {
         }
         map.put("applyId",sysOrgan.getApplyId());
         try {
-            log.info(JSONObject.toJSONString(map));
+//            log.info(JSONObject.toJSONString(map));
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
             if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
             }
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
+            if (organConfiguration.getSysLocalOrganId().equals(sysOrgan.getOrganId())){
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方不可以是本机构!!!");
+            }
             sysOrgan.setOrganName(resultMap.get("organName").toString());
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
 //            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
