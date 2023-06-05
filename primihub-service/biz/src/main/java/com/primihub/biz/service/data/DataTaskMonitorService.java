@@ -108,8 +108,9 @@ public class DataTaskMonitorService {
 
     public long getNumberOfSuccessfulTasks(String key){
         Long count = primaryStringRedisTemplate.opsForList().size(key);
-        if (count==null || count==0L)
+        if (count==null || count==0L){
             return 0L;
+        }
         List<String> range = primaryStringRedisTemplate.opsForList().range(key, 0L, count);
         Map<String, Long> statusMap = range.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
         if (statusMap.containsKey("SUCCESS")){
