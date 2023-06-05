@@ -214,6 +214,9 @@ public class SysOrganService {
             }
             Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
             sysOrgan.setOrganId(resultMap.get("organId").toString());
+            if (organConfiguration.getSysLocalOrganId().equals(sysOrgan.getOrganId())){
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方不可以是本机构!!!");
+            }
             sysOrgan.setOrganName(resultMap.get("organName").toString());
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
 //            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
