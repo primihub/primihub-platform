@@ -32,7 +32,7 @@ public class DataTaskMonitorService {
     @Autowired
     private WorkGrpcClient workGrpcClient;
 
-    private final static Long FILE_VERIFICATION_TIME = 10000L;
+    private final static Long FILE_VERIFICATION_TIME = 60000L;
 
     public void continuouslyObtainTaskStatus(DataTask dataTask,Common.TaskContext taskBuild,int num,String path){
         boolean isContinue = true;
@@ -63,7 +63,7 @@ public class DataTaskMonitorService {
                             log.info("num:{} - success:{}",num,success);
                             if (num <= success){
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                                //TODO 循环1分钟 因在k8s中文件同步存在一定的延迟性。物理机可以注释【一】打开【二】
+                                // TODO 循环1分钟 因在k8s中文件同步存在一定的延迟性。物理机可以注释【一】打开【二】
                                 // ------------一---------------------
                                 long start = System.currentTimeMillis();
                                 while (true){
