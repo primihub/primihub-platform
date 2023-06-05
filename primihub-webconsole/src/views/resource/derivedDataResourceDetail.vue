@@ -129,10 +129,7 @@ export default {
     toResourceDetailPage(id) {
       this.$router.push({
         name: 'UnionResourceDetail',
-        params: { id },
-        query: {
-          serverAddress: this.resource.serverAddress
-        }
+        params: { id }
       })
     },
     async download() {

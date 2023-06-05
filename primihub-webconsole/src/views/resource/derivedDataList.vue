@@ -58,7 +58,6 @@ export default {
     return {
       loading: false,
       tags: [],
-      serverAddressList: [],
       query: {
         resourceId: '',
         resourceName: '',
@@ -77,7 +76,6 @@ export default {
       resourceName: '',
       resourceSortType: 0,
       resourceAuthType: 0,
-      serverAddress: null,
       groupId: 0,
       organId: 0,
       resourceSourceList: [{
