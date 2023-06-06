@@ -120,5 +120,7 @@ public class DataDerivationResourceVo {
         return fileHandleField;
     }
 
+    private List<DataFileFieldVo> fileFields;
+
     private Long projectId;
 }

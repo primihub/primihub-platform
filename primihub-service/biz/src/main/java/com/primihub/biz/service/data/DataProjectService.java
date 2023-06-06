@@ -589,6 +589,8 @@ public class DataProjectService {
         req1.setServerAddress(req.getServerAddress());
         req1.setResourceName(req.getResourceName());
         req1.setOrganId(req.getOrganId());
+        req1.setPageSize(req.getPageSize());
+        req1.setPageNo(req.getPageNo());
         return otherBusinessesService.getResourceList(req1);
 //        }
     }
@@ -602,6 +604,7 @@ public class DataProjectService {
         req.setProjectId(projectId);
         req.setPageSize(1000);
         List<DataDerivationResourceVo> dataDerivationResourceVos = dataResourceRepository.queryDerivationResourceList(req);
+
         Set<Long> userIds = dataDerivationResourceVos.stream().map(DataDerivationResourceVo::getUserId).collect(Collectors.toSet());
         Map<Long, SysUser> sysUserMap = sysUserService.getSysUserMap(userIds);
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
@@ -610,6 +613,8 @@ public class DataProjectService {
             dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
             dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
             dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
+            dataDerivationResourceVo.setFileFields(dataResourceRepository.queryDataFileFieldByFileId(dataDerivationResourceVo.getId()).stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
+
         }
         return BaseResultEntity.success(dataDerivationResourceVos);
     }
