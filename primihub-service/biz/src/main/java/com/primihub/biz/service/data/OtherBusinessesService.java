@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -167,7 +168,7 @@ public class OtherBusinessesService {
                 gatewayAddressAndApi = gatewayAddressAndApi+"?ignore=ignore";
                 data = vo;
             }else {
-                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
+                data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo, SerializerFeature.WriteMapNullValue), publicKey);
             }
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
