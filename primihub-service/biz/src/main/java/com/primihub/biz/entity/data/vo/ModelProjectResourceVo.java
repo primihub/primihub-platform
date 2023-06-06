@@ -46,6 +46,8 @@ public class ModelProjectResourceVo {
 
     private List<String> fileHandleField;
 
+    private List<DataFileFieldVo> resourceField;
+
     private String calculationField;
 
     private Integer derivation = 0;
