@@ -10,6 +10,37 @@ import java.util.zip.ZipOutputStream;
 
 @Slf4j
 public class ZipUtils {
+
+    public static void pathFileTOZipRegularFile(String path, String zipPath, Set<String> appointFileNames) {
+        File sourceFile = new File(path);
+        File targetZipFile = new File(zipPath);
+        if (!targetZipFile.getParentFile().exists()) {
+            targetZipFile.getParentFile().mkdir();
+        }
+        try {
+            FileOutputStream outputStream = new FileOutputStream(targetZipFile);
+            ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream);
+            if (sourceFile.isDirectory()) {
+                File[] files = sourceFile.listFiles();
+                boolean isExclude = appointFileNames!=null;
+                if (files.length != 0) {
+                    for (File file : files) {
+                        if (isExclude&&!appointFileNames.contains(file.getName())) {
+                            continue;
+                        }
+                        executeToZip(zipOutputStream, file);
+                    }
+                }
+            } else {
+                executeToZip(zipOutputStream, sourceFile);
+            }
+            zipOutputStream.close();
+            outputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * 压缩文件到指定路径---单个文件、多个文件适用
      *
