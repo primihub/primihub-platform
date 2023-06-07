@@ -65,20 +65,20 @@ public class DataTaskMonitorService {
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                 // TODO 循环1分钟 因在k8s中文件同步存在一定的延迟性。物理机可以注释【一】打开【二】
                                 // ------------一---------------------
-                                long start = System.currentTimeMillis();
-                                while (true){
                                     if (StringUtils.isNotBlank(path)){
-                                        if (FileUtil.isFileExists(path)){
-                                            log.info("{} - 存在了-退出",path);
-                                            break;
+                                        long start = System.currentTimeMillis();
+                                        while (true){
+                                            if (FileUtil.isFileExists(path)){
+                                                log.info("{} - 存在了-退出",path);
+                                                break;
+                                            }
+                                            if ((System.currentTimeMillis() - start)>FILE_VERIFICATION_TIME){
+                                                log.info("path:{} 不存在",path);
+                                                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                                                dataTask.setTaskErrorMsg("运行失败:无文件信息");
+                                                break;
+                                            }
                                         }
-                                    }
-                                    if ((System.currentTimeMillis() - start)>FILE_VERIFICATION_TIME){
-                                        log.info("path:{} 不存在",path);
-                                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                                        dataTask.setTaskErrorMsg("运行失败:无文件信息");
-                                        break;
-                                    }
                                 }
                                 // ------------二---------------------
 //                                if (StringUtils.isNotBlank(path)){

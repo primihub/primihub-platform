@@ -169,19 +169,11 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             Common.ParamValue batchSizeParamValue = Common.ParamValue.newBuilder().setValueInt32(batchSize).build();
             Common.ParamValue numItersParamValue = Common.ParamValue.newBuilder().setValueInt32(numlters).build();
-            Common.ParamValue predictFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getPredictFileName().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue indicatorFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getIndicatorFileName().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
+            Common.ParamValue modelNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(outputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("predictFileName", predictFileNameParamValue)
-                    .putParamMap("indicatorFileName", indicatorFileNameParamValue)
-                    .putParamMap("hostLookupTable", hostLookupTableParamValue)
-                    .putParamMap("guestLookupTable", guestLookupTableParamValue)
-                    .putParamMap("modelFileName", modelFileNameParamValue)
                     .putParamMap("BatchSize", batchSizeParamValue)
                     .putParamMap("NumIters", numItersParamValue)
+                    .putParamMap("modelName", modelNameeParamValue)
                     .build();
             Map<String, Common.Dataset> values = new HashMap<>();
             for (int i = 0; i < resourceIds.size(); i++) {
