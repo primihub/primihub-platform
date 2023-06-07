@@ -243,6 +243,7 @@ public class DataModelService {
             saveOrGetModelComponentCache(true, userId,params.getProjectId(), params, dataModel);
         } catch (Exception e) {
             log.info(e.getMessage());
+            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
         }
         Map<String,Object> resultMap = new HashMap<>();
