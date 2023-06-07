@@ -110,6 +110,7 @@ public class DataModelConvert {
         String resourceColumnNameList = resourceMap==null?null: ObjectUtils.isEmpty(resourceMap.get("resourceColumnNameList"))?null:resourceMap.get("resourceColumnNameList").toString();
         if (StringUtils.isNotBlank(resourceColumnNameList)){
             modelProjectResourceVo.setFileHandleField(Arrays.asList(resourceColumnNameList.split(",")));
+            modelProjectResourceVo.setResourceField((List<DataFileFieldVo>)resourceMap.get("fieldList"));
         }
         return modelProjectResourceVo;
     }

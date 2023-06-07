@@ -547,6 +547,7 @@ public class DataProjectService {
             dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
             dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
             dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
+            dataDerivationResourceVo.setFileFields(dataResourceRepository.queryDataFileFieldByFileId(dataDerivationResourceVo.getId()).stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
         }
         return BaseResultEntity.success(dataDerivationResourceVos);
     }

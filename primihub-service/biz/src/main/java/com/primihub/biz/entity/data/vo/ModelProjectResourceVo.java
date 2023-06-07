@@ -43,7 +43,7 @@ public class ModelProjectResourceVo {
      * 机构项目中参与身份 1发起者 2协作者
      */
     private Integer participationIdentity;
-
+    private List<DataFileFieldVo> resourceField;
     private List<String> fileHandleField;
 
     private String calculationField;
