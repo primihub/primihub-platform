@@ -176,7 +176,7 @@ public class OtherBusinessesService {
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);
             log.info(gatewayAddressAndApi);
             BaseResultEntity baseResultEntity = restTemplate.postForObject(gatewayAddressAndApi, request, BaseResultEntity.class);
-            log.info("baseResultEntity {}",JSONObject.toJSONString(baseResultEntity));
+            log.info("url:【{}】 - baseResultEntity {}",gatewayAddressAndApi,JSONObject.toJSONString(baseResultEntity));
             return baseResultEntity;
         }catch (Exception e){
             log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
