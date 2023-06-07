@@ -236,7 +236,7 @@ public class DataModelService {
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
 //                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
-                dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
+//                dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
                 dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null));
             }
             dataModel.setProjectId(params.getProjectId());
