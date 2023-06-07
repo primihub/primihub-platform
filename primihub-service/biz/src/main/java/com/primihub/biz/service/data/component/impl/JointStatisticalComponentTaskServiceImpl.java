@@ -84,9 +84,13 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
                     Iterator<Map.Entry<String, GrpcComponentDto>> iterator = jointStatisticalMap.entrySet().iterator();
+                    Map<String, Common.Dataset> values = new HashMap<>();
+                    int ci = 0;
                     while (iterator.hasNext()){
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         next.getValue().setJointStatisticalType(MAP_TYPE.get(jsonObject.getString("type")));
+                        values.put("PARTY"+ci,Common.Dataset.newBuilder().putData("Data_File",next.getKey()).build());
+                        ci++;
                     }
                     Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
                     Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))).build();
@@ -94,10 +98,6 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                             .putParamMap("ColumnInfo", columnInfoParamValue)
                             .putParamMap("TaskDetail", taskDetailParamValue)
                             .build();
-                    Map<String, Common.Dataset> values = new HashMap<>();
-                    for (String id : jointStatisticalMap.keySet()) {
-                        values.put("PARTY"+i,Common.Dataset.newBuilder().putData("Data_File",id).build());
-                    }
                     Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(String.valueOf(taskReq.getJob())).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                     Common.Task task = Common.Task.newBuilder()
                             .setType(Common.TaskType.ACTOR_TASK)
