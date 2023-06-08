@@ -285,9 +285,6 @@ export default {
         name: 'UnionResourceDetail',
         params: {
           id: row.resourceId
-        },
-        query: {
-          serverAddress: row.serverAddress
         }
       })
     },

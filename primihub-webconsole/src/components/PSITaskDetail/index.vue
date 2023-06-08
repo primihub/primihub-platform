@@ -105,10 +105,6 @@ export default {
       default() {
         return {}
       }
-    },
-    serverAddress: {
-      type: String,
-      default: 'http://fusion.primihub.svc.cluster.local:8080/'
     }
   },
   data() {
@@ -125,10 +121,7 @@ export default {
     toUnionResourceDetailPage(id) {
       this.$router.push({
         name: 'UnionResourceDetail',
-        params: { id },
-        query: {
-          serverAddress: this.serverAddress
-        }
+        params: { id }
       })
     },
     async downloadPsiTask() {

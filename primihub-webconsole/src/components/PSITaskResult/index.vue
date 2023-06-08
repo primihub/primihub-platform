@@ -50,7 +50,7 @@
       top="5vh"
       width="750px"
     >
-      <PSI-task-detail :server-address="taskData.serverAddress" :data="taskData" @change="handleEditChange" />
+      <PSI-task-detail :data="taskData" @change="handleEditChange" />
     </el-dialog>
   </div>
 </template>

@@ -70,7 +70,7 @@ const actions = {
      *  host = 'node1' or 'node2' or 'node3' or 'test1'
      **/
     const host = window.location.host
-    const origin = host.indexOf('.com') !== -1 ? host : 'other'
+    const origin = host.indexOf('.com') !== -1 ? host.split('.')[0] : 'other'
     console.log('origin', origin)
     commit('SET_ORIGIN', origin)
   }
