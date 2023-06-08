@@ -3,7 +3,7 @@ FROM ibmjava:8-jre
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt update \
-  && apt -y install tzdata telnet \
+  && apt -y install tzdata \
   && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 ADD fusion-api/target/*-SNAPSHOT.jar /applications/fusion.jar
