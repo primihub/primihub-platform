@@ -264,7 +264,7 @@ export default {
         this.task = task
         this.project = project
         this.model = model
-        this.modelId = model.modelId ? model.modelId : this.$route.query.modelId
+        this.modelId = model.modelId ? Number(model.modelId) : Number(this.$route.query.modelId)
         this.anotherQuotas = anotherQuotas
         this.modelQuotas = modelQuotas
         this.modelResources = modelResources.sort(function(a, b) { return a.participationIdentity - b.participationIdentity })
@@ -285,9 +285,6 @@ export default {
         name: 'UnionResourceDetail',
         params: {
           id: row.resourceId
-        },
-        query: {
-          serverAddress: row.serverAddress
         }
       })
     },

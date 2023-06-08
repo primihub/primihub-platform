@@ -21,7 +21,7 @@
           <div class="item-row">
             <div class="item">
               <el-form-item label="资源表" prop="ownResourceId">
-                <ResourceSelect disabled :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" />
+                <ResourceSelect disabled :value="formData.ownResourceName" no-data-text="暂无数据" :options="tableDataA" role="own" />
               </el-form-item>
               <el-form-item label="关联键" prop="ownKeyword">
                 <el-select v-model="formData.ownKeyword" v-loading="selectLoading" disabled no-data-text="暂无数据" />
@@ -33,7 +33,7 @@
             </div>
             <div class="item">
               <el-form-item label="资源表" prop="otherResourceId">
-                <ResourceSelect disabled :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" />
+                <ResourceSelect disabled :value="formData.otherResourceName" :options="tableDataB" role="other" no-data-text="暂无数据" />
               </el-form-item>
               <el-form-item label="关联键" prop="otherKeyword">
                 <el-select v-model="formData.otherKeyword" disabled no-data-text="暂无数据" placeholder="请选择" />
@@ -110,7 +110,7 @@
       </div>
     </div>
     <div class="button-wrapper">
-      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="openDialog">提交任务</el-button>
+      <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
     </div>
     <el-dialog
       :visible.sync="dialogVisible"
@@ -119,7 +119,7 @@
       width="700px"
     >
       <div v-loading="loading" element-loading-text="查询中">
-        <PSI-task-detail :server-address="formData.serverAddress" :show-download="false" :data="taskData" />
+        <PSI-task-detail :show-download="false" :data="taskData" />
 
         <h3>运算结果</h3>
         <div v-if="taskState === 1" style="background-color: #fafafa;padding: 10px 20px 10px 20px;">
@@ -170,7 +170,6 @@ export default {
       taskTimer: null,
       taskData: {},
       dialogVisible: false,
-      cascaderValue: ['http://fusion.primihub.svc.cluster.local:8080/', '2cad8338-2e8c-4768-904d-2b598a7e3298'],
       options: [
         {
           value: 'http://fusion.primihub.svc.cluster.local:8080/',
@@ -202,6 +201,7 @@ export default {
         }
       ],
       formData: {
+        resultOrgan: [],
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
         ownResourceName: '',
@@ -216,7 +216,6 @@ export default {
         outputNoRepeat: 0, // 输出内容是否去重
         resultName: 'psi测试数据结果',
         remarks: null,
-        serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
         psiTag: 0
       },
       ownResourceName: 'psi测试数据',
@@ -286,67 +285,62 @@ export default {
         'node1': {
           ownOrganId: this.$store.getters.userOrganId,
           ownOrganName: this.$store.getters.userOrganName,
-          ownResourceId: '7',
-          ownResourceName: '测试数据a',
-          ownKeyword: 'company',
+          ownResourceId: '141',
+          ownResourceName: 'PIR-PSI测试数据',
+          ownKeyword: '姓名',
           otherOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
-          otherOrganName: 'Primihub02',
-          otherResourceId: '704a92e392fd-b19fc295-843e-4d68-9225-a12a1522bdff',
-          otherResourceName: '测试数据b',
-          otherKeyword: 'company',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          otherOrganName: '机构B',
+          otherResourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e',
+          otherResourceName: 'PIR-PSI测试数据',
+          otherKeyword: '姓名'
         },
         'node2': {
           ownOrganId: this.$store.getters.userOrganId,
           ownOrganName: this.$store.getters.userOrganName,
-          ownResourceId: '11',
-          ownResourceName: '测试数据b',
-          ownKeyword: 'company',
+          ownResourceId: '132',
+          ownResourceName: 'PIR-PSI测试数据',
+          ownKeyword: '姓名',
           otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
           otherOrganName: '机构A',
-          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
-          otherResourceName: '测试数据a',
-          otherKeyword: 'company',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          otherResourceId: 'ea5fd5f5f9f0-96594465-4bff-4763-b3d4-226922c9a59a',
+          otherResourceName: 'PIR-PSI测试数据',
+          otherKeyword: '姓名'
         },
         'node3': {
           ownOrganId: this.$store.getters.userOrganId,
           ownOrganName: this.$store.getters.userOrganName,
-          ownResourceId: '11',
-          ownResourceName: '数据源',
-          ownKeyword: 'name',
+          ownResourceId: '35',
+          ownResourceName: 'PIR-PSI测试数据',
+          ownKeyword: '姓名',
           otherOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
           otherOrganName: '机构B',
-          otherResourceId: 'ea5fd5f5f9f0-916dd504-5e13-42e5-966d-dae83ab09c69',
-          otherResourceName: '测试数据a',
-          otherKeyword: 'name',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          otherResourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e',
+          otherResourceName: 'PIR-PSI测试数据',
+          otherKeyword: '姓名'
         },
         'other': {
-          ownOrganName: '机构A',
-          ownOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
-          ownResourceId: '67',
-          ownResourceName: '应用市场测试数据',
+          ownOrganId: this.$store.getters.userOrganId,
+          ownOrganName: this.$store.getters.userOrganName,
+          ownResourceId: '141',
+          ownResourceName: 'PIR-PSI测试数据',
           ownKeyword: '姓名',
-          otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
+          otherOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
           otherOrganName: '机构B',
-          otherResourceId: '4b38606341d8-bb78987c-bf07-422d-93cf-057d7f69a51e',
-          otherResourceName: '应用市场测试数据',
-          otherKeyword: '姓名',
-          serverAddress: 'http://fusion:8080/'
+          otherResourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e',
+          otherResourceName: 'PIR-PSI测试数据',
+          otherKeyword: '姓名'
         },
         'test1': {
           ownOrganId: this.$store.getters.userOrganId,
           ownOrganName: this.$store.getters.userOrganName,
-          ownResourceId: '1219',
-          ownResourceName: 'PSI-用户数据B',
+          ownResourceId: '527',
+          ownResourceName: 'PIR-PSI测试数据',
           ownKeyword: '姓名',
           otherOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
           otherOrganName: '机构B',
-          otherResourceId: '2b598a7e3298-2749c900-52dd-428c-8f14-1a472e7fec00',
-          otherResourceName: 'PSI-用户数据B',
-          otherKeyword: '姓名',
-          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+          otherResourceId: '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a',
+          otherResourceName: 'PIR-PSI测试数据',
+          otherKeyword: '姓名'
         }
       }
       this.init(data[this.origin])
@@ -355,7 +349,6 @@ export default {
       this.formData = Object.assign(this.formData, data)
       this.resultName = `${this.formData.ownResourceName}-${this.formData.otherResourceName}`
       this.formData.resultName = this.resultName
-      this.cascaderValue = [data.serverAddress, data.otherOrganId]
       this.formData.resultOrgan.push(this.formData.ownOrganId)
       if (this.origin !== 'other') {
         this.setResourceOptions(data)
@@ -373,14 +366,12 @@ export default {
     async setResourceOptions(data) {
       this.tableDataA = await this.getPsiResourceAllocationList({
         resourceName: data.ownResourceName,
-        organId: data.ownOrganId,
-        serverAddress: data.serverAddress
+        organId: data.ownOrganId
       })
 
       this.tableDataB = await this.getPsiResourceAllocationList({
         resourceName: data.resourceName,
-        organId: data.otherOrganId,
-        serverAddress: data.serverAddress
+        organId: data.otherOrganId
       })
     },
     openDialog() {
@@ -437,8 +428,7 @@ export default {
       const res = await getPsiResourceAllocationList({
         resourceName,
         organId,
-        pageSize: this.pageSize,
-        serverAddress: this.formData.serverAddress
+        pageSize: this.pageSize
       })
       if (res.code === 0) {
         return res.result.data

@@ -52,10 +52,6 @@ const mutations = {
   SET_FOOTER_TEXT: (state, text) => {
     state.footerText = text
   },
-  SET_TITLE: (state, title) => {
-    state.title = title
-    changePageTitle(title)
-  },
   SET_LOGO_URL: (state, logoUrl) => {
     logoUrl = formatImgUrl(logoUrl)
     state.logoUrl = logoUrl
@@ -129,11 +125,6 @@ const actions = {
 function changePageFavicon(favicon) {
   const link = document.querySelector("link[rel*='icon']")
   link.href = favicon === '' ? 'data:;' : favicon
-}
-
-function changePageTitle(title) {
-  const subTitle = document.title.split('-')[0]
-  document.title = `${subTitle} - ${title}`
 }
 
 export default {

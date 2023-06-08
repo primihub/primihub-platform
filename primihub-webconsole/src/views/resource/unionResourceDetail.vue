@@ -38,8 +38,7 @@ export default {
       authType: '私有',
       originName: '',
       originList: [],
-      resourceId: this.$route.params.id,
-      serverAddress: this.$route.query.serverAddress || ''
+      resourceId: this.$route.params.id
     }
   },
   async created() {
@@ -48,8 +47,7 @@ export default {
   methods: {
     async getDataResource() {
       const res = await getDataResource({
-        resourceId: this.resourceId,
-        serverAddress: this.serverAddress
+        resourceId: this.resourceId
       })
       if (res.code === 0) {
         this.resource = res.result
