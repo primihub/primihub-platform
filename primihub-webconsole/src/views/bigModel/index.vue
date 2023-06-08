@@ -1,7 +1,7 @@
 <template>
   <div class="iframe">
     <navbar />
-    <iframe id="iframeContain" src="https://chat.primihub.com/" frameborder="0" />
+    <iframe id="iframeContain" src="http://chat.primihub.com/" frameborder="0" />
     <fade-back />
   </div>
 </template>

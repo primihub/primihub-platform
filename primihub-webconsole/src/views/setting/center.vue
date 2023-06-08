@@ -154,6 +154,7 @@ export default {
         organName: '',
         gatewayAddress: ''
       },
+      serverAddress: '',
       partnersForm: {
         organId: '',
         organName: '',
