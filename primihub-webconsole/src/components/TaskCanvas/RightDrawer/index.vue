@@ -75,6 +75,7 @@
                     :key="v.key"
                     :label="v.val"
                     :value="v.key"
+                    :disabled="v.disabled"
                   />
                 </el-select>
               </el-col>
@@ -526,6 +527,10 @@ export default {
       })
 
       this.featureItems = featureItemsValue
+      this.processingType.map((item) => {
+        const current = this.featureItems.find(feature => feature.type === item.key)
+        item.disabled = !!current
+      })
       this.setFeaturesValue()
     },
     // 添加填充策略
@@ -541,6 +546,10 @@ export default {
       this.featureItems.push({
         features: this.defaultExceptionFeatures,
         type: ''
+      })
+      this.processingType.map((item) => {
+        const current = this.featureItems.find(feature => feature.type === item.key)
+        item.disabled = !!current
       })
       this.handleChange('exception')
     },
@@ -598,6 +607,8 @@ export default {
           })
           return
         }
+        console.log('23e44', this.selectedProviderOrgans)
+        console.log('openProviderOrganDialog  222', this.providerOrganIds)
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
@@ -663,7 +674,6 @@ export default {
       if (this.graphData.cells.find(item => item.componentCode === MPC_STATISTICS)) {
         this.getFeaturesItem()
       }
-
       this.providerOrganDialogVisible = false
       this.$emit('change', this.nodeData)
     },
@@ -1000,7 +1010,7 @@ p {
   font-size: 12px;
 }
 .tags{
-  margin: 5px 2px;
+  margin: 5px 8px;
 }
 .exception-type{
   margin-left: 10px;

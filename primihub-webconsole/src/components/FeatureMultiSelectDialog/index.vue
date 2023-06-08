@@ -7,7 +7,7 @@
   >
     <el-tabs v-model="activeName">
       <el-tab-pane v-for="(item,index) in selectedData" :key="index" :label="item.organName" :name="item.organId">
-        <checkbox :organ-id="item.organId" :options="item.calculationField" :checked="item.checked" @change="handleChange" />
+        <checkbox :select-data="selectedFeatures" :organ-id="item.organId" :options="filterData(item.resourceField)" :checked="item.checked" @change="handleChange" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -20,6 +20,7 @@
 
 <script>
 import checkbox from '@/components/BaseCheckbox'
+import { String, Boolean } from '@/const/filedType'
 
 export default {
   name: 'FeatureMultiSelectDialog',
@@ -30,12 +31,16 @@ export default {
     data: {
       type: Array,
       default: () => []
+    },
+    selectedFeatures: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
     return {
       activeName: '',
-      selectedData: {}
+      selectedData: []
     }
   },
   created() {
@@ -43,16 +48,68 @@ export default {
     this.activeName = this.selectedData && this.selectedData[0].organId
   },
   methods: {
+    filterData(data) {
+      return data.map(item => item.fieldName)
+    },
     handleClose() {
       this.$emit('close')
     },
     handleDialogSubmit() {
+      const hasNoCheck = this.selectedData.find(item => item.checked.length === 0)
+      if (hasNoCheck) {
+        this.$message.error('联合统计多方特征需保持一致，请核验')
+        return
+      }
+      for (let i = 0; i < this.selectedData[0].checked.length; i++) {
+        const fieldType = this.selectedData[0].resourceField.find(resource => resource.fieldName === this.selectedData[0].checked[i])?.fieldType
+        if (fieldType === String || fieldType === Boolean) {
+          this.$message({
+            message: '联合统计特征类型需为Integer、Double或Long类型，请核验',
+            type: 'error',
+            duration: 5000
+          })
+          return
+        }
+      }
+      // same features
+      const features = []
+      this.selectedData.forEach(item => {
+        const posIndex = features.findIndex(v => v.organId === item.organId)
+        if (item.checked.length > 0) {
+          if (posIndex === -1) {
+            features.push(item.checked)
+          } else {
+            features[posIndex].checked = item.checked
+          }
+        }
+      })
+      for (let i = 0; i < features.length; i++) {
+        const difference = this.compareFeature(features[i], features[i + 1])
+        if (difference) {
+          this.$message.error('联合统计多方特征需保持一致,请核验')
+          return
+        }
+      }
       this.$emit('submit', this.selectedData)
     },
     handleChange(data) {
       const { organId, checked } = data
       const posIndex = this.selectedData.findIndex(item => item.organId === organId)
       this.selectedData[posIndex].checked = checked
+    },
+    compareFeature(arr, arr2) {
+      if (!arr2) return
+      if (arr.length !== arr2.length) {
+        return true
+      } else {
+        for (let i = 0; i < arr.length; i++) {
+          if (!arr2.find(item => item === arr[i])) {
+            return true
+          } else {
+            return false
+          }
+        }
+      }
     }
   }
 }
