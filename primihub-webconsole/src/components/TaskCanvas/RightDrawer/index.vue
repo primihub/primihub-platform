@@ -442,6 +442,11 @@ export default {
       })
 
       this.featureItems = featureItemsValue
+      // set policy Type status
+      this.processingType.map((item) => {
+        const current = this.featureItems.find(feature => feature.type === item.key)
+        item.disabled = !!current
+      })
       this.setFeaturesValue()
     },
     // 添加填充策略
