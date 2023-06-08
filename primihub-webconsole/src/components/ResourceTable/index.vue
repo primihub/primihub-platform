@@ -124,11 +124,6 @@ export default {
     creator: {
       type: Boolean,
       default: false
-    },
-    serverAddress: {
-      type: String,
-      default: '',
-      require: true
     }
   },
   data() {
@@ -198,10 +193,7 @@ export default {
     toResourceDetailPage(id) {
       this.$router.push({
         name: 'UnionResourceDetail',
-        params: { id },
-        query: {
-          serverAddress: this.serverAddress
-        }
+        params: { id }
       })
     },
     checkSelectable(row) {

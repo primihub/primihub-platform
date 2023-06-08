@@ -63,7 +63,7 @@
             <el-input v-model="form.pirParam" placeholder="请输入关键词" maxlength="50" show-word-limit />
           </el-form-item>
           <el-form-item>
-            <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用;分隔。例: a;b;c</p>
+            <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用英文,分隔。例: a,b,c</p>
           </el-form-item>
           <el-form-item style="text-align: center">
             <el-button style="margin: 12px auto;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
@@ -135,29 +135,25 @@ export default {
     async setDefaultValue() {
       const data = {
         'node1': {
-          resourceId: '704a92e392fd-6eaa5520-16ce-49be-a80f-3ea948334c9d',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          resourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e'
         },
         'node2': {
-          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          resourceId: '794e41ba0e63-fcec3208-cd95-4660-a651-0e2387cdb035'
         },
         'node3': {
-          resourceId: 'ea5fd5f5f9f0-7dc7bdfd-0cbc-41dc-b8ec-f8a20867dfc3',
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/'
+          resourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e'
         },
         'test1': {
-          resourceId: '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
-          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/'
+          resourceId: '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a'
         }
       }
       if (this.origin !== 'other') {
+        console.log('this.origin', this.origin)
         this.resourceId = data[this.origin].resourceId
-        this.serverAddress = data[this.origin].serverAddress
         await this.getDataResource()
       } else {
         this.resource = [{
-          'resourceId': '2b598a7e3298-8f54f7b7-a121-4ac5-bc6a-dd6b18ba1591',
+          'resourceId': '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a',
           'resourceName': 'pir测试数据',
           'resourceDesc': '测试数据',
           'resourceRowsCount': 30,
@@ -172,8 +168,8 @@ export default {
     next() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1) {
-            this.$message.error('多条件查询请使用英文;分隔')
+          if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1 || this.form.pirParam.indexOf(';') !== -1) {
+            this.$message.error('多条件查询请使用英文,分隔')
             return
           }
           this.loading = true
@@ -194,7 +190,6 @@ export default {
           }
           if (this.origin !== 'other') {
             pirSubmitTask({
-              serverAddress: this.serverAddress,
               resourceId: this.resource[0].resourceId,
               pirParam: this.form.pirParam
             }).then(res => {
@@ -227,8 +222,7 @@ export default {
     },
     async getDataResource() {
       const res = await getDataResource({
-        resourceId: this.resourceId,
-        serverAddress: this.serverAddress
+        resourceId: this.resourceId
       })
       if (res.code === 0) {
         this.resource = [res.result]
