@@ -2,9 +2,6 @@
   <div v-loading="loading" class="container">
     <div v-if="loaded" class="detail">
       <el-descriptions :column="1" label-class-name="detail-title">
-        <el-descriptions-item label="页面标题">
-          <ConfirmInput name="title" :default-value="title" @submit="handleInputSubmit" />
-        </el-descriptions-item>
         <el-descriptions-item label="是否显示logo">
           <el-radio-group v-model="isShowLogo" @input="handleShowLogoChange">
             <el-radio :label="true">是</el-radio>
@@ -79,7 +76,6 @@ export default {
   computed: {
     ...mapState('settings', [
       'loaded',
-      'title',
       'favicon',
       'settingChanged',
       'loginLogoUrl',
@@ -143,7 +139,6 @@ export default {
     this.logoText = this.logoTitle
     this.theFooterText = this.footerText
     this.params = {
-      title: this.title,
       isHideFadeBack: this.isHideFadeBack,
       isHideFooterVersion: this.isHideFooterVersion,
       logoUrl: this.logoUrl,
@@ -184,7 +179,7 @@ export default {
     },
     handleLogoTitleClear() {
       this.logoText = ''
-      this.changeSettings({ state: 'logoTitle', mutation: 'SET_TITLE', value: '' })
+      this.changeSettings({ state: 'logoTitle', mutation: 'SET_LOGO_TITLE', value: '' })
     },
     handleVersionChange(val) {
       this.params.isHideFooterVersion = val
@@ -235,18 +230,8 @@ export default {
       }
     },
     handleInputSubmit({ inputValue, name }) {
-      switch (name) {
-        case 'title':
-          this.params.title = inputValue
-          this.changeSettings({ state: name, mutation: 'SET_TITLE', value: inputValue })
-          break
-        case 'loginDescription':
-          this.params.loginDescription = inputValue
-          this.changeSettings({ state: name, mutation: 'SET_DESCRIPTION', value: inputValue })
-          break
-        default:
-          break
-      }
+      this.params.loginDescription = inputValue
+      this.changeSettings({ state: name, mutation: 'SET_DESCRIPTION', value: inputValue })
     },
     async changeSettings(data) {
       this.loading = true
