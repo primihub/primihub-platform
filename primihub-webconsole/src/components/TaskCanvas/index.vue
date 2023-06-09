@@ -687,11 +687,11 @@ export default {
 
       const fileContainsY = providerResource.fileHandleField?.includes('y')
       // LR features must select
-      if (initiateResource.calculationField.length === 1) { // has Y
+      if (initiateResource.calculationField.length === 1 && initiateResource.calculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
-      } else if (fileContainsY && providerResource.calculationField.length === 1 || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
+      } else if (fileContainsY && providerResource.calculationField.length === 1 && providerResource.calculationField.includes('y') || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
         this.$message.error('请选择协作方数据特征')
         this.modelRunValidated = false
         return
