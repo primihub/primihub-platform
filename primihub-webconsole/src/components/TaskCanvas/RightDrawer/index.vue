@@ -496,7 +496,7 @@ export default {
           organId: item.organId,
           organName: item.organName,
           resourceId: item.resourceId,
-          resourceField: item.resourceField.map(resource => {
+          resourceField: item.resourceField && item.resourceField.map(resource => {
             return {
               fieldName: resource.fieldName,
               fieldType: resource.fieldType
@@ -513,7 +513,7 @@ export default {
         featureItemsValue.map(item => {
           const posIndex = item.features.findIndex(v => v.organId === value.organId)
           const { organId, organName, resourceId } = value
-          const resourceField = value.resourceField.map(resource => {
+          const resourceField = value.resourceField && value.resourceField.map(resource => {
             return {
               fieldName: resource.fieldName,
               fieldType: resource.fieldType
