@@ -182,6 +182,9 @@ export default {
       })
     },
     async handleResourceSelect(organId, participationIdentity) {
+      if (organId !== this.selectedOrganId) {
+        this.paginationOptions.pageNo = 1
+      }
       this.selectedOrganId = organId
       this.participationIdentity = participationIdentity
       await this.getResourceList()
