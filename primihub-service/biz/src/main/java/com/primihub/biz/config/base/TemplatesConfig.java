@@ -7,6 +7,7 @@ import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.tool.TemplatesHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -20,10 +21,16 @@ import java.util.concurrent.Executor;
 public class TemplatesConfig {
     @Resource
     private Environment environment;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     @PostConstruct
     public void readNacosFreemarkerPython(){
         try {
+            if (!baseConfiguration.getOpenDynamicTuning()){
+                log.info("Close nacos template debugging");
+                return;
+            }
             String group=environment.getProperty("nacos.config.group");
             String serverAddr=environment.getProperty("nacos.config.server-addr");
             Properties properties = new Properties();

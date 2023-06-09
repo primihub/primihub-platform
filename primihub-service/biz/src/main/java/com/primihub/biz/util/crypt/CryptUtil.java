@@ -1,6 +1,7 @@
 package com.primihub.biz.util.crypt;
 
 import com.google.common.io.BaseEncoding;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
@@ -15,6 +16,7 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
+@Slf4j
 public class CryptUtil {
     private CryptUtil(){
 
@@ -45,6 +47,7 @@ public class CryptUtil {
      */
     public static String multipartEncrypt( String str, String publicKey ) throws Exception{
 //        byte[] decoded = Base64.decodeBase64(publicKey);
+//        long start = System.currentTimeMillis();
         byte[] decoded = BaseEncoding.base64().decode(publicKey);
         RSAPublicKey pubKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(new X509EncodedKeySpec(decoded));
         Cipher cipher = Cipher.getInstance("RSA");
@@ -68,6 +71,8 @@ public class CryptUtil {
         bops.close();
         byte[] encryptedData = bops.toByteArray();
         String encodeToString = Base64.encodeBase64String(encryptedData);
+//        long end = System.currentTimeMillis();
+//        log.info("加密耗时:{}",end-start);
         return encodeToString;
 
     }
@@ -87,6 +92,7 @@ public class CryptUtil {
      */
     public static String multipartDecrypt(String str, String privateKey) throws Exception{
 //        byte[] decoded = Base64.decodeBase64(privateKey);
+//        long start = System.currentTimeMillis();
         byte[] decoded = BaseEncoding.base64().decode(privateKey);
         RSAPrivateKey priKey = (RSAPrivateKey) KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(decoded));
         Cipher cipher = Cipher.getInstance("RSA");
@@ -110,6 +116,8 @@ public class CryptUtil {
         }
         byteArrayOutputStream.close();
         byte[] byteArray = byteArrayOutputStream.toByteArray();
+//        long end = System.currentTimeMillis();
+//        log.info("解密耗时:{}",end-start);
         return new String(byteArray);
     }
 }

@@ -188,7 +188,7 @@ public class DataTaskService {
     }
 
     public void spreadModelData(String paramStr){
-        log.info(paramStr);
+//        log.info(paramStr);
         ShareModelVo shareModelVo = JSONObject.parseObject(paramStr, ShareModelVo.class);
         if (shareModelVo.getShareOrganId() == null && shareModelVo.getShareOrganId().isEmpty()) {
             log.info("no shareOrganId");

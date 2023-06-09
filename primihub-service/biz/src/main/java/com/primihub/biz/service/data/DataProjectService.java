@@ -146,26 +146,24 @@ public class DataProjectService {
         if (organList==null || organList.isEmpty()) {
             return false;
         }
-        List<String> organNames = new ArrayList<>();
+        Set<String> organNames = new HashSet<>();
         if (StringUtils.isNotBlank(dataProject.getProviderOrganNames())){
             organNames.addAll(Arrays.asList(dataProject.getProviderOrganNames().split(",")));
         }
-        if (organNames.size()<3){
-            String localOrganId = organConfiguration.getSysLocalOrganId();
-            List<String> organIds = organList.stream().map(DataProjectOrganReq::getOrganId).collect(Collectors.toList());
-            organIds.remove(localOrganId);
-            if (!organIds.isEmpty()){
-                Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(organIds);
-                for (String organId : organIds) {
-                    SysOrgan organ = organListMap.get(organId);
-                    if (organ!=null){
-                        if (!organNames.contains(organ.getOrganName())){
-                            organNames.add(organ.getOrganName());
-                        }
+        String localOrganId = organConfiguration.getSysLocalOrganId();
+        List<String> organIds = organList.stream().map(DataProjectOrganReq::getOrganId).collect(Collectors.toList());
+        organIds.remove(localOrganId);
+        if (!organIds.isEmpty()){
+            Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(organIds);
+            for (String organId : organIds) {
+                SysOrgan organ = organListMap.get(organId);
+                if (organ!=null){
+                    if (!organNames.contains(organ.getOrganName())){
+                        organNames.add(organ.getOrganName());
                     }
                 }
-                dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
             }
+            dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
         }
         return true;
     }
@@ -549,6 +547,7 @@ public class DataProjectService {
             dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
             dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
             dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
+            dataDerivationResourceVo.setFileFields(dataResourceRepository.queryDataFileFieldByFileId(dataDerivationResourceVo.getId()).stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
         }
         return BaseResultEntity.success(dataDerivationResourceVos);
     }

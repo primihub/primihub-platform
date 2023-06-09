@@ -29,7 +29,7 @@ public class AjCaptchaServiceAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public CaptchaService captchaService(@Qualifier("ajCaptchaProperties")AjCaptchaProperties prop) {
-        log.info("自定义配置项：{}", prop.toString());
+//        log.info("自定义配置项：{}", prop.toString());
         Properties config = new Properties();
         config.put(Const.CAPTCHA_CACHETYPE, prop.getCacheType().name());
         config.put(Const.CAPTCHA_WATER_MARK, prop.getWaterMark());

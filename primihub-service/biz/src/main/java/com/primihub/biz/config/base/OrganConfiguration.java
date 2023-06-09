@@ -18,7 +18,6 @@ import javax.annotation.Resource;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -70,7 +69,6 @@ public class OrganConfiguration {
     @PostConstruct
     public void init(){
         readNacosConfigOrganInfo();
-//        readNacosConfigCollectOrganInfo();
         readResourceConfigCollectOrganInfo();
     }
 
@@ -112,7 +110,7 @@ public class OrganConfiguration {
 
     public void readResourceConfigCollectOrganInfo(){
         try {
-            org.springframework.core.io.Resource  resource = new ClassPathResource("collectData.json");
+            org.springframework.core.io.Resource  resource = new ClassPathResource(SysConstant.SYS_COLLECT_DATA_ORGAN_INFO_NAME);
             InputStream is = resource.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
@@ -130,39 +128,5 @@ public class OrganConfiguration {
         }catch (Exception e){
             log.info("读取文件失败:{}",e.getMessage());
         }
-
     }
-
-//    public void readNacosConfigCollectOrganInfo(){
-//        try {
-//            String group=environment.getProperty("nacos.config.group");
-//            String serverAddr=environment.getProperty("nacos.config.server-addr");
-//            Properties properties = new Properties();
-//            properties.put("serverAddr",serverAddr);
-//            ConfigService configService= NacosFactory.createConfigService(properties);
-//            String collectDataContent=configService.getConfig(SysConstant.SYS_COLLECT_DATA_ORGAN_INFO_NAME,group,3000);
-//            log.info(" nacos collect_data data:{}",collectDataContent);
-//            if (StringUtils.isNotBlank(collectDataContent)){
-//                collectOrganList = JSON.parseArray(collectDataContent,SysCollectOrgan.class);
-//            }
-//            configService.addListener(SysConstant.SYS_COLLECT_DATA_ORGAN_INFO_NAME, group, new Listener() {
-//                @Override
-//                public Executor getExecutor() {
-//                    return null;
-//                }
-//
-//                @Override
-//                public void receiveConfigInfo(String config) {
-//                    log.info(" nacos receiveConfigInfo organ_info data:{}",config);
-//                    if (StringUtils.isNotBlank(config)){
-//                        collectOrganList = JSON.parseArray(collectDataContent,SysCollectOrgan.class);
-//                    }else {
-//                        collectOrganList = null;
-//                    }
-//                }
-//            });
-//        }catch (Exception e){
-//            log.info("nacos collect_data Exception:{}",e.getMessage());
-//        }
-//    }
 }

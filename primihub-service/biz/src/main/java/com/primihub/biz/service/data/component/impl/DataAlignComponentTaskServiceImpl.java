@@ -3,17 +3,15 @@ package com.primihub.biz.service.data.component.impl;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.DataModelResource;
-import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
@@ -24,7 +22,6 @@ import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.FreemarkerUtil;
-import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
@@ -44,6 +41,8 @@ import java.util.stream.Collectors;
 @Service("dataAlignComponentTaskServiceImpl")
 public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
+    private ComponentsConfiguration componentsConfiguration;
+    @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
@@ -58,7 +57,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
-        return componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
+        return componentTypeVerification(req, componentsConfiguration.getModelComponents(), taskReq);
     }
 
 
@@ -101,14 +100,13 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         .setTaskInfo(taskBuild)
                         .putAllPartyDatasets(values)
                         .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
                         .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
-                        .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
+                log.info("grpc PushTaskRequest :\n{}", request.toString());
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode() == 2) {
@@ -263,14 +261,13 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", serverData.getResourceId()).build())
                     .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", clientData.getResourceId()).build())
                     .build();
-            log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()
                     .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:"+reply);
             dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),clientEntity.getPsiPath());

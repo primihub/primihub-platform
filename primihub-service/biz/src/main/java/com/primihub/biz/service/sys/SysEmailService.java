@@ -44,7 +44,8 @@ public class SysEmailService {
                 log.info("End attempting to connect to mailbox : {}",System.currentTimeMillis());
             }
             catch (MessagingException ex) {
-                log.error("Mail server is not available", ex);
+                log.error("Mail server is not available");
+//                log.error("Mail server is not available", ex);
                 return null;
             }
             return javaMailSender;

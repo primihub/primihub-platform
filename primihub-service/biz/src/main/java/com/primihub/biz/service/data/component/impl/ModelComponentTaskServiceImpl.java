@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.constant.DataConstant;
-import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.ModelTypeEnum;
@@ -31,7 +31,6 @@ import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
+    private ComponentsConfiguration componentsConfiguration;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -62,8 +61,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
-        log.info("------- 执行校验");
-        BaseResultEntity baseResultEntity = componentTypeVerification(req, baseConfiguration.getModelComponents(), taskReq);
+        BaseResultEntity baseResultEntity = componentTypeVerification(req, componentsConfiguration.getModelComponents(), taskReq);
         if (baseResultEntity.getCode()!=0) {
             return baseResultEntity;
         }
@@ -191,7 +189,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setTaskInfo(taskBuild)
                     .putAllPartyDatasets(values)
                     .build();
-            log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
                     .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
@@ -199,6 +196,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                     .setClientProcessedUpTo(22)
                     .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){
@@ -277,7 +275,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setTaskInfo(taskBuild)
                         .putAllPartyDatasets(values)
                         .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
                         .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTask(task)
@@ -285,6 +282,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setClientProcessedUpTo(22)
                         .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
+                log.info("grpc PushTaskRequest :\n{}", request.toString());
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){
@@ -363,7 +361,6 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setTaskInfo(taskBuild)
                         .putAllPartyDatasets(values)
                         .build();
-                log.info("grpc Common.Task :\n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
                         .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTask(task)
@@ -371,6 +368,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                         .setClientProcessedUpTo(22)
                         .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                         .build();
+                log.info("grpc PushTaskRequest :\n{}", request.toString());
                 PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:{}", reply.toString());
                 if (reply.getRetCode()==0){

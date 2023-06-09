@@ -9,9 +9,6 @@ public class RedisKeyConstant {
     public static final String SCHEDULE_FUSION_COPY_KEY="schedule:fusion_copy_<date>_<piece>";
     public static final String VERIFICATION_CODE_TYPE_KEY="verification:code_<code_type>_<code_key>";
 
-    // Port number key
-    public final static String REQUEST_PORT_NUMBER = "model:port_number:<square>";
-
     // task key
     public final static String TASK_STATUS_KEY = "ts:<taskId>:<jobId>";
     public final static String TASK_STATUS_LIST_KEY = "ts:list";

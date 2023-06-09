@@ -2,9 +2,8 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.PropertyNamingStrategy;
-import com.alibaba.fastjson.parser.ParserConfig;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
@@ -16,7 +15,6 @@ import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
-import com.primihub.biz.entity.data.dto.ModelEvaluationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
@@ -25,7 +23,6 @@ import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
@@ -52,9 +49,9 @@ public class DataModelService {
     @Autowired
     private DataModelRepository dataModelRepository;
     @Autowired
-    private DataProjectService dataProjectService;
-    @Autowired
     private BaseConfiguration baseConfiguration;
+    @Autowired
+    private ComponentsConfiguration componentsConfiguration;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
@@ -187,7 +184,7 @@ public class DataModelService {
     }
 
     public BaseResultEntity getModelComponent() {
-        List<ModelComponent> modelComponents  = baseConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow()==0).collect(Collectors.toList());
+        List<ModelComponent> modelComponents  = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow()==0).collect(Collectors.toList());
         return BaseResultEntity.success(modelComponents);
     }
 
@@ -239,13 +236,14 @@ public class DataModelService {
                 dataModel.setModelDesc(paramValuesMap.get("modelDesc"));
 //                dataModel.setTrainType(Integer.parseInt(paramValuesMap.get("trainType")));
                 dataModel.setOrganId(organConfiguration.getSysLocalOrganId());
-                dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
+//                dataModel.setModelType(Integer.parseInt(paramValuesMap.get("modelType")));
                 dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(params.getProjectId(), null));
             }
             dataModel.setProjectId(params.getProjectId());
             saveOrGetModelComponentCache(true, userId,params.getProjectId(), params, dataModel);
         } catch (Exception e) {
             log.info(e.getMessage());
+            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
         }
         Map<String,Object> resultMap = new HashMap<>();
@@ -381,7 +379,7 @@ public class DataModelService {
         if (modelComponentReq==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
         }
-        Set<String> mandatorySet = baseConfiguration.getModelComponents().stream()
+        Set<String> mandatorySet = componentsConfiguration.getModelComponents().stream()
                 .filter(modelComponent -> modelComponent.getIsMandatory() == 0)
                 .map(ModelComponent::getComponentCode)
                 .collect(Collectors.toSet());
@@ -495,7 +493,7 @@ public class DataModelService {
 
 
     public BaseResultEntity syncModel(ShareModelVo vo) {
-        log.info(JSONObject.toJSONString(vo));
+//        log.info(JSONObject.toJSONString(vo));
         if (vo.getDataModel()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataModel");
         }
