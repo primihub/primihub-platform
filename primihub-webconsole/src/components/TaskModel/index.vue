@@ -41,7 +41,7 @@
         <div class="desc-col" style="width: 100%;">
           <div class="desc-label">模型描述:</div>
           <div class="desc-content">
-            <template v-if="task.isCoperation === 0">
+            <template v-if="task.isCooperation === 0">
               <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
             </template>
             <template v-else>

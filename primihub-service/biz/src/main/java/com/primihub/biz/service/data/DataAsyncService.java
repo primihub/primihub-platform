@@ -69,6 +69,7 @@ public class DataAsyncService implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;
     }
+
     @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
