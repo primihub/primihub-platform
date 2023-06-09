@@ -25,8 +25,8 @@
 
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item prop="resourceName">
-                      <el-select v-model="form.resourceName" :disabled="form.organId === ''" style="width: 100%" placeholder="请选择机构下资源" @focus="openDialog" />
+                    <el-form-item>
+                      <el-input v-model="form.resourceName" :disabled="form.organId === ''" style="width: 100%" placeholder="请选择机构下资源" suffix-icon="el-icon-arrow-down" @focus="openDialog" />
                     </el-form-item>
                   </el-col>
                 </el-row>
@@ -65,13 +65,15 @@
               </el-input>
             </div>
             <ResourceTableSingleSelect max-height="560" :data="resourceList" :show-status="false" :selected-data="selectResources && selectResources.resourceId" @change="handleResourceChange" />
+          </div>
+          <div class="dialog-footer flex align-items-center" :class="{'justify-content-between': pageCount>1,'justify-content-center': pageCount<=1}">
             <pagination v-show="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :page-count="pageCount" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
+            <div>
+              <el-button @click="handleDialogCancel">取 消</el-button>
+              <el-button type="primary" @click="handleDialogSubmit">确 定</el-button>
+            </div>
           </div>
 
-          <span slot="footer" class="dialog-footer">
-            <el-button @click="handleDialogCancel">取 消</el-button>
-            <el-button type="primary" @click="handleDialogSubmit">确 定</el-button>
-          </span>
         </el-dialog>
       </div>
     </div>
@@ -191,9 +193,7 @@ export default {
         this.form.resourceName = ''
       }
     },
-    searchResource(name) {
-      this.selectResources = null
-      this.form.resourceName = name
+    searchResource() {
       this.pageNo = 1
       this.getResourceList()
     },
@@ -327,14 +327,13 @@ export default {
 }
 .dialog-footer{
   width: 100%;
-  display: inline-block;
-  text-align: center;
+  height: 50px;
+  margin-bottom: 30px;
 }
 ::v-deep .el-form-item__content{
   text-align: left;
 }
 .pagination-container {
-  padding: 10px 0 0 0;
   display: flex;
   justify-content: center;
 }
