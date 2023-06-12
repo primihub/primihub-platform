@@ -496,7 +496,10 @@ public class DataModelService {
     public BaseResultEntity restartTaskModel(Long taskId) {
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
         if (dataTask==null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
+            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId.toString());
+            if (dataTask==null){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
+            }
         }
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(taskId);
         if (modelTask==null) {
