@@ -535,14 +535,11 @@ public class DataModelService {
             if (organListMap.containsKey(dataProjectOrgan.getOrganId())) {
                 Map mapo = organListMap.get(dataProjectOrgan.getOrganId());
                 String gatewayAddress = mapo.get("gatewayAddress").toString();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-                MultiValueMap map = new LinkedMultiValueMap<>();
+                Map map = new HashMap();
                 map.put("taskId", new ArrayList() {{
                     add(dataTask.getTaskIdName());
                 }});
-                HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-                BaseResultEntity resultEntity = restTemplate.postForObject(CommonConstant.DISPATCH_RESTART_TASK_MODEL.replace("<address>", gatewayAddress.toString()), request, BaseResultEntity.class);
+                BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(map, CommonConstant.DISPATCH_RESTART_TASK_MODEL.replace("<address>", gatewayAddress), null);
                 log.info("baseResultEntity code:{} msg:{}", resultEntity.getCode(), resultEntity.getMsg());
             }
         }catch (Exception e){
