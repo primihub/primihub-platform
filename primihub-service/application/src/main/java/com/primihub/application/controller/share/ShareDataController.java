@@ -90,7 +90,7 @@ public class ShareDataController {
     }
 
     @RequestMapping("dispatchRestartTaskModel")
-    public BaseResultEntity dispatchRestartTaskModel(String taskId) {
+    public BaseResultEntity dispatchRestartTaskModel(@RequestBody String taskId) {
         return dataModelService.dispatchRestartTaskModel(taskId);
     }
 
