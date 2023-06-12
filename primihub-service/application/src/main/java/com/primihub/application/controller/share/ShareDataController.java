@@ -6,10 +6,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataTask;
-import com.primihub.biz.entity.data.req.ComponentTaskReq;
-import com.primihub.biz.entity.data.req.DataPirTaskSyncReq;
-import com.primihub.biz.entity.data.req.DataPsiTaskSyncReq;
-import com.primihub.biz.entity.data.req.DataReasoningTaskSyncReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.service.data.*;
@@ -90,8 +87,8 @@ public class ShareDataController {
     }
 
     @RequestMapping("dispatchRestartTaskModel")
-    public BaseResultEntity dispatchRestartTaskModel(@RequestBody String taskId) {
-        return dataModelService.dispatchRestartTaskModel(taskId);
+    public BaseResultEntity dispatchRestartTaskModel(@RequestBody DataTaskReq req) {
+        return dataModelService.dispatchRestartTaskModel(req);
     }
 
 

@@ -417,9 +417,9 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity dispatchRestartTaskModel(String taskId) {
-        log.info(taskId);
-        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+    public BaseResultEntity dispatchRestartTaskModel(DataTaskReq req) {
+        log.info(req.getTaskId());
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(req.getTaskId());
         if (dataTask==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
         }
