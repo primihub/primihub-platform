@@ -169,6 +169,7 @@ public class OtherBusinessesService {
             }else {
                 data = CryptUtil.multipartEncrypt(JSONObject.toJSONString(vo), publicKey);
             }
+            log.info("url:{} - data:{}",gatewayAddressAndApi,data);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);

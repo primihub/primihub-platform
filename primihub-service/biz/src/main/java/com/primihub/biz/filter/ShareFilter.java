@@ -40,6 +40,7 @@ public class ShareFilter implements Filter {
             String bodytxt;
             try {
                 bodytxt = getBodytxt(request);
+                log.info("bodytxt:{}",bodytxt);
                 if (StringUtils.isBlank(bodytxt)){
                     writeJsonToResponse(response,"解析内容空或同步内容为空");
                     return;
