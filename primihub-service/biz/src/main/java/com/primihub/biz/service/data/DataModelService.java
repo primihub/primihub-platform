@@ -417,9 +417,16 @@ public class DataModelService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity dispatchRestartTaskModel(DataTaskReq req) {
-        log.info(req.getTaskId());
-        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(req.getTaskId());
+    public BaseResultEntity dispatchRestartTaskModel(String taskJson) {
+        log.info(taskJson);
+        if (taskJson==null){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
+        }
+        JSONObject jsonObject = JSONObject.parseObject(taskJson);
+        if (!jsonObject.containsKey("taskId")){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
+        }
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(jsonObject.getString("taskId"));
         if (dataTask==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
         }
