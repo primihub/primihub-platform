@@ -423,10 +423,11 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
         }
         JSONObject jsonObject = JSONObject.parseObject(taskJson);
+        log.info(jsonObject.getString("taskId"));
         if (!jsonObject.containsKey("taskId")){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
         }
-        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(jsonObject.getString("taskId"));
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(jsonObject.getJSONArray("taskId").getString(0));
         if (dataTask==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到任务信息");
         }
