@@ -98,10 +98,6 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                             .putParamMap("ColumnInfo", columnInfoParamValue)
                             .putParamMap("TaskDetail", taskDetailParamValue)
                             .build();
-                    Map<String, Common.Dataset> values = new HashMap<>();
-                    for (String id : jointStatisticalMap.keySet()) {
-                        values.put("PARTY"+i,Common.Dataset.newBuilder().putData("Data_File",id).build());
-                    }
                     Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(String.valueOf(taskReq.getJob())).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
                     Common.Task task = Common.Task.newBuilder()
                             .setType(Common.TaskType.ACTOR_TASK)
