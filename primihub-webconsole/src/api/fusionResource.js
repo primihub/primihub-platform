@@ -4,6 +4,7 @@ export function getResourceList(params) {
   return request({
     url: '/data/fusionResource/getResourceList',
     method: 'get',
+    showLoading: false,
     params
   })
 }

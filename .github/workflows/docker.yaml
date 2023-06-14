@@ -12,6 +12,7 @@ env:
   FUSION_IMAGE: primihub/primihub-fusion
   PLATFORM_IMAGE: primihub/primihub-platform
   WEB_IMAGE: primihub/primihub-web
+  META_IMAGE: primihub/primihub-meta
 
 jobs:
   build-and-push:
@@ -42,6 +43,12 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: ${{ env.REGISTRY }}/${{ env.FUSION_IMAGE }}
+    
+    - name: Extract Docker metadata
+      id: metameta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.REGISTRY }}/${{ env.META_IMAGE }}
     
     - name: Extract Docker metadata
       id: metaplatform
@@ -77,6 +84,16 @@ jobs:
       uses: docker/build-push-action@v2
       with:
         context: ./primihub-webconsole
+        push: true
+        platforms: linux/amd64,linux/arm64
+        tags: ${{ steps.metaweb.outputs.tags }}
+        labels: ${{ steps.metaweb.outputs.labels }}
+    
+    - name: Build and push meta images
+      uses: docker/build-push-action@v2
+      with:
+        context: ./primihub-fusion
+        file: Dockerfile.meta
         push: true
         platforms: linux/amd64,linux/arm64
         tags: ${{ steps.metaweb.outputs.tags }}

@@ -219,7 +219,7 @@ export default {
     })
   },
   destroyed() {
-    clearTimeout(this.taskTimer)
+    clearInterval(this.taskTimer)
     this.selectComponentList = []
     this.destroyed = true
     this.graph.dispose()
