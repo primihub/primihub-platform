@@ -91,10 +91,6 @@ public class DataTaskMonitorService {
                                 isContinue = false;
                             }
                         }
-                        if (StringUtils.isNotBlank(path) && FileUtil.isFileExists(path)){
-                            dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                            isContinue = false;
-                        }
                     }
                 }
                 Thread.sleep(1000L);
