@@ -229,16 +229,13 @@ export default {
         this.oneself = oneself
         // format model score list
         if (JSON.stringify(anotherQuotas) !== '{}') {
-          for (let i = 0; i < 2; i++) {
-            const modelType = model.modelType === 3 ? '横向-LR' : model.modelType === 4 ? 'MPC_LR' : '纵向-XGBoost'
-            this.modelQuotas.push({
-              modelType,
-              quotaType: i === 0 ? '测试集' : '评估集',
-              train_acc: anotherQuotas.train_acc,
-              train_auc: anotherQuotas.train_auc,
-              train_ks: anotherQuotas.train_ks
-            })
-          }
+          this.modelQuotas.push({
+            modelType: anotherQuotas.modelType,
+            quotaType: '测试集',
+            train_acc: anotherQuotas.train_acc,
+            train_auc: anotherQuotas.train_auc,
+            train_ks: anotherQuotas.train_ks
+          })
         }
         console.log(this.modelQuotas)
         this.modelResources = modelResources.filter(item => item.resourceType !== 3)

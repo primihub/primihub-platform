@@ -32,6 +32,9 @@
           <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
         </el-descriptions>
         <div v-if="dataList.reasoningState === 1" class="result">
+          <!-- <h3>运算结果</h3> -->
+          <!-- <p class="el-icon-error icon-error" />
+          <p>存在欺诈</p> -->
           <img src="../../../assets/result-img.png" width="200" alt="" srcset="">
         </div>
       </div>
@@ -44,6 +47,7 @@ import { mapActions, mapState } from 'vuex'
 import { saveReasoning } from '@/api/reasoning'
 import StatusIcon from '@/components/StatusIcon'
 import { parseTime } from '@/utils/index'
+import { getReasoning } from '@/api/reasoning'
 
 export default {
   name: 'ModelInferenceTask',
@@ -79,8 +83,7 @@ export default {
       createdOrgan: '',
       createdOrganId: '',
       providerOrganId: '',
-      providerOrganName: '',
-      serverAddress: ''
+      providerOrganName: ''
     }
   },
   computed: {
@@ -97,40 +100,36 @@ export default {
     async setDefault() {
       const data = {
         'node1': {
-          taskId: 299,
+          taskId: 1,
           providerOrganId: '3abfcb2a-8335-4bcc-b6f9-704a92e392fd',
           projectId: 51,
-          modelId: 161,
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/',
-          createdResourceId: 'ea5fd5f5f9f0-00bccdeb-d400-4498-b609-8985e84effd6',
-          providerResourceId: '704a92e392fd-c49f9170-9d6c-4c4e-bf21-eadafdb5bb2c'
+          modelId: 1,
+          createdResourceId: 'ea5fd5f5f9f0-c44ee65d-a6c5-4991-8e6d-7dbb270d5b80',
+          providerResourceId: '704a92e392fd-24f43d55-0700-4236-a6a6-270758551ab6'
         },
         'node2': {
-          taskId: 90,
+          taskId: 8,
           providerOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
-          projectId: 51,
-          modelId: 71,
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/',
-          createdResourceId: '704a92e392fd-383fd8fa-4fb8-4a46-b4b3-dfffa69ef10f',
-          providerResourceId: 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
+          projectId: 3,
+          modelId: 8,
+          createdResourceId: '704a92e392fd-a7015f8c-b4a9-4755-bd67-6a46b54f6aa5',
+          providerResourceId: 'ea5fd5f5f9f0-518802aa-0e94-42bf-8655-e1aa25929757'
         },
         'node3': {
-          taskId: 28,
+          taskId: 1,
           providerOrganId: '7aeeb3aa-75cc-4e40-8692-ea5fd5f5f9f0',
-          projectId: 22,
-          modelId: 7,
-          serverAddress: 'http://fusion.primihub-demo.svc.cluster.local:8080/',
-          createdResourceId: '794e41ba0e63-f7f15a33-435a-4518-bf6c-706dcc229927',
-          providerResourceId: 'ea5fd5f5f9f0-69065341-bd34-4f11-a944-e868da7aae2c'
+          projectId: 3,
+          modelId: 1,
+          createdResourceId: '794e41ba0e63-2dc724b0-95fe-49e0-9f85-0eb1379458ce',
+          providerResourceId: '704a92e392fd-acd297d5-25f0-4d4d-a27c-0a2ce29e72c2'
         },
         'test1': {
-          taskId: 1706,
+          taskId: 29,
           providerOrganId: '2cad8338-2e8c-4768-904d-2b598a7e3298',
-          projectId: 409,
-          modelId: 1185,
-          serverAddress: 'http://fusion.primihub.svc.cluster.local:8080/',
-          createdResourceId: 'ece67278c395-4501b886-9d9c-4f90-afa9-488b0f4dc90d',
-          providerResourceId: '2b598a7e3298-7fecfced-0e44-4212-920f-e1efc14e43df'
+          projectId: 20,
+          modelId: 20,
+          createdResourceId: 'ece67278c395-5e3fc67f-cee9-4dae-a534-f80404cb26c2',
+          providerResourceId: '2b598a7e3298-836eb580-2dea-4c8b-a6cf-6a4d25d3b04c'
         },
         'other': {
           providerOrganName: '互联网公司B',
@@ -140,7 +139,7 @@ export default {
           reasoningDesc: '隐私计算反欺诈应用'
         }
       }
-      const { taskId, providerOrganId, projectId, modelId, serverAddress, createdResourceId, providerResourceId } = data[this.origin]
+      const { taskId, providerOrganId, projectId, modelId, createdResourceId, providerResourceId } = data[this.origin]
       this.createdOrganId = this.$store.getters.userOrganId
       this.providerOrganName = '互联网公司B'
       this.createdOrgan = '电信运营商A'
@@ -151,7 +150,6 @@ export default {
       this.providerOrganId = providerOrganId
       this.projectId = projectId
       this.modelId = modelId
-      this.serverAddress = serverAddress
       this.createdResourceId = createdResourceId
       this.providerResourceId = providerResourceId
     },
@@ -196,6 +194,18 @@ export default {
           this.getReasoning()
           this.active = 2
         }
+      }
+    },
+    async getReasoning() {
+      this.listLoading = true
+      const res = await getReasoning({ id: this.reasoningId })
+      if (res.code === 0) {
+        this.dataList = res.result
+        setTimeout(() => {
+          this.dataList.reasoningState = 1
+          this.dataList.releaseDate = parseTime(new Date().getTime())
+          this.listLoading = false
+        }, 1000)
       }
     },
     handleClose() {

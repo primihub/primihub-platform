@@ -280,7 +280,6 @@ export default {
   },
   methods: {
     async getAvailableOrganList() {
-      console.log('11222')
       this.loading = true
       const res = await getAvailableOrganList()
       if (res.code === 0) {
@@ -386,6 +385,11 @@ export default {
           organId: this.formData.ownOrganId
         })
       } else {
+        if (this.formData.otherOrganId === '') {
+          this.$message.error('请选择协作方')
+          return
+        }
+        console.log('otherOrganId=====>', this.formData.otherOrganId)
         this.tableDataB = []
         this.tableDataB = await this.getPsiResourceAllocationList({
           organId: this.formData.otherOrganId,

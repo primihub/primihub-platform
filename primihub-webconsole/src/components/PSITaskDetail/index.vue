@@ -105,10 +105,6 @@ export default {
       default() {
         return {}
       }
-    },
-    serverAddress: {
-      type: String,
-      default: 'http://fusion.primihub.svc.cluster.local:8080/'
     }
   },
   data() {
@@ -125,10 +121,7 @@ export default {
     toUnionResourceDetailPage(id) {
       this.$router.push({
         name: 'UnionResourceDetail',
-        params: { id },
-        query: {
-          serverAddress: this.serverAddress
-        }
+        params: { id }
       })
     },
     async downloadPsiTask() {
@@ -194,6 +187,37 @@ h2{
 .desc-content{
   flex: 1;
   padding-right: 10px;
+}
+
+::v-deep .el-descriptions-item__container .el-descriptions-item__content{
+  align-items: center;
+}
+::v-deep .el-descriptions__body{
+  background-color: #fafafa;
+  padding: 20px 10px 10px 10px;
+  font-size: 14px;
+  line-height: 35px;
+  margin-bottom: 20px;
+}
+.infos-title{
+  font-size: 16px;
+}
+
+.desc-col{
+  width: 50%;
+  flex-shrink: 0;
+  display: flex;
+  color: #606266;
+  font-size: 14px;
+  margin-bottom: 12px;
+  align-items: center;
+  height: 22px;
+}
+.desc-label{
+  margin-right: 10px;
+}
+.desc-content{
+  flex: 1;
 }
 
 ::v-deep .el-descriptions-item__container .el-descriptions-item__content{

@@ -67,7 +67,7 @@
       <template v-else-if="nodeData.componentCode === MPC_STATISTICS">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
           <div v-for="(item,index) in featureItems" :key="index" :gutter="20" style="margin-bottom: 30px;">
-            <el-row v-if="options.isEditable" :gutter="5">
+            <el-row :gutter="5">
               <el-col :span="10">
                 <el-select v-model="item.type" :disabled="!options.isEditable" class="block" @change="handleTypeChange(index,$event)">
                   <el-option
@@ -75,13 +75,14 @@
                     :key="v.key"
                     :label="v.val"
                     :value="v.key"
+                    :disabled="v.disabled"
                   />
                 </el-select>
               </el-col>
-              <el-col :span="featureItems.length > 1 ? 10 : 14">
+              <el-col v-if="options.isEditable" :span="featureItems.length > 1 ? 10 : 14">
                 <el-button class="block" :disabled="!options.isEditable" @click="openMultiFeaturesDialog(index)">选择特征</el-button>
               </el-col>
-              <el-col v-if="featureItems.length > 1" :span="4">
+              <el-col v-if="featureItems.length > 1 && options.isEditable" :span="4">
                 <i class="el-icon-delete icon-delete" @click="removeFilling(index)" />
               </el-col>
             </el-row>
@@ -209,7 +210,7 @@
     <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedDataAlignFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
 
     <!-- MPC_MPC_STATISTICS component dialog -->
-    <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
+    <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :selected-features="selectFeatures" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
   </div>
 </template>
 
@@ -284,6 +285,7 @@ export default {
       dataAlignParam: {},
       modelParams: [],
       defaultComponentConfig: [],
+      selectFeatures: [],
       selectType: 'radio',
       emptyMissingData: {
         selectedExceptionFeatures: [],
@@ -448,6 +450,7 @@ export default {
       if (this.dataAlignTypeValue !== '') {
         this.dataAlignTypeInputValues = dataAlignType.inputValues.find(item => item.key === this.dataAlignTypeValue)
         this.dataAlignParam = this.dataAlignTypeInputValues?.param
+        console.log('dataAlignParam', this.dataAlignTypeInputValues)
         if (this.dataAlignParam) {
           const inputValue = this.dataAlignParam.find(item => item.typeCode === MULTIPLE_SELECT_FEATURE).inputValue
           let selectedDataAlignFeatures = inputValue !== '' ? JSON.parse(inputValue) : []
@@ -493,7 +496,12 @@ export default {
           organId: item.organId,
           organName: item.organName,
           resourceId: item.resourceId,
-          calculationField: item.calculationField,
+          resourceField: item.resourceField && item.resourceField.map(resource => {
+            return {
+              fieldName: resource.fieldName,
+              fieldType: resource.fieldType
+            }
+          }),
           checked: []
         }
       })
@@ -501,17 +509,22 @@ export default {
         features: this.defaultExceptionFeatures,
         type: ''
       }]
-
       this.inputValue.map(value => {
         featureItemsValue.map(item => {
           const posIndex = item.features.findIndex(v => v.organId === value.organId)
-          const { organId, organName, calculationField, resourceId } = value
+          const { organId, organName, resourceId } = value
+          const resourceField = value.resourceField && value.resourceField.map(resource => {
+            return {
+              fieldName: resource.fieldName,
+              fieldType: resource.fieldType
+            }
+          })
           if (posIndex === -1) {
             if (this.inputValue.length > item.features.length) {
               item.features.push({
                 organId,
                 organName,
-                calculationField,
+                resourceField,
                 resourceId,
                 checked: []
               })
@@ -519,8 +532,13 @@ export default {
               item.features.splice(posIndex, 1)
             }
           } else {
-            item.features[posIndex].calculationField = calculationField
-            item.features[posIndex].checked = item.features[posIndex].checked.filter(item => calculationField.find(v => item === v))
+            if (item.features[posIndex].resourceId !== resourceId) {
+              item.features[posIndex].checked = []
+            } else {
+              item.features[posIndex].checked = item.features[posIndex].checked.filter(item => resourceField.find(v => item === v.fieldName))
+            }
+            item.features[posIndex].resourceId = resourceId
+            item.features[posIndex].resourceField = resourceField
           }
         })
       })
@@ -532,9 +550,10 @@ export default {
     addFilling() {
       this.defaultExceptionFeatures = this.inputValue.map(item => {
         return {
-          calculationField: item.calculationField,
           organId: item.organId,
+          resourceId: item.resourceId,
           organName: item.organName,
+          resourceField: item.resourceField,
           checked: []
         }
       })
@@ -542,11 +561,23 @@ export default {
         features: this.defaultExceptionFeatures,
         type: ''
       })
+      this.processingType.map((item) => {
+        const current = this.featureItems.find(feature => feature.type === item.key)
+        item.disabled = !!current
+      })
       this.handleChange('exception')
     },
     removeFilling(index) {
       this.featureItems.splice(index, 1)
+      this.featureItems.forEach(item => {
+        if (item.features[0].checked.length > 0) {
+          this.selectFeatures = [...item.features[0].checked]
+        } else {
+          this.selectFeatures = []
+        }
+      })
       this.setFeaturesValue()
+      this.handleChange()
     },
     resetModelParams() {
       const defaultConfig = JSON.parse(JSON.stringify(this.defaultConfig))
@@ -663,7 +694,6 @@ export default {
       if (this.graphData.cells.find(item => item.componentCode === MPC_STATISTICS)) {
         this.getFeaturesItem()
       }
-
       this.providerOrganDialogVisible = false
       this.$emit('change', this.nodeData)
     },
@@ -809,12 +839,27 @@ export default {
     save() {
       this.$emit('save')
     },
+    setSelectFeaturesStatus() {
+      const selected = []
+      // set checkbox disabled element
+      const featureItems = this.featureItems.filter(feature => feature.type !== this.featureItems[this.featureIndex].type)
+      featureItems.forEach(item => {
+        const checked = item.features[0].checked
+        if (checked.length > 0) {
+          for (let i = 0; i < checked.length; i++) {
+            selected.push(checked[i])
+          }
+        }
+      })
+      this.selectFeatures = selected
+    },
     openMultiFeaturesDialog(index) {
       if (this.inputValue === '') {
         this.$message.error('请先添加选择数据集组件')
         return
       }
       this.featureIndex = index
+      this.setSelectFeaturesStatus()
       this.multiFeaturesVisible = true
     },
     openFeaturesDialog(code, index) {
@@ -1000,7 +1045,7 @@ p {
   font-size: 12px;
 }
 .tags{
-  margin: 5px 2px;
+  margin: 5px 8px;
 }
 .exception-type{
   margin-left: 10px;

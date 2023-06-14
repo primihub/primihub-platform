@@ -125,7 +125,6 @@ export default {
     return {
       tabName: 'organ',
       listLoading: false,
-      serverAddress: '',
       isShowAuditForm: false,
       projectName: '',
       projectId: '',
@@ -419,9 +418,8 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectDesc, userName, createDate, organs, serverAddress, creator, status, projectId } = this.list
+          const { projectName, projectDesc, userName, createDate, organs, creator, status, projectId } = this.list
           this.projectId = projectId
-          this.serverAddress = serverAddress
           this.creator = creator
           this.projectName = projectName
           this.projectStatus = status

@@ -366,9 +366,6 @@ export default {
       })
       this.fileUrl = url
       this.loading = false
-      if (this.authOrganList.length) {
-        this.getCascaderValue()
-      }
     },
     goBack() {
       this.$router.replace({
@@ -380,19 +377,6 @@ export default {
         this.showCascader = true
         this.resourceAuthType = value
       }
-    },
-    getCascaderValue() {
-      for (let index = 0; index < this.authOrganList.length; index++) {
-        const item = this.authOrganList[index]
-        const organGlobalId = item.organGlobalId
-        const current = [item.organServerAddress, organGlobalId]
-        this.cascaderValue.push(current)
-      }
-      this.showCascader = false
-      setTimeout(() => {
-        this.showCascader = true
-      }, 30)
-      this.listLoading = false
     },
     handleOrganChange(data) {
       this.dataForm.fusionOrganList = data
