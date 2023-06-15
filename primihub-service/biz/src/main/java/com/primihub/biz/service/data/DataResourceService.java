@@ -150,8 +150,9 @@ public class DataResourceService {
             for (DataResourceFieldReq field : fieldList) {
                 dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
             }
-            if (!resourceSynGRPCDataSet(dataSource,dataResource,dataFileFieldList)){
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中");
+            BaseResultEntity resultEntity = resourceSynGRPCDataSet(dataSource, dataResource, dataFileFieldList);
+            if (resultEntity.getCode()!=0){
+                return resultEntity;
             }
             if (dataSource!=null){
                 dataResourcePrRepository.saveSource(dataSource);
@@ -221,7 +222,10 @@ public class DataResourceService {
             dataSource = dataResourceRepository.queryDataSourceById(dbId);
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
-        resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+        BaseResultEntity resultEntity = resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+        if (resultEntity.getCode()!=0){
+            return resultEntity;
+        }
         fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         Map<String,Object> map = new HashMap<>();
@@ -625,7 +629,7 @@ public class DataResourceService {
         return yRow;
     }
 
-    public Boolean resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource,List<DataFileField> fieldList){
+    public BaseResultEntity resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource,List<DataFileField> fieldList){
         if (dataResource.getResourceSource() !=2 ){
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl(),fieldList);
         }
@@ -644,7 +648,7 @@ public class DataResourceService {
         return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map),fieldList);
     }
 
-    public Boolean resourceSynGRPCDataSet(String suffix,String id,String url,List<DataFileField> fieldList){
+    public BaseResultEntity resourceSynGRPCDataSet(String suffix,String id,String url,List<DataFileField> fieldList){
         log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",suffix,id,url,System.currentTimeMillis());
         MetaInfo.Builder metaInfoBuilder = MetaInfo.newBuilder()
                 .setId(id)
@@ -662,13 +666,15 @@ public class DataResourceService {
             NewDatasetResponse.ResultCode retCode = response.getRetCode();
             if (retCode.getValueDescriptor().getName().equals(NewDatasetResponse.ResultCode.SUCCESS.getValueDescriptor().getName())){
                 log.info("dataServiceGrpc success");
-                return true;
+                return BaseResultEntity.success();
+            }else {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中:"+response.getRetMsg());
             }
         }catch (Exception e){
             log.info("dataServiceGrpcException:{}",e.getMessage());
         }
         log.info("end dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{}  - time:{}",suffix,id,url,System.currentTimeMillis());
-        return false;
+        return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL);
     }
 
 
