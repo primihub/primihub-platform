@@ -1,0 +1,82 @@
+package com.primihub.sdk.task.factory;
+
+import com.alibaba.fastjson.JSONObject;
+import com.google.protobuf.ByteString;
+import com.primihub.sdk.task.cache.CacheService;
+import com.primihub.sdk.task.param.TaskMPCParam;
+import com.primihub.sdk.task.param.TaskParam;
+import io.grpc.Channel;
+import java_worker.PushTaskReply;
+import java_worker.PushTaskRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import primihub.rpc.Common;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
+
+public class AbstractMPCGRPCExecute extends AbstractGRPCExecuteFactory {
+
+    private final static Logger log = LoggerFactory.getLogger(AbstractMPCGRPCExecute.class);
+
+    private CacheService cacheService;
+
+    @Override
+    public CacheService getCacheService() {
+        return cacheService;
+    }
+
+    @Override
+    public void setCacheService(CacheService cacheService) {
+        this.cacheService = cacheService;
+    }
+    @Override
+    public void execute(Channel channel, TaskParam taskParam) {
+        runMPC(channel,taskParam);
+    }
+
+    private void runMPC(Channel channel, TaskParam<TaskMPCParam> taskParam){
+        try {
+            TaskMPCParam mpcParam = taskParam.getTaskContentParam();
+            Common.Params.Builder paramsBuilder = Common.Params.newBuilder();
+            Iterator<Map.Entry<String, String>> mapIterator = mpcParam.getParamMap().entrySet().iterator();
+            while (mapIterator.hasNext()){
+                Map.Entry<String, String> next = mapIterator.next();
+                paramsBuilder.putParamMap(next.getKey(),Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(next.getValue().getBytes(StandardCharsets.UTF_8))).build());
+            }
+            Common.TaskContext taskBuild = assembleTaskContext(taskParam);
+            Common.Task task = Common.Task.newBuilder()
+                    .setType(Common.TaskType.ACTOR_TASK)
+                    .setParams(paramsBuilder.build())
+                    .setName(mpcParam.getTaskName())
+                    .setLanguage(Common.Language.PROTO)
+                    .setTaskInfo(taskBuild)
+                    .putAllPartyDatasets(assembleModelMpcDatasets(mpcParam.getResourceIds()))
+                    .build();
+            PushTaskRequest request = PushTaskRequest.newBuilder()
+                    .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
+                    .setTask(task)
+                    .setSequenceNumber(11)
+                    .setClientProcessedUpTo(22)
+                    .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
+            PushTaskReply reply = runVMNodeGrpc(o -> o.submitTask(request),channel);
+            log.info("grpc结果:{}", reply.toString());
+            if (reply.getRetCode()==0){
+                taskParam.setPartyCount(reply.getPartyCount());
+                if (taskParam.getOpenGetStatus()){
+                    continuouslyObtainTaskStatus(channel,taskBuild,taskParam,reply.getPartyCount());
+                }
+            }else {
+                taskParam.setSuccess(false);
+                taskParam.setError(reply.getMsgInfo().toStringUtf8());
+            }
+        }catch (Exception e){
+            taskParam.setSuccess(false);
+            taskParam.setError(e.getMessage());
+            log.info("grpc Exception:{}", e.getMessage());
+            e.printStackTrace();
+        }
+    }
+}
