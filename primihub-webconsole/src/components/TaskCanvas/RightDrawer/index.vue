@@ -94,7 +94,7 @@
               </div>
             </div>
           </div>
-          <el-button v-if="options.isEditable && nodeData.componentTypes.find(item => item.typeCode === 'addFilling')" class="block" type="primary" @click="addFilling">添加填充策略</el-button>
+          <el-button v-if="options.isEditable && nodeData.componentTypes.find(item => item.typeCode === 'addFilling')" class="block" type="primary" @click="addFilling">添加统计项</el-button>
         </el-form-item>
       </template>
       <template v-else-if="nodeData.componentCode === MODEL">
@@ -546,7 +546,7 @@ export default {
       this.featureItems = featureItemsValue
       this.setFeaturesValue()
     },
-    // 添加填充策略
+    // 添加统计项
     addFilling() {
       this.defaultExceptionFeatures = this.inputValue.map(item => {
         return {
