@@ -71,10 +71,10 @@ public abstract class AbstractGRPCExecuteFactory {
         try {
             while (isContinue){
                 TaskStatusReply taskStatusReply  = runVMNodeGrpc(o -> o.fetchTaskStatus(taskBuild),channel);
-                log.info(taskStatusReply.toString());
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
                     List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->t.getParty()!=null && !"".equals(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
                     if (!taskStatus.isEmpty()){
+                        log.info(taskStatusReply.toString());
                         List<String> getList = cacheService.get(key);
                         getList.addAll(taskStatus);
                         cacheService.put(key,getList);
