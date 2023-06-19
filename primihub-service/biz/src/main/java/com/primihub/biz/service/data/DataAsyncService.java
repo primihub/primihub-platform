@@ -296,7 +296,6 @@ public class DataAsyncService implements ApplicationContextAware {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
-            PushTaskReply reply = null;
             TaskPIRParam pirParam = new TaskPIRParam();
             pirParam.setQueryParam(param.split(","));
             pirParam.setServerData(resourceId);
@@ -311,7 +310,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
             }
-            log.info("grpc end pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{} - reply:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis(), reply.toString());
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());

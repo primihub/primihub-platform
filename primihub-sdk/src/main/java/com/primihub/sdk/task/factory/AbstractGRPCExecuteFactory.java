@@ -83,14 +83,14 @@ public abstract class AbstractGRPCExecuteFactory {
                             List<TaskStatus> taskStatusFails = taskStatusReply.getTaskStatusList().stream().filter(t -> t.getStatus() == TaskStatus.StatusCode.FAIL).collect(Collectors.toList());
                             StringBuilder sb = new StringBuilder();
                             for (TaskStatus taskStatusFail : taskStatusFails) {
-                                log.info("taskid:{}-fail:{}",taskBuild.getTaskId(),taskStatusFail.toString());
+                                log.info("taskid:{} - requestId:{} -fail:{}",param.getTaskId(),param.getRequestId(),taskStatusFail.toString());
                                 sb.append(taskStatusFail.getParty()).append(":").append(taskStatusFail.getMessage()).append("\n");
                             }
                             param.setError(sb.toString());
                             isContinue = false;
                         }else {
                             long success = getNumberOfSuccessfulTasks(key,cacheService);
-                            log.info("num:{} - success:{}",partyCount,success);
+                            log.info("taskid:{} - requestId:{} - num:{} - success:{}",param.getTaskId(),param.getRequestId(),partyCount,success);
                             if (partyCount <= success){
                                 isContinue = false;
                             }
