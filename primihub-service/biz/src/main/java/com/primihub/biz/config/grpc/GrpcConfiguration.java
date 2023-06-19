@@ -4,6 +4,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.sdk.task.TaskHelper;
 import com.primihub.sdk.task.cache.CacheService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -13,7 +14,7 @@ import org.springframework.context.annotation.DependsOn;
 public class GrpcConfiguration {
 
     @Bean(name="taskHelper")
-    public TaskHelper initTaskHelper(BaseConfiguration baseConfiguration) throws Exception {
+    public TaskHelper initTaskHelper(@Qualifier("baseConfiguration") BaseConfiguration baseConfiguration) throws Exception {
         return TaskHelper.getInstance(baseConfiguration.getGrpcClient());
     }
 
