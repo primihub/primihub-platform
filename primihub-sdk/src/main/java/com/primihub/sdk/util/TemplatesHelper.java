@@ -1,4 +1,4 @@
-package com.primihub.biz.tool;
+package com.primihub.sdk.util;
 
 import java.util.HashMap;
 import java.util.Map;

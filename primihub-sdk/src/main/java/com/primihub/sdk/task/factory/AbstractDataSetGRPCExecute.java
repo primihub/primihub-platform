@@ -36,7 +36,7 @@ public class AbstractDataSetGRPCExecute extends AbstractGRPCExecuteFactory {
                 .setDriver(param.getTaskContentParam().getDriver())
                 .setVisibility(MetaInfo.Visibility.PUBLIC);
         for (TaskDataSetParam.FieldType fieldType : param.getTaskContentParam().getFieldTypes()) {
-            metaInfoBuilder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(fieldType.getFieldTypeEnum().getNodeTypeName())).setName(fieldType.getName()));
+            metaInfoBuilder.addDataType(fieldType.getPlainDataType()!=null?DataTypeInfo.newBuilder().setType(fieldType.getPlainDataType()):DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(fieldType.getFieldTypeEnum().getNodeTypeName())).setName(fieldType.getName()));
         }
         NewDatasetRequest request = NewDatasetRequest.newBuilder().setMetaInfo(metaInfoBuilder).setOpTypeValue(NewDatasetRequest.Operator.REGISTER.getNumber()).build();
         log.info("NewDatasetRequest:{}",request.toString());
@@ -55,6 +55,5 @@ public class AbstractDataSetGRPCExecute extends AbstractGRPCExecuteFactory {
             e.printStackTrace();
         }
         log.info("end dataServiceGrpc fparam:{} - time:{}",param.toString(),System.currentTimeMillis());
-
     }
 }

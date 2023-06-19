@@ -3,6 +3,7 @@ package com.primihub.sdk.task.param;
 import com.primihub.sdk.task.annotation.TaskTypeExample;
 import com.primihub.sdk.task.dataenum.FieldTypeEnum;
 import com.primihub.sdk.task.factory.AbstractDataSetGRPCExecute;
+import java_data_service.DataTypeInfo;
 
 import java.util.List;
 
@@ -67,10 +68,15 @@ public class TaskDataSetParam {
     public static class FieldType{
         private String name;
         private FieldTypeEnum fieldTypeEnum;
+        private DataTypeInfo.PlainDataType plainDataType;
 
         public FieldType(String name, FieldTypeEnum fieldTypeEnum) {
             this.name = name;
             this.fieldTypeEnum = fieldTypeEnum;
+        }
+        public FieldType(String name, DataTypeInfo.PlainDataType plainDataType) {
+            this.name = name;
+            this.plainDataType = plainDataType;
         }
 
         public String getName() {
@@ -87,6 +93,14 @@ public class TaskDataSetParam {
 
         public void setFieldTypeEnum(FieldTypeEnum fieldTypeEnum) {
             this.fieldTypeEnum = fieldTypeEnum;
+        }
+
+        public DataTypeInfo.PlainDataType getPlainDataType() {
+            return plainDataType;
+        }
+
+        public void setPlainDataType(DataTypeInfo.PlainDataType plainDataType) {
+            this.plainDataType = plainDataType;
         }
     }
 }

@@ -22,7 +22,6 @@ import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
-import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
@@ -30,9 +29,14 @@ import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.service.sys.SysEmailService;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
-import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
+import com.primihub.sdk.task.TaskHelper;
+import com.primihub.sdk.task.dataenum.ModelTypeEnum;
+import com.primihub.sdk.task.param.TaskComponentParam;
+import com.primihub.sdk.task.param.TaskPIRParam;
+import com.primihub.sdk.task.param.TaskPSIParam;
+import com.primihub.sdk.task.param.TaskParam;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +45,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -69,9 +72,6 @@ public class DataAsyncService implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;
     }
-
-    @Autowired
-    private WorkGrpcClient workGrpcClient;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -107,7 +107,7 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private SysEmailService sysEmailService;
     @Autowired
-    private DataTaskMonitorService dataTaskMonitorService;
+    private TaskHelper taskHelper;
 
 
     public BaseResultEntity executeBeanMethod(boolean isCheck, DataComponentReq req, ComponentTaskReq taskReq) {
@@ -243,51 +243,29 @@ public class DataAsyncService implements ApplicationContextAware {
             Date date = new Date();
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
             psiTask.setFilePath(sb.toString());
-            PushTaskReply reply = null;
             try {
-                log.info("grpc run dataPsiId:{} - psiTaskId:{} - outputFilePath{} - time:{}", dataPsi.getId(), psiTask.getId(), psiTask.getFilePath(), System.currentTimeMillis());
-                Common.ParamValue psiTypeParamValue = Common.ParamValue.newBuilder().setValueInt32(dataPsi.getOutputContent()).build();
-                Common.ParamValue psiTagParamValue = Common.ParamValue.newBuilder().setValueInt32(dataPsi.getTag()).build();
+                TaskPSIParam psiParam = new TaskPSIParam();
+                psiParam.setPsiTag(dataPsi.getTag());
+                psiParam.setPsiType(dataPsi.getOutputContent());
+                psiParam.setClientData(resourceId);
                 List<String> clientFields = Arrays.asList(ownDataResource.getFileHandleField().split(","));
-                Common.int32_array.Builder clientFieldsBuilder = Common.int32_array.newBuilder();
-                Arrays.stream(dataPsi.getOwnKeyword().split(",")).forEach(str -> {
-                    clientFieldsBuilder.addValueInt32Array(clientFields.indexOf(str));
-                });
-                Common.ParamValue clientIndexParamValue = Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(clientFieldsBuilder.build()).build();
+                List<String> ownKeyword = Arrays.asList(dataPsi.getOwnKeyword().split(","));
+                psiParam.setClientIndex(ownKeyword.stream().map(clientFields::indexOf).toArray(Integer[]::new));
                 List<String> serverFields = Arrays.asList(resourceColumnNameList.split(","));
-                Common.int32_array.Builder serverFieldsBuilder = Common.int32_array.newBuilder();
-                Arrays.stream(dataPsi.getOtherKeyword().split(",")).forEach(str -> {
-                    serverFieldsBuilder.addValueInt32Array(serverFields.indexOf(str));
-                });
-                Common.ParamValue serverIndexParamValue = Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(serverFieldsBuilder.build()).build();
-                Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(psiTask.getFilePath().getBytes(StandardCharsets.UTF_8))).build();
-                Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("psiType", psiTypeParamValue)
-                        .putParamMap("psiTag", psiTagParamValue)
-                        .putParamMap("clientIndex", clientIndexParamValue)
-                        .putParamMap("serverIndex", serverIndexParamValue)
-                        .putParamMap("outputFullFilename", outputFullFilenameParamValue)
-                        .build();
-                Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(dataTask.getTaskIdName()).build();
-                Common.Task task = Common.Task.newBuilder()
-                        .setType(Common.TaskType.PSI_TASK)
-                        .setParams(params)
-                        .setName("psiTask")
-                        .setTaskInfo(taskBuild)
-                        .setLanguage(Common.Language.PROTO)
-                        .putPartyDatasets("SERVER", Common.Dataset.newBuilder().putData("SERVER", resourceId).build())
-                        .putPartyDatasets("CLIENT", Common.Dataset.newBuilder().putData("CLIENT", ownDataResource.getResourceFusionId()).build())
-                        .build();
-                PushTaskRequest request = PushTaskRequest.newBuilder()
-                        .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTask(task)
-                        .setSequenceNumber(11)
-                        .setClientProcessedUpTo(22)
-                        .build();
-                log.info("grpc PushTaskRequest :\n{}", request.toString());
-                reply = workGrpcClient.run(o -> o.submitTask(request));
-                log.info("grpc结果:" + reply);
-                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask, taskBuild, reply.getPartyCount(), psiTask.getFilePath());
+                List<String> otherKeyword = Arrays.asList(dataPsi.getOtherKeyword().split(","));
+                psiParam.setServerData(ownDataResource.getResourceFusionId());
+                psiParam.setServerIndex(otherKeyword.stream().map(serverFields::indexOf).toArray(Integer[]::new));
+                psiParam.setOutputFullFilename(psiTask.getFilePath());
+                TaskParam taskParam = new TaskParam();
+                taskParam.setTaskId(dataTask.getTaskIdName());
+                taskParam.setTaskContentParam(psiParam);
+                taskHelper.submit(taskParam);
+                if (taskParam.getSuccess()){
+                    dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                }else {
+                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    dataTask.setTaskErrorMsg(taskParam.getError());
+                }
                 DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
                 psiTask.setTaskState(task1.getTaskState());
                 if (task1.getTaskState() != 4) {
@@ -302,7 +280,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
-            log.info("grpc end dataPsiId:{} - psiTaskId:{} - outputFilePath{} - time:{}", dataPsi.getId(), psiTask.getId(), psiTask.getFilePath(), System.currentTimeMillis());
         } else {
             psiTask.setTaskState(3);
         }
@@ -313,53 +290,26 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String pirParam) {
+    public void pirGrpcTask(DataTask dataTask, String resourceId, String param) {
         Date date = new Date();
         try {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
             PushTaskReply reply = null;
-            log.info("grpc run pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis());
-            String[] paramSplit = pirParam.split(",");
-            Common.string_array.Builder builder = Common.string_array.newBuilder();
-            for (String str : paramSplit) {
-                builder.addValueStringArray(ByteString.copyFrom(str.getBytes(StandardCharsets.UTF_8)));
-            }
-            Common.ParamValue clientDataParamValue = Common.ParamValue.newBuilder().setIsArray(true).setValueStringArray(builder).build();
-            Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(resourceId.getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue pirTagParamValue = Common.ParamValue.newBuilder().setValueInt32(1).build();
-            Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(sb.toString().getBytes(StandardCharsets.UTF_8))).build();
-            Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("clientData", clientDataParamValue)
-                    .putParamMap("serverData", serverDataParamValue)
-                    .putParamMap("pirType", pirTagParamValue)
-                    .putParamMap("outputFullFilename", outputFullFilenameParamValue)
-                    .build();
-            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(dataTask.getTaskIdName()).build();
-            Common.Task task = Common.Task.newBuilder()
-                    .setType(Common.TaskType.PIR_TASK)
-                    .setParams(params)
-                    .setName("testTask")
-                    .setTaskInfo(taskBuild)
-                    .setLanguage(Common.Language.PROTO)
-                    .putPartyDatasets("SERVER", Common.Dataset.newBuilder().putData("SERVER", resourceId).build())
-                    .build();
-            PushTaskRequest request = PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                    .setTask(task)
-                    .setSequenceNumber(11)
-                    .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
-                    .build();
-            log.info("grpc PushTaskRequest :\n{}", request.toString());
-            reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info(reply.toString());
-            if (reply.getRetCode() == 0) {
-                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask, taskBuild, reply.getPartyCount(), dataTask.getTaskResultPath());
-            } else {
+            TaskPIRParam pirParam = new TaskPIRParam();
+            pirParam.setQueryParam(param.split(","));
+            pirParam.setServerData(resourceId);
+            pirParam.setOutputFullFilename(dataTask.getTaskResultPath());
+            TaskParam taskParam = new TaskParam();
+            taskParam.setTaskContentParam(pirParam);
+            taskParam.setTaskId(dataTask.getTaskIdName());
+            taskHelper.submit(taskParam);
+            if (taskParam.getSuccess()){
+                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+            }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:" + reply.getMsgInfo().toStringUtf8());
+                dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
             }
             log.info("grpc end pirSubmitTask:{} - resourceId_fileId:{} - queryIndeies:{} - time:{} - reply:{}", sb.toString(), resourceId, pirParam, System.currentTimeMillis(), reply.toString());
         } catch (Exception e) {
@@ -445,8 +395,14 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("未能获取到模型类型信息");
             } else {
-                map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
-                grpc(dataReasoning, dataTask, modelType.getVal(), map);
+                ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(modelType.getVal()));
+                if (modelTypeEnum!=null){
+                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
+                }else {
+                    map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                    grpc(dataReasoning, dataTask, modelTypeEnum, map);
+                }
             }
         }
 
@@ -499,82 +455,7 @@ public class DataAsyncService implements ApplicationContextAware {
         }
     }
 
-
-
-    /**
-     * @param dataReasoning     推理实体
-     * @param dataTask          推理任务
-     * @param freemarkerContent 推理模板
-     * @param modelType         推理类型
-     */
-    public void grpc(DataReasoning dataReasoning, DataTask dataTask, String freemarkerContent,String modelType,int size){
-        try {
-            log.info(freemarkerContent);
-            DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
-            log.info(modelTask.toString());
-            log.info(modelTask.getTaskResultContent());
-            ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
-            log.info(modelOutputPathDto.toString());
-            StringBuilder filePath = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(dataTask.getTaskIdName()).append("/outfile.csv");
-            dataTask.setTaskResultPath(filePath.toString());
-            log.info(dataTask.getTaskResultPath());
-            Common.ParamValue modelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue predictFileNameeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(dataTask.getTaskResultPath().getBytes(StandardCharsets.UTF_8))).build();
-            Common.Params params = null;
-            if ("2".equals(modelType)){
-                Common.ParamValue hostLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-                Common.ParamValue guestLookupTableParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getGuestLookupTable().getBytes(StandardCharsets.UTF_8))).build();
-                params = Common.Params.newBuilder()
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("predictFileName", predictFileNameeParamValue)
-                        .putParamMap("hostLookupTable", hostLookupTableParamValue)
-                        .putParamMap("guestLookupTable", guestLookupTableParamValue)
-                        .build();
-            }else {
-                params = Common.Params.newBuilder()
-                        .putParamMap("modelFileName", modelFileNameParamValue)
-                        .putParamMap("predictFileName", predictFileNameeParamValue)
-                        .build();
-            }
-
-            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(dataTask.getTaskIdName()).build();
-            Common.Task task = Common.Task.newBuilder()
-                    .setType(Common.TaskType.ACTOR_TASK)
-                    .setParams(params)
-                    .setName("modelTask")
-                    .setTaskInfo(taskBuild)
-                    .setLanguage(Common.Language.PYTHON)
-//                    .setCode(ByteString.copyFrom(freemarkerContent.getBytes(StandardCharsets.UTF_8)))
-                    .build();
-            log.info("grpc Common.Task :\n{}", task.toString());
-            PushTaskRequest request = PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                    .setTask(task)
-                    .setSequenceNumber(11)
-                    .setClientProcessedUpTo(22)
-                    //.setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
-                    .build();
-            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc结果:{}", reply.toString());
-            if (reply.getRetCode() == 0) {
-                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask, taskBuild, reply.getPartyCount(), dataTask.getTaskResultPath());
-                if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())) {
-                    dataReasoning.setReleaseDate(new Date());
-                }
-            } else {
-                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:" + reply.getMsgInfo().toStringUtf8());
-            }
-        } catch (Exception e) {
-            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-            dataTask.setTaskErrorMsg(e.getMessage());
-            log.info("grpc Exception:{}", e.getMessage());
-            e.printStackTrace();
-        }
-        dataReasoning.setReasoningState(dataTask.getTaskState());
-    }
-
-    private void grpc(DataReasoning dataReasoning, DataTask dataTask, String modelType, Map<String, Object> map) {
+    private void grpc(DataReasoning dataReasoning, DataTask dataTask, ModelTypeEnum modelTypeEnum, Map<String, Object> map) {
         // 推理任务
         DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
         log.info(modelTask.toString());
@@ -582,59 +463,30 @@ public class DataAsyncService implements ApplicationContextAware {
         // 推理模板参数
         ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
         log.info("模板参数-------"+modelOutputPathDto.toString());
-        String freemarkerContent = "";
-        Map<String, Common.Dataset> values = new HashMap<>();
-        values.put("Bob",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_LABEL_DATASET).toString()).build());
-        if ("2".equals(modelType)) {
+        map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+        map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
+        if (modelTypeEnum == ModelTypeEnum.V_XGBOOST) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
-            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
-            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
             map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
             map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
-            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET).toString()).build());
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
-        } else if ("5".equals(modelType)) {
+        } else if (modelTypeEnum == ModelTypeEnum.HETERO_LR) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
-            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
-            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-            values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",map.get(PYTHON_GUEST_DATASET).toString()).build());
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
-        } else if ("6".equals(modelType) || "7".equals(modelType)) {
-            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
-            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
+        } else if (modelTypeEnum == ModelTypeEnum.REGRESSION_BINARY || modelTypeEnum == ModelTypeEnum.CLASSIFICATION_BINARY) {
+            map.remove(PYTHON_GUEST_DATASET);
         } else {
-            map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
-            map.put("predictFileName", modelOutputPathDto.getPredictFileName());
-            freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
+            map.remove(PYTHON_GUEST_DATASET);
         }
         try {
-            Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent), SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
-            Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("component_params", componentParamsParamValue)
-                    .build();
-            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(dataTask.getTaskIdName()).build();
-            Common.Task task = Common.Task.newBuilder()
-                    .setType(Common.TaskType.ACTOR_TASK)
-                    .setParams(params)
-                    .setName("modelTask")
-                    .setTaskInfo(taskBuild)
-                    .setLanguage(Common.Language.PYTHON)
-                    .putAllPartyDatasets(values)
-                    .build();
-            PushTaskRequest request = PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                    .setTask(task)
-                    .setSequenceNumber(11)
-                    .setClientProcessedUpTo(22)
-                    .build();
-            log.info("grpc PushTaskRequest :\n{}", request.toString());
-            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc结果:{}", reply.toString());
-            if (reply.getRetCode()==0){
-                dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask,taskBuild,reply.getPartyCount(),dataTask.getTaskResultPath());
+            TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
+            taskParam.setTaskId(dataTask.getTaskIdName());
+            taskParam.setJobId("1");
+            taskParam.getTaskContentParam().setModelType(modelTypeEnum);
+            taskParam.getTaskContentParam().setInfer(true);
+            taskParam.getTaskContentParam().setFreemarkerMap(map);
+            taskHelper.submit(taskParam);
+            if (taskParam.getSuccess()){
                 if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                     dataTask.setTaskResultPath(modelOutputPathDto.getPredictFileName());
                     dataReasoning.setReleaseDate(new Date());
@@ -642,7 +494,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:"+reply.getMsgInfo().toStringUtf8());
+                dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
                 dataTaskPrRepository.updateDataTask(dataTask);
             }
         } catch (Exception e) {

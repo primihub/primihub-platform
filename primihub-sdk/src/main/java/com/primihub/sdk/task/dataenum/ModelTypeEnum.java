@@ -1,5 +1,8 @@
 package com.primihub.sdk.task.dataenum;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public enum ModelTypeEnum {
     V_XGBOOST(2,"taskModel-v_xgboost",1,"hetero_xgb.ftl","hetero_xgb_infer.ftl"),
     TRANSVERSE_LR(3,"taskModel-transverse_lr",1,"homo_lr.ftl","homo_lr_infer.ftl"),
@@ -13,6 +16,14 @@ public enum ModelTypeEnum {
     private String typeName;
     private String modelFtlPath;
     private String inferFtlPath;
+
+    public static Map<Integer, ModelTypeEnum> MODEL_TYPE_MAP=new HashMap(){
+        {
+            for (ModelTypeEnum e: ModelTypeEnum.values()){
+                put(e.type,e);
+            }
+        }
+    };
 
     ModelTypeEnum(Integer type, String typeName, Integer trainType, String modelFtlPath, String inferFtlPath) {
         this.type = type;

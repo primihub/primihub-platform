@@ -5,20 +5,17 @@ import com.primihub.sdk.task.annotation.TaskTypeExample;
 import com.primihub.sdk.task.cache.CacheService;
 import com.primihub.sdk.task.factory.AbstractGRPCExecuteFactory;
 import com.primihub.sdk.task.param.TaskParam;
-import com.primihub.sdk.util.ClassUtils;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.netty.GrpcSslContexts;
 import io.grpc.netty.NegotiationType;
 import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
-import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * node task
@@ -48,6 +45,12 @@ public class TaskHelper {
     private GrpcClientConfig grpcClientConfig;
 
     private Channel channel;
+
+    private CacheService cacheService = null;
+
+    public CacheService getCacheService() {
+        return cacheService;
+    }
 
     public Channel getChannel() {
         return channel;
@@ -102,32 +105,23 @@ public class TaskHelper {
                 .build();
     }
 
-    private void initExecuteFactory()throws InstantiationException, IllegalAccessException {
+    private void initExecuteFactory(){
         String cacheType = this.grpcClientConfig.getCacheType();
         log.info("cacheType : {}",cacheType);
-        CacheService cacheService = null;
-        List<Class> allClassByInterface = ClassUtils.getAllClassByInterface(CacheService.class);
-        for (Class aClass : allClassByInterface) {
-            if (aClass.getSimpleName().equals(cacheType)){
-                cacheService = (CacheService)aClass.newInstance();
+        ServiceLoader<CacheService> cacheServices = ServiceLoader.load(CacheService.class);
+        for (CacheService service : cacheServices) {
+            if (service.getType().equals(cacheType)){
+                cacheService = service;
                 break;
             }
         }
         if (cacheService==null){
             throw new NullPointerException("cacheService is not null");
         }
-        List<String> customPackagePath = this.grpcClientConfig.getCustomPackagePath();
-        customPackagePath.add("com.primihub.sdk.task.param");
-        Iterator<Class<?>> examplesIt = getExample(customPackagePath).iterator();
-        while (examplesIt.hasNext()){
-            Class<?> next = examplesIt.next();
-            if (next!=null){
-                if (!EXECUTE_MAP.containsKey(next)){
-                    AbstractGRPCExecuteFactory execute = (AbstractGRPCExecuteFactory)next.newInstance();
-                    execute.setCacheService(cacheService);
-                    EXECUTE_MAP.put(next,execute);
-                }
-            }
+        ServiceLoader<AbstractGRPCExecuteFactory> executeFactorys = ServiceLoader.load(AbstractGRPCExecuteFactory.class);
+        for (AbstractGRPCExecuteFactory execute : executeFactorys) {
+            execute.setCacheService(cacheService);
+            EXECUTE_MAP.put(execute.getClass(),execute);
         }
     }
 
@@ -162,17 +156,5 @@ public class TaskHelper {
         AbstractGRPCExecuteFactory abstractGRPCExecuteFactory = EXECUTE_MAP.get(annotation.value());
         abstractGRPCExecuteFactory.continuouslyObtainTaskStatus(channel,abstractGRPCExecuteFactory.assembleTaskContext(taskParam),taskParam,taskParam.getPartyCount());
     }
-
-    private Set<Class<?>> getExample(List<String> customPackagePath){
-        Set<Class<?>> set = new HashSet<>();
-        for (String customPackage : customPackagePath) {
-            Reflections reflections = new Reflections(customPackage);
-            Set<Class<?>> taskTypeExampleClass = reflections.getTypesAnnotatedWith(TaskTypeExample.class);
-            set.addAll(taskTypeExampleClass.stream().map(c->c.getAnnotation(TaskTypeExample.class)).map(TaskTypeExample::value).collect(Collectors.toSet()));
-        }
-        return set;
-    }
-
-
 
 }

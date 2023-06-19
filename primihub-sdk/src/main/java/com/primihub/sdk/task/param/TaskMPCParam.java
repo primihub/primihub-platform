@@ -10,7 +10,7 @@ import java.util.Map;
 public class TaskMPCParam {
     private List<String> resourceIds;
     private String taskName = "MPC";
-    private Map<String,String> paramMap;
+    private Map<String,Object> paramMap;
 
     public List<String> getResourceIds() {
         return resourceIds;
@@ -28,11 +28,11 @@ public class TaskMPCParam {
         this.taskName = taskName;
     }
 
-    public Map<String, String> getParamMap() {
+    public Map<String, Object> getParamMap() {
         return paramMap;
     }
 
-    public void setParamMap(Map<String, String> paramMap) {
+    public void setParamMap(Map<String, Object> paramMap) {
         this.paramMap = paramMap;
     }
 

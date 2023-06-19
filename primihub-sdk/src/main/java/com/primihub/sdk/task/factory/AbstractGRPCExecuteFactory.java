@@ -66,9 +66,9 @@ public abstract class AbstractGRPCExecuteFactory {
 
     public void continuouslyObtainTaskStatus(Channel channel,Common.TaskContext taskBuild, TaskParam param, int partyCount) {
         boolean isContinue = true;
+        String key = TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
+        CacheService cacheService = getCacheService();
         try {
-            String key = TASK_STATUS_KEY.replace("<taskId>",taskBuild.getTaskId()).replace("<jobId>",taskBuild.getJobId());
-            CacheService cacheService = getCacheService();
             while (isContinue){
                 TaskStatusReply taskStatusReply  = runVMNodeGrpc(o -> o.fetchTaskStatus(taskBuild),channel);
                 log.info(taskStatusReply.toString());
@@ -99,11 +99,12 @@ public abstract class AbstractGRPCExecuteFactory {
                 }
                 Thread.sleep(1000L);
             }
-            cacheService.invalidate(key);
-            param.setEnd(true);
         }catch (Exception e){
+            param.setSuccess(false);
             e.printStackTrace();
         }
+        cacheService.invalidate(key);
+        param.setEnd(true);
     }
 
 

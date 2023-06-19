@@ -43,6 +43,9 @@ public class FreemarkerTemplate {
      */
     public String generateTemplateStr(Map<String, Object> dataMap, String templatePath){
         try{
+            if (TemplatesHelper.getTemplatesMap().containsKey(templatePath)){
+                return generateTemplateStrFreemarkerContent(templatePath,TemplatesHelper.getTemplatesMap().get(templatePath),dataMap);
+            }
             Writer writer = new StringWriter();
             generateTemplate(dataMap, templatePath, writer);
             String content = writer.toString();

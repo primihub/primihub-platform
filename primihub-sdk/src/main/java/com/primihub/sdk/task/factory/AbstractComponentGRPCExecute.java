@@ -11,9 +11,9 @@ import com.primihub.sdk.util.FreemarkerTemplate;
 import io.grpc.Channel;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
@@ -64,7 +64,7 @@ public class AbstractComponentGRPCExecute extends AbstractGRPCExecuteFactory {
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(params)
-                    .setName(taskParam.getTaskContentParam().getModelType().getTypeName())
+                    .setName(taskParam.getTaskContentParam().getModelType()==null?"taskModel":taskParam.getTaskContentParam().getModelType().getTypeName())
                     .setLanguage(Common.Language.PYTHON)
                     .setTaskInfo(taskBuild)
                     .putAllPartyDatasets(values)

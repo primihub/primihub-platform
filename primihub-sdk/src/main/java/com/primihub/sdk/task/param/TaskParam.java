@@ -13,6 +13,13 @@ public class TaskParam<T> {
     private Boolean isOpenGetStatus = true;
     private T taskContentParam;
 
+    public TaskParam(T taskContentParam) {
+        this.taskContentParam = taskContentParam;
+    }
+
+    public TaskParam() {
+    }
+
     public String getRequestId() {
         return requestId;
     }
@@ -26,6 +33,9 @@ public class TaskParam<T> {
     }
 
     public String getJobId() {
+        if (jobId == null || "".equals(jobId)){
+            return "1";
+        }
         return jobId;
     }
 

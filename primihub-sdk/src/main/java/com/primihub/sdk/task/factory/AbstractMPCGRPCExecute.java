@@ -40,16 +40,17 @@ public class AbstractMPCGRPCExecute extends AbstractGRPCExecuteFactory {
         try {
             TaskMPCParam mpcParam = taskParam.getTaskContentParam();
             Common.Params.Builder paramsBuilder = Common.Params.newBuilder();
-            Iterator<Map.Entry<String, String>> mapIterator = mpcParam.getParamMap().entrySet().iterator();
+            Iterator<Map.Entry<String, Object>> mapIterator = mpcParam.getParamMap().entrySet().iterator();
             while (mapIterator.hasNext()){
-                Map.Entry<String, String> next = mapIterator.next();
-                paramsBuilder.putParamMap(next.getKey(),Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(next.getValue().getBytes(StandardCharsets.UTF_8))).build());
+                Map.Entry<String, Object> next = mapIterator.next();
+                paramsBuilder.putParamMap(next.getKey(),Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(next.getValue().toString().getBytes(StandardCharsets.UTF_8))).build());
             }
             Common.TaskContext taskBuild = assembleTaskContext(taskParam);
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(paramsBuilder.build())
                     .setName(mpcParam.getTaskName())
+                    .setCode(ByteString.copyFrom(mpcParam.getTaskName().getBytes(StandardCharsets.UTF_8)))
                     .setLanguage(Common.Language.PROTO)
                     .setTaskInfo(taskBuild)
                     .putAllPartyDatasets(assembleModelMpcDatasets(mpcParam.getResourceIds()))
