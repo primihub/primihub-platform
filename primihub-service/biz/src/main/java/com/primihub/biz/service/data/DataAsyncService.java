@@ -180,7 +180,6 @@ public class DataAsyncService implements ApplicationContextAware {
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         updateTaskState(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName(), System.currentTimeMillis());
-//        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
         log.info("Share model task modelId:{} modelName:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName());
         ShareModelVo vo = new ShareModelVo();
         vo.setDataModel(req.getDataModel());
@@ -190,7 +189,6 @@ public class DataAsyncService implements ApplicationContextAware {
         vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
         vo.setDerivationList(req.getDerivationList());
         sendShareModelTask(vo);
-//        }
         sendModelTaskMail(req.getDataTask(), req.getDataModel().getProjectId());
         dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(req.getDataModel().getProjectId(), null));
     }
@@ -452,11 +450,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private void grpc(DataReasoning dataReasoning, DataTask dataTask, ModelTypeEnum modelTypeEnum, Map<String, Object> map) {
         // 推理任务
         DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
-        log.info(modelTask.toString());
-        log.info(modelTask.getTaskResultContent());
         // 推理模板参数
         ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
-        log.info("模板参数-------"+modelOutputPathDto.toString());
         map.put("predictFileName", modelOutputPathDto.getPredictFileName());
         map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
         if (modelTypeEnum == ModelTypeEnum.V_XGBOOST) {
@@ -482,10 +477,9 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info(taskParam.toString());
             taskHelper.submit(taskParam);
             if (taskParam.getSuccess()){
-                if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
-                    dataTask.setTaskResultPath(modelOutputPathDto.getPredictFileName());
-                    dataReasoning.setReleaseDate(new Date());
-                }
+                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                dataTask.setTaskResultPath(modelOutputPathDto.getPredictFileName());
+                dataReasoning.setReleaseDate(new Date());
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
