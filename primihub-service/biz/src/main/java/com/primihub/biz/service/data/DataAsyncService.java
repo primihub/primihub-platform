@@ -403,7 +403,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 }
             }
         }
-
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
@@ -483,25 +482,24 @@ public class DataAsyncService implements ApplicationContextAware {
             taskParam.getTaskContentParam().setModelType(modelTypeEnum);
             taskParam.getTaskContentParam().setInfer(true);
             taskParam.getTaskContentParam().setFreemarkerMap(map);
+            log.info(taskParam.toString());
             taskHelper.submit(taskParam);
             if (taskParam.getSuccess()){
                 if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                     dataTask.setTaskResultPath(modelOutputPathDto.getPredictFileName());
                     dataReasoning.setReleaseDate(new Date());
-                    dataTaskPrRepository.updateDataTask(dataTask);
                 }
             }else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
-                dataTaskPrRepository.updateDataTask(dataTask);
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
-            dataTaskPrRepository.updateDataTask(dataTask);
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }
+        dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoning.setReasoningState(dataTask.getTaskState());
     }
 }

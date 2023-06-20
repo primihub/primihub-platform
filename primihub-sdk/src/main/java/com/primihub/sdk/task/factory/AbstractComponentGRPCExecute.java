@@ -55,6 +55,7 @@ public class AbstractComponentGRPCExecute extends AbstractGRPCExecuteFactory {
             }else {
                 freemarkerContent = taskContentParam.isUntreated()?FreemarkerTemplate.getInstance().generateTemplateStrFreemarkerContent(taskContentParam.isInfer()?taskContentParam.getModelType().getInferFtlPath():taskContentParam.getModelType().getModelFtlPath(),taskContentParam.getTemplatesContent(),taskContentParam.getFreemarkerMap()):taskContentParam.getTemplatesContent();
             }
+            log.info("start taskParam:{} - freemarkerContent:{}",taskParam,freemarkerContent);
             Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent), SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("component_params", componentParamsParamValue)
