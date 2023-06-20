@@ -136,11 +136,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
         ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
         putPath(outputPathDto,taskReq);
-        if (modelType == ModelTypeEnum.REGRESSION_BINARY){
-            taskReq.getFreemarkerMap().put("taskNNType","classification");
-        }else if(modelType == ModelTypeEnum.CLASSIFICATION_BINARY) {
-            taskReq.getFreemarkerMap().put("taskNNType","regression");
-        }
+        taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
+        taskReq.getDataModelTask().setPredictFile(outputPathDto.getIndicatorFileName());
         TaskParam<TaskComponentParam> taskParam = new TaskParam(new TaskComponentParam());
         taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
         taskParam.setJobId(String.valueOf(taskReq.getJob()));
