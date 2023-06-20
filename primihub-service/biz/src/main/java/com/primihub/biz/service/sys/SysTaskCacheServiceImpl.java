@@ -32,6 +32,6 @@ public class SysTaskCacheServiceImpl implements CacheService {
 
     @Override
     public String getType() {
-        return null;
+        return "SysTaskCacheServiceImpl";
     }
 }
