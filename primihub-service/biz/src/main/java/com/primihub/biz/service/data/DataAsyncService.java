@@ -403,10 +403,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 }
             }
         }
-        dataReasoning.setReasoningState(dataTask.getTaskState());
-        dataTask.setTaskEndTime(System.currentTimeMillis());
-        dataTaskPrRepository.updateDataTask(dataTask);
-        dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 
     public void sendModelTaskMail(DataTask dataTask, Long projectId) {
@@ -500,5 +496,9 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }
+        dataReasoning.setReasoningState(dataTask.getTaskState());
+        dataTask.setTaskEndTime(System.currentTimeMillis());
+        dataTaskPrRepository.updateDataTask(dataTask);
+        dataReasoningPrRepository.updateDataReasoning(dataReasoning);
     }
 }
