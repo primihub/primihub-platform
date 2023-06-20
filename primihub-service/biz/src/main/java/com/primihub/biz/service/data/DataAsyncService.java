@@ -394,7 +394,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskErrorMsg("未能获取到模型类型信息");
             } else {
                 ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(modelType.getVal()));
-                if (modelTypeEnum!=null){
+                if (modelTypeEnum==null){
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 }else {
@@ -403,6 +403,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 }
             }
         }
+        dataReasoning.setReasoningState(dataTask.getTaskState());
         dataTask.setTaskEndTime(System.currentTimeMillis());
         dataTaskPrRepository.updateDataTask(dataTask);
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
@@ -499,7 +500,5 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }
-        dataTaskPrRepository.updateDataTask(dataTask);
-        dataReasoning.setReasoningState(dataTask.getTaskState());
     }
 }
