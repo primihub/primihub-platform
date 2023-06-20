@@ -21,6 +21,7 @@ public class SysTaskCacheServiceImpl implements CacheService {
 
     @Override
     public void put(String key, List<String> list) {
+        primaryStringRedisTemplate.delete(key);
         primaryStringRedisTemplate.opsForList().rightPushAll(key,list);
         primaryStringRedisTemplate.expire(key,12, TimeUnit.HOURS);
     }
