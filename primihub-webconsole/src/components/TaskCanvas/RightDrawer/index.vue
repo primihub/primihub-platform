@@ -69,7 +69,7 @@
           <div v-for="(item,index) in featureItems" :key="index" :gutter="20" style="margin-bottom: 30px;">
             <el-row :gutter="5">
               <el-col :span="10">
-                <el-select v-model="item.type" :disabled="!options.isEditable" class="block" @change="handleTypeChange(index,$event)">
+                <el-select v-model="item.type" :disabled="!options.isEditable" class="block" @focus="handleTypeFocus(index)" @change="handleTypeChange(index,$event)">
                   <el-option
                     v-for="v in processingType"
                     :key="v.key"
@@ -355,9 +355,14 @@ export default {
     }
   },
   computed: {
-    processingType() {
-      const processingType = this.nodeData.componentTypes.find(item => item.typeCode === MPC_STATISTICS_TYPE)
-      return processingType ? processingType.inputValues : []
+    processingType: {
+      get() {
+        const processingType = this.nodeData.componentTypes.find(item => item.typeCode === MPC_STATISTICS_TYPE)
+        return processingType ? processingType.inputValues : []
+      },
+      set() {
+
+      }
     },
     isDataSelect() {
       return this.nodeData && this.nodeData.componentCode === DATA_SET
@@ -560,10 +565,6 @@ export default {
       this.featureItems.push({
         features: this.defaultExceptionFeatures,
         type: ''
-      })
-      this.processingType.map((item) => {
-        const current = this.featureItems.find(feature => feature.type === item.key)
-        item.disabled = !!current
       })
       this.handleChange('exception')
     },
@@ -915,6 +916,12 @@ export default {
     },
     handleMultiFeatureDialogClose() {
       this.multiFeaturesVisible = false
+    },
+    handleTypeFocus() {
+      this.processingType.map((item) => {
+        const current = this.featureItems.find(feature => feature.type === item.key)
+        this.$set(item, 'disabled', !!current)
+      })
     },
     handleTypeChange(index, value) {
       this.featureItems[index].type = value

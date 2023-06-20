@@ -58,7 +58,7 @@
         </el-col>
       </el-row>
       <div class="buttons">
-        <el-button v-if="hasModelDownloadPermission && task.taskState === 1" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
+        <el-button v-if="downLoadPermission" :disabled="project.status === 2 && task.taskState === 5" type="primary" icon="el-icon-download" @click="download">下载结果</el-button>
         <el-button v-if="hasModelRunPermission && task.taskState === 3" :disabled="project.status === 2" type="primary" @click="restartTaskModel(task.taskId)">重启任务</el-button>
         <el-button v-if="task.taskState === 2" :disabled="project.status === 2" type="primary" @click="cancelTaskModel(task.taskId)">取消任务</el-button>
         <el-button v-if="hasDeleteModelTaskPermission && task.taskState !== 5 && task.isCooperation === 0" :disabled="project.status === 2 || task.taskState === 2" type="danger" icon="el-icon-delete" @click="deleteModelTask">删除任务</el-button>
@@ -201,8 +201,17 @@ export default {
     hasViewPermission() {
       return this.$store.getters.buttonPermissionList.includes('UnionResourceDetail')
     },
-    hasModelDownloadPermission() {
-      return this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
+    downLoadPermission() {
+      const sysPermission = this.$store.getters.buttonPermissionList.includes('ModelResultDownload')
+      if (this.task.taskState === 1 && sysPermission) {
+        // mpc-lr task, only the initiator has the permission
+        if (this.model.modelType === 4) {
+          return this.task.isCooperation === 0
+        }
+        return true
+      } else {
+        return false
+      }
     },
     hasDeleteModelTaskPermission() {
       return this.$store.getters.buttonPermissionList.includes('deleteModelTask')
