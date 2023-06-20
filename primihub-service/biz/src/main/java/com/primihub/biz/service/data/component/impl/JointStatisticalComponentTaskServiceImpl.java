@@ -98,6 +98,8 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     if(!taskParam.getSuccess()){
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+taskParam.getError());
+                    }else {
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                     }
                     String newId = null;
                     String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
