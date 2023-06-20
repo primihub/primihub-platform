@@ -43,7 +43,11 @@ public class AbstractMPCGRPCExecute extends AbstractGRPCExecuteFactory {
             Iterator<Map.Entry<String, Object>> mapIterator = mpcParam.getParamMap().entrySet().iterator();
             while (mapIterator.hasNext()){
                 Map.Entry<String, Object> next = mapIterator.next();
-                paramsBuilder.putParamMap(next.getKey(),Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(next.getValue().toString().getBytes(StandardCharsets.UTF_8))).build());
+                if (next.getValue() instanceof Integer){
+                    paramsBuilder.putParamMap(next.getKey(),Common.ParamValue.newBuilder().setValueInt32((int)next.getValue()).build());
+                }else {
+                    paramsBuilder.putParamMap(next.getKey(),Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(next.getValue().toString().getBytes(StandardCharsets.UTF_8))).build());
+                }
             }
             Common.TaskContext taskBuild = assembleTaskContext(taskParam);
             Common.Task task = Common.Task.newBuilder()

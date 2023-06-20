@@ -188,8 +188,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName());
             ModelOutputPathDto outputPathDto = new ModelOutputPathDto(baseSb.toString());
             taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
-            int batchSize = 128;
-            int numlters = 5;
+            Integer batchSize = 128;
+            Integer numlters = 5;
             try {
                 if (taskReq.getValueMap().containsKey("batchSize")){
                     batchSize = Integer.parseInt(taskReq.getValueMap().get("batchSize"));
