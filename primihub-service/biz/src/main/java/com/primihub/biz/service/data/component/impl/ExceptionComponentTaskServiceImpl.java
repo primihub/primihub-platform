@@ -1,10 +1,8 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.protobuf.ByteString;
-import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -17,19 +15,17 @@ import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.DataTaskMonitorService;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
 import primihub.rpc.Common;
-
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,11 +34,11 @@ import java.util.stream.Collectors;
 @Service("exceptionComponentTaskServiceImpl")
 public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
-    private BaseConfiguration baseConfiguration;
-    @Autowired
-    private FreeMarkerConfigurer freeMarkerConfigurer;
+    private ComponentsConfiguration componentsConfiguration;
     @Autowired
     private WorkGrpcClient workGrpcClient;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
     @Autowired
     private DataResourceService dataResourceService;
     @Autowired
@@ -52,7 +48,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
-        return componentTypeVerification(req,baseConfiguration.getModelComponents(),taskReq);
+        return componentTypeVerification(req,componentsConfiguration.getModelComponents(),taskReq);
     }
 
     @Override
@@ -61,7 +57,8 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
             List<ModelDerivationDto> newest = taskReq.getNewest();
             log.info("ids:{}", ids);
-            Map<String, GrpcComponentDto> exceptionEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),null);
+            String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "exception";
+            Map<String, GrpcComponentDto> exceptionEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
             log.info("exceptionEntityMap-1:{}",JSONObject.toJSONString(exceptionEntityMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
@@ -99,14 +96,13 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     .setTaskInfo(taskBuild)
                     .putAllPartyDatasets(values)
                     .build();
-            log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
                     .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
-                    .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if(reply.getRetCode() == 2){
@@ -124,7 +120,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         continue;
                     }
                     log.info("value:{}",JSONObject.toJSONString(value));
-                    derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),null,value.getDataSetId()));
+                    derivationList.add(new ModelDerivationDto(key,"missing","异常值处理",value.getNewDataSetId(),value.getOutputFilePath(),value.getDataSetId()));
                     log.info("derivationList:{}",JSONObject.toJSONString(derivationList));
                 }
                 taskReq.getDerivationList().addAll(derivationList);

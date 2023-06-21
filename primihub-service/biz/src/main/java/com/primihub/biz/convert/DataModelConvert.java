@@ -29,36 +29,15 @@ import java.util.Map;
 @Slf4j
 public class DataModelConvert {
 
-    public static DataModel dataModelReqConvertPo(DataModelReq req, Long userId, Long organId){
-        DataModel po = new DataModel();
-        po.setModelName(req.getModelName());
-        po.setModelDesc(req.getModelDesc());
-        po.setModelType(req.getModelType());
-        po.setProjectId(req.getProjectId());
-        po.setYValueColumn(req.getYValueColumn());
-        po.setResourceNum(0);
-        return po;
-    }
-
     public static DataModel dataModelReqConvertPo(DataModelAndComponentReq req, Long userId){
         DataModel po = new DataModel();
         po.setModelId(StringUtils.isNotBlank(req.getModelId())?Long.parseLong(req.getModelId()):null);
-//        po.setModelName(req.getModelName());
         po.setModelDesc(req.getModelDesc());
         po.setIsDraft(req.getIsDraft());
         po.setTrainType(req.getTrainType());
         po.setUserId(userId);
         po.setResourceNum(0);
         return po;
-    }
-    public static ModelVo dataModelConvertVo(DataModel dataModel){
-        ModelVo vo = new ModelVo();
-        vo.setModelId(dataModel.getModelId());
-        vo.setCreateDate(dataModel.getCreateDate());
-        vo.setModelType(dataModel.getModelType());
-        vo.setModelDesc(dataModel.getModelDesc());
-        vo.setModelName(dataModel.getModelName());
-        return vo;
     }
 
     public static DataComponent dataModelReqConvertDataComponentPo(DataComponentReq req){
@@ -75,26 +54,6 @@ public class DataModelConvert {
         dataComponent.setIsDel(0);
         dataComponent.setDataJson(JSONArray.toJSONString(req.getComponentValues()));
         return dataComponent;
-    }
-
-    public static ComponentResourceVo resourceRecordVoConvertComponentResourceVo(DataResource dataResource){
-        ComponentResourceVo vo= new ComponentResourceVo(dataResource.getFileHandleField());
-        vo.setResourceId(dataResource.getResourceId().toString());
-        vo.setResourceName(dataResource.getResourceName());
-        return vo;
-    }
-
-    public static ComponentResourceVo resourceRecordMapConvertComponentResourceVo(Map<String,Object> dataResource){
-        Object resourceColumnNameList = dataResource.get("resourceColumnNameList");
-        ComponentResourceVo vo;
-        if (resourceColumnNameList!=null){
-            vo = new ComponentResourceVo(resourceColumnNameList.toString());
-        }else {
-            vo = new ComponentResourceVo();
-        }
-        vo.setResourceId(dataResource.get("resourceId").toString());
-        vo.setResourceName(dataResource.get("resourceName").toString());
-        return vo;
     }
 
     public static DataComponentVo dataComponentPoConvertDataComponentVo(DataComponent dataComponent){
@@ -151,6 +110,7 @@ public class DataModelConvert {
         String resourceColumnNameList = resourceMap==null?null: ObjectUtils.isEmpty(resourceMap.get("resourceColumnNameList"))?null:resourceMap.get("resourceColumnNameList").toString();
         if (StringUtils.isNotBlank(resourceColumnNameList)){
             modelProjectResourceVo.setFileHandleField(Arrays.asList(resourceColumnNameList.split(",")));
+            modelProjectResourceVo.setResourceField((List<DataFileFieldVo>)resourceMap.get("fieldList"));
         }
         return modelProjectResourceVo;
     }

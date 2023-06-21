@@ -3,7 +3,6 @@ package com.primihub.gateway;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
 import com.primihub.biz.config.base.TemplatesConfig;
-import com.primihub.biz.config.grpc.GrpcServerConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
 import com.primihub.biz.config.thread.ThreadPoolConfig;
 import com.primihub.biz.service.sys.*;
@@ -23,7 +22,6 @@ import org.springframework.context.annotation.FilterType;
         @ComponentScan.Filter(
                 type = FilterType.ASSIGNABLE_TYPE,
                 value = {
-                        GrpcServerConfiguration.class,
                         SingleTaskChannelConsumer.class,
                         ThreadPoolConfig.class,
                         TemplatesConfig.class,

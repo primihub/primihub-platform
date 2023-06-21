@@ -71,8 +71,6 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Autowired
-    private StringRedisTemplate stringRedisTemplate;
-    @Autowired
     private WorkGrpcClient workGrpcClient;
     @Autowired
     private BaseConfiguration baseConfiguration;
@@ -181,7 +179,6 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         req.getDataTask().setTaskEndTime(System.currentTimeMillis());
         updateTaskState(req.getDataTask());
-//        dataTaskPrRepository.updateDataTask(req.getDataTask());
         log.info("end model task grpc modelId:{} modelName:{} end time:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName(), System.currentTimeMillis());
 //        if (req.getDataTask().getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
         log.info("Share model task modelId:{} modelName:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName());
@@ -281,13 +278,13 @@ public class DataAsyncService implements ApplicationContextAware {
                         .putPartyDatasets("SERVER", Common.Dataset.newBuilder().putData("SERVER", resourceId).build())
                         .putPartyDatasets("CLIENT", Common.Dataset.newBuilder().putData("CLIENT", ownDataResource.getResourceFusionId()).build())
                         .build();
-                log.info("grpc Common.Task : \n{}", task.toString());
                 PushTaskRequest request = PushTaskRequest.newBuilder()
                         .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                         .setTask(task)
                         .setSequenceNumber(11)
                         .setClientProcessedUpTo(22)
                         .build();
+                log.info("grpc PushTaskRequest :\n{}", request.toString());
                 reply = workGrpcClient.run(o -> o.submitTask(request));
                 log.info("grpc结果:" + reply);
                 dataTaskMonitorService.continuouslyObtainTaskStatus(dataTask, taskBuild, reply.getPartyCount(), psiTask.getFilePath());
@@ -313,20 +310,6 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskState(psiTask.getTaskState());
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
-    }
-
-    public void psiTaskOutputFileHandle(DataPsiTask task) {
-        if (task.getTaskState() != 1) {
-            return;
-        }
-        List<String> fileContent = FileUtil.getFileContent(task.getFilePath(), null);
-        StringBuilder sb = new StringBuilder();
-        for (String line : fileContent) {
-            sb.append(line).append("\r\n");
-        }
-        task.setFileContent(sb.toString());
-        task.setFileRows(fileContent.size());
-        dataPsiPrRepository.updateDataPsiTask(task);
     }
 
     @Async
@@ -360,11 +343,8 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setName("testTask")
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PROTO)
-//                    .setCode(ByteString.copyFrom("import sys;".getBytes(StandardCharsets.UTF_8)))
-//                    .addInputDatasets("serverData")
                     .putPartyDatasets("SERVER", Common.Dataset.newBuilder().putData("SERVER", resourceId).build())
                     .build();
-            log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
                     .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
@@ -372,6 +352,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setClientProcessedUpTo(22)
                     .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
                     .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
             reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info(reply.toString());
             if (reply.getRetCode() == 0) {
@@ -389,7 +370,6 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
-//        dataTaskPrRepository.updateDataTask(dataTask);
     }
 
     public void sendShareModelTask(ShareModelVo shareModelVo) {
@@ -441,7 +421,6 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         log.info("{}-{}", labelDataset, guestDataset);
         DataTask dataTask = new DataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(dataReasoning.getReasoningName());
         dataTask.setTaskStartTime(System.currentTimeMillis());
@@ -468,22 +447,6 @@ public class DataAsyncService implements ApplicationContextAware {
             } else {
                 map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
                 grpc(dataReasoning, dataTask, modelType.getVal(), map);
-                //String freemarkerContent = "";
-                /*if ("2".equals(modelType.getVal())){
-                 *//*freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());*//*
-                }else if(modelType.getVal().equals("5")){
-                    *//*freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HETERO_LR_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());*//*
-                }else if(modelType.getVal().equals("6")||modelType.getVal().equals("7")){
-                    *//*freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());*//*
-                }else{
-                    Common.ParamValue hostModelFileNameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(modelOutputPathDto.getHostModelFileName().getBytes(StandardCharsets.UTF_8))).build();
-                    map.put("hostModelFileName", dataTask.getTaskResultPath());
-                    freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_HOMO_LR_INFER_PATH, freeMarkerConfigurer, map);
-                    grpc(dataReasoning,dataTask,freemarkerContent,modelType.getVal());
-                }*/
             }
         }
 
@@ -661,13 +624,13 @@ public class DataAsyncService implements ApplicationContextAware {
                     .setLanguage(Common.Language.PYTHON)
                     .putAllPartyDatasets(values)
                     .build();
-            log.info("grpc Common.Task :\n{}", task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()
                     .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
                     .build();
+            log.info("grpc PushTaskRequest :\n{}", request.toString());
             PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
             log.info("grpc结果:{}", reply.toString());
             if (reply.getRetCode()==0){

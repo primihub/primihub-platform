@@ -219,7 +219,7 @@ export default {
     })
   },
   destroyed() {
-    clearTimeout(this.taskTimer)
+    clearInterval(this.taskTimer)
     this.selectComponentList = []
     this.destroyed = true
     this.graph.dispose()
@@ -614,7 +614,6 @@ export default {
     },
     deleteNode() {
       const cells = this.graph.getSelectedCells()
-      console.log('deleteNode', cells)
       if (cells.length) {
         this.graph.removeCells(cells)
       }
@@ -647,12 +646,30 @@ export default {
         return false
       })
     },
+    checkModelStatisticsValidated(jointStatisticalCom) {
+      let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
+      featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
+      const emptyType = featureValues.find(item => item.type === '')
+      const emptyFeature = featureValues.find(item => item.features[0].checked.length === 0)
+      if (emptyFeature) {
+        this.$message.error('联合统计所选统计项特征不能为空，请核验')
+        return false
+      } else if (emptyType) {
+        this.$message.error('联合统计所选统计项不能为空，请核验')
+        return false
+      } else {
+        return true
+      }
+    },
     checkRunValidated() {
       const data = this.graph.toJSON()
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
+      if (jointStatisticalCom) {
+        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+      }
 
       const startCom = modelComponents.find(item => item.componentCode === START_NODE)
 
@@ -670,11 +687,11 @@ export default {
 
       const fileContainsY = providerResource.fileHandleField?.includes('y')
       // LR features must select
-      if (initiateResource.calculationField.length === 1) { // has Y
+      if (initiateResource.calculationField.length === 1 && initiateResource.calculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
-      } else if (fileContainsY && providerResource.calculationField.length === 1 || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
+      } else if (fileContainsY && providerResource.calculationField.length === 1 && providerResource.calculationField.includes('y') || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
         this.$message.error('请选择协作方数据特征')
         this.modelRunValidated = false
         return
@@ -695,7 +712,6 @@ export default {
       }
       // 横向lr
       if ((modelType === '3' || modelType === '6' || modelType === '7') && arbiterOrganId === '') {
-        console.log('error1')
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -704,7 +720,6 @@ export default {
         return
       }
       if (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId) {
-        console.log('error2')
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -757,8 +772,6 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
-      } else {
-        this.modelRunValidated = true
       }
     },
     async run() {
@@ -1188,8 +1201,6 @@ export default {
         const model = result.find(item => item.componentCode === MODEL)
         this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
         this.components = JSON.parse(JSON.stringify(result))
-        console.log('defaultComponentsConfig 1', this.defaultComponentsConfig)
-        // this.componentsList = config.slice(1)
       }
     },
     // 获取模型组件详情
@@ -1217,7 +1228,6 @@ export default {
           closeOnClickModal: false,
           type: 'warning'
         }).then(() => {
-          // this.setComponentsDetail(res.result)
           this.setComponentsDetail(res.result)
         }).catch(() => {
           this.isLoadHistory = false
@@ -1240,7 +1250,7 @@ export default {
         const currentData = this.components.find(c => c.componentCode === item.componentCode)
         currentData.componentTypes.map(c => {
           const componentValue = item.componentValues.find(item => item.key === c.typeCode)
-          if (componentValue.val !== '') {
+          if (componentValue && componentValue.val !== '') {
             c.inputValue = componentValue.val
           }
           this.getDetailParams(c, item)

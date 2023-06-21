@@ -69,7 +69,7 @@ public class DataGrpcService extends DataSetServiceGrpc.DataSetServiceImplBase {
         responseObserver.onCompleted();
     }
 
-
+    @Override
     public void getDataset(GetDatasetRequest request, StreamObserver<GetDatasetResponse> responseObserver){
         log.info("get ids:{}",request.getIdList().toString());
         List<ByteString> ids = request.getIdList().asByteStringList();

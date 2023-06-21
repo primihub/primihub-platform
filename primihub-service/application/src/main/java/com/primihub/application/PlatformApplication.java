@@ -14,6 +14,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 //        @NacosPropertySource(dataId = "test", autoRefreshed = true),
 //        @NacosPropertySource(dataId = "test.yaml", autoRefreshed = true),
         @NacosPropertySource(dataId = "base.json" ,autoRefreshed = true),
+        @NacosPropertySource(dataId = "components.json" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "database.yaml" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "redis.yaml" ,autoRefreshed = true)})
 @SpringBootApplication(scanBasePackages="com.primihub")

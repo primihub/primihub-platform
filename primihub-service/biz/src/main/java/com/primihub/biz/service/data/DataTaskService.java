@@ -183,12 +183,12 @@ public class DataTaskService {
         }
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
         dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
-        dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
+//        dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
         dataProjectPrRepository.updateDataProject(dataProject);
     }
 
     public void spreadModelData(String paramStr){
-        log.info(paramStr);
+//        log.info(paramStr);
         ShareModelVo shareModelVo = JSONObject.parseObject(paramStr, ShareModelVo.class);
         if (shareModelVo.getShareOrganId() == null && shareModelVo.getShareOrganId().isEmpty()) {
             log.info("no shareOrganId");

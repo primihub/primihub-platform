@@ -32,6 +32,9 @@
           <el-descriptions-item label="状态"><StatusIcon :status="dataList.reasoningState" /> {{ dataList.reasoningState | reasoningStateFilter }}</el-descriptions-item>
         </el-descriptions>
         <div v-if="dataList.reasoningState === 1" class="result">
+          <!-- <h3>运算结果</h3> -->
+          <!-- <p class="el-icon-error icon-error" />
+          <p>存在欺诈</p> -->
           <img src="../../../assets/result-img.png" width="200" alt="" srcset="">
         </div>
       </div>

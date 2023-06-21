@@ -145,9 +145,6 @@ public class DataResourceConvert {
         dataFileField.setFieldName(req.getFieldName());
         dataFileField.setFieldId(req.getFieldId());
         dataFileField.setFieldAs(req.getFieldAs());
-//        if (StringUtils.isNotBlank(req.getFieldType())){
-//            dataFileField.setFieldType(Integer.valueOf(req.getFieldType()));
-//        }
         if (fieldTypeEnum!=null) {
             dataFileField.setFieldType(fieldTypeEnum.getCode());
         }
@@ -161,11 +158,7 @@ public class DataResourceConvert {
     public static DataPsiResourceAllocationVo DataResourcePoConvertAllocationVo(DataResource dataResource, List<DataFileField> fileFieldList, String organId){
         DataPsiResourceAllocationVo vo = new DataPsiResourceAllocationVo();
         vo.setOrganId(organId);
-//        if (StringUtils.isNotBlank(dataResource.getResourceFusionId())){
-//            vo.setResourceId(dataResource.getResourceFusionId());
-//        }else {
-            vo.setResourceId(dataResource.getResourceId().toString());
-//        }
+        vo.setResourceId(dataResource.getResourceId().toString());
         vo.setResourceName(dataResource.getResourceName());
         if (fileFieldList!=null&&fileFieldList.size()>0){
             for (DataFileField dataFileField : fileFieldList) {

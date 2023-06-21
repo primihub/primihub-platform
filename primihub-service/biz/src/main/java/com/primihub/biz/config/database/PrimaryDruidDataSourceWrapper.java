@@ -23,7 +23,6 @@ public class PrimaryDruidDataSourceWrapper extends DruidDataSource implements In
     @NacosValue(value="${spring.datasource.druid.primary.filter.config.enabled}",autoRefreshed = true)
     private Boolean filterConfigEnabled = false;
 
-//    private String passwordCallbackClassName;
 
     public void setMaxWait(int maxWait) {
         this.maxWait = maxWait;
@@ -54,11 +53,6 @@ public class PrimaryDruidDataSourceWrapper extends DruidDataSource implements In
         this.connectionProperties = connectionProperties;
     }
 
-//    @Override
-//    public void setPasswordCallbackClassName(String passwordCallbackClassName) {
-//        this.passwordCallbackClassName = passwordCallbackClassName;
-//    }
-
     @Override
     public void afterPropertiesSet() throws Exception {
         super.setUrl(url);
@@ -82,7 +76,6 @@ public class PrimaryDruidDataSourceWrapper extends DruidDataSource implements In
         if (filterConfigEnabled){
             super.addFilters("config");
         }
-//        super.setPasswordCallbackClassName(passwordCallbackClassName);
     }
 
 }

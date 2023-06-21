@@ -113,6 +113,8 @@ public class DataDerivationResourceVo {
 
     private String tag;
 
+    private List<DataFileFieldVo> fileFields;
+
     public String[] getFileHandleField() {
         if (StringUtils.isNotBlank(handleField)){
             return handleField.split(",");

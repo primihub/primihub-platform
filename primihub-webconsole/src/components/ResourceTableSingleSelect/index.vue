@@ -9,7 +9,7 @@
       highlight-current-row
       :row-class-name="tableRowClassName"
     >
-      <el-table-column label="选择" width="55">
+      <el-table-column label="选择" width="55" align="center">
         <template slot-scope="{row}">
           <el-radio v-model="radioSelect" :disabled="row.auditStatus !== undefined && row.auditStatus !== 1" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
         </template>
