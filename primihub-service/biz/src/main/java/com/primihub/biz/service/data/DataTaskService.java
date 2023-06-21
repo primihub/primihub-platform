@@ -183,7 +183,7 @@ public class DataTaskService {
         }
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(null, shareProjectVo.getProjectId());
         dataProject.setResourceNum(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()).size());
-        dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
+//        dataProject.setProviderOrganNames(StringUtils.join(organNames,","));
         dataProjectPrRepository.updateDataProject(dataProject);
     }
 
