@@ -63,13 +63,17 @@ public class DataTaskMonitorService {
                             if (num <= success){
                                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                                 // 暂停2秒 在k8s中文件同步存在一定的延迟性
-                                Thread.sleep(2000L);
                                 if (StringUtils.isNotBlank(path)){
-                                    if (!FileUtil.isFileExists(path)){
-                                        log.info("path:{} 不存在",path);
-                                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                                        dataTask.setTaskErrorMsg("运行失败:无文件信息");
+                                    long startTime = System.currentTimeMillis();
+                                    log.info("开始测试nfs 文件同步时间戳:{}",startTime);
+                                    while (true){
+                                        if (FileUtil.isFileExists(path)){
+                                            log.info("{} - 存在了-退出",path);
+                                            break;
+                                        }
                                     }
+                                    long endTime = System.currentTimeMillis();
+                                    log.info("结束始测试nfs 文件同步时间戳:{} - 耗时:{}",endTime,endTime-startTime);
                                 }
                                 isContinue = false;
                             }
