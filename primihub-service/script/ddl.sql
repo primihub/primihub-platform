@@ -1,435 +1,5 @@
 use privacy;
 
-DROP TABLE IF EXISTS `data_model`;
-CREATE TABLE `data_model` (
-                              `model_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '模型id',
-                              `model_uuid` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '模型uuid',
-                              `model_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '模型名称',
-                              `model_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '模型描述',
-                              `model_type` int(2) DEFAULT NULL COMMENT '模型模板',
-                              `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
-                              `resource_num` int(8) DEFAULT NULL COMMENT '资源个数',
-                              `y_value_column` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT 'y值字段',
-                              `component_speed` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件执行进度id',
-                              `train_type` tinyint(4) DEFAULT '0' COMMENT '训练类型 0纵向 1横向 默认纵向',
-                              `is_draft` tinyint(4) DEFAULT '0' COMMENT '是否草稿 0是 1不是 默认是',
-                              `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                              `organ_id` varchar(255) DEFAULT NULL COMMENT '机构id',
-                              `component_json` blob COMMENT '组件json',
-                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                              PRIMARY KEY (`model_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='模型表';
-
-DROP TABLE IF EXISTS `data_source`;
-CREATE TABLE `data_source` (
-                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
-                               `db_type` int DEFAULT NULL COMMENT '数据库类型',
-                               `db_driver` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '驱动类',
-                               `db_url` varchar(500) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据源地址',
-                               `db_name` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据库名称',
-                               `db_table_name` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '数据库名称',
-                               `db_username` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '用户名',
-                               `db_password` varchar(100) CHARACTER SET utf8mb4  DEFAULT NULL COMMENT '密码',
-                               `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                               `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                               `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                               PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='资源数据库';
-
-DROP TABLE IF EXISTS `data_component_draft`;
-CREATE TABLE `data_component_draft` (
-                                        `draft_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
-                                        `draft_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '草稿名称',
-                                        `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                        `component_json` blob COMMENT '组件json',
-                                        `component_image` blob COMMENT '组件图',
-                                        `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                        `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                        `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                        PRIMARY KEY (`draft_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='组件草稿表';
-
-DROP TABLE IF EXISTS `data_model_component`;
-CREATE TABLE `data_model_component` (
-                                        `mc_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '关系id',
-                                        `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                                        `task_id` bigint(20) DEFAULT NULL COMMENT '任务id',
-                                        `input_component_id` bigint(20) DEFAULT NULL COMMENT '输入组件id',
-                                        `output_component_id` bigint(20) DEFAULT NULL COMMENT '输出组件id',
-                                        `point_type` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '指向类型(直线、曲线图等等)',
-                                        `point_json` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '指向json数据',
-                                        `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                        `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                        `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                        PRIMARY KEY (`mc_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='组件模型关系表';
-
-DROP TABLE IF EXISTS `data_component`;
-CREATE TABLE `data_component` (
-                                  `component_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '组件id',
-                                  `front_component_id` varchar(255) DEFAULT NULL COMMENT '前端组件id',
-                                  `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                                  `task_id` bigint DEFAULT NULL COMMENT '任务id',
-                                  `component_code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件code',
-                                  `component_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件名称',
-                                  `shape` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '形状',
-                                  `width` int(11) DEFAULT '0' COMMENT '宽度',
-                                  `height` int(11) DEFAULT '0' COMMENT '高度',
-                                  `coordinate_y` int(11) DEFAULT '0' COMMENT '坐标y',
-                                  `coordinate_x` int(11) DEFAULT '0' COMMENT '坐标x',
-                                  `data_json` blob COMMENT '组件参数json',
-                                  `start_time` bigint(20) DEFAULT '0' COMMENT '开始时间戳',
-                                  `end_time` bigint(20) DEFAULT '0' COMMENT '结束时间戳',
-                                  `component_state` tinyint(4) DEFAULT '0' COMMENT '组件运行状态 0初始 1成功 2运行中 3失败',
-                                  `input_file_path` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '输入文件路径',
-                                  `output_file_path` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '输出文件路径',
-                                  `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                  PRIMARY KEY (`component_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='组件表';
-
-DROP TABLE IF EXISTS `data_model_quota`;
-CREATE TABLE `data_model_quota` (
-                                    `quota_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '指标id',
-                                    `quota_type` int(2) DEFAULT NULL COMMENT '样本集类型（训练样本集，测试样本集）',
-                                    `quota_images` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '样本集图片',
-                                    `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                                    `component_id` bigint(20) DEFAULT NULL COMMENT '组件id',
-                                    `auc` decimal(12,6) DEFAULT NULL COMMENT 'auc',
-                                    `ks` decimal(12,6) DEFAULT NULL COMMENT 'ks',
-                                    `gini` decimal(12,6) DEFAULT NULL COMMENT 'gini',
-                                    `precision` decimal(12,6) DEFAULT NULL COMMENT 'precision',
-                                    `recall` decimal(12,6) DEFAULT NULL COMMENT 'recall',
-                                    `f1_score` decimal(12,6) DEFAULT NULL COMMENT 'f1_score',
-                                    `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                    PRIMARY KEY (`quota_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='模板指标入参';
-
-DROP TABLE IF EXISTS `data_model_task`;
-CREATE TABLE `data_model_task` (
-                                   `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
-                                   `model_id` bigint DEFAULT NULL COMMENT '模型id',
-                                   `task_id` bigint DEFAULT NULL COMMENT '任务id',
-                                   `predict_file` varchar(255) DEFAULT NULL COMMENT '预测文件路径',
-                                   `predict_content` blob COMMENT '预测文件内容',
-                                   `component_json` blob COMMENT '模型运行组件列表json',
-                                   `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
-                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                   PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='模型任务表';
-
-DROP TABLE IF EXISTS `data_mr`;
-CREATE TABLE `data_mr`  (
-                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
-                            `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
-                            `resource_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源id',
-                            `task_id` bigint DEFAULT NULL COMMENT '任务ID',
-                            `take_part_type` tinyint(4) DEFAULT '0' COMMENT '参与类型 0使用数据 1衍生数据',
-                            `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
-                            `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
-                            `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',
-                            `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                            PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '模型资源表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_project`;
-CREATE TABLE `data_project` (
-                                `id` bigint NOT NULL AUTO_INCREMENT COMMENT '自增ID',
-                                `project_id` varchar(141) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目ID 机构后12位+UUID',
-                                `project_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目名称',
-                                `project_desc` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '项目描述',
-                                `created_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构id',
-                                `created_organ_name` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构名称',
-                                `created_username` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '创建者名称',
-                                `resource_num` int DEFAULT '0' COMMENT '资源数',
-                                `provider_organ_names` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '协作方机构名称 保存三个',
-                                `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
-                                `status` tinyint DEFAULT '0' COMMENT '项目状态 0审核中 1可用 2关闭',
-                                `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
-                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                PRIMARY KEY (`id`) USING BTREE,
-                                UNIQUE INDEX `project_id_ix`(`project_id`) USING BTREE,
-                                INDEX `created_organ_id_ix`(`created_organ_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci  COMMENT='项目表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_project_organ`;
-CREATE TABLE `data_project_organ` (
-                                      `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-                                      `po_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目机构关联ID UUID',
-                                      `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目ID',
-                                      `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
-                                      `initiate_organ_id` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
-                                      `participation_identity` tinyint DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
-                                      `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
-                                      `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
-                                      `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
-                                      `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
-                                      `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
-                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                      PRIMARY KEY (`id`) USING BTREE,
-                                      INDEX `project_id_ix`(`project_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT='项目资源授权审核表' ROW_FORMAT = Dynamic;
-
-
-DROP TABLE IF EXISTS `data_project_resource`;
-CREATE TABLE `data_project_resource` (
-                                         `id` bigint NOT NULL AUTO_INCREMENT COMMENT 'id',
-                                         `pr_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目资源ID  UUID',
-                                         `project_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '项目id',
-                                         `initiate_organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '发起方机构ID',
-                                         `organ_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '机构ID',
-                                         `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
-                                         `is_del` tinyint(1) DEFAULT '0' COMMENT '是否删除',
-                                         `resource_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT '0' COMMENT '资源ID',
-                                         `audit_status` tinyint DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
-                                         `audit_opinion` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '审核意见',
-                                         `secretkey_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '秘钥ID',
-                                         `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
-                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                         PRIMARY KEY (`id`) USING BTREE,
-                                         INDEX `project_id_ix`(`project_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT='项目资源关系表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_psi`;
-CREATE TABLE `data_psi`  (
-                             `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi 主键',
-                             `own_organ_id` varchar(255) DEFAULT NULL COMMENT '本机构id',
-                             `own_resource_id` bigint(20) DEFAULT NULL COMMENT '本机构资源id',
-                             `own_keyword` varchar(255) DEFAULT NULL COMMENT '本机构资源关键字',
-                             `other_organ_id` varchar(255) DEFAULT NULL COMMENT '其他机构id',
-                             `other_resource_id` varchar(255) DEFAULT NULL COMMENT '其他机构资源id',
-                             `other_keyword` varchar(255) DEFAULT NULL COMMENT '其他机构资源关键字',
-                             `output_file_path_type` tinyint(4) DEFAULT '0' COMMENT '文件路径输出类型 0默认 自动生成',
-                             `output_no_repeat` tinyint(4) DEFAULT '0' COMMENT '输出内容是否不去重 默认0 不去重 1去重',
-                             `tag` tinyint(4) DEFAULT '0' COMMENT '0表示openmined psi，1表示libPsi的KKRT psi',
-                             `result_name` varchar(255) DEFAULT NULL COMMENT '结果名称',
-                             `output_content` int(11) DEFAULT '0' COMMENT '输出内容 默认0 0交集 1差集',
-                             `output_format` varchar(255) DEFAULT NULL COMMENT '输出格式',
-                             `result_organ_ids` varchar(255) DEFAULT NULL COMMENT '结果获取方 多机构","号间隔',
-                             `server_address` varchar(255) DEFAULT NULL COMMENT '其他机构中心节点地址',
-                             `remarks` varchar(255) DEFAULT NULL COMMENT '备注',
-                             `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                             `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                             `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                             `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                             PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_psi_resource`;
-CREATE TABLE `data_psi_resource`  (
-                                      `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi资源id',
-                                      `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                                      `psi_resource_desc` varchar(255) DEFAULT NULL COMMENT 'psi资源描述',
-                                      `table_structure_template` varchar(255) DEFAULT NULL COMMENT '表结构模板',
-                                      `organ_type` int(11) DEFAULT NULL COMMENT '机构类型',
-                                      `results_allow_open` int(11) DEFAULT NULL COMMENT '是否允许结果出现在对方节点上',
-                                      `keyword_list` varchar(255) DEFAULT NULL COMMENT '关键字 关键字:类型,关键字:类型.....',
-                                      `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                      PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_psi_task`;
-CREATE TABLE `data_psi_task`  (
-                                  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi任务id',
-                                  `psi_id` bigint(20) DEFAULT NULL COMMENT 'psi id',
-                                  `task_id` varchar(255) DEFAULT NULL COMMENT '对外展示的任务uuid 同时也是文件名称',
-                                  `task_state` int(11) DEFAULT '0' COMMENT '运行状态 0未运行 1运行中 2完成 默认0',
-                                  `ascription_type` int(11) DEFAULT '0' COMMENT '归属类型 0一方 1双方',
-                                  `ascription` varchar(255) DEFAULT NULL COMMENT '结果归属',
-                                  `file_rows` int(11) DEFAULT '0' COMMENT '文件行数',
-                                  `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
-                                  `file_content` blob COMMENT '文件内容',
-                                  `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_pir_task`;
-CREATE TABLE `data_pir_task` (
-                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'pir任务id',
-                                 `task_id` bigint(20) DEFAULT NULL COMMENT '任务ID',
-                                 `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
-                                 `provider_organ_name` varchar(255) DEFAULT NULL COMMENT '协作方机构名称',
-                                 `resource_id` varchar(64) DEFAULT null COMMENT '资源ID',
-                                 `resource_name` varchar(64) DEFAULT null COMMENT '资源名称',
-                                 `retrieval_id` varchar(255) DEFAULT NULL COMMENT '检索ID',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = 'pir 任务表' ROW_FORMAT = DYNAMIC;
-
-DROP TABLE IF EXISTS `data_resource`;
-CREATE TABLE `data_resource`  (
-                                  `resource_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
-                                  `resource_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源名称',
-                                  `resource_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源描述',
-                                  `resource_sort_type` int(2) DEFAULT NULL COMMENT '资源分类（银行，电商，媒体，运营商，保险）',
-                                  `resource_auth_type` int(1) DEFAULT NULL COMMENT '授权类型（公开，私有）',
-                                  `resource_source` int(1) DEFAULT NULL COMMENT '资源来源（文件上传，数据库链接）',
-                                  `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
-                                  `file_id` int(8) DEFAULT NULL COMMENT '文件id',
-                                  `file_size` int(32) DEFAULT NULL COMMENT '文件大小',
-                                  `file_suffix` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '文件后缀',
-                                  `file_rows` int(8) DEFAULT NULL COMMENT '文件行数',
-                                  `file_columns` int(8) DEFAULT NULL COMMENT '文件列数',
-                                  `file_handle_status` tinyint(4) DEFAULT NULL COMMENT '文件处理状态',
-                                  `file_handle_field` blob COMMENT '文件头字段',
-                                  `file_contains_y` tinyint(4) DEFAULT '0' COMMENT '文件字段是否包含y字段 0否 1是',
-                                  `file_y_rows` int(11) DEFAULT '0' COMMENT '文件字段y值内容不为空的行数',
-                                  `file_y_ratio` decimal(8,4) DEFAULT '0.0000' COMMENT '文件字段y值内容不为空的行数在总行的占比',
-                                  `public_organ_id` varchar(3072) DEFAULT NULL COMMENT '机构列表',
-                                  `resource_fusion_id` varchar(255) DEFAULT NULL COMMENT '中心节点资源ID',
-                                  `db_id` int(8) DEFAULT NULL COMMENT '数据库id',
-                                  `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                  `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                  `url` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源表示路径',
-                                  `resource_hash_code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源hash值',
-                                  `resource_state` tinyint NOT NULL DEFAULT '0' COMMENT '资源状态 0上线 1下线',
-                                  `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                  PRIMARY KEY (`resource_id`) USING BTREE
-) ENGINE = InnoDB  CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_resource_tag`;
-CREATE TABLE `data_resource_tag`  (
-                                      `tag_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '标签id',
-                                      `tag_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '标签名称',
-                                      `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                      PRIMARY KEY (`tag_id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '标签表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_rt`;
-CREATE TABLE `data_rt`  (
-                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
-                            `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                            `tag_id` bigint(20) DEFAULT NULL COMMENT '标签id',
-                            `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                            PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源标签关系表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_file_field`;
-CREATE TABLE `data_file_field` (
-                                   `field_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字段id',
-                                   `file_id` bigint(20) DEFAULT NULL COMMENT '文件id',
-                                   `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
-                                   `field_name` varchar(255) DEFAULT NULL COMMENT '字段名称',
-                                   `field_as` varchar(255) DEFAULT NULL COMMENT '字段别名',
-                                   `field_type` int(11) DEFAULT '0' COMMENT '字段类型 默认0 string',
-                                   `field_desc` varchar(255) DEFAULT NULL COMMENT '字段描述',
-                                   `relevance` int(11) DEFAULT '0' COMMENT '关键字 0否 1是',
-                                   `grouping` int(11) DEFAULT '0' COMMENT '分组 0否 1是',
-                                   `protection_status` int(11) DEFAULT '0' COMMENT '保护开关 0关闭 1开启',
-                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                   PRIMARY KEY (`field_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '资源字段表' ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_mpc_task`;
-CREATE TABLE `data_mpc_task` (
-                                 `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
-                                 `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id对外展示',
-                                 `script_id` bigint(20) DEFAULT NULL COMMENT '脚本id',
-                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                 `task_status` int(11) DEFAULT '0' COMMENT '任务状态 0未运行 1成功 2运行中 3失败',
-                                 `task_desc` varchar(255) DEFAULT NULL COMMENT '任务备注',
-                                 `log_data` blob COMMENT '日志信息',
-                                 `result_file_path` varchar(255) DEFAULT NULL COMMENT '结果文件地址',
-                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                 PRIMARY KEY (`task_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci  COMMENT = 'mpc任务表' ROW_FORMAT=DYNAMIC;
-
-DROP TABLE IF EXISTS `data_script`;
-CREATE TABLE `data_script`  (
-                                `script_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '脚本id',
-                                `name` varchar(255) DEFAULT NULL COMMENT '文件名称或文件夹名称',
-                                `catalogue` int(11) DEFAULT '0' COMMENT '是否目录 0否 1是',
-                                `p_script_id` bigint(20) DEFAULT NULL COMMENT '上级id',
-                                `script_type` int(11) DEFAULT NULL COMMENT '脚本类型 0sql 1python',
-                                `script_status` int(11) DEFAULT NULL COMMENT '脚本状态 0打开 1关闭 默认打开',
-                                `script_content` blob COMMENT '脚本内容',
-                                `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
-                                `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
-                                `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                PRIMARY KEY (`script_id`) USING BTREE
-) ENGINE = InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
-
-DROP TABLE IF EXISTS `data_task`;
-CREATE TABLE `data_task` (
-                             `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
-                             `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id展示名',
-                             `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
-                             `task_desc` varchar(255) DEFAULT NULL COMMENT '任务描述',
-                             `task_state` int(11) DEFAULT '0' COMMENT '任务状态(0未开始 1成功 2运行中 3失败 4取消)',
-                             `task_type` int(11) DEFAULT NULL COMMENT '任务类型 1、模型 2、PSI 3、PIR',
-                             `task_result_path` varchar(255) DEFAULT NULL COMMENT '文件返回路径',
-                             `task_result_content` blob COMMENT '文件返回内容',
-                             `task_start_time` bigint(20) DEFAULT NULL COMMENT '任务开始时间',
-                             `task_end_time` bigint(20) DEFAULT NULL COMMENT '任务结束时间',
-                             `task_user_id` bigint(20) DEFAULT NULL COMMENT '任务创建人',
-                             `task_error_msg` blob COMMENT '任务异常信息',
-                             `is_cooperation` tinyint(4) DEFAULT '0' COMMENT '是否协作任务0否 1是',
-                             `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
-                             `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                             `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                             PRIMARY KEY (`task_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='数据任务表';
-
-DROP TABLE IF EXISTS `data_reasoning`;
-CREATE TABLE `data_reasoning` (
-                                  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '推理ID',
-                                  `reasoning_id` varchar(255) DEFAULT NULL COMMENT '推理展示uuid',
-                                  `reasoning_name` varchar(255) DEFAULT NULL COMMENT '推理名称',
-                                  `reasoning_desc` varchar(255) DEFAULT NULL COMMENT '推理描述',
-                                  `reasoning_type` tinyint DEFAULT NULL COMMENT '推理类型 0两方 1三方',
-                                  `reasoning_state` tinyint DEFAULT NULL COMMENT '推理状态',
-                                  `task_id` bigint DEFAULT NULL COMMENT '任务ID',
-                                  `run_task_id` bigint DEFAULT NULL COMMENT '任务ID',
-                                  `user_id` bigint DEFAULT NULL COMMENT '用户ID',
-                                  `release_date` datetime DEFAULT NULL COMMENT '发布日期',
-                                  `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
-                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='推理表';
-
-DROP TABLE IF EXISTS `data_reasoning_resource`;
-CREATE TABLE `data_reasoning_resource` (
-                                           `id` bigint NOT NULL AUTO_INCREMENT COMMENT '推理资源ID',
-                                           `reasoning_id` bigint DEFAULT NULL COMMENT '推理ID',
-                                           `resource_id` varchar(64) DEFAULT NULL COMMENT '资源ID',
-                                           `organ_id` varchar(64) DEFAULT NULL COMMENT '机构ID',
-                                           `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
-                                           `server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL COMMENT '中心节点地址',
-                                           `is_del` tinyint DEFAULT '0' COMMENT '是否删除',
-                                           `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                           `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
-                                           PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC COMMENT='推理资源表';
 
 DROP TABLE IF EXISTS `sys_auth`;
 CREATE TABLE `sys_auth`  (
@@ -630,6 +200,7 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1100, 1, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1101, 1000, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1102, 1, 1063, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1103, 1, 1058, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (
@@ -695,6 +266,74 @@ CREATE TABLE `sys_file`  (
                              PRIMARY KEY (`file_id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '文件表' ROW_FORMAT = Dynamic;
 
+-- ----------------------------
+-- Table structure for data_component
+-- ----------------------------
+DROP TABLE IF EXISTS `data_component`;
+CREATE TABLE `data_component` (
+                                  `component_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '组件id',
+                                  `front_component_id` varchar(255) DEFAULT NULL COMMENT '前端组件id',
+                                  `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                                  `task_id` bigint(20) DEFAULT NULL COMMENT '任务id',
+                                  `component_code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件code',
+                                  `component_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件名称',
+                                  `shape` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '形状',
+                                  `width` int(11) DEFAULT '0' COMMENT '宽度',
+                                  `height` int(11) DEFAULT '0' COMMENT '高度',
+                                  `coordinate_y` int(11) DEFAULT '0' COMMENT '坐标y',
+                                  `coordinate_x` int(11) DEFAULT '0' COMMENT '坐标x',
+                                  `data_json` mediumtext COMMENT '组件json',
+                                  `start_time` bigint(20) DEFAULT '0' COMMENT '开始时间戳',
+                                  `end_time` bigint(20) DEFAULT '0' COMMENT '结束时间戳',
+                                  `component_state` tinyint(4) DEFAULT '0' COMMENT '组件运行状态 0初始 1成功 2运行中 3失败',
+                                  `input_file_path` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '输入文件路径',
+                                  `output_file_path` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '输出文件路径',
+                                  `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                  PRIMARY KEY (`component_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='组件表';
+
+-- ----------------------------
+-- Table structure for data_component_draft
+-- ----------------------------
+DROP TABLE IF EXISTS `data_component_draft`;
+CREATE TABLE `data_component_draft` (
+                                        `draft_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
+                                        `draft_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '草稿名称',
+                                        `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                                        `component_json` mediumtext COMMENT '组件json',
+                                        `component_image` mediumtext COMMENT '组件图',
+                                        `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                        `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                        `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                        PRIMARY KEY (`draft_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='组件草稿表';
+
+-- ----------------------------
+-- Table structure for data_file_field
+-- ----------------------------
+DROP TABLE IF EXISTS `data_file_field`;
+CREATE TABLE `data_file_field` (
+                                   `field_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '字段id',
+                                   `file_id` bigint(20) DEFAULT NULL COMMENT '文件id',
+                                   `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                                   `field_name` varchar(255) DEFAULT NULL COMMENT '字段名称',
+                                   `field_as` varchar(255) DEFAULT NULL COMMENT '字段别名',
+                                   `field_type` int(11) DEFAULT '0' COMMENT '字段类型 默认0 string',
+                                   `field_desc` varchar(255) DEFAULT NULL COMMENT '字段描述',
+                                   `relevance` int(11) DEFAULT '0' COMMENT '关键字 0否 1是',
+                                   `grouping` int(11) DEFAULT '0' COMMENT '分组 0否 1是',
+                                   `protection_status` int(11) DEFAULT '0' COMMENT '保护开关 0关闭 1开启',
+                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                   PRIMARY KEY (`field_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资源字段表';
+
+-- ----------------------------
+-- Table structure for data_fusion_copy_task
+-- ----------------------------
 DROP TABLE IF EXISTS `data_fusion_copy_task`;
 CREATE TABLE `data_fusion_copy_task` (
                                          `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
@@ -712,23 +351,465 @@ CREATE TABLE `data_fusion_copy_task` (
                                          KEY `target_offset_ix` (`target_offset`) USING BTREE,
                                          KEY `c_time_ix` (`c_time`) USING BTREE,
                                          KEY `u_time_ix` (`u_time`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
+-- ----------------------------
+-- Table structure for data_model
+-- ----------------------------
+DROP TABLE IF EXISTS `data_model`;
+CREATE TABLE `data_model` (
+                              `model_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '模型id',
+                              `model_uuid` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '模型uuid',
+                              `model_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '模型名称',
+                              `model_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '模型描述',
+                              `model_type` int(2) DEFAULT NULL COMMENT '模型模板',
+                              `project_id` bigint(20) DEFAULT NULL COMMENT '项目id',
+                              `resource_num` int(8) DEFAULT NULL COMMENT '资源个数',
+                              `y_value_column` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT 'y值字段',
+                              `component_speed` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '组件执行进度id',
+                              `train_type` tinyint(4) DEFAULT '0' COMMENT '训练类型 0纵向 1横向 默认纵向',
+                              `is_draft` tinyint(4) DEFAULT '0' COMMENT '是否草稿 0是 1不是 默认是',
+                              `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                              `organ_id` varchar(255) DEFAULT NULL COMMENT '机构id',
+                              `component_json` mediumtext COMMENT '组件json',
+                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                              `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                              `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                              PRIMARY KEY (`model_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='模型表';
+
+-- ----------------------------
+-- Table structure for data_model_component
+-- ----------------------------
+DROP TABLE IF EXISTS `data_model_component`;
+CREATE TABLE `data_model_component` (
+                                        `mc_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '关系id',
+                                        `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                                        `task_id` bigint(20) DEFAULT NULL COMMENT '任务id',
+                                        `input_component_id` bigint(20) DEFAULT NULL COMMENT '输入组件id',
+                                        `output_component_id` bigint(20) DEFAULT NULL COMMENT '输出组件id',
+                                        `point_type` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '指向类型(直线、曲线图等等)',
+                                        `point_json` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '指向json数据',
+                                        `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                        `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                        `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                        PRIMARY KEY (`mc_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='组件模型关系表';
+
+-- ----------------------------
+-- Table structure for data_model_quota
+-- ----------------------------
+DROP TABLE IF EXISTS `data_model_quota`;
+CREATE TABLE `data_model_quota` (
+                                    `quota_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '指标id',
+                                    `quota_type` int(2) DEFAULT NULL COMMENT '样本集类型（训练样本集，测试样本集）',
+                                    `quota_images` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '样本集图片',
+                                    `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                                    `component_id` bigint(20) DEFAULT NULL COMMENT '组件id',
+                                    `auc` decimal(12,6) DEFAULT NULL COMMENT 'auc',
+                                    `ks` decimal(12,6) DEFAULT NULL COMMENT 'ks',
+                                    `gini` decimal(12,6) DEFAULT NULL COMMENT 'gini',
+                                    `precision` decimal(12,6) DEFAULT NULL COMMENT 'precision',
+                                    `recall` decimal(12,6) DEFAULT NULL COMMENT 'recall',
+                                    `f1_score` decimal(12,6) DEFAULT NULL COMMENT 'f1_score',
+                                    `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                    `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                    `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                    PRIMARY KEY (`quota_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='模板指标入参';
+
+-- ----------------------------
+-- Table structure for data_model_task
+-- ----------------------------
+DROP TABLE IF EXISTS `data_model_task`;
+CREATE TABLE `data_model_task` (
+                                   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                                   `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                                   `task_id` bigint(20) DEFAULT NULL COMMENT '任务id',
+                                   `predict_file` varchar(255) DEFAULT NULL COMMENT '预测文件路径',
+                                   `predict_content` mediumblob COMMENT '预测文件内容',
+                                   `component_json` mediumtext COMMENT '组件json',
+                                   `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                   `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                   `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                   PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='模型任务表';
+
+-- ----------------------------
+-- Table structure for data_mpc_task
+-- ----------------------------
+DROP TABLE IF EXISTS `data_mpc_task`;
+CREATE TABLE `data_mpc_task` (
+                                 `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
+                                 `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id对外展示',
+                                 `script_id` bigint(20) DEFAULT NULL COMMENT '脚本id',
+                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                                 `task_status` int(11) DEFAULT '0' COMMENT '任务状态 0未运行 1成功 2运行中 3失败',
+                                 `task_desc` varchar(255) DEFAULT NULL COMMENT '任务备注',
+                                 `log_data` blob COMMENT '日志信息',
+                                 `result_file_path` varchar(255) DEFAULT NULL COMMENT '结果文件地址',
+                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                 PRIMARY KEY (`task_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='mpc任务表';
+
+-- ----------------------------
+-- Table structure for data_mr
+-- ----------------------------
+DROP TABLE IF EXISTS `data_mr`;
+CREATE TABLE `data_mr` (
+                           `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
+                           `model_id` bigint(20) DEFAULT NULL COMMENT '模型id',
+                           `resource_id` varchar(255) NOT NULL COMMENT '资源id',
+                           `task_id` bigint(20) DEFAULT NULL COMMENT '任务ID',
+                           `take_part_type` tinyint(4) DEFAULT '0' COMMENT '参与类型 0使用数据 1衍生数据',
+                           `alignment_num` int(8) DEFAULT NULL COMMENT '对齐后记录数量',
+                           `primitive_param_num` int(8) DEFAULT NULL COMMENT '原始变量数量',
+                           `modelParam_num` int(8) DEFAULT NULL COMMENT '入模变量数量',
+                           `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                           `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                           `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                           PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='模型资源表';
+
+-- ----------------------------
+-- Table structure for data_pir_task
+-- ----------------------------
+DROP TABLE IF EXISTS `data_pir_task`;
+CREATE TABLE `data_pir_task` (
+                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'pir任务id',
+                                 `task_id` bigint(20) DEFAULT NULL COMMENT '任务ID',
+                                 `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
+                                 `provider_organ_name` varchar(255) DEFAULT NULL COMMENT '协作方机构名称',
+                                 `resource_id` varchar(64) DEFAULT NULL COMMENT '资源ID',
+                                 `resource_name` varchar(64) DEFAULT NULL COMMENT '资源名称',
+                                 `retrieval_id` varchar(255) DEFAULT NULL COMMENT '检索ID',
+                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                 PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='pir 任务表';
+
+-- ----------------------------
+-- Table structure for data_project
+-- ----------------------------
+DROP TABLE IF EXISTS `data_project`;
+CREATE TABLE `data_project` (
+                                `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '自增ID',
+                                `project_id` varchar(141) NOT NULL COMMENT '项目ID 机构后12位+UUID',
+                                `project_name` varchar(255) NOT NULL COMMENT '项目名称',
+                                `project_desc` varchar(255) NOT NULL COMMENT '项目描述',
+                                `created_organ_id` varchar(64) DEFAULT NULL COMMENT '机构id',
+                                `created_organ_name` varchar(255) DEFAULT NULL COMMENT '机构名称',
+                                `created_username` varchar(255) DEFAULT NULL COMMENT '创建者名称',
+                                `resource_num` int(11) DEFAULT '0' COMMENT '资源数',
+                                `provider_organ_names` varchar(255) DEFAULT NULL COMMENT '协作方机构名称 保存三个',
+                                `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
+                                `status` tinyint(4) DEFAULT '0' COMMENT '项目状态 0审核中 1可用 2关闭',
+                                `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                PRIMARY KEY (`id`) USING BTREE,
+                                UNIQUE KEY `project_id_ix` (`project_id`) USING BTREE,
+                                KEY `created_organ_id_ix` (`created_organ_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目表';
+
+-- ----------------------------
+-- Table structure for data_project_organ
+-- ----------------------------
+DROP TABLE IF EXISTS `data_project_organ`;
+CREATE TABLE `data_project_organ` (
+                                      `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                      `po_id` varchar(64) DEFAULT NULL COMMENT '项目机构关联ID UUID',
+                                      `project_id` varchar(64) DEFAULT NULL COMMENT '项目ID',
+                                      `organ_id` varchar(64) DEFAULT NULL COMMENT '机构ID',
+                                      `initiate_organ_id` varchar(255) DEFAULT NULL COMMENT '发起方机构ID',
+                                      `participation_identity` tinyint(4) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                      `audit_status` tinyint(4) DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                      `audit_opinion` varchar(255) DEFAULT NULL COMMENT '审核意见',
+                                      `secretkey_id` varchar(64) DEFAULT NULL COMMENT '秘钥ID',
+                                      `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
+                                      `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                      `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                      `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                      PRIMARY KEY (`id`) USING BTREE,
+                                      KEY `project_id_ix` (`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目资源授权审核表';
+
+-- ----------------------------
+-- Table structure for data_project_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `data_project_resource`;
+CREATE TABLE `data_project_resource` (
+                                         `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+                                         `pr_id` varchar(64) DEFAULT NULL COMMENT '项目资源ID  UUID',
+                                         `project_id` varchar(64) DEFAULT NULL COMMENT '项目id',
+                                         `initiate_organ_id` varchar(64) DEFAULT NULL COMMENT '发起方机构ID',
+                                         `organ_id` varchar(64) DEFAULT NULL COMMENT '机构ID',
+                                         `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                         `is_del` tinyint(1) DEFAULT '0' COMMENT '是否删除',
+                                         `resource_id` varchar(64) DEFAULT '0' COMMENT '资源ID',
+                                         `audit_status` tinyint(4) DEFAULT NULL COMMENT '审核状态 0审核中 1同意 2拒绝',
+                                         `audit_opinion` varchar(255) DEFAULT NULL COMMENT '审核意见',
+                                         `secretkey_id` varchar(64) DEFAULT NULL COMMENT '秘钥ID',
+                                         `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
+                                         `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                         `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                         PRIMARY KEY (`id`) USING BTREE,
+                                         KEY `project_id_ix` (`project_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='项目资源关系表';
+
+-- ----------------------------
+-- Table structure for data_psi
+-- ----------------------------
+DROP TABLE IF EXISTS `data_psi`;
+CREATE TABLE `data_psi` (
+                            `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi 主键',
+                            `own_organ_id` varchar(255) DEFAULT NULL COMMENT '本机构id',
+                            `own_resource_id` varchar(255) DEFAULT NULL COMMENT '本机构资源id',
+                            `own_keyword` varchar(255) DEFAULT NULL COMMENT '本机构资源关键字',
+                            `other_organ_id` varchar(255) DEFAULT NULL COMMENT '其他机构id',
+                            `other_resource_id` varchar(255) DEFAULT NULL COMMENT '其他机构资源id',
+                            `other_keyword` varchar(255) DEFAULT NULL COMMENT '其他机构资源关键字',
+                            `output_file_path_type` tinyint(4) DEFAULT '0' COMMENT '文件路径输出类型 0默认 自动生成',
+                            `output_no_repeat` tinyint(4) DEFAULT '0' COMMENT '输出内容是否不去重 默认0 不去重 1去重',
+                            `tag` tinyint(4) DEFAULT '0' COMMENT '0表示openmined psi，1表示libPsi的KKRT psi',
+                            `result_name` varchar(255) DEFAULT NULL COMMENT '结果名称',
+                            `output_content` int(11) DEFAULT '0' COMMENT '输出内容 默认0 0交集 1差集',
+                            `output_format` varchar(255) DEFAULT NULL COMMENT '输出格式',
+                            `result_organ_ids` varchar(255) DEFAULT NULL COMMENT '结果获取方 多机构","号间隔',
+                            `server_address` varchar(255) DEFAULT NULL COMMENT '其他机构中心节点地址',
+                            `remarks` varchar(255) DEFAULT NULL COMMENT '备注',
+                            `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                            `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                            `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                            `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                            PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Table structure for data_psi_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `data_psi_resource`;
+CREATE TABLE `data_psi_resource` (
+                                     `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi资源id',
+                                     `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                                     `psi_resource_desc` varchar(255) DEFAULT NULL COMMENT 'psi资源描述',
+                                     `table_structure_template` varchar(255) DEFAULT NULL COMMENT '表结构模板',
+                                     `organ_type` int(11) DEFAULT NULL COMMENT '机构类型',
+                                     `results_allow_open` int(11) DEFAULT NULL COMMENT '是否允许结果出现在对方节点上',
+                                     `keyword_list` varchar(255) DEFAULT NULL COMMENT '关键字 关键字:类型,关键字:类型.....',
+                                     `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                     `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                     `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                     PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Table structure for data_psi_task
+-- ----------------------------
+DROP TABLE IF EXISTS `data_psi_task`;
+CREATE TABLE `data_psi_task` (
+                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi任务id',
+                                 `psi_id` bigint(20) DEFAULT NULL COMMENT 'psi id',
+                                 `task_id` varchar(255) DEFAULT NULL COMMENT '对外展示的任务uuid 同时也是文件名称',
+                                 `task_state` int(11) DEFAULT '0' COMMENT '运行状态 0未运行 1运行中 2完成 默认0',
+                                 `ascription_type` int(11) DEFAULT '0' COMMENT '归属类型 0一方 1双方',
+                                 `ascription` varchar(255) DEFAULT NULL COMMENT '结果归属',
+                                 `file_rows` int(11) DEFAULT '0' COMMENT '文件行数',
+                                 `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
+                                 `file_content` blob COMMENT '文件内容',
+                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                 PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Table structure for data_reasoning
+-- ----------------------------
+DROP TABLE IF EXISTS `data_reasoning`;
+CREATE TABLE `data_reasoning` (
+                                  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '推理ID',
+                                  `reasoning_id` varchar(255) DEFAULT NULL COMMENT '推理展示uuid',
+                                  `reasoning_name` varchar(255) DEFAULT NULL COMMENT '推理名称',
+                                  `reasoning_desc` varchar(255) DEFAULT NULL COMMENT '推理描述',
+                                  `reasoning_type` tinyint(4) DEFAULT NULL COMMENT '推理类型 0两方 1三方',
+                                  `reasoning_state` tinyint(4) DEFAULT NULL COMMENT '推理状态',
+                                  `task_id` bigint(20) DEFAULT NULL COMMENT '任务ID',
+                                  `run_task_id` bigint(20) DEFAULT NULL COMMENT '任务ID',
+                                  `user_id` bigint(20) DEFAULT NULL COMMENT '用户ID',
+                                  `release_date` datetime DEFAULT NULL COMMENT '发布日期',
+                                  `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='推理表';
+
+-- ----------------------------
+-- Table structure for data_reasoning_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `data_reasoning_resource`;
+CREATE TABLE `data_reasoning_resource` (
+                                           `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '推理资源ID',
+                                           `reasoning_id` bigint(20) DEFAULT NULL COMMENT '推理ID',
+                                           `resource_id` varchar(64) DEFAULT NULL COMMENT '资源ID',
+                                           `organ_id` varchar(64) DEFAULT NULL COMMENT '机构ID',
+                                           `participation_identity` tinyint(1) DEFAULT NULL COMMENT '机构项目中参与身份 1发起者 2协作者',
+                                           `server_address` varchar(255) DEFAULT NULL COMMENT '中心节点地址',
+                                           `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                           `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                           `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                           PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='推理资源表';
+
+-- ----------------------------
+-- Table structure for data_resource
+-- ----------------------------
+DROP TABLE IF EXISTS `data_resource`;
+CREATE TABLE `data_resource` (
+                                 `resource_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '资源id',
+                                 `resource_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源名称',
+                                 `resource_desc` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源描述',
+                                 `resource_sort_type` int(2) DEFAULT NULL COMMENT '资源分类（银行，电商，媒体，运营商，保险）',
+                                 `resource_auth_type` int(1) DEFAULT NULL COMMENT '授权类型（公开，私有）',
+                                 `resource_source` int(1) DEFAULT NULL COMMENT '资源来源（文件上传，数据库链接）',
+                                 `resource_num` int(8) DEFAULT NULL COMMENT '资源数',
+                                 `file_id` bigint(20) DEFAULT NULL COMMENT '文件id',
+                                 `file_size` bigint(20) DEFAULT NULL COMMENT '文件大小',
+                                 `file_suffix` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '文件后缀',
+                                 `file_rows` bigint(20) DEFAULT NULL COMMENT '文件行数',
+                                 `file_columns` int(8) DEFAULT NULL COMMENT '文件列数',
+                                 `file_handle_status` tinyint(4) DEFAULT NULL COMMENT '文件处理状态',
+                                 `file_handle_field` blob COMMENT '文件头字段',
+                                 `file_contains_y` tinyint(4) DEFAULT '0' COMMENT '文件字段是否包含y字段 0否 1是',
+                                 `file_y_rows` int(11) DEFAULT '0' COMMENT '文件字段y值内容不为空的行数',
+                                 `file_y_ratio` decimal(8,4) DEFAULT '0.0000' COMMENT '文件字段y值内容不为空的行数在总行的占比',
+                                 `public_organ_id` varchar(3072) DEFAULT NULL COMMENT '机构列表',
+                                 `resource_fusion_id` varchar(255) DEFAULT NULL COMMENT '中心节点资源ID',
+                                 `db_id` int(8) DEFAULT NULL COMMENT '数据库id',
+                                 `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                                 `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
+                                 `url` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源表示路径',
+                                 `resource_hash_code` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '资源hash值',
+                                 `resource_state` tinyint(4) NOT NULL DEFAULT '0' COMMENT '资源状态 0上线 1下线',
+                                 `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                 `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                 `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                 PRIMARY KEY (`resource_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资源表';
+
+-- ----------------------------
+-- Table structure for data_resource_tag
+-- ----------------------------
+DROP TABLE IF EXISTS `data_resource_tag`;
+CREATE TABLE `data_resource_tag` (
+                                     `tag_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '标签id',
+                                     `tag_name` varchar(255) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '标签名称',
+                                     `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                                     `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                     `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                                     PRIMARY KEY (`tag_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='标签表';
+
+-- ----------------------------
+-- Table structure for data_resource_visibility_auth
+-- ----------------------------
 DROP TABLE IF EXISTS `data_resource_visibility_auth`;
-CREATE TABLE `data_resource_visibility_auth`  (
-                                                  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                                  `resource_id` bigint(20) NOT NULL COMMENT '资源id',
-                                                  `organ_global_id` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '机构唯一id',
-                                                  `organ_name` varchar(64) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '资源名称',
-                                                  `organ_server_address` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '服务地址',
-                                                  `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
-                                                  `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
-                                                  `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
-                                                  PRIMARY KEY (`id`) USING BTREE,
-                                                  INDEX `resource_id_ix`(`resource_id`) USING BTREE,
-                                                  INDEX `organ_global_id_ix`(`organ_global_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci ROW_FORMAT = Dynamic;
+CREATE TABLE `data_resource_visibility_auth` (
+                                                 `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
+                                                 `resource_id` bigint(20) NOT NULL COMMENT '资源id',
+                                                 `organ_global_id` varchar(64) NOT NULL COMMENT '机构唯一id',
+                                                 `organ_name` varchar(64) NOT NULL COMMENT '资源名称',
+                                                 `organ_server_address` varchar(255) NOT NULL COMMENT '服务地址',
+                                                 `is_del` tinyint(4) NOT NULL COMMENT '是否删除',
+                                                 `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                                                 `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更新时间',
+                                                 PRIMARY KEY (`id`) USING BTREE,
+                                                 KEY `resource_id_ix` (`resource_id`) USING BTREE,
+                                                 KEY `organ_global_id_ix` (`organ_global_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
 
+-- ----------------------------
+-- Table structure for data_rt
+-- ----------------------------
+DROP TABLE IF EXISTS `data_rt`;
+CREATE TABLE `data_rt` (
+                           `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'id',
+                           `resource_id` bigint(20) DEFAULT NULL COMMENT '资源id',
+                           `tag_id` bigint(20) DEFAULT NULL COMMENT '标签id',
+                           `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                           `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                           `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                           PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资源标签关系表';
+
+-- ----------------------------
+-- Table structure for data_script
+-- ----------------------------
+DROP TABLE IF EXISTS `data_script`;
+CREATE TABLE `data_script` (
+                               `script_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '脚本id',
+                               `name` varchar(255) DEFAULT NULL COMMENT '文件名称或文件夹名称',
+                               `catalogue` int(11) DEFAULT '0' COMMENT '是否目录 0否 1是',
+                               `p_script_id` bigint(20) DEFAULT NULL COMMENT '上级id',
+                               `script_type` int(11) DEFAULT NULL COMMENT '脚本类型 0sql 1python',
+                               `script_status` int(11) DEFAULT NULL COMMENT '脚本状态 0打开 1关闭 默认打开',
+                               `script_content` blob COMMENT '脚本内容',
+                               `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
+                               `organ_id` bigint(20) DEFAULT NULL COMMENT '机构id',
+                               `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                               `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                               `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                               PRIMARY KEY (`script_id`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;
+
+-- ----------------------------
+-- Table structure for data_source
+-- ----------------------------
+DROP TABLE IF EXISTS `data_source`;
+CREATE TABLE `data_source` (
+                               `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '草稿id',
+                               `db_type` int(11) DEFAULT NULL COMMENT '数据库类型',
+                               `db_driver` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '驱动类',
+                               `db_url` varchar(500) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '数据源地址',
+                               `db_name` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '数据库名称',
+                               `db_table_name` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '数据库名称',
+                               `db_username` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '用户名',
+                               `db_password` varchar(100) CHARACTER SET utf8mb4 DEFAULT NULL COMMENT '密码',
+                               `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                               `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                               `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                               PRIMARY KEY (`id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='资源数据库';
+
+-- ----------------------------
+-- Table structure for data_task
+-- ----------------------------
+DROP TABLE IF EXISTS `data_task`;
+CREATE TABLE `data_task` (
+                             `task_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '任务id',
+                             `task_id_name` varchar(255) DEFAULT NULL COMMENT '任务id展示名',
+                             `task_name` varchar(255) DEFAULT NULL COMMENT '任务名称',
+                             `task_desc` varchar(255) DEFAULT NULL COMMENT '任务描述',
+                             `task_state` int(11) DEFAULT '0' COMMENT '任务状态(0未开始 1成功 2运行中 3失败 4取消)',
+                             `task_type` int(11) DEFAULT NULL COMMENT '任务类型 1、模型 2、PSI 3、PIR',
+                             `task_result_path` varchar(255) DEFAULT NULL COMMENT '文件返回路径',
+                             `task_result_content` blob COMMENT '文件返回内容',
+                             `task_start_time` bigint(20) DEFAULT NULL COMMENT '任务开始时间',
+                             `task_end_time` bigint(20) DEFAULT NULL COMMENT '任务结束时间',
+                             `task_user_id` bigint(20) DEFAULT NULL COMMENT '任务创建人',
+                             `task_error_msg` blob COMMENT '任务异常信息',
+                             `is_cooperation` tinyint(4) DEFAULT '0' COMMENT '是否协作任务0否 1是',
+                             `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
+                             `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
+                             `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',
+                             PRIMARY KEY (`task_id`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC COMMENT='数据任务表';
+-- ----------------------------
+-- Table structure for data_visiting_users
+-- ----------------------------
 DROP TABLE IF EXISTS `data_visiting_users`;
 CREATE TABLE `data_visiting_users` (
                                        `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '来访ID',
