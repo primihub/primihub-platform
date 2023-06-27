@@ -1,5 +1,6 @@
 package com.primihub.biz.repository.primaryredis.sys;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.sys.vo.SysUserListVO;
@@ -35,6 +36,8 @@ public class SysUserPrimaryRedisRepository {
         map.put("isForbid",sysUserListVO.getIsForbid().toString());
         map.put("authIdList",sysUserListVO.getAuthIdList());
         map.put("token",token);
+        log.info(userKey);
+        log.info(JSONObject.toJSONString(map));
         stringRedisTemplate.opsForHash().putAll(userKey,map);
         stringRedisTemplate.expire(tokenKey,1, TimeUnit.HOURS);
         stringRedisTemplate.expire(userKey,1, TimeUnit.HOURS);
