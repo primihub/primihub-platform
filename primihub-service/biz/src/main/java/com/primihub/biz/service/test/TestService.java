@@ -25,6 +25,7 @@ import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.sdk.task.TaskHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +64,8 @@ public class TestService {
     private OtherBusinessesService otherBusinessesService;
     @Autowired
     private OrganConfiguration organConfiguration;
-
+    @Autowired
+    private TaskHelper taskHelper;
     @Resource
     private Environment environment;
 
@@ -137,4 +139,7 @@ public class TestService {
         return fusionResourceService.batchSaveTestDataSet(dataSets);
     }
 
+    public BaseResultEntity killTask(String taskId) {
+        return BaseResultEntity.success(taskHelper.killTask(taskId));
+    }
 }

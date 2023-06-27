@@ -95,6 +95,14 @@ public class TestController {
         return testService.testDataSet(id);
     }
 
+    @GetMapping("/killTask")
+    public BaseResultEntity killTask(String taskId){
+        if (StringUtils.isBlank(taskId)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
+        return testService.killTask(taskId);
+    }
+
 
 
 

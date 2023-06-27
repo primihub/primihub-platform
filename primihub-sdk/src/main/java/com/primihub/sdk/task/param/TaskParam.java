@@ -3,7 +3,7 @@ package com.primihub.sdk.task.param;
 import java.util.UUID;
 
 public class TaskParam<T> {
-    private final String requestId = UUID.randomUUID().toString().replace("-","");
+    private String requestId = UUID.randomUUID().toString().replace("-","");
     private String taskId;
     private String jobId;
     private Boolean isSuccess = true;
@@ -22,6 +22,10 @@ public class TaskParam<T> {
 
     public String getRequestId() {
         return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     public String getTaskId() {

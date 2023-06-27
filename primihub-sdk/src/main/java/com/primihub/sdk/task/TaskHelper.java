@@ -4,6 +4,7 @@ import com.primihub.sdk.config.GrpcClientConfig;
 import com.primihub.sdk.task.annotation.TaskTypeExample;
 import com.primihub.sdk.task.cache.CacheService;
 import com.primihub.sdk.task.factory.AbstractGRPCExecuteFactory;
+import com.primihub.sdk.task.factory.AbstractKillGRPCExecute;
 import com.primihub.sdk.task.param.TaskParam;
 import io.grpc.Channel;
 import io.grpc.ManagedChannelBuilder;
@@ -13,6 +14,7 @@ import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import primihub.rpc.Common;
 
 import java.io.File;
 import java.util.*;
@@ -138,6 +140,7 @@ public class TaskHelper {
             log.info("taskParam:{}",taskParam.toString());
             throw new NullPointerException("TaskContentParam 实例对象为null");
         }
+        cacheService.taskData(taskParam);
         EXECUTE_MAP.get(annotation.value()).execute(channel,taskParam);
         if (taskParam.getOpenGetStatus()){
             taskParam.setEnd(true);
@@ -155,6 +158,33 @@ public class TaskHelper {
         }
         AbstractGRPCExecuteFactory abstractGRPCExecuteFactory = EXECUTE_MAP.get(annotation.value());
         abstractGRPCExecuteFactory.continuouslyObtainTaskStatus(channel,abstractGRPCExecuteFactory.assembleTaskContext(taskParam),taskParam,taskParam.getPartyCount());
+    }
+    public TaskParam killTask(String taskId){
+        return killTask(this.channel,taskId);
+    }
+
+    public TaskParam killTask(Channel channel,String taskId){
+        TaskParam taskParam = new TaskParam();
+        Map<String, String> taskData = cacheService.getTaskData(taskId);
+        if (taskData == null){
+            taskParam.setSuccess(false);
+            taskParam.setEnd(true);
+            taskParam.setError("无任务信息,任务已取消或任务已完成");
+            return taskParam;
+        }
+
+        taskParam.setTaskId(taskData.get("taskId"));
+        taskParam.setRequestId(taskData.get("requestId"));
+        taskParam.setJobId(taskData.get("jobId"));
+        if (!EXECUTE_MAP.containsKey(AbstractKillGRPCExecute.class)){
+            taskParam.setSuccess(false);
+            taskParam.setEnd(true);
+            taskParam.setError("取消实例不存在无法执行取消操作");
+            return taskParam;
+        }
+        EXECUTE_MAP.get(AbstractKillGRPCExecute.class).execute(channel,taskParam);
+        taskParam.setEnd(true);
+        return taskParam;
     }
 
 }
