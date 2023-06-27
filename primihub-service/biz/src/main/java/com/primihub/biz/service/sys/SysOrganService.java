@@ -59,14 +59,18 @@ public class SysOrganService {
             String organInfoContent = configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, 3000);
             SysLocalOrganInfo sysLocalOrganInfo = JSON.parseObject(organInfoContent, SysLocalOrganInfo.class);
             if (sysLocalOrganInfo != null) {
-                List<SysOrganFusion> fusionList = new ArrayList<>();
-                if (sysLocalOrganInfo.getFusionMap() != null) {
-                    Iterator<String> iterator = sysLocalOrganInfo.getFusionMap().keySet().iterator();
-                    while (iterator.hasNext()) {
-                        fusionList.add(sysLocalOrganInfo.getFusionMap().get(iterator.next()));
+                if (sysLocalOrganInfo.getOrganId() == null){
+                    sysLocalOrganInfo = null;
+                }else {
+                    List<SysOrganFusion> fusionList = new ArrayList<>();
+                    if (sysLocalOrganInfo.getFusionMap() != null) {
+                        Iterator<String> iterator = sysLocalOrganInfo.getFusionMap().keySet().iterator();
+                        while (iterator.hasNext()) {
+                            fusionList.add(sysLocalOrganInfo.getFusionMap().get(iterator.next()));
+                        }
                     }
+                    sysLocalOrganInfo.setFusionList(fusionList);
                 }
-                sysLocalOrganInfo.setFusionList(fusionList);
             }
             Map result = new HashMap();
             result.put("sysLocalOrganInfo", sysLocalOrganInfo);
