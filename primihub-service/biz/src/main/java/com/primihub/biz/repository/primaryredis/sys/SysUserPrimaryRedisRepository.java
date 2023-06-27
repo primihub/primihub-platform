@@ -31,8 +31,8 @@ public class SysUserPrimaryRedisRepository {
         map.put("userAccount",sysUserListVO.getUserAccount());
         map.put("roleIdList",sysUserListVO.getRoleIdList());
         map.put("roleIdListDesc",sysUserListVO.getRoleIdListDesc());
-        map.put("organIdList",sysUserListVO.getOrganIdList());
-        map.put("organIdListDesc",sysUserListVO.getOrganIdListDesc());
+//        map.put("organIdList",sysUserListVO.getOrganIdList());
+//        map.put("organIdListDesc",sysUserListVO.getOrganIdListDesc());
         map.put("isForbid",sysUserListVO.getIsForbid().toString());
         map.put("authIdList",sysUserListVO.getAuthIdList());
         map.put("token",token);
