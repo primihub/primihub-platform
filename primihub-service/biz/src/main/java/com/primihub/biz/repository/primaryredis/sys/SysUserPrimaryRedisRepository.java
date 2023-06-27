@@ -53,10 +53,10 @@ public class SysUserPrimaryRedisRepository {
         sysUserListVO.setUserId(Long.parseLong(map.get("userId").toString()));
         sysUserListVO.setUserName(map.get("userName").toString());
         sysUserListVO.setUserAccount(map.get("userAccount").toString());
-//        sysUserListVO.setRoleIdList(map.get("roleIdList").toString());
-//        sysUserListVO.setRoleIdListDesc(map.get("roleIdListDesc").toString());
-        sysUserListVO.setOrganIdList(map.get("organIdList").toString());
-        sysUserListVO.setOrganIdListDesc(map.get("organIdListDesc").toString());
+        sysUserListVO.setRoleIdList(map.get("roleIdList").toString());
+        sysUserListVO.setRoleIdListDesc(map.get("roleIdListDesc").toString());
+//        sysUserListVO.setOrganIdList(map.get("organIdList").toString());
+//        sysUserListVO.setOrganIdListDesc(map.get("organIdListDesc").toString());
         sysUserListVO.setIsForbid(Integer.parseInt(map.get("isForbid").toString()));
         sysUserListVO.setAuthIdList(map.get("authIdList").toString());
         return sysUserListVO;
