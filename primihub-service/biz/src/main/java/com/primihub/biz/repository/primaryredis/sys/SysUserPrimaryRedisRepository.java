@@ -1,5 +1,6 @@
 package com.primihub.biz.repository.primaryredis.sys;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.sys.vo.SysUserListVO;
@@ -30,8 +31,8 @@ public class SysUserPrimaryRedisRepository {
         map.put("userAccount",sysUserListVO.getUserAccount());
         map.put("roleIdList",sysUserListVO.getRoleIdList());
         map.put("roleIdListDesc",sysUserListVO.getRoleIdListDesc());
-        map.put("organIdList",sysUserListVO.getOrganIdList());
-        map.put("organIdListDesc",sysUserListVO.getOrganIdListDesc());
+//        map.put("organIdList",sysUserListVO.getOrganIdList());
+//        map.put("organIdListDesc",sysUserListVO.getOrganIdListDesc());
         map.put("isForbid",sysUserListVO.getIsForbid().toString());
         map.put("authIdList",sysUserListVO.getAuthIdList());
         map.put("token",token);
@@ -52,8 +53,8 @@ public class SysUserPrimaryRedisRepository {
         sysUserListVO.setUserId(Long.parseLong(map.get("userId").toString()));
         sysUserListVO.setUserName(map.get("userName").toString());
         sysUserListVO.setUserAccount(map.get("userAccount").toString());
-        sysUserListVO.setRoleIdList(map.get("roleIdList").toString());
-        sysUserListVO.setRoleIdListDesc(map.get("roleIdListDesc").toString());
+//        sysUserListVO.setRoleIdList(map.get("roleIdList").toString());
+//        sysUserListVO.setRoleIdListDesc(map.get("roleIdListDesc").toString());
         sysUserListVO.setOrganIdList(map.get("organIdList").toString());
         sysUserListVO.setOrganIdListDesc(map.get("organIdListDesc").toString());
         sysUserListVO.setIsForbid(Integer.parseInt(map.get("isForbid").toString()));
