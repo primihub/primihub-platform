@@ -95,6 +95,11 @@ public class TestController {
         return testService.testDataSet(id);
     }
 
+    /**
+     * 取消运行任务
+     * @param taskId
+     * @return
+     */
     @GetMapping("/killTask")
     public BaseResultEntity killTask(String taskId){
         if (StringUtils.isBlank(taskId)) {
