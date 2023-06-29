@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,8 @@ import java.util.stream.Collectors;
 public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
     private ComponentsConfiguration componentsConfiguration;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
     @Autowired
     private DataResourceService dataResourceService;
     @Autowired
