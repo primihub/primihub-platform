@@ -11,6 +11,13 @@ jobs:
 
     steps:
 
+    - name: Check if event is from fork
+      run: |
+        if [[ "${{ github.event.repository.fork }}" == "true" ]]; then
+          echo "This event is from a fork. Skip the job."
+          exit 0
+        fi
+
     - name: Sync to Gitee
       uses: abersheeran/sync-gitee-mirror@v1-beta
       with:
