@@ -26,7 +26,7 @@
                   </el-col>
                   <el-col :span="12">
                     <el-form-item>
-                      <el-input v-model="form.resourceName" :disabled="form.organId === ''" style="width: 100%" placeholder="请选择机构下资源" suffix-icon="el-icon-arrow-down" @focus="openDialog" />
+                      <div class="custom-input" :style="{'color': resourceName === '请选择机构下资源' ? '#C0C4CC' : '#606266'}" :class="{'disabled': form.organId === '' }" @click="openDialog"><span class="resource-name">{{ resourceName }}</span><i class="el-icon-arrow-down" /></div>
                     </el-form-item>
                   </el-col>
                 </el-row>
@@ -106,6 +106,7 @@ export default {
       taskDate: 0,
       organList: [],
       dialogVisible: false,
+      resourceName: '请选择机构下资源',
       form: {
         organId: '',
         resourceName: '',
@@ -147,12 +148,14 @@ export default {
     handleDelete() {
       this.form.resourceId = ''
       this.form.resourceName = ''
+      this.resourceName = ''
       this.selectResources = null
       this.form.selectResources = null
     },
     handleDialogSubmit() {
       if (this.selectResources) {
         this.form.resourceName = this.selectResources.resourceName
+        this.resourceName = this.selectResources.resourceName
         this.form.selectResources = this.selectResources
         this.dialogVisible = false
       } else {
@@ -286,7 +289,21 @@ export default {
 ::v-deep .table.el-table .el-table__cell{
   padding: 5px 0;
 }
-
+.custom-input{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 4px;
+  border: 1px solid #DCDFE6;
+  color: #C0C4CC;
+  line-height: 40px;
+  height: 40px;
+  padding: 0 15px;
+  cursor: pointer;
+  &.disabled{
+    background-color: #F5F7FA;
+  }
+}
 .dialog-body{
   min-height: 200px;
 }

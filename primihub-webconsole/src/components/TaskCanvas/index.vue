@@ -652,10 +652,10 @@ export default {
       const emptyType = featureValues.find(item => item.type === '')
       const emptyFeature = featureValues.find(item => item.features[0].checked.length === 0)
       if (emptyFeature) {
-        this.$message.error('联合统计所选策略特征不能为空，请核验')
+        this.$message.error('联合统计所选统计项特征不能为空，请核验')
         return false
       } else if (emptyType) {
-        this.$message.error('联合统计所选策略不能为空，请核验')
+        this.$message.error('联合统计所选统计项不能为空，请核验')
         return false
       } else {
         return true
