@@ -3,6 +3,7 @@ package com.primihub.sdk.task;
 import com.primihub.sdk.config.GrpcClientConfig;
 import com.primihub.sdk.task.annotation.TaskTypeExample;
 import com.primihub.sdk.task.cache.CacheService;
+import com.primihub.sdk.task.factory.AbstractDataSetGRPCExecute;
 import com.primihub.sdk.task.factory.AbstractGRPCExecuteFactory;
 import com.primihub.sdk.task.factory.AbstractKillGRPCExecute;
 import com.primihub.sdk.task.param.TaskParam;
@@ -14,7 +15,6 @@ import io.grpc.netty.NettyChannelBuilder;
 import io.netty.handler.ssl.SslContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import primihub.rpc.Common;
 
 import java.io.File;
 import java.util.*;
@@ -140,7 +140,9 @@ public class TaskHelper {
             log.info("taskParam:{}",taskParam.toString());
             throw new NullPointerException("TaskContentParam 实例对象为null");
         }
-        cacheService.taskData(taskParam);
+        if (annotation.value() != AbstractDataSetGRPCExecute.class){
+            cacheService.taskData(taskParam);
+        }
         EXECUTE_MAP.get(annotation.value()).execute(channel,taskParam);
         if (taskParam.getOpenGetStatus()){
             taskParam.setEnd(true);
