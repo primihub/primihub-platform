@@ -6,20 +6,18 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
-import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.GrpcComponentDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
-import com.primihub.biz.grpc.client.WorkGrpcClient;
-import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
-import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.ZipUtils;
 import com.primihub.biz.util.snowflake.SnowflakeId;
+import com.primihub.sdk.task.TaskHelper;
+import com.primihub.sdk.task.param.TaskMPCParam;
+import com.primihub.sdk.task.param.TaskParam;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -46,11 +44,9 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
     @Autowired
     private ComponentsConfiguration componentsConfiguration;
     @Autowired
-    private WorkGrpcClient workGrpcClient;
-    @Autowired
-    private DataTaskMonitorService dataTaskMonitorService;
-    @Autowired
     private OrganConfiguration organConfiguration;
+    @Autowired
+    private TaskHelper taskHelper;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -84,45 +80,26 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
                     Iterator<Map.Entry<String, GrpcComponentDto>> iterator = jointStatisticalMap.entrySet().iterator();
-                    Map<String, Common.Dataset> values = new HashMap<>();
-                    int ci = 0;
+                    List<String> rids = new ArrayList<>();
                     while (iterator.hasNext()){
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         next.getValue().setJointStatisticalType(MAP_TYPE.get(jsonObject.getString("type")));
-                        values.put("PARTY"+ci,Common.Dataset.newBuilder().putData("Data_File",next.getKey()).build());
-                        ci++;
+                        rids.add(next.getKey());
                     }
-                    Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(jointStatisticalMap).getBytes(StandardCharsets.UTF_8))).build();
-                    Common.ParamValue taskDetailParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(jsonObject.toJSONString().getBytes(StandardCharsets.UTF_8))).build();
-                    Common.Params params = Common.Params.newBuilder()
-                            .putParamMap("ColumnInfo", columnInfoParamValue)
-                            .putParamMap("TaskDetail", taskDetailParamValue)
-                            .build();
-                    Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(String.valueOf(taskReq.getJob())).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
-                    Common.Task task = Common.Task.newBuilder()
-                            .setType(Common.TaskType.ACTOR_TASK)
-                            .setParams(params)
-                            .setName("mpc_statistics")
-                            .setLanguage(Common.Language.PROTO)
-                            .setCode(ByteString.copyFrom("mpc_statistics".getBytes(StandardCharsets.UTF_8)))
-                            .setTaskInfo(taskBuild)
-                            .putAllPartyDatasets(values)
-                            .build();
-                    PushTaskRequest request = PushTaskRequest.newBuilder()
-                            .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
-                            .setTask(task)
-                            .setSequenceNumber(11)
-                            .setClientProcessedUpTo(22)
-                            .setSubmitClientId(ByteString.copyFrom(baseConfiguration.getGrpcClient().getGrpcClientPort().toString().getBytes(StandardCharsets.UTF_8)))
-                            .build();
-                    log.info("grpc PushTaskRequest :\n{}", request.toString());
-                    PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                    log.info("grpc结果:{}", reply.toString());
-                    if(reply.getRetCode() == 2){
+                    TaskParam<TaskMPCParam> taskParam = new TaskParam<>(new TaskMPCParam());
+                    taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
+                    taskParam.setJobId(String.valueOf(taskReq.getJob()));
+                    taskParam.getTaskContentParam().setTaskName("mpc_statistics");
+                    taskParam.getTaskContentParam().setResourceIds(rids);
+                    taskParam.getTaskContentParam().setParamMap(new HashMap<>());
+                    taskParam.getTaskContentParam().getParamMap().put("ColumnInfo",JSONObject.toJSONString(jointStatisticalMap));
+                    taskParam.getTaskContentParam().getParamMap().put("TaskDetail",jsonObject.toJSONString());
+                    taskHelper.submit(taskParam);
+                    if(!taskParam.getSuccess()){
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
+                        taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+taskParam.getError());
                     }else {
-                        dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
+                        taskReq.getDataTask().setTaskState(TaskStateEnum.SUCCESS.getStateType());
                     }
                     String newId = null;
                     String localOrganShortCode = organConfiguration.getLocalOrganShortCode();

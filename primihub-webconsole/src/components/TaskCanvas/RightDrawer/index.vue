@@ -566,6 +566,10 @@ export default {
         features: this.defaultExceptionFeatures,
         type: ''
       })
+      this.processingType.map((item) => {
+        const current = this.featureItems.find(feature => feature.type === item.key)
+        item.disabled = !!current
+      })
       this.handleChange('exception')
     },
     removeFilling(index) {

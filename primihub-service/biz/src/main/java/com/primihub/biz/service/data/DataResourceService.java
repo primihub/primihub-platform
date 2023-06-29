@@ -12,7 +12,6 @@ import com.primihub.biz.convert.DataSourceConvert;
 import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
-import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
@@ -22,21 +21,19 @@ import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
-import com.primihub.biz.grpc.client.DataServiceGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.service.sys.SysUserService;
-import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
-import java_data_service.DataTypeInfo;
-import java_data_service.MetaInfo;
-import java_data_service.NewDatasetRequest;
-import java_data_service.NewDatasetResponse;
+import com.primihub.sdk.task.TaskHelper;
+import com.primihub.sdk.task.dataenum.FieldTypeEnum;
+import com.primihub.sdk.task.param.TaskDataSetParam;
+import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,8 +67,6 @@ public class DataResourceService {
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private DataServiceGrpcClient dataServiceGrpcClient;
-    @Autowired
     private DataSourceService dataSourceService;
     @Autowired
     private BaseConfiguration baseConfiguration;
@@ -79,6 +74,8 @@ public class DataResourceService {
     private DataModelRepository dataModelRepository;
     @Autowired
     private FusionResourceService fusionResourceService;
+    @Autowired
+    private TaskHelper taskHelper;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -150,9 +147,9 @@ public class DataResourceService {
             for (DataResourceFieldReq field : fieldList) {
                 dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
             }
-            BaseResultEntity resultEntity = resourceSynGRPCDataSet(dataSource, dataResource, dataFileFieldList);
-            if (resultEntity.getCode()!=0){
-                return resultEntity;
+            TaskParam taskParam = resourceSynGRPCDataSet(dataSource, dataResource, dataFileFieldList);
+            if (!taskParam.getSuccess()){
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中:"+taskParam.getError());
             }
             if (dataSource!=null){
                 dataResourcePrRepository.saveSource(dataSource);
@@ -222,9 +219,9 @@ public class DataResourceService {
             dataSource = dataResourceRepository.queryDataSourceById(dbId);
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
-        BaseResultEntity resultEntity = resourceSynGRPCDataSet(dataSource,dataResource,dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
-        if (resultEntity.getCode()!=0){
-            return resultEntity;
+        TaskParam taskParam = resourceSynGRPCDataSet(dataSource, dataResource, dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+        if (!taskParam.getSuccess()){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法将资源注册到数据集中:"+taskParam.getError());
         }
         fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
@@ -528,7 +525,6 @@ public class DataResourceService {
     }
 
     public BaseResultEntity handleDataResourceSource(DataResource dataResource, List<DataResourceFieldReq> fieldList, DataSource dataSource) {
-//        TreeSet<String> fieldNames = new TreeSet<>(fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toSet()));
         List<String> fieldNames = fieldList.stream().map(DataResourceFieldReq::getFieldName).collect(Collectors.toList());
         BaseResultEntity baseResultEntity = dataSourceService.tableDataStatistics(dataSource, fieldNames.contains("y") || fieldNames.contains("Y"));
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
@@ -629,7 +625,7 @@ public class DataResourceService {
         return yRow;
     }
 
-    public BaseResultEntity resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource,List<DataFileField> fieldList){
+    public TaskParam resourceSynGRPCDataSet(DataSource dataSource,DataResource dataResource,List<DataFileField> fieldList){
         if (dataResource.getResourceSource() !=2 ){
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl(),fieldList);
         }
@@ -648,33 +644,19 @@ public class DataResourceService {
         return resourceSynGRPCDataSet(SourceEnum.SOURCE_MAP.get(dataSource.getDbType()).getSourceName(),dataResource.getResourceFusionId(), JSONObject.toJSONString(map),fieldList);
     }
 
-    public BaseResultEntity resourceSynGRPCDataSet(String suffix,String id,String url,List<DataFileField> fieldList){
-        log.info("run dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{} - time:{}",suffix,id,url,System.currentTimeMillis());
-        MetaInfo.Builder metaInfoBuilder = MetaInfo.newBuilder()
-                .setId(id)
-                .setAccessInfo(url)
-                .setDriver(suffix)
-                .setVisibility(MetaInfo.Visibility.PUBLIC);
+    public TaskParam resourceSynGRPCDataSet(String suffix, String id, String url, List<DataFileField> fieldList){
+        TaskParam<TaskDataSetParam> taskParam=new TaskParam();
+        TaskDataSetParam param = new TaskDataSetParam();
+        param.setFieldTypes(new ArrayList<>());
+        param.setId(id);
+        param.setAccessInfo(url);
+        param.setDriver(suffix);
         for (DataFileField field : fieldList) {
-            metaInfoBuilder.addDataType(DataTypeInfo.newBuilder().setType(DataTypeInfo.PlainDataType.valueOf(FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType()).getNodeTypeName())).setName(field.getFieldName()));
+            param.getFieldTypes().add(new TaskDataSetParam.FieldType(field.getFieldName(), FieldTypeEnum.FIELD_TYPE_MAP.get(field.getFieldType())));
         }
-        NewDatasetRequest request = NewDatasetRequest.newBuilder().setMetaInfo(metaInfoBuilder).setOpTypeValue(NewDatasetRequest.Operator.REGISTER.getNumber()).build();
-        log.info("NewDatasetRequest:{}",request.toString());
-        try {
-            NewDatasetResponse response = dataServiceGrpcClient.run(o -> o.newDataset(request));
-            log.info("dataServiceGrpc Response:{}",response.toString());
-            NewDatasetResponse.ResultCode retCode = response.getRetCode();
-            if (retCode.getValueDescriptor().getName().equals(NewDatasetResponse.ResultCode.SUCCESS.getValueDescriptor().getName())){
-                log.info("dataServiceGrpc success");
-                return BaseResultEntity.success();
-            }else {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中:"+response.getRetMsg());
-            }
-        }catch (Exception e){
-            log.info("dataServiceGrpcException:{}",e.getMessage());
-        }
-        log.info("end dataServiceGrpc fileSuffix:{} - fileId:{} - fileUrl:{}  - time:{}",suffix,id,url,System.currentTimeMillis());
-        return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL);
+        taskParam.setTaskContentParam(param);
+        taskHelper.submit(taskParam);
+        return taskParam;
     }
 
 

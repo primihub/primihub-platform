@@ -6,7 +6,6 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
-import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
@@ -16,7 +15,6 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.sys.po.DataSet;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.test.TestPrimaryRepository;
 import com.primihub.biz.repository.primaryredis.test.TestRedisRepository;
@@ -27,20 +25,16 @@ import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
-import com.primihub.biz.util.snowflake.SnowflakeId;
-import java_worker.PushTaskReply;
-import java_worker.PushTaskRequest;
+import com.primihub.sdk.task.TaskHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import primihub.rpc.Common;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,8 +48,6 @@ public class TestService {
     private TestSecondaryRepository testSecondaryRepository;
     @Autowired
     private TestRedisRepository testRedisRepository;
-    @Autowired
-    private WorkGrpcClient workGrpcClient;
     @Autowired
     private DataResourceService dataResourceService;
     @Autowired
@@ -72,7 +64,8 @@ public class TestService {
     private OtherBusinessesService otherBusinessesService;
     @Autowired
     private OrganConfiguration organConfiguration;
-
+    @Autowired
+    private TaskHelper taskHelper;
     @Resource
     private Environment environment;
 
@@ -98,50 +91,6 @@ public class TestService {
         return new HashMap();
     }
 
-    public void runGrpc(){
-        log.info("请求开始");
-        Common.ParamValue revealIntersectionParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-        Common.ParamValue clientDataDirParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("/usr/local/src/data".getBytes(StandardCharsets.UTF_8))).build();
-        Common.ParamValue clientFileNameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("client.csv".getBytes(StandardCharsets.UTF_8))).build();
-        Common.ParamValue serverDataDirParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("/usr/local/src/data".getBytes(StandardCharsets.UTF_8))).build();
-        Common.ParamValue serverFileNameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("server.csv".getBytes(StandardCharsets.UTF_8))).build();
-        Common.ParamValue colParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-        Common.ParamValue clientStartRowParamValue=Common.ParamValue.newBuilder().setValueInt32(2).build();
-        Common.ParamValue serverColParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-        Common.ParamValue serverStartRowParamValue=Common.ParamValue.newBuilder().setValueInt32(2).build();
-        // out
-        Common.ParamValue outputDataDirParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("/usr/local/src/data".getBytes(StandardCharsets.UTF_8))).build();
-        Common.ParamValue outputFileNameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom("output.csv".getBytes(StandardCharsets.UTF_8))).build();
-        Common.Params params=Common.Params.newBuilder()
-                .putParamMap("reveal_intersection",revealIntersectionParamValue)
-                .putParamMap("client_data_dir",clientDataDirParamValue)
-                .putParamMap("client_filename",clientFileNameParamValue)
-                .putParamMap("client_col",colParamValue)
-                .putParamMap("client_start_row",clientStartRowParamValue)
-                .putParamMap("server_data_dir",serverDataDirParamValue)
-                .putParamMap("server_filename",serverFileNameParamValue)
-                .putParamMap("server_col",serverColParamValue)
-                .putParamMap("server_start_row",serverStartRowParamValue)
-                .putParamMap("output_data_dir",outputDataDirParamValue)
-                .putParamMap("output_filename",outputFileNameParamValue)
-                .build();
-        Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId("1").setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId("1").build();
-        primihub.rpc.Common.Task task= Common.Task.newBuilder()
-                .setType(Common.TaskType.PSI_TASK)
-                .setParams(params)
-                .setName("testTask")
-                .setLanguage(Common.Language.PROTO)
-                .setTaskInfo(taskBuild)
-                .build();
-        PushTaskRequest request=PushTaskRequest.newBuilder()
-                .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                .setTask(task)
-                .setSequenceNumber(11)
-                .setClientProcessedUpTo(22)
-                .build();
-        PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-        log.info("grpc结果:"+reply);
-    }
 
     public void formatResources(String tag) {
         tag = StringUtils.isBlank(tag)?"grpc":tag;
@@ -190,4 +139,7 @@ public class TestService {
         return fusionResourceService.batchSaveTestDataSet(dataSets);
     }
 
+    public BaseResultEntity killTask(String taskId) {
+        return BaseResultEntity.success(taskHelper.killTask(taskId));
+    }
 }

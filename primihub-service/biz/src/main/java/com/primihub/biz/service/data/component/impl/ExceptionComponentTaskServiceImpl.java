@@ -1,7 +1,6 @@
 package com.primihub.biz.service.data.component.impl;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -11,22 +10,17 @@ import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
-import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.DataTaskMonitorService;
-import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.service.data.component.ComponentTaskService;
-import com.primihub.biz.util.snowflake.SnowflakeId;
-import java_worker.PushTaskReply;
-import java_worker.PushTaskRequest;
+import com.primihub.sdk.task.TaskHelper;
+import com.primihub.sdk.task.param.TaskMPCParam;
+import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import primihub.rpc.Common;
-import java.io.File;
-import java.nio.charset.StandardCharsets;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -36,15 +30,11 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Autowired
     private ComponentsConfiguration componentsConfiguration;
     @Autowired
-    private WorkGrpcClient workGrpcClient;
-    @Autowired
-    private BaseConfiguration baseConfiguration;
-    @Autowired
     private DataResourceService dataResourceService;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
-    private DataTaskMonitorService dataTaskMonitorService;
+    private TaskHelper taskHelper;
 
     @Override
     public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
@@ -70,46 +60,24 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
                 log.info("newids:{}", ids);
             }
-            String jobId = String.valueOf(taskReq.getJob());
             log.info("exceptionEntityMap-2:{}",JSONObject.toJSONString(exceptionEntityMap));
             String replaceType = taskReq.getValueMap().get("replaceType");
             if (StringUtils.isEmpty(replaceType)){
                 replaceType = "MAX";
             }
-            Map<String, Common.Dataset> values = new HashMap<>();
-            for (int i = 0; i < ids.size(); i++) {
-                values.put("PARTY"+i,Common.Dataset.newBuilder().putData("Data_File",ids.get(i)).build());
-            }
-            Common.ParamValue columnInfoParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(exceptionEntityMap).getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue replaceTypeParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(replaceType.getBytes(StandardCharsets.UTF_8))).build();
-            Common.Params params = Common.Params.newBuilder()
-                    .putParamMap("ColumnInfo", columnInfoParamValue)
-                    .putParamMap("Replace_Type", replaceTypeParamValue)
-                    .build();
-            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
-            Common.Task task = Common.Task.newBuilder()
-                    .setType(Common.TaskType.ACTOR_TASK)
-                    .setParams(params)
-                    .setName("AbnormalProcessTask")
-                    .setLanguage(Common.Language.PROTO)
-                    .setCode(ByteString.copyFrom("AbnormalProcessTask".getBytes(StandardCharsets.UTF_8)))
-                    .setTaskInfo(taskBuild)
-                    .putAllPartyDatasets(values)
-                    .build();
-            PushTaskRequest request = PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
-                    .setTask(task)
-                    .setSequenceNumber(11)
-                    .setClientProcessedUpTo(22)
-                    .build();
-            log.info("grpc PushTaskRequest :\n{}", request.toString());
-            PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc结果:{}", reply.toString());
-            if(reply.getRetCode() == 2){
+            TaskParam<TaskMPCParam> taskParam = new TaskParam<>(new TaskMPCParam());
+            taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
+            taskParam.setJobId(String.valueOf(taskReq.getJob()));
+            taskParam.getTaskContentParam().setTaskName("AbnormalProcessTask");
+            taskParam.getTaskContentParam().setResourceIds(ids);
+            taskParam.getTaskContentParam().setParamMap(new HashMap<>());
+            taskParam.getTaskContentParam().getParamMap().put("ColumnInfo",JSONObject.toJSONString(exceptionEntityMap));
+            taskParam.getTaskContentParam().getParamMap().put("Replace_Type",replaceType);
+            taskHelper.submit(taskParam);
+            if(!taskParam.getSuccess()){
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
+                taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+taskParam.getError());
             }else {
-                dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
                 List<ModelDerivationDto> derivationList = new ArrayList<>();
                 log.info("exceptionEntityMap-3:{}",JSONObject.toJSONString(exceptionEntityMap));
                 Iterator<String> keyi = exceptionEntityMap.keySet().iterator();

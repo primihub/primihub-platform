@@ -15,14 +15,16 @@ import com.primihub.biz.entity.data.po.DataModelResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
-import com.primihub.biz.grpc.client.WorkGrpcClient;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.DataTaskMonitorService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.util.FileUtil;
-import com.primihub.biz.util.FreemarkerUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
+import com.primihub.sdk.task.TaskHelper;
+import com.primihub.sdk.task.param.TaskComponentParam;
+import com.primihub.sdk.task.param.TaskPSIParam;
+import com.primihub.sdk.task.param.TaskParam;
+import com.primihub.sdk.util.FreemarkerTemplate;
 import java_worker.PushTaskReply;
 import java_worker.PushTaskRequest;
 import lombok.Data;
@@ -47,13 +49,11 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Autowired
     private FreeMarkerConfigurer freeMarkerConfigurer;
     @Autowired
-    private WorkGrpcClient workGrpcClient;
-    @Autowired
     private DataResourceService dataResourceService;
     @Autowired
     private DataModelPrRepository dataModelPrRepository;
     @Autowired
-    private DataTaskMonitorService dataTaskMonitorService;
+    private TaskHelper taskHelper;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -78,42 +78,18 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         freemarkerMap.put(DataConstant.PYTHON_LABEL_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
         freemarkerMap.put(DataConstant.PYTHON_GUEST_DATASET,taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
         freemarkerMap.put("detail",map);
-        String freemarkerContent = FreemarkerUtil.configurerCreateFreemarkerContent(DataConstant.FREEMARKER_PYTHON_DATA_ALIGN_PATH, freeMarkerConfigurer, freemarkerMap);
+        String freemarkerContent = FreemarkerTemplate.getInstance().generateTemplateStr(freemarkerMap,DataConstant.FREEMARKER_PYTHON_DATA_ALIGN_PATH);
         log.info(freemarkerContent);
         if (freemarkerContent != null) {
             try {
-                String jobId = String.valueOf(taskReq.getJob());
-                log.info("runAssemblyDatamap:{}", JSONObject.toJSONString(map));
-                Common.ParamValue componentParamsParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(JSONObject.toJSONString(JSONObject.parseObject(freemarkerContent), SerializerFeature.WriteMapNullValue).getBytes(StandardCharsets.UTF_8))).build();
-                Common.Params params = Common.Params.newBuilder()
-                        .putParamMap("component_params", componentParamsParamValue)
-                        .build();
-                Map<String, Common.Dataset> values = new HashMap<>();
-                values.put("Bob",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("label_dataset")).build());
-                values.put("Charlie",Common.Dataset.newBuilder().putData("data_set",taskReq.getFreemarkerMap().get("guest_dataset")).build());
-                Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
-                Common.Task task = Common.Task.newBuilder()
-                        .setType(Common.TaskType.ACTOR_TASK)
-                        .setParams(params)
-                        .setName("assemblyData")
-                        .setLanguage(Common.Language.PYTHON)
-                        .setTaskInfo(taskBuild)
-                        .putAllPartyDatasets(values)
-                        .build();
-                PushTaskRequest request = PushTaskRequest.newBuilder()
-                        .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                        .setTask(task)
-                        .setSequenceNumber(11)
-                        .setClientProcessedUpTo(22)
-                        .build();
-                log.info("grpc PushTaskRequest :\n{}", request.toString());
-                PushTaskReply reply = workGrpcClient.run(o -> o.submitTask(request));
-                log.info("grpc结果:{}", reply.toString());
-                if (reply.getRetCode() == 2) {
-                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
-                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败");
-                } else {
-                    dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),null);
+                TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
+                taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
+                taskParam.setJobId(String.valueOf(taskReq.getJob()));
+                taskParam.getTaskContentParam().setTemplatesContent(freemarkerContent);
+                taskParam.getTaskContentParam().setUntreated(false);
+                taskParam.getTaskContentParam().setFreemarkerMap(freemarkerMap);
+                taskHelper.submit(taskParam);
+                if (taskParam.getSuccess()){
                     List<ModelDerivationDto> derivationList = new ArrayList<>();
                     Iterator<Map.Entry<String, ModelEntity>> iterator = map.entrySet().iterator();
                     Map<String, String> dtoMap = taskReq.getNewest()!=null && taskReq.getNewest().size()!=0?taskReq.getNewest().stream().collect(Collectors.toMap(ModelDerivationDto::getResourceId,ModelDerivationDto::getOriginalResourceId)):null;
@@ -147,6 +123,9 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                             taskReq.getDmrList().add(dataModelResource);
                         }
                     }
+                }else {
+                    taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+                    taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件处理失败:"+taskParam.getError());
                 }
             } catch (Exception e) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -227,50 +206,21 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             if (serverIndex.size()<0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐协作方特征未查询到");
             }
-            String jobId = String.valueOf(taskReq.getJob());
             StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix()).append(taskReq.getDataTask().getTaskIdName()).append("/");
             ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex,clientData.getResourceId());
             ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex,serverData.getResourceId());
-            Common.ParamValue psiTypeParamValue=Common.ParamValue.newBuilder().setValueInt32(0).build();
-            Common.ParamValue syncResultToServerParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-            Common.ParamValue psiTagParamValue=Common.ParamValue.newBuilder().setValueInt32(1).build();
-            Common.int32_array.Builder clientFieldsBuilder = Common.int32_array.newBuilder();
-            clientIndex.forEach(clientFieldsBuilder::addValueInt32Array);
-            Common.ParamValue clientIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(clientFieldsBuilder.build()).build();
-            Common.int32_array.Builder serverFieldsBuilder = Common.int32_array.newBuilder();
-            serverIndex.forEach(serverFieldsBuilder::addValueInt32Array);
-            Common.ParamValue serverIndexParamValue=Common.ParamValue.newBuilder().setIsArray(true).setValueInt32Array(serverFieldsBuilder.build()).build();
-            Common.ParamValue outputFullFilenameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(clientEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
-            Common.ParamValue serverOutputFullFilnameParamValue=Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(serverEntity.getPsiPath().getBytes(StandardCharsets.UTF_8))).build();
-            Common.Params params=Common.Params.newBuilder()
-                    .putParamMap("psiType",psiTypeParamValue)
-                    .putParamMap("psiTag",psiTagParamValue)
-                    .putParamMap("clientIndex",clientIndexParamValue)
-                    .putParamMap("serverIndex",serverIndexParamValue)
-                    .putParamMap("sync_result_to_server",syncResultToServerParamValue)
-                    .putParamMap("outputFullFilename",outputFullFilenameParamValue)
-                    .putParamMap("server_outputFullFilname",serverOutputFullFilnameParamValue)
-                    .build();
-            Common.TaskContext taskBuild = Common.TaskContext.newBuilder().setJobId(jobId).setRequestId(String.valueOf(SnowflakeId.getInstance().nextId())).setTaskId(taskReq.getDataTask().getTaskIdName()).build();
-            Common.Task task= Common.Task.newBuilder()
-                    .setType(Common.TaskType.PSI_TASK)
-                    .setParams(params)
-                    .setName("testTask")
-                    .setLanguage(Common.Language.PROTO)
-                    .setTaskInfo(taskBuild)
-                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", serverData.getResourceId()).build())
-                    .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", clientData.getResourceId()).build())
-                    .build();
-            PushTaskRequest request=PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
-                    .setTask(task)
-                    .setSequenceNumber(11)
-                    .setClientProcessedUpTo(22)
-                    .build();
-            log.info("grpc PushTaskRequest :\n{}", request.toString());
-            reply = workGrpcClient.run(o -> o.submitTask(request));
-            log.info("grpc结果:"+reply);
-            dataTaskMonitorService.continuouslyObtainTaskStatus(taskReq.getDataTask(),taskBuild,reply.getPartyCount(),clientEntity.getPsiPath());
+            TaskParam<TaskPSIParam> taskParam = new TaskParam<>(new TaskPSIParam());
+            taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
+            taskParam.setJobId(String.valueOf(taskReq.getJob()));
+            taskParam.getTaskContentParam().setServerData(serverData.getResourceId());
+            taskParam.getTaskContentParam().setServerIndex(serverIndex.toArray(new Integer[]{}));
+            taskParam.getTaskContentParam().setClientData(clientData.getResourceId());
+            taskParam.getTaskContentParam().setClientIndex(clientIndex.toArray(new Integer[]{}));
+            taskParam.getTaskContentParam().setPsiTag(1);
+            taskParam.getTaskContentParam().setSyncResultToServer(1);
+            taskParam.getTaskContentParam().setOutputFullFilename(clientEntity.getPsiPath());
+            taskParam.getTaskContentParam().setServerOutputFullFilname(serverEntity.getPsiPath());
+            taskHelper.submit(taskParam);
             if (!FileUtil.isFileExists(clientEntity.getPsiPath())){
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐PSI无文件信息");
             }
