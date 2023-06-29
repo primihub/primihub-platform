@@ -1,8 +1,5 @@
 package com.primihub.sdk.config;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class GrpcClientConfig {
     private String address;
     private Integer port;
