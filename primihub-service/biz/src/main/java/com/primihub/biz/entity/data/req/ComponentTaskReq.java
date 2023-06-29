@@ -19,7 +19,7 @@ public class  ComponentTaskReq {
     private DataTask dataTask;
     private List<DataModelResource> dmrList = new ArrayList<>();
     private List<ModelProjectResourceVo> resourceList;
-    private Map<String,String> freemarkerMap = new HashMap<>();
+    private Map<String,Object> freemarkerMap = new HashMap<>();
     private DataModelAndComponentReq modelComponentReq = null;
     private List<DataModelComponent> dataModelComponents = new ArrayList<>();
     private List<DataComponent> dataComponents = new ArrayList<>();

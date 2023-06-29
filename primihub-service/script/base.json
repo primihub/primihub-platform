@@ -26,9 +26,8 @@
     "defaultPasswordVector":"excalibur",
     "primihubOfficalService": "http://127.0.0.1:8000",
     "grpcClient":{
-        "grpcClientAddress":"192.168.99.20",
-        "grpcClientPort":50050,
-        "grpcServerPorts":[],
+        "address":"192.168.99.20",
+        "port":50050,
         "useTls":false,
         "trustCertFilePath":"/ca.crt",
         "keyCertChainFile":"/client.crt",

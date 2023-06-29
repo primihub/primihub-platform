@@ -3,8 +3,8 @@ package com.primihub.biz.config.base;
 import com.alibaba.nacos.api.config.annotation.NacosConfigurationProperties;
 import com.primihub.biz.entity.data.vo.ModelComponent;
 import com.primihub.biz.entity.sys.config.BaseAuthConfig;
-import com.primihub.biz.entity.sys.config.BaseGrpcClientConfig;
 import com.primihub.biz.entity.sys.config.LokiConfig;
+import com.primihub.sdk.config.GrpcClientConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
@@ -25,7 +25,7 @@ public class BaseConfiguration {
     private String primihubOfficalService;
     private String defaultPassword;
     private String defaultPasswordVector;
-    private BaseGrpcClientConfig grpcClient;
+    private GrpcClientConfig grpcClient;
     private Integer grpcServerPort;
     private String uploadUrlDirPrefix;
     private String resultUrlDirPrefix;

@@ -1,6 +1,5 @@
 package com.primihub.biz.convert;
 
-import com.primihub.biz.entity.data.dataenum.FieldTypeEnum;
 import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.DataResourceTag;
@@ -9,8 +8,8 @@ import com.primihub.biz.entity.data.req.DataResourceReq;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysUser;
+import com.primihub.sdk.task.dataenum.FieldTypeEnum;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.data.relational.core.sql.In;
 
 import java.math.BigDecimal;
 import java.util.*;
