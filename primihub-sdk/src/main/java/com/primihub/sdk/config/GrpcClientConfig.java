@@ -11,7 +11,6 @@ public class GrpcClientConfig {
     private String keyCertChainFile;
     private String keyFile;
     private String cacheType = "CaffeineCacheService";
-    private List<String> customPackagePath;
 
     public String getAddress() {
         return address;
@@ -67,16 +66,5 @@ public class GrpcClientConfig {
 
     public void setCacheType(String cacheType) {
         this.cacheType = cacheType;
-    }
-
-    public List<String> getCustomPackagePath() {
-        if (this.customPackagePath == null){
-            return new ArrayList<>();
-        }
-        return customPackagePath;
-    }
-
-    public void setCustomPackagePath(List<String> customPackagePath) {
-        this.customPackagePath = customPackagePath;
     }
 }
