@@ -24,7 +24,7 @@
         "record": ${record!0},
         "encrypted_proto": "paillier",
         "sampling_stategy": "random",
-        "samples_clip_size": ${samplesClipSize!20000},
+        "samples_clip_size": 20000,
         "large_grads_ratio": ${largeGradsRatio!0.2},
         "small_grads_ratio": ${smallGradsRatio!0.2},
         "actors": ${actors!20},
