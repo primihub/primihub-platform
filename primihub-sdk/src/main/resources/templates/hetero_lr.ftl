@@ -1,48 +1,36 @@
 {
-  "roles": {
-	"guest": [
-	  "Charlie"
-	],
-	"host": [
-	  "Bob"
-	]
-  },
-  "common_params": {
-	"model": "HeteroLR",
-	"task_name": "train",
-	"learning_rate": 0.01,
-	"alpha": 0.0001,
-	"epochs": 50,
-	"penalty": "l2",
-	"optimal_method": "momentum",
-	"momentum": 0.7,
-	"random_state": 2023,
-	"scale_type": "z-score",
-	"batch_size": 512,
-	"sample_method": "random",
-	"sample_ratio": 0.3,
-	"loss_type": "log",
-	"prev_grad": 0,
-	"metric_path": "${indicatorFileName}",
-	"model_pred": "${predictFileName}"
-  },
-  "role_params": {
-	"Bob": {
-	  "data_set": "${label_dataset}",
-	  "id": "id",
-	  "selected_column": null,
-	  "add_noise": "regular",
-	  "tol": 0.001,
-	  "label": "y",
-	  "model_path": "${hostModelFileName}",
-	  "n_iter_no_change": 5
+	"roles": {
+		"guest": [
+			"Charlie"
+		],
+		"host": "Bob"
 	},
-	"Charlie": {
-	  "data_set": "${guest_dataset}",
-	  "id": "id",
-	  "model_path": "${guestModelFileName}",
-	  "selected_column": null,
-	  "label": null
+	"common_params": {
+		"model": "VFL_logistic_regression",
+		"method": "Plaintext",
+		"process": "train",
+		"task_name": "VFL_logistic_regression_plaintext_train",
+		"learning_rate": 1e-0,
+		"alpha": 1e-4,
+		"epoch": ${epoch!10},
+		"shuffle_seed":${shuffleSeed!0},
+		"batch_size": ${batchSize!100},
+		"print_metrics": ${printMetrics!true}
+	},
+	"role_params": {
+		"Bob": {
+			"data_set": "${label_dataset}",
+			"selected_column": null,
+			"id": "id",
+			"label": "y",
+			"model_path": "${hostModelFileName}",
+			"metric_path": "${indicatorFileName}"
+		},
+		"Charlie": {
+			"data_set": "${guest_dataset}",
+			"selected_column": null,
+			"id": "id",
+			"model_path": "${guestModelFileName}"
+		}
 	}
-  }
 }
