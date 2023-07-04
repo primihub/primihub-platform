@@ -23,7 +23,7 @@
 	  "local_epoch": ${localEpoch!1},
 	  "selected_column": null,
 	  "id": "id",
-	  "label": "${label!y}",
+	  "label": "y",
 	  "print_metrics": true,
 	  "metric_path": "${indicatorFileName}"
 	},
