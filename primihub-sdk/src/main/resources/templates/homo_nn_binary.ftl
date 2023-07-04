@@ -22,7 +22,7 @@
 	  "global_epoch": ${globalEpoch!100},
 	  "local_epoch": ${localEpoch!1},
 	  "selected_column": null,
-	  "id": "${id!id}",
+	  "id": "id",
 	  "label": "${label!y}",
 	  "print_metrics": true,
 	  "metric_path": "${indicatorFileName}"
