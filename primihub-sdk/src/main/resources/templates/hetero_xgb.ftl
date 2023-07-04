@@ -16,7 +16,7 @@
         "merge_gh": ${mergeGh!true},
         "ray_group":${rayGroup!true},
         "sample_type": "${sampleType!random}",
-        "feature_sample": ${featureSample!true},
+        "feature_sample": true,
         "learning_rate":${learningRate!0.1},
         "gamma": ${gamma!0},
         "min_child_weight":${minChildWeight!5},

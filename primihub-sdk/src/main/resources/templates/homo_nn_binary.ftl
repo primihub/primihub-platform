@@ -24,7 +24,7 @@
 	  "selected_column": null,
 	  "id": "${id!id}",
 	  "label": "${label!y}",
-	  "print_metrics": ${printMetrics!true},
+	  "print_metrics": true,
 	  "metric_path": "${indicatorFileName}"
 	},
 	"role_params": {
