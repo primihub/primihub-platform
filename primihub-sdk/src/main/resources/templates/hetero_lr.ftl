@@ -10,12 +10,12 @@
 		"method": "Plaintext",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
-		"learning_rate": 1e-0,
-		"alpha": 1e-4,
+		"learning_rate": ${learningRate!1},
+		"alpha": ${alpha!0.0001},
 		"epoch": ${epoch!10},
 		"shuffle_seed":${shuffleSeed!0},
 		"batch_size": ${batchSize!100},
-		"print_metrics": true
+		"print_metrics": ${printMetrics!true?c}
 	},
 	"role_params": {
 		"Bob": {

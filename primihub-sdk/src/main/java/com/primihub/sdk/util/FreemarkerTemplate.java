@@ -20,6 +20,8 @@ public class FreemarkerTemplate {
         configuration = new Configuration(Configuration.getVersion());
         configuration.setDefaultEncoding("utf-8");
         configuration.setClassForTemplateLoading(this.getClass(), SLASH);
+        configuration.setNumberFormat("#");
+        configuration.setBooleanFormat("true,false");
     }
 
     //单例
