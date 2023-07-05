@@ -8,7 +8,7 @@
 	},
 	"common_params": {
 		"model": "HFL_logistic_regression",
-		"method": "Plaintext",
+		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "HFL_logistic_regression",
 		"n_length": ${nLength!2048},
