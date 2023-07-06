@@ -32,4 +32,5 @@ public class ModelTaskSuccessVo {
     private Integer resourceNum;
 
     private Integer isCooperation;
+    private Integer trainType;
 }

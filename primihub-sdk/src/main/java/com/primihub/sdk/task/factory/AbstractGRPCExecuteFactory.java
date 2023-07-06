@@ -56,12 +56,43 @@ public abstract class AbstractGRPCExecuteFactory {
     }
 
     public <Result> Result runVMNodeGrpc(Functional<VMNodeGrpc.VMNodeBlockingStub,Result> functional, Channel channel){
-        VMNodeGrpc.VMNodeBlockingStub vMNodeBlockingStub =VMNodeGrpc.newBlockingStub(channel);
-        return functional.run(vMNodeBlockingStub);
+        Result result = null;
+        int i = 0;
+        while(true){
+            i++;
+            try {
+                VMNodeGrpc.VMNodeBlockingStub vMNodeBlockingStub =VMNodeGrpc.newBlockingStub(channel);
+                result = functional.run(vMNodeBlockingStub);
+                break;
+            }catch (Exception e){
+                e.printStackTrace();
+                if (i > 3) {
+                    log.info("Over three anomalies thrown");
+                    throw e;
+                }
+            }
+        }
+        return result;
     }
     public <Result> Result runDataServiceGrpc(Functional<DataSetServiceGrpc.DataSetServiceBlockingStub,Result> functional, Channel channel){
-        DataSetServiceGrpc.DataSetServiceBlockingStub dataServiceBlockingStub = DataSetServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
-        return functional.run(dataServiceBlockingStub);
+        Result result = null;
+        int i = 0;
+        while (true){
+            i++;
+            try {
+                DataSetServiceGrpc.DataSetServiceBlockingStub dataServiceBlockingStub = DataSetServiceGrpc.newBlockingStub(channel).withDeadlineAfter(3, TimeUnit.SECONDS);
+                result = functional.run(dataServiceBlockingStub);
+                break;
+            }catch (Exception e){
+                e.printStackTrace();
+                if (i>3) {
+                    log.info("Over three anomalies thrown");
+                    throw e;
+                }
+            }
+        }
+        return result;
+
     }
 
     public void continuouslyObtainTaskStatus(Channel channel,Common.TaskContext taskBuild, TaskParam param, int partyCount) {
