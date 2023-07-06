@@ -605,7 +605,7 @@ export default {
       if (filterData) {
         return Number(filterData.val)
       } else {
-        return 1
+        return name === 'max' ? Infinity : -Infinity
       }
     },
     filterData(organId) {
