@@ -662,6 +662,7 @@ export default {
       }
     },
     checkRunValidated() {
+      this.modelRunValidated = true
       const data = this.graph.toJSON()
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
