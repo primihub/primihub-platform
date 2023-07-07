@@ -6,7 +6,7 @@
 
     <groupId>com.primihub</groupId>
     <artifactId>primihub-sdk</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <name>primihub:sdk</name>
     <description>Apply to Primihub submit tasks</description>
     <url>https://github.com/primihub</url>
