@@ -100,7 +100,7 @@ export default {
       selectedResource: [], // 选中
       rules: {
         modelName: [
-          { required: true, message: '请选择模型' }
+          { required: true, message: '请选择模型', trigger: 'change' }
         ],
         reasoningName: [
           { required: true, message: '请输入推理服务名称' }
@@ -135,7 +135,10 @@ export default {
       this.$refs.form.resetFields()
     },
     handleRemove(organId, participationIdentity) {
+      this.paginationOptions.pageNo = 1
+      this.selectedOrganId = organId
       this.selectedResource[organId].splice(0)
+
       if (participationIdentity === 1) {
         this.form.createdResourceId = ''
       } else if (participationIdentity === 2) {
@@ -194,11 +197,22 @@ export default {
       }
       this.selectedOrganId = organId
       this.participationIdentity = participationIdentity
+      // set select resource value
+      if (this.selectedResource[this.selectedOrganId] && this.selectedResource[this.selectedOrganId][0]) {
+        this.selectedResourceId = this.selectedResource[this.selectedOrganId][0].resourceId
+      } else {
+        this.selectedResourceId = ''
+      }
       await this.getResourceList()
+
       this.resourceDialogVisible = true
     },
     handleClose() {
       this.dialogVisible = false
+    },
+    handleModelNameChange(val) {
+      console.log(this.form.modelName)
+      console.log(val)
     },
     openModelDialog() {
       this.dialogVisible = true
@@ -217,13 +231,12 @@ export default {
       this.dialogVisible = false
     },
     handleResourceDialogCancel() {
-      this.selectedResourceId = ''
       this.resourceDialogVisible = false
     },
     handleResourceDialogSubmit(data) {
-      console.log('handleResourceDialogSubmit', data)
       if (data.resourceId) {
         this.selectedResource[this.selectedOrganId] = [data]
+        this.selectedResourceId = data.resourceId
         if (this.participationIdentity === 1) {
           this.form.createdResourceId = data.resourceId
         } else {
@@ -238,7 +251,7 @@ export default {
       await this.getResourceList()
     },
     async getResourceList() {
-      this.resourceList = []
+      // this.resourceList = []
       const res = await getResourceList({
         modelId: this.modelId,
         organId: this.selectedOrganId,
