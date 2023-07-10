@@ -379,7 +379,7 @@ export default {
       return enable
     },
     async handleResourceFocus(role) {
-      this.$refs.form.resetFields()
+      this.resourceName = ''
       if (role === 'own') {
         this.tableDataA = await this.getPsiResourceAllocationList({
           organId: this.formData.ownOrganId
