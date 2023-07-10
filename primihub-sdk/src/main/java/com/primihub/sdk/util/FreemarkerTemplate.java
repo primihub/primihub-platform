@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.Map;
 
 public class FreemarkerTemplate {
@@ -20,7 +21,7 @@ public class FreemarkerTemplate {
         configuration = new Configuration(Configuration.getVersion());
         configuration.setDefaultEncoding("utf-8");
         configuration.setClassForTemplateLoading(this.getClass(), SLASH);
-        configuration.setNumberFormat("#");
+        configuration.setNumberFormat("#.######");
         configuration.setBooleanFormat("true,false");
     }
 
@@ -90,4 +91,17 @@ public class FreemarkerTemplate {
             return null;
         }
     }
+
+//    public static void main(String[] args) {
+//        Map<String, Object> map = new HashMap<>();
+//        map.put("indicatorFileName","1");
+//        map.put("predictFileName","1");
+//        map.put("label_dataset","1");
+//        map.put("hostLookupTable","1");
+//        map.put("guest_dataset","1");
+//        map.put("guestModelFileName","1");
+//        map.put("guestLookupTable","1");
+//        map.put("hostModelFileName","1");
+//        System.out.println(FreemarkerTemplate.getInstance().generateTemplateStr(map,"hetero_xgb.ftl"));
+//    }
 }
