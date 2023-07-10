@@ -152,7 +152,7 @@ import { deleteTask, cancelTask, updateTaskDesc } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 import Log from '@/components/Log'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/EditInput'
 
 export default {
   name: 'TaskDetail',
@@ -160,7 +160,7 @@ export default {
     TaskModel,
     TaskCanvas,
     Log,
-    editInput
+    EditInput
   },
   data() {
     return {

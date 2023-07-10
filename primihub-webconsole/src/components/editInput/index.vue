@@ -41,6 +41,10 @@ export default {
   },
   methods: {
     handleInputConfirm() {
+      if (/\[|\]/g.test(this.inputValue)) {
+        this.$message.error('输入内容不能包含英文[]字符')
+        return
+      }
       this.inputVisible = false
       this.$emit('change', {
         change: this.value !== this.inputValue,

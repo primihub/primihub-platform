@@ -113,11 +113,11 @@
 
 <script>
 import { getModelDetail, deleteModel, updateModelDesc } from '@/api/model'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/EditInput'
 
 export default {
   components: {
-    editInput
+    EditInput
   },
   filters: {
     quotaTypeFilter(type) {

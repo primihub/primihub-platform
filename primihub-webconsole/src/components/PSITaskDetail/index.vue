@@ -76,11 +76,11 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { updateDataPsiResultName } from '@/api/PSI'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/EditInput'
 export default {
   name: 'PSITaskDetail',
   components: {
-    editInput
+    EditInput
   },
   filters: {
     // 运行状态 0未运行 1完成 2运行中 3失败 默认0

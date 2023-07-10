@@ -107,7 +107,7 @@ import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
 import DerivedDataTable from '@/components/DerivedDataTable'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/EditInput'
 
 export default {
   components: {
@@ -119,7 +119,7 @@ export default {
     ProjectAudit,
     ResourceApprovalDialog,
     DerivedDataTable,
-    editInput
+    EditInput
   },
   data() {
     return {
