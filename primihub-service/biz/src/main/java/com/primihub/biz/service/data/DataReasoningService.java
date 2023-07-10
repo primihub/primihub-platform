@@ -62,11 +62,11 @@ public class DataReasoningService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到模型信息");
         }
         DataReasoning dataReasoning = DataReasoningConvert.dataReasoningReqConvertPo(req);
-        Set<String> resourceIds = req.getResourceList().stream().map(DataReasoningResourceReq::getResourceId).collect(Collectors.toSet());
-        List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByResourceIds(resourceIds);
-        if (dataProjectResources.isEmpty()){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源信息");
-        }
+//        Set<String> resourceIds = req.getResourceList().stream().map(DataReasoningResourceReq::getResourceId).collect(Collectors.toSet());
+//        List<DataProjectResource> dataProjectResources = dataProjectRepository.selectProjectResourceByResourceIds(resourceIds);
+//        if (dataProjectResources.isEmpty()){
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"没有查询到资源信息");
+//        }
         dataReasoningPrRepository.saveDataReasoning(dataReasoning);
         List<DataReasoningResource> dataReasoningResourceList = req.getResourceList().stream().map(r -> DataReasoningConvert.dataReasoningResourceReqConvertPo(r, dataReasoning.getId())).collect(Collectors.toList());
         dataReasoningPrRepository.saveDataReasoningResources(dataReasoningResourceList);
