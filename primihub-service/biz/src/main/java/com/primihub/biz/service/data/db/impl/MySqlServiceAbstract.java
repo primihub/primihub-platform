@@ -26,7 +26,7 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
 
 
     protected static final String QUERY_TABLES_SQL = "select table_name as tableName from information_schema.tables where table_schema = ? order by table_name asc";
-    protected static final String QUERY_TABLES_COLUMNS_SQL = "select column_name as columnName from information_schema.columns where table_name = ? and table_schema = ? order by table_name asc";
+    protected static final String QUERY_TABLES_COLUMNS_SQL = "select column_name as columnName from information_schema.columns where table_name = ? and table_schema = ? order by column_name asc";
     protected static final String QUERY_DETAILS_SQL = "select * from <tableName> limit 0,50";
     protected static final String QUERY_COUNT_SQL = "select count(*) total from <tableName>";
     protected static final String QUERY_COUNT_Y_SQL = "select count(*) ytotal from <tableName>";

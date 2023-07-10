@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ModelTypeEnum {
-    V_XGBOOST(2,"taskModel-v_xgboost",1,"hetero_xgb.ftl","hetero_xgb_infer.ftl"),
+    V_XGBOOST(2,"taskModel-v_xgboost",0,"hetero_xgb.ftl","hetero_xgb_infer.ftl"),
     TRANSVERSE_LR(3,"taskModel-transverse_lr",1,"homo_lr.ftl","homo_lr_infer.ftl"),
     MPC_LR(4,"taskModel-mpc_lr",1,null,null),
-    HETERO_LR(5,"taskModel-hetero_lr",1,"hetero_lr.ftl","hetero_lr_infer.ftl"),
+    HETERO_LR(5,"taskModel-hetero_lr",0,"hetero_lr.ftl","hetero_lr_infer.ftl"),
     REGRESSION_BINARY(7,"taskModel-nn_regression",1,"homo_nn_binary.ftl","homo_nn_binary_infer.ftl"),
     CLASSIFICATION_BINARY(6,"taskModel-nn_classification",1,"homo_nn_binary.ftl","homo_nn_binary_infer.ftl"),
     ;

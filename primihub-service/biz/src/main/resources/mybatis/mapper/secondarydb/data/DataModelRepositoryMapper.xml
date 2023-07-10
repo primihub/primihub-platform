@@ -288,6 +288,7 @@
             dt.is_cooperation isCooperation,
             dm.model_id modelId,
             dm.model_name modelName,
+            dm.train_type trainType,
             dp.id projectId,
             dp.project_name projectName,
             dp.created_organ_id createdOrganId,
