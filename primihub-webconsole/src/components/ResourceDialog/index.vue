@@ -3,8 +3,11 @@
     :before-close="closeDialog"
     v-bind="$attrs"
   >
-    <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
-    <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedResourceId" @change="handleChange" />
+    <div class="dialog-body">
+      <!-- <search-input class="input-with-search" @click="searchResource" @change="handleSearchNameChange" /> -->
+      <ResourceTableSingleSelect max-height="530" :data="tableData" :show-status="showStatus" :selected-data="selectedResourceId" @change="handleChange" />
+    </div>
+
     <span slot="footer" class="dialog-footer">
       <pagination v-show="paginationOptions.pageCount>1" small :limit.sync="paginationOptions.pageSize" :page.sync="paginationOptions.pageNo" :total="paginationOptions.total" layout="total, prev, pager, next" @pagination="handlePagination" />
       <div class="buttons">
@@ -53,25 +56,27 @@ export default {
   data() {
     return {
       resourceList: [],
-      selectedResource: null,
       resourceName: '',
       listLoading: false,
-      selectedResourceId: this.selectedData,
       pageCount: 1,
       total: 0,
       pageSize: 5,
-      pageNo: 1
+      pageNo: 1,
+      selectedResource: null
     }
   },
   computed: {
-    visible() {
-      return this.$attrs.visible
+    selectedResourceId: {
+      get() {
+        return this.selectedData
+      },
+      set() {}
     }
   },
   watch: {
-    visible(newVal) {
+    selectedData(newVal) {
       if (newVal) {
-        this.selectedResource = null
+        this.selectedResourceId = newVal
       }
     }
   },
@@ -88,9 +93,6 @@ export default {
       this.resourceName = searchName
     },
     closeDialog() {
-      this.selectedResource = null
-      this.selectedResourceId = ''
-      this.resourceName = ''
       this.$emit('close')
     },
     handleSubmit() {
@@ -122,6 +124,9 @@ export default {
 }
 ::v-deep .table.el-table .el-table__cell{
   padding: 5px 0;
+}
+.dialog-body{
+  min-height: 200px;
 }
 .pagination-container {
   padding: 10px 0 0 0;

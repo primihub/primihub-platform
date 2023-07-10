@@ -7,12 +7,12 @@
       <el-form-item>
         <p><strong class="required">*</strong>发起方：<span>{{ createdOrgan }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(createdOrganId,1)">选择资源</el-button>
-        <ResourceTable v-if="selectedResource[createdOrganId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId,1)" />
+        <ResourceTable v-if="selectedResource[createdOrganId]" :show-preview-button="false" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[createdOrganId]" @remove="handleRemove(createdOrganId,1)" />
       </el-form-item>
       <el-form-item v-for="(item,index) in providerOrgans" :key="index">
         <p><strong class="required">*</strong>协作方：<span>{{ item.organName }}</span></p>
         <el-button class="select-button" :disabled="form.modelName === ''" size="small" type="primary" @click="handleResourceSelect(item.organId, 2)">选择资源</el-button>
-        <ResourceTable v-if="selectedResource[item.organId]" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId,2)" />
+        <ResourceTable v-if="selectedResource[item.organId]" :show-preview-button="false" :this-institution="false" :creator="true" :show-status="false" row-key="resourceId" :data="selectedResource[item.organId]" @remove="handleRemove(item.organId,2)" />
       </el-form-item>
       <el-form-item label="推理服务名称" prop="reasoningName">
         <el-input
@@ -73,6 +73,7 @@ export default {
   },
   data() {
     return {
+      trainType: 0,
       dialogVisible: false,
       resourceDialogVisible: false,
       selectedResourceId: '',
@@ -99,7 +100,7 @@ export default {
       selectedResource: [], // 选中
       rules: {
         modelName: [
-          { required: true, message: '请选择模型' }
+          { required: true, message: '请选择模型', trigger: 'change' }
         ],
         reasoningName: [
           { required: true, message: '请输入推理服务名称' }
@@ -134,7 +135,10 @@ export default {
       this.$refs.form.resetFields()
     },
     handleRemove(organId, participationIdentity) {
+      this.paginationOptions.pageNo = 1
+      this.selectedOrganId = organId
       this.selectedResource[organId].splice(0)
+
       if (participationIdentity === 1) {
         this.form.createdResourceId = ''
       } else if (participationIdentity === 2) {
@@ -143,23 +147,29 @@ export default {
     },
     async onSubmit() {
       const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
-      if (createdResourceId === '' || providerResourceId === '') {
+      this.form.resourceList.push({
+        participationIdentity: 1,
+        resourceId: createdResourceId
+      })
+      if (providerResourceId !== '') {
+        this.form.resourceList.push({
+          participationIdentity: 2,
+          resourceId: providerResourceId
+        })
+      }
+      if (createdResourceId === '') {
         this.$message({
-          message: createdResourceId === '' ? '请输入发起方方资源' : '请输入协作方资源',
+          message: '请输入发起方方资源',
+          type: 'warning'
+        })
+        return
+      } else if (providerResourceId === '' && this.trainType === 0) {
+        this.$message({
+          message: '请输入协作方资源',
           type: 'warning'
         })
         return
       }
-      this.form.resourceList = [
-        {
-          participationIdentity: 1,
-          resourceId: createdResourceId
-        }, {
-          participationIdentity: 2,
-          resourceId: providerResourceId
-        }
-      ]
-
       this.$refs['form'].validate(async valid => {
         if (valid) {
           const { code, result } = await saveReasoning({
@@ -187,19 +197,31 @@ export default {
       }
       this.selectedOrganId = organId
       this.participationIdentity = participationIdentity
+      // set select resource value
+      if (this.selectedResource[this.selectedOrganId] && this.selectedResource[this.selectedOrganId][0]) {
+        this.selectedResourceId = this.selectedResource[this.selectedOrganId][0].resourceId
+      } else {
+        this.selectedResourceId = ''
+      }
       await this.getResourceList()
+
       this.resourceDialogVisible = true
     },
     handleClose() {
       this.dialogVisible = false
+    },
+    handleModelNameChange(val) {
+      console.log(this.form.modelName)
+      console.log(val)
     },
     openModelDialog() {
       this.dialogVisible = true
     },
     async handleModelSubmit(data) {
       if (data) {
+        this.trainType = data.trainType
         this.form.taskId = data.taskId
-        this.providerOrgans = data.providerOrgans
+        this.providerOrgans = this.trainType === 0 ? data.providerOrgans : []
         this.createdOrgan = data.createdOrgan
         this.createdOrganId = data.createdOrganId
         this.projectId = data.projectId
@@ -209,13 +231,12 @@ export default {
       this.dialogVisible = false
     },
     handleResourceDialogCancel() {
-      this.selectedResourceId = ''
       this.resourceDialogVisible = false
     },
     handleResourceDialogSubmit(data) {
-      console.log('handleResourceDialogSubmit', data)
       if (data.resourceId) {
         this.selectedResource[this.selectedOrganId] = [data]
+        this.selectedResourceId = data.resourceId
         if (this.participationIdentity === 1) {
           this.form.createdResourceId = data.resourceId
         } else {
@@ -230,7 +251,7 @@ export default {
       await this.getResourceList()
     },
     async getResourceList() {
-      this.resourceList = []
+      // this.resourceList = []
       const res = await getResourceList({
         modelId: this.modelId,
         organId: this.selectedOrganId,
