@@ -51,14 +51,6 @@ export default {
   async mounted() {
     this.id = this.$route.params.id
     await this.fetchData()
-    console.log(this.reasoningState)
-    if (this.reasoningState === 2) {
-      this.timer = window.setInterval(async() => {
-        setTimeout(await this.fetchData(), 0)
-      }, 2000)
-    } else {
-      clearInterval(this.timer)
-    }
   },
   destroyed() {
     clearInterval(this.timer)
@@ -78,6 +70,12 @@ export default {
         this.dataList = res.result
         this.reasoningState = this.dataList.reasoningState
         this.listLoading = false
+        clearInterval(this.timer)
+        if (this.reasoningState === 2) {
+          this.timer = setInterval(async() => {
+            await this.fetchData()
+          }, 2000)
+        }
       }
     }
   }
