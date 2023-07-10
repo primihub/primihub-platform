@@ -49,7 +49,7 @@
           <div class="desc-label">任务描述:</div>
           <div class="desc-content">
             <template v-if="task.isCooperation === 0">
-              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
+              <EditInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="taskDesc" @change="handleDescChange" />
             </template>
             <template v-else>
               {{ taskDesc }}
@@ -152,7 +152,7 @@ import { deleteTask, cancelTask, updateTaskDesc } from '@/api/task'
 import TaskModel from '@/components/TaskModel'
 import TaskCanvas from '@/components/TaskCanvas'
 import Log from '@/components/Log'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/editInput'
 
 export default {
   name: 'TaskDetail',
@@ -160,7 +160,7 @@ export default {
     TaskModel,
     TaskCanvas,
     Log,
-    editInput
+    EditInput
   },
   data() {
     return {

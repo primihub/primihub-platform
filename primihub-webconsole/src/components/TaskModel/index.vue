@@ -42,7 +42,7 @@
           <div class="desc-label">模型描述:</div>
           <div class="desc-content">
             <template v-if="task.isCooperation === 0">
-              <editInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
+              <EditInput style="width:70%;" type="textarea" show-word-limit maxlength="200" :value="model.modelDesc" @change="handleDescChange" />
             </template>
             <template v-else>
               {{ model.modelDesc }}
@@ -113,11 +113,11 @@
 
 <script>
 import { getModelDetail, deleteModel, updateModelDesc } from '@/api/model'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/editInput'
 
 export default {
   components: {
-    editInput
+    EditInput
   },
   filters: {
     quotaTypeFilter(type) {

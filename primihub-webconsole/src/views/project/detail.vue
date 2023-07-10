@@ -7,7 +7,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="项目名称">
           <template v-if="creator">
-            <editInput style="width: 70%;" show-word-limit maxlength="20" :value="projectName" @change="handleProjectNameChange" />
+            <EditInput style="width: 70%;" show-word-limit maxlength="20" :value="projectName" @change="handleProjectNameChange" />
           </template>
           <template v-else>{{ projectName }}</template>
         </el-descriptions-item>
@@ -19,7 +19,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="项目描述">
           <template v-if="creator">
-            <editInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" />
+            <EditInput style="width: 70%;" type="textarea" show-word-limit maxlength="200" :value="projectDesc" @change="handleProjectDescChange" />
           </template>
           <template v-else>{{ projectDesc }}</template>
         </el-descriptions-item>
@@ -107,7 +107,7 @@ import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 import ModelTaskList from '@/components/ModelTaskList'
 import ProjectAudit from '@/components/ProjectAudit'
 import DerivedDataTable from '@/components/DerivedDataTable'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/editInput'
 
 export default {
   components: {
@@ -119,7 +119,7 @@ export default {
     ProjectAudit,
     ResourceApprovalDialog,
     DerivedDataTable,
-    editInput
+    EditInput
   },
   data() {
     return {

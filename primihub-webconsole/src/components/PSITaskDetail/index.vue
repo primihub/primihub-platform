@@ -5,7 +5,7 @@
       <div class="desc-col">
         <div class="desc-label">任务结果名称:</div>
         <div class="desc-content">
-          <editInput type="textarea" show-word-limit maxlength="50" size="mini" :value="data.resultName" @change="handleEditChange" />
+          <EditInput type="textarea" show-word-limit maxlength="50" size="mini" :value="data.resultName" @change="handleEditChange" />
         </div>
       </div>
       <div class="desc-col">
@@ -76,11 +76,11 @@
 <script>
 import { getToken } from '@/utils/auth'
 import { updateDataPsiResultName } from '@/api/PSI'
-import editInput from '@/components/editInput'
+import EditInput from '@/components/editInput'
 export default {
   name: 'PSITaskDetail',
   components: {
-    editInput
+    EditInput
   },
   filters: {
     // 运行状态 0未运行 1完成 2运行中 3失败 默认0
