@@ -245,13 +245,13 @@ public class DataAsyncService implements ApplicationContextAware {
                 TaskPSIParam psiParam = new TaskPSIParam();
                 psiParam.setPsiTag(dataPsi.getTag());
                 psiParam.setPsiType(dataPsi.getOutputContent());
-                psiParam.setClientData(resourceId);
+                psiParam.setClientData(ownDataResource.getResourceFusionId());
                 List<String> clientFields = Arrays.asList(ownDataResource.getFileHandleField().split(","));
                 List<String> ownKeyword = Arrays.asList(dataPsi.getOwnKeyword().split(","));
                 psiParam.setClientIndex(ownKeyword.stream().map(clientFields::indexOf).toArray(Integer[]::new));
                 List<String> serverFields = Arrays.asList(resourceColumnNameList.split(","));
                 List<String> otherKeyword = Arrays.asList(dataPsi.getOtherKeyword().split(","));
-                psiParam.setServerData(ownDataResource.getResourceFusionId());
+                psiParam.setServerData(resourceId);
                 psiParam.setServerIndex(otherKeyword.stream().map(serverFields::indexOf).toArray(Integer[]::new));
                 psiParam.setOutputFullFilename(psiTask.getFilePath());
                 TaskParam taskParam = new TaskParam();
