@@ -147,16 +147,6 @@ export default {
     },
     async onSubmit() {
       const { taskId, reasoningName, reasoningDesc, createdResourceId, providerResourceId } = this.form
-      this.form.resourceList.push({
-        participationIdentity: 1,
-        resourceId: createdResourceId
-      })
-      if (providerResourceId !== '') {
-        this.form.resourceList.push({
-          participationIdentity: 2,
-          resourceId: providerResourceId
-        })
-      }
       if (createdResourceId === '') {
         this.$message({
           message: '请输入发起方方资源',
@@ -172,6 +162,16 @@ export default {
       }
       this.$refs['form'].validate(async valid => {
         if (valid) {
+          this.form.resourceList.push({
+            participationIdentity: 1,
+            resourceId: createdResourceId
+          })
+          if (providerResourceId !== '') {
+            this.form.resourceList.push({
+              participationIdentity: 2,
+              resourceId: providerResourceId
+            })
+          }
           const { code, result } = await saveReasoning({
             taskId,
             resourceList: this.form.resourceList,
