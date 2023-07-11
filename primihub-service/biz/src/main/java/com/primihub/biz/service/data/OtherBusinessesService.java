@@ -163,6 +163,10 @@ public class OtherBusinessesService {
     }
 
     public BaseResultEntity syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey){
+        return syncGatewayApiData(vo,gatewayAddressAndApi,publicKey,1);
+    }
+
+    public BaseResultEntity syncGatewayApiData(Object vo,String gatewayAddressAndApi,String publicKey,int i){
         try {
             Object data;
             if (StringUtils.isEmpty(publicKey)){
@@ -179,8 +183,11 @@ public class OtherBusinessesService {
             log.info("url:【{}】 - baseResultEntity {}",gatewayAddressAndApi,JSONObject.toJSONString(baseResultEntity));
             return baseResultEntity;
         }catch (Exception e){
-            log.info("gatewayAddress api url:{} Exception:{}",gatewayAddressAndApi,e.getMessage());
+            log.info("gatewayAddress i:{} api url:{} Exception:{}",i,gatewayAddressAndApi,e.getMessage());
             e.printStackTrace();
+            if (i<=3){
+                return syncGatewayApiData(vo,gatewayAddressAndApi,publicKey,i++);
+            }
         }
         log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());
         return null;
