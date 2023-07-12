@@ -3,6 +3,7 @@ package com.primihub.gateway;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySource;
 import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
 import com.primihub.biz.config.base.TemplatesConfig;
+import com.primihub.biz.config.grpc.GrpcConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
 import com.primihub.biz.config.thread.ThreadPoolConfig;
 import com.primihub.biz.service.sys.*;
@@ -32,7 +33,8 @@ import org.springframework.context.annotation.FilterType;
                         SysWebSocketService.class,
                         SysEmailService.class,
                         SysOrganService.class,
-                        SysAsyncService.class
+                        SysAsyncService.class,
+                        GrpcConfiguration.class
                 }),
         @ComponentScan.Filter(type = FilterType.REGEX, pattern = {"com.primihub.biz.service.data.*","com.primihub.biz.service.schedule.*","com.primihub.biz.service.test.*","com.primihub.biz.config.captcha.*"})
     }
