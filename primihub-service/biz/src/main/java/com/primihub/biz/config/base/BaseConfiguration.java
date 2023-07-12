@@ -56,4 +56,6 @@ public class BaseConfiguration {
      * Open the nacos template for debugging
      */
     private Boolean openDynamicTuning = false;
+
+    private Integer uploadSize = 10;
 }
