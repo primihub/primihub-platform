@@ -60,10 +60,6 @@
             {
               "key": "1",
               "val": "样本对齐"
-            },
-            {
-              "key": "2",
-              "val": "特征对齐"
             }
           ]
         },
@@ -95,7 +91,7 @@
     {
       "component_code": "exception",
       "component_name": "异常值处理",
-      "is_show": 1,
+      "is_show": 0,
       "is_mandatory": 1,
       "component_types": [
         {
@@ -111,6 +107,67 @@
               "val": "异常值处理"
             }
           ]
+        }
+      ]
+    },
+    {
+      "component_code": "jointStatistical",
+      "component_name": "联合统计",
+      "is_show": 0,
+      "is_mandatory": 1,
+      "component_types": [
+        {
+          "is_show": 0,
+          "is_required": 0,
+          "type_code": "jointStatistical",
+          "type_name": "联合统计",
+          "input_type": "none",
+          "input_value": "",
+          "input_values": []
+        },
+        {
+          "is_show": 0,
+          "is_required": 0,
+          "type_code": "processingType",
+          "type_name": "运算类型",
+          "input_type": "select",
+          "input_value": "",
+          "input_values": [
+            {
+              "key": 1,
+              "val": "平均值"
+            },
+            {
+              "key": 2,
+              "val": "求和"
+            },
+            {
+              "key": 3,
+              "val": "最大值"
+            },
+            {
+              "key": 4,
+              "val": "最小值"
+            }
+          ]
+        },
+        {
+          "is_show": 0,
+          "is_required": 0,
+          "type_code": "selectFeature",
+          "type_name": "选择特征",
+          "input_type": "select",
+          "input_value": "",
+          "input_values": []
+        },
+        {
+          "is_show": 0,
+          "is_required": 0,
+          "type_code": "addFilling",
+          "type_name": "添加填充策略",
+          "input_type": "button",
+          "input_value": "",
+          "input_values": []
         }
       ]
     },
@@ -373,6 +430,15 @@
                 {
                   "is_show": 1,
                   "is_required": 0,
+                  "type_code": "learningRate",
+                  "type_name": "Params.LearningRate",
+                  "input_type": "text",
+                  "input_value": "1.0",
+                  "input_values": []
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
                   "type_code": "alpha",
                   "type_name": "Params.Alpha",
                   "input_type": "text",
@@ -385,15 +451,11 @@
                   "type_code": "batchSize",
                   "type_name": "Params.BatchSize",
                   "input_type": "number",
-                  "input_value": "1",
+                  "input_value": "100",
                   "input_values": [
                     {
                       "key": "min",
                       "val": 1
-                    },
-                    {
-                      "key": "max",
-                      "val": 2000
                     }
                   ]
                 },
@@ -432,6 +494,30 @@
                       "val": 10
                     }
                   ]
+                }
+              ]
+            },
+            {
+              "key": "4",
+              "val": "MPC-LR",
+              "param": [
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "batchSize",
+                  "type_name": "Params.BatchSize",
+                  "input_type": "number",
+                  "input_value": 128,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 128
+                    },
+                    {
+                      "key": "max",
+                      "val": 1024
+                    }
+                  ]
                 },
                 {
                   "is_show": 1,
@@ -443,11 +529,11 @@
                   "input_values": [
                     {
                       "key": "min",
-                      "val": 1
+                      "val": 5
                     },
                     {
                       "key": "max",
-                      "val": 1000
+                      "val": 5000
                     }
                   ]
                 }
@@ -463,7 +549,7 @@
                   "type_code": "learningRate",
                   "type_name": "Params.LearningRate",
                   "input_type": "text",
-                  "input_value": "1.0",
+                  "input_value": 0.1,
                   "input_values": []
                 },
                 {
@@ -472,16 +558,16 @@
                   "type_code": "alpha",
                   "type_name": "Params.Alpha",
                   "input_type": "text",
-                  "input_value": "0.0",
+                  "input_value": "0.0001",
                   "input_values": []
                 },
                 {
                   "is_show": 1,
                   "is_required": 0,
-                  "type_code": "epochs",
-                  "type_name": "Params.Epochs",
+                  "type_code": "epoch",
+                  "type_name": "Params.Epoch",
                   "input_type": "number",
-                  "input_value": 1,
+                  "input_value": 5,
                   "input_values": [
                     {
                       "key": "min",
@@ -493,170 +579,18 @@
                     }
                   ]
                 },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "penalty",
-                  "type_name": "Params.Penalty",
-                  "input_type": "select",
-                  "input_value": "l2",
-                  "input_values": [
-                    {
-                      "key": "l1",
-                      "val": "l1"
-                    },
-                    {
-                      "key": "l2",
-                      "val": "l2"
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "pptimalMethod",
-                  "type_name": "Params.OptimalMethod",
-                  "input_type": "select",
-                  "input_value": "momentum",
-                  "input_values": [
-                    {
-                      "key": "simple",
-                      "val": "simple"
-                    },
-                    {
-                      "key": "momentum",
-                      "val": "momentum"
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "momentum",
-                  "type_name": "Params.Momentum",
-                  "input_type": "text",
-                  "input_value": "0.7",
-                  "input_values": [
-                    {
-                      "key": "min",
-                      "val": 0.1
-                    },
-                    {
-                      "key": "max",
-                      "val": 1
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "randomState",
-                  "type_name": "Params.RandomState",
-                  "input_type": "number",
-                  "input_value": 2023,
-                  "input_values": []
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "scaleType",
-                  "type_name": "Params.ScaleType",
-                  "input_type": "select",
-                  "input_value": "z-score",
-                  "input_values": [
-                    {
-                      "key": "z-score",
-                      "val": "z-score"
-                    },
-                    {
-                      "key": "std",
-                      "val": "std"
-                    }
-                  ]
-                },
+
                 {
                   "is_show": 0,
                   "is_required": 0,
                   "type_code": "batchSize",
                   "type_name": "Params.BatchSize",
                   "input_type": "number",
-                  "input_value": 512,
+                  "input_value": 1,
                   "input_values": [
                     {
                       "key": "min",
                       "val": 1
-                    },
-                    {
-                      "key": "max",
-                      "val": 1024
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "sampleMethod",
-                  "type_name": "Params.SampleMethod",
-                  "input_type": "select",
-                  "input_value": "random",
-                  "input_values": [
-                    {
-                      "key": "random",
-                      "val": "random"
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "sampleRatio",
-                  "type_name": "Params.SampleRatio",
-                  "input_type": "text",
-                  "input_value": 0.3,
-                  "input_values": [
-                    {
-                      "key": "min",
-                      "val": 0
-                    },
-                    {
-                      "key": "max",
-                      "val": 1
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "lossType",
-                  "type_name": "Params.LossType",
-                  "input_type": "select",
-                  "input_value": "log",
-                  "input_values": [
-                    {
-                      "key": "log",
-                      "val": "log"
-                    },
-                    {
-                      "key": "linear",
-                      "val": "linear"
-                    }
-                  ]
-                },
-                {
-                  "is_show": 1,
-                  "is_required": 0,
-                  "type_code": "tol",
-                  "type_name": "Params.Tol",
-                  "input_type": "text",
-                  "input_value": 0.001,
-                  "input_values": [
-                    {
-                      "key": "min",
-                      "val": 0
-                    },
-                    {
-                      "key": "max",
-                      "val": 0.1
                     }
                   ]
                 }
@@ -728,7 +662,7 @@
                   "type_code": "learningRate",
                   "type_name": "Params.LearningRate",
                   "input_type": "text",
-                  "input_value": "1.0",
+                  "input_value": "0.01",
                   "input_values": []
                 },
                 {
@@ -737,7 +671,7 @@
                   "type_code": "alpha",
                   "type_name": "Params.Alpha",
                   "input_type": "text",
-                  "input_value": "0.0",
+                  "input_value": "0.0001",
                   "input_values": []
                 },
                 {
@@ -745,6 +679,38 @@
                   "is_required": 0,
                   "type_code": "batchSize",
                   "type_name": "Params.BatchSize",
+                  "input_type": "number",
+                  "input_value": 100,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    }
+                  ]
+                },
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "globalEpoch",
+                  "type_name": "Params.GlobalEpoch",
+                  "input_type": "number",
+                  "input_value": 5,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    },
+                    {
+                      "key": "max",
+                      "val": 1000
+                    }
+                  ]
+                },
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "localEpoch",
+                  "type_name": "Params.LocalEpoch",
                   "input_type": "number",
                   "input_value": 1,
                   "input_values": [
@@ -754,25 +720,7 @@
                     },
                     {
                       "key": "max",
-                      "val": 1024
-                    }
-                  ]
-                },
-                {
-                  "is_show": 0,
-                  "is_required": 0,
-                  "type_code": "epoch",
-                  "type_name": "Params.Epoch",
-                  "input_type": "number",
-                  "input_value": 100,
-                  "input_values": [
-                    {
-                      "key": "min",
-                      "val": 1
-                    },
-                    {
-                      "key": "max",
-                      "val": 1000
+                      "val": 10
                     }
                   ]
                 },
@@ -894,7 +842,7 @@
                   "type_code": "learningRate",
                   "type_name": "Params.LearningRate",
                   "input_type": "text",
-                  "input_value": "1.0",
+                  "input_value": "0.01",
                   "input_values": []
                 },
                 {
@@ -903,7 +851,7 @@
                   "type_code": "alpha",
                   "type_name": "Params.Alpha",
                   "input_type": "text",
-                  "input_value": "0.0",
+                  "input_value": "0.0001",
                   "input_values": []
                 },
                 {
@@ -911,6 +859,38 @@
                   "is_required": 0,
                   "type_code": "batchSize",
                   "type_name": "Params.BatchSize",
+                  "input_type": "number",
+                  "input_value": 100,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    }
+                  ]
+                },
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "globalEpoch",
+                  "type_name": "Params.GlobalEpoch",
+                  "input_type": "number",
+                  "input_value": 5,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    },
+                    {
+                      "key": "max",
+                      "val": 1000
+                    }
+                  ]
+                },
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "localEpoch",
+                  "type_name": "Params.LocalEpoch",
                   "input_type": "number",
                   "input_value": 1,
                   "input_values": [
@@ -920,25 +900,7 @@
                     },
                     {
                       "key": "max",
-                      "val": 1024
-                    }
-                  ]
-                },
-                {
-                  "is_show": 0,
-                  "is_required": 0,
-                  "type_code": "epoch",
-                  "type_name": "Params.Epoch",
-                  "input_type": "number",
-                  "input_value": 100,
-                  "input_values": [
-                    {
-                      "key": "min",
-                      "val": 1
-                    },
-                    {
-                      "key": "max",
-                      "val": 1000
+                      "val": 10
                     }
                   ]
                 },
