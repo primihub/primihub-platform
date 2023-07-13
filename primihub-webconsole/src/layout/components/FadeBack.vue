@@ -6,7 +6,7 @@
       trigger="hover"
     >
       <div style="text-align: center;">
-        <img src="https://primihub.com/img/qrcode1.78d466ad.png" width="100%">
+        <img src="../../assets/assitant.png" width="100%">
         <p>原语科技小助手</p>
       </div>
       <div slot="reference" class="contact-icon"><svg-icon icon-class="contact" /></div>
