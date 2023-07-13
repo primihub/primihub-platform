@@ -37,6 +37,11 @@ public class TestController {
     @Autowired
     private DataResourceService dataResourceService;
 
+    @RequestMapping("/healthConnection")
+    public BaseResultEntity healthConnection(){
+        return BaseResultEntity.success(System.currentTimeMillis());
+    }
+
     @RequestMapping("/testPublish")
     public BaseResultEntity testPublish(){
         testService.testPublish();
