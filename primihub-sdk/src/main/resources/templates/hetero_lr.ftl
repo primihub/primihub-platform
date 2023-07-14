@@ -3,11 +3,12 @@
 		"guest": [
 			"Charlie"
 		],
-		"host": "Bob"
+		"host": "Bob",
+		"coordinator": "David"
 	},
 	"common_params": {
 		"model": "VFL_logistic_regression",
-		"method": "Plaintext",
+		"method": "${method!"Plaintext"}",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
 		"learning_rate": ${learningRate!1},
@@ -31,6 +32,9 @@
 			"selected_column": null,
 			"id": "id",
 			"model_path": "${guestModelFileName}"
+		},
+		"David": {
+			"data_set": "${arbiter_dataset!""}"
 		}
 	}
 }

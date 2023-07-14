@@ -148,20 +148,23 @@ public class SysOrganService {
     }
 
     public BaseResultEntity changeHomepage(Map<String, Object> homeMap) {
-        if (!sysCommonPrimaryRedisRepository.lock(SysConstant.SYS_LOCAL_ORGAN_INFO_LOCK)) {
-            return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW);
-        }
-        String group = environment.getProperty("nacos.config.group");
-        String serverAddr = environment.getProperty("nacos.config.server-addr");
-        String namespace = environment.getProperty("nacos.config.namespace");
-        ConfigService configService;
         try {
+            if (!sysCommonPrimaryRedisRepository.lock(SysConstant.SYS_LOCAL_ORGAN_INFO_LOCK)) {
+                return BaseResultEntity.failure(BaseResultEnum.HANDLE_RIGHT_NOW);
+            }
+            String group = environment.getProperty("nacos.config.group");
+            String serverAddr = environment.getProperty("nacos.config.server-addr");
+            String namespace = environment.getProperty("nacos.config.namespace");
+            ConfigService configService;
             Properties properties = new Properties();
             properties.put("serverAddr", serverAddr);
             properties.put("namespace", namespace);
             configService = NacosFactory.createConfigService(properties);
             String organInfoContent = configService.getConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, 3000);
             SysLocalOrganInfo sysLocalOrganInfo = JSON.parseObject(organInfoContent, SysLocalOrganInfo.class);
+            if (sysLocalOrganInfo == null){
+                sysLocalOrganInfo = new SysLocalOrganInfo();
+            }
             if (sysLocalOrganInfo.getHomeMap() == null) {
                 sysLocalOrganInfo.setHomeMap(homeMap);
             } else {
