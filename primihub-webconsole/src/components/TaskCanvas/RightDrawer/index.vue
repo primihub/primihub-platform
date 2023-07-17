@@ -204,7 +204,7 @@
     <ModelTaskResourceDialog ref="dialogRef" top="10px" width="800px" :selected-data="selectedResourceId" title="选择资源" :show-tab="participationIdentity === 1" :table-data="resourceList[selectedOrganId]" :visible="dialogVisible" @close="handleDialogCancel" @submit="handleDialogSubmit" />
 
     <!-- add provider organ dialog -->
-    <CooperateOrganDialog v-if="providerOrganDialogVisible" :select-type="selectType" :selected-data="providerOrganIds" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
+    <CooperateOrganDialog v-if="providerOrganDialogVisible" :select-type="selectType" :selected-data="selectedOrgan" :visible.sync="providerOrganDialogVisible" :title="dialogTitle" :data="organData" @submit="handleProviderOrganSubmit" @close="closeProviderOrganDialog" />
 
     <!-- DATA_ALIGN component dialog -->
     <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedDataAlignFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
@@ -221,7 +221,7 @@ import ResourceDec from '@/components/ResourceDec'
 import CooperateOrganDialog from '@/components/CooperateOrganDialog'
 import FeatureSelectDialog from '@/components/FeatureSelectDialog'
 import FeatureMultiSelectDialog from '@/components/FeatureMultiSelectDialog'
-import { DATA_SET, DATA_ALIGN, MODEL, MPC_STATISTICS, ARBITER_ORGAN, DATA_SET_SELECT_DATA, MODEL_TYPE, MULTIPLE_SELECT_FEATURE, MPC_STATISTICS_TYPE } from '@/const/componentCode.js'
+import { DATA_SET, DATA_ALIGN, MODEL, MPC_STATISTICS, ARBITER_ORGAN, DATA_SET_SELECT_DATA, MODEL_TYPE, MULTIPLE_SELECT_FEATURE, MPC_STATISTICS_TYPE, ENCRYPTION_TYPE } from '@/const/componentCode.js'
 
 export default {
   components: {
@@ -332,6 +332,7 @@ export default {
       providerOrganName: '',
       dialogVisible: false,
       selectedOrganId: '',
+      selectedOrgan: null, // dialog organ selected organ
       resourceList: [],
       selectedResourceId: '',
       participationIdentity: 2,
@@ -339,6 +340,7 @@ export default {
       inputValue: '',
       modelTypeValue: '',
       modelEncryptionType: '',
+      encryptionParam: null,
       resourceChanged: false,
       rules: {
         modelName: [
@@ -472,13 +474,14 @@ export default {
         this.modelTypeValue = modelType.inputValue
         this.modelParams = currentData['param'] ? currentData.param : []
         if (this.modelParams) {
+          const encryptionCode = this.modelParams.find(item => item.typeCode === ENCRYPTION_TYPE)
+          if (!encryptionCode) return
+          this.modelEncryptionType = encryptionCode.inputValue
+          this.encryptionParam = encryptionCode.inputValues.find(item => item.key === this.modelEncryptionType)?.param
+          this.modelParams = this.modelEncryptionType !== '' && this.encryptionParam ? [...this.modelParams, ...this.encryptionParam] : currentData.param
+
           this.arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
           this.arbiterOrganName = this.organs.find(item => item.organId === this.arbiterOrganId)?.organName
-          const child = this.modelParams.find(item => item.typeCode === 'encryption')
-          if (!child) return
-          this.modelEncryptionType = child.inputValue
-          const childParam = child.inputValues.find(item => item.key === this.modelEncryptionType)?.param
-          this.modelParams = this.modelEncryptionType !== '' && childParam ? [...this.modelParams, ...childParam] : currentData.param
         }
       } else {
         this.modelParams.length > 0 && this.modelParams.splice(0)
@@ -634,6 +637,7 @@ export default {
           })
           return
         }
+        this.selectedOrgan = this.providerOrganIds
         this.providerOrganDialogVisible = true
         this.organData = this.providerOrganOptions
       } else {
@@ -642,6 +646,8 @@ export default {
         if (this.initiateOrgan.organId && this.selectedProviderOrgans.length > 0) {
           const organs = this.selectedProviderOrgans.concat([this.initiateOrgan])
           this.organData = [...this.organs].filter(x => [...organs].every(y => y.organId !== x.organId))
+          console.log('organData', this.organData)
+          this.selectedOrgan = this.arbiterOrganId
           this.providerOrganDialogVisible = true
         } else {
           this.$message({
@@ -665,7 +671,13 @@ export default {
     closeProviderOrganDialog(data) {
       this.providerOrganDialogVisible = false
     },
+    getArbiterOrganId() {
+      const encryptionParam = this.modelParams.find(item => item.typeCode === ENCRYPTION_TYPE)?.param
+      const arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue || encryptionParam?.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
+      return arbiterOrganId
+    },
     handleProviderOrganSubmit(data) {
+      console.log('data', data)
       if (this.nodeData.componentCode === DATA_SET) {
         // multiple select type
         if (Array.isArray(data)) {

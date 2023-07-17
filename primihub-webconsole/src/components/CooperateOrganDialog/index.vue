@@ -127,8 +127,10 @@ export default {
       }
     },
     checkStatus(row) {
-      const res = !(this.selectedData.length > 0 && this.selectedData.find(organId => row.organId === organId))
-      return res
+      if (this.selectType === 'checkbox') {
+        const res = !(this.selectedData.length > 0 && this.selectedData.find(organId => row.organId === organId))
+        return res
+      }
     }
   }
 
