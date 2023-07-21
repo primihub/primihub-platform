@@ -8,7 +8,7 @@
 	},
 	"common_params": {
 		"model": "VFL_logistic_regression",
-		"method": "${method!"Plaintext"}",
+		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
 		"learning_rate": ${learningRate!1},
