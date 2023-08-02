@@ -4,7 +4,7 @@
 			"Charlie"
 		],
 		"host": "Bob",
-		"coordinator": "David"
+		"coordinator": "Alice"
 	},
 	"common_params": {
 		"model": "VFL_logistic_regression",
@@ -33,7 +33,7 @@
 			"id": "id",
 			"model_path": "${guestModelFileName}"
 		},
-		"David": {
+		"Alice": {
 			"data_set": "${arbiter_dataset!""}"
 		}
 	}
