@@ -38,12 +38,13 @@ then we should locate this path:
 
     ./script
         base.json
+        components.json
         database.yaml
         ddl.sql
         init.sql
         redis.yaml
 
-In the next step, we enter the nacos management(usually http://localhost:8848/nacos) ,create base.json,database.yaml,redis.yaml in your target namespace.
+In the next step, we enter the nacos management(usually http://localhost:8848/nacos) ,create base.json,components.json,database.yaml,redis.yaml in your target namespace.
 
 Also modify the configuration which is just created in nacos.
 
