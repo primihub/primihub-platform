@@ -9,30 +9,16 @@ import 'element-ui/lib/theme-chalk/index.css'
 import '@/styles/index.scss' // global css
 import '@/icons' // icon
 import '@/permission' // permission control
-import { getTrackingID } from '@/api/common'
+import { baiduAnalytics } from '@/utils/ba'
 import filter from '@/filters'
-import VueGtag from 'vue-gtag'
 import locale from 'element-ui/lib/locale/lang/zh-CN'
 
 // common filter
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
 
-import defaultSettings from '@/settings'
+// add baidu analytics
+baiduAnalytics()
 
-getTrackingID().then(res => {
-  try {
-    if (res.code === 0) {
-      const trackingID = res.result
-      if (trackingID !== '' && defaultSettings.googleAnalytics) {
-        Vue.use(VueGtag, {
-          config: { id: trackingID }
-        }, router)
-      }
-    }
-  } catch (error) {
-    console.log(error)
-  }
-})
 // set pagination global options
 locale.el.pagination = {
   pagesize: '条/页',
