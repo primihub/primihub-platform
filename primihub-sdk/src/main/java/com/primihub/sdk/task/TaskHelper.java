@@ -149,6 +149,10 @@ public class TaskHelper {
         }
     }
 
+    public void continuouslyObtainTaskStatus(TaskParam taskParam){
+        continuouslyObtainTaskStatus(this.channel,taskParam);
+    }
+
     public void continuouslyObtainTaskStatus(Channel channel, TaskParam taskParam){
         TaskTypeExample annotation = taskParam.getTaskContentParam().getClass().getAnnotation(TaskTypeExample.class);
         if (annotation ==null || annotation.value()==null){
@@ -161,6 +165,7 @@ public class TaskHelper {
         AbstractGRPCExecuteFactory abstractGRPCExecuteFactory = EXECUTE_MAP.get(annotation.value());
         abstractGRPCExecuteFactory.continuouslyObtainTaskStatus(channel,abstractGRPCExecuteFactory.assembleTaskContext(taskParam),taskParam,taskParam.getPartyCount());
     }
+
     public TaskParam killTask(String taskId){
         return killTask(this.channel,taskId);
     }

@@ -3,6 +3,7 @@ package com.primihub.sdk.task.factory;
 import com.primihub.sdk.constant.TaskConstant;
 import com.primihub.sdk.task.Functional;
 import com.primihub.sdk.task.cache.CacheService;
+import com.primihub.sdk.task.dataenum.ModelTypeEnum;
 import com.primihub.sdk.task.param.TaskParam;
 import io.grpc.Channel;
 import java_data_service.DataSetServiceGrpc;
@@ -33,7 +34,7 @@ public abstract class AbstractGRPCExecuteFactory {
                 .build();
     }
 
-    public Map<String, Common.Dataset> assembleModelDatasets(Map<String, Object> map){
+    public Map<String, Common.Dataset> assembleModelDatasets(Map<String, Object> map, ModelTypeEnum modelType){
         Map<String, Common.Dataset> values = new HashMap<>();
         if (map.containsKey(TaskConstant.FTL_KEY_LABEL_DATASET)){
             values.put(TaskConstant.TASK_MODEL_LABEL_DATASET,Common.Dataset.newBuilder().putData(TaskConstant.TASK_MODEL_PARTY_DATASETS_KEY,map.get(TaskConstant.FTL_KEY_LABEL_DATASET).toString()).build());
@@ -43,6 +44,9 @@ public abstract class AbstractGRPCExecuteFactory {
         }
         if (map.containsKey(TaskConstant.FTL_KEY_ARBITER_DATASET)){
             values.put(TaskConstant.TASK_MODEL_ARBITER_DATASET,Common.Dataset.newBuilder().putData(TaskConstant.TASK_MODEL_PARTY_DATASETS_KEY,map.get(TaskConstant.FTL_KEY_ARBITER_DATASET).toString()).build());
+        }
+        if (ModelTypeEnum.HETERO_LR.equals(modelType) && map.containsKey("method") && map.get("method").equals("CKKS")){
+            values.put(TaskConstant.TASK_MODEL_DAVID_DATASET,Common.Dataset.newBuilder().putData(TaskConstant.TASK_MODEL_DAVID_DATASET,map.get(TaskConstant.FTL_KEY_ARBITER_DATASET).toString()).build());
         }
         return values;
     }

@@ -60,7 +60,7 @@ public class AbstractComponentGRPCExecute extends AbstractGRPCExecuteFactory {
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("component_params", componentParamsParamValue)
                     .build();
-            Map<String, Common.Dataset> values = assembleModelDatasets(taskContentParam.getFreemarkerMap());
+            Map<String, Common.Dataset> values = assembleModelDatasets(taskContentParam.getFreemarkerMap(),taskContentParam.getModelType());
             Common.TaskContext taskBuild = assembleTaskContext(taskParam);
             Common.Task task = Common.Task.newBuilder()
                     .setType(Common.TaskType.ACTOR_TASK)

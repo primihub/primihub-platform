@@ -31,6 +31,7 @@ public class TaskConstant {
     public final static String TASK_MODEL_GUEST_DATASET = "Charlie";
     public final static String FTL_KEY_ARBITER_DATASET = "arbiter_dataset";
     public final static String TASK_MODEL_ARBITER_DATASET = "Alice";
+    public final static String TASK_MODEL_DAVID_DATASET = "David";
     public final static String TASK_MODEL_MPC_DATASET = "PARTY";
     public final static String FTL_KEY_CALCULATION_FIELD = "label_field";
     public final static String TASK_MODEL_PARTY_DATASETS_KEY = "data_set";
