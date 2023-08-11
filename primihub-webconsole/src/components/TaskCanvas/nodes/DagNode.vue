@@ -15,7 +15,7 @@
       </span>
     </div>
     <div v-if="showDeleteButton" class="operation-drawer">
-      <div class="delete" @click="deleteNode">
+      <div class="delete" @mouseup="deleteNode">
         <i class="icon el-icon-circle-close" />
         <span>删除节点</span>
       </div>
@@ -76,7 +76,7 @@ export default {
     })
   },
   methods: {
-    deleteNode() {
+    deleteNode(e) {
       const node = this.getNode()
       window.graph.removeNode(node)
     }
