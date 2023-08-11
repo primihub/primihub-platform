@@ -52,7 +52,7 @@
       <div class="desc-col">
         <div class="desc-label">资源表:</div>
         <div class="desc-content">
-          <el-link type="primary" @click="toUnionResourceDetailPage(data.otherResourceId)">{{ data.otherResourceName }}</el-link>
+          <el-link type="primary" @click="toResourceDetailPage(data.ownResourceId)">{{ data.ownResourceName }}</el-link>
         </div>
       </div>
       <div class="desc-col">
