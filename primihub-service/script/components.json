@@ -544,6 +544,36 @@
               "val": "纵向-LR",
               "param": [
                 {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "encryption",
+                  "type_name": "加密方式",
+                  "input_type": "select",
+                  "input_value": "Plaintext",
+                  "input_values": [
+                    {
+                      "key": "Plaintext",
+                      "val": "明文"
+                    },
+                    {
+                      "key": "CKKS",
+                      "val": "CKKS",
+                      "param": [
+                        {
+                          "is_show": 0,
+                          "is_required": 0,
+                          "type_code": "arbiterOrgan",
+                          "type_name": "可信第三方选择",
+                          "input_type": "button",
+                          "input_value": "",
+                          "input_values": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                
+                {
                   "is_show": 1,
                   "is_required": 0,
                   "type_code": "learningRate",
@@ -579,7 +609,7 @@
                     }
                   ]
                 },
-
+                
                 {
                   "is_show": 0,
                   "is_required": 0,
