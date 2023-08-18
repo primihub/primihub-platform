@@ -24,7 +24,7 @@ public class SysCommonService {
 
     @Autowired
     private SysCommonPrimaryRedisRepository sysCommonPrimaryRedisRepository;
-    @Resource
+    @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
 
     public BaseResultEntity getValidatePublicKey() {
@@ -49,12 +49,12 @@ public class SysCommonService {
     }
 
     public BaseResultEntity getCollectList() {
-        ResponseEntity<JSONObject> ipInfoData = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);
-        log.info("获取客户端ip json:{}",JSONObject.toJSONString(ipInfoData));
-        if (ipInfoData==null || ipInfoData.getBody()==null){
+        ResponseEntity<JSONObject> collectList = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);
+        log.info("getCollectList json:{}",JSONObject.toJSONString(collectList));
+        if (collectList==null || collectList.getBody()==null){
             return null;
         }
-        JSONObject body = ipInfoData.getBody();
+        JSONObject body = collectList.getBody();
         return BaseResultEntity.success(body.getJSONArray("data"));
     }
 }
