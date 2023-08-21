@@ -7,7 +7,7 @@
 		]
 	},
 	"common_params": {
-		"model": "HFL_logistic_regression",
+		"model": "${model}",
 		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "HFL_logistic_regression",

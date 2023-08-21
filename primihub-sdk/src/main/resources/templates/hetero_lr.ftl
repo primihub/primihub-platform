@@ -7,7 +7,7 @@
 		"coordinator": "Alice"
 	},
 	"common_params": {
-		"model": "VFL_logistic_regression",
+		"model": "${model}",
 		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
