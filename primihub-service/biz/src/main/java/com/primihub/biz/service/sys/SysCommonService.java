@@ -50,7 +50,7 @@ public class SysCommonService {
 
     public BaseResultEntity getCollectList() {
         ResponseEntity<JSONObject> collectList = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);
-        log.info("getCollectList json:{}",JSONObject.toJSONString(collectList));
+//        log.info("getCollectList json:{}",JSONObject.toJSONString(collectList));
         if (collectList==null || collectList.getBody()==null){
             return null;
         }
