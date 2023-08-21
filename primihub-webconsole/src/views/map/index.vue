@@ -1,163 +1,289 @@
 <template>
-  <div>
-    <div ref="mapBox" style="width: 100%; height: calc(100vh - 50px); margin-top: 5px" />
-  </div>
+  <div
+    id="map"
+    ref="mapBox"
+    v-loading="loading"
+    element-loading-text="数据加载中"
+    element-loading-spinner="el-icon-loading"
+    element-loading-background="rgba(0, 0, 0, 0.8)"
+    style="width: 100%; height: calc(100vh - 50px); "
+  />
 </template>
 <script>
-// import mapboxgl
-import mapboxgl from 'mapbox-gl'
-import 'mapbox-gl/dist/mapbox-gl.css'
-// mapboxgl language
-import MapboxLanguage from '@mapbox/mapbox-gl-language'
+import { getCoordinates } from '@/api/map'
+import polygonData2 from './geoJson.json'
 
-import { getOrgInfo, getCoordinates } from '@/api/map'
+const accessToken = 'EE16920807918671432B6E77949CCEA4BD397862C88E80FCE789FUWGY4ZG3919'
+const theme = 'light'
+const colors = ['#BDD0C5', '#A1CEA1', '#BE86BD', '#59A6C8', '#7DC3DA', '#78A5DC', '#9E76D1', '#41b6c4', '#6EA8EB', '#D0956F', '#D5B776', '#E2D6B3', '#E6EAB5', '#EDB57F', '#A1CEA1', '#78A5DC', '#A275A7']
 
 export default {
   data() {
     return {
-      map: '',
-      doms: {}
+      loading: false,
+      map: null,
+      data: [],
+      mapData: {
+        type: 'FeatureCollection',
+        name: 'Generalizer_Output',
+        features: []
+      },
+      labelData: {
+        type: 'FeatureCollection',
+        name: 'Generalizer_Output',
+        features: []
+      }
     }
   },
-  mounted() {
-    this.doms.Map = this.$refs.mapBox
+  async created() {
+    await this.getData()
+    this.loading = true
+    await this.loadMapJs1(`https://webapi.luokuang.com/maps?ak=${accessToken}&plugins=Scale,ToolBar,ControlBar,OverView,Autocomplete`)
+    await this.loadMapJs1(`https://webapi.luokuang.com/mapvgl?ak=${accessToken}&v=1.2.6`)
     this.initMap()
+    this.loading = false
+  },
+  destroyed() {
+    this.map && this.map.destroy()
+    this.map = null
   },
   methods: {
-    initMap() {
-      mapboxgl.accessToken =
-        'pk.eyJ1IjoiemhhbmppbmdqaW5nIiwiYSI6ImNsZHNodWltZjF2cHkzdnFnYzhpc2dxa28ifQ.FnBt8nvjN6jtLpvJgU3Z6g'
-      this.map = new mapboxgl.Map({
-        container: this.doms.Map,
-        style: 'mapbox://styles/mapbox/streets-v12', // style URL
-        // projection: 'globe',
-        center: [103.407, 31.9042],
-        zoom: 4.5
-      })
-
-      this.map.addControl(new MapboxLanguage({ defaultLanguage: 'zh-Hans' }))
-
-      const nav = new mapboxgl.NavigationControl()
-      this.map.addControl(nav, 'top-right')
-      this.map.addControl(new mapboxgl.FullscreenControl())
-      this.map.on('load', () => {
-        // this.map.setFog({})
-        this.getData()
+    loadMapJs(src, cb) {
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.src = src
+      document.getElementsByTagName('head')[0].appendChild(script)
+      // 引入成功
+      if (cb) {
+        script.onload = cb
+      }
+    },
+    loadMapJs1(src) {
+      return new Promise((resolve) => {
+        const script = document.createElement('script')
+        script.type = 'text/javascript'
+        script.src = src
+        document.getElementsByTagName('head')[0].appendChild(script)
+        script.onload = () => {
+          resolve()
+        }
       })
     },
-    getData() {
-      getOrgInfo().then((res) => {
-        const fusionMap = res.result.sysLocalOrganInfo.fusionMap
-        if (!fusionMap) return
-        const fusionMapKeys = Object.keys(fusionMap)
-        getCoordinates({
-          serverAddress: fusionMapKeys[0]
-        }).then((res) => {
-          const dataList = res.result.dataList
-          const geoJson = {
-            type: 'FeatureCollection',
-            crs: {
-              type: 'name',
-              properties: { name: 'urn:ogc:def:crs:OGC:1.3:CRS84' }
-            },
-            features: []
+    // 脱敏
+    replaceText(text) {
+      const str1 = text.slice(0, 2) + '****' + text.slice(text.length - 3)
+      return str1
+    },
+    async initMap() {
+      console.log('initMap')
+      let map = null; let mapv = null; let text = null
+      const position = new LKMap.LngLat(102.13247102462083, 35.977135505255802)
+
+      map = new LKMap.Map('map', {
+        center: position,
+        style: 'lkmap://styles/nightblue',
+        zoom: 3.3,
+        minZoom: 3.3,
+        cursor: 'auto'
+      })
+      this.map = map
+      map.on('load', async() => {
+        addLayerFun()
+        // 添加事件
+        mapv.on('mousemove', 'map-layer', (e) => {
+          text && text.remove()
+          if (e.features.length > 0) {
+            addText(this.data.filter(item => item.province === e.features[0].properties.name), e.lngLat)
+            updateLayer(e.features[0].properties)
           }
-          try {
-            dataList.forEach((item) => {
-              const lonlat = [item.lon, item.lat]
-              geoJson.features.push({
-                type: 'Feature',
-                geometry: {
-                  type: 'Point',
-                  coordinates: lonlat
-                },
-                properties: {
-                  title: item.globalName,
-                  online: item.online
-                }
-              })
-            })
-          } catch (err) {
-            console.log('error==', err)
+        })
+        mapv.on('mouseleave', 'map-layer', (e) => {
+          if (text) {
+            text.remove()
+            text = null
           }
-
-          const map = this.map
-
-          dataList.forEach(function(marker) {
-            console.log(marker.online)
-            const color = marker.online ? '#36ab60' : '#8a8a8a'
-            // const color = marker.online ? '#F56C6C' : '#8a8a8a'
-            const marker_on = new mapboxgl.Marker({
-              color,
-              anchor: 'center',
-              draggable: false
-            }).setLngLat([marker.lon, marker.lat])
-              .addTo(map)
-
-            const el = marker_on.getElement()
-            console.log(el)
-            const div = document.createElement('div')
-            div.className = marker.online ? 'marker-online' : 'marker-offline'
-            div.innerHTML = `${marker.globalName}`
-            const dot = document.createElement('span')
-            const status = document.createElement('span')
-            status.className = 'status-text'
-            status.innerHTML = marker.online ? ' (在线)' : ' (离线)'
-            dot.className = marker.online ? 'marker-dot' : 'marker-dot off'
-            div.insertBefore(dot, div.firstChild)
-            div.appendChild(status)
-            new mapboxgl.Popup({ anchor: marker.direction ? marker.direction : 'bottom', offset: marker.offset || [0, -30], className: 'info', closeButton: false, closeOnClick: false })
-              .setLngLat([marker.lon, marker.lat])
-              .setDOMContent(div)
-              .addTo(map)
-          })
+          // 恢复样式
+          resatStyle()
         })
       })
+      const addLayerFun = async() => {
+        // 渲染地图数据
+        mapv = new mapvgl.PolyonLayer({
+          map: map,
+          data: this.mapData
+        })
+        mapv.addLayer({
+          id: 'map-layer',
+          style: {
+            cursor: 'pointer',
+            color: 'color',
+            showBorder: true,
+            borderWidth: 1,
+            borderColor: '#000'
+          }
+        })
+        // 渲染地图上文字
+        const layerObj = new mapvgl.LabelsLayer({
+          map: map, // 添加到的地图对象
+          data: this.labelData
+        })
+        // 添加图层
+        layerObj.addLayer({
+          id: 'label-layer',
+          style: {
+            content: ['get', 'name'], // 从数据中获取文字数据
+            color: '#000',
+            size: 11,
+            cursor: 'pointer',
+            borderWidth: 1,
+            borderColor: ''
+          }
+        })
+        initTool()
+      }
+      // 更新图层样式
+      const updateLayer = (data) => {
+        mapv.updateLayer({
+          id: 'map-layer',
+          style: {
+            // 根据参数adcode设置透明度
+            opacity: ['case', ['==', ['get', 'name'], data.name], 1, 0.9]
+          }
+        })
+      }
+
+      const initTool = () => {
+        // 工具条
+        const toolBarTool = new LKMap.ToolBar({
+          position: 'top-left',
+          showCompass: true,
+          labels: true
+        })
+        map.addControl(toolBarTool)
+      }
+      // 恢复样式
+      const resatStyle = () => {
+        mapv.updateLayer({
+          id: 'map-layer',
+          style: {
+            opacity: 0.9
+          }
+        })
+      }
+      // 添加文本框
+      const addText = (textStr, position) => {
+        text && text.remove()
+        let content = `<h3 class="province-title">${textStr[0].province} ${textStr.length}个节点</h3>`
+        textStr.forEach((item) => {
+          const onlineText = item.online === 'true' ? '（在线）' : '（离线）'
+          const containerClass = item.online === 'true' ? `label-container ${theme}` : `label-container ${theme} offline`
+          content += `<p class="${containerClass}">
+                        <span class="marker-dot"></span>
+                        <span>${item.globalName}</span>${onlineText}
+                      </p>`
+        })
+        text = new LKMap.Text({
+          position: position,
+          text: content, // 内容
+          anchor: 'top', // 设置文本对齐方式
+          offset: new LKMap.Pixel(10, 20),
+          style: { // 自定义样式
+            cursor: 'pointer',
+            opacity: 1,
+            padding: '12px',
+            borderRadius: '4px',
+            backgroundColor: '#fff',
+            borderWidth: 0,
+            boxShadow: '0px 2px 6px 0px rgba(97,113,166,0.2)',
+            fontSize: '14px',
+            color: '#333'
+          }
+        })
+        text.setMap(map)
+      }
+    },
+    async getData() {
+      const mapDataFeatures = []
+      const labelDataFeatures = []
+      const { code, result } = await getCoordinates()
+      if (code === 0) {
+        this.data = result
+        for (let i = 0; i < this.data.length; i++) {
+          const item = this.data[i]
+          for (const key in polygonData2.features) {
+            const province = polygonData2.features[key]
+            const include = mapDataFeatures.findIndex(data => data.properties.name === item.province) !== -1
+            if (province.properties.name === item.province && !include) {
+              // 添加不同区域色块
+              province.properties.color = colors[i]
+              // map 数据
+              mapDataFeatures.push(province)
+              // map上文字数据
+              labelDataFeatures.push({
+                'type': 'Feature',
+                'geometry': {
+                  'type': 'Point',
+                  'coordinates': province.properties.centroid ? province.properties.centroid : province.properties.center
+                },
+                'properties': {
+                  'name': `${province.properties.name} (${this.data.filter(val => val.province === item.province).length})`,
+                  'province': province.properties.province
+                }
+              })
+            }
+          }
+        }
+        this.$set(this.mapData, 'features', mapDataFeatures)
+        this.$set(this.labelData, 'features', labelDataFeatures)
+      }
     }
   }
 }
 </script>
 
 <style lang="scss">
-.mapboxgl-popup-content{
-  padding: 10px;
+.lkmap-marker .LKmap-label-content .label-content-container{
+  padding: 0!important;
+  background-color: #000!important;
 }
-::v-deep .mapboxgl-marker{
-  svg{
-    height:35px
-  }
-}
-.status-con{
-  font-size: 12px;
-  border-bottom: 1px solid #e9e9e9;
+.province-title{
   margin-bottom: 5px;
-  padding-left: 3px;
 }
-.marker-online{
-  color: #333;
-  font-size: 14px;
+
+#map{
+  background-color: #1b0058;
 }
-.marker-offline{
-  color: #999;
-  .status-text{
-    color: #999;
+
+.label-container{
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  line-height: 1.5;
+  &.dark{
+    background-color: rgba(0,0,0,.2);
+    color: #fff;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
   }
-}
-.marker-dot{
-  border-radius: 50%;
-  width: 6px;
-  height: 6px;
-  background-color: #36ab60;
-  border: 1px solid #aad08f;
-  display: inline-block;
-  margin-right: 5px;
-  animation: 2s infinite flash;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
-  vertical-align: middle;
-  &.off{
-    background-color: #999;
-    border: 1px solid #999;
-    animation: none;
+
+  .marker-dot{
+    border-radius: 50%;
+    width: 6px;
+    height: 6px;
+    background-color: #36ab60;
+    border: 1px solid #aad08f;
+    display: inline-block;
+    margin-right: 5px;
+    // animation: 2s infinite flash;
+    box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+    vertical-align: middle;
+  }
+  &.offline{
+    color: #999;
+    .marker-dot{
+      background-color: #F56C6C;
+      border: 1px solid #F56C6C;
+      animation: none;
+    }
   }
 }
 @-webkit-keyframes flash {
@@ -184,4 +310,5 @@ export default {
     opacity: 0;
   }
 }
+
 </style>
