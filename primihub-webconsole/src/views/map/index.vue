@@ -3,9 +3,8 @@
     id="map"
     ref="mapBox"
     v-loading="loading"
-    element-loading-text="数据加载中"
+    element-loading-text="地图数据加载中"
     element-loading-spinner="el-icon-loading"
-    element-loading-background="rgba(0, 0, 0, 0.8)"
     style="width: 100%; height: calc(100vh - 50px); "
   />
 </template>
@@ -77,7 +76,7 @@ export default {
     async initMap() {
       console.log('initMap')
       let map = null; let mapv = null; let text = null
-      const position = new LKMap.LngLat(106.13247102462083, 38.977135505255802)
+      const position = new LKMap.LngLat(106.39800739525646, 39.9079696505369)
 
       map = new LKMap.Map('map', {
         center: position,
