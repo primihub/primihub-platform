@@ -77,13 +77,13 @@ export default {
     async initMap() {
       console.log('initMap')
       let map = null; let mapv = null; let text = null
-      const position = new LKMap.LngLat(102.13247102462083, 35.977135505255802)
+      const position = new LKMap.LngLat(106.13247102462083, 38.977135505255802)
 
       map = new LKMap.Map('map', {
         center: position,
-        style: 'lkmap://styles/nightblue',
-        zoom: 3.3,
-        minZoom: 3.3,
+        style: 'lkmap://styles/6aa705fd38b1486b8539c9971e03be56',
+        zoom: 3.4,
+        minZoom: 3.4,
         cursor: 'auto'
       })
       this.map = map
@@ -116,10 +116,10 @@ export default {
           id: 'map-layer',
           style: {
             cursor: 'pointer',
-            color: 'color',
+            color: '#fdd0a9',
             showBorder: true,
             borderWidth: 1,
-            borderColor: '#000'
+            borderColor: '#644A29'
           }
         })
         // 渲染地图上文字
@@ -132,11 +132,11 @@ export default {
           id: 'label-layer',
           style: {
             content: ['get', 'name'], // 从数据中获取文字数据
-            color: '#000',
+            color: '#644A29',
             size: 11,
             cursor: 'pointer',
-            borderWidth: 1,
-            borderColor: ''
+            borderWidth: 0.5,
+            borderColor: '#000'
           }
         })
         initTool()
@@ -242,16 +242,19 @@ export default {
 </script>
 
 <style lang="scss">
+::v-deep(.el-loading-mask){
+  background-color: #fff!important;
+}
 .lkmap-marker .LKmap-label-content .label-content-container{
   padding: 0!important;
-  background-color: #000!important;
+  background-color: #fff!important;
 }
 .province-title{
   margin-bottom: 5px;
 }
 
 #map{
-  background-color: #1b0058;
+  background-color: #ffffff;
 }
 
 .label-container{
