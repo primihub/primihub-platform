@@ -70,7 +70,7 @@ export default {
         // 是否开启服务器分片校验。默认为 true
         testChunks: false,
         // 分片大小
-        chunkSize: this.chunkSize,
+        chunkSize: this.maxSize,
         // 并发上传数，默认为 3
         simultaneousUploads: 3,
         testMethod: 'POST', // 测试的时候使用的 HTTP 方法
