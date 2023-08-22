@@ -267,7 +267,7 @@ export default {
       }
       this.startData = cells.filter(item => item.componentCode === 'start')[0]
       this.nodeData = this.startNode
-      this.graphData.cells = []
+      this.graphData.cells.splice(0)
       this.graphData.cells.push(this.startData)
       this.graph.fromJSON(this.graphData)
       this.selectComponentList = []
