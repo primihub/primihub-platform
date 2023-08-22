@@ -20,8 +20,7 @@
       <uploader-list />
     </uploader>
     <p v-if="showTips" class="upload-tip">
-      1.只能上传.csv文件，且不超过1MB <br>
-      2.请确保上传的资源文件编码为UTF8
+      请确保上传的资源文件编码为UTF8
     </p>
   </div>
 </template>
@@ -35,7 +34,7 @@ import uploader from 'vue-simple-uploader'
 Vue.use(uploader)
 
 // 切片大小
-const CHUNK_SIZE = 1 * 1024 * 1024
+// const CHUNK_SIZE = 1 * 1024 * 1024
 // 可传文件类型集合
 // const FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
 const FILE_SUFFIXS = ['csv', ' sqlite', 'sqlite3', 'db', 'db3', 's3db', 'sl3']
@@ -61,6 +60,7 @@ export default {
   },
   data() {
     return {
+      chunkSize: this.maxSize,
       isError: false,
       options: { // 文件上传时options
         // 上传地址
@@ -70,7 +70,7 @@ export default {
         // 是否开启服务器分片校验。默认为 true
         testChunks: false,
         // 分片大小
-        chunkSize: CHUNK_SIZE,
+        chunkSize: this.chunkSize,
         // 并发上传数，默认为 3
         simultaneousUploads: 3,
         testMethod: 'POST', // 测试的时候使用的 HTTP 方法
@@ -203,9 +203,15 @@ export default {
       const fileReader = new FileReader()
       const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice
       let currentChunk = 0
-      const chunks = Math.ceil(file.size / CHUNK_SIZE)
+      const chunks = Math.ceil(file.size / this.chunkSize)
       const startTime = new Date().getTime()
       file.pause()
+
+      const loadNext = () => {
+        const start = currentChunk * this.chunkSize
+        const end = ((start + this.chunkSize) >= file.size) ? file.size : start + this.chunkSize
+        fileReader.readAsArrayBuffer(blobSlice.call(file.file, start, end))
+      }
       loadNext()
       fileReader.onload = function(e) {
         spark.append(e.target.result)
@@ -221,11 +227,6 @@ export default {
       fileReader.onerror = function() {
         this.$message.error('文件读取错误')
         file.cancel()
-      }
-      function loadNext() {
-        const start = currentChunk * CHUNK_SIZE
-        const end = ((start + CHUNK_SIZE) >= file.size) ? file.size : start + CHUNK_SIZE
-        fileReader.readAsArrayBuffer(blobSlice.call(file.file, start, end))
       }
     },
     handleError(file) {
