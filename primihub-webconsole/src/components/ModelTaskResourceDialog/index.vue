@@ -106,7 +106,7 @@ export default {
     },
     handleSubmit() {
       this.resourceName = ''
-      if (!this.selectedResource) {
+      if (!this.selectedResourceId) {
         this.$message({
           message: '请选择资源',
           type: 'warning'
