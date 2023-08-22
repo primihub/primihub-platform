@@ -65,7 +65,7 @@ export default {
   data() {
     return {
       resourceList: [],
-      selectedResource: null,
+      selectedResource: {},
       resourceName: '',
       listLoading: false,
       selectedResourceId: this.selectedData,
