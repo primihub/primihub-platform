@@ -13,7 +13,8 @@ export function getTaskList(params) {
   return request({
     url: '/data/task/getTaskList',
     method: 'get',
-    params
+    params,
+    showLoading: false
   })
 }
 export function getTaskLogInfo(taskId) {

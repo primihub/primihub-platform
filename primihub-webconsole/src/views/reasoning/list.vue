@@ -9,7 +9,7 @@
           <el-input v-model="query.reasoningName" size="small" placeholder="请输入" clearable @clear="handleClear('reasoningName')" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="query.reasoningState" placeholder="请选择">
+          <el-select v-model="query.reasoningState" size="small" placeholder="请选择">
             <el-option
               v-for="item in statusOptions"
               :key="item.value"
