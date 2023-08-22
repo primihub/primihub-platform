@@ -76,13 +76,12 @@ export default {
     async initMap() {
       console.log('initMap')
       let map = null; let mapv = null; let text = null
-      const position = new LKMap.LngLat(106.39800739525646, 39.9079696505369)
-
+      const clientHeight = document.body.clientHeight
+      const center = clientHeight > 769 ? [106.4124519634895, 37.9043382673205] : [106.39800739525646, 37.9079696505369]
       map = new LKMap.Map('map', {
-        center: position,
+        center: center,
         style: 'lkmap://styles/6aa705fd38b1486b8539c9971e03be56',
-        zoom: 3.4,
-        minZoom: 3.4,
+        zoom: clientHeight > 769 ? 3.7 : 3.4,
         cursor: 'auto'
       })
       this.map = map
