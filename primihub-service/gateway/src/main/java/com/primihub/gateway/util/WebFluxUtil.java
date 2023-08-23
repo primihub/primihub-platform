@@ -15,8 +15,8 @@ public class WebFluxUtil {
 
     public static String getIpAddress(ServerHttpRequest request) {
         HttpHeaders headers = request.getHeaders();
-        String ipAddress = headers.getFirst("x-forwarded-for");
-        log.info("x-forwarded-for:{}",ipAddress);
+        String ipAddress = headers.getFirst("X-Real-Ip");
+        log.info("X-Real-Ip:{}",ipAddress);
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
             ipAddress = headers.getFirst("Proxy-Client-IP");
             log.info("Proxy-Client-IP:{}",ipAddress);
@@ -27,8 +27,8 @@ public class WebFluxUtil {
             log.info("WL-Proxy-Client-IP:{}",ipAddress);
         }
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
-            ipAddress = headers.getFirst("X-Real-Ip");
-            log.info("X-Real-Ip:{}",ipAddress);
+            ipAddress = headers.getFirst("x-forwarded-for");
+            log.info("x-forwarded-for:{}",ipAddress);
         }
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
             ipAddress = Optional.ofNullable(request.getRemoteAddress())
