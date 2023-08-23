@@ -267,7 +267,7 @@ export default {
       }
       this.startData = cells.filter(item => item.componentCode === 'start')[0]
       this.nodeData = this.startNode
-      this.graphData.cells = []
+      this.graphData.cells.splice(0)
       this.graphData.cells.push(this.startData)
       this.graph.fromJSON(this.graphData)
       this.selectComponentList = []
@@ -686,17 +686,20 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
-      const fileContainsY = providerResource.fileHandleField?.includes('y')
+      const fileContainsY = providerResource?.fileHandleField?.includes('y')
+      const initiateCalculationField = initiateResource?.calculationField || []
+      const providerCalculationField = providerResource?.calculationField || []
+
       // LR features must select
-      if (initiateResource.calculationField.length === 1 && initiateResource.calculationField.includes('y')) { // has Y
+      if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
-      } else if (fileContainsY && providerResource.calculationField.length === 1 && providerResource.calculationField.includes('y') || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
+      } else if (fileContainsY && providerCalculationField && providerCalculationField.length === 1 || !fileContainsY && providerCalculationField.length === 0) { // has Y
         this.$message.error('请选择协作方数据特征')
         this.modelRunValidated = false
         return
-      } else if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) { // LR select features must be same
+      } else if (modelType === '3' && xor(initiateCalculationField, providerCalculationField).length > 0) { // LR select features must be same
         this.$message.error('选择特征需一致')
         this.modelRunValidated = false
         return

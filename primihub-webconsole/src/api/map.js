@@ -9,8 +9,11 @@ export function getOrgInfo() {
 
 export function getCoordinates(params) {
   return request({
-    url: 'sys/fusion/getOrganExtendsList',
+    url: 'sys/common/getCollectList',
     method: 'get',
-    params
+    params: {
+      key: 'Qg7T3TgGBtYIF2XJOViTgWSuohNnkakU',
+      page: 1
+    }
   })
 }
