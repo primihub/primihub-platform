@@ -19,17 +19,16 @@ public class WebFluxUtil {
         log.info("X-Real-Ip:{}",ipAddress);
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
             ipAddress = headers.getFirst("Proxy-Client-IP");
-            log.info("Proxy-Client-IP:{}",ipAddress);
-
         }
+        log.info("Proxy-Client-IP:{}",headers.getFirst("Proxy-Client-IP"));
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
             ipAddress = headers.getFirst("WL-Proxy-Client-IP");
-            log.info("WL-Proxy-Client-IP:{}",ipAddress);
         }
+        log.info("WL-Proxy-Client-IP:{}",headers.getFirst("WL-Proxy-Client-IP"));
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
             ipAddress = headers.getFirst("x-forwarded-for");
-            log.info("x-forwarded-for:{}",ipAddress);
         }
+        log.info("x-forwarded-for:{}",headers.getFirst("x-forwarded-for"));
         if (ipAddress == null || ipAddress.length() == 0 || IP_UNKNOWN.equalsIgnoreCase(ipAddress)) {
             ipAddress = Optional.ofNullable(request.getRemoteAddress())
                     .map(address -> address.getAddress().getHostAddress())
