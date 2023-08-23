@@ -49,6 +49,7 @@ public class AbstractComponentGRPCExecute extends AbstractGRPCExecuteFactory {
             if (taskContentParam.getModelType() == ModelTypeEnum.REGRESSION_BINARY){
                 taskContentParam.getFreemarkerMap().put("taskNNType","regression");
             }
+            taskContentParam.getFreemarkerMap().put("model",taskContentParam.getModelType().getTypeName());
             String freemarkerContent;
             if (StringUtils.isEmpty(taskContentParam.getTemplatesContent())){
                 freemarkerContent = FreemarkerTemplate.getInstance().generateTemplateStr(taskContentParam.getFreemarkerMap(),taskContentParam.isInfer()?taskContentParam.getModelType().getInferFtlPath():taskContentParam.getModelType().getModelFtlPath());

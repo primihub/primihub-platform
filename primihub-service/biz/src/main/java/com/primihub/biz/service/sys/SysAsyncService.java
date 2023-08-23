@@ -45,10 +45,12 @@ public class SysAsyncService {
     public void collectBaseData() {
         try {
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo==null)
+            if (sysLocalOrganInfo==null){
                 return;
-            if (sysLocalOrganInfo.getAddressInfo()==null)
+            }
+            if (sysLocalOrganInfo.getAddressInfo()==null){
                 return;
+            }
             Thread.sleep(5000L);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -59,6 +61,8 @@ public class SysAsyncService {
             map.put("country", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getCountry());}});
             map.put("lat", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getLat());}});
             map.put("lon", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getLon());}});
+            map.put("city", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getCity());}});
+            map.put("region", new ArrayList() {{add(sysLocalOrganInfo.getAddressInfo().getRegion());}});
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
             BaseResultEntity resultEntity = restTemplate.postForObject(SysConstant.SYS_COLLECT_URL, request, BaseResultEntity.class);
             log.info(JSONObject.toJSONString(resultEntity));
