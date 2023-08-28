@@ -99,10 +99,10 @@ export default {
           }
         })
         mapv.on('mouseleave', 'map-layer', (e) => {
-          // if (text) {
-          //   text.remove()
-          //   text = null
-          // }
+          if (text) {
+            text.remove()
+            text = null
+          }
           // 恢复样式
           resatStyle()
         })

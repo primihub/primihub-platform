@@ -3,7 +3,7 @@
 	"client": "Bob"
   },
   "common_params": {
-	"model": "HFL_logistic_regression",
+	"model": "${model}",
 	"process": "predict",
 	"task_name": "HFL_logistic_regression_binclass_predict"
   },
