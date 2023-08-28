@@ -69,9 +69,12 @@ export default {
       })
     },
     // 脱敏
-    replaceText(text) {
-      const str1 = text.slice(0, 2) + '****' + text.slice(text.length - 3)
-      return str1
+    replaceText(name) {
+      if (name.length < 6) {
+        return name.slice(0, 2) + '****'
+      } else {
+        return name.slice(0, 3) + '****' + name.substring(name.length - 3)
+      }
     },
     async initMap() {
       console.log('initMap')
@@ -173,12 +176,15 @@ export default {
         text && text.remove()
         let content = `<h3 class="province-title">${textStr[0].province} ${textStr.length}个节点</h3>`
         textStr.forEach((item) => {
-          const onlineText = item.online === 'true' ? '（在线）' : '（离线）'
-          const containerClass = item.online === 'true' ? `label-container ${theme}` : `label-container ${theme} offline`
-          content += `<p class="${containerClass}">
-                        <span class="marker-dot"></span>
-                        <span>${item.globalName}</span>${onlineText}
-                      </p>`
+          const organName = this.replaceText(item.globalName)
+          const onlineText = item.online ? '（在线）' : '（离线）'
+          const containerClass = item.online ? `label-container ${theme}` : `label-container ${theme} offline`
+          content += `<div class="${containerClass}">
+                        <p>
+                          <span class="marker-dot"></span>
+                          <span>${organName}</span>${onlineText}
+                        </p>
+                      </div>`
         })
         text = new LKMap.Text({
           position: position,
@@ -205,7 +211,7 @@ export default {
       const labelDataFeatures = []
       const { code, result } = await getCoordinates()
       if (code === 0) {
-        this.data = result
+        this.data = result.sort((a, b) => { return b.online - a.online })
         for (let i = 0; i < this.data.length; i++) {
           const item = this.data[i]
           for (const key in polygonData2.features) {
