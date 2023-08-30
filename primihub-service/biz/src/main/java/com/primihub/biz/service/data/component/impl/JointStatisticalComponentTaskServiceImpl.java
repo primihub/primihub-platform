@@ -76,6 +76,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             String jointStatistical = taskReq.getValueMap().get("jointStatistical");
             if (jointStatistical!=null){
                 log.info(jointStatistical);
+                Set<String> paths = new HashSet<>();
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
@@ -112,14 +113,13 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:未匹配到数据集ID无法打包zip");
                     }else {
-                        Set<String> paths = new HashSet<>();
                         for (Map.Entry<String, String> stringStringEntry : MAP_TYPE.entrySet()) {
                             paths.add(newId+"-"+stringStringEntry.getValue()+".csv");
                         }
-                        ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
-                        taskReq.getDataTask().setTaskResultPath(path+".zip");
                     }
                 }
+                ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
+                taskReq.getDataTask().setTaskResultPath(path+".zip");
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:jointStatistical不可以为null");
