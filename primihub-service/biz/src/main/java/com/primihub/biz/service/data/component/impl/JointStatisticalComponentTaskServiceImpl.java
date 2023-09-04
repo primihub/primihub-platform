@@ -61,6 +61,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             log.info("ids:{}", ids);
             String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "mpc";
             Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
+            Map<String,String> newsetidMap = new HashMap<>();
             log.info("jointStatisticalMap-1:{}", JSONObject.toJSONString(jointStatisticalMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
@@ -68,6 +69,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     ids.add(modelDerivationDto.getNewResourceId());
                     jointStatisticalMap.put(modelDerivationDto.getNewResourceId(),jointStatisticalMap.get(modelDerivationDto.getOriginalResourceId()));
                     jointStatisticalMap.remove(modelDerivationDto.getOriginalResourceId());
+                    newsetidMap.put(modelDerivationDto.getOriginalResourceId(),modelDerivationDto.getNewResourceId());
                 }
 
                 log.info("newids:{}", ids);
@@ -86,12 +88,13 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         next.getValue().setJointStatisticalType(MAP_TYPE.get(jsonObject.getString("type")));
                         rids.add(next.getKey());
-                        JSONArray features = jsonObject.getJSONArray("features");
-                        for (int i1 = 0; i1 < features.size(); i1++) {
-                            JSONObject jsonObject1 = features.getJSONObject(i1);
-                            if (next.getValue().getDataSetId().equals(jsonObject1.getString("resourceId"))){
-                                jsonObject1.put("resourceId",next.getValue().getNewDataSetId());
-                                break;
+                        if (!newsetidMap.isEmpty()){
+                            JSONArray features = jsonObject.getJSONArray("features");
+                            for (int i1 = 0; i1 < features.size(); i1++) {
+                                JSONObject jsonObject1 = features.getJSONObject(i1);
+                                if (newsetidMap.containsKey(jsonObject1.getString("resourceId"))){
+                                    jsonObject1.put("resourceId",newsetidMap.get(jsonObject1.getString("resourceId")));
+                                }
                             }
                         }
                     }
@@ -126,8 +129,10 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         }
                     }
                 }
-                ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
-                taskReq.getDataTask().setTaskResultPath(path+".zip");
+                if (!taskReq.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())){
+                    ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
+                    taskReq.getDataTask().setTaskResultPath(path+".zip");
+                }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                 taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:jointStatistical不可以为null");
