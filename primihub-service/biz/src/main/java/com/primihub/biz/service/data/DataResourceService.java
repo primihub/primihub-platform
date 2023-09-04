@@ -719,7 +719,13 @@ public class DataResourceService {
                     }
                 }
                 log.info(url);
+                long start = System.currentTimeMillis();
                 File file = new File(url);
+                while ((System.currentTimeMillis() - start)< 300000){
+                    if (file.exists()){
+                        break;
+                    }
+                }
                 if (!file.exists()) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
                 }
