@@ -86,6 +86,14 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         next.getValue().setJointStatisticalType(MAP_TYPE.get(jsonObject.getString("type")));
                         rids.add(next.getKey());
+                        JSONArray features = jsonObject.getJSONArray("features");
+                        for (int i1 = 0; i1 < features.size(); i1++) {
+                            JSONObject jsonObject1 = features.getJSONObject(i1);
+                            if (next.getValue().getDataSetId().equals(jsonObject1.getString("resourceId"))){
+                                jsonObject1.put("resourceId",next.getValue().getNewDataSetId());
+                                break;
+                            }
+                        }
                     }
                     TaskParam<TaskMPCParam> taskParam = new TaskParam<>(new TaskMPCParam());
                     taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
