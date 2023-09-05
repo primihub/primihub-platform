@@ -191,8 +191,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 if (taskReq.getValueMap().containsKey("batchSize")){
                     batchSize = Integer.parseInt(taskReq.getValueMap().get("batchSize"));
                 }
-                if (taskReq.getValueMap().containsKey("numlters")){
-                    numlters = Integer.parseInt(taskReq.getValueMap().get("numlters"));
+                if (taskReq.getValueMap().containsKey("maxIter")){
+                    numlters = Integer.parseInt(taskReq.getValueMap().get("maxIter"));
                 }
             }catch (Exception e){
                 log.info(e.getMessage());
