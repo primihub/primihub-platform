@@ -428,6 +428,9 @@ public class DataResourceService {
         if (StringUtils.isBlank(fieldVal)) {
             return FieldTypeEnum.STRING;
         }
+        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
+        }
         if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
             return FieldTypeEnum.DOUBLE;
         }
