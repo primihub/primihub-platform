@@ -1,5 +1,6 @@
 package com.primihub.biz.util;
 
+import com.primihub.biz.constant.DataConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
@@ -178,6 +179,9 @@ public class FileUtil {
         try{
             List<String[]> list = CsvUtil.csvReader(filePath, pageSize + 1);
             String[] fields = list.get(0);
+            if (fields[0].startsWith(DataConstant.UTF8_BOM)) {
+                fields[0] = fields[0].substring(1);
+            }
             log.info(Arrays.toString(fields));
             for(int i=1;i<list.size();i++) {
                 String[] data = list.get(i);

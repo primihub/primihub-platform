@@ -369,6 +369,9 @@ public class DataResourceService {
             }
             csvVo =  new DataResourceCsvVo();
             String[] headers = headersStr.split(",");
+            if (headers[0].startsWith(DataConstant.UTF8_BOM)) {
+                headers[0] = headers[0].substring(1);
+            }
             List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(),DataConstant.READ_DATA_ROW);
             csvVo.setDataList(csvData);
             List<DataFileField> dataFileFieldList = batchInsertDataFileField(sysFile, headers, csvData.get(0));
@@ -574,6 +577,9 @@ public class DataResourceService {
         String str;
         while((str = bufferedReader.readLine())!=null) {
             if (header){
+                if (str.startsWith(DataConstant.UTF8_BOM)) {
+                    str = str.substring(1);
+                }
                 resourceFileData.setField(str);
                 header = false;
                 yIndex = resourceFileData.getYIndex();
