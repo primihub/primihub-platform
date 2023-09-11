@@ -192,6 +192,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             serverData.setFileHandleField(serverData.getFileHandleField().stream().map(String::toLowerCase).collect(Collectors.toList()));
             List<String> fieldList = null;
             if ("1".equals(dataAlign)){
+                log.info("clientData:",JSONObject.toJSONString(clientData));
+                log.info("serverData:",JSONObject.toJSONString(serverData));
                 if (clientData.getFileHandleField().contains("id")&&serverData.getFileHandleField().contains("id")){
                     fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
                 }else {
