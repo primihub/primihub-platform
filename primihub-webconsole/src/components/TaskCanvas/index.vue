@@ -703,7 +703,14 @@ export default {
       }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
-      if (line.output.cell !== dataSetCom.frontComponentId) {
+      if (!line) {
+        this.$message({
+          message: '模型选择流程不合规',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (line?.output.cell !== dataSetCom.frontComponentId) {
         this.$message({
           message: '流程错误:请先选择数据集组件',
           type: 'error'
