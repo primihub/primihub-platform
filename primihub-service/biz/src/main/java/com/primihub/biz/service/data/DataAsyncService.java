@@ -3,8 +3,6 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
@@ -37,8 +35,6 @@ import com.primihub.sdk.task.param.TaskComponentParam;
 import com.primihub.sdk.task.param.TaskPIRParam;
 import com.primihub.sdk.task.param.TaskPSIParam;
 import com.primihub.sdk.task.param.TaskParam;
-import java_worker.PushTaskReply;
-import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
@@ -48,10 +44,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
-import primihub.rpc.Common;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -101,13 +94,15 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private FreeMarkerConfigurer freeMarkerConfigurer;
-    @Autowired
     private SysUserSecondarydbRepository sysUserSecondarydbRepository;
     @Autowired
     private SysEmailService sysEmailService;
     @Autowired
     private TaskHelper taskHelper;
+
+    public TaskHelper getTaskHelper(){
+        return taskHelper;
+    }
 
 
     public BaseResultEntity executeBeanMethod(boolean isCheck, DataComponentReq req, ComponentTaskReq taskReq) {
