@@ -162,11 +162,13 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         Map<String, ModelEntity> map = null;
         try {
             Map<String, String> fusionResourceMap = taskReq.getFusionResourceList().stream().collect(Collectors.toMap(fmap -> fmap.get("resourceId").toString(), fmap -> fmap.getOrDefault("resourceColumnNameList", "").toString()));
+            log.info(JSONObject.toJSONString(fusionResourceMap));
             List<ModelProjectResourceVo> projectResource = resourceMap.get(1);
             if (projectResource==null || projectResource.size()==0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐查询不到发起方资源");
             }
             ModelProjectResourceVo clientData = projectResource.get(0);
+            log.info(JSONObject.toJSONString(fusionResourceMap.get(clientData.getResourceId())));
             if (fusionResourceMap.containsKey(clientData.getResourceId()) && StringUtils.isNotBlank(fusionResourceMap.get(clientData.getResourceId()))){
                 clientData.setFileHandleField(Arrays.asList(fusionResourceMap.get(clientData.getResourceId()).split(",")));
             }
@@ -175,6 +177,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐查询不到发起方资源");
             }
             ModelProjectResourceVo serverData = projectResource.get(0);
+            log.info(JSONObject.toJSONString(fusionResourceMap.get(serverData.getResourceId())));
             if (fusionResourceMap.containsKey(serverData.getResourceId()) && StringUtils.isNotBlank(fusionResourceMap.get(serverData.getResourceId()))){
                 serverData.setFileHandleField(Arrays.asList(fusionResourceMap.get(serverData.getResourceId()).split(",")));
             }
