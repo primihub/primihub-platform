@@ -61,6 +61,16 @@ export function downloadPsiTask(params) {
     params
   })
 }
+
+export function cancelTask(taskId) {
+  return request({
+    url: '/data/task/cancelTask',
+    method: 'get',
+    params: {
+      taskId
+    }
+  })
+}
 export function cancelPsiTask(params) {
   return request({
     url: '/data/psi/cancelPsiTask',
