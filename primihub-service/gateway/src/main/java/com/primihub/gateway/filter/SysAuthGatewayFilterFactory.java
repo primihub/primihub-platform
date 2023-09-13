@@ -67,7 +67,6 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
 
                 userIdStr = sysUserListVO.getUserId().toString();
             }
-
             ServerHttpRequest newRequest = exchange.getRequest().mutate()
                     .header("userId", userIdStr)
                     .header("token", token)
