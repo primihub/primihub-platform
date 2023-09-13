@@ -457,11 +457,12 @@ public class DataAsyncService implements ApplicationContextAware {
         } else if (modelTypeEnum == ModelTypeEnum.HETERO_LR) {
             map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
             map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-        } else if (modelTypeEnum == ModelTypeEnum.REGRESSION_BINARY || modelTypeEnum == ModelTypeEnum.CLASSIFICATION_BINARY) {
-            map.remove(PYTHON_GUEST_DATASET);
-        } else {
-            map.remove(PYTHON_GUEST_DATASET);
         }
+//        else if (modelTypeEnum == ModelTypeEnum.REGRESSION_BINARY || modelTypeEnum == ModelTypeEnum.CLASSIFICATION_BINARY) {
+//            map.remove(PYTHON_GUEST_DATASET);
+//        } else {
+//            map.remove(PYTHON_GUEST_DATASET);
+//        }
         try {
             TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
             taskParam.setTaskId(dataTask.getTaskIdName());
