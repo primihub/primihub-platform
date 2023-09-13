@@ -23,7 +23,7 @@ public class UserController {
     private String interiorCode;
 
     @RequestMapping("login")
-    public BaseResultEntity login(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
+    public BaseResultEntity login(@RequestHeader("ip") String ip,LoginParam loginParam){
         if(loginParam.getUserAccount()==null|| "".equals(loginParam.getUserAccount().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
         }
