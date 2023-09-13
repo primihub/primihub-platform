@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui'
 import App from './App'
+import WebTracing from '@web-tracing/vue2'
 import store from './store'
 import router from './router'
 import { message } from '@/utils/resetMessage'
@@ -11,7 +12,27 @@ import '@/icons' // icon
 import '@/permission' // permission control
 import { baiduAnalytics } from '@/utils/ba'
 import filter from '@/filters'
+
 import locale from 'element-ui/lib/locale/lang/zh-CN'
+
+console.log('env', process.env.NODE_ENV)
+const developEnv = process.env.NODE_ENV === 'development'
+const dsn = developEnv ? 'http://192.168.99.10:32013/ali/log/save' : '/ali/log/save'
+
+Vue.use(WebTracing, {
+  dsn: dsn,
+  appCode: 'PrimihubPlatform',
+  appName: '原语隐私计算平台',
+  debug: !!developEnv,
+  pv: true,
+  performance: true,
+  error: true,
+  event: true,
+  recordScreen: false, // 是否开启录屏功能
+  cacheMaxLength: 10,
+  cacheWatingTime: 5000,
+  scopeError: true
+})
 
 // common filter
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))

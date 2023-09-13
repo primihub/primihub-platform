@@ -39,7 +39,7 @@ module.exports = {
     },
     proxy: {
       '/dev-api': {
-        target: '',
+        target: 'http://test1.primihub.com/prod-api/',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
@@ -67,6 +67,9 @@ module.exports = {
       }
     }
   },
+  transpileDependencies: [
+    /[/\\]node_modules[/\\](.+?)?web-tracing(.*)[/\\]/
+  ],
   chainWebpack(config) {
     // it can improve the speed of the first screen, it is recommended to turn on preload
     config.plugin('preload').tap(() => [
