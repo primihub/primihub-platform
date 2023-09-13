@@ -149,9 +149,6 @@ public class SysUserService {
 
         sysUserPrimaryRedisRepository.updateUserLoginStatus(token,sysUserListVO);
         sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(sysUser.getUserId());
-        log.info("user:{}", JSONObject.toJSONString(sysUser));
-        log.info("ip-1:{}",StringUtils.isNotBlank(ip));
-        log.info("ip-1:{}",StringUtils.equals(sysUser.getIp(),ip));
         if (StringUtils.isNotBlank(ip)&&!StringUtils.equals(sysUser.getIp(),ip)){
             sysUserPrimarydbRepository.updateUserIp(ip,sysUser.getUserId());
         }
