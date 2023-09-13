@@ -8,7 +8,9 @@ import com.primihub.biz.entity.sys.vo.SysUserListVO;
 import com.primihub.biz.repository.primaryredis.sys.SysUserPrimaryRedisRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysRoleSecondarydbRepository;
 import com.primihub.biz.service.sys.SysAuthService;
+import com.primihub.gateway.util.WebFluxUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -67,10 +69,12 @@ public class SysAuthGatewayFilterFactory extends AbstractGatewayFilterFactory {
 
                 userIdStr = sysUserListVO.getUserId().toString();
             }
-
+            String ip = WebFluxUtil.getIpAddress(exchange.getRequest());
+            log.info(ip);
             ServerHttpRequest newRequest = exchange.getRequest().mutate()
                     .header("userId", userIdStr)
                     .header("token", token)
+                    .header("ip", ip)
                     .build();
             return chain.filter(exchange.mutate().request(newRequest).build());
         }));
