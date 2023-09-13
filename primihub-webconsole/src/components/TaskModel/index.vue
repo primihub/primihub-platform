@@ -72,40 +72,11 @@
     </div>
     <div v-if="hasModelSelectComponent" class="section">
       <h3>模型评估分数</h3>
-      <el-table
-        :data="modelQuotas"
-        style="width: 100%"
-      >
-        <el-table-column
-          prop="modelType"
-          label="模型"
-        >
-          <template scoped="{scope}">
-            {{ model.modelType | modelTypeFilter }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="quotaType"
-          label="数据集"
-        />
-        <!-- <el-table-column
-          prop="percent"
-          label="占比"
-        /> -->
-        <el-table-column
-          prop="train_auc"
-          label="AUC"
-        />
-        <el-table-column
-          prop="train_acc"
-          label="ACC"
-        />
-        <el-table-column
-          prop="train_ks"
-          label="KS"
-        />
+      <el-table style="width: 100%" border :data="modelQuotas">
+        <template v-for="(item,index) in tableHead">
+          <el-table-column :key="index" :prop="item.column_name" :label="item.column_comment" />
+        </template>
       </el-table>
-
     </div>
 
   </div>
@@ -147,6 +118,7 @@ export default {
       listLoading: false,
       model: {},
       modelQuotas: [],
+      tableHead: [],
       modelResources: [],
       modelId: 0,
       modelComponent: [],
@@ -227,15 +199,31 @@ export default {
         this.modelId = model.modelId
         this.anotherQuotas = anotherQuotas
         this.oneself = oneself
+        delete this.anotherQuotas['train_fpr']
+        delete this.anotherQuotas['train_tpr']
+        delete this.anotherQuotas['gain_x']
+        delete this.anotherQuotas['gain_y']
+        delete this.anotherQuotas['lift_x']
+        delete this.anotherQuotas['lift_y']
+        delete this.anotherQuotas['recall']
         // format model score list
         if (JSON.stringify(anotherQuotas) !== '{}') {
           this.modelQuotas.push({
-            modelType: anotherQuotas.modelType,
             quotaType: '测试集',
-            train_acc: anotherQuotas.train_acc,
-            train_auc: anotherQuotas.train_auc,
-            train_ks: anotherQuotas.train_ks
+            ...anotherQuotas
           })
+          this.tableHead.push({
+            column_name: 'quotaType',
+            column_comment: '数据集'
+          })
+          for (const key in anotherQuotas) {
+            const column_comment = key.split('train_')[1].toUpperCase()
+            console.log('column_comment', column_comment)
+            this.tableHead.push({
+              column_name: key,
+              column_comment
+            })
+          }
         }
         console.log(this.modelQuotas)
         this.modelResources = modelResources.filter(item => item.resourceType !== 3)
