@@ -17,4 +17,5 @@ public interface SysUserPrimarydbRepository {
     void updateSysUserDelStatus(@Param("userId")Long userId);
 
     void updateUserAccount(@Param("userAccount") String userAccount,@Param("userId") Long userId);
+    void updateUserIp(@Param("ip") String ip,@Param("userId") Long userId);
 }

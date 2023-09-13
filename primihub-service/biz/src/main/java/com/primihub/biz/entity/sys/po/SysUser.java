@@ -52,6 +52,10 @@ public class SysUser {
      */
     private String authUuid;
     /**
+     * 用户最近登录的客户端IP地址
+     */
+    private String ip;
+    /**
      * 创建时间
      */
     private Date cTime;

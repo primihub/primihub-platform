@@ -71,7 +71,7 @@ public class SysUserService {
     private CaptchaService captchaService;
 
 
-    public BaseResultEntity login(LoginParam loginParam){
+    public BaseResultEntity login(LoginParam loginParam,String ip){
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
         if(privateKey==null) {
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
@@ -116,10 +116,10 @@ public class SysUserService {
             failure.setResult(number);
             return failure;
         }
-        return baseLogin(sysUser);
+        return baseLogin(sysUser,ip);
     }
 
-    public BaseResultEntity baseLogin(SysUser sysUser){
+    public BaseResultEntity baseLogin(SysUser sysUser,String ip){
         Set<Long> roleIdSet=Stream.of(sysUser.getRoleIdList().split(",")).filter(item->!"".equals(item))
                 .map(item->(Long.parseLong(item))).collect(Collectors.toSet());
         Set<Long> authIdList=sysRoleSecondarydbRepository.selectRaByBatchRoleId(roleIdSet);
@@ -147,6 +147,9 @@ public class SysUserService {
 
         sysUserPrimaryRedisRepository.updateUserLoginStatus(token,sysUserListVO);
         sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(sysUser.getUserId());
+        if (StringUtils.isNotBlank(ip)&&!StringUtils.equals(sysUser.getIp(),ip)){
+            sysUserPrimarydbRepository.updateUserIp(ip,sysUser.getUserId());
+        }
         Map map=new HashMap<>();
         map.put("sysUser",sysUserListVO);
         map.put("grantAuthRootList",grantAuthRootList);
