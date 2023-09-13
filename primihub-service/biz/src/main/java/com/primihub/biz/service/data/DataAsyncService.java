@@ -447,22 +447,11 @@ public class DataAsyncService implements ApplicationContextAware {
         DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
         // 推理模板参数
         ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
-        map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+        map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
+        map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
         map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
-        if (modelTypeEnum == ModelTypeEnum.V_XGBOOST) {
-            map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
-            map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-            map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
-            map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
-        } else if (modelTypeEnum == ModelTypeEnum.HETERO_LR) {
-            map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
-            map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-        }
-//        else if (modelTypeEnum == ModelTypeEnum.REGRESSION_BINARY || modelTypeEnum == ModelTypeEnum.CLASSIFICATION_BINARY) {
-//            map.remove(PYTHON_GUEST_DATASET);
-//        } else {
-//            map.remove(PYTHON_GUEST_DATASET);
-//        }
+        map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
+        map.put("predictFileName", modelOutputPathDto.getPredictFileName());
         try {
             TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
             taskParam.setTaskId(dataTask.getTaskIdName());
