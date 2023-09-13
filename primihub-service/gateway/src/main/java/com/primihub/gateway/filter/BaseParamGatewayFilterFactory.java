@@ -5,6 +5,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.entity.base.BaseJsonParam;
 import com.primihub.biz.entity.base.BaseParamEnum;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.gateway.util.WebFluxUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
@@ -268,7 +269,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                     }
 
                                     exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
-                                    return chain.filter(exchange.mutate().request(mutatedRequest).build()).then(
+                                    return chain.filter(exchange.mutate().request(mutatedRequest.mutate().header("ip", WebFluxUtil.getIpAddress(exchange.getRequest())).build()).build()).then(
                                             Mono.fromRunnable(()->{
                                                 Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
                                                 if(requestTimeStart!=null){

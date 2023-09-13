@@ -5,7 +5,6 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.VerificationCodeEnum;
 import com.primihub.biz.entity.sys.param.*;
 import com.primihub.biz.service.sys.SysUserService;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,12 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Enumeration;
-
 @RequestMapping("user")
 @RestController
-@Slf4j
 public class UserController {
 
     @Autowired
@@ -28,12 +23,7 @@ public class UserController {
     private String interiorCode;
 
     @RequestMapping("login")
-    public BaseResultEntity login(@RequestHeader(value = "ip",defaultValue = "") String ip, LoginParam loginParam, HttpServletRequest request){
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            log.info("Header Name:{}-  value:{} ",headerName,request.getHeader(headerName));
-        }
+    public BaseResultEntity login(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getUserAccount()==null|| "".equals(loginParam.getUserAccount().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
         }
