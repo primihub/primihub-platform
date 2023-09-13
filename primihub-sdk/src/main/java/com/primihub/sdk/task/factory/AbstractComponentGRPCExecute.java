@@ -43,13 +43,15 @@ public class AbstractComponentGRPCExecute extends AbstractGRPCExecuteFactory {
     private void runComponentTask(Channel channel, TaskParam<TaskComponentParam> taskParam){
         try {
             TaskComponentParam taskContentParam = taskParam.getTaskContentParam();
-            if (taskContentParam.getModelType() == ModelTypeEnum.CLASSIFICATION_BINARY){
-                taskContentParam.getFreemarkerMap().put("taskNNType","classification");
+            if (taskContentParam.getModelType()!=null){
+                if (taskContentParam.getModelType() == ModelTypeEnum.CLASSIFICATION_BINARY){
+                    taskContentParam.getFreemarkerMap().put("taskNNType","classification");
+                }
+                if (taskContentParam.getModelType() == ModelTypeEnum.REGRESSION_BINARY){
+                    taskContentParam.getFreemarkerMap().put("taskNNType","regression");
+                }
+                taskContentParam.getFreemarkerMap().put("model",taskContentParam.getModelType().getTypeName());
             }
-            if (taskContentParam.getModelType() == ModelTypeEnum.REGRESSION_BINARY){
-                taskContentParam.getFreemarkerMap().put("taskNNType","regression");
-            }
-            taskContentParam.getFreemarkerMap().put("model",taskContentParam.getModelType().getTypeName());
             String freemarkerContent;
             if (StringUtils.isEmpty(taskContentParam.getTemplatesContent())){
                 freemarkerContent = FreemarkerTemplate.getInstance().generateTemplateStr(taskContentParam.getFreemarkerMap(),taskContentParam.isInfer()?taskContentParam.getModelType().getInferFtlPath():taskContentParam.getModelType().getModelFtlPath());

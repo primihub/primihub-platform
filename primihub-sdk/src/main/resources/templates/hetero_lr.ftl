@@ -16,7 +16,7 @@
 		"epoch": ${epoch!10},
 		"shuffle_seed":${shuffleSeed!0},
 		"batch_size": ${batchSize!100},
-		"print_metrics": ${printMetrics!true?c}
+		"print_metrics": ${printMetrics!false?c}
 	},
 	"role_params": {
 		"Bob": {

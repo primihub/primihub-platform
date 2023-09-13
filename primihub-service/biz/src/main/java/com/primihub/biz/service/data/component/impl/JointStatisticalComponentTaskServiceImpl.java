@@ -61,6 +61,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             log.info("ids:{}", ids);
             String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "mpc";
             Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
+            Map<String,String> newsetidMap = new HashMap<>();
             log.info("jointStatisticalMap-1:{}", JSONObject.toJSONString(jointStatisticalMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();
@@ -68,6 +69,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     ids.add(modelDerivationDto.getNewResourceId());
                     jointStatisticalMap.put(modelDerivationDto.getNewResourceId(),jointStatisticalMap.get(modelDerivationDto.getOriginalResourceId()));
                     jointStatisticalMap.remove(modelDerivationDto.getOriginalResourceId());
+                    newsetidMap.put(modelDerivationDto.getOriginalResourceId(),modelDerivationDto.getNewResourceId());
                 }
 
                 log.info("newids:{}", ids);
@@ -76,6 +78,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             String jointStatistical = taskReq.getValueMap().get("jointStatistical");
             if (jointStatistical!=null){
                 log.info(jointStatistical);
+                Set<String> paths = new HashSet<>();
                 JSONArray objects = JSONArray.parseArray(jointStatistical);
                 for (int i = 0; i < objects.size(); i++) {
                     JSONObject jsonObject = objects.getJSONObject(i);
@@ -85,6 +88,15 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         Map.Entry<String, GrpcComponentDto> next = iterator.next();
                         next.getValue().setJointStatisticalType(MAP_TYPE.get(jsonObject.getString("type")));
                         rids.add(next.getKey());
+                        if (!newsetidMap.isEmpty()){
+                            JSONArray features = jsonObject.getJSONArray("features");
+                            for (int i1 = 0; i1 < features.size(); i1++) {
+                                JSONObject jsonObject1 = features.getJSONObject(i1);
+                                if (newsetidMap.containsKey(jsonObject1.getString("resourceId"))){
+                                    jsonObject1.put("resourceId",newsetidMap.get(jsonObject1.getString("resourceId")));
+                                }
+                            }
+                        }
                     }
                     TaskParam<TaskMPCParam> taskParam = new TaskParam<>(new TaskMPCParam());
                     taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
@@ -112,13 +124,14 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName()+"组件:未匹配到数据集ID无法打包zip");
                     }else {
-                        Set<String> paths = new HashSet<>();
                         for (Map.Entry<String, String> stringStringEntry : MAP_TYPE.entrySet()) {
                             paths.add(newId+"-"+stringStringEntry.getValue()+".csv");
                         }
-                        ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
-                        taskReq.getDataTask().setTaskResultPath(path+".zip");
                     }
+                }
+                if (!taskReq.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())){
+                    ZipUtils.pathFileTOZipRegularFile(path,path+".zip",paths);
+                    taskReq.getDataTask().setTaskResultPath(path+".zip");
                 }
             }else {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());

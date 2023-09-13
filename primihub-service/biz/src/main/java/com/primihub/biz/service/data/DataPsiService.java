@@ -43,7 +43,7 @@ public class DataPsiService {
     private OrganConfiguration organConfiguration;
 
 
-    public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId) {
+    public BaseResultEntity getPsiResourceList(DataResourceReq req) {
         return dataResourceService.getDataResourceList(req,null);
     }
 

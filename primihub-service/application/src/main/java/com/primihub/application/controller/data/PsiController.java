@@ -99,17 +99,13 @@ public class PsiController {
      */
     @GetMapping("getPsiResourceList")
     public BaseResultEntity getPsiResourceList(DataResourceReq req, Long organId){
-        if (organId==null||organId==0L) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
-        }
-        return dataPsiService.getPsiResourceList(req,organId);
+        return dataPsiService.getPsiResourceList(req);
     }
 
     /**
      * 多方位查询资源支持中心节点查询
      * @param req
      * @param organId
-     * @param serverAddress
      * @param resourceName
      * @return
      */

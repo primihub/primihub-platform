@@ -369,6 +369,9 @@ public class DataResourceService {
             }
             csvVo =  new DataResourceCsvVo();
             String[] headers = headersStr.split(",");
+            if (headers[0].startsWith(DataConstant.UTF8_BOM)) {
+                headers[0] = headers[0].substring(1);
+            }
             List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(),DataConstant.READ_DATA_ROW);
             csvVo.setDataList(csvData);
             List<DataFileField> dataFileFieldList = batchInsertDataFileField(sysFile, headers, csvData.get(0));
@@ -427,6 +430,9 @@ public class DataResourceService {
     public FieldTypeEnum getFieldType(String fieldVal) {
         if (StringUtils.isBlank(fieldVal)) {
             return FieldTypeEnum.STRING;
+        }
+        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
         }
         if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
             return FieldTypeEnum.DOUBLE;
@@ -571,6 +577,9 @@ public class DataResourceService {
         String str;
         while((str = bufferedReader.readLine())!=null) {
             if (header){
+                if (str.startsWith(DataConstant.UTF8_BOM)) {
+                    str = str.substring(1);
+                }
                 resourceFileData.setField(str);
                 header = false;
                 yIndex = resourceFileData.getYIndex();
@@ -719,9 +728,16 @@ public class DataResourceService {
                     }
                 }
                 log.info(url);
+                long start = System.currentTimeMillis();
                 File file = new File(url);
+//                while ((System.currentTimeMillis() - start)< 300000){
+//                    if (file.exists()){
+//                        break;
+//                    }
+//                }
                 if (!file.exists()) {
-                    return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
+                    continue;
+//                    return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
                 }
                 DataResource derivationDataResource = new DataResource();
                 derivationDataResource.setUrl(url);

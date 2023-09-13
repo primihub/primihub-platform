@@ -24,20 +24,22 @@
 		"selected_column": null,
 		"id": "${id!"id"}",
 		"label": "${label!"y"}",
-		"print_metrics": ${printMetrics!true?c},
-		"metric_path": "${indicatorFileName}"
+		"print_metrics": ${printMetrics!false?c}
 	},
 	"role_params": {
 		"Bob": {
 			"data_set": "${label_dataset}",
-			"model_path": "${hostModelFileName}"
+			"model_path": "${hostModelFileName}",
+			"metric_path": "${indicatorFileName}"
 		},
 		"Charlie": {
 			"data_set": "${guest_dataset}",
-			"model_path": "${guestModelFileName}"
+			"model_path": "${guestModelFileName}",
+			"metric_path": "${indicatorFileName}"
 		},
 		"Alice": {
-			"data_set": "${arbiter_dataset}"
+			"data_set": "${arbiter_dataset}",
+			"metric_path": "${indicatorFileName}"
 		}
 	}
 }

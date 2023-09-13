@@ -34,7 +34,7 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     DATA_NO_MATCHING(1004,"数据不匹配"),
     DATA_APPROVAL(1005,"审核授权失败"),
     DATA_DEL_FAIL(1006,"删除失败"),
-    DATA_RUN_TASK_FAIL(1007,"运行失败"),
+    DATA_RUN_TASK_FAIL(1007,"失败"),
     DATA_RUN_SQL_CHECK_FAIL(1008,"SQL校验失败"),
     DATA_RUN_FILE_CHECK_FAIL(1009,"文件解析失败"),
     DATA_DOWNLOAD_TASK_ERROR_FAIL(1010,"文件下载失败"),
