@@ -1,5 +1,6 @@
 package com.primihub.biz.service.sys;
 
+import com.alibaba.fastjson.JSONObject;
 import com.anji.captcha.model.common.ResponseModel;
 import com.anji.captcha.service.CaptchaService;
 import com.primihub.biz.config.base.BaseConfiguration;
@@ -72,6 +73,7 @@ public class SysUserService {
 
 
     public BaseResultEntity login(LoginParam loginParam,String ip){
+        log.info("ip:{}",ip);
         String privateKey=sysCommonPrimaryRedisRepository.getRsaKey(loginParam.getValidateKeyName());
         if(privateKey==null) {
             return BaseResultEntity.failure(BaseResultEnum.VALIDATE_KEY_INVALIDATION);
@@ -147,6 +149,9 @@ public class SysUserService {
 
         sysUserPrimaryRedisRepository.updateUserLoginStatus(token,sysUserListVO);
         sysUserPrimaryRedisRepository.deleteLoginErrorRecordNumber(sysUser.getUserId());
+        log.info("user:{}", JSONObject.toJSONString(sysUser));
+        log.info("ip-1:{}",StringUtils.isNotBlank(ip));
+        log.info("ip-1:{}",StringUtils.equals(sysUser.getIp(),ip));
         if (StringUtils.isNotBlank(ip)&&!StringUtils.equals(sysUser.getIp(),ip)){
             sysUserPrimarydbRepository.updateUserIp(ip,sysUser.getUserId());
         }
