@@ -63,6 +63,7 @@ public class ScheduleService {
      */
     @Scheduled(cron="0 0/10 * * * ? ")
     private void nodeOperations(){
+        log.info("定时处理节点业务");
         // 上报节点状态
         sysAsyncService.collectBaseData();
         List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();

@@ -36,7 +36,7 @@ import org.springframework.context.annotation.FilterType;
                         SysAsyncService.class,
                         GrpcConfiguration.class
                 }),
-        @ComponentScan.Filter(type = FilterType.REGEX, pattern = {"com.primihub.biz.service.data.*","com.primihub.biz.service.schedule.*","com.primihub.biz.service.test.*","com.primihub.biz.config.captcha.*"})
+        @ComponentScan.Filter(type = FilterType.REGEX, pattern = {"com.primihub.biz.service.data.*","com.primihub.biz.service.schedule.*","com.primihub.biz.service.share.*","com.primihub.biz.service.test.*","com.primihub.biz.config.captcha.*"})
     }
 )
 public class GatewayApplication {
