@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui'
 import App from './App'
-import WebTracing from '@web-tracing/vue2'
+import WebTracing, { options } from '@web-tracing/vue2'
 import store from './store'
 import router from './router'
 import { message } from '@/utils/resetMessage'
@@ -21,19 +21,22 @@ const dsn = developEnv ? 'http://192.168.99.10:32013/ali/log/save' : '/ali/log/s
 
 Vue.use(WebTracing, {
   dsn: dsn,
-  appCode: 'PrimihubPlatform',
+  appCode: 'primihub-platform',
   appName: '原语隐私计算平台',
   debug: !!developEnv,
   pv: true,
-  performance: true,
-  error: true,
+  performance: false,
+  error: {
+    core: true,
+    server: false
+  },
   event: true,
   recordScreen: false, // 是否开启录屏功能
   cacheMaxLength: 10,
   cacheWatingTime: 5000,
   scopeError: true
 })
-
+options.value.error = true
 // common filter
 Object.keys(filter).forEach(key => Vue.filter(key, filter[key]))
 
