@@ -44,7 +44,7 @@ public class ShareDataController {
     private ShareService shareService;
 
     @RequestMapping("/healthConnection")
-    public BaseResultEntity healthConnection(Long time){
+    public BaseResultEntity healthConnection(@RequestBody Long time){
         log.info("healthConnection - time:{}",time);
         return BaseResultEntity.success(shareService.getServiceState());
     }
