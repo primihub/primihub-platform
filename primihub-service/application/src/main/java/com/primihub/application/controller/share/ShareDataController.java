@@ -11,6 +11,7 @@ import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.service.data.DataModelService;
 import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.service.data.DataResourceService;
+import com.primihub.biz.service.share.ShareService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +40,14 @@ public class ShareDataController {
     private DataResourceService dataResourceService;
     @Autowired
     private TestService testService;
+    @Autowired
+    private ShareService shareService;
+
+    @RequestMapping("/healthConnection")
+    public BaseResultEntity healthConnection(Long time){
+        log.info("healthConnection - time:{}",time);
+        return BaseResultEntity.success(shareService.getServiceState());
+    }
 
     /**
      * 创建编辑项目接口
