@@ -28,6 +28,7 @@ public class ShareService {
             taskParam.setTaskId("0");
             taskParam.setJobId("0");
             taskParam.setRequestId("0");
+            taskParam.setPartyCount(0);
             taskHelper.continuouslyObtainTaskStatus(taskParam);
             if (taskParam.getSuccess()){
                 service.add("node");

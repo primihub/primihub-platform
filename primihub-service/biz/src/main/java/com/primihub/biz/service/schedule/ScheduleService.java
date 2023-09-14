@@ -87,6 +87,7 @@ public class ScheduleService {
                 sysOrgan.setNodeState(0);
                 sysOrgan.setFusionState(0);
                 log.info("机构ID:{} - 机构名称:{} - 机构网关地址:{} - 状态获取失败",sysOrgan.getOrganId(),sysOrgan.getOrganName(),sysOrgan.getOrganGateway());
+                e.printStackTrace();
             }
             sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         }
