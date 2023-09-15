@@ -109,7 +109,9 @@ const actions = {
           commit('SET_USER_INFO', sysUser)
           commit('SET_PERMISSION', grantAuthRootList)
           setToken(token)
-          options.value.userUuid = sysUser.userId
+          if (options) {
+            options.value.userUuid = sysUser.userId
+          }
           resolve()
         } else if ((code === 109 && result > 3)) {
           commit('SET_SHOW_VALIDATION', true)
