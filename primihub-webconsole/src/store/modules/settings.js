@@ -1,7 +1,7 @@
 import defaultSettings from '@/settings'
 import { getHomepage, changeHomepage } from '@/api/system'
 
-const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, isHideAppMarket, isShowLogo } = defaultSettings
+const { fixedHeader, sidebarLogo, title, isHideFadeBack, isHideFooterVersion, footerText, favicon, logoUrl: defaultLogoUrl, loginLogoUrl, isHideAppMarket, isShowLogo, isOpenTracing } = defaultSettings
 
 const baseUrl = '/'
 
@@ -32,6 +32,7 @@ const state = {
   footerText,
   loaded: false,
   isShowLogo,
+  isOpenTracing,
   isHideBigModel: true
 }
 
@@ -42,6 +43,10 @@ const mutations = {
   SET_LOGO_STATUS: (state, status) => {
     console.log('SET_LOGO_STATUS', status)
     state.isShowLogo = status
+  },
+  SET_TRACING_STATUS: (state, status) => {
+    console.log('SET_TRACING_STATUS', status)
+    state.isOpenTracing = status
   },
   SET_CHANGE_STATUS: (state, status) => {
     state.settingChanged = status
@@ -95,8 +100,10 @@ const actions = {
   async getHomepage({ commit }) {
     const res = await getHomepage()
     if (res.code === 0 && res.result && Object.keys(res.result).length > 0) {
-      const { favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo, isHideBigModel = state.isHideBigModel } = res.result
+      const { favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo, isHideBigModel = state.isHideBigModel, isOpenTracing = state.isOpenTracing } = res.result
+      console.log('isOpenTracing', isOpenTracing)
       commit('SET_LOGO_STATUS', isShowLogo)
+      commit('SET_TRACING_STATUS', isOpenTracing)
       commit('SET_FAVICON', favicon)
       commit('SET_LOGO_URL', logoUrl)
       commit('SET_LOGIN_LOGO_URL', loginLogoUrl)
