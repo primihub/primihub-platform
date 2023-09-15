@@ -3,6 +3,7 @@ import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 const USER_INFO = 'userInfo'
 const PER_KEY = 'primihubPer'
+import { options } from '@web-tracing/vue2'
 
 const getDefaultState = () => {
   return {
@@ -108,6 +109,7 @@ const actions = {
           commit('SET_USER_INFO', sysUser)
           commit('SET_PERMISSION', grantAuthRootList)
           setToken(token)
+          options.value.userUuid = sysUser.userId
           resolve()
         } else if ((code === 109 && result > 3)) {
           commit('SET_SHOW_VALIDATION', true)
