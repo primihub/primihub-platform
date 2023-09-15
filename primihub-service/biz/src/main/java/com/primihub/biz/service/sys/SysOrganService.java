@@ -240,6 +240,9 @@ public class SysOrganService {
         log.info(JSONObject.toJSONString(info));
 //        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
         SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(info.get("organId").toString());
+        if (sysOrgan.getOrganId().equals(info.get("organId").toString())){
+            return BaseResultEntity.success();
+        }
         if (sysOrgan==null){
             sysOrgan = new SysOrgan();
             sysOrgan.setApplyId(info.get("applyId").toString());
