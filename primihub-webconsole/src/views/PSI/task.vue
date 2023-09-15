@@ -36,7 +36,7 @@
                   <ResourceSelect :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="ownKeyword">
-                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" multiple no-data-text="暂无数据" clearable placeholder="请选择" @change="handleKeywordChange($event,formData.otherKeyword)">
+                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" multiple no-data-text="暂无数据" clearable placeholder="请选择">
                     <el-option
                       v-for="(item,index) in ownOrganResourceField"
                       :key="index"
@@ -55,7 +55,7 @@
                   <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
                 </el-form-item>
                 <el-form-item label="关联键" prop="otherKeyword">
-                  <el-select v-model="formData.otherKeyword" multiple no-data-text="暂无数据" placeholder="请选择" clearable @change="handleKeywordChange($event,formData.ownKeyword)">
+                  <el-select v-model="formData.otherKeyword" multiple no-data-text="暂无数据" placeholder="请选择" clearable>
                     <el-option
                       v-for="(item,index) in otherOrganResourceField"
                       :key="index"
@@ -313,19 +313,6 @@ export default {
           this.formData.resultOrganIds = this.formData.resultOrgan.join(',')
           const ownKeyword = this.formData.ownKeyword.join(',')
           const otherKeyword = this.formData.otherKeyword.join(',')
-          if (this.formData.ownKeyword.length !== this.formData.otherKeyword.length) {
-            this.$message.error('两方关联键需相同')
-            return
-          } else {
-            const ownKeywordData = this.formData.ownKeyword
-            const otherKeywordData = this.formData.otherKeyword
-            const difference = ownKeywordData.concat(otherKeywordData).filter(v => !ownKeywordData.includes(v) || !otherKeywordData.includes(v))
-            console.log('difference', difference)
-            if (difference.length > 0) {
-              this.$message.error('两方关联键需相同')
-              return
-            }
-          }
           this.isRun = true
           const res = await saveDataPsi(Object.assign({}, this.formData, { ownKeyword, otherKeyword }))
           if (res.code === 0) {
@@ -395,16 +382,6 @@ export default {
           organId: this.formData.otherOrganId,
           resourceName: this.resourceName
         })
-      }
-    },
-    handleKeywordChange(value, data) {
-      if (data.length > 0) {
-        for (let i = 0; i < value.length; i++) {
-          if (!data.includes(value[i])) {
-            this.$message.error('关联键配置错误！请选择相同关联键')
-            break
-          }
-        }
       }
     },
     async handleOwnResourceSearch(resourceName) {

@@ -56,7 +56,7 @@
 </template>
 
 <script>
-import { getPsiTaskDetails, delPsiTask, retryPsiTask, cancelPsiTask } from '@/api/PSI'
+import { getPsiTaskDetails, delPsiTask, retryPsiTask, cancelTask } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 
 export default {
@@ -149,7 +149,7 @@ export default {
       }).catch(() => {})
     },
     async cancelTask(row) {
-      const res = await cancelPsiTask({ taskId: row.taskId })
+      const res = await cancelTask(row.taskId)
       if (res.code === 0) {
         const posIndex = this.tableData.findIndex(item => item.taskId === row.taskId)
         this.tableData[posIndex].taskState === 4

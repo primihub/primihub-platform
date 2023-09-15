@@ -26,6 +26,7 @@ module.exports = {
   googleAnalytics: true,
   loginLogoUrl: '/images/logo-white.png', // login page logo
   isShowLogo: false,
+  isOpenTracing: false,
   logoUrl: '/images/logo1.png', // navbar logo
   logoTitle: '原语隐私计算平台', // navbar logo title
   favicon: '', // browser icon

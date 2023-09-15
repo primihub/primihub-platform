@@ -49,6 +49,12 @@
         <el-descriptions-item label="隐藏大模型">
           <el-switch v-model="isHideBigModel" @change="handleBigModelChange" />
         </el-descriptions-item>
+        <el-descriptions-item label="是否开启数据采集">
+          <el-radio-group v-model="isOpenTracing" @input="handleTracingChange">
+            <el-radio :label="true">是</el-radio>
+            <el-radio :label="false">否</el-radio>
+          </el-radio-group>
+        </el-descriptions-item>
       </el-descriptions>
     </div>
   </div>
@@ -96,6 +102,15 @@ export default {
       get() {
         console.log('store value', this.$store.state.settings.isShowLogo)
         return this.$store.state.settings.isShowLogo
+      },
+      set(val) {
+        return val
+      }
+    },
+    isOpenTracing: {
+      get() {
+        console.log('store value', this.$store.state.settings.isOpenTracing)
+        return this.$store.state.settings.isOpenTracing
       },
       set(val) {
         return val
@@ -168,6 +183,10 @@ export default {
     handleShowLogoChange(val) {
       this.params.isShowLogo = val
       this.changeSettings({ state: 'isShowLogo', mutation: 'SET_LOGO_STATUS', value: val })
+    },
+    handleTracingChange(val) {
+      this.params.isOpenTracing = val
+      this.changeSettings({ state: 'isOpenTracing', mutation: 'SET_TRACING_STATUS', value: val })
     },
     handleAppMarketChange(val) {
       this.params.isHideAppMarket = val

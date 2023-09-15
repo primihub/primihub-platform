@@ -129,7 +129,7 @@
 </template>
 
 <script>
-import { getPsiResourceAllocationList, saveDataPsi, getPsiTaskDetails, cancelPsiTask, retryPsiTask } from '@/api/PSI'
+import { getPsiResourceAllocationList, saveDataPsi, getPsiTaskDetails, cancelTask, retryPsiTask } from '@/api/PSI'
 import OrganCascader from '@/components/OrganCascader'
 const ORGAN_KEY = 'priOrgan'
 
@@ -415,7 +415,7 @@ export default {
       clearInterval(this.timmer)
       this.buttonText = '重试'
       this.isRun = false
-      await cancelPsiTask({ taskId: this.taskId })
+      await cancelTask({ taskId: this.taskId })
       this.$notify({
         message: '取消成功',
         type: 'success',
