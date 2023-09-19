@@ -49,7 +49,11 @@ export default {
   },
   methods: {
     filterData(data) {
-      return data.map(item => item.fieldName)
+      if (data) {
+        return data.map(item => item.fieldName)
+      } else {
+        return []
+      }
     },
     handleClose() {
       this.$emit('close')

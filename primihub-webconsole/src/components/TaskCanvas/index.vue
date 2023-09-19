@@ -649,6 +649,7 @@ export default {
     checkModelStatisticsValidated(jointStatisticalCom) {
       let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
       featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
+      console.log('featureValues', featureValues)
       const emptyType = featureValues.find(item => item.type === '')
       const emptyFeature = featureValues.find(item => item.features[0].checked.length === 0)
       if (emptyFeature) {
@@ -667,13 +668,7 @@ export default {
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
-      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
-      if (jointStatisticalCom) {
-        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
-      }
-
       const startCom = modelComponents.find(item => item.componentCode === START_NODE)
-
       const modelSelectCom = modelComponents.find(item => item.componentCode === MODEL)
       const taskName = startCom.componentValues.find(item => item.key === TASK_NAME)?.val
       const modelName = modelSelectCom?.componentValues.find(item => item.key === MODEL_NAME)?.val
@@ -690,6 +685,15 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
+      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
+      if (jointStatisticalCom) {
+        if (value.find(item => item.resourceId === undefined)) {
+          this.$message.error('请选择数据集')
+          this.modelRunValidated = false
+          return
+        }
+        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+      }
       // LR features must select
       if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
