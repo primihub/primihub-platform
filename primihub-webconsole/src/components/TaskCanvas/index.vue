@@ -265,10 +265,10 @@ export default {
         })
         return
       }
-      this.startData = cells.filter(item => item.componentCode === 'start')[0]
+      const startData = cells.filter(item => item.componentCode === 'start')[0]
       this.nodeData = this.startNode
       this.graphData.cells.splice(0)
-      this.graphData.cells.push(this.startData)
+      this.graphData.cells.push(startData)
       this.graph.fromJSON(this.graphData)
       this.selectComponentList = []
       this.$emit('selectComponents', this.selectComponentList)
@@ -488,7 +488,7 @@ export default {
       // 60 = start node width
       const x = this.width * 0.5 - 90
       if (this.components) {
-        this.startData = this.components.find(item => item.componentCode === 'start')
+        this.startData = this.components.find(item => item.componentCode === START_NODE)
         this.startData && this.graph.addNode({
           x: x,
           y: 100,
@@ -563,11 +563,6 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('node:removed', (a, b) => {
-          console.log('node:removed', a)
-          this.needSave = true
-          this.deleteNode()
-        })
         graph.on('cell:removed', () => {
           this.needSave = true
           if (!this.destroyed) {
@@ -600,6 +595,9 @@ export default {
         })
         graph.bindKey('backspace', () => {
           this.deleteNode()
+          setTimeout(() => {
+            this.$notify.closeAll()
+          }, 1000)
         })
 
         graph.on('edge:connected', ({ edge }) => {
@@ -625,7 +623,8 @@ export default {
         this.selectComponentList.splice(index, 1)
       }
       this.$emit('selectComponents', this.selectComponentList)
-      this.nodeData = this.startNode
+      this.nodeData = this.startData
+      console.log('graphData', this.startData)
     },
     initToolBarEvent() {
       // 画布不可编辑只可点击
@@ -649,6 +648,7 @@ export default {
     checkModelStatisticsValidated(jointStatisticalCom) {
       let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
       featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
+      console.log('featureValues', featureValues)
       const emptyType = featureValues.find(item => item.type === '')
       const emptyFeature = featureValues.find(item => item.features[0].checked.length === 0)
       if (emptyFeature) {
@@ -667,13 +667,7 @@ export default {
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
-      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
-      if (jointStatisticalCom) {
-        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
-      }
-
       const startCom = modelComponents.find(item => item.componentCode === START_NODE)
-
       const modelSelectCom = modelComponents.find(item => item.componentCode === MODEL)
       const taskName = startCom.componentValues.find(item => item.key === TASK_NAME)?.val
       const modelName = modelSelectCom?.componentValues.find(item => item.key === MODEL_NAME)?.val
@@ -690,6 +684,15 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
+      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
+      if (jointStatisticalCom) {
+        if (value.find(item => item.resourceId === undefined)) {
+          this.$message.error('请选择数据集')
+          this.modelRunValidated = false
+          return
+        }
+        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+      }
       // LR features must select
       if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
@@ -1041,6 +1044,7 @@ export default {
     async saveFn() { // 0 草稿
       const data = this.graph.toJSON()
       const { cells } = data
+      this.startData = cells.find(item => item.componentCode === START_NODE)?.data
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',
