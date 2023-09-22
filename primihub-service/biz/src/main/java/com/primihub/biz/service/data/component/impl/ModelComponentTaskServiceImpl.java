@@ -202,6 +202,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskParam.setJobId(jobId);
             TaskMPCParam mpcParam = new TaskMPCParam();
             mpcParam.setTaskName("logistic_regression");
+            mpcParam.setTaskCode("logistic_regression");
             mpcParam.setResourceIds(resourceIds);
             mpcParam.setParamMap(new HashMap<>());
             mpcParam.getParamMap().put("BatchSize",batchSize);

@@ -102,6 +102,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
                     taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
                     taskParam.setJobId(String.valueOf(taskReq.getJob()));
                     taskParam.getTaskContentParam().setTaskName("mpc_statistics");
+                    taskParam.getTaskContentParam().setTaskCode("mpc_statistics");
                     taskParam.getTaskContentParam().setResourceIds(rids);
                     taskParam.getTaskContentParam().setParamMap(new HashMap<>());
                     taskParam.getTaskContentParam().getParamMap().put("ColumnInfo",JSONObject.toJSONString(jointStatisticalMap));
