@@ -684,17 +684,35 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
+      const notSelectResource = value.find(item => item.resourceId === undefined)
+
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
       if (jointStatisticalCom) {
-        if (value.find(item => item.resourceId === undefined)) {
-          this.$message.error('请选择数据集')
-          this.modelRunValidated = false
-          return
-        }
         this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
       }
-      // LR features must select
-      if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
+      if (!initiateResource) {
+        this.$message({
+          message: '请选择发起方数据集',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (!providerResource) {
+        this.$message({
+          message: '请选择协作方数据集',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (notSelectResource && notSelectResource.participationIdentity === 1) {
+        this.$message.error('请选择发起方数据集')
+        this.modelRunValidated = false
+        return
+      } else if (notSelectResource && notSelectResource.participationIdentity === 2) {
+        this.$message.error('请选择协作方数据集')
+        this.modelRunValidated = false
+        return
+      } else if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
@@ -709,7 +727,7 @@ export default {
       }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
-      if (line.output.cell !== dataSetCom.frontComponentId) {
+      if (line && line.output.cell !== dataSetCom.frontComponentId) {
         this.$message({
           message: '流程错误:请先选择数据集组件',
           type: 'error'
@@ -726,7 +744,7 @@ export default {
         this.modelRunValidated = false
         return
       }
-      if (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId) {
+      if (initiateResource && initiateResource.organId === arbiterOrganId || providerResource && providerResource.organId === arbiterOrganId) {
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -769,13 +787,6 @@ export default {
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,
-          type: 'error'
-        })
-        this.modelRunValidated = false
-      } else if (!(initiateResource && providerResource)) {
-        const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
-        this.$message({
-          message: msg,
           type: 'error'
         })
         this.modelRunValidated = false
