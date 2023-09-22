@@ -684,21 +684,32 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
+      const notSelectResource = value.find(item => item.resourceId === undefined)
+
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
       if (jointStatisticalCom) {
-        if (value.find(item => item.resourceId === undefined)) {
-          this.$message.error('请选择数据集')
-          this.modelRunValidated = false
-          return
-        }
         this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
       }
-      if (!(initiateResource && providerResource)) {
-        const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
+      if (!initiateResource) {
         this.$message({
-          message: msg,
+          message: '请选择发起方数据集',
           type: 'error'
         })
+        this.modelRunValidated = false
+        return
+      } else if (!providerResource) {
+        this.$message({
+          message: '请选择协作方数据集',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (notSelectResource && notSelectResource.participationIdentity === 1) {
+        this.$message.error('请选择发起方数据集')
+        this.modelRunValidated = false
+        return
+      } else if (notSelectResource && notSelectResource.participationIdentity === 2) {
+        this.$message.error('请选择协作方数据集')
         this.modelRunValidated = false
         return
       } else if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
@@ -716,7 +727,7 @@ export default {
       }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
-      if (line.output.cell !== dataSetCom.frontComponentId) {
+      if (line && line.output.cell !== dataSetCom.frontComponentId) {
         this.$message({
           message: '流程错误:请先选择数据集组件',
           type: 'error'
