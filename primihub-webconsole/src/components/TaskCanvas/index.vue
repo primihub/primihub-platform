@@ -693,8 +693,15 @@ export default {
         }
         this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
       }
-      // LR features must select
-      if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
+      if (!(initiateResource && providerResource)) {
+        const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
+        this.$message({
+          message: msg,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
@@ -726,7 +733,7 @@ export default {
         this.modelRunValidated = false
         return
       }
-      if (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId) {
+      if (initiateResource && initiateResource.organId === arbiterOrganId || providerResource && providerResource.organId === arbiterOrganId) {
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -769,13 +776,6 @@ export default {
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,
-          type: 'error'
-        })
-        this.modelRunValidated = false
-      } else if (!(initiateResource && providerResource)) {
-        const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
-        this.$message({
-          message: msg,
           type: 'error'
         })
         this.modelRunValidated = false
