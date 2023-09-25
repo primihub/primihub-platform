@@ -456,6 +456,7 @@ export default {
       let calculationFields = []
       let resourceFields = []
       this.FitTransformData = []
+      if (!this.inputValue) return
       this.inputValue.map(item => {
         resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
         calculationFields = [...new Set([...calculationFields, ...item.calculationField])]

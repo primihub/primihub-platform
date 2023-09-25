@@ -4,7 +4,7 @@ export const DATA_SET = 'dataSet'
 export const MODEL = 'model'
 export const DATA_ALIGN = 'dataAlign'
 export const MPC_STATISTICS = 'jointStatistical'
-export const FIT_TRANSFORM = 'exception'
+export const FIT_TRANSFORM = 'fitTransform'
 
 // Level 1
 export const MULTIPLE_SELECT_FEATURE = 'MultipleSelected'
