@@ -55,20 +55,6 @@
       </div>
     </div>
     <div class="detail">
-      <!-- <p>资源表结构</p> -->
-      <el-row
-        :gutter="20"
-        class="data-container"
-      >
-        <el-col v-if="fieldList.length>0" :span="12">
-          <EditResourceTable border :is-editable="false" :data="fieldList" height="500" />
-        </el-col>
-        <el-col v-if="dataList.length>0" :span="12">
-          <ResourcePreviewTable :data="dataList" height="500" />
-        </el-col>
-      </el-row>
-    </div>
-    <div class="detail">
       <h3>实现方法</h3>
       <div class="description-container">
         <div class="desc-col">
@@ -90,26 +76,45 @@
         </div>
         <div class="desc-col">
           <div class="desc-label">任务耗时:</div>
-          <div class="desc-content">{{ taskData.tag === 0? 'ECDH': 'KKRT' }}</div>
+          <div class="desc-content">{{ taskData.consuming | timeFilter }}</div>
+        </div>
+        <div class="desc-col" style="width: 100%;">
+          <div class="desc-label">计算结果:</div>
+          <div class="desc-content flex">
+            <el-link :underline="false" type="primary" @click="downloadPsiTask">{{ taskData.resultName }}.csv <svg-icon icon-class="download" /></el-link>
+            <el-button size="small" type="primary" plain @click="downloadPsiTask">下载文档</el-button>
+            <el-button size="small" type="primary" plain @click="handlePreview">在线预览</el-button>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- preview dialog -->
+    <ResourcePreviewDialog
+      :data="previewList"
+      :visible.sync="previewDialogVisible"
+      append-to-body
+      width="1000px"
+      @close="closeDialog"
+    />
   </div>
 </template>
 
 <script>
 import { getPsiTaskDetails } from '@/api/PSI'
 import { getDataResource } from '@/api/fusionResource'
-import EditResourceTable from '@/components/EditResourceTable'
-import ResourcePreviewTable from '@/components/ResourcePreviewTable'
+import { resourceFilePreview } from '@/api/resource'
+import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
+import { getToken } from '@/utils/auth'
 
 export default {
   components: {
-    EditResourceTable,
-    ResourcePreviewTable
+    ResourcePreviewDialog
   },
   data() {
     return {
+      previewList: [],
+      previewDialogVisible: false,
       taskData: [],
       resource: {},
       dialogVisible: false,
@@ -137,6 +142,12 @@ export default {
     }
   },
   methods: {
+    async downloadPsiTask() {
+      const timestamp = new Date().getTime()
+      const nonce = Math.floor(Math.random() * 1000 + 1)
+      const token = getToken()
+      window.open(`${process.env.VUE_APP_BASE_API}/data/psi/downloadPsiTask?taskId=${this.taskData.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+    },
     async fetchData() {
       const res = await getPsiTaskDetails({ taskId: this.taskId })
       if (res.code === 0) {
@@ -157,6 +168,17 @@ export default {
     },
     cancel() {
       this.dialogVisible = false
+    },
+    closeDialog() {
+      this.previewDialogVisible = false
+    },
+    async handlePreview() {
+      await this.resourceFilePreview()
+      this.previewDialogVisible = true
+    },
+    async resourceFilePreview() {
+      const res = await resourceFilePreview({ resourceId: this.taskData.id })
+      this.previewList = res.result?.dataList
     }
 
   }
@@ -164,6 +186,13 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.detail{
+  margin-bottom: 40px;
+  h3{
+    border-left: 3px solid #1677FF;
+    padding-left: 10px;
+  }
+}
 .description-container{
   display: flex;
   flex-flow: wrap;
