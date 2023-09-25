@@ -14,8 +14,10 @@ import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,5 +94,32 @@ public class PirService {
             }
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataPirTaskVos));
+    }
+
+    public BaseResultEntity getPirTaskDetail(Long taskId) {
+        DataPirTask task = dataTaskRepository.selectPirTaskById(taskId);
+        if (task==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务信息");
+        }
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务详情");
+        }
+        List<LinkedHashMap<String, Object>> list = null;
+        if (StringUtils.isNotEmpty(dataTask.getTaskResultPath())){
+            list = FileUtil.getCsvData(dataTask.getTaskResultPath(), 50);
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("taskName", dataTask.getTaskName());
+        map.put("taskIdName", dataTask.getTaskIdName());
+        map.put("organName", task.getProviderOrganName());
+        map.put("resourceName", task.getResourceName());
+        map.put("resourceId", task.getResourceId());
+        map.put("retrievalId", task.getRetrievalId());
+        map.put("createDate", task.getCreateDate());
+        map.put("consuming", dataTask.getTaskEndTime() - dataTask.getTaskStartTime());
+        map.put("createTime", dataTask.getTaskStartTime());
+        map.put("dataList", list);
+        return BaseResultEntity.success(map);
     }
 }

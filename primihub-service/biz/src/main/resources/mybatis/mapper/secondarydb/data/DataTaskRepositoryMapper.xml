@@ -141,4 +141,13 @@
             and task_type = #{taskType}
         </if>
     </sql>
+
+    <select id="selectPirTaskById" resultType="com.primihub.biz.entity.data.po.DataPirTask">
+        SELECT
+            id,task_id as taskId,task_state as taskState,provider_organ_name as providerOrganName,resource_id as resourceId,resource_name as resourceName,retrieval_id as retrievalId
+        FROM
+            data_pir_task
+        WHERE
+            id = #{id}
+    </select>
 </mapper>

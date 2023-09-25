@@ -51,6 +51,19 @@ public class PirController {
         return pirService.getPirTaskList(req);
     }
 
+    /**
+     * 查询隐匿查询任务详情
+     * @param taskId
+     * @return
+     */
+    @GetMapping("getPirTaskDetail")
+    public BaseResultEntity getPirTaskDetail(Long taskId){
+        if (taskId==null||taskId==0L) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+        }
+        return pirService.getPirTaskDetail(taskId);
+    }
+
     @GetMapping("downloadPirTask")
     public void downloadPirTask(HttpServletResponse response, String taskId,String taskDate) {
         if (StringUtils.isBlank(taskId)||StringUtils.isBlank(taskDate)) {
