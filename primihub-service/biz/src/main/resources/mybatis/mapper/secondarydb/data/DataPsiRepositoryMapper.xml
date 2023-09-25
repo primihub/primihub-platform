@@ -90,7 +90,7 @@
             other_organ_id as otherOrganId,other_resource_id as otherResourceId,other_keyword as otherKeyword,
             output_file_path_type as outputFilePathType,output_no_repeat as outputNoRepeat,tag as tag,
             result_name as resultName,output_content as outputContent,output_format as outputFormat,result_organ_ids as resultOrganIds,
-            remarks,user_id as userId,create_date as createDate
+            remarks,user_id as userId,create_date as createDate,tee_organ_id as teeOrganId
         from
             data_psi
         where
