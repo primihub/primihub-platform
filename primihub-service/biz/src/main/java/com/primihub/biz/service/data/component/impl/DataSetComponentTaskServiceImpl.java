@@ -81,16 +81,14 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             if (!availableList.isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
             }
-            ModelTypeEnum modelType = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(taskReq.getValueMap().get("modelType")));
-            taskReq.getDataModel().setTrainType(modelType.getTrainType());
-            taskReq.getDataModel().setModelType(modelType.getType());
-            if (modelType.equals(ModelTypeEnum.TRANSVERSE_LR)){
+            String modelType = taskReq.getValueMap().get("modelType");
+            if ("3".equals(modelType)){
                 Set<Object> resourceColumnNameList = voList.stream().map(data -> data.get("resourceColumnNameList")).collect(Collectors.toSet());
                 if (resourceColumnNameList.contains(null) || resourceColumnNameList.size()!=1) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源特征量不一致,不可使用");
                 }
             }
-            if(ModelTypeEnum.MPC_LR == modelType){
+            if(ModelTypeEnum.MPC_LR.getType().equals(modelType)){
                 if (voList.size()<3) {
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型需要三个数据集");
                 }
