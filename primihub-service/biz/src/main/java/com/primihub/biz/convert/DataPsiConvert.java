@@ -90,6 +90,8 @@ public class DataPsiConvert {
         dataPsiVo.setTaskError(dataTask.getTaskErrorMsg());
         dataPsiVo.setDataList(dataList);
         dataPsiVo.setTaskName(dataTask.getTaskName());
+        dataPsiVo.setTeeOrganId(dataPsi.getTeeOrganId());
+        dataPsiVo.setTeeOrganName(teeOrganName);
         return dataPsiVo;
     }
 }
