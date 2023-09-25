@@ -126,6 +126,8 @@ public class DataPsiVo {
      * 任务id名称
      */
     private String taskIdName;
+
+    private String taskName;
     /**
      * 运行状态 0未运行 1完成 2运行中 3失败 4取消 默认0
      */

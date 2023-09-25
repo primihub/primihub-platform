@@ -89,6 +89,7 @@ public class DataPsiConvert {
         dataPsiVo.setTaskEndTime(dataTask.getTaskEndTime());
         dataPsiVo.setTaskError(dataTask.getTaskErrorMsg());
         dataPsiVo.setDataList(dataList);
+        dataPsiVo.setTaskName(dataTask.getTaskName());
         return dataPsiVo;
     }
 }
