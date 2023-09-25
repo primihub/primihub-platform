@@ -140,7 +140,7 @@ public class DataPsiVo {
     private Long taskStartTime;
     private Long taskEndTime;
 
-    public Long getTimeConsuming(){
+    public Long getConsuming(){
         if ((taskStartTime!=null&&taskStartTime!=0L)&&(taskEndTime!=null&&taskEndTime!=0L)){
             return (taskEndTime-taskStartTime)/1000;
         }

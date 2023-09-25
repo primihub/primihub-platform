@@ -127,6 +127,11 @@ public class DataPsiService {
         if (dataPsiTaskVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
         }
+        Set<String> ids = dataPsiTaskVos.stream().map(DataPsiTaskVo::getOtherOrganId).collect(Collectors.toSet());
+        Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(new ArrayList<>(ids));
+        for (DataPsiTaskVo dataPsiTaskVo : dataPsiTaskVos) {
+            dataPsiTaskVo.setOtherOrganName(organListMap.get(dataPsiTaskVo.getOtherOrganId()).getOrganName());
+        }
         Long count = dataPsiRepository.selectPsiTaskPageCount(req);
         return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataPsiTaskVos));
     }

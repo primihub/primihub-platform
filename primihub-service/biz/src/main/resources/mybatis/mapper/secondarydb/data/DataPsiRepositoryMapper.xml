@@ -6,6 +6,8 @@
         SELECT
             dp.id AS dataPsiId,
             dp.result_name AS resultName,
+            dp.other_organ_id as otherOrganId,
+            dp.tag as psiTag,
             dpt.id as taskId,
             dpt.task_id as taskIdName,
             dt.task_name as taskName,

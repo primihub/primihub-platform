@@ -18,6 +18,12 @@ public class DataPsiTaskVo {
     private String resultName;
 
     private String taskName;
+
+    private String otherOrganId;
+
+    private String otherOrganName;
+
+    private Integer psiTag;
     /**
      * 真实任务id
      */
