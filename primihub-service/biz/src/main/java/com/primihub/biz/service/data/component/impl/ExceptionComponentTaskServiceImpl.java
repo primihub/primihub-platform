@@ -73,6 +73,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
             taskParam.setJobId(String.valueOf(taskReq.getJob()));
             taskParam.getTaskContentParam().setTaskName("AbnormalProcessTask");
+            taskParam.getTaskContentParam().setTaskCode("AbnormalProcessTask");
             taskParam.getTaskContentParam().setResourceIds(ids);
             taskParam.getTaskContentParam().setParamMap(new HashMap<>());
             taskParam.getTaskContentParam().getParamMap().put("ColumnInfo",JSONObject.toJSONString(exceptionEntityMap));
