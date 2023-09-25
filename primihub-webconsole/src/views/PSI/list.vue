@@ -3,7 +3,7 @@
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
         <el-form-item>
-          <el-select v-model="query.organName" placeholder="请选择参与机构" clearable @change="handleOrganChange" @clear="handleClear('organName')">
+          <el-select v-model="query.organId" placeholder="请选择参与机构" clearable @clear="handleClear('organId')">
             <el-option
               v-for="item in organList"
               :key="item.globalId"
@@ -28,12 +28,13 @@
         <el-form-item>
           <el-date-picker
             v-model="query.createDate"
-
-            type="daterange"
+            type="datetimerange"
             range-separator="至"
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
+            :default-time="['00:00:00', '23:59:59']"
+            @change="handleDateChange"
           />
         </el-form-item>
         <el-form-item>
@@ -60,18 +61,17 @@
               <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span> <br>
             </template>
           </el-table-column> -->
-          <el-table-column label="任务名称" min-width="160px">
+          <el-table-column label="任务名称">
             <template slot-scope="{row}">
-              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.resultName }}</el-link>
+              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link>
             </template>
           </el-table-column>
           <el-table-column
-            prop="organName"
             label="参与机构"
             align="center"
           >
             <template slot-scope="{row}">
-              <el-tooltip :content="row.organName" placement="top"><span>{{ row.organName }}</span></el-tooltip>
+              <el-tooltip :content="row.otherOrganName" placement="top"><span>{{ row.otherOrganName }}</span></el-tooltip>
             </template>
           </el-table-column>
           <el-table-column
@@ -80,7 +80,7 @@
             align="center"
           >
             <template slot-scope="{row}">
-              <el-tooltip :content="row.psiTag" placement="top"><span>{{ row.psiTag }}</span></el-tooltip>
+              {{ row.psiTag | psiTagFilter }}
             </template>
           </el-table-column>
           <el-table-column label="任务类型" prop="ascription" />
@@ -100,7 +100,7 @@
           <el-table-column label="操作" fixed="right" min-width="120px" align="center">
             <template slot-scope="{row}">
               <p class="tool-buttons">
-                <el-link type="primary" @click="openDialog(row.taskId)">查看</el-link>
+                <el-link type="primary" @click="toTaskDetailPage(row.taskId)">查看</el-link>
                 <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
                 <el-link type="danger" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-link>
               </p>
@@ -142,24 +142,26 @@ export default {
         4: '已取消'
       }
       return stateMap[state]
+    },
+    psiTagFilter(state) {
+      const stateMap = {
+        0: 'ECDH',
+        1: 'KKRT',
+        2: 'TEE'
+      }
+      return stateMap[state]
     }
   },
   data() {
     return {
       query: {
-        organName: '',
+        organId: '',
         retrievalId: '',
         resourceName: '',
         taskState: '',
-        taskId: ''
+        taskId: '',
+        createDate: []
       },
-      listLoading: false,
-      listLoading2: false,
-      loading: false,
-      active: 0,
-      userId: 0,
-      ownOrganId: 0,
-      ownOrganName: '',
       allDataPsiTask: [],
       organList: [],
       pageSize: 10,
@@ -183,6 +185,10 @@ export default {
         {
           label: '失败',
           value: 3
+        },
+        {
+          label: '已取消',
+          value: 4
         }
       ]
     }
@@ -198,15 +204,24 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    handleDateChange(val) {
+      console.log(val)
+      if (!val) {
+        this.query.createDate = []
+        this.getPsiTaskList()
+      }
+    },
+    handleClear(name) {
+      this.query[name] = ''
+      console.log('handleClear', name)
+      this.getPsiTaskList()
+    },
     reset() {
       for (const key in this.query) {
         this.query[key] = ''
       }
       this.pageNo = 1
       this.getPsiTaskList()
-    },
-    handleOrganChange(value) {
-      this.query.organName = this.organList.find(item => item.globalId === value)?.globalName
     },
     toTaskPage() {
       this.$router.push({
@@ -265,7 +280,7 @@ export default {
     },
     handleDelete(data) {
       // last page && all deleted, to the first page
-      if (data.length === 0 && (this.pageNo === this.totalPage)) {
+      if (this.taskData.length === 0 && (this.pageNo === this.totalPage)) {
         this.pageNo = 1
       }
       this.getPsiTaskList()
@@ -274,11 +289,39 @@ export default {
       this.getPsiTaskList()
     },
     getPsiTaskList() {
-      getPsiTaskList({
+      let params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         resultName: this.resultName
-      }).then(res => {
+      }
+      console.log('createDate', this.query.createDate)
+      if (this.query.createDate.length > 0) {
+        const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
+        const endDate = this.query.createDate.length > 0 ? this.query.createDate[1] : ''
+        params = {
+          ...params,
+          startDate: startDate,
+          endDate: endDate }
+      }
+      if (this.query.organId !== '') {
+        params = {
+          ...params,
+          organId: this.query.organId
+        }
+      }
+      if (this.query.taskState !== '') {
+        params = {
+          ...params,
+          taskState: this.query.taskState
+        }
+      }
+      if (this.query.taskName !== '') {
+        params = {
+          ...params,
+          taskName: this.query.taskName
+        }
+      }
+      getPsiTaskList(params).then(res => {
         const { data, totalPage, total } = res.result
         this.totalPage = totalPage
         this.total = total
@@ -307,6 +350,7 @@ export default {
     },
     async search() {
       this.pageNo = 1
+      console.log(this.query.createDate)
       await this.getPsiTaskList()
     }
   }
