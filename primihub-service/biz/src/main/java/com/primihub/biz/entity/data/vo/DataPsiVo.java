@@ -1,6 +1,7 @@
 package com.primihub.biz.entity.data.vo;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
@@ -116,6 +117,7 @@ public class DataPsiVo {
      * 创建时间
      */
 //    @JsonIgnore
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createDate;
 
     /**
