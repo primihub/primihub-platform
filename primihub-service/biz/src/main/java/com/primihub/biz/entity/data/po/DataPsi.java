@@ -96,6 +96,8 @@ public class DataPsi {
     private String remarks;
 
     private Long userId;
+
+    private String teeOrganId;
     /**
      * 是否删除
      */

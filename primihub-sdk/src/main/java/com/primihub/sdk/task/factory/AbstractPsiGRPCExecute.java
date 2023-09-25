@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import primihub.rpc.Common;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
@@ -67,6 +69,12 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
                 paramsBuilder.putParamMap("sync_result_to_server",syncResultToServerParamValue).putParamMap("server_outputFullFilname",serverOutputFullFilnameParamValue);
             }
             Common.TaskContext taskBuild = assembleTaskContext(param);
+            Map<String, Common.Dataset> datasetMap = new HashMap<>();
+            datasetMap.put("SERVER",Common.Dataset.newBuilder().putData("SERVER", param.getTaskContentParam().getServerData()).build());
+            datasetMap.put("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", param.getTaskContentParam().getClientData()).build());
+            if (param.getTaskContentParam().getPsiTag().equals(2)){
+                datasetMap.put("TEE_COMPUTE",Common.Dataset.newBuilder().putData("TEE_COMPUTE", param.getTaskContentParam().getClientData()).build());
+            }
             Common.Task task= Common.Task.newBuilder()
                     .setType(Common.TaskType.PSI_TASK)
                     .setParams(paramsBuilder.build())
@@ -74,8 +82,7 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
-                    .putPartyDatasets("SERVER",Common.Dataset.newBuilder().putData("SERVER", param.getTaskContentParam().getServerData()).build())
-                    .putPartyDatasets("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", param.getTaskContentParam().getClientData()).build())
+                    .putAllPartyDatasets(datasetMap)
                     .build();
             log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()

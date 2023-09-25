@@ -203,7 +203,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi) {
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,String taskName) {
         DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
         String resourceId, resourceColumnNameList;
         int available;
@@ -224,7 +224,11 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(psiTask.getTaskId());
-        dataTask.setTaskName(dataPsi.getResultName());
+        if (taskName == null){
+            dataTask.setTaskName(dataPsi.getResultName());
+        }else {
+            dataTask.setTaskName(taskName);
+        }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());

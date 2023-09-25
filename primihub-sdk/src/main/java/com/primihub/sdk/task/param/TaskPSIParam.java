@@ -4,6 +4,7 @@ import com.primihub.sdk.task.annotation.TaskTypeExample;
 import com.primihub.sdk.task.factory.AbstractPsiGRPCExecute;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * psi 隐私求交组装类
@@ -25,6 +26,7 @@ public class TaskPSIParam {
     /**
      *  0、ECDH
      *  1、KKRT
+     *  2、TEE
      *  默认0
      */
     private Integer psiTag = 0;
@@ -48,6 +50,8 @@ public class TaskPSIParam {
      * 数据对齐服务端存放地址
      */
     private String serverOutputFullFilname;
+
+    private String arbiterData;
 
     public String getClientData() {
         return clientData;
@@ -119,6 +123,14 @@ public class TaskPSIParam {
 
     public void setServerOutputFullFilname(String serverOutputFullFilname) {
         this.serverOutputFullFilname = serverOutputFullFilname;
+    }
+
+    public String getArbiterData() {
+        return arbiterData;
+    }
+
+    public void setArbiterData(String arbiterData) {
+        this.arbiterData = arbiterData;
     }
 
     @Override

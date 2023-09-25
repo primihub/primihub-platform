@@ -16,6 +16,8 @@ public class DataPsiTaskVo {
      * 返回结果名称
      */
     private String resultName;
+
+    private String taskName;
     /**
      * 真实任务id
      */

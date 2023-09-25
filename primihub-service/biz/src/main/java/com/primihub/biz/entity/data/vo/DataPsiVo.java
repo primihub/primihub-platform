@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 
 @Data
@@ -113,7 +115,7 @@ public class DataPsiVo {
     /**
      * 创建时间
      */
-    @JsonIgnore
+//    @JsonIgnore
     private Date createDate;
 
     /**
@@ -128,4 +130,20 @@ public class DataPsiVo {
      * 运行状态 0未运行 1完成 2运行中 3失败 4取消 默认0
      */
     private Integer taskState;
+
+    private String teeOrganId;
+    private String teeOrganName;
+    private String taskError;
+
+    private List<LinkedHashMap<String, Object>> dataList;
+
+    private Long taskStartTime;
+    private Long taskEndTime;
+
+    public Long getTimeConsuming(){
+        if ((taskStartTime!=null&&taskStartTime!=0L)&&(taskEndTime!=null&&taskEndTime!=0L)){
+            return (taskEndTime-taskStartTime)/1000;
+        }
+        return 0L;
+    }
 }
