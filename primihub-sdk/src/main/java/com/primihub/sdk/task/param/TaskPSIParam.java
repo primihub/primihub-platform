@@ -51,7 +51,7 @@ public class TaskPSIParam {
      */
     private String serverOutputFullFilname;
 
-    private String arbiterData;
+    private String teeData;
 
     public String getClientData() {
         return clientData;
@@ -125,12 +125,12 @@ public class TaskPSIParam {
         this.serverOutputFullFilname = serverOutputFullFilname;
     }
 
-    public String getArbiterData() {
-        return arbiterData;
+    public String getTeeData() {
+        return teeData;
     }
 
-    public void setArbiterData(String arbiterData) {
-        this.arbiterData = arbiterData;
+    public void setTeeData(String teeData) {
+        this.teeData = teeData;
     }
 
     @Override

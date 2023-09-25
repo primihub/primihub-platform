@@ -73,7 +73,7 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
             datasetMap.put("SERVER",Common.Dataset.newBuilder().putData("SERVER", param.getTaskContentParam().getServerData()).build());
             datasetMap.put("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", param.getTaskContentParam().getClientData()).build());
             if (param.getTaskContentParam().getPsiTag().equals(2)){
-                datasetMap.put("TEE_COMPUTE",Common.Dataset.newBuilder().putData("TEE_COMPUTE", param.getTaskContentParam().getClientData()).build());
+                datasetMap.put("TEE_COMPUTE",Common.Dataset.newBuilder().putData("TEE_COMPUTE", param.getTaskContentParam().getTeeData()).build());
             }
             Common.Task task= Common.Task.newBuilder()
                     .setType(Common.TaskType.PSI_TASK)

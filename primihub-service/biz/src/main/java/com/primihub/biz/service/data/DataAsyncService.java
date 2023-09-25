@@ -233,6 +233,33 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTaskPrRepository.saveDataTask(dataTask);
+        String teeResourceId = "";
+        if (dataPsi.getTag().equals(2)){
+            DataFResourceReq fresourceReq = new DataFResourceReq();
+            fresourceReq.setOrganId(dataPsi.getTeeOrganId());
+            BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
+            if (resourceList.getCode()!=0) {
+                psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataPsiPrRepository.updateDataPsiTask(psiTask);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskEndTime(System.currentTimeMillis());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:"+resourceList.getMsg());
+                dataTaskPrRepository.updateDataTask(dataTask);
+                return;
+            }
+            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
+            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
+            if (resourceDataList==null || resourceDataList.size()==0) {
+                psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataPsiPrRepository.updateDataPsiTask(psiTask);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskEndTime(System.currentTimeMillis());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:机构下无资源信息");
+                dataTaskPrRepository.updateDataTask(dataTask);
+                return;
+            }
+            teeResourceId = resourceDataList.get(0).get("resourceId").toString();
+        }
         psiTask.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}", available);
@@ -251,6 +278,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 List<String> serverFields = Arrays.asList(resourceColumnNameList.split(","));
                 List<String> otherKeyword = Arrays.asList(dataPsi.getOtherKeyword().split(","));
                 psiParam.setServerData(resourceId);
+                psiParam.setTeeData(teeResourceId);
                 psiParam.setServerIndex(otherKeyword.stream().map(serverFields::indexOf).toArray(Integer[]::new));
                 psiParam.setOutputFullFilename(psiTask.getFilePath());
                 TaskParam taskParam = new TaskParam();
