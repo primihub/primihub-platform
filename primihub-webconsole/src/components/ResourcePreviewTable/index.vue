@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h3>数据资源预览</h3>
+    <!-- <h3>数据资源预览</h3> -->
     <el-table
       :data="data"
       border

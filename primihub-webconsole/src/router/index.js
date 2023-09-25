@@ -141,12 +141,15 @@ export const asyncRoutes = [
         path: 'list',
         name: 'PSIList',
         component: () => import('@/views/PSI/list'),
-        meta: { title: '隐私求交' }
+        meta: { title: '隐私求交', breadcrumb: false }
       }, {
         path: 'detail/:id',
         name: 'PSIDetail',
         component: () => import('@/views/PSI/detail'),
-        meta: { title: '任务详情' },
+        meta: {
+          title: '任务详情',
+          activeMenu: '/PSI/list'
+        },
         hidden: true
       }]
   },

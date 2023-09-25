@@ -50,20 +50,15 @@
           :data="allDataPsiTask"
           class="table-list"
         >
-          <!-- <el-table-column
+          <el-table-column
             type="index"
             align="center"
             label="序号"
             width="50"
-          /> -->
-          <!-- <el-table-column label="任务ID" min-width="120px">
+          />
+          <el-table-column label="任务名称" min-width="120px">
             <template slot-scope="{row}">
-              <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span> <br>
-            </template>
-          </el-table-column> -->
-          <el-table-column label="任务名称">
-            <template slot-scope="{row}">
-              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link>
+              <el-tooltip :content="row.taskName" placement="top"><el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link></el-tooltip>
             </template>
           </el-table-column>
           <el-table-column
@@ -84,7 +79,12 @@
             </template>
           </el-table-column>
           <el-table-column label="任务类型" prop="ascription" />
-          <el-table-column label="发起时间" prop="createDate" min-width="120px" />
+          <el-table-column label="发起时间" prop="createDate" min-width="120px">
+            <template slot-scope="{row}">
+              <span>{{ row.createDate.split(' ')[0] }}</span><br>
+              <span>{{ row.createDate.split(' ')[1] }}</span><br>
+            </template>
+          </el-table-column>
           <el-table-column label="任务耗时">
             <template slot-scope="{row}">
               {{ row.consuming | timeFilter }}
@@ -205,7 +205,6 @@ export default {
   },
   methods: {
     handleDateChange(val) {
-      console.log(val)
       if (!val) {
         this.query.createDate = []
         this.getPsiTaskList()
@@ -213,7 +212,6 @@ export default {
     },
     handleClear(name) {
       this.query[name] = ''
-      console.log('handleClear', name)
       this.getPsiTaskList()
     },
     reset() {
@@ -294,7 +292,6 @@ export default {
         pageSize: this.pageSize,
         resultName: this.resultName
       }
-      console.log('createDate', this.query.createDate)
       if (this.query.createDate.length > 0) {
         const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
         const endDate = this.query.createDate.length > 0 ? this.query.createDate[1] : ''
@@ -350,7 +347,6 @@ export default {
     },
     async search() {
       this.pageNo = 1
-      console.log(this.query.createDate)
       await this.getPsiTaskList()
     }
   }

@@ -43,7 +43,6 @@ export function getPsiTaskDetails(params) {
   return request({
     url: '/data/psi/getPsiTaskDetails',
     method: 'get',
-    showLoading: false,
     params
   })
 }
