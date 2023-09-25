@@ -371,7 +371,7 @@ export default {
 }
 .graph-container {
   position: relative;
-  height: calc(100vh - 80px - 80px);
+  height: calc(100vh - 80px - 103px);
   padding: 0;
   overflow: hidden;
   display: flex;

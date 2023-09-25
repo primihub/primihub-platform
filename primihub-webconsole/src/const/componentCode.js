@@ -4,6 +4,7 @@ export const DATA_SET = 'dataSet'
 export const MODEL = 'model'
 export const DATA_ALIGN = 'dataAlign'
 export const MPC_STATISTICS = 'jointStatistical'
+export const FIT_TRANSFORM = 'fitTransform'
 
 // Level 1
 export const MULTIPLE_SELECT_FEATURE = 'MultipleSelected'
@@ -14,3 +15,5 @@ export const MPC_STATISTICS_TYPE = 'processingType'
 export const TASK_NAME = 'taskName'
 export const MODEL_NAME = 'modelName'
 export const ENCRYPTION_TYPE = 'encryption'
+export const SIMPLE_IMPUTER_STRING = 'simpleImputerString'
+export const SIMPLE_IMPUTER_NUMBER = 'simpleImputerNumeric'
