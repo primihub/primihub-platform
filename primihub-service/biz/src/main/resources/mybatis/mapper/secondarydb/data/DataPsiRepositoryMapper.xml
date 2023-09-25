@@ -8,7 +8,7 @@
             dp.result_name AS resultName,
             dpt.id as taskId,
             dpt.task_id as taskIdName,
-            dpt.task_name as taskName,
+            dt.task_name as taskName,
             dt.task_start_time as taskStart,
             dt.task_end_time as taskEnd,
             dpt.task_state as taskState,
