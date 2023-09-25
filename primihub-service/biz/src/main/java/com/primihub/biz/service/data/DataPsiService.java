@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.convert.DataPsiConvert;
 import com.primihub.biz.convert.DataResourceConvert;
@@ -109,9 +110,9 @@ public class DataPsiService {
             task.setAscriptionType(0);
         }
         if (dataPsi.getOutputContent()==0){
-            task.setAscription("求交集");
+            task.setAscription("交集");
         }else {
-            task.setAscription("求差集");
+            task.setAscription("差集");
         }
         task.setCreateDate(new Date());
         dataPsiPrRepository.saveDataPsiTask(task);
@@ -123,6 +124,7 @@ public class DataPsiService {
     }
 
     public BaseResultEntity getPsiTaskList(DataPsiQueryReq req) {
+        log.info(JSONObject.toJSONString(req));
         List<DataPsiTaskVo> dataPsiTaskVos = dataPsiRepository.selectPsiTaskPage(req);
         if (dataPsiTaskVos.size()==0){
             return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
