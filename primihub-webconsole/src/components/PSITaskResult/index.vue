@@ -247,7 +247,7 @@ export default {
 
 }
 .state-running{
-  background-color: #409EFF;
+  background-color: #1677FF;
 }
 .state-error{
   background-color: #F56C6C;

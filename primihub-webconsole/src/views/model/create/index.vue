@@ -196,7 +196,7 @@ export default {
         // 默认true, 但是会抖动
         copyStyles: false,
         // 解决生成图片样式丢失问题，官方临时解决方案 https://antv-x6.gitee.io/zh/docs/tutorial/epilog#%E5%AF%BC%E5%87%BA%E5%9B%BE%E7%89%87%E6%A0%B7%E5%BC%8F%E7%BC%BA%E5%A4%B1
-        stylesheet: ` 
+        stylesheet: `
             .start-node {
               color: #00a387;
               font-weight: bold;
@@ -348,7 +348,7 @@ export default {
 }
 
 ::v-deep .x6-widget-minimap-viewport{
-  border-color: #409EFF;
+  border-color: #1677FF;
 }
 .center-container{
   flex: 1;

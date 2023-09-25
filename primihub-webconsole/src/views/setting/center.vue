@@ -511,7 +511,7 @@ export default {
   color: #67C23A;
 }
 .state-primary{
-  color: #4596ff;
+  color: $mainColor;
 }
 .state-error{
   color: #F56C6C;

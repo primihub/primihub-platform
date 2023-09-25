@@ -265,7 +265,7 @@ export default {
   color: #67C23A;
 }
 .status-processing{
-  background-color: #409EFF;
+  background-color: #1677FF;
 }
 .status-error{
   color: #F56C6C;
@@ -282,8 +282,5 @@ export default {
   color: #F56C6C;
   font-size: 12px;
   line-height: 1.2;
-}
-::v-deep .el-table th.el-table__cell{
-  background-color: #f5f7fa!important;
 }
 </style>

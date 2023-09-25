@@ -128,19 +128,26 @@ export const asyncRoutes = [
     path: '/PSI',
     component: Layout,
     name: 'PSI',
-    redirect: '/PSI/task',
+    redirect: '/PSI/list',
     meta: { title: '隐私求交', icon: 'el-icon-lock' },
     children: [
       {
         path: 'task',
         name: 'PSITask',
         component: () => import('@/views/PSI/task'),
-        meta: { title: '求交任务' }
+        meta: { title: '求交任务' },
+        hidden: true
       }, {
-        path: 'result',
-        name: 'PSIResult',
-        component: () => import('@/views/PSI/result'),
-        meta: { title: '求交结果' }
+        path: 'list',
+        name: 'PSIList',
+        component: () => import('@/views/PSI/list'),
+        meta: { title: '隐私求交' }
+      }, {
+        path: 'detail/:id',
+        name: 'PSIDetail',
+        component: () => import('@/views/PSI/detail'),
+        meta: { title: '任务详情' },
+        hidden: true
       }]
   },
   {

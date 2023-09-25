@@ -1,88 +1,158 @@
 <template>
   <div class="container">
-    <organ-select @change="handleOrganSelect" />
-    <div class="organ-container">
-      <div class="organ">
-        <div class="header">
-          <p class="organ-name"><i class="el-icon-office-building" /> {{ ownOrganName }}</p>
-          <search-input width="200px" size="small" @click="handelSearchA" @change="handleSearchNameChangeA" />
-        </div>
-        <el-table
-          v-loading="listLoading"
-          element-loading-spinner="el-icon-loading"
-          :data="tableDataA"
-          class="table-list"
-          :default-sort="{prop: 'resourceName', order: 'descending'}"
-        >
-          <el-table-column label="表名" prop="resourceName" width="250" sortable>
-            <template slot-scope="{row}">
-              <span class="resource-name" type="text" icon="el-icon-view" @click="toResourceDetail(row.resourceId)">{{ row.resourceName }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" prop="fileHandleStatus" sortable>
-            <template>
-              <!-- <span v-if="row.fileHandleStatus === 2">
-                可用
-                <i class="state right el-icon-circle-check" />
-              </span>
-              <span v-else>
-                不可用
-                <i class="state error el-icon-circle-close" />
-              </span> -->
-              <span>可用 <i class="state right el-icon-circle-check" /></span>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="列数" prop="fileColumns" sortable />
-        </el-table>
-        <pagination v-show="totalPage>1" :background="false" :limit.sync="pageSize" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
-      </div>
-      <div v-if="otherOrganId" class="organ">
-        <div class="header">
-          <p class="organ-name"><i class="el-icon-office-building" />{{ otherOrganName }}</p>
-          <search-input width="200px" size="small" @click="handelSearchA" @change="handleSearchNameChangeA" />
-        </div>
-        <el-table
-          v-loading="listLoading2"
-          element-loading-spinner="el-icon-loading"
-          :data="tableDataB"
-          class="table-list"
-          :default-sort="{prop: 'resourceName', order: 'descending'}"
-        >
-          <el-table-column label="表名" prop="resourceName" width="250" sortable>
-            <template slot-scope="{row}">
-              <span class="resource-name" type="text" icon="el-icon-view" @click="toResourceDetail(row.resourceId)">{{ row.resourceName }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" prop="fileHandleStatus" sortable>
-            <template>
-              <span>可用 <i class="state right el-icon-circle-check" /></span>
-            </template>
-          </el-table-column>
-          <el-table-column align="center" label="列数" prop="fileColumns" sortable />
-        </el-table>
-        <pagination v-show="totalPage2>1" :limit.sync="pageSize2" :page.sync="pageNo2" :total="total2" layout="total, prev, pager, next" @pagination="handlePagination2" />
-      </div>
+    <div class="search-area">
+      <el-form :model="query" :inline="true" @keyup.enter.native="search">
+        <el-form-item>
+          <el-select v-model="query.organName" placeholder="请选择参与机构" clearable @change="handleOrganChange" @clear="handleClear('organName')">
+            <el-option
+              v-for="item in organList"
+              :key="item.globalId"
+              :label="item.globalName"
+              :value="item.globalId"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-input v-model="query.taskName" placeholder="请输入任务名称" clearable @clear="handleClear('taskName')" />
+        </el-form-item>
+        <el-form-item>
+          <el-select v-model="query.taskState" placeholder="请选择任务状态" clearable @clear="handleClear('taskState')">
+            <el-option
+              v-for="item in statusOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-date-picker
+            v-model="query.createDate"
 
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd HH:mm:ss"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
+          <el-button icon="el-icon-refresh-right" @click="reset" />
+        </el-form-item>
+      </el-form>
     </div>
-    <div v-if="otherOrganId" class="button">
-      <el-button type="primary" @click="next()">下一步</el-button>
+    <div class="organ-container">
+      <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐私求交</el-button>
+      <div class="organ">
+        <el-table
+          :data="allDataPsiTask"
+          class="table-list"
+        >
+          <!-- <el-table-column
+            type="index"
+            align="center"
+            label="序号"
+            width="50"
+          /> -->
+          <!-- <el-table-column label="任务ID" min-width="120px">
+            <template slot-scope="{row}">
+              <span class="result-name" type="text" icon="el-icon-view" @click="openDialog(row.taskId)">{{ row.taskIdName }}</span> <br>
+            </template>
+          </el-table-column> -->
+          <el-table-column label="任务名称" min-width="160px">
+            <template slot-scope="{row}">
+              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.resultName }}</el-link>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="organName"
+            label="参与机构"
+            align="center"
+          >
+            <template slot-scope="{row}">
+              <el-tooltip :content="row.organName" placement="top"><span>{{ row.organName }}</span></el-tooltip>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="psiTag"
+            label="实现方法"
+            align="center"
+          >
+            <template slot-scope="{row}">
+              <el-tooltip :content="row.psiTag" placement="top"><span>{{ row.psiTag }}</span></el-tooltip>
+            </template>
+          </el-table-column>
+          <el-table-column label="任务类型" prop="ascription" />
+          <el-table-column label="发起时间" prop="createDate" min-width="120px" />
+          <el-table-column label="任务耗时">
+            <template slot-scope="{row}">
+              {{ row.consuming | timeFilter }}
+            </template>
+          </el-table-column>
+          <el-table-column label="任务状态" prop="taskState">
+            <template slot-scope="{row}">
+              <i :class="statusStyle(row.taskState)" />
+              <span>{{ row.taskState | taskStateFilter }}</span>
+              <span v-if="row.taskState === 2"> <i class="el-icon-loading" /></span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" fixed="right" min-width="120px" align="center">
+            <template slot-scope="{row}">
+              <p class="tool-buttons">
+                <el-link type="primary" @click="openDialog(row.taskId)">查看</el-link>
+                <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
+                <el-link type="danger" :disabled="row.taskState === 2" @click="delPsiTask(row)">删除</el-link>
+              </p>
+            </template>
+          </el-table-column>
+        </el-table>
+        <pagination v-show="totalPage>1" :limit.sync="pageSize" :page-count="totalPage" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
+      </div>
     </div>
+    <el-dialog
+      :visible.sync="dialogVisible"
+      width="70%"
+    >
+      <PSI-task-detail :data="taskData" />
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { getPsiResourceList } from '@/api/PSI'
-import OrganSelect from '@/components/OrganSelect'
+import { getAvailableOrganList } from '@/api/center'
+import { getPsiTaskDetails, getPsiTaskList, delPsiTask, cancelTask } from '@/api/PSI'
+import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
 
 export default {
   name: 'PSIDirectory',
   components: {
-    OrganSelect,
+    PSITaskDetail,
     Pagination
+  },
+  filters: {
+    // 运行状态 0未运行 1完成 2运行中 3失败 默认0
+    taskStateFilter(state) {
+      const stateMap = {
+        0: '未运行',
+        1: '完成',
+        2: '运行中',
+        3: '失败',
+        4: '已取消'
+      }
+      return stateMap[state]
+    }
   },
   data() {
     return {
+      query: {
+        organName: '',
+        retrievalId: '',
+        resourceName: '',
+        taskState: '',
+        taskId: ''
+      },
       listLoading: false,
       listLoading2: false,
       loading: false,
@@ -90,215 +160,236 @@ export default {
       userId: 0,
       ownOrganId: 0,
       ownOrganName: '',
-      tableDataA: [],
-      tableDataB: [],
-      otherOrganId: '',
-      otherOrganName: '机构B',
+      allDataPsiTask: [],
       organList: [],
-      pageSize: 5,
-      pageNo: 1,
-      totalPage: '',
+      pageSize: 10,
+      totalPage: 0,
       total: 0,
-      pageSize2: 5,
-      pageNo2: 1,
-      totalPage2: '',
-      total2: 0,
-      searchNameA: '',
-      searchNameB: ''
+      pageNo: 1,
+      dialogVisible: false,
+      taskData: [],
+      taskId: 0,
+      resultName: '',
+      resultNameB: '',
+      timer: null,
+      statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
+        {
+          label: '查询中',
+          value: 2
+        }, {
+          label: '成功',
+          value: 1
+        },
+        {
+          label: '失败',
+          value: 3
+        }
+      ]
     }
   },
-  // if (to.name === 'PSITask' && !this.otherOrganId) {
-  //   this.$message({
-  //     message: '请选择隐私求交机构',
-  //     type: 'warning'
-  //   })
-  // } else {
-  //   to.query.targetOrganId = this.otherOrganId
-  //   to.query.organName = this.organName
-  //   next()
-  // }
-  // },
   async created() {
-    this.getUserInfo()
-    this.listLoading = true
-    getPsiResourceList({
-      organId: this.ownOrganId,
-      pageSize: this.pageSize,
-      pageNo: this.pageNo
-    }).then(res => {
-      this.listLoading = false
-      const { data, totalPage, total } = res.result
-      console.log('res', res)
-      this.tableDataA = data
-      this.total = total
-      this.totalPage = totalPage
-    })
+    this.getPsiTaskList()
+    await this.getAvailableOrganList()
+    this.timer = window.setInterval(() => {
+      setTimeout(this.getPsiTaskList(), 0)
+    }, 3000)
+  },
+  destroyed() {
+    clearInterval(this.timer)
   },
   methods: {
-    getUserInfo() {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      this.userInfo = userInfo
-      this.ownOrganId = userInfo.organIdList
-      this.ownOrganName = userInfo.organIdListDesc
-      console.log('userInfo', this.userInfo)
+    reset() {
+      for (const key in this.query) {
+        this.query[key] = ''
+      }
+      this.pageNo = 1
+      this.getPsiTaskList()
     },
-    handleOrganSelect(data) {
-      this.otherOrganId = data.organId
-      this.otherOrganName = data.organName
-      this.listLoading2 = true
-      getPsiResourceList({
-        organId: this.otherOrganId,
-        pageSize: this.pageSize2,
-        pageNo: this.pageNo2
-      }).then(res => {
-        const { data, totalPage, total } = res.result
-        this.tableDataB = data
-        this.total2 = total
-        this.totalPage2 = totalPage
-        this.listLoading2 = false
+    handleOrganChange(value) {
+      this.query.organName = this.organList.find(item => item.globalId === value)?.globalName
+    },
+    toTaskPage() {
+      this.$router.push({
+        name: 'PSITask'
       })
     },
-    toResourceDetail(id) {
+    toTaskDetailPage(id) {
       this.$router.push({
-        name: 'ResourceDetail',
+        name: 'PSIDetail',
         params: { id }
       })
     },
-    next(id) {
-      this.$router.push({
-        name: 'PSITask',
-        query: {
-          organId: this.otherOrganId,
-          organName: encodeURIComponent(this.otherOrganName)
+    async getAvailableOrganList() {
+      const { result } = await getAvailableOrganList()
+      this.organList = result
+    },
+    statusStyle(state) {
+      return state === 0 ? 'state-default' : state === 1 ? 'state-end' : state === 2 ? 'state-running' : state === 4 ? 'state-default' : 'state-error'
+    },
+    delPsiTask(row) {
+      if (row.taskState === 2) return
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        delPsiTask({ taskId: row.taskId }).then(res => {
+          if (res.code === 0) {
+            const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
+            if (posIndex !== -1) {
+              this.allDataPsiTask.splice(posIndex, 1)
+            }
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            clearInterval(this.timer)
+            this.$emit('delete', this.allDataPsiTask)
+          }
+        })
+      }).catch(() => {})
+    },
+    async cancelTask(row) {
+      const res = await cancelTask(row.taskId)
+      if (res.code === 0) {
+        const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
+        this.allDataPsiTask[posIndex].taskState === 4
+        this.$notify({
+          message: '取消成功',
+          type: 'success',
+          duration: 1000
+        })
+        this.$emit('cancel', { taskId: row.taskId })
+      }
+    },
+    handleDelete(data) {
+      // last page && all deleted, to the first page
+      if (data.length === 0 && (this.pageNo === this.totalPage)) {
+        this.pageNo = 1
+      }
+      this.getPsiTaskList()
+    },
+    handleCancel() {
+      this.getPsiTaskList()
+    },
+    getPsiTaskList() {
+      getPsiTaskList({
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
+        resultName: this.resultName
+      }).then(res => {
+        const { data, totalPage, total } = res.result
+        this.totalPage = totalPage
+        this.total = total
+        this.allDataPsiTask = data
+        // filter the running task
+        const result = this.allDataPsiTask.filter(item => item.taskState === 2)
+        // No tasks are running
+        if (result.length === 0) {
+          clearInterval(this.timer)
         }
+      }).catch(error => {
+        console.log(error)
+        clearInterval(this.timer)
+      })
+    },
+    openDialog(id) {
+      this.taskId = id
+      getPsiTaskDetails({ taskId: this.taskId }).then(res => {
+        this.taskData = res.result
+        this.dialogVisible = true
       })
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.listLoading2 = true
-      getPsiResourceList({
-        organId: this.ownOrganId,
-        pageSize: this.pageSize,
-        pageNo: this.pageNo,
-        resourceName: this.searchNameA
-      }).then(res => {
-        this.listLoading2 = false
-        const { data, totalPage, total } = res.result
-        this.tableDataA = data
-        this.total = total
-        this.totalPage = totalPage
-      })
+      this.getPsiTaskList()
     },
-    handlePagination2(data) {
-      this.pageNo2 = data.page
-      this.listLoading2 = true
-      getPsiResourceList({
-        organId: this.otherOrganId,
-        pageSize: this.pageSize2,
-        pageNo: this.pageNo2,
-        resourceName: this.searchNameB
-      }).then(res => {
-        this.listLoading2 = false
-        const { data, totalPage, total } = res.result
-        this.tableDataB = data
-        this.total2 = total
-        this.totalPage2 = totalPage
-      })
-    },
-    async search(searchName, organId, pageSize) {
-      console.log('searchName', searchName)
-      const res = await getPsiResourceList({
-        organId: organId,
-        pageSize: pageSize,
-        resourceName: searchName
-      })
-      return res
-    },
-    async handelSearchA(searchName) {
-      this.listLoading = true
+    async search() {
       this.pageNo = 1
-      this.searchNameA = searchName
-      const res = await this.search(searchName, this.ownOrganId, this.pageSize)
-      this.listLoading = false
-      const { data, totalPage, total } = res.result
-      console.log('data', data)
-      this.tableDataA = data
-      this.total = total
-      this.totalPage = totalPage
-    },
-    async handelSearchB(searchName) {
-      this.listLoading2 = true
-      this.pageNo2 = 1
-      this.searchNameB = searchName
-      const res = await this.search(searchName, this.otherOrganId, this.pageSize2)
-      this.listLoading2 = false
-      const { data, totalPage, total } = res.result
-      this.tableDataB = data
-      this.total2 = total
-      this.totalPage2 = totalPage
-    },
-    handleSearchNameChangeA(value) {
-      this.searchNameA = value
-    },
-    handleSearchNameChangeB(value) {
-      this.searchNameB = value
+      await this.getPsiTaskList()
     }
   }
+
 }
 </script>
 <style lang="scss" scoped>
-@import "~@/styles/variables.scss";
-.header{
+.search-area {
+  padding: 48px 40px 20px 40px;
+  background-color: #fff;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  .organ-name{
-    color: $mainColor;
-  }
-  .search{
-    width: 260px;
-  }
-}
-::v-deep .el-table th{
-  background: #fafafa;
+  flex-wrap: wrap;
+  border-radius: 12px;
 }
 .el-table{
   cursor: pointer;
+  margin-top: 24px;
 }
 .app-container{
   min-width: 1000px
 }
 .organ-container{
-  display: flex;
-  .organ{
-    background-color: #fff;
-    width: 500px;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 20px;
-    &:nth-child(1){
-      margin-right: 20px;
-    }
-  }
-  .resource-name:hover{
+  border-radius: 12px;
+  padding: 25px 40px;
+  background-color: #fff;
+  margin-top: 20px;
+  .resource-name{
     color: #1989fa;
   }
 }
-.state{
-  margin-left: 5px;
-  font-weight: bold;
-  &.right{
-    color: #67C23A;
-  }
-  &.error{
-    color: #F56C6C;
-  }
+::v-deep .el-descriptions__body{
+  background-color: #fafafa;
+  padding: 10px 20px 10px 20px;
+}
+::v-deep  .el-descriptions{
+  margin-bottom:20px;
+}
+::v-deep .el-descriptions-item__container{
+  align-items: center;
+}
+::v-deep .el-descriptions__header{
+  margin-bottom: 10px;
+}
+::v-deep .el-dialog__body{
+  padding: 20px 20px 10px 20px;
+}
+.pagination-container{
+  padding-left:0;
+  padding-right: 0;
+}
+.header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.state-default,.state-running,.state-error,.state-end{
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.state-default{
+  background-color: #909399;
 
 }
-.button{
-  text-align: right;
-  padding-right: 50px;
-  margin: 20px auto;
+.state-end{
+  background-color: #67C23A;
+
+}
+.state-running{
+  background-color: #1677FF;
+}
+.state-error{
+  background-color: #F56C6C;
+}
+.tool-buttons{
+  display: flex;
+  justify-content: center;
+  .el-link{
+    margin: 0 5px;
+  }
 }
 </style>

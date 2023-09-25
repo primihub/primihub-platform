@@ -55,7 +55,7 @@
 
     <div class="main">
       <div class="tab-container">
-        <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
+        <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#1677FF" @select="handleSelect">
           <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
           <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
           <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>

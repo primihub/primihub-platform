@@ -2,8 +2,8 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="参与机构">
-          <el-select v-model="query.organName" v-loading="organLoading" size="small" placeholder="请选择" clearable @change="handleOrganChange" @focus="handleOrganFocus" @clear="handleClear('organName')">
+        <el-form-item>
+          <el-select v-model="query.organName" placeholder="请选择参与机构" clearable @change="handleOrganChange" @clear="handleClear('organName')">
             <el-option
               v-for="item in organList"
               :key="item.globalId"
@@ -12,17 +12,14 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="任务ID">
-          <el-input v-model="query.taskId" size="small" placeholder="请输入" clearable @clear="handleClear('taskId')" />
+        <el-form-item>
+          <el-input v-model="query.taskName" placeholder="请输入任务名称" clearable @clear="handleClear('taskName')" />
         </el-form-item>
-        <el-form-item label="被查询资源名">
-          <el-input v-model="query.resourceName" size="small" placeholder="请输入" clearable @clear="handleClear('resourceName')" />
+        <el-form-item>
+          <el-input v-model="query.retrievalId" placeholder="请输入查询关键词" clearable @clear="handleClear('retrievalId')" />
         </el-form-item>
-        <el-form-item label="查询关键词">
-          <el-input v-model="query.retrievalId" size="small" placeholder="请输入" clearable @clear="handleClear('retrievalId')" />
-        </el-form-item>
-        <el-form-item label="查询状态">
-          <el-select v-model="query.taskState" size="small" placeholder="请选择" clearable @clear="handleClear('taskState')">
+        <!-- <el-form-item>
+          <el-select v-model="query.taskState" placeholder="请选择查询状态" clearable @clear="handleClear('taskState')">
             <el-option
               v-for="item in statusOptions"
               :key="item.value"
@@ -30,18 +27,37 @@
               :value="item.value"
             />
           </el-select>
+        </el-form-item> -->
+        <el-form-item>
+          <el-date-picker
+            v-model="query.createDate"
+
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            value-format="yyyy-MM-dd HH:mm:ss"
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="small" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
+          <el-button icon="el-icon-refresh-right" @click="reset" />
         </el-form-item>
       </el-form>
     </div>
-    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">隐匿查询</el-button>
     <div class="list">
+      <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐匿查询</el-button>
       <el-table
         :data="dataList"
       >
+        <el-table-column
+          prop="taskName"
+          label="任务名称"
+        />
+        <!-- <el-table-column
+          prop="taskIdName"
+          label="任务ID"
+        /> -->
         <el-table-column
           prop="organName"
           label="参与机构"
@@ -52,9 +68,14 @@
           </template>
         </el-table-column>
         <el-table-column
-          prop="taskIdName"
-          label="任务ID"
-        />
+          prop="resourceName"
+          label="被查询资源名称"
+          min-width="120"
+        >
+          <template slot-scope="{row}">
+            <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="resourceId"
           label="被查询资源ID"
@@ -62,21 +83,11 @@
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.resourceId" placement="top">
-              <el-link size="small" :disabled="row.available === 1" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
+              <el-link :disabled="row.available === 1" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
             </el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="resourceName"
-          label="被查询资源名"
-          min-width="120"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
-          </template>
-        </el-table-column>
-
-        <el-table-column
+        <!-- <el-table-column
           label="资源信息"
           min-width="150"
         >
@@ -88,7 +99,7 @@
               正例样本比例：{{ row.resourceYRatio || 0 }}%
             </div>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           prop="retrievalId"
           label="查询关键词"
@@ -100,15 +111,10 @@
         </el-table-column>
         <el-table-column
           prop="createDate"
-          label="查询时间"
-          min-width="120"
-        >
-          <template slot-scope="{row}">
-            {{ row.createDate.split(' ')[0] }} <br>
-            {{ row.createDate.split(' ')[1] }}
-          </template>
-        </el-table-column>
-        <el-table-column label="任务耗时" min-width="120px">
+          label="发起时间"
+          min-width="140"
+        />
+        <el-table-column label="任务耗时">
           <template slot-scope="{row}">
             {{ row.consuming | timeFilter }}
           </template>
@@ -116,7 +122,6 @@
         <el-table-column
           prop="taskState"
           label="查询状态"
-          min-width="100"
         >
           <template slot-scope="{row}">
             <StatusIcon :status="row.taskState" />
@@ -201,6 +206,7 @@ export default {
   },
   async created() {
     await this.fetchData()
+    await this.getAvailableOrganList()
     if (this.searchList.length > 0) {
       this.timer = window.setInterval(async() => {
         setTimeout(await this.fetchData(), 0)
@@ -269,9 +275,6 @@ export default {
     handleOrganChange(value) {
       this.query.organName = this.organList.find(item => item.globalId === value)?.globalName
     },
-    async handleOrganFocus() {
-      await this.getAvailableOrganList()
-    },
     async getAvailableOrganList() {
       this.organLoading = true
       const { result } = await getAvailableOrganList()
@@ -297,20 +300,22 @@ export default {
   cursor: pointer;
 }
 .search-area {
-  padding: 30px 0px 10px 20px;
+  padding: 48px 40px 20px 40px;
   background-color: #fff;
   display: flex;
   flex-wrap: wrap;
+  border-radius: 12px;
 }
 .form-wrap{
   padding-top: 20px;
   background-color: #fff;
 }
 .list {
-  padding: 30px;
+  padding: 25px 48px;
   margin-top: 20px;
   border-top: 1px solid #eee;
   background-color: #fff;
+  border-radius: 12px;
 }
 .info{
   font-size: 12px;
@@ -322,6 +327,6 @@ export default {
   justify-content: center;
 }
 .add-button{
-  margin-top: 20px;
+  margin-bottom: 25px;
 }
 </style>
