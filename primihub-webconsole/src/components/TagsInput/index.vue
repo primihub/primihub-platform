@@ -8,6 +8,7 @@
       :clearable="true"
       show-word-limit
       placeholder="请添加标签，方便搜索"
+      @change="handleChange"
       @keyup.enter.native="addTag"
     />
     <div class="tag-container">
@@ -46,6 +47,9 @@ export default {
   },
 
   methods: {
+    handleChange(val) {
+      this.$emit('change', val)
+    },
     setDisabled(data) {
       this.disabledInput = !!data
     },

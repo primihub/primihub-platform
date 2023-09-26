@@ -1,11 +1,7 @@
 <template>
   <div class="container">
     <div class="steps">
-      <!--      <el-steps :active="active" finish-status="success" align-center>-->
-      <!--        <el-step title="查询条件" />-->
-      <!--        <el-step title="查询结果" />-->
-      <!--      </el-steps>-->
-      <div v-if="active === 0" class="search-area">
+      <div class="search-area">
         <el-form ref="form" :model="form" :rules="rules" label-width="110px" class="demo-form">
           <div class="select-resource">
             <el-form-item label="任务名称" prop="taskName">
@@ -39,7 +35,7 @@
               </el-form-item>
             </div>
             <el-form-item label="关键词" prop="pirParam">
-              <tags-input :selected-data="tagValueList" />
+              <tags-input :selected-data="tagValueList" @change="handleKeywordChange" />
             </el-form-item>
             <el-form-item>
               <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，输入关键词后Enter即可。</p>
@@ -164,6 +160,9 @@ export default {
     await this.getAvailableOrganList()
   },
   methods: {
+    handleKeywordChange(val) {
+      this.form.pirParam = val
+    },
     handleDelete() {
       this.form.resourceId = ''
       this.form.resourceName = ''
@@ -242,11 +241,7 @@ export default {
       this.form.resourceName = ''
       this.form.selectResources = null
     },
-    tagChange(data) {
-      console.log('当前的数据==', data)
-    },
     next() {
-      console.log('next', this.selectResources)
       if (!this.selectResources) {
         this.$message({
           message: '请选择资源',
@@ -265,7 +260,8 @@ export default {
           }
           pirSubmitTask({
             resourceId: this.selectResources.resourceId,
-            pirParam: this.form.pirParam.replace(/(\s|,)+$/g, '')
+            pirParam: this.form.pirParam.replace(/(\s|,)+$/g, ''),
+            taskName: this.form.taskName
           }).then(res => {
             if (res.code === 0) {
               this.listLoading = false

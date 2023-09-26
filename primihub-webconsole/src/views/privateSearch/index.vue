@@ -51,22 +51,24 @@
         :data="dataList"
       >
         <el-table-column
+          type="index"
+          align="center"
+          label="序号"
+          width="50"
+        />
+        <el-table-column
           prop="taskName"
           label="任务名称"
-        />
-        <!-- <el-table-column
-          prop="taskIdName"
-          label="任务ID"
-        /> -->
+        >
+          <template slot-scope="{row}">
+            <el-tooltip :content="row.taskName" placement="top"><span>{{ row.taskName }}</span></el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="organName"
           label="参与机构"
           align="center"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.organName" placement="top"><span>{{ row.organName }}</span></el-tooltip>
-          </template>
-        </el-table-column>
+        />
         <el-table-column
           prop="resourceName"
           label="被查询资源名称"
@@ -79,7 +81,7 @@
         <el-table-column
           prop="resourceId"
           label="被查询资源ID"
-          min-width="120"
+          min-width="150"
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.resourceId" placement="top">
@@ -87,19 +89,6 @@
             </el-tooltip>
           </template>
         </el-table-column>
-        <!-- <el-table-column
-          label="资源信息"
-          min-width="150"
-        >
-          <template slot-scope="{row}">
-            <div class="info">
-              特征量：{{ row.resourceColumnCount }}<br>
-              样本量：{{ row.resourceRowsCount }} <br>
-              正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
-              正例样本比例：{{ row.resourceYRatio || 0 }}%
-            </div>
-          </template>
-        </el-table-column> -->
         <el-table-column
           prop="retrievalId"
           label="查询关键词"
@@ -109,11 +98,12 @@
             <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="createDate"
-          label="发起时间"
-          min-width="140"
-        />
+        <el-table-column label="发起时间" prop="createDate" min-width="120px">
+          <template slot-scope="{row}">
+            <span>{{ row.createDate.split(' ')[0] }}</span><br>
+            <span>{{ row.createDate.split(' ')[1] }}</span><br>
+          </template>
+        </el-table-column>
         <el-table-column label="任务耗时">
           <template slot-scope="{row}">
             {{ row.consuming | timeFilter }}
@@ -122,21 +112,20 @@
         <el-table-column
           prop="taskState"
           label="查询状态"
+          min-width="120px"
         >
           <template slot-scope="{row}">
             <StatusIcon :status="row.taskState" />
-            {{ row.taskState | statusFilter }}
+            {{ row.taskState | taskStatusFilter }}
           </template>
         </el-table-column>
-        <el-table-column
-          label="操作"
-          width="120"
-          fixed="right"
-        >
+        <el-table-column label="操作" fixed="right" min-width="120px" align="center">
           <template slot-scope="{row}">
-            <div>
-              <el-button :disabled="row.taskState !== 1" type="text" @click.stop="download(row.taskId)">导出结果</el-button>
-            </div>
+            <p class="tool-buttons">
+              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">查看</el-link>
+              <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
+              <el-link type="danger" :disabled="row.taskState === 2" @click="deleteTask(row)">删除</el-link>
+            </p>
           </template>
         </el-table-column>
       </el-table>
@@ -148,6 +137,7 @@
 <script>
 import { getAvailableOrganList } from '@/api/center'
 import { getPirTaskList } from '@/api/PIR'
+import { deleteTask, cancelTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import StatusIcon from '@/components/StatusIcon'
 import { getToken } from '@/utils/auth'
@@ -156,17 +146,6 @@ export default {
   components: {
     Pagination,
     StatusIcon
-  },
-  filters: {
-    // 任务状态 任务状态(0未开始 1成功 2运行中 3失败 4取消)
-    statusFilter(status) {
-      const sourceMap = {
-        2: '查询中',
-        1: '成功',
-        3: '失败'
-      }
-      return sourceMap[status]
-    }
   },
   data() {
     return {
@@ -217,6 +196,47 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    toTaskDetailPage(id) {
+      this.$router.push({
+        name: 'PIRDetail',
+        params: { id }
+      })
+    },
+    async cancelTask(row) {
+      const res = await cancelTask(row.taskId)
+      if (res.code === 0) {
+        const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
+        this.$set(this.dataList[posIndex], 'taskState', 4)
+        this.$notify({
+          message: '取消成功',
+          type: 'success',
+          duration: 1000
+        })
+      }
+    },
+    deleteTask(row) {
+      if (row.taskState === 2) return
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteTask(row.taskId).then(res => {
+          if (res.code === 0) {
+            const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
+            if (posIndex !== -1) {
+              this.dataList.splice(posIndex, 1)
+            }
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            clearInterval(this.timer)
+          }
+        })
+      }).catch(() => {})
+    },
     toTaskPage() {
       this.$router.push({
         name: 'PIRTask'
@@ -245,15 +265,23 @@ export default {
       })
     },
     async fetchData() {
-      const { taskState, organName, resourceName, retrievalId, taskId } = this.query
-      const params = {
-        taskId,
+      const { taskState, organName, resourceName, retrievalId, taskName } = this.query
+      let params = {
+        taskName,
         taskState,
         organName,
         resourceName,
         retrievalId,
         pageNo: this.pageNo,
         pageSize: this.pageSize
+      }
+      if (this.query.createDate && this.query.createDate.length > 0) {
+        const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
+        const endDate = this.query.createDate.length > 0 ? this.query.createDate[1] : ''
+        params = {
+          ...params,
+          startDate: startDate,
+          endDate: endDate }
       }
       const res = await getPirTaskList(params)
       const { result } = res
@@ -292,12 +320,8 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-::v-deep .el-table .cell{
-  margin: 0 5px;
-  line-height: 1.5;
-  max-height: 65px;
-  overflow: hidden;
-  cursor: pointer;
+::v-deep .el-input--suffix .el-input__inner{
+  padding-right: 0;
 }
 .search-area {
   padding: 48px 40px 20px 40px;
@@ -328,5 +352,12 @@ export default {
 }
 .add-button{
   margin-bottom: 25px;
+}
+.tool-buttons{
+  display: flex;
+  justify-content: center;
+  .el-link{
+    margin: 0 5px;
+  }
 }
 </style>
