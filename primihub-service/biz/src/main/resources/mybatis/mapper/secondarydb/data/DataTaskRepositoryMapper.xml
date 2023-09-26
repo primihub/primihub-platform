@@ -123,6 +123,7 @@
         <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
         <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
         <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
+        <if test="taskName!=null"> and dt.task_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')</if>
         <if test="startDate!=null">and dpt.create_date &gt;=#{startDate} </if>
         <if test="endDate!=null">and dpt.create_date &lt;=#{endDate} </if>
     </sql>

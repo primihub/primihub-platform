@@ -20,6 +20,8 @@ public class DataPirTaskReq extends PageReq {
 
     private String taskId;
 
+    private String taskName;
+
     private String startDate;
     private String endDate;
 
