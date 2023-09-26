@@ -23,7 +23,6 @@
       </div>
       <div class="step">
         <div class="step-icon">
-          <!--          <div class="step-circle">1</div>-->
           <div class="step-description"> 数据引入 <i class="el-icon-setting" /></div>
         </div>
         <div class="inner-con inner-con-second">
@@ -385,7 +384,7 @@ export default {
               message: '创建完成',
               type: 'success'
             })
-            this.toResultPage()
+            this.toResultPage(res.result.dataPsiTask.taskId)
           } else {
             this.isRun = false
           }
@@ -396,9 +395,10 @@ export default {
         }
       })
     },
-    toResultPage() {
+    toResultPage(id) {
       this.$router.push({
-        name: 'PSIResult'
+        name: 'PSIDetail',
+        params: { id }
       })
     },
     checkParams() {
@@ -436,6 +436,7 @@ export default {
         this.tableDataA = await this.getPsiResourceAllocationList({
           organId: this.formData.ownOrganId
         })
+        console.log('tableDataA', this.tableDataA)
       } else {
         if (this.formData.otherOrganId === '') {
           this.$message.error('请选择协作方')

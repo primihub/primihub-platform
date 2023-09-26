@@ -93,7 +93,7 @@
           <el-table-column label="任务状态" prop="taskState">
             <template slot-scope="{row}">
               <i :class="statusStyle(row.taskState)" />
-              <span>{{ row.taskState | taskStateFilter }}</span>
+              <span>{{ row.taskState | taskStatusFilter }}</span>
               <span v-if="row.taskState === 2"> <i class="el-icon-loading" /></span>
             </template>
           </el-table-column>
@@ -132,17 +132,6 @@ export default {
     Pagination
   },
   filters: {
-    // 运行状态 0未运行 1完成 2运行中 3失败 默认0
-    taskStateFilter(state) {
-      const stateMap = {
-        0: '未运行',
-        1: '完成',
-        2: '运行中',
-        3: '失败',
-        4: '已取消'
-      }
-      return stateMap[state]
-    },
     psiTagFilter(state) {
       const stateMap = {
         0: 'ECDH',
@@ -176,7 +165,7 @@ export default {
       timer: null,
       statusOptions: [ // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
         {
-          label: '查询中',
+          label: '运行中',
           value: 2
         }, {
           label: '成功',
@@ -292,7 +281,7 @@ export default {
         pageSize: this.pageSize,
         resultName: this.resultName
       }
-      if (this.query.createDate.length > 0) {
+      if (this.query.createDate && this.query.createDate.length > 0) {
         const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
         const endDate = this.query.createDate.length > 0 ? this.query.createDate[1] : ''
         params = {
@@ -354,6 +343,9 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+::v-deep .el-input--suffix .el-input__inner{
+  padding-right: 0;
+}
 .search-area {
   padding: 48px 40px 20px 40px;
   background-color: #fff;
@@ -376,22 +368,6 @@ export default {
   .resource-name{
     color: #1989fa;
   }
-}
-::v-deep .el-descriptions__body{
-  background-color: #fafafa;
-  padding: 10px 20px 10px 20px;
-}
-::v-deep  .el-descriptions{
-  margin-bottom:20px;
-}
-::v-deep .el-descriptions-item__container{
-  align-items: center;
-}
-::v-deep .el-descriptions__header{
-  margin-bottom: 10px;
-}
-::v-deep .el-dialog__body{
-  padding: 20px 20px 10px 20px;
 }
 .pagination-container{
   padding-left:0;
