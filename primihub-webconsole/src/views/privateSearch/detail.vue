@@ -11,81 +11,27 @@
           <div class="desc-label">任务ID:</div>
           <div class="desc-content">{{ taskData.taskIdName }}</div>
         </div>
-        <div class="desc-col">
-          <div class="desc-label">结果输出方式:</div>
-          <div class="desc-content">{{ taskData.outputFormat === '0'? '资源文件(csv)': '' }}</div>
-        </div>
-        <div class="desc-col">
-          <div class="desc-label">结果名称:</div>
-          <div class="desc-content">{{ taskData.resultName }}</div>
-        </div>
       </div>
     </div>
     <div class="detail">
       <h3>数据配置</h3>
-      <div class="section">
-        <div class="description-container dataset-container">
-          <div class="desc-col">
-            <div class="desc-label">发起方:</div>
-            <div class="desc-content">{{ taskData.ownOrganName }}</div>
-          </div>
-          <div class="desc-col">
-            <div class="desc-label">资源表:</div>
-            <div class="desc-content">
-              <el-link type="primary" @click="toResourceDetailPage(taskData.ownResourceId)">{{ taskData.ownResourceName }}</el-link>
-            </div>
-          </div>
-          <div class="desc-col">
-            <div class="desc-label">关联键:</div>
-            <div class="desc-content">{{ taskData.ownKeyword }}</div>
-          </div>
-        </div>
-        <div class="relation-img">
-          <div class="line">
-            <div class="line-icon">计算</div>
-          </div>
-          <div class="center">
-            <span>关系预览</span>
-            <p><img :src="centerImg" alt="" width="48"></p>
-          </div>
-        </div>
-        <div class="description-container dataset-container">
-          <div class="desc-col">
-            <div class="desc-label">协作方:</div>
-            <div class="desc-content">{{ taskData.otherOrganName }}</div>
-          </div>
-          <div class="desc-col">
-            <div class="desc-label">资源表:</div>
-            <div class="desc-content">
-              <el-link type="primary" @click="toUnionResourceDetailPage(taskData.otherResourceId)">{{ taskData.otherResourceName }}</el-link>
-            </div>
-          </div>
-          <div class="desc-col">
-            <div class="desc-label">关联键:</div>
-            <div class="desc-content">{{ taskData.otherKeyword }}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="detail">
-      <h3>实现方法</h3>
       <div class="description-container section">
         <div class="desc-col">
-          <div class="desc-label">输出内容:</div>
-          <div class="desc-content">{{ taskData.outputContent === 0 ? '交集': '差集' }}</div>
+          <div class="desc-label">被查询方:</div>
+          <div class="desc-content">{{ taskData.organName }}</div>
         </div>
         <div class="desc-col">
-          <div class="desc-label">实现方法:</div>
-          <div class="desc-content">{{ taskData.tag === 1 ? 'KKRT' : taskData.tag === 2 ? 'TEE' : 'ECDH' }}</div>
-        </div>
-        <div v-if="taskData.tag === 2" class="desc-col flex" style="width: 100%;">
-          <div class="desc-label">可信计算节点:</div>
+          <div class="desc-label">资源表:</div>
           <div class="desc-content">
-            {{ taskData.teeOrganName }}
-            <p style="font-size: 12px; margin-top: 5px;">注：第三方可信计算节点为双方提供数据机密性和完整性保护的前提，并支持计算</p>
+            <el-link type="primary" @click="toUnionResourceDetailPage(taskData.resourceId)">{{ taskData.resourceName }}</el-link>
           </div>
         </div>
+        <div class="desc-col">
+          <div class="desc-label">关键词:</div>
+          <div class="desc-content">{{ taskData.retrievalId }}</div>
+        </div>
       </div>
+
     </div>
     <div class="detail">
       <h3>具体实现</h3>
@@ -101,22 +47,13 @@
         <div class="desc-col align-items-center" style="width: 100%;">
           <div class="desc-label">实现过程:</div>
           <div class="desc-content">
-            <!-- <el-steps :active="stepActive" simple finish-status="success" process-status="wait">
-              <el-step v-for="(step) in stepData" :key="step.step" :title="step.title" :status="step.status" @mouseover.native="handleStepOver(step)" @mouseleave.native="showError = false" />
-            </el-steps>
-            <div v-if="showError" class="task-error">
-              <p>错误信息：</p>
-              <p v-for="(item,index) in taskError" :key="index">
-                {{ item }}
-              </p>
-            </div> -->
             <FlowStep :active="stepActive" :data="stepData" :task-state="taskState" :error-text="taskError" />
           </div>
         </div>
-        <div v-if="taskData.taskState === 1" class="desc-col" style="width: 100%;">
+        <div v-if="taskData.taskState === 1" class="desc-col align-items-center" style="width: 100%;">
           <div class="desc-label">计算结果:</div>
           <div class="desc-content flex">
-            <el-link :underline="false" class="margin-right-10" type="primary" @click="downloadPsiTask">{{ taskData.resultName }}.csv <svg-icon icon-class="download" /></el-link>
+            <el-link :underline="false" class="margin-right-10" type="primary" @click="downloadPsiTask">{{ taskData.taskName }}任务结果.csv <svg-icon icon-class="download" /></el-link>
             <el-button size="small" type="primary" plain @click="downloadPsiTask">下载文档</el-button>
             <el-button size="small" type="primary" plain @click="handlePreview">在线预览</el-button>
           </div>
@@ -189,11 +126,17 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    toUnionResourceDetailPage(id) {
+      this.$router.push({
+        name: 'UnionResourceDetail',
+        params: { id }
+      })
+    },
     async downloadPsiTask() {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)
       const token = getToken()
-      window.open(`${process.env.VUE_APP_BASE_API}/data/psi/downloadPsiTask?taskId=${this.taskData.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+      window.open(`${process.env.VUE_APP_BASE_API}/data/psi/downloadPsiTask?taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     },
     async fetchData() {
       this.loading = true

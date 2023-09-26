@@ -180,6 +180,18 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    toResourceDetailPage(id) {
+      this.$router.push({
+        name: 'ResourceDetail',
+        params: { id }
+      })
+    },
+    toUnionResourceDetailPage(id) {
+      this.$router.push({
+        name: 'UnionResourceDetail',
+        params: { id }
+      })
+    },
     async downloadPsiTask() {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)

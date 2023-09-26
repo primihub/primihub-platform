@@ -61,7 +61,7 @@
           label="任务名称"
         >
           <template slot-scope="{row}">
-            <el-tooltip :content="row.taskName" placement="top"><span>{{ row.taskName }}</span></el-tooltip>
+            <el-tooltip :content="row.taskName" placement="top"><el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link></el-tooltip>
           </template>
         </el-table-column>
         <el-table-column
