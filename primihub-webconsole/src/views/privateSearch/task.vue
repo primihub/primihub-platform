@@ -39,7 +39,7 @@
               </el-form-item>
             </div>
             <el-form-item label="关键词" prop="pirParam">
-              <tags-input  :selected-data="tagValueList" ></tags-input>
+              <tags-input :selected-data="tagValueList" />
             </el-form-item>
             <el-form-item>
               <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，输入关键词后Enter即可。</p>
@@ -126,7 +126,7 @@ export default {
       pageSize: 5,
       pageCount: 0,
       rules: {
-        taskName:[
+        taskName: [
           { required: true, message: '请输入任务名称', trigger: 'blur' }
         ],
         organId: [

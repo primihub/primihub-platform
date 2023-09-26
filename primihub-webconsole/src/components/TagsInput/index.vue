@@ -43,7 +43,7 @@ export default {
       get() {
         if (this.selectedData.length >= 5) {
           this.disabledInput = true
-        }else{
+        } else {
           this.disabledInput = false
         }
         return this.selectedData
