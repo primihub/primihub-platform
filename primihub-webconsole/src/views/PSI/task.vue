@@ -3,7 +3,7 @@
     <div class="steps">
       <div class="step">
         <div class="step-icon">
-          <div class="step-description"> 基础信息 <i class="el-icon-setting" /></div>
+          <div class="step-description"> 基础信息 </div>
         </div>
         <div class="inner-con">
           <el-form ref="form" :model="formData" :rules="rules" label-width="140px">
@@ -23,67 +23,84 @@
       </div>
       <div class="step">
         <div class="step-icon">
-          <!--          <div class="step-circle">1</div>-->
-          <div class="step-description"> 数据引入 <i class="el-icon-setting" /></div>
+          <div class="step-description"> 数据引入 </div>
         </div>
         <div class="inner-con inner-con-second">
-          <el-form ref="formData" :model="formData" :rules="rules" label-width="70px">
+          <el-form ref="formData" :model="formData" :rules="rules" label-width="0px">
+            <div class="flex organ-title">
+              <div>
+                <svg-icon icon-class="share" /> 发起方
+              </div>
+              <div>
+                <svg-icon icon-class="association" /> 协作方
+              </div>
+            </div>
             <div class="header">
               <div class="organ-container">
-                <div class="organ">
-                  <span>发起方: </span>
-                  <el-select v-model="formData.ownOrganName" class="organ-select" style="display:inline-block;" disabled :placeholder="formData.ownOrganName" />
+                <div class="row-title">
+                  <span>参与机构</span>
                 </div>
-                <div class="organ">
-                  <span>协作方: </span>
-                  <el-select v-model="formData.otherOrganId" placeholder="请选择">
-                    <el-option
-                      v-for="item in organList"
-                      :key="item.globalId"
-                      :label="item.globalName"
-                      :value="item.globalId"
-                    />
-                  </el-select>
+                <div class="organ-container-right flex">
+                  <div class="organ">
+                    <el-select v-model="formData.ownOrganName" class="organ-select" style="display:inline-block;" disabled :placeholder="formData.ownOrganName" />
+                  </div>
+                  <div class="content-organ">{{taskTypeText}}</div>
+                  <div class="organ">
+                    <el-select v-model="formData.otherOrganId" placeholder="请选择协作方">
+                      <el-option
+                        v-for="item in organList"
+                        :key="item.globalId"
+                        :label="item.globalName"
+                        :value="item.globalId"
+                      />
+                    </el-select>
+                  </div>
                 </div>
-              </div>
-              <div class="line">
-                <div class="line-icon">{{ taskTypeText }}</div>
               </div>
             </div>
             <div class="item-row">
-              <div class="item">
-                <el-form-item label="资源表" prop="ownResourceId">
-                  <ResourceSelect :value="formData.ownResourceId" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
-                </el-form-item>
-                <el-form-item label="关联键" prop="ownKeyword">
-                  <el-select v-model="formData.ownKeyword" v-loading="selectLoading" multiple no-data-text="暂无数据" clearable placeholder="请选择">
-                    <el-option
-                      v-for="(item,index) in ownOrganResourceField"
-                      :key="index"
-                      :label="item"
-                      :value="item"
-                    />
-                  </el-select>
-                </el-form-item>
+              <div class="item flex">
+                <div class="row-title">
+                  <span>资源表</span>
+                </div>
+                <div class="row-right-container justify-content-between flex">
+                  <el-form-item prop="ownResourceId">
+                    <ResourceSelect :value="formData.ownResourceId" placeholder="发起方资源表" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
+                  </el-form-item>
+                  <div class="right-container-center"><img :src="centerImg" alt="" width="24"></div>
+                  <el-form-item prop="otherResourceId">
+                    <ResourceSelect :value="formData.otherResourceId" placeholder="协作方资源表" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
+                  </el-form-item>
+                </div>
+
               </div>
-              <div class="center">
-                <span>关系预览</span>
-                <p><img :src="centerImg" alt="" width="48"></p>
-              </div>
-              <div class="item">
-                <el-form-item label="资源表" prop="otherResourceId">
-                  <ResourceSelect :value="formData.otherResourceId" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
-                </el-form-item>
-                <el-form-item label="关联键" prop="otherKeyword">
-                  <el-select v-model="formData.otherKeyword" multiple no-data-text="暂无数据" placeholder="请选择" clearable>
-                    <el-option
-                      v-for="(item,index) in otherOrganResourceField"
-                      :key="index"
-                      :label="item"
-                      :value="item"
-                    />
-                  </el-select>
-                </el-form-item>
+              <div class="item flex">
+                <div class="row-title">
+                  <span>关联键</span>
+                </div>
+                <div class="row-right-container justify-content-between flex">
+                  <el-form-item  prop="ownKeyword">
+                    <el-select v-model="formData.ownKeyword" v-loading="selectLoading" multiple no-data-text="暂无数据" clearable placeholder="发起方关联键">
+                      <el-option
+                        v-for="(item,index) in ownOrganResourceField"
+                        :key="index"
+                        :label="item.fieldName"
+                        :value="item.fieldName"
+                      />
+                    </el-select>
+                  </el-form-item>
+                  <div class="right-container-center"><img :src="centerImg" alt="" width="24"></div>
+                  <el-form-item prop="otherKeyword">
+                    <el-select v-model="formData.otherKeyword" multiple no-data-text="暂无数据" placeholder="协作方关联键" clearable>
+                      <el-option
+                        v-for="(item,index) in otherOrganResourceField"
+                        :key="index"
+                        :label="item.fieldName"
+                        :value="item.fieldName"
+                      />
+                    </el-select>
+                  </el-form-item>
+                </div>
               </div>
             </div>
           </el-form>
@@ -93,13 +110,12 @@
 
       <div class="step">
         <div class="step-icon">
-          <!--          <div class="step-circle">2</div>-->
-          <div class="step-description"> 高级配置 <i class="el-icon-setting" /></div>
+          <div class="step-description"> 高级配置 </div>
         </div>
-        <div class="inner-con">
+        <div class="inner-con inner-con-high">
           <el-form ref="form" :model="formData" :rules="rules" label-width="140px">
             <el-row>
-              <el-col :span="8">
+              <el-col :span="12">
                 <el-form-item label="输出内容" prop="outputContent">
                   <el-select v-model="formData.outputContent" placeholder="请选择" @change="handleTaskTypeChange">
                     <el-option label="交集" :value="0" />
@@ -109,7 +125,7 @@
               </el-col>
             </el-row>
             <el-row>
-              <el-col :span="9">
+              <el-col :span="12">
                 <el-form-item label="实现方法" prop="psiTag">
                   <el-select v-model="formData.psiTag" placeholder="请选择实现方式">
                     <el-option v-for="item in psiTagOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -117,13 +133,6 @@
                   <el-checkbox v-model="formData.outputNoRepeat" :true-label="1" :false-label="0">关联键有重复值时输出内容不去重</el-checkbox>
                 </el-form-item>
               </el-col>
-              <!--              <el-col :span="8">-->
-              <!--                    <el-form-item label="关联键有重复值时" prop="outputNoRepeat">-->
-              <!--                      <el-radio-group v-model="formData.outputNoRepeat">-->
-              <!--                        <el-radio :label="0">输出内容不去重</el-radio>-->
-              <!--                      </el-radio-group>-->
-              <!--                    </el-form-item>-->
-              <!--              </el-col>-->
             </el-row>
             <el-form-item v-if="formData.psiTag == 2" label="可信计算节点" prop="teeOrganId">
               <el-select v-model="formData.teeOrganId" placeholder="请选择可信计算节点" :disabled="formData.otherOrganId ? false : true" @click.native="selectTeeOgan">
@@ -132,11 +141,6 @@
               <div v-if="!formData.otherOrganId" class="display-modal" @click="selectTeeOgan" />
               <div class="form-tip-text">注：第三方可信计算节点为双方提供数据机密性和完整性保护的前提，并支持计算。</div>
             </el-form-item>
-            <!-- <el-form-item label="结果获取方" prop="resultOrgan">
-              <el-checkbox-group v-model="formData.resultOrgan">
-                <el-checkbox v-for="(item,index) in resultOrgan" :key="index" :label="item.organId">{{ item.organName }}</el-checkbox>
-              </el-checkbox-group>
-            </el-form-item> -->
             <el-form-item label="备注" prop="remarks">
               <el-input
                 v-model="formData.remarks"
@@ -154,9 +158,6 @@
           </el-form>
         </div>
       </div>
-      <!--      <div class="button-wrapper">-->
-      <!--        <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>-->
-      <!--      </div>-->
     </div>
   </div>
 </template>
@@ -368,7 +369,6 @@ export default {
       }
     },
     handleSubmit() {
-      console.log('handleSubmit====', this.formData.outputNoRepeat)
       const enable = this.checkParams()
       if (!enable) return
       // max size is 200
@@ -402,10 +402,16 @@ export default {
       })
     },
     checkParams() {
-      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword } = this.formData
+      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword, taskName, resultName } = this.formData
       let message = ''
       let enable = true
-      if (!otherOrganId) {
+      if (!taskName) {
+        message = '请输入任务名称'
+        enable = false
+      } else if (!resultName) {
+        message = '请输入结果名称'
+        enable = false
+      } else if (!otherOrganId) {
         message = '请选择求交机构'
         enable = false
       } else if (ownResourceId === '') {
@@ -514,11 +520,7 @@ export default {
 </script>
 <style lang="scss" scoped>
 @import "../../styles/variables.scss";
-::v-deep .el-form-item{
-  margin-bottom: 15px;
-}
 .container{
-  //width: 1200px;
   overflow: hidden;
   background: #fff;
   padding: 36px;
@@ -532,8 +534,7 @@ export default {
 }
 .inner-con{
   background: #fff;
-  padding: 30px 50px;
-  margin: 20px 50px;
+  margin: 20px 0;
   ::v-deep .el-form{
     width: 1000px;
     margin: 0 auto;
@@ -545,17 +546,77 @@ export default {
   .display-modal{
     position: absolute;
     height: 40px;
-    width: 230px;
+    width: 340px;
     top:0px;
     z-index: 1;
   }
 }
-.inner-con-second{
-  ::v-deep.el-form{
-    width: 1200px;
-    .item-row{
-      width: 885px;
+.row-title {
+  width: 140px;
+  align-self: center;
+  font-size: 14px;
+  color: #333;
+  width: 140px;
+  flex-shrink: 0;
+  text-align: right;
+  padding-right: 12px;
+  font-weight: 700;
+  span {
+    &:before {
+      content: '*';
+      color: #f56c6c;
+      margin-right: 4px;
     }
+  }
+}
+.inner-con-second{
+  ::v-deep .el-select, ::v-deep .el-input{
+    input{
+      border:none;
+    }
+  }
+  .organ-title{
+    padding-left: 160px;
+    width: 100%;
+    margin: 32px 0 24px 0;
+    div{
+      flex:1;
+      color: #333;
+      font-size: 16px;
+      font-weight: 700;
+      &:last-child{
+        padding-left: 70px;
+      }
+    }
+  }
+  .row-right-container{
+    flex:1;
+    border:1px solid #ccc;
+    border-radius: 4px;
+    padding: 0 10px;
+    ::v-deep .el-form-item{
+      margin-bottom: 0;
+      flex:1;
+      .el-select{
+        width: 90%;
+      }
+      &:last-child{
+        .el-select{
+          float: right;
+        }
+      }
+    }
+    .right-container-center{
+      width: 32px;
+      align-self: center;
+      margin: 0 12px;
+      text-align: center;
+    }
+  }
+}
+.inner-con-high{
+  ::v-deep input{
+    width: 340px;
   }
 }
 .step-icon{
@@ -610,14 +671,34 @@ export default {
   margin-bottom: 20px;
   .organ-container{
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    .organ-container-right{
+      flex:1;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding:0 10px;
+      justify-content: space-between;
+      .content-organ{
+        align-self: center;
+        font-size: 12px;
+        background: #F6F6F6;
+        color: $mainColor;
+        padding: 5px 10px;
+        border-radius: 2px;
+        margin:0 12px;
+        flex-shrink: 0;
+      }
+      ::v-deep .el-input{
+        input{
+          height: 38px;
+        }
+      }
+    }
   }
   .line{
     border-top: 1px dotted #cccccc;
     width: 60%;
     margin:-20px auto 0;
-    // position: absolute;
-    // top: 50%;
     &-icon{
       width: 20px;
       height: 20px;
@@ -637,6 +718,15 @@ export default {
     background-color: #fff;
     font-size: 14px;
     font-weight: bold;
+    flex: 1;
+    &:last-child{
+      ::v-deep .el-select{
+        float: right;
+      }
+    }
+    ::v-deep .el-select{
+      width: 90%;
+    }
     span{
       width: 60px;
       display: inline-block;
@@ -645,14 +735,9 @@ export default {
   }
 }
 .item-row{
-  display: flex;
-  justify-content: space-between;
-  width: 781px;
   margin: 0 auto;
   .item{
-    &:last-child{
-      margin-right: 12px;
-    }
+    margin-bottom: 22px;
   }
 }
 .center{

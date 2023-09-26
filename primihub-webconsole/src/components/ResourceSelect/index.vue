@@ -3,7 +3,7 @@
     <el-select
       ref="selectTree"
       v-model="selectValue"
-      placeholder="请选择"
+      :placeholder="placeholder"
       clearable
       filterable
       remote
@@ -40,6 +40,10 @@ export default {
     role: { // own or other
       type: String,
       default: 'own'
+    },
+    placeholder: {
+      type: String,
+      default: '请选择'
     }
   },
   data() {
