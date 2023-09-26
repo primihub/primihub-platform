@@ -1,19 +1,22 @@
 <template>
   <div class="container">
     <div class="steps">
-      <el-steps :active="active" finish-status="success" align-center>
-        <el-step title="查询条件" />
-        <el-step title="查询结果" />
-      </el-steps>
+      <!--      <el-steps :active="active" finish-status="success" align-center>-->
+      <!--        <el-step title="查询条件" />-->
+      <!--        <el-step title="查询结果" />-->
+      <!--      </el-steps>-->
       <div v-if="active === 0" class="search-area">
         <el-form ref="form" :model="form" :rules="rules" label-width="110px" class="demo-form">
           <div class="select-resource">
+            <el-form-item label="任务名称" prop="taskName">
+              <el-input v-model="form.taskName" maxlength="32" show-word-limit placeholder="请输入任务名称,限32字" />
+            </el-form-item>
             <div class="dialog-con">
               <el-form-item label="选择查询资源" prop="resourceName">
                 <el-row type="flex" :gutter="10">
                   <el-col :span="12">
                     <el-form-item prop="organId">
-                      <el-select v-model="form.organId" style="width: 100%" placeholder="请选择机构" clearable @change="handleOrganChange" @clear="handleClear('organId')">
+                      <el-select v-model="form.organId" style="width: 100%" placeholder="请选择机构" clearable @change="handleOrganChange">
                         <el-option
                           v-for="item in organList"
                           :key="item.globalId"
@@ -36,10 +39,10 @@
               </el-form-item>
             </div>
             <el-form-item label="关键词" prop="pirParam">
-              <el-input v-model="form.pirParam" placeholder="请输入关键词" />
+              <tags-input  :selected-data="tagValueList" ></tags-input>
             </el-form-item>
             <el-form-item>
-              <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用英文,分隔。例: a,b,c</p>
+              <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，输入关键词后Enter即可。</p>
             </el-form-item>
             <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
           </div>
@@ -89,12 +92,14 @@ import { getResourceList } from '@/api/fusionResource'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
+import tagsInput from '@/components/TagsInput/index.vue'
 
 export default {
   components: {
     ResourceItemSimple,
     ResourceTableSingleSelect,
-    Pagination
+    Pagination,
+    tagsInput
   },
   data() {
     return {
@@ -111,7 +116,8 @@ export default {
         organId: '',
         resourceName: '',
         pirParam: '',
-        selectResources: null
+        selectResources: null,
+        taskName: ''
       },
       selectResources: null, // selected resource id list
       total: 0,
@@ -120,8 +126,11 @@ export default {
       pageSize: 5,
       pageCount: 0,
       rules: {
+        taskName:[
+          { required: true, message: '请输入任务名称', trigger: 'blur' }
+        ],
         organId: [
-          { required: true, message: '请选择机构', trigger: 'blur' }
+          { required: true, message: '请选择机构', trigger: 'change' }
         ],
         resourceName: [
           { required: true, message: '请选择机构下资源', trigger: 'blur' }
@@ -130,7 +139,8 @@ export default {
           { required: true, message: '请输入关键词' },
           { max: 50, message: '长度在50个字符以内' }
         ]
-      }
+      },
+      tagValueList: []
     }
   },
   computed: {
@@ -140,6 +150,15 @@ export default {
     ...mapGetters([
       'buttonPermissionList'
     ])
+  },
+  watch: {
+    tagValueList(val) {
+      if (val.length > 0) {
+        this.form.pirParam = val.join(',')
+      } else {
+        this.form.pirParam = ''
+      }
+    }
   },
   async created() {
     await this.getAvailableOrganList()
@@ -205,8 +224,12 @@ export default {
       this.selectResources = data
     },
     async openDialog() {
-      await this.getResourceList()
-      this.dialogVisible = true
+      if (this.form.organId) {
+        await this.getResourceList()
+        this.dialogVisible = true
+      } else {
+        this.$refs.form.validateField('organId')
+      }
     },
     async getAvailableOrganList() {
       this.organLoading = true
@@ -218,6 +241,9 @@ export default {
       this.organName = this.organList.find(item => item.globalId === value)?.globalName
       this.form.resourceName = ''
       this.form.selectResources = null
+    },
+    tagChange(data) {
+      console.log('当前的数据==', data)
     },
     next() {
       console.log('next', this.selectResources)

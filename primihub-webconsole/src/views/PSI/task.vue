@@ -3,16 +3,36 @@
     <div class="steps">
       <div class="step">
         <div class="step-icon">
-          <div class="step-circle">1</div>
-          <div class="step-description">step1: 数据引入 <i class="el-icon-setting" /></div>
+          <div class="step-description"> 基础信息 <i class="el-icon-setting" /></div>
         </div>
         <div class="inner-con">
-          <el-form ref="form" :model="formData" :rules="rules" label-width="70px">
+          <el-form ref="form" :model="formData" :rules="rules" label-width="140px">
+            <el-form-item label="任务名称" prop="taskName">
+              <el-input v-model="formData.taskName" maxlength="32" show-word-limit placeholder="请输入任务名称,限32字" />
+            </el-form-item>
+            <el-form-item label="输出格式" prop="outputFormat">
+              <el-select v-model="formData.outputFormat" placeholder="请选择">
+                <el-option label="资源文件(csv)" :value="0" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="求交结果名称" prop="resultName">
+              <el-input v-model="formData.resultName" placeholder="请输入内容" />
+            </el-form-item>
+          </el-form>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-icon">
+          <!--          <div class="step-circle">1</div>-->
+          <div class="step-description"> 数据引入 <i class="el-icon-setting" /></div>
+        </div>
+        <div class="inner-con inner-con-second">
+          <el-form ref="formData" :model="formData" :rules="rules" label-width="70px">
             <div class="header">
               <div class="organ-container">
                 <div class="organ">
                   <span>发起方: </span>
-                  <el-select v-model="formData.ownOrganName" style="display:inline-block;" disabled :placeholder="formData.ownOrganName" />
+                  <el-select v-model="formData.ownOrganName" class="organ-select" style="display:inline-block;" disabled :placeholder="formData.ownOrganName" />
                 </div>
                 <div class="organ">
                   <span>协作方: </span>
@@ -67,18 +87,17 @@
               </div>
             </div>
           </el-form>
+
         </div>
       </div>
+
       <div class="step">
         <div class="step-icon">
-          <div class="step-circle">2</div>
-          <div class="step-description">step2: 高级配置 <i class="el-icon-setting" /></div>
+          <!--          <div class="step-circle">2</div>-->
+          <div class="step-description"> 高级配置 <i class="el-icon-setting" /></div>
         </div>
         <div class="inner-con">
           <el-form ref="form" :model="formData" :rules="rules" label-width="140px">
-            <el-form-item label="求交结果名称" prop="resultName">
-              <el-input v-model="formData.resultName" placeholder="请输入内容" />
-            </el-form-item>
             <el-row>
               <el-col :span="8">
                 <el-form-item label="输出内容" prop="outputContent">
@@ -88,32 +107,31 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
-                <el-form-item label="输出格式" prop="outputFormat">
-                  <el-select v-model="formData.outputFormat" placeholder="请选择">
-                    <el-option label="资源文件(csv)" :value="0" />
-                  </el-select>
-                </el-form-item>
-              </el-col>
             </el-row>
             <el-row>
               <el-col :span="9">
-                <el-form-item label="实现协议" prop="psiTag">
-                  <el-select v-model="formData.psiTag" placeholder="请选择实现协议">
+                <el-form-item label="实现方法" prop="psiTag">
+                  <el-select v-model="formData.psiTag" placeholder="请选择实现方式">
                     <el-option v-for="item in psiTagOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
+                  <el-checkbox v-model="formData.outputNoRepeat" :true-label="1" :false-label="0">关联键有重复值时输出内容不去重</el-checkbox>
                 </el-form-item>
               </el-col>
-              <el-col :span="8">
-                <el-form-item label="关联键有重复值时" prop="outputNoRepeat">
-                  <el-radio-group v-model="formData.outputNoRepeat">
-                    <el-radio :label="0">输出内容不去重</el-radio>
-                    <!-- <el-radio :label="1">输出内容去重</el-radio> -->
-                  </el-radio-group>
-                </el-form-item>
-              </el-col>
+              <!--              <el-col :span="8">-->
+              <!--                    <el-form-item label="关联键有重复值时" prop="outputNoRepeat">-->
+              <!--                      <el-radio-group v-model="formData.outputNoRepeat">-->
+              <!--                        <el-radio :label="0">输出内容不去重</el-radio>-->
+              <!--                      </el-radio-group>-->
+              <!--                    </el-form-item>-->
+              <!--              </el-col>-->
             </el-row>
-
+            <el-form-item v-if="formData.psiTag == 2" label="可信计算节点" prop="teeOrganId">
+              <el-select v-model="formData.teeOrganId" placeholder="请选择可信计算节点" :disabled="formData.otherOrganId ? false : true" @click.native="selectTeeOgan">
+                <el-option v-for="item in teeOrganList" :key="item.globalId" :label="item.globalName" :value="item.globalId" />
+              </el-select>
+              <div v-if="!formData.otherOrganId" class="display-modal" @click="selectTeeOgan" />
+              <div class="form-tip-text">注：第三方可信计算节点为双方提供数据机密性和完整性保护的前提，并支持计算。</div>
+            </el-form-item>
             <!-- <el-form-item label="结果获取方" prop="resultOrgan">
               <el-checkbox-group v-model="formData.resultOrgan">
                 <el-checkbox v-for="(item,index) in resultOrgan" :key="index" :label="item.organId">{{ item.organName }}</el-checkbox>
@@ -130,12 +148,15 @@
                 show-word-limit
               />
             </el-form-item>
+            <el-form-item>
+              <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
+            </el-form-item>
           </el-form>
         </div>
       </div>
-      <div class="button-wrapper">
-        <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>
-      </div>
+      <!--      <div class="button-wrapper">-->
+      <!--        <el-button ref="btnRef" icon="el-icon-check" type="primary" :disabled="isRun" @click="handleSubmit">提交任务</el-button>-->
+      <!--      </div>-->
     </div>
   </div>
 </template>
@@ -155,7 +176,9 @@ export default {
   },
   data() {
     return {
+      allOrganList: [],
       organList: [],
+      teeOrganList: [],
       taskTypeText: '交',
       resourceName: '',
       selectLoading: false,
@@ -170,6 +193,7 @@ export default {
       tableDataA: [],
       tableDataB: [],
       formData: {
+        taskName: '',
         ownOrganId: 0,
         ownResourceId: '', // 本机构资源Id
         ownKeyword: [], // 本机构关联键
@@ -181,7 +205,7 @@ export default {
         outputContent: 0,
         resultOrgan: [],
         resultOrganIds: '',
-        outputNoRepeat: 0, // 输出内容是否去重
+        outputNoRepeat: 1, // 输出内容是否去重
         resultName: '',
         remarks: null,
         serverAddress: '',
@@ -190,6 +214,9 @@ export default {
       ownResourceName: '',
       otherResourceName: '',
       rules: {
+        taskName: [
+          { required: true, message: '请输入任务名称', trigger: 'blur' }
+        ],
         ownResourceId: [
           { required: true, message: '请选择资源' }
         ],
@@ -234,6 +261,10 @@ export default {
         {
           value: 1,
           label: 'KKRT'
+        },
+        {
+          value: 2,
+          label: 'TEE'
         }
       ]
     }
@@ -270,6 +301,34 @@ export default {
       } else {
         this.formData.resultName = ''
       }
+    },
+    'formData.psiTag'(newVal) {
+      if (newVal === 2) {
+        this.formData.outputNoRepeat = 1
+      } else {
+        this.formData.teeOrganId = ''
+      }
+    },
+    'formData.otherOrganId'(newVal) {
+      if (newVal) {
+        this.teeOrganList = this.allOrganList.filter((item) => {
+          return item.globalId !== newVal
+        })
+      } else {
+        this.teeOrganList = this.allOrganList
+      }
+    },
+    'formData.teeOrganId': {
+      handler(newVal) {
+        if (newVal) {
+          this.organList = this.allOrganList.filter((item) => {
+            return item.globalId !== newVal
+          })
+        } else {
+          this.organList = this.allOrganList
+        }
+      },
+      immediate: true
     }
   },
   async created() {
@@ -285,11 +344,16 @@ export default {
       if (res.code === 0) {
         this.loading = false
         const { result } = res
-        this.organList = result
+        this.allOrganList = this.organList = result
       }
     },
     handleTaskTypeChange(value) {
       this.taskTypeText = value === 0 ? '交' : '差'
+    },
+    selectTeeOgan() {
+      if (!this.formData.otherOrganId) {
+        this.$message.error('请选择协作方')
+      }
     },
     async getPsiResourceAllocationList(params) {
       const { resourceName, organId } = params
@@ -304,6 +368,7 @@ export default {
       }
     },
     handleSubmit() {
+      console.log('handleSubmit====', this.formData.outputNoRepeat)
       const enable = this.checkParams()
       if (!enable) return
       // max size is 200
@@ -453,23 +518,60 @@ export default {
   margin-bottom: 15px;
 }
 .container{
-width: 1200px;
- overflow: hidden;
- &::before{
-  border-left: 1px solid #cccccc;
-  content: '';
-  display: block;
-  height: 100%;
- }
+  //width: 1200px;
+  overflow: hidden;
+  background: #fff;
+  padding: 36px;
+  border-radius: 8px;
+  &::before{
+    border-left: 1px solid #cccccc;
+    content: '';
+    display: block;
+    height: 100%;
+  }
 }
 .inner-con{
   background: #fff;
   padding: 30px 50px;
   margin: 20px 50px;
+  ::v-deep .el-form{
+    width: 1000px;
+    margin: 0 auto;
+  }
+  .form-tip-text{
+    font-size: 12px;
+    color: #666;
+  }
+  .display-modal{
+    position: absolute;
+    height: 40px;
+    width: 230px;
+    top:0px;
+    z-index: 1;
+  }
+}
+.inner-con-second{
+  ::v-deep.el-form{
+    width: 1200px;
+    .item-row{
+      width: 885px;
+    }
+  }
 }
 .step-icon{
   display: flex;
   align-items: center;
+  position: relative;
+  &:after{
+    content:"";
+    display: block;
+    height: 1px;
+    background:#eee;
+    width: calc(100% - 40px);
+    position: absolute;
+    bottom: -10px;
+    margin: 0 20px;
+  }
   .step-circle{
     width: 30px;
     height: 30px;
@@ -483,11 +585,24 @@ width: 1200px;
     font-size: 16px;
     margin-left: 20px;
     color: #333;
+    &:before{
+      content: '';
+      display: inline-block;
+      width: 5px;
+      height: 26px;
+      background-color: $mainColor;
+      border-radius: 0px 5px 5px 0px;
+      margin-right: 10px;
+      transform: translateY(7px);
+    }
   }
 }
-::v-deep .el-input.is-disabled .el-input__inner{
-  background-color: transparent;
+.organ-select{
+  ::v-deep .el-input.is-disabled .el-input__inner{
+    background-color: transparent;
+  }
 }
+
 .header{
   overflow: hidden;
   position: relative;
