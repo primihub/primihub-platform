@@ -108,7 +108,9 @@ export default {
             color: '#fff'
           },
           formatter: function() {
-            return `<strong>fpr：</strong>${arguments[0].data[0]}<br/><strong>tpr：</strong>${arguments[0].data[1]}`
+            if (arguments[0].data[0] && arguments[0].data[1]) {
+              return `<strong>fpr：</strong>${arguments[0].data[0]}<br/><strong>tpr：</strong>${arguments[0].data[1]}`
+            }
           }
         },
         xAxis: [
