@@ -28,14 +28,17 @@ public class PirController {
     private PirService pirService;
 
     @RequestMapping("pirSubmitTask")
-    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam){
+    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam,String taskName){
         if (StringUtils.isBlank(resourceId)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
         if (StringUtils.isBlank(pirParam)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
         }
-        return pirService.pirSubmitTask(resourceId,pirParam);
+        if (StringUtils.isBlank(taskName)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
+        }
+        return pirService.pirSubmitTask(resourceId,pirParam,taskName);
     }
     @RequestMapping("getPirTaskList")
     public BaseResultEntity getPirTaskList(DataPirTaskReq req){

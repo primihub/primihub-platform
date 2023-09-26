@@ -42,7 +42,7 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam) {
+    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam,String taskName) {
         BaseResultEntity dataResource = otherBusinessesService.getDataResource(resourceId);
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
@@ -55,7 +55,7 @@ public class PirService {
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(pirDataResource.get("resourceName").toString());
+        dataTask.setTaskName(taskName);
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
