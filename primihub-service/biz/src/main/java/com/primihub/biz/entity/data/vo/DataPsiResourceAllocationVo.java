@@ -20,5 +20,5 @@ public class DataPsiResourceAllocationVo {
      */
     private String organId;
 
-    private List<String> keywordList = new ArrayList<>();
+    private List<DataResourceFieldCopyVo> keywordList = new ArrayList<>();
 }
