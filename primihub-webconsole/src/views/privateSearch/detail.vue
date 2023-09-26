@@ -146,7 +146,7 @@ export default {
           this.taskState = this.taskData.taskState
           if (this.taskState === 2) {
             this.timer = window.setInterval(() => {
-              this.fetchData()
+              setTimeout(this.fetchData(), 0)
             }, 1500)
           } else {
             clearInterval(this.timer)
