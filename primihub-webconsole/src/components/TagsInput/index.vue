@@ -39,19 +39,16 @@ export default {
     }
   },
   computed: {
-    tagValueList: {
-      get() {
-        if (this.selectedData.length >= 5) {
-          this.disabledInput = true
-        } else {
-          this.disabledInput = false
-        }
-        return this.selectedData
-      },
-      set() {}
+    tagValueList() {
+      this.setDisabled(this.selectedData.length >= 5)
+      return this.selectedData
     }
   },
+
   methods: {
+    setDisabled(data) {
+      this.disabledInput = !!data
+    },
     addTag() {
       if (this.tagValueList.length < 5 && this.tagValue.trim() !== '') {
         this.tagValueList.push(this.tagValue)
