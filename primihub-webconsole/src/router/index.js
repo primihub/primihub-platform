@@ -205,7 +205,6 @@ export const asyncRoutes = [
     name: 'Model',
     redirect: '/model/list',
     meta: { title: '模型管理', icon: 'el-icon-files' },
-    alwaysShow: true,
     children: [
       {
         path: 'list',
