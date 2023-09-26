@@ -136,7 +136,7 @@ export default {
           { required: true, message: '请选择机构下资源', trigger: 'blur' }
         ],
         pirParam: [
-          { required: true, message: '请输入关键词' },
+          { required: true, message: '请输入关键词', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内' }
         ]
       },
