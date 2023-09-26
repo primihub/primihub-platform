@@ -72,6 +72,7 @@
             dt.task_id_name taskIdName,
             dt.task_start_time as taskStart,
             dt.task_end_time as taskEnd,
+            dt.task_name as taskName,
             dpt.provider_organ_name organName,
             dpt.resource_id resourceId,
             dpt.resource_name resourceName,
@@ -122,6 +123,8 @@
         <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
         <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
         <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
+        <if test="startDate!=null">and dpt.create_date &gt;=#{startDate} </if>
+        <if test="endDate!=null">and dpt.create_date &lt;=#{endDate} </if>
     </sql>
     <sql id="selectDataTaskListWhere">
         where is_del = 0
