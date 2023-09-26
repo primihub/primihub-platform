@@ -7,7 +7,7 @@
       v-bind="$attrs"
       class="table-list"
     >
-      <el-table-column align="center" label="序号" type="index" width="50" />
+      <el-table-column v-if="data.length >0" align="center" label="序号" type="index" width="50" />
       <el-table-column
         v-for="(item,index) in tableHeader"
         :key="index"

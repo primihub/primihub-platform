@@ -101,15 +101,6 @@
         <div class="desc-col align-items-center" style="width: 100%;">
           <div class="desc-label">实现过程:</div>
           <div class="desc-content">
-            <!-- <el-steps :active="stepActive" simple finish-status="success" process-status="wait">
-              <el-step v-for="(step) in stepData" :key="step.step" :title="step.title" :status="step.status" @mouseover.native="handleStepOver(step)" @mouseleave.native="showError = false" />
-            </el-steps>
-            <div v-if="showError" class="task-error">
-              <p>错误信息：</p>
-              <p v-for="(item,index) in taskError" :key="index">
-                {{ item }}
-              </p>
-            </div> -->
             <FlowStep :active="stepActive" :data="stepData" :task-state="taskState" :error-text="taskError" />
           </div>
         </div>
@@ -268,17 +259,9 @@ export default {
 @import "~@/styles/taskDetail.scss";
 .description-container{
   flex: 1;
-  &.dataset-container{
-    // width: 300px;
-    // margin-left: 160px;
-    // margin-right: 50px;
-  }
 }
 .section .dataset-container{
   display: inline-block;
-  // &:first-child{
-  //   margin-left: 100px;
-  // }
   .desc-col{
     width: 100%;
   }
@@ -307,7 +290,6 @@ export default {
     }
   }
   .center{
-    // margin: 0 25px 0 60px;
     text-align: center;
     font-size: 12px;
     color: #666;

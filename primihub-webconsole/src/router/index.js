@@ -122,6 +122,15 @@ export const asyncRoutes = [
         activeMenu: '/privateSearch/list',
         parent: { name: 'PrivateSearchList' }
       }
+    }, {
+      path: 'detail/:id',
+      name: 'PIRDetail',
+      component: () => import('@/views/privateSearch/detail'),
+      meta: {
+        title: '任务详情',
+        activeMenu: '/privateSearch/list'
+      },
+      hidden: true
     }]
   },
   {
