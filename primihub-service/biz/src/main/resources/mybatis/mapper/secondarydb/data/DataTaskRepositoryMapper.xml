@@ -152,6 +152,6 @@
         FROM
             data_pir_task
         WHERE
-            id = #{id}
+            task_id = #{id}
     </select>
 </mapper>
