@@ -267,7 +267,7 @@ export default {
               this.listLoading = false
               this.taskId = res.result.taskId
               this.$emit('next', this.taskId)
-              this.toTaskListPage()
+              this.toTaskDetailPage(this.taskId)
             } else {
               this.$message({
                 message: res.msg,
@@ -285,9 +285,10 @@ export default {
         }
       })
     },
-    toTaskListPage() {
+    toTaskDetailPage(id) {
       this.$router.push({
-        name: 'PrivateSearchList'
+        name: 'PIRDetail',
+        params: { id }
       })
     }
   }
