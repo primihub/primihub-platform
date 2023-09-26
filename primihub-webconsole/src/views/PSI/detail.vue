@@ -2,7 +2,7 @@
   <div v-loading="loading" class="container">
     <div class="detail">
       <h3>基础信息</h3>
-      <div class="description-container">
+      <div class="description-container section">
         <div class="desc-col">
           <div class="desc-label">任务名称:</div>
           <div class="desc-content">{{ taskData.taskName }}</div>
@@ -23,43 +23,56 @@
     </div>
     <div class="detail">
       <h3>数据配置</h3>
-      <div class="description-container">
-        <div class="desc-col">
-          <div class="desc-label">发起方:</div>
-          <div class="desc-content">{{ taskData.ownOrganName }}</div>
-        </div>
-        <div class="desc-col">
-          <div class="desc-label">协作方:</div>
-          <div class="desc-content">{{ taskData.otherOrganName }}</div>
-        </div>
-        <div class="desc-col">
-          <div class="desc-label">资源表:</div>
-          <div class="desc-content">
-            <el-link type="primary" @click="toResourceDetailPage(taskData.ownResourceId)">{{ taskData.ownResourceName }}</el-link>
+      <div class="section">
+        <div class="description-container dataset-container">
+          <div class="desc-col">
+            <div class="desc-label">发起方:</div>
+            <div class="desc-content">{{ taskData.ownOrganName }}</div>
+          </div>
+          <div class="desc-col">
+            <div class="desc-label">资源表:</div>
+            <div class="desc-content">
+              <el-link type="primary" @click="toResourceDetailPage(taskData.ownResourceId)">{{ taskData.ownResourceName }}</el-link>
+            </div>
+          </div>
+          <div class="desc-col">
+            <div class="desc-label">关联键:</div>
+            <div class="desc-content">{{ taskData.ownKeyword }}</div>
           </div>
         </div>
-        <div class="desc-col">
-          <div class="desc-label">资源表:</div>
-          <div class="desc-content">
-            <el-link type="primary" @click="toUnionResourceDetailPage(taskData.otherResourceId)">{{ taskData.otherResourceName }}</el-link>
+        <div class="relation-img">
+          <div class="line">
+            <div class="line-icon">计算</div>
+          </div>
+          <div class="center">
+            <span>关系预览</span>
+            <p><img :src="centerImg" alt="" width="48"></p>
           </div>
         </div>
-        <div class="desc-col">
-          <div class="desc-label">关联键:</div>
-          <div class="desc-content">{{ taskData.ownKeyword }}</div>
-        </div>
-        <div class="desc-col">
-          <div class="desc-label">关联键:</div>
-          <div class="desc-content">{{ taskData.otherKeyword }}</div>
+        <div class="description-container dataset-container">
+          <div class="desc-col">
+            <div class="desc-label">协作方:</div>
+            <div class="desc-content">{{ taskData.otherOrganName }}</div>
+          </div>
+          <div class="desc-col">
+            <div class="desc-label">资源表:</div>
+            <div class="desc-content">
+              <el-link type="primary" @click="toUnionResourceDetailPage(taskData.otherResourceId)">{{ taskData.otherResourceName }}</el-link>
+            </div>
+          </div>
+          <div class="desc-col">
+            <div class="desc-label">关联键:</div>
+            <div class="desc-content">{{ taskData.otherKeyword }}</div>
+          </div>
         </div>
       </div>
     </div>
     <div class="detail">
       <h3>实现方法</h3>
-      <div class="description-container">
+      <div class="description-container section">
         <div class="desc-col">
           <div class="desc-label">输出内容:</div>
-          <div class="desc-content">{{ taskData.outputContent=== 0 ? '交集': '差集' }}</div>
+          <div class="desc-content">{{ taskData.outputContent === 0 ? '交集': '差集' }}</div>
         </div>
         <div class="desc-col">
           <div class="desc-label">实现方法:</div>
@@ -76,7 +89,7 @@
     </div>
     <div class="detail">
       <h3>具体实现</h3>
-      <div class="description-container">
+      <div class="description-container section">
         <div class="desc-col">
           <div class="desc-label">任务发起时间:</div>
           <div class="desc-content">{{ taskData.createDate }}</div>
@@ -88,7 +101,7 @@
         <div class="desc-col align-items-center" style="width: 100%;">
           <div class="desc-label">实现过程:</div>
           <div class="desc-content">
-            <el-steps :active="stepActive" simple finish-status="success" process-status="wait">
+            <!-- <el-steps :active="stepActive" simple finish-status="success" process-status="wait">
               <el-step v-for="(step) in stepData" :key="step.step" :title="step.title" :status="step.status" @mouseover.native="handleStepOver(step)" @mouseleave.native="showError = false" />
             </el-steps>
             <div v-if="showError" class="task-error">
@@ -96,7 +109,8 @@
               <p v-for="(item,index) in taskError" :key="index">
                 {{ item }}
               </p>
-            </div>
+            </div> -->
+            <FlowStep :active="stepActive" :data="stepData" :task-state="taskState" :error-text="taskError" />
           </div>
         </div>
         <div v-if="taskData.taskState === 1" class="desc-col" style="width: 100%;">
@@ -122,12 +136,17 @@
 
 <script>
 import { getPsiTaskDetails } from '@/api/PSI'
-import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 import { getToken } from '@/utils/auth'
+import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
+import FlowStep from '@/components/FlowStep'
+
+const intersection = require('@/assets/intersection.svg')
+const diffsection = require('@/assets/diffsection.svg')
 
 export default {
   components: {
-    ResourcePreviewDialog
+    ResourcePreviewDialog,
+    FlowStep
   },
   data() {
     return {
@@ -138,9 +157,8 @@ export default {
       previewDialogVisible: false,
       taskData: [],
       taskId: this.$route.params.id,
-      taskState: '',
+      taskState: 0,
       stepActive: 1,
-      stepFinishStatus: 'success',
       stepData: [{
         step: 1,
         title: '提交任务',
@@ -153,8 +171,16 @@ export default {
         step: 3,
         title: '等待结果',
         status: 'wait'
-      }]
+      }],
+      taskError: [],
+      taskTypeText: '计算'
     }
+  },
+  computed: {
+    centerImg() {
+      return this.taskData.outputContent === 0 ? intersection : this.taskData.outputContent === 1 ? diffsection : intersection
+    }
+
   },
   async created() {
     await this.fetchData()
@@ -163,13 +189,6 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
-    handleStepOver() {
-      if (this.taskState !== 3) {
-        this.showError = false
-      } else {
-        this.showError = true
-      }
-    },
     async downloadPsiTask() {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)
@@ -184,13 +203,13 @@ export default {
           this.taskState = this.taskData.taskState
           if (this.taskState === 2) {
             this.timer = window.setInterval(() => {
-              setTimeout(this.fetchData(), 0)
-            }, 3000)
+              this.fetchData()
+            }, 1500)
           } else {
             clearInterval(this.timer)
           }
           this.previewList = this.taskData.dataList
-          this.taskError = this.taskData.taskError ? this.taskData.taskError.split('\n') : ''
+          this.taskError = this.taskData.taskError ? this.taskData.taskError.split('\n') : []
           switch (this.taskState) {
             case 1:
               this.stepData[1].title = '任务运行'
@@ -246,59 +265,57 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.detail{
-  margin-bottom: 40px;
-  h3{
-    border-left: 3px solid #1677FF;
-    padding-left: 10px;
-  }
-}
+@import "~@/styles/taskDetail.scss";
 .description-container{
-  display: flex;
-  flex-flow: wrap;
-  background-color: #fafafa;
-  padding: 25px 40px 25px 40px;
-  line-height: 1.5;
-  margin-bottom: 20px;
-  border-radius: 12px;
-  &.w100{
-    display: block;
+  flex: 1;
+  &.dataset-container{
+    // width: 300px;
+    // margin-left: 160px;
+    // margin-right: 50px;
   }
 }
-.infos-title{
-  font-size: 16px;
+.section .dataset-container{
+  display: inline-block;
+  // &:first-child{
+  //   margin-left: 100px;
+  // }
+  .desc-col{
+    width: 100%;
+  }
 }
-
-.desc-col{
-  width: 50%;
-  flex-shrink: 0;
-  display: flex;
-  color: #606266;
-  font-size: 14px;
-  margin: 6px 0;
+.relation-img{
+  display: inline-block;
   position: relative;
-}
-.desc-label{
-  margin-right: 10px;
-}
-.desc-content{
-  flex: 1;
-  padding-right: 10px;
-}
-
-.task-error{
   width: 300px;
-  padding: 10px;
-  color: #fff;
-  background-color: rgba($color: #000000, $alpha: .7);
-  position: absolute;
-  top: 40px;
-  left: calc((100% / 2) - 100px);
-  border-radius: 4px;
-}
-.el-steps--simple{
-  margin:  5px 0;
-  padding: 11px 8%;
+  margin: 15px 70px;
+  vertical-align: top;
+  .line{
+    border-top: 1px dotted #cccccc;
+    margin: 0px auto 0;
+    &-icon{
+      padding: 0 3px;
+      border: 1px solid #666;
+      position: absolute;
+      left: 50%;
+      transform: translate3d(-50%,0,0);
+      top: -12px;
+      background-color: #fff;
+      font-size: 12px;
+      line-height: 20px;
+      text-align: center;
+      color: #333;
+    }
+  }
+  .center{
+    // margin: 0 25px 0 60px;
+    text-align: center;
+    font-size: 12px;
+    color: #666;
+    margin-top: 25px;
+    img{
+      width: 28px;
+    }
+  }
 }
 
 </style>
