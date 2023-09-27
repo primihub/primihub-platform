@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="loading" class="container">
+  <div class="container">
     <div class="detail">
       <h3>基础信息</h3>
       <div class="description-container section">
@@ -175,6 +175,9 @@ export default {
   },
   created() {
     this.fetchData()
+    this.timer = window.setInterval(() => {
+      setTimeout(this.fetchData(), 0)
+    }, 1500)
   },
   destroyed() {
     clearInterval(this.timer)
@@ -204,13 +207,6 @@ export default {
         if (res.code === 0) {
           this.taskData = res.result
           this.taskState = this.taskData.taskState
-          if (this.taskState === 2) {
-            this.timer = window.setInterval(() => {
-              this.fetchData()
-            }, 1500)
-          } else {
-            clearInterval(this.timer)
-          }
           this.previewList = this.taskData.dataList
           this.taskError = this.taskData.taskError ? this.taskData.taskError.split('\n') : []
           switch (this.taskState) {
