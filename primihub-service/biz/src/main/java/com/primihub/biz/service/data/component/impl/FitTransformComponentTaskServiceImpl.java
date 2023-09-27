@@ -15,6 +15,7 @@ import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
+import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.sdk.task.TaskHelper;
 import com.primihub.sdk.task.dataenum.ModelTypeEnum;
 import com.primihub.sdk.task.param.TaskComponentParam;
@@ -24,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service("fitTransformComponentTaskServiceImpl")
@@ -35,6 +33,8 @@ import java.util.stream.Collectors;
 public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
     private ComponentsConfiguration componentsConfiguration;
+    @Autowired
+    private FusionResourceService fusionResourceService;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -118,8 +118,23 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     }
                 }
             }
-            // 休眠一秒等待数据集同步
-            Thread.sleep(1000L);
+            HashSet dids = new HashSet(){{
+                add(labelDatasetDto.getNewDataSetId());
+                add(guestDatasetDto.getNewDataSetId());
+            }};
+            while (true){
+                // 休眠一秒等待数据集同步
+                BaseResultEntity dataSets = fusionResourceService.getDataSets(dids);
+                log.info(JSONObject.toJSONString(dataSets));
+                if (dataSets.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                    List<Object> objectList = (List<Object>) dataSets.getResult();
+                    if (objectList.size() == dids.size()){
+                        break;
+                    }
+                }
+                Thread.sleep(100L);
+            }
+
         }catch (Exception e){
             e.printStackTrace();
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
