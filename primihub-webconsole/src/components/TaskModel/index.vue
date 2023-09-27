@@ -214,7 +214,8 @@ export default {
         delete this.anotherQuotas['gain_y']
         delete this.anotherQuotas['lift_x']
         delete this.anotherQuotas['lift_y']
-        delete this.anotherQuotas['recall']
+        delete this.anotherQuotas['train_thresholds']
+
         // format model score list
         if (JSON.stringify(anotherQuotas) !== '{}') {
           this.modelQuotas.push({

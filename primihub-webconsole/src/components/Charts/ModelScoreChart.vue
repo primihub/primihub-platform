@@ -101,16 +101,16 @@ export default {
           }
         },
         tooltip: {
+          trigger: 'axis',
           show: true,
           backgroundColor: 'rgba(0,0,0,0.7)',
           borderWidth: 0,
           textStyle: {
             color: '#fff'
           },
-          formatter: function() {
-            if (arguments[0].data[0] && arguments[0].data[1]) {
-              return `<strong>fpr：</strong>${arguments[0].data[0]}<br/><strong>tpr：</strong>${arguments[0].data[1]}`
-            }
+          formatter: function(params) {
+            const data = params[0].data
+            return `<strong>fpr：</strong>${data[0]}<br/><strong>tpr：</strong>${data[1]}`
           }
         },
         xAxis: [
@@ -161,15 +161,12 @@ export default {
             itemStyle: {
               color: '#fac858'
             },
-            // lineStyle: {
-            //   color: '#fac858'
-            // },
             data: xAxisData.map(function(value, index) {
               return [value, yAxisData[index]]
             }),
             markLine: {
               animation: false,
-
+              silent: true,
               lineStyle: {
                 type: 'dashed',
                 color: '#999'
