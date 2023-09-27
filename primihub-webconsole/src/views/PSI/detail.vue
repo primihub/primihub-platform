@@ -173,8 +173,8 @@ export default {
     }
 
   },
-  async created() {
-    await this.fetchData()
+  created() {
+    this.fetchData()
   },
   destroyed() {
     clearInterval(this.timer)
@@ -198,7 +198,7 @@ export default {
       const token = getToken()
       window.open(`${process.env.VUE_APP_BASE_API}/data/psi/downloadPsiTask?taskId=${this.taskData.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     },
-    async fetchData() {
+    fetchData() {
       this.loading = true
       getPsiTaskDetails({ taskId: this.taskId }).then(res => {
         if (res.code === 0) {

@@ -20,10 +20,10 @@
           <div class="desc-label">被查询方:</div>
           <div class="desc-content">{{ taskData.organName }}</div>
         </div>
-        <div class="desc-col">
+        <div class="desc-col align-items-center">
           <div class="desc-label">资源表:</div>
           <div class="desc-content">
-            <el-link type="primary" @click="toUnionResourceDetailPage(taskData.resourceId)">{{ taskData.resourceName }}</el-link>
+            <el-link style="line-height: 1;" type="primary" @click="toUnionResourceDetailPage(taskData.resourceId)">{{ taskData.resourceName }}</el-link>
           </div>
         </div>
         <div class="desc-col">
@@ -52,9 +52,9 @@
         </div>
         <div v-if="taskData.taskState === 1" class="desc-col align-items-center" style="width: 100%;">
           <div class="desc-label">计算结果:</div>
-          <div class="desc-content flex">
-            <el-link :underline="false" class="margin-right-10" type="primary" @click="downloadPsiTask">{{ taskData.taskName }}任务结果.csv <svg-icon icon-class="download" /></el-link>
-            <el-button size="small" type="primary" plain @click="downloadPsiTask">下载文档</el-button>
+          <div class="desc-content flex align-items-center">
+            <div class="margin-right-10">{{ taskData.taskName }}任务结果.csv</div>
+            <el-button size="small" type="primary" plain @click="downloadTaskResult">下载文档</el-button>
             <el-button size="small" type="primary" plain @click="handlePreview">在线预览</el-button>
           </div>
         </div>
@@ -119,8 +119,8 @@ export default {
     }
 
   },
-  async created() {
-    await this.fetchData()
+  created() {
+    this.fetchData()
   },
   destroyed() {
     clearInterval(this.timer)
@@ -132,13 +132,13 @@ export default {
         params: { id }
       })
     },
-    async downloadPsiTask() {
+    async downloadTaskResult() {
       const timestamp = new Date().getTime()
       const nonce = Math.floor(Math.random() * 1000 + 1)
       const token = getToken()
-      window.open(`${process.env.VUE_APP_BASE_API}/data/psi/downloadPsiTask?taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
+      window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${this.taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
     },
-    async fetchData() {
+    fetchData() {
       this.loading = true
       getPirTaskDetail({ taskId: this.taskId }).then(res => {
         if (res.code === 0) {
