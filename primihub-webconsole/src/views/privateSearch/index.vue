@@ -187,11 +187,6 @@ export default {
   async created() {
     await this.fetchData()
     await this.getAvailableOrganList()
-    if (this.searchList.length > 0) {
-      this.timer = window.setInterval(async() => {
-        setTimeout(await this.fetchData(), 0)
-      }, 5000)
-    }
   },
   destroyed() {
     clearInterval(this.timer)
@@ -301,6 +296,10 @@ export default {
       if (this.searchList.length === 0) {
         this.startInterval = false
         clearInterval(this.timer)
+      } else {
+        this.timer = window.setInterval(async() => {
+          setTimeout(await this.fetchData(), 0)
+        }, 1500)
       }
     },
     handlePagination(data) {
