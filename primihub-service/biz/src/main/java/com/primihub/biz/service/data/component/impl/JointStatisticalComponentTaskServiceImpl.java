@@ -6,6 +6,7 @@ import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.GrpcComponentDto;
@@ -61,6 +62,7 @@ public class JointStatisticalComponentTaskServiceImpl extends BaseComponentServi
             log.info("ids:{}", ids);
             String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "mpc";
             Map<String, GrpcComponentDto> jointStatisticalMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
+            jointStatisticalMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
             Map<String,String> newsetidMap = new HashMap<>();
             log.info("jointStatisticalMap-1:{}", JSONObject.toJSONString(jointStatisticalMap));
             if (newest!=null && newest.size()!=0){

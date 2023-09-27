@@ -56,6 +56,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         log.info("ids:{}", ids);
         String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "fitTransform";
         Map<String, GrpcComponentDto> fitTransformEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
+        fitTransformEntityMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
         log.info("fitTransform-1:{}", JSONObject.toJSONString(fitTransformEntityMap));
         if (newest!=null && newest.size()!=0){
             ids = new ArrayList<>();
