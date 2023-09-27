@@ -111,7 +111,6 @@ public class PirService {
         if (StringUtils.isNotEmpty(dataTask.getTaskResultPath())){
             vo.setList(FileUtil.getCsvData(dataTask.getTaskResultPath(), 50));
         }
-
         vo.setTaskName(dataTask.getTaskName());
         vo.setTaskIdName(dataTask.getTaskIdName());
         vo.setTaskState(dataTask.getTaskState());
@@ -121,6 +120,8 @@ public class PirService {
         vo.setRetrievalId(task.getRetrievalId());
         vo.setTaskError(dataTask.getTaskErrorMsg());
         vo.setCreateDate(dataTask.getCreateDate());
+        vo.setTaskStartTime(dataTask.getTaskStartTime());
+        vo.setTaskEndTime(dataTask.getTaskEndTime());
         return BaseResultEntity.success(vo);
     }
 
