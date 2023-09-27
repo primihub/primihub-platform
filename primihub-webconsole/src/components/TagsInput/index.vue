@@ -7,7 +7,7 @@
       :disabled="disabledInput"
       :clearable="true"
       show-word-limit
-      placeholder="请添加标签，方便搜索"
+      placeholder="请输入关键字"
       @change="handleChange"
       @keyup.enter.native="addTag"
     />

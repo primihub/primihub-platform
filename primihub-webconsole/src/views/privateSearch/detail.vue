@@ -211,11 +211,6 @@ export default {
 @import "~@/styles/taskDetail.scss";
 .description-container{
   flex: 1;
-  &.dataset-container{
-    // width: 300px;
-    // margin-left: 160px;
-    // margin-right: 50px;
-  }
 }
 .section .dataset-container{
   display: inline-block;
