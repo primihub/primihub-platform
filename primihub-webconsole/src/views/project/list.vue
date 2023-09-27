@@ -391,7 +391,6 @@ export default {
       this.searchForm.startDate = ''
       this.searchForm.endDate = ''
       this.pageNo = 1
-      this.organList = []
       this.fetchData()
     },
     fetchData(type) {
