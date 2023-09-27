@@ -112,7 +112,6 @@ public class PirService {
             vo.setList(FileUtil.getCsvData(dataTask.getTaskResultPath(), 50));
         }
 
-        Map<String, Object> map = new HashMap<>();
         vo.setTaskName(dataTask.getTaskName());
         vo.setTaskIdName(dataTask.getTaskIdName());
         vo.setTaskState(dataTask.getTaskState());
@@ -122,7 +121,7 @@ public class PirService {
         vo.setRetrievalId(task.getRetrievalId());
         vo.setTaskError(dataTask.getTaskErrorMsg());
         vo.setCreateDate(dataTask.getCreateDate());
-        return BaseResultEntity.success(map);
+        return BaseResultEntity.success(vo);
     }
 
 
