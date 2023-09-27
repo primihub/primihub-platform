@@ -151,7 +151,7 @@ export default {
           } else {
             clearInterval(this.timer)
           }
-          this.previewList = this.taskData.dataList
+          this.previewList = this.taskData.list
           this.taskError = this.taskData.taskError ? this.taskData.taskError.split('\n') : []
           switch (this.taskState) {
             case 1:
