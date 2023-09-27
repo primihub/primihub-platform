@@ -119,7 +119,9 @@ public class PirService {
         map.put("resourceId", task.getResourceId());
         map.put("retrievalId", task.getRetrievalId());
         map.put("taskError",dataTask.getTaskErrorMsg());
-        map.put("createDate", DateUtil.formatDate(dataTask.getCreateDate(),DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat()));
+        String date = DateUtil.formatDate(dataTask.getCreateDate(), DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat());
+        log.info(date);
+        map.put("createDate", date);
         map.put("consuming", getConsuming(dataTask.getTaskStartTime(),dataTask.getTaskEndTime()));
         map.put("createTime", dataTask.getTaskStartTime());
         map.put("dataList", list);
