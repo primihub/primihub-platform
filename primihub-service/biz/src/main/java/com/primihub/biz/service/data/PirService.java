@@ -11,11 +11,11 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.util.FileUtil;
-import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -106,35 +106,24 @@ public class PirService {
         if (dataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务详情");
         }
+        DataPirTaskDetailVo vo = new DataPirTaskDetailVo();
         List<LinkedHashMap<String, Object>> list = null;
         if (StringUtils.isNotEmpty(dataTask.getTaskResultPath())){
-            list = FileUtil.getCsvData(dataTask.getTaskResultPath(), 50);
+            vo.setList(FileUtil.getCsvData(dataTask.getTaskResultPath(), 50));
         }
+
         Map<String, Object> map = new HashMap<>();
-        map.put("taskName", dataTask.getTaskName());
-        map.put("taskIdName", dataTask.getTaskIdName());
-        map.put("taskState",dataTask.getTaskState());
-        map.put("organName", task.getProviderOrganName());
-        map.put("resourceName", task.getResourceName());
-        map.put("resourceId", task.getResourceId());
-        map.put("retrievalId", task.getRetrievalId());
-        map.put("taskError",dataTask.getTaskErrorMsg());
-        String date = DateUtil.formatDate(dataTask.getCreateDate(), DateUtil.DateStyle.TIME_FORMAT_NORMAL.getFormat());
-        log.info(date);
-        map.put("createDate", date);
-        map.put("consuming", getConsuming(dataTask.getTaskStartTime(),dataTask.getTaskEndTime()));
-        map.put("createTime", dataTask.getTaskStartTime());
-        map.put("dataList", list);
+        vo.setTaskName(dataTask.getTaskName());
+        vo.setTaskIdName(dataTask.getTaskIdName());
+        vo.setTaskState(dataTask.getTaskState());
+        vo.setOrganName(task.getProviderOrganName());
+        vo.setResourceName(task.getResourceName());
+        vo.setResourceId(task.getResourceId());
+        vo.setRetrievalId(task.getRetrievalId());
+        vo.setTaskError(dataTask.getTaskErrorMsg());
+        vo.setCreateDate(dataTask.getCreateDate());
         return BaseResultEntity.success(map);
     }
 
-    public Long getConsuming(Long taskStart,Long taskEnd) {
-        if (taskStart==null) {
-            return 0L;
-        }
-        if (taskEnd==null||taskEnd==0) {
-            return (System.currentTimeMillis() - taskStart)/1000;
-        }
-        return (taskEnd - taskStart)/1000;
-    }
+
 }
