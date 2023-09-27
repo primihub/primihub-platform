@@ -104,10 +104,10 @@
             <FlowStep :active="stepActive" :data="stepData" :task-state="taskState" :error-text="taskError" />
           </div>
         </div>
-        <div v-if="taskData.taskState === 1" class="desc-col" style="width: 100%;">
+        <div v-if="taskData.taskState === 1" class="desc-col  align-items-center" style="width: 100%;">
           <div class="desc-label">计算结果:</div>
-          <div class="desc-content flex">
-            <el-link :underline="false" class="margin-right-10" type="primary" @click="downloadPsiTask">{{ taskData.resultName }}.csv <svg-icon icon-class="download" /></el-link>
+          <div class="desc-content flex align-items-center">
+            <div class="margin-right-10">{{ taskData.resultName }}.csv</div>
             <el-button size="small" type="primary" plain @click="downloadPsiTask">下载文档</el-button>
             <el-button size="small" type="primary" plain @click="handlePreview">在线预览</el-button>
           </div>
@@ -274,6 +274,7 @@ export default {
 }
 .section .dataset-container{
   display: inline-block;
+  margin: 0;
   .desc-col{
     width: 100%;
   }

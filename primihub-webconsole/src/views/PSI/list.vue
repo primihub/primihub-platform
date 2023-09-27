@@ -346,6 +346,10 @@ export default {
 ::v-deep .el-input--suffix .el-input__inner{
   padding-right: 0;
 }
+.el-date-editor--datetimerange.el-input, .el-date-editor--datetimerange.el-input__inner{
+  width: 360px;
+  padding: 3px 5px;
+}
 .search-area {
   padding: 48px 40px 20px 40px;
   background-color: #fff;

@@ -29,7 +29,7 @@
           <el-form ref="formData" :model="formData" :rules="rules" label-width="0px">
             <div class="flex organ-title">
               <div>
-                <svg-icon icon-class="share" /> 发起方
+                <svg-icon icon-class="share" /> <i class="iconfont icon-plane" /> 发起方
               </div>
               <div>
                 <svg-icon icon-class="association" /> 协作方
@@ -130,12 +130,11 @@
                   <el-select v-model="formData.psiTag" placeholder="请选择实现方式">
                     <el-option v-for="item in psiTagOptions" :key="item.value" :label="item.label" :value="item.value" />
                   </el-select>
-                  <el-checkbox v-model="formData.outputNoRepeat" :true-label="1" :false-label="0">关联键有重复值时输出内容不去重</el-checkbox>
                 </el-form-item>
               </el-col>
             </el-row>
             <el-form-item v-if="formData.psiTag == 2" label="可信计算节点" prop="teeOrganId">
-              <el-select v-model="formData.teeOrganId" placeholder="请选择可信计算节点" :disabled="formData.otherOrganId ? false : true" @click.native="selectTeeOgan">
+              <el-select v-model="formData.teeOrganId" placeholder="请选择可信计算节点" @click.native="selectTeeOgan">
                 <el-option v-for="item in teeOrganList" :key="item.globalId" :label="item.globalName" :value="item.globalId" />
               </el-select>
               <div v-if="!formData.otherOrganId" class="display-modal" @click="selectTeeOgan" />
@@ -292,7 +291,7 @@ export default {
       return this.formData.outputContent === 0 ? intersection : this.formData.outputContent === 1 ? diffsection : intersection
     },
     resultName() {
-      return `${this.ownResourceName}-${this.otherResourceName}`
+      return `${this.formData.taskName}求交结果`
     }
   },
   watch: {
@@ -536,9 +535,9 @@ export default {
 }
 .inner-con{
   background: #fff;
-  margin: 20px 0;
+  margin: 32px 0;
   ::v-deep .el-form{
-    width: 1000px;
+    width: 950px;
     margin: 0 auto;
   }
   .form-tip-text{
@@ -622,9 +621,8 @@ export default {
   }
 }
 .step-icon{
-  display: flex;
-  align-items: center;
   position: relative;
+  padding-bottom: 13px;
   &:after{
     content:"";
     display: block;
@@ -632,7 +630,7 @@ export default {
     background:#eee;
     width: calc(100% - 40px);
     position: absolute;
-    bottom: -10px;
+    bottom: 0px;
     margin: 0 20px;
   }
   .step-circle{
