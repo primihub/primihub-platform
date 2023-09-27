@@ -118,12 +118,14 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     }
                 }
             }
+            // 休眠一秒等待数据集同步
+            Thread.sleep(1000L);
         }catch (Exception e){
             e.printStackTrace();
             taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
             taskReq.getDataTask().setTaskErrorMsg("缺失值填充错误:"+e.getMessage());
         }
 
-        return null;
+        return BaseResultEntity.success();
     }
 }

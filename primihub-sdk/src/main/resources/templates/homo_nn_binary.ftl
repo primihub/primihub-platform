@@ -39,7 +39,7 @@
 	  },
 	  "Alice": {
 		"data_set": "${arbiter_dataset}",
-		"metric_path": "${indicatorFileName}"
+		"metric_path": "/data${indicatorFileName}"
 	  }
 	}
 }
