@@ -118,6 +118,7 @@ public class DataResourceConvert {
         vo.setFileHandleField(StringUtils.isBlank(po.getFileHandleField())?new String[]{}:po.getFileHandleField().split(","));
         vo.setResourceState(po.getResourceState());
         vo.setResourceHashCode(po.getResourceHashCode());
+        vo.setResourceFusionId(po.getResourceFusionId());
         return vo;
     }
     public static DataFileFieldVo DataFileFieldPoConvertVo(DataFileField fileField){
