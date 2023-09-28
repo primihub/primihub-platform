@@ -72,8 +72,10 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
             Map<String, Common.Dataset> datasetMap = new HashMap<>();
             datasetMap.put("SERVER",Common.Dataset.newBuilder().putData("SERVER", param.getTaskContentParam().getServerData()).build());
             datasetMap.put("CLIENT",Common.Dataset.newBuilder().putData("CLIENT", param.getTaskContentParam().getClientData()).build());
+            String code = "";
             if (param.getTaskContentParam().getPsiTag().equals(2)){
                 datasetMap.put("TEE_COMPUTE",Common.Dataset.newBuilder().putData("TEE_COMPUTE", param.getTaskContentParam().getTeeData()).build());
+                code = "psi";
             }
             Common.Task task= Common.Task.newBuilder()
                     .setType(Common.TaskType.PSI_TASK)
@@ -86,7 +88,7 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
                     .build();
             log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
+                    .setIntendedWorkerId(ByteString.copyFrom(code.getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
