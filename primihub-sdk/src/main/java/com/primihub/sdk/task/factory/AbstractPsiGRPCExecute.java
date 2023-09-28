@@ -83,12 +83,12 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
                     .setName("psiTask")
                     .setTaskInfo(taskBuild)
                     .setLanguage(Common.Language.PROTO)
-                    .setCode(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom(code.getBytes(StandardCharsets.UTF_8)))
                     .putAllPartyDatasets(datasetMap)
                     .build();
             log.info("grpc Common.Task : \n{}",task.toString());
             PushTaskRequest request=PushTaskRequest.newBuilder()
-                    .setIntendedWorkerId(ByteString.copyFrom(code.getBytes(StandardCharsets.UTF_8)))
+                    .setIntendedWorkerId(ByteString.copyFrom("1".getBytes(StandardCharsets.UTF_8)))
                     .setTask(task)
                     .setSequenceNumber(11)
                     .setClientProcessedUpTo(22)
