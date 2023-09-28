@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.data.po;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.Date;
@@ -97,6 +98,7 @@ public class DataFileField {
     /**
      * 是否删除
      */
+    @JsonIgnore
     private Integer isDel;
 
     /**
@@ -107,6 +109,7 @@ public class DataFileField {
     /**
      * 修改时间
      */
+    @JsonIgnore
     private Date updateDate;
 
 

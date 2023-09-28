@@ -9,6 +9,7 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @NacosPropertySources({
 //        @NacosPropertySource(dataId = "test", autoRefreshed = true),
@@ -22,6 +23,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @ServletComponentScan(basePackages = {"com.primihub.biz.filter"})
 @EnableBinding({SingleTaskChannel.class})
 @EnableFeignClients(basePackages = {"com.primihub"})
+@EnableScheduling
 public class PlatformApplication {
 
     public static void main(String[] args) {

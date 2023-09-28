@@ -79,8 +79,13 @@ public class DataPsiReq {
     /**
      * 0、ECDH
      * 1、KKRT
+     * 2、TEE
      */
     private Integer psiTag;
 
+
+    private String taskName;
+
+    private String teeOrganId;
 
 }

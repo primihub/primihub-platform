@@ -4,10 +4,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
-import com.primihub.biz.entity.data.req.DataPsiReq;
-import com.primihub.biz.entity.data.req.DataPsiResourceReq;
-import com.primihub.biz.entity.data.req.DataResourceReq;
-import com.primihub.biz.entity.data.req.PageReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.service.data.DataPsiService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -72,6 +69,11 @@ public class PsiController {
         if (req.getPsiTag()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"psiTag");
         }
+        if (req.getPsiTag() == 2){
+            if (StringUtils.isBlank(req.getTeeOrganId())){
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"teeOrganId");
+            }
+        }
         return dataPsiService.saveDataPsi(req,userId);
     }
 
@@ -118,14 +120,12 @@ public class PsiController {
 
     /**
      * 查询隐私求交任务列表
-     * @param resultName
      * @param req
      * @return
      */
     @GetMapping("getPsiTaskList")
-    public BaseResultEntity getPsiTaskList(String resultName,
-                                           PageReq req){
-        return  dataPsiService.getPsiTaskList(req,resultName);
+    public BaseResultEntity getPsiTaskList(DataPsiQueryReq req){
+        return  dataPsiService.getPsiTaskList(req);
     }
 
 

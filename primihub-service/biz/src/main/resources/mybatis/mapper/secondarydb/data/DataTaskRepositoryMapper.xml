@@ -72,6 +72,7 @@
             dt.task_id_name taskIdName,
             dt.task_start_time as taskStart,
             dt.task_end_time as taskEnd,
+            dt.task_name as taskName,
             dpt.provider_organ_name organName,
             dpt.resource_id resourceId,
             dpt.resource_name resourceName,
@@ -122,6 +123,9 @@
         <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
         <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
         <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
+        <if test="taskName!=null"> and dt.task_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')</if>
+        <if test="startDate!=null">and dpt.create_date &gt;=#{startDate} </if>
+        <if test="endDate!=null">and dpt.create_date &lt;=#{endDate} </if>
     </sql>
     <sql id="selectDataTaskListWhere">
         where is_del = 0
@@ -141,4 +145,13 @@
             and task_type = #{taskType}
         </if>
     </sql>
+
+    <select id="selectPirTaskById" resultType="com.primihub.biz.entity.data.po.DataPirTask">
+        SELECT
+            id,task_id as taskId,provider_organ_name as providerOrganName,resource_id as resourceId,resource_name as resourceName,retrieval_id as retrievalId,create_date as createDate
+        FROM
+            data_pir_task
+        WHERE
+            task_id = #{id}
+    </select>
 </mapper>
