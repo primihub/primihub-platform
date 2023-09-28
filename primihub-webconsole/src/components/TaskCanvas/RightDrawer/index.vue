@@ -143,7 +143,7 @@
               </el-select>
             </el-col>
             <el-col v-if="param.inputType === 'button'" :span="24">
-              <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
+              <p class="tips">{{ flText }}需可信第三方(arbiter方)参与</p>
               <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
               <el-button v-if="options.isEditable" type="primary" size="mini" class="block" @click="openProviderOrganDialog">请选择</el-button>
             </el-col>
@@ -353,7 +353,8 @@ export default {
           { required: true, trigger: 'change' }
         ]
       },
-      selectedProviderOrgans: []
+      selectedProviderOrgans: [],
+      flText: ''
     }
   },
   computed: {
@@ -416,6 +417,8 @@ export default {
         } else if (newVal.componentCode === MODEL) {
           this.getDataSetComValue()
           this.getModelParams(newVal)
+          this.flText = this.filterModelValue()
+          console.log(this.flText)
         } else if (newVal.componentCode === DATA_ALIGN) {
           this.getDataSetComValue()
           this.getFeaturesOptions()
@@ -467,6 +470,13 @@ export default {
         }
       }
     },
+    filterModelValue() {
+      if (this.modelTypeValue === '2' || this.modelTypeValue === '5' || this.modelTypeValue === '9') {
+        return '纵向联邦'
+      } else {
+        return '横向联邦'
+      }
+    },
     getModelParams(data) {
       const modelType = data.componentTypes.find(item => item.typeCode === MODEL_TYPE)
       const currentData = modelType && modelType.inputValues.find(item => item.key === modelType.inputValue)
@@ -491,11 +501,15 @@ export default {
       this.modelTypeValue = val
       // reset before params
       this.resetModelParams()
+      this.flText = this.filterModelValue()
+      console.log(this.flText)
       this.handleChange()
     },
     handleParamChange(val) {
       this.modelEncryptionType = val
       this.getModelParams(this.nodeData)
+      this.flText = this.filterModelValue()
+      console.log(this.flText)
       this.handleChange()
     },
     getFeaturesItem() {
