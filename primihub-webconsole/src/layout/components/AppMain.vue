@@ -7,7 +7,7 @@
           <breadcrumb class="breadcrumb-container" />
         </template>
       </div>
-      <div id="guide" class="align-self-center flex">
+      <!-- <div id="guide" class="align-self-center flex">
         <div class="guide-item">
           <el-dropdown>
             <div type="primary" class="dropdown-title">
@@ -38,7 +38,7 @@
           </el-dropdown>
         </div>
         <div class="guide-item"> <svg-icon icon-class="order" class="icon" />提交工单</div>
-      </div>
+      </div> -->
     </div>
     <transition name="fade-transform" mode="out-in">
       <router-view :key="key" />
