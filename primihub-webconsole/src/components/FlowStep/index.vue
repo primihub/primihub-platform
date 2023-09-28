@@ -1,7 +1,7 @@
 <template>
   <div class="step-container">
     <el-steps :active="active" simple finish-status="success" process-status="wait">
-      <el-step v-for="(step) in data" :key="step.step" :title="step.title" :status="step.status" @mouseover.native="handleStepOver(step)" @mouseleave.native="showError = false" />
+      <el-step v-for="(step) in data" :key="step.step" icon="el-icon-loading" :title="step.title" :status="step.status" @mouseover.native="handleStepOver(step)" @mouseleave.native="showError = false" />
     </el-steps>
     <div v-if="showError" class="task-error">
       <p>错误信息：</p>
