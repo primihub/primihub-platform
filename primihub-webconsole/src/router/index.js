@@ -122,25 +122,44 @@ export const asyncRoutes = [
         activeMenu: '/privateSearch/list',
         parent: { name: 'PrivateSearchList' }
       }
+    }, {
+      path: 'detail/:id',
+      name: 'PIRDetail',
+      component: () => import('@/views/privateSearch/detail'),
+      meta: {
+        title: '任务详情',
+        activeMenu: '/privateSearch/list'
+      },
+      hidden: true
     }]
   },
   {
     path: '/PSI',
     component: Layout,
     name: 'PSI',
-    redirect: '/PSI/task',
+    redirect: '/PSI/list',
     meta: { title: '隐私求交', icon: 'el-icon-lock' },
     children: [
       {
         path: 'task',
         name: 'PSITask',
         component: () => import('@/views/PSI/task'),
-        meta: { title: '求交任务' }
+        meta: { title: '求交任务' },
+        hidden: true
       }, {
-        path: 'result',
-        name: 'PSIResult',
-        component: () => import('@/views/PSI/result'),
-        meta: { title: '求交结果' }
+        path: 'list',
+        name: 'PSIList',
+        component: () => import('@/views/PSI/list'),
+        meta: { title: '隐私求交', breadcrumb: false }
+      }, {
+        path: 'detail/:id',
+        name: 'PSIDetail',
+        component: () => import('@/views/PSI/detail'),
+        meta: {
+          title: '任务详情',
+          activeMenu: '/PSI/list'
+        },
+        hidden: true
       }]
   },
   {

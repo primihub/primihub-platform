@@ -1,0 +1,42 @@
+.detail{
+  margin-bottom: 40px;
+  h3{
+    border-left: 3px solid #1677FF;
+    padding-left: 10px;
+  }
+}
+.section{
+  background-color: #fafafa;
+  padding: 25px 40px 25px 40px;
+  border-radius: 12px;
+}
+.description-container{
+  display: flex;
+  flex-flow: wrap;
+  line-height: 1.5;
+  margin: 20px 0;
+
+  &.w100{
+    display: block;
+  }
+}
+.infos-title{
+  font-size: 16px;
+}
+
+.desc-col{
+  width: 50%;
+  flex-shrink: 0;
+  display: flex;
+  color: #606266;
+  font-size: 14px;
+  margin: 6px 0;
+  position: relative;
+}
+.desc-label{
+  margin-right: 10px;
+}
+.desc-content{
+  flex: 1;
+  padding-right: 10px;
+}

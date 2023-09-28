@@ -204,7 +204,7 @@ export default {
     }
     .secondary-title{
       display: inline-block;
-      color:#409EFF;
+      color:#1677FF;
       margin-left: 45px;
       font-size:14px;
       cursor: pointer;

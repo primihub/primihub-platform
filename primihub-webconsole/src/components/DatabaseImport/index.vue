@@ -291,9 +291,9 @@ export default {
     }
   }
   .state-running{
-    color: #409EFF;
+    color: #1677FF;
     .state-icon{
-      background-color: #409EFF;
+      background-color: #1677FF;
     }
   }
   .state-failed{

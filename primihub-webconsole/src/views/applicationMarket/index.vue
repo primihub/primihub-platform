@@ -98,7 +98,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     .read-num{
-      color: #409eff;
+      color: #1677FF;
       font-size: 14px;
     }
   }

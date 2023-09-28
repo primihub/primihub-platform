@@ -2,8 +2,8 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="参与机构">
-          <el-select v-model="query.organName" v-loading="organLoading" size="small" placeholder="请选择" clearable @change="handleOrganChange" @focus="handleOrganFocus" @clear="handleClear('organName')">
+        <el-form-item>
+          <el-select v-model="query.organName" placeholder="请选择参与机构" clearable @change="handleOrganChange" @clear="handleClear('organName')">
             <el-option
               v-for="item in organList"
               :key="item.globalId"
@@ -12,17 +12,14 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="任务ID">
-          <el-input v-model="query.taskId" size="small" placeholder="请输入" clearable @clear="handleClear('taskId')" />
+        <el-form-item>
+          <el-input v-model="query.taskName" placeholder="请输入任务名称" clearable @clear="handleClear('taskName')" />
         </el-form-item>
-        <el-form-item label="被查询资源名">
-          <el-input v-model="query.resourceName" size="small" placeholder="请输入" clearable @clear="handleClear('resourceName')" />
+        <el-form-item>
+          <el-input v-model="query.retrievalId" placeholder="请输入查询关键词" clearable @clear="handleClear('retrievalId')" />
         </el-form-item>
-        <el-form-item label="查询关键词">
-          <el-input v-model="query.retrievalId" size="small" placeholder="请输入" clearable @clear="handleClear('retrievalId')" />
-        </el-form-item>
-        <el-form-item label="查询状态">
-          <el-select v-model="query.taskState" size="small" placeholder="请选择" clearable @clear="handleClear('taskState')">
+        <!-- <el-form-item>
+          <el-select v-model="query.taskState" placeholder="请选择查询状态" clearable @clear="handleClear('taskState')">
             <el-option
               v-for="item in statusOptions"
               :key="item.value"
@@ -30,63 +27,67 @@
               :value="item.value"
             />
           </el-select>
+        </el-form-item> -->
+        <el-form-item>
+          <el-date-picker
+            v-model="query.createDate"
+            type="datetimerange"
+            range-separator="至"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            value-format="yyyy-MM-dd HH:mm:ss"
+            :default-time="['00:00:00', '23:59:59']"
+            @change="handleDateChange"
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" icon="el-icon-search" size="small" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" size="small" @click="reset">重置</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
+          <el-button icon="el-icon-refresh-right" @click="reset" />
         </el-form-item>
       </el-form>
     </div>
-    <el-button class="add-button" icon="el-icon-plus" type="primary" @click="toTaskPage">隐匿查询</el-button>
     <div class="list">
+      <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐匿查询</el-button>
       <el-table
         :data="dataList"
       >
         <el-table-column
+          type="index"
+          align="center"
+          label="序号"
+          width="50"
+        />
+        <el-table-column
+          prop="taskName"
+          label="任务名称"
+        >
+          <template slot-scope="{row}">
+            <el-tooltip :content="row.taskName" placement="top"><el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link></el-tooltip>
+          </template>
+        </el-table-column>
+        <el-table-column
           prop="organName"
           label="参与机构"
           align="center"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.organName" placement="top"><span>{{ row.organName }}</span></el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="taskIdName"
-          label="任务ID"
         />
         <el-table-column
-          prop="resourceId"
-          label="被查询资源ID"
-          min-width="120"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.resourceId" placement="top">
-              <el-link size="small" :disabled="row.available === 1" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column
           prop="resourceName"
-          label="被查询资源名"
+          label="被查询资源名称"
           min-width="120"
         >
           <template slot-scope="{row}">
             <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
           </template>
         </el-table-column>
-
         <el-table-column
-          label="资源信息"
+          prop="resourceId"
+          label="被查询资源ID"
           min-width="150"
         >
           <template slot-scope="{row}">
-            <div class="info">
-              特征量：{{ row.resourceColumnCount }}<br>
-              样本量：{{ row.resourceRowsCount }} <br>
-              正例样本数量：{{ row.resourceYRowsCount || 0 }}<br>
-              正例样本比例：{{ row.resourceYRatio || 0 }}%
-            </div>
+            <el-tooltip :content="row.resourceId" placement="top">
+              <el-link :disabled="row.available === 1" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column
@@ -98,17 +99,13 @@
             <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
           </template>
         </el-table-column>
-        <el-table-column
-          prop="createDate"
-          label="查询时间"
-          min-width="120"
-        >
+        <el-table-column label="发起时间" prop="createDate" min-width="120px">
           <template slot-scope="{row}">
-            {{ row.createDate.split(' ')[0] }} <br>
-            {{ row.createDate.split(' ')[1] }}
+            <span>{{ row.createDate.split(' ')[0] }}</span><br>
+            <span>{{ row.createDate.split(' ')[1] }}</span><br>
           </template>
         </el-table-column>
-        <el-table-column label="任务耗时" min-width="120px">
+        <el-table-column label="任务耗时">
           <template slot-scope="{row}">
             {{ row.consuming | timeFilter }}
           </template>
@@ -116,22 +113,20 @@
         <el-table-column
           prop="taskState"
           label="查询状态"
-          min-width="100"
+          min-width="120px"
         >
           <template slot-scope="{row}">
             <StatusIcon :status="row.taskState" />
-            {{ row.taskState | statusFilter }}
+            {{ row.taskState | taskStatusFilter }}
           </template>
         </el-table-column>
-        <el-table-column
-          label="操作"
-          width="120"
-          fixed="right"
-        >
+        <el-table-column label="操作" fixed="right" min-width="120px" align="center">
           <template slot-scope="{row}">
-            <div>
-              <el-button :disabled="row.taskState !== 1" type="text" @click.stop="download(row.taskId)">导出结果</el-button>
-            </div>
+            <p class="tool-buttons">
+              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">查看</el-link>
+              <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
+              <el-link type="danger" :disabled="row.taskState === 2" @click="deleteTask(row)">删除</el-link>
+            </p>
           </template>
         </el-table-column>
       </el-table>
@@ -143,6 +138,7 @@
 <script>
 import { getAvailableOrganList } from '@/api/center'
 import { getPirTaskList } from '@/api/PIR'
+import { deleteTask, cancelTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import StatusIcon from '@/components/StatusIcon'
 import { getToken } from '@/utils/auth'
@@ -151,17 +147,6 @@ export default {
   components: {
     Pagination,
     StatusIcon
-  },
-  filters: {
-    // 任务状态 任务状态(0未开始 1成功 2运行中 3失败 4取消)
-    statusFilter(status) {
-      const sourceMap = {
-        2: '查询中',
-        1: '成功',
-        3: '失败'
-      }
-      return sourceMap[status]
-    }
   },
   data() {
     return {
@@ -201,16 +186,59 @@ export default {
   },
   async created() {
     await this.fetchData()
-    if (this.searchList.length > 0) {
-      this.timer = window.setInterval(async() => {
-        setTimeout(await this.fetchData(), 0)
-      }, 5000)
-    }
+    await this.getAvailableOrganList()
   },
   destroyed() {
     clearInterval(this.timer)
   },
   methods: {
+    handleDateChange(val) {
+      if (!val) {
+        this.query.createDate = []
+        this.fetchData()
+      }
+    },
+    toTaskDetailPage(id) {
+      this.$router.push({
+        name: 'PIRDetail',
+        params: { id }
+      })
+    },
+    async cancelTask(row) {
+      const res = await cancelTask(row.taskId)
+      if (res.code === 0) {
+        const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
+        this.$set(this.dataList[posIndex], 'taskState', 4)
+        this.$notify({
+          message: '取消成功',
+          type: 'success',
+          duration: 1000
+        })
+      }
+    },
+    deleteTask(row) {
+      if (row.taskState === 2) return
+      this.$confirm('此操作将永久删除该任务, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        deleteTask(row.taskId).then(res => {
+          if (res.code === 0) {
+            const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
+            if (posIndex !== -1) {
+              this.dataList.splice(posIndex, 1)
+            }
+            this.$message({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+            clearInterval(this.timer)
+          }
+        })
+      }).catch(() => {})
+    },
     toTaskPage() {
       this.$router.push({
         name: 'PIRTask'
@@ -239,15 +267,23 @@ export default {
       })
     },
     async fetchData() {
-      const { taskState, organName, resourceName, retrievalId, taskId } = this.query
-      const params = {
-        taskId,
+      const { taskState, organName, resourceName, retrievalId, taskName } = this.query
+      let params = {
+        taskName,
         taskState,
         organName,
         resourceName,
         retrievalId,
         pageNo: this.pageNo,
         pageSize: this.pageSize
+      }
+      if (this.query.createDate && this.query.createDate.length > 0) {
+        const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
+        const endDate = this.query.createDate.length > 0 ? this.query.createDate[1] : ''
+        params = {
+          ...params,
+          startDate: startDate,
+          endDate: endDate }
       }
       const res = await getPirTaskList(params)
       const { result } = res
@@ -260,6 +296,10 @@ export default {
       if (this.searchList.length === 0) {
         this.startInterval = false
         clearInterval(this.timer)
+      } else {
+        this.timer = window.setInterval(async() => {
+          setTimeout(await this.fetchData(), 0)
+        }, 1500)
       }
     },
     handlePagination(data) {
@@ -268,9 +308,6 @@ export default {
     },
     handleOrganChange(value) {
       this.query.organName = this.organList.find(item => item.globalId === value)?.globalName
-    },
-    async handleOrganFocus() {
-      await this.getAvailableOrganList()
     },
     async getAvailableOrganList() {
       this.organLoading = true
@@ -289,28 +326,26 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-::v-deep .el-table .cell{
-  margin: 0 5px;
-  line-height: 1.5;
-  max-height: 65px;
-  overflow: hidden;
-  cursor: pointer;
+::v-deep .el-input--suffix .el-input__inner{
+  padding-right: 0;
 }
 .search-area {
-  padding: 30px 0px 10px 20px;
+  padding: 48px 40px 20px 40px;
   background-color: #fff;
   display: flex;
   flex-wrap: wrap;
+  border-radius: 12px;
 }
 .form-wrap{
   padding-top: 20px;
   background-color: #fff;
 }
 .list {
-  padding: 30px;
+  padding: 25px 48px;
   margin-top: 20px;
   border-top: 1px solid #eee;
   background-color: #fff;
+  border-radius: 12px;
 }
 .info{
   font-size: 12px;
@@ -322,6 +357,13 @@ export default {
   justify-content: center;
 }
 .add-button{
-  margin-top: 20px;
+  margin-bottom: 25px;
+}
+.tool-buttons{
+  display: flex;
+  justify-content: center;
+  .el-link{
+    margin: 0 5px;
+  }
 }
 </style>

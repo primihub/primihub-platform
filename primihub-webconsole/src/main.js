@@ -5,7 +5,7 @@ import store from './store'
 import router from './router'
 import { message } from '@/utils/resetMessage'
 import 'normalize.css/normalize.css' // A modern alternative to CSS resets
-import 'element-ui/lib/theme-chalk/index.css'
+import '@/theme/index.css'
 import '@/styles/index.scss' // global css
 import '@/icons' // icon
 import '@/permission' // permission control

@@ -25,15 +25,16 @@
       </el-descriptions>
     </div>
     <div class="detail">
-      <!-- <p>资源表结构</p> -->
       <el-row
         :gutter="20"
         class="data-container"
       >
         <el-col v-if="fieldList.length>0" :span="12">
+          <h3>字段信息</h3>
           <EditResourceTable border :is-editable="false" :data="fieldList" height="500" />
         </el-col>
         <el-col v-if="dataList.length>0" :span="12">
+          <h3>数据资源预览</h3>
           <ResourcePreviewTable :data="dataList" height="500" />
         </el-col>
       </el-row>
