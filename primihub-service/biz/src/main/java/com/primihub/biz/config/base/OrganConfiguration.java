@@ -5,10 +5,11 @@ import com.alibaba.nacos.api.NacosFactory;
 import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.listener.Listener;
 import com.primihub.biz.constant.SysConstant;
-import com.primihub.biz.entity.sys.po.SysCollectOrgan;
+import com.primihub.biz.entity.data.vo.ModelComponent;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
@@ -18,7 +19,6 @@ import javax.annotation.Resource;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -32,10 +32,10 @@ import java.util.concurrent.Executor;
 public class OrganConfiguration {
     @Resource
     private Environment environment;
+    @Resource
+    private ApplicationContext applicationContext;
 
     private SysLocalOrganInfo sysLocalOrganInfo;
-
-    private List<SysCollectOrgan> collectOrganList;
 
     public SysLocalOrganInfo getSysLocalOrganInfo() {
         return sysLocalOrganInfo;
@@ -69,7 +69,7 @@ public class OrganConfiguration {
     @PostConstruct
     public void init(){
         readNacosConfigOrganInfo();
-        readResourceConfigCollectOrganInfo();
+        readResourceCofigComponentsInfo();
     }
 
 
@@ -108,9 +108,13 @@ public class OrganConfiguration {
         }
     }
 
-    public void readResourceConfigCollectOrganInfo(){
+    public void readResourceCofigComponentsInfo(){
         try {
-            org.springframework.core.io.Resource  resource = new ClassPathResource(SysConstant.SYS_COLLECT_DATA_ORGAN_INFO_NAME);
+            ComponentsConfiguration components = applicationContext.getBean(ComponentsConfiguration.class);
+            if (components.getModelComponents()!=null && components.getModelComponents().size()>0){
+                return;
+            }
+            org.springframework.core.io.Resource  resource = new ClassPathResource(SysConstant.SYS_COMPONENTS_INFO_NAME);
             InputStream is = resource.getInputStream();
             InputStreamReader isr = new InputStreamReader(is);
             BufferedReader br = new BufferedReader(isr);
@@ -120,7 +124,7 @@ public class OrganConfiguration {
                 sb.append(data);
             }
             if (StringUtils.isNotBlank(sb.toString())){
-                collectOrganList = JSON.parseArray(sb.toString(),SysCollectOrgan.class);
+                components.setModelComponents(JSON.parseObject(sb.toString()).getJSONArray("model_components").toJavaList(ModelComponent.class));
             }
             br.close();
             isr.close();
@@ -129,4 +133,5 @@ public class OrganConfiguration {
             log.info("读取文件失败:{}",e.getMessage());
         }
     }
+
 }

@@ -204,7 +204,20 @@
             <artifactId>guava</artifactId>
             <version>30.1.1-jre</version>
         </dependency>
-
     </dependencies>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>../../primihub-service/script</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/components.json</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>
 
 </project>
