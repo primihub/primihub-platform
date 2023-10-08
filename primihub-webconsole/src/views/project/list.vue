@@ -379,6 +379,8 @@ export default {
     },
     searchProject() {
       this.pageNo = 1
+      this.queryType = this.searchForm.queryType
+      this.activeIndex = this.queryType !== '' ? this.queryType : '0'
       this.fetchData()
     },
     reset() {
@@ -393,7 +395,7 @@ export default {
       this.pageNo = 1
       this.fetchData()
     },
-    fetchData(type) {
+    fetchData() {
       this.listLoading = true
       this.projectList = []
       const { projectName, organId, status, createDate, projectId, queryType } = this.searchForm
@@ -401,7 +403,7 @@ export default {
         projectId,
         projectName,
         organId,
-        queryType: type || queryType,
+        queryType,
         status,
         startDate: createDate && createDate[0],
         endDate: createDate && createDate[1],
@@ -429,14 +431,9 @@ export default {
     },
     handleSelect(key) {
       this.queryType = key
-      this.searchForm.queryType = ''
-      this.searchForm.projectName = ''
-      this.searchForm.organId = ''
-      this.searchForm.status = ''
-      this.searchForm.startDate = ''
-      this.searchForm.endDate = ''
+      this.searchForm.queryType = this.queryType
       this.pageNo = 1
-      this.fetchData(this.queryType)
+      this.fetchData()
     },
     handlePagination(data) {
       this.pageNo = data.page
