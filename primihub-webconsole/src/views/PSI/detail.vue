@@ -118,6 +118,8 @@
     <!-- preview dialog -->
     <ResourcePreviewDialog
       :data="previewList"
+      title="计算结果如下"
+      empty-text="隐私求交未查询到相关结果"
       :visible.sync="previewDialogVisible"
       append-to-body
       @close="closeDialog"

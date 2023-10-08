@@ -7,21 +7,21 @@
           <breadcrumb class="breadcrumb-container" />
         </template>
       </div>
-      <!-- <div id="guide" class="align-self-center flex">
-        <div class="guide-item">
-          <el-dropdown>
-            <div type="primary" class="dropdown-title">
-              <svg-icon icon-class="problem" class="icon" />新手指引
-            </div>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item><svg-icon icon-class="scene" class="icon" />功能场景</el-dropdown-item>
-              <el-dropdown-item> <svg-icon icon-class="achieve" class="icon" />技术实现</el-dropdown-item>
-              <el-dropdown-item> <svg-icon icon-class="cases" class="icon" />典型用例</el-dropdown-item>
-              <el-dropdown-item> <svg-icon icon-class="extend" class="icon" />扩展阅读</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-        </div>
-        <div class="guide-item"> <svg-icon icon-class="problem" class="icon" />常见问题</div>
+      <div id="guide" class="align-self-center flex">
+        <!--        <div class="guide-item">-->
+        <!--          <el-dropdown>-->
+        <!--            <div type="primary" class="dropdown-title">-->
+        <!--              <svg-icon icon-class="problem" class="icon"/>新手指引-->
+        <!--            </div>-->
+        <!--            <el-dropdown-menu slot="dropdown" >-->
+        <!--              <el-dropdown-item><svg-icon icon-class="scene" class="icon" />功能场景</el-dropdown-item>-->
+        <!--              <el-dropdown-item> <svg-icon icon-class="achieve" class="icon" />技术实现</el-dropdown-item>-->
+        <!--              <el-dropdown-item> <svg-icon icon-class="cases" class="icon" />典型用例</el-dropdown-item>-->
+        <!--              <el-dropdown-item> <svg-icon icon-class="extend" class="icon" />扩展阅读</el-dropdown-item>-->
+        <!--            </el-dropdown-menu>-->
+        <!--          </el-dropdown>-->
+        <!--        </div>-->
+        <!--        <div class="guide-item"> <svg-icon icon-class="problem" class="icon"/>常见问题</div>-->
         <div class="guide-item">
           <el-dropdown>
             <div type="primary" class="dropdown-title">
@@ -37,8 +37,8 @@
             </el-dropdown-menu>
           </el-dropdown>
         </div>
-        <div class="guide-item"> <svg-icon icon-class="order" class="icon" />提交工单</div>
-      </div> -->
+        <div class="guide-item"><a href="https://m74hgjmt55.feishu.cn/share/base/form/shrcnVHhIFLb4EJzOf4OXx0drLe" target="_blank"> <svg-icon icon-class="order" class="icon" />提交工单</a></div>
+      </div>
     </div>
     <transition name="fade-transform" mode="out-in">
       <router-view :key="key" />

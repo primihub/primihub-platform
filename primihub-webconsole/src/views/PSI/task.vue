@@ -56,6 +56,22 @@
                     </el-select>
                   </div>
                 </div>
+                <el-popover
+                  class="popover-container"
+                  placement="top-start"
+                  title="隐私求交步骤："
+                  width="400"
+                  trigger="hover"
+                >
+                  <div>
+                    <p>(1)添加资源：发起方和协作方先在各自节点【资源管理】菜单下添加数据资源</p>
+                    <p>(2)资源授权：协作方向发起方授权资源权限，设置资源公开或指定机构可见</p>
+                    <p>(3)发起查询：发起方在本方【隐私求交】菜单下发起隐匿查询任务，并查看结果</p>
+                  </div>
+                  <div slot="reference">
+                    <svg-icon icon-class="problem" />
+                  </div>
+                </el-popover>
               </div>
             </div>
             <div class="item-row">
@@ -352,7 +368,7 @@ export default {
     },
     selectTeeOgan() {
       if (!this.formData.otherOrganId) {
-        this.$message.error('请选择协作方')
+        this.$message.error('请先选择协作方再选可信第三方')
       }
     },
     async getPsiResourceAllocationList(params) {
@@ -665,7 +681,7 @@ export default {
 }
 
 .header{
-  overflow: hidden;
+  //overflow: hidden;
   position: relative;
   height: 40px;
   margin-bottom: 20px;
@@ -732,6 +748,11 @@ export default {
       display: inline-block;
       font-size: 16px;
     }
+  }
+  .popover-container{
+    position: absolute;
+    right: -22px;
+    top: 12px;
   }
 }
 .item-row{
