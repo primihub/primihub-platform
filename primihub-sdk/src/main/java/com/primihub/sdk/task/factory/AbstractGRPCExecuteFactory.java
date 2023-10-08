@@ -123,13 +123,12 @@ public abstract class AbstractGRPCExecuteFactory {
                             }
                             param.setError(sb.toString());
                             isContinue = false;
-                        }else {
-                            long success = getNumberOfSuccessfulTasks(key,cacheService);
-                            log.info("taskid:{} - requestId:{} - num:{} - success:{}",param.getTaskId(),param.getRequestId(),partyCount,success);
-                            if (partyCount <= success){
-                                isContinue = false;
-                            }
                         }
+                    }
+                    long success = getNumberOfSuccessfulTasks(key,cacheService);
+                    log.info("taskid:{} - requestId:{} - num:{} - success:{}",param.getTaskId(),param.getRequestId(),partyCount,success);
+                    if (partyCount <= success){
+                        isContinue = false;
                     }
                 }
                 Thread.sleep(1000L);

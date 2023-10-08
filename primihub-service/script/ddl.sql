@@ -193,6 +193,7 @@ CREATE TABLE `data_psi`  (
                              `output_content` int(11) DEFAULT '0' COMMENT '输出内容 默认0 0交集 1差集',
                              `output_format` varchar(255) DEFAULT NULL COMMENT '输出格式',
                              `result_organ_ids` varchar(255) DEFAULT NULL COMMENT '结果获取方 多机构","号间隔',
+                             `tee_organ_id` varchar(255) DEFAULT NULL COMMENT 'tee 机构ID',
                              `remarks` varchar(255) DEFAULT NULL COMMENT '备注',
                              `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',

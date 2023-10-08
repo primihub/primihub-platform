@@ -3,6 +3,7 @@ package com.primihub.biz.service.data.component.impl;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
+import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -53,6 +54,7 @@ public class ExceptionComponentTaskServiceImpl extends BaseComponentServiceImpl 
             log.info("ids:{}", ids);
             String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "exception";
             Map<String, GrpcComponentDto> exceptionEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
+            exceptionEntityMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
             log.info("exceptionEntityMap-1:{}",JSONObject.toJSONString(exceptionEntityMap));
             if (newest!=null && newest.size()!=0){
                 ids = new ArrayList<>();

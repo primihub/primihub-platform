@@ -36,7 +36,7 @@ public class AbstractKillGRPCExecute extends AbstractGRPCExecuteFactory {
             taskParam.setSuccess(true);
         }else {
             taskParam.setSuccess(false);
-            taskParam.setError(response.getMsgInfo());
+            taskParam.setError(response.getMsgInfoBytes().toStringUtf8());
         }
         log.info("kill end response:{}",response.toString());
     }

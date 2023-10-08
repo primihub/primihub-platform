@@ -3,12 +3,15 @@ package com.primihub.biz.convert;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPsiReq;
 import com.primihub.biz.entity.data.vo.DataPsiVo;
 import com.primihub.biz.entity.data.vo.PsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import org.apache.commons.lang.StringUtils;
 
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DataPsiConvert {
@@ -30,6 +33,7 @@ public class DataPsiConvert {
         dataPsi.setOutputFormat(StringUtils.isBlank(req.getOutputFormat())?"csv":req.getOutputFormat());
         dataPsi.setResultOrganIds(req.getResultOrganIds());
         dataPsi.setRemarks(req.getRemarks());
+        dataPsi.setTeeOrganId(req.getTeeOrganId());
         return dataPsi;
     }
 
@@ -47,7 +51,7 @@ public class DataPsiConvert {
 
     }
 
-    public static DataPsiVo DataPsiConvertVo(DataPsiTask task, DataPsi dataPsi, DataResource dataResource, Map<String, Object> otherDataResource, SysLocalOrganInfo sysLocalOrganInfo) {
+    public static DataPsiVo DataPsiConvertVo(DataPsiTask task, DataPsi dataPsi, DataResource dataResource, Map<String, Object> otherDataResource, SysLocalOrganInfo sysLocalOrganInfo, DataTask dataTask, List<LinkedHashMap<String, Object>> dataList, String teeOrganName) {
         DataPsiVo dataPsiVo = new DataPsiVo();
         dataPsiVo.setId(task.getId());
         dataPsiVo.setOwnOrganId(dataPsi.getOwnOrganId());
@@ -81,6 +85,13 @@ public class DataPsiConvert {
         dataPsiVo.setTaskId(task.getId());
         dataPsiVo.setTaskIdName(task.getTaskId());
         dataPsiVo.setTaskState(task.getTaskState());
+        dataPsiVo.setTaskStartTime(dataTask.getTaskStartTime());
+        dataPsiVo.setTaskEndTime(dataTask.getTaskEndTime());
+        dataPsiVo.setTaskError(dataTask.getTaskErrorMsg());
+        dataPsiVo.setDataList(dataList);
+        dataPsiVo.setTaskName(dataTask.getTaskName());
+        dataPsiVo.setTeeOrganId(dataPsi.getTeeOrganId());
+        dataPsiVo.setTeeOrganName(teeOrganName);
         return dataPsiVo;
     }
 }

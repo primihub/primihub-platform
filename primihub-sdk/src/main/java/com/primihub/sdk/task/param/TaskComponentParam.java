@@ -23,6 +23,8 @@ public class TaskComponentParam{
 
     private boolean infer = false;
 
+    private boolean fitTransform = false;
+
     public ModelTypeEnum getModelType() {
         return modelType;
     }
@@ -61,6 +63,14 @@ public class TaskComponentParam{
 
     public void setInfer(boolean infer) {
         this.infer = infer;
+    }
+
+    public boolean isFitTransform() {
+        return fitTransform;
+    }
+
+    public void setFitTransform(boolean fitTransform) {
+        this.fitTransform = fitTransform;
     }
 
     @Override

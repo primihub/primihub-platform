@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataPsiPrRepository">
     <insert id="saveDataPsi" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataPsi">
-        insert into data_psi (own_organ_id,own_resource_id,own_keyword,other_organ_id,other_resource_id,other_keyword,output_file_path_type,output_no_repeat,tag,result_name,output_content,output_format,result_organ_ids,remarks,user_id,is_del,create_date,update_date)
-        values (#{ownOrganId},#{ownResourceId},#{ownKeyword},#{otherOrganId},#{otherResourceId},#{otherKeyword},#{outputFilePathType},${outputNoRepeat},#{tag},#{resultName},#{outputContent},#{outputFormat},#{resultOrganIds},#{remarks},#{userId},0,now(),now())
+        insert into data_psi (own_organ_id,own_resource_id,own_keyword,other_organ_id,other_resource_id,other_keyword,output_file_path_type,output_no_repeat,tag,result_name,output_content,output_format,result_organ_ids,tee_organ_id,remarks,user_id,is_del,create_date,update_date)
+        values (#{ownOrganId},#{ownResourceId},#{ownKeyword},#{otherOrganId},#{otherResourceId},#{otherKeyword},#{outputFilePathType},${outputNoRepeat},#{tag},#{resultName},#{outputContent},#{outputFormat},#{resultOrganIds},#{teeOrganId},#{remarks},#{userId},0,now(),now())
     </insert>
     <insert id="saveDataPsiTask" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataPsiTask">
         insert into data_psi_task (psi_id,task_id,task_state,ascription,ascription_type,file_rows,file_path,is_del,create_date,update_date)

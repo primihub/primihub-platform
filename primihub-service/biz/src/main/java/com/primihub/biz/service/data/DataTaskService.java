@@ -293,6 +293,7 @@ public class DataTaskService {
         TaskParam taskParam = dataAsyncService.getTaskHelper().killTask(rawDataTask.getTaskIdName());
         if (taskParam.getSuccess()){
             rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
+            rawDataTask.setTaskEndTime(System.currentTimeMillis());
             dataTaskPrRepository.updateDataTask(rawDataTask);
             if (rawDataTask.getTaskType().equals(TaskTypeEnum.PSI.getTaskType())){
                 DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
