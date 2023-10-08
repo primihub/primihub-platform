@@ -4,7 +4,7 @@
     :before-close="closeDialog"
     v-bind="$attrs"
   >
-    <ResourcePreviewTable :data="data" style="width:100%;" max-height="500" />
+    <ResourcePreviewTable :data="data" :empty-text="emptyText" style="width:100%;" max-height="500" />
   </el-dialog>
 </template>
 
@@ -19,6 +19,10 @@ export default {
     data: {
       type: Array,
       default: () => []
+    },
+    emptyText: {
+      type: String,
+      default: '暂无数据'
     }
   },
   methods: {

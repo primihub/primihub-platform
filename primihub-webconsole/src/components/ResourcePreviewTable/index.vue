@@ -6,6 +6,7 @@
       border
       v-bind="$attrs"
       class="table-list"
+      :empty-text="emptyText"
     >
       <el-table-column v-if="data.length >0" align="center" label="序号" type="index" width="50" />
       <el-table-column
@@ -33,6 +34,10 @@ export default {
       default() {
         return []
       }
+    },
+    emptyText: {
+      type: String,
+      default: '暂无数据'
     }
   },
   computed: {

@@ -26,9 +26,27 @@
                   <el-col :span="12">
                     <el-form-item>
                       <div class="custom-input" :style="{'color': resourceName === '请选择机构下资源' ? '#C0C4CC' : '#606266'}" :class="{'disabled': form.organId === '' }" @click="openDialog"><span class="resource-name">{{ resourceName }}</span><i class="el-icon-arrow-down" /></div>
+                      <el-popover
+                        class="popover-container"
+                        placement="top-start"
+                        title="隐匿查询步骤:"
+                        width="400"
+                        trigger="hover"
+                      >
+                        <div>
+                          <p>(1)添加资源：被查询机构先在其节点里【资源管理】菜单下添加数据资源</p>
+                          <p>(2)资源授权：被查询机构向查询发起方授权资源权限，设置资源公开或指定机构可见</p>
+                          <p>(3)发起查询：查询发起方在本方【隐匿查询】菜单下发起隐匿查询任务，并查看结果。</p>
+                          <p>您可以通过搜索框查找机构开放给您的资源，如您未找到，请到对应机构先添加资源。</p>
+                        </div>
+                        <div slot="reference">
+                          <svg-icon icon-class="problem" />
+                        </div>
+                      </el-popover>
                     </el-form-item>
                   </el-col>
                 </el-row>
+
               </el-form-item>
               <el-form-item v-if="form.selectResources" class="resource-container" label="已选资源" prop="selectResources">
                 <ResourceItemSimple :data="selectResources" :show-close="true" class="select-item" @delete="handleDelete" />
@@ -349,6 +367,13 @@ export default {
 }
 .dialog-con{
   text-align: left;
+  .popover-container{
+    position: absolute;
+    top: 12px;
+    right: -22px;
+    font-size: 16px;
+    line-height: 1;
+  }
 }
 .resource-box{
   display: flex;

@@ -64,6 +64,8 @@
     <!-- preview dialog -->
     <ResourcePreviewDialog
       :data="previewList"
+      title="计算结果如下"
+      empty-text="未查询到关键词"
       :visible.sync="previewDialogVisible"
       append-to-body
       @close="closeDialog"
