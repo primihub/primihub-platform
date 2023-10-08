@@ -24,6 +24,8 @@
             v-model="row.fieldDesc"
             :disabled="!isEditable"
             size="mini"
+            :maxlength="12"
+            placeholder="不超过12个字符"
             @change="handleChange(row)"
           />
         </template>

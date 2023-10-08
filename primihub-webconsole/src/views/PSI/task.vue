@@ -102,7 +102,18 @@
                         :key="index"
                         :label="item.fieldName"
                         :value="item.fieldName"
-                      />
+                      >
+                        <template slot="default">
+                          <div class="flex justify-content-between">
+                            <span class="option-label">{{ item.fieldName }}</span>
+                            <span class="option-desc">
+                              <el-tooltip class="item" effect="dark" :content="item.fieldDesc" placement="top-start">
+                                <span>{{ item.fieldDesc ? item.fieldDesc.length>8 ? item.fieldDesc.slice(0,8)+'...' : item.fieldDesc : '' }}</span>
+                              </el-tooltip>
+                            </span>
+                          </div>
+                        </template>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                   <div class="right-container-center"><img :src="centerImg" alt="" width="24"></div>
@@ -113,7 +124,18 @@
                         :key="index"
                         :label="item.fieldName"
                         :value="item.fieldName"
-                      />
+                      >
+                        <template slot="default">
+                          <div class="flex justify-content-between">
+                            <span class="option-label">{{ item.fieldName }}</span>
+                            <span class="option-desc">
+                              <el-tooltip class="item" effect="dark" :content="item.fieldDesc" placement="top-start">
+                                <span>{{ item.fieldDesc ? item.fieldDesc.length>8 ? item.fieldDesc.slice(0,8)+'...' : item.fieldDesc : '' }}</span>
+                              </el-tooltip>
+                            </span>
+                          </div>
+                        </template>
+                      </el-option>
                     </el-select>
                   </el-form-item>
                 </div>
@@ -773,5 +795,16 @@ export default {
   padding-right: 20px;
   margin: 30px;
   text-align: right;
+}
+.option-label{
+  max-width: 120px;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.option-desc{
+  width: 30%;
+  color: #999;
 }
 </style>
