@@ -321,15 +321,6 @@ export default {
 ::v-deep .el-dialog__body{
   padding: 10px 20px;
 }
-::v-deep .el-table,::v-deep .el-divider__text, .el-link{
-  font-size: 12px!important;
-}
-::v-deep .el-table td.el-table__cell div{
-  line-height: 1.5;
-}
-::v-deep .table.el-table .el-table__cell{
-  padding: 5px 0;
-}
 .custom-input{
   display: flex;
   justify-content: space-between;
