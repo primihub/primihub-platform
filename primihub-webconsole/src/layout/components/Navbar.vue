@@ -5,7 +5,7 @@
         <img v-if="isShowLogo && logoUrl !== ''" :src="logoUrl" class="sidebar-logo">
         <h1 v-if="showLogoTitle" class="logo-title">{{ logoTitle }} </h1>
       </template>
-      <div class="secondary-title" @click="toPath">
+      <div v-if="!isHideNodeMap" class="secondary-title" @click="toPath">
         {{ routePath ? '首页' : '分布式隐私计算服务网络' }}
       </div>
     </div>
@@ -82,7 +82,8 @@ export default {
       'isHideAppMarket',
       'isHideBigModel',
       'logoTitle',
-      'showLogoTitle'
+      'showLogoTitle',
+      'isHideNodeMap'
     ]),
     ...mapGetters([
       'sidebar',
@@ -180,14 +181,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 50px;
+  height: 60px;
   overflow: hidden;
   background: #3e4555;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
   color: #838790;
   width: 100%;
   .logo{
-    padding: 5px 20px;
+    padding: 10px 20px;
     line-height: 36px;
     height: 100%;
     flex: 1;

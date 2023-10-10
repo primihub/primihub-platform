@@ -33,7 +33,8 @@ const state = {
   loaded: false,
   isShowLogo,
   isOpenTracing,
-  isHideBigModel: true
+  isHideBigModel: true,
+  isHideNodeMap: true
 }
 
 const mutations = {
@@ -41,12 +42,14 @@ const mutations = {
     state[key] = value
   },
   SET_LOGO_STATUS: (state, status) => {
-    console.log('SET_LOGO_STATUS', status)
     state.isShowLogo = status
   },
   SET_TRACING_STATUS: (state, status) => {
-    console.log('SET_TRACING_STATUS', status)
     state.isOpenTracing = status
+  },
+  SET_NODE_MAP_STATUS: (state, status) => {
+    console.log('SET_NODE_MAP_STATUS', status)
+    state.isHideNodeMap = status
   },
   SET_CHANGE_STATUS: (state, status) => {
     state.settingChanged = status

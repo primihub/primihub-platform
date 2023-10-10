@@ -7,7 +7,7 @@
           <breadcrumb class="breadcrumb-container" />
         </template>
       </div>
-      <div id="guide" class="align-self-center flex">
+      <div v-if="!isHideFadeBack" id="guide" class="align-self-center flex">
         <!--        <div class="guide-item">-->
         <!--          <el-dropdown>-->
         <!--            <div type="primary" class="dropdown-title">-->
@@ -72,6 +72,9 @@ export default {
         return true
       }
       return false
+    },
+    isHideFadeBack() {
+      return this.$store.state.settings.isHideFadeBack
     }
   },
   watch: {
@@ -143,13 +146,13 @@ export default {
 
 <style lang="scss" scoped>
 .app-main {
-  /*50 = navbar  */
-  min-height: calc(100vh - 50px);
+  /*60 = navbar  */
+  min-height: calc(100vh - 60px);
   width: 100%;
   position: relative;
   overflow: hidden;
   background-color: #f0f2f5;
-  top: 45px;
+  top: 60px;
   &.padding{
      padding: 0 20px 20px 20px;
   }

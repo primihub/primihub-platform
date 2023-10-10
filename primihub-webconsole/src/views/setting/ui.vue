@@ -55,6 +55,12 @@
             <el-radio :label="false">否</el-radio>
           </el-radio-group>
         </el-descriptions-item>
+        <el-descriptions-item label="是否隐藏分布式隐私计算服务网络">
+          <el-radio-group v-model="isHideNodeMap" @input="handleNodeMapChange">
+            <el-radio :label="true">是</el-radio>
+            <el-radio :label="false">否</el-radio>
+          </el-radio-group>
+        </el-descriptions-item>
       </el-descriptions>
     </div>
   </div>
@@ -111,6 +117,15 @@ export default {
       get() {
         console.log('store value', this.$store.state.settings.isOpenTracing)
         return this.$store.state.settings.isOpenTracing
+      },
+      set(val) {
+        return val
+      }
+    },
+    isHideNodeMap: {
+      get() {
+        console.log('store value', this.$store.state.settings.isHideNodeMap)
+        return this.$store.state.settings.isHideNodeMap
       },
       set(val) {
         return val
@@ -187,6 +202,10 @@ export default {
     handleTracingChange(val) {
       this.params.isOpenTracing = val
       this.changeSettings({ state: 'isOpenTracing', mutation: 'SET_TRACING_STATUS', value: val })
+    },
+    handleNodeMapChange(val) {
+      this.params.isHideNodeMap = val
+      this.changeSettings({ state: 'isHideNodeMap', mutation: 'SET_NODE_MAP_STATUS', value: val })
     },
     handleAppMarketChange(val) {
       this.params.isHideAppMarket = val
