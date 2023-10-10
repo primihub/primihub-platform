@@ -30,7 +30,7 @@ public interface DataResourceRepository {
 
     List<DataResourceTag> queryTagsByResourceId(Long resourceId);
 
-    DataResource queryDataResourceById(Long resourceId);
+    DataResource queryDataResourceById(String resourceId);
 
     DataSource queryDataSourceById(Long id);
 

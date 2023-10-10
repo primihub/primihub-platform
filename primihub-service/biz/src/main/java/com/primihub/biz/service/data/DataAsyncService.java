@@ -208,7 +208,7 @@ public class DataAsyncService implements ApplicationContextAware {
         String resourceId, resourceColumnNameList;
         int available;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())) {
-            DataResource otherDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOtherResourceId()));
+            DataResource otherDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOtherResourceId());
             resourceId = StringUtils.isNotBlank(otherDataResource.getResourceFusionId()) ? otherDataResource.getResourceFusionId() : otherDataResource.getResourceId().toString();
             resourceColumnNameList = otherDataResource.getFileHandleField();
             available = otherDataResource.getResourceState();

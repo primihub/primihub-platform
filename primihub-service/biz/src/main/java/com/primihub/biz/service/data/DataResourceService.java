@@ -190,7 +190,7 @@ public class DataResourceService {
     }
 
     public BaseResultEntity editDataResource(DataResourceReq req, Long userId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(req.getResourceId());
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(String.valueOf(req.getResourceId()));
         if (dataResource==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"找不到资源信息");
         }
@@ -233,7 +233,7 @@ public class DataResourceService {
     }
 
     public BaseResultEntity getDataResource(Long resourceId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(String.valueOf(resourceId));
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
@@ -285,7 +285,7 @@ public class DataResourceService {
     }
 
     public BaseResultEntity deleteDataResource(Long resourceId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(String.valueOf(resourceId));
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到资源信息");
         }
@@ -314,7 +314,7 @@ public class DataResourceService {
         }else {
             Integer count = dataResourceRepository.queryDataFileFieldCount(paramMap);
             boolean isUpdate = false;
-            DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+            DataResource dataResource = dataResourceRepository.queryDataResourceById(String.valueOf(resourceId));
             if (dataResource!=null&&dataResource.getUserId().equals(userId)) {
                 isUpdate = true;
             }
@@ -670,7 +670,7 @@ public class DataResourceService {
 
 
     public BaseResultEntity resourceStatusChange(Long resourceId, Integer resourceState) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(String.valueOf(resourceId));
         if (dataResource==null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"找不到资源信息");
         }
@@ -804,7 +804,7 @@ public class DataResourceService {
     }
 
     public DataResource getDataResourceUrl(Long resourceId) {
-        return dataResourceRepository.queryDataResourceById(resourceId);
+        return dataResourceRepository.queryDataResourceById(String.valueOf(resourceId));
     }
 
     public BaseResultEntity getDerivationResourceData(DerivationResourceReq req) {
