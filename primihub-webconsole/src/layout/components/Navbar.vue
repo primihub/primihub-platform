@@ -180,14 +180,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 50px;
+  height: 60px;
   overflow: hidden;
   background: #3e4555;
   box-shadow: 0 1px 4px rgba(0,21,41,.08);
   color: #838790;
   width: 100%;
   .logo{
-    padding: 5px 20px;
+    padding: 10px 20px;
     line-height: 36px;
     height: 100%;
     flex: 1;
