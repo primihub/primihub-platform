@@ -185,7 +185,10 @@ export default {
     }
   },
   async created() {
-    await this.fetchData()
+    this.timer = window.setInterval(() => {
+      setTimeout(this.fetchData(), 0)
+    }, 1500)
+    this.fetchData()
     await this.getAvailableOrganList()
   },
   destroyed() {
@@ -246,7 +249,7 @@ export default {
     },
     async search() {
       this.pageNo = 1
-      await this.fetchData()
+      this.fetchData()
     },
     reset() {
       for (const key in this.query) {
@@ -266,7 +269,7 @@ export default {
         params: { id: resourceId }
       })
     },
-    async fetchData() {
+    fetchData() {
       const { taskState, organName, resourceName, retrievalId, taskName } = this.query
       let params = {
         taskName,
@@ -285,22 +288,22 @@ export default {
           startDate: startDate,
           endDate: endDate }
       }
-      const res = await getPirTaskList(params)
-      const { result } = res
-      this.dataList = result.data
-      this.total = result.total
-      this.pageCount = result.totalPage
-      // filter the running task
-      this.searchList = this.dataList.filter(item => item.taskState === 2)
-      // No tasks are running
-      if (this.searchList.length === 0) {
-        this.startInterval = false
+      getPirTaskList(params).then(res => {
+        const { result } = res
+        this.dataList = result.data
+        this.total = result.total
+        this.pageCount = result.totalPage
+        // filter the running task
+        this.searchList = this.dataList.filter(item => item.taskState === 2)
+        // No tasks are running
+        if (this.searchList.length === 0) {
+          this.startInterval = false
+          clearInterval(this.timer)
+        }
+      }).catch(err => {
+        console.log(err)
         clearInterval(this.timer)
-      } else {
-        this.timer = window.setInterval(async() => {
-          setTimeout(await this.fetchData(), 0)
-        }, 1500)
-      }
+      })
     },
     handlePagination(data) {
       this.pageNo = data.page
