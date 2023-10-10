@@ -165,10 +165,10 @@ public class DataPsiService {
         if (dataTask == null){
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务详情");
         }
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
         Map<String, Object> otherDataResource = null;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
-            DataResource otherResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+            DataResource otherResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
             otherDataResource = new LinkedHashMap<>();
             otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
             otherDataResource.put("resourceName",otherResource.getResourceName());
