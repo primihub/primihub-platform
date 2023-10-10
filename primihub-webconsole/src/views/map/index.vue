@@ -35,6 +35,10 @@ export default {
     }
   },
   async created() {
+    if (this.$store.state.settings.isHideNodeMap) {
+      this.$router.push('/project/list')
+      return
+    }
     await this.getData()
     this.loading = true
     await this.loadMapJs1(`https://webapi.luokuang.com/maps?ak=${accessToken}&plugins=Scale,ToolBar,ControlBar,OverView,Autocomplete`)
