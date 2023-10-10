@@ -77,16 +77,16 @@ export default {
       return this.$store.state.settings.isHideFadeBack
     }
   },
-  watch: {
-    '$route': {
-      immediate: true,
-      handler(newVal) {
-        if (newVal.path !== '/map/index') {
-          this.showGuide()
-        }
-      }
-    }
-  },
+  // watch: {
+  //   '$route': {
+  //     immediate: true,
+  //     handler(newVal) {
+  //       if (newVal.path !== '/map/index' && !this.isHideFadeBack) {
+  //         this.showGuide()
+  //       }
+  //     }
+  //   }
+  // },
   methods: {
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
