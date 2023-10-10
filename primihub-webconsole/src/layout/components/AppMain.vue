@@ -7,7 +7,7 @@
           <breadcrumb class="breadcrumb-container" />
         </template>
       </div>
-      <div id="guide" class="align-self-center flex">
+      <div v-if="!isHideFadeBack" id="guide" class="align-self-center flex">
         <!--        <div class="guide-item">-->
         <!--          <el-dropdown>-->
         <!--            <div type="primary" class="dropdown-title">-->
@@ -72,6 +72,9 @@ export default {
         return true
       }
       return false
+    },
+    isHideFadeBack() {
+      return this.$store.state.settings.isHideFadeBack
     }
   },
   watch: {
