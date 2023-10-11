@@ -18,7 +18,7 @@ RUN apt update \
   && apt install tzdata \
   && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
-COPY --from=build /opt/application/target/*-SNAPSHOT.jar /applications/application.jar
-COPY --from=build /opt/gateway/target/*-SNAPSHOT.jar /applications/gateway.jar
+COPY --from=build /opt/primihub-service/application/target/*-SNAPSHOT.jar /applications/application.jar
+COPY --from=build /opt/primihub-service/gateway/target/*-SNAPSHOT.jar /applications/gateway.jar
 
 ENTRYPOINT ["/bin/sh","-c","java -jar -Dfile.encoding=UTF-8 /applications/application.jar --spring.profiles.active=test --server.port=8080"]
