@@ -172,10 +172,10 @@
               </el-col>
             </el-row>
             <el-form-item v-if="formData.psiTag == 2" label="可信计算节点" prop="teeOrganId">
-              <el-select v-model="formData.teeOrganId" placeholder="请选择可信计算节点" @click.native="selectTeeOgan">
+              <el-select v-model="formData.teeOrganId" placeholder="请选择可信计算节点" @click.native="selectTeeOrgan">
                 <el-option v-for="item in teeOrganList" :key="item.globalId" :label="item.globalName" :value="item.globalId" />
               </el-select>
-              <div v-if="!formData.otherOrganId" class="display-modal" @click="selectTeeOgan" />
+              <div v-if="!formData.otherOrganId" class="display-modal" @click="selectTeeOrgan" />
               <div class="form-tip-text">注：第三方可信计算节点为双方提供数据机密性和完整性保护的前提，并支持计算。</div>
             </el-form-item>
             <el-form-item label="备注" prop="remarks">
@@ -388,7 +388,7 @@ export default {
     handleTaskTypeChange(value) {
       this.taskTypeText = value === 0 ? '交' : '差'
     },
-    selectTeeOgan() {
+    selectTeeOrgan() {
       if (!this.formData.otherOrganId) {
         this.$message.error('请先选择协作方再选可信第三方')
       }
@@ -440,7 +440,7 @@ export default {
       })
     },
     checkParams() {
-      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword, taskName, resultName } = this.formData
+      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword, taskName, resultName, teeOrganId, psiTag } = this.formData
       let message = ''
       let enable = true
       if (!taskName) {
@@ -463,6 +463,9 @@ export default {
         enable = false
       } else if (ownKeyword === '') {
         message = '请选择发起方关联键'
+        enable = false
+      } else if (psiTag === 2 && !teeOrganId) {
+        message = '请选择可信计算节点'
         enable = false
       }
       if (!enable) {
