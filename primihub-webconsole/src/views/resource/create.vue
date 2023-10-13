@@ -174,7 +174,7 @@ export default {
       },
       tagInputVisible: false,
       tagInputValue: '',
-      fileMaxSize: 1024 * 1024 * 1, // file limit 1MB
+      fileMaxSize: 1024 * 1024 * 100, // file limit 1MB
       resource: null,
       loading: false,
       fieldTypeList: [{

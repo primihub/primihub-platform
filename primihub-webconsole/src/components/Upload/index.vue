@@ -20,7 +20,7 @@
       <uploader-list />
     </uploader>
     <p v-if="showTips" class="upload-tip">
-      1.只能上传.csv文件，且不超过1MB <br>
+      1.只能上传.csv文件，且不超过100MB <br>
       2.请确保上传的资源文件编码为UTF8
     </p>
   </div>
@@ -35,7 +35,7 @@ import uploader from 'vue-simple-uploader'
 Vue.use(uploader)
 
 // 切片大小
-const CHUNK_SIZE = 1 * 1024 * 1024
+const CHUNK_SIZE = 100 * 1024 * 1024
 // 可传文件类型集合
 // const FILE_TYPES = ['text/csv', 'application/vnd.ms-excel']
 const FILE_SUFFIXS = ['csv', ' sqlite', 'sqlite3', 'db', 'db3', 's3db', 'sl3']
@@ -261,7 +261,7 @@ p{
   font-size: 14px;
 }
 .uploader {
-  width:660px;
+  width:670px;
   min-width: 300px;
   margin: 20px 0;
   font-size: 12px;
