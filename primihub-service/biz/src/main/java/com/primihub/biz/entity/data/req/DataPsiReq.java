@@ -18,8 +18,9 @@ public class DataPsiReq {
 
     /**
      * 本机构资源id
+     * 对应 data_resource 中的 resource_fusion_id
      */
-    private Long ownResourceId;
+    private String ownResourceId;
 
     /**
      * 本机构资源关键字

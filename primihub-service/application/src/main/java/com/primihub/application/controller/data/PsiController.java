@@ -45,7 +45,7 @@ public class PsiController {
         if (req.getOwnOrganId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownOrganId");
         }
-        if (req.getOwnResourceId()==null||req.getOwnResourceId()==0L) {
+        if (StringUtils.isBlank(req.getOwnResourceId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownResourceId");
         }
         if (StringUtils.isBlank(req.getOwnKeyword())) {
