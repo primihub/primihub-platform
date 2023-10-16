@@ -427,13 +427,14 @@ export default {
         })
         return
       }
+      console.log('selectResources', this.selectResources.resourceId, this.formData.otherResourceId)
       if (this.role === 'own') {
-        this.ownOrganResourceField = this.selectResources && this.selectResources.resourceId !== this.formData.ownResourceId ? this.selectResources.fieldList : []
+        this.ownOrganResourceField = this.selectResources ? this.selectResources.fieldList : []
         this.formData.ownKeyword = ''
         this.formData.ownResourceId = this.selectResources.resourceId
         this.formData.ownResourceName = this.selectResources.resourceName
       } else {
-        this.otherOrganResourceField = this.selectResources && this.selectResources.resourceId !== this.formData.otherResourceId ? this.selectResources.fieldList : []
+        this.otherOrganResourceField = this.selectResources ? this.selectResources.fieldList : []
         this.formData.otherKeyword = ''
         this.formData.otherResourceId = this.selectResources.resourceId
         this.formData.otherResourceName = this.selectResources.resourceName
