@@ -51,8 +51,10 @@ public class ShareFilter implements Filter {
                     filterChain.doFilter(httpServletRequestWrapper, response);
                 }
             }catch (IOException e){
+                e.printStackTrace();
                 writeJsonToResponse(response,"获取同步内容失败:"+e.getMessage());
             }catch (Exception e) {
+                e.printStackTrace();
                 writeJsonToResponse(response,"解密内容失败:"+e.getMessage());
             }
         }

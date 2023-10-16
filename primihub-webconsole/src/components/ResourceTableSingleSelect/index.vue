@@ -25,7 +25,6 @@
       </el-table-column>
       <el-table-column
         label="资源信息"
-        min-width="120"
       >
         <template slot-scope="{row}">
           特征量：{{ row.resourceColumnCount }}<br>
