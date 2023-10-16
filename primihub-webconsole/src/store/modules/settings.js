@@ -33,7 +33,8 @@ const state = {
   loaded: false,
   isShowLogo,
   isOpenTracing,
-  isHideBigModel: true
+  isHideBigModel: true,
+  isHideNodeMap: true
 }
 
 const mutations = {
@@ -41,12 +42,13 @@ const mutations = {
     state[key] = value
   },
   SET_LOGO_STATUS: (state, status) => {
-    console.log('SET_LOGO_STATUS', status)
     state.isShowLogo = status
   },
   SET_TRACING_STATUS: (state, status) => {
-    console.log('SET_TRACING_STATUS', status)
     state.isOpenTracing = status
+  },
+  SET_NODE_MAP_STATUS: (state, status) => {
+    state.isHideNodeMap = status
   },
   SET_CHANGE_STATUS: (state, status) => {
     state.settingChanged = status
@@ -100,10 +102,11 @@ const actions = {
   async getHomepage({ commit }) {
     const res = await getHomepage()
     if (res.code === 0 && res.result && Object.keys(res.result).length > 0) {
-      const { favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo, isHideBigModel = state.isHideBigModel, isOpenTracing = state.isOpenTracing } = res.result
+      const { favicon = state.favicon, logoUrl = state.logoUrl, loginDescription = state.loginDescription, isHideFadeBack = state.isHideFadeBack, isHideFooterVersion = state.isHideFooterVersion, logoTitle = state.logoTitle, showLogoTitle = state.showLogoTitle, loginLogoUrl = state.loginLogoUrl, footerText = state.footerText, isHideAppMarket = state.isHideAppMarket, isShowLogo = state.isShowLogo, isHideBigModel = state.isHideBigModel, isOpenTracing = state.isOpenTracing, isHideNodeMap = state.isHideNodeMap } = res.result
       console.log('isOpenTracing', isOpenTracing)
       commit('SET_LOGO_STATUS', isShowLogo)
       commit('SET_TRACING_STATUS', isOpenTracing)
+      commit('SET_NODE_MAP_STATUS', isHideNodeMap)
       commit('SET_FAVICON', favicon)
       commit('SET_LOGO_URL', logoUrl)
       commit('SET_LOGIN_LOGO_URL', loginLogoUrl)

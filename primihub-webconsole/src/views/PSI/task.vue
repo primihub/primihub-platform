@@ -553,7 +553,7 @@ export default {
       })
     },
     checkParams() {
-      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword, taskName, resultName } = this.formData
+      const { otherOrganId, otherKeyword, ownResourceId, otherResourceId, ownKeyword, taskName, resultName, teeOrganId, psiTag } = this.formData
       let message = ''
       let enable = true
       if (!taskName) {
@@ -576,6 +576,9 @@ export default {
         enable = false
       } else if (ownKeyword === '') {
         message = '请选择发起方关联键'
+        enable = false
+      } else if (psiTag === 2 && !teeOrganId) {
+        message = '请选择可信计算节点'
         enable = false
       }
       if (!enable) {
