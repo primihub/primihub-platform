@@ -49,12 +49,17 @@ public class SysCommonService {
     }
 
     public BaseResultEntity getCollectList() {
-        ResponseEntity<JSONObject> collectList = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);
+        try {
+            ResponseEntity<JSONObject> collectList = restTemplate.getForEntity(SysConstant.SYS_QUERY_COLLECT_URL, JSONObject.class);
 //        log.info("getCollectList json:{}",JSONObject.toJSONString(collectList));
-        if (collectList==null || collectList.getBody()==null){
-            return null;
+            if (collectList==null || collectList.getBody()==null){
+                return null;
+            }
+            JSONObject body = collectList.getBody();
+            return BaseResultEntity.success(body.getJSONArray("data"));
+        }catch (Exception e){
+            log.info(e.getMessage());
         }
-        JSONObject body = collectList.getBody();
-        return BaseResultEntity.success(body.getJSONArray("data"));
+        return BaseResultEntity.success();
     }
 }
