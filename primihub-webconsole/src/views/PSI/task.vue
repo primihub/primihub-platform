@@ -81,11 +81,11 @@
                 </div>
                 <div class="row-right-container justify-content-between flex">
                   <el-form-item prop="ownResourceId">
-                    <ResourceSelect :value="formData.ownResourceId" placeholder="发起方资源表" no-data-text="暂无数据" :options="tableDataA" role="own" @focus="handleResourceFocus" @search="handleOwnResourceSearch" @change="handleOwnResourceChange" @clear="handleResourceClear" />
+                    <el-select v-model="formData.ownResourceName" placeholder="发起方资源表" clearable @focus="openDialog('own')" @clear="handleResourceClear('own')" />
                   </el-form-item>
                   <div class="right-container-center"><img :src="centerImg" alt="" width="24"></div>
                   <el-form-item prop="otherResourceId">
-                    <ResourceSelect :value="formData.otherResourceId" placeholder="协作方资源表" :options="tableDataB" role="other" no-data-text="暂无数据" @focus="handleResourceFocus" @search="handleOtherResourceSearch" @change="handleTargetResourceChange" @clear="handleResourceClear" />
+                    <el-select v-model="formData.otherResourceName" placeholder="协作方资源表" @focus="openDialog('other')" />
                   </el-form-item>
                 </div>
 
@@ -196,13 +196,46 @@
         </div>
       </div>
     </div>
+    <el-dialog
+      title="选择资源"
+      :visible.sync="dialogVisible"
+      top="10px"
+      class="dialog"
+      width="800px"
+      :before-close="handleDialogCancel"
+    >
+      <div class="dialog-body">
+        <div class="search-input">
+          <el-input
+            v-model="searchKeyword"
+            placeholder="请输入内容"
+            class="search"
+            @change="handleSearchNameChange"
+            @keyup.enter.native="searchResource"
+          >
+            <el-button slot="append" icon="el-icon-search" @click="searchResource" />
+          </el-input>
+        </div>
+        <ResourceTableSingleSelect max-height="560" :data="resourceList" :show-status="false" :selected-data="selectResources && selectResources.resourceId" @change="handleResourceChange" />
+      </div>
+      <div class="dialog-footer flex align-items-center" :class="{'justify-content-between': pageCount>1,'justify-content-center': pageCount<=1}">
+        <pagination v-if="pageCount>1" :limit.sync="pageSize" :page.sync="pageNo" :page-count="pageCount" :total="total" layout="total, prev, pager, next" @pagination="handlePagination" />
+        <div>
+          <el-button @click="handleDialogCancel">取 消</el-button>
+          <el-button type="primary" @click="handleDialogSubmit">确 定</el-button>
+        </div>
+      </div>
+
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
+import { getResourceList } from '@/api/fusionResource'
 import { getAvailableOrganList } from '@/api/center'
-import ResourceSelect from '@/components/ResourceSelect'
+import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
+import Pagination from '@/components/Pagination'
 
 const intersection = require('@/assets/intersection.svg')
 const diffsection = require('@/assets/diffsection.svg')
@@ -210,10 +243,16 @@ const diffsection = require('@/assets/diffsection.svg')
 export default {
   name: 'PSITask',
   components: {
-    ResourceSelect
+    ResourceTableSingleSelect,
+    Pagination
   },
   data() {
     return {
+      role: '',
+      resourceList: [],
+      searchKeyword: '',
+      selectResources: null,
+      dialogVisible: false,
       allOrganList: [],
       organList: [],
       teeOrganList: [],
@@ -222,14 +261,18 @@ export default {
       selectLoading: false,
       ownOrganResourceField: [],
       otherOrganResourceField: [],
-      pageSize: 100,
       total: 0,
+      currentPage: 1,
       pageNo: 1,
+      pageSize: 5,
+      pageCount: 0,
       isRun: false, // task running state
       isReset: false,
       taskId: 0,
       tableDataA: [],
       tableDataB: [],
+      ownResourceList: [],
+      otherResourceList: [],
       formData: {
         taskName: '',
         ownOrganId: 0,
@@ -262,7 +305,7 @@ export default {
           { required: true, message: '请选择关联键', trigger: 'blur' }
         ],
         otherResourceId: [
-          { required: true, message: '请选择资源', trigger: 'blur' }
+          { required: true, message: '请选择资源' }
         ],
         otherKeyword: [
           { required: true, message: '请选择关联键', trigger: 'blur' }
@@ -376,6 +419,77 @@ export default {
     await this.getAvailableOrganList()
   },
   methods: {
+    handleDialogSubmit() {
+      if (!this.selectResources) {
+        this.$message({
+          message: '请选择资源',
+          type: 'warning'
+        })
+        return
+      }
+      console.log('selectResources', this.selectResources.resourceId, this.formData.otherResourceId)
+      if (this.role === 'own') {
+        this.ownOrganResourceField = this.selectResources ? this.selectResources.fieldList : []
+        this.formData.ownKeyword = ''
+        this.formData.ownResourceId = this.selectResources.resourceId
+        this.formData.ownResourceName = this.selectResources.resourceName
+      } else {
+        this.otherOrganResourceField = this.selectResources ? this.selectResources.fieldList : []
+        this.formData.otherKeyword = ''
+        this.formData.otherResourceId = this.selectResources.resourceId
+        this.formData.otherResourceName = this.selectResources.resourceName
+      }
+      this.dialogVisible = false
+    },
+    handleSearchNameChange(searchName) {
+      console.log(searchName)
+      // this.form.resourceName = searchName
+    },
+    searchResource() {
+      this.pageNo = 1
+      this.getResourceList()
+    },
+    openDialog(role) {
+      this.searchKeyword = ''
+      this.pageNo = 1
+      this.role = role
+      if (role === 'other' && this.formData.otherOrganId === '') {
+        this.$message.error('请选择协作方')
+        return
+      }
+      if (this.selectResources) {
+        this.selectResources.resourceId = role === 'own' ? this.formData.ownResourceId : this.formData.otherResourceId
+      }
+      this.dialogVisible = true
+      this.getResourceList()
+    },
+    async getResourceList() {
+      const params = {
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
+        organId: this.role === 'own' ? this.formData.ownOrganId : this.formData.otherOrganId,
+        resourceName: this.searchKeyword
+      }
+      const { code, result } = await getResourceList(params)
+      if (code === 0) {
+        const { data, total, totalPage } = result
+        this.total = total
+        this.pageCount = totalPage
+        this.resourceList = data
+      }
+    },
+    handleDialogCancel() {
+      this.dialogVisible = false
+      this.searchKeyword = ''
+      this.pageNo = 1
+    },
+    handleResourceChange(data) {
+      this.selectResources = data
+    },
+    handlePagination(data) {
+      this.pageNo = data.page
+      this.getResourceList()
+    },
     async getAvailableOrganList() {
       this.loading = true
       const res = await getAvailableOrganList()
@@ -477,91 +591,27 @@ export default {
 
       return enable
     },
-    async handleResourceFocus(role) {
-      this.resourceName = ''
-      if (role === 'own') {
-        this.tableDataA = await this.getPsiResourceAllocationList({
-          organId: this.formData.ownOrganId
-        })
-        console.log('tableDataA', this.tableDataA)
-      } else {
-        if (this.formData.otherOrganId === '') {
-          this.$message.error('请选择协作方')
-          return
-        }
-        console.log('otherOrganId=====>', this.formData.otherOrganId)
-        this.tableDataB = []
-        this.tableDataB = await this.getPsiResourceAllocationList({
-          organId: this.formData.otherOrganId,
-          resourceName: this.resourceName
-        })
-      }
-    },
-    async handleOwnResourceSearch(resourceName) {
-      this.resourceName = resourceName
-      this.tableDataA = await this.getPsiResourceAllocationList({
-        organId: this.formData.organId,
-        resourceName: this.resourceName
-      })
-    },
-    async handleOtherResourceSearch(resourceName) {
-      if (resourceName !== '') {
-        this.resourceName = resourceName
-        this.tableDataB = await this.getPsiResourceAllocationList({
-          organId: this.formData.otherOrganId,
-          resourceName: this.resourceName
-        })
-      }
-    },
     handleResourceClear(role) {
-      this.resourceName = ''
       if (role === 'own') {
-        this.tableDataA = []
+        this.formData.ownResourceId = ''
+        this.formData.ownResourceName = ''
+        this.formData.ownKeyword = ''
+        this.ownOrganResourceField = []
       } else if (role === 'other') {
-        this.tableDataB = []
+        this.formData.otherResourceId = ''
+        this.formData.otherResourceName = ''
+        this.otherOrganResourceField = []
+        this.otherKeyword = ''
       }
-    },
-    handleOwnResourceChange(resourceId) {
-      this.formData.ownResourceId = resourceId
-      this.ownOrganResourceField = []
-      this.formData.ownKeyword = []
-      const currentResource = this.tableDataA.find(item => item.resourceId === resourceId)
-      this.ownResourceName = currentResource ? currentResource.resourceName : ''
-      currentResource?.keywordList.forEach((item, index) => {
-        this.ownOrganResourceField.push(item)
-      })
-    },
-    handleTargetResourceChange(resourceId) {
-      this.otherOrganResourceField = []
-      this.formData.otherResourceId = resourceId
-      this.formData.otherKeyword = []
-      const currentResource = this.tableDataB.find(item => item.resourceId === resourceId)
-      this.otherResourceName = currentResource ? currentResource.resourceName : ''
-      currentResource?.keywordList.forEach((item, index) => {
-        this.otherOrganResourceField.push(item)
-      })
-    },
-    async handleOrganSelect(data) {
-      this.resourceName = ''
-      this.formData.otherOrganId = data.organId
-      this.formData.otherOrganName = data.organName
-      this.otherOrganResourceField = []
-      this.formData.otherResourceId = ''
-      this.formData.otherKeyword = []
-      this.formData.serverAddress = data.serverAddress
-      this.tableDataB = []
-      this.tableDataB = await this.getPsiResourceAllocationList({
-        organId: this.formData.otherOrganId
-      })
-    },
-    handleClose() {
-      this.dialogVisible = false
     }
   }
 }
 </script>
 <style lang="scss" scoped>
 @import "../../styles/variables.scss";
+::v-deep .el-dialog__body{
+  padding: 10px 20px;
+}
 .container{
   overflow: hidden;
   background: #fff;
@@ -809,5 +859,8 @@ export default {
 .option-desc{
   width: 30%;
   color: #999;
+}
+.search-input{
+  width: 300px;
 }
 </style>
