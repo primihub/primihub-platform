@@ -80,7 +80,7 @@
             <div class="buttons">
               <el-link v-if="hasCopyModelTaskPermission && isCreator" :disabled="projectStatus === 2" type="primary" size="mini" @click.stop="copyTask(row)">复制</el-link>
               <el-link v-if="hasModelRunPermission && row.latestTaskStatus === 3 && isCreator" :disabled="projectStatus === 2" type="primary" size="mini" @click.stop="restartTaskModel(row.latestTaskId)">重启</el-link>
-              <el-link v-if="row.latestTaskStatus === 2 && isCreator" type="danger" @click.stop="cancelTaskModel(row.latestTaskId)">取消</el-link>
+              <el-link v-if="row.latestTaskStatus === 2 && isCreator" type="danger" @click.stop="cancelTaskModel(row.latestTaskIdName)">取消</el-link>
             </div>
           </template>
         </el-table-column>

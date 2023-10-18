@@ -187,7 +187,7 @@ export default {
     await this.getAvailableOrganList()
     this.timer = window.setInterval(() => {
       setTimeout(this.getPsiTaskList(), 0)
-    }, 3000)
+    }, 1500)
   },
   destroyed() {
     clearInterval(this.timer)
@@ -253,7 +253,7 @@ export default {
       }).catch(() => {})
     },
     async cancelTask(row) {
-      const res = await cancelTask(row.taskId)
+      const res = await cancelTask(row.taskIdName)
       if (res.code === 0) {
         const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
         this.allDataPsiTask[posIndex].taskState === 4
