@@ -253,6 +253,7 @@ export default {
       }).catch(() => {})
     },
     async cancelTask(row) {
+      this.getPsiTaskList()
       const res = await cancelTask(row.taskIdName)
       if (res.code === 0) {
         const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
