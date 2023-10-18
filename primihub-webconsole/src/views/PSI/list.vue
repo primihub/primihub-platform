@@ -237,10 +237,7 @@ export default {
       }).then(() => {
         delPsiTask({ taskId: row.taskId }).then(res => {
           if (res.code === 0) {
-            const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
-            if (posIndex !== -1) {
-              this.allDataPsiTask.splice(posIndex, 1)
-            }
+            this.getPsiTaskList()
             this.$message({
               message: '删除成功',
               type: 'success',
