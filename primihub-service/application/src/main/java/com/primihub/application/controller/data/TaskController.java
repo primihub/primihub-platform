@@ -86,8 +86,8 @@ public class TaskController {
 
 
     @GetMapping("cancelTask")
-    public BaseResultEntity cancelPsiTask(Long taskId){
-        if (taskId==null||taskId==0L) {
+    public BaseResultEntity cancelPsiTask(String taskId){
+        if (StringUtils.isBlank(taskId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
         return  dataTaskService.cancelTask(taskId);
