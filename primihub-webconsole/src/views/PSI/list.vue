@@ -255,12 +255,11 @@ export default {
       if (res.code === 0) {
         const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
         this.allDataPsiTask[posIndex].taskState === 4
-        this.$notify({
-          message: '取消成功',
-          type: 'success',
-          duration: 1000
+      } else {
+        this.$message({
+          message: '取消任务失败',
+          type: 'error'
         })
-        this.$emit('cancel', { taskId: row.taskId })
       }
     },
     handleDelete(data) {
