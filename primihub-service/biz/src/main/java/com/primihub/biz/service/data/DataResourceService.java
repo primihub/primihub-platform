@@ -639,8 +639,8 @@ public class DataResourceService {
             return resourceSynGRPCDataSet(dataResource.getFileSuffix(),dataResource.getResourceFusionId(),dataResource.getUrl(),fieldList);
         }
         Map<String,Object> map = new HashMap<>();
-//        map.put("dbType",dataSource.getDbType());
-//        map.put("dbUrl",dataSource.getDbUrl());
+        map.put("dbType",dataSource.getDbType());
+        map.put("dbUrl",dataSource.getDbUrl());
         map.put("tableName", dataSource.getDbTableName());
         if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
             map.put("db_path",dataSource.getDbUrl());

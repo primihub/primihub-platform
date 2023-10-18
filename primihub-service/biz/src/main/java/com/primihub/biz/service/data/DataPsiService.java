@@ -166,6 +166,9 @@ public class DataPsiService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务详情");
         }
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
+        if (dataResource==null){
+            dataResource = dataResourceRepository.queryDataResourceById(Long.valueOf(dataPsi.getOwnResourceId()));
+        }
         Map<String, Object> otherDataResource = null;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
             DataResource otherResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
