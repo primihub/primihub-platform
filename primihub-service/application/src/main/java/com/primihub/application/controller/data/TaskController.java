@@ -207,7 +207,11 @@ public class TaskController {
         if (file!=null&&file.exists()){
             FileInputStream inputStream = new FileInputStream(file);
             response.setHeader("content-Type","application/vnd.ms-excel");
-            response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
+            if (dataTask.getTaskType().equals(TaskTypeEnum.PIR.getTaskType())){
+                response.setHeader("content-disposition", "attachment; fileName=" + new String((dataTask.getTaskName()+"任务结果.csv").getBytes("UTF-8"),"iso-8859-1"));
+            }else {
+                response.setHeader("content-disposition", "attachment; fileName=" + new String(file.getName().getBytes("UTF-8"),"iso-8859-1"));
+            }
             ServletOutputStream outputStream = response.getOutputStream();
             int len = 0;
             byte[] data = new byte[1024];
