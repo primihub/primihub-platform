@@ -234,6 +234,9 @@ public class DataResourceService {
 
     public BaseResultEntity getDataResource(String resourceId) {
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+        if (dataResource == null){
+            dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+        }
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
@@ -265,7 +268,8 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
-        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(dataResource.getResourceId());}}));
+        Long id = dataResource.getResourceId();
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(id);}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }
