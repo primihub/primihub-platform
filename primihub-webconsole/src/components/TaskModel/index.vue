@@ -78,10 +78,10 @@
         </template>
       </el-table>
     </div>
-    <!-- <div v-if="hasModelSelectComponent && chartData.length > 0" class="section">
+    <div v-if="hasModelSelectComponent && chartData.length > 0" class="section">
       <h3>模型评估视图</h3>
       <modelScoreChart :chart-data="chartData" width="500px" height="400px" />
-    </div> -->
+    </div>
 
   </div>
 </template>
@@ -89,12 +89,12 @@
 <script>
 import { getModelDetail, deleteModel, updateModelDesc } from '@/api/model'
 import EditInput from '@/components/editInput'
-// import modelScoreChart from '@/components/Charts/ModelScoreChart'
+import modelScoreChart from '@/components/Charts/ModelScoreChart'
 
 export default {
   components: {
-    EditInput
-    // modelScoreChart
+    EditInput,
+    modelScoreChart
   },
   filters: {
     quotaTypeFilter(type) {
