@@ -37,7 +37,6 @@ public class OtherServiceAbstract extends AbstractDataDBService {
     @Value("#{systemProperties['SEATUNNEL_HOME']}")
     private String SEATUNNEL_HOME;
 
-    private SeaTunnelEngineProxy seaTunnelEngine;
     @Resource
     private Environment environment;
     @Autowired
@@ -45,13 +44,6 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Resource(name="primaryStringRedisTemplate")
     private StringRedisTemplate primaryStringRedisTemplate;
-    @PostConstruct
-    public void init(){
-        if (StringUtils.isNotBlank(SEATUNNEL_HOME)){
-            seaTunnelEngine = SeaTunnelEngineProxy.getInstance();
-        }
-    }
-
     @Override
     public BaseResultEntity healthConnection(DataSource dbSource) {
         return dataSourceTables(dbSource);
@@ -59,7 +51,8 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity dataSourceTables(DataSource dbSource) {
-        if (seaTunnelEngine==null){
+        SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
+        if (instance==null || !instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
         }
         if (OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
@@ -86,7 +79,8 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity dataSourceTableDetails(DataSource dbSource) {
-        if (seaTunnelEngine==null){
+        SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
+        if (instance==null || !instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
         }
         if (OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
@@ -109,7 +103,8 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY) {
-        if (seaTunnelEngine==null){
+        SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
+        if (instance==null || !instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
         }
         if (OtherEunm.DB_DRIVER_MAP.containsKey(dataSource.getDbDriver())){
@@ -157,9 +152,9 @@ public class OtherServiceAbstract extends AbstractDataDBService {
             String content = FreemarkerTemplate.getInstance().generateTemplateStr(getTemplatesParam(dataSource, sql, traceId), otherEunm.template());
             Long jobInstanceId = System.currentTimeMillis();
             Long jobEngineId = System.currentTimeMillis();
-            seaTunnelEngine.restoreJobContent(content,jobInstanceId,jobEngineId);
+            SeaTunnelEngineProxy.getInstance().restoreJobContent(content,jobInstanceId,jobEngineId);
             while (true){
-                String jobPipelineStatusStr = seaTunnelEngine.getJobPipelineStatusStr(jobEngineId.toString());
+                String jobPipelineStatusStr =  SeaTunnelEngineProxy.getInstance().getJobPipelineStatusStr(jobEngineId.toString());
                 JSONObject jsonObject = JSONObject.parseObject(jobPipelineStatusStr);
                 String jobStatus = jsonObject.getString("jobStatus");
                 if ("FAILING".equals(jobStatus)){
