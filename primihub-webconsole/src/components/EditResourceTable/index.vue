@@ -25,7 +25,8 @@
             :disabled="!isEditable"
             size="mini"
             :maxlength="12"
-            placeholder="不超过12个字符"
+            placeholder="请输入描述"
+            show-word-limit
             @change="handleChange(row)"
           />
         </template>
