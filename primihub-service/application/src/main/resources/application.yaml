@@ -29,6 +29,9 @@ spring:
         singleTaskInput:
           destination: singlTaskChannel
           group: single
+        singleSeatunnelInput:
+          destination: seatunnel
+          group: data
     nacos:
       discovery:
         server-addr: localhost:8848

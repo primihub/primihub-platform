@@ -97,16 +97,6 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
         }
     }
 
-    public static void main(String[] args) {
-        TreeSet treeSet = new TreeSet();
-        treeSet.add("zhang");
-        treeSet.add("id");
-        treeSet.add("d");
-        treeSet.add("ad");
-        treeSet.add("y");
-        System.out.println(JSONObject.toJSONString(treeSet));
-    }
-
     @Override
     public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY){
         Map<String,Object> map = new HashMap<>();
