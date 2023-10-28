@@ -64,7 +64,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dbSource.getDbDriver());
         String sql = otherEunm.tablesSql().replace("<database>",dbSource.getDbName());
         BaseResultEntity baseResultEntity = restoreJobContent(dbSource, sql, otherEunm);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS)){
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
         }
         List<Object> tableNameList = new ArrayList<>();
@@ -92,7 +92,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dbSource.getDbDriver());
         String sql = otherEunm.tablesDetailsSql().replace("<tableName>",dbSource.getDbTableName());
         BaseResultEntity baseResultEntity = restoreJobContent(dbSource, sql, otherEunm);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS)){
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
         }
         List<Map<String, Object>> result = (List<Map<String, Object>> )baseResultEntity.getResult();
@@ -116,15 +116,15 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dataSource.getDbDriver());
         String tablesCountSql = otherEunm.tablesCountSql().replace("<tableName>", dataSource.getDbTableName());
         BaseResultEntity baseResultEntity = restoreJobContent(dataSource, tablesCountSql, otherEunm);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS)){
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
         }
         List<Map<String, Object>> result = (List<Map<String, Object>> )baseResultEntity.getResult();
         Map<String, Object> map = new HashMap<>();
         map.put("total",result.get(0).get("total"));
         String tablesCountYSql = otherEunm.tablesCountYSql().replace("<tableName>", dataSource.getDbTableName());
-        baseResultEntity = restoreJobContent(dataSource, tablesCountSql, otherEunm);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS)){
+        baseResultEntity = restoreJobContent(dataSource, tablesCountYSql, otherEunm);
+        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
         }
         result = (List<Map<String, Object>> )baseResultEntity.getResult();
