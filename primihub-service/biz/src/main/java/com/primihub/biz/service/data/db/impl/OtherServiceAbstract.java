@@ -11,6 +11,7 @@ import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.db.AbstractDataDBService;
 import com.primihub.biz.service.data.db.impl.dbenum.OtherEunm;
+import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import com.primihub.sdk.util.FreemarkerTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,11 @@ public class OtherServiceAbstract extends AbstractDataDBService {
     private StringRedisTemplate primaryStringRedisTemplate;
     @Override
     public BaseResultEntity healthConnection(DataSource dbSource) {
+        String dataBaseName = (String) DataUtil.getJDBCData(dbSource.getDbUrl()).get("database");
+        if (org.apache.commons.lang.StringUtils.isBlank(dataBaseName)) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
+        }
+        dbSource.setDbName(dataBaseName);
         return dataSourceTables(dbSource);
     }
 
@@ -131,6 +137,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         map.put("traceId",traceId);
         map.put("driver",dataSource.getDbDriver());
         map.put("url",dataSource.getDbUrl());
+        map.put("sql",sql);
         map.put("host",environment.getProperty("spring.rabbitmq.host"));
         map.put("port",environment.getProperty("spring.rabbitmq.port"));
         map.put("virtual_host",environment.getProperty("spring.rabbitmq.virtual-host"));

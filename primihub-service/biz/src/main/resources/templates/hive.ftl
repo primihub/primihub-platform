@@ -23,7 +23,7 @@
       "virtual_host":"${virtual_host}",
       "username":"${username!guest}",
       "password":"${password!guest}",
-      "queue_name":"seatunnel_data",
+      "queue_name":"seatunnel.data",
       "rabbitmq.headers":{
         "traceId":"${traceId!id}"
       }
