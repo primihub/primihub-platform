@@ -22,7 +22,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,6 +47,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
     public BaseResultEntity healthConnection(DataSource dbSource) {
         return dataSourceTables(dbSource);
     }
+
 
     @Override
     public BaseResultEntity dataSourceTables(DataSource dbSource) {
