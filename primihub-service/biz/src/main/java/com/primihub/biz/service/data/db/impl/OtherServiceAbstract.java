@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
 @Service
 public class OtherServiceAbstract extends AbstractDataDBService {
 
-    @Value("#{systemProperties['SEATUNNEL_HOME']}")
-    private String SEATUNNEL_HOME;
-
     @Resource
     private Environment environment;
     @Autowired
@@ -51,12 +48,12 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity dataSourceTables(DataSource dbSource) {
+        if (!OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
+        }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
         if (instance==null || !instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
-        }
-        if (OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
         }
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dbSource.getDbDriver());
         String sql = otherEunm.tablesSql().replace("<database>",dbSource.getDbName());
@@ -79,12 +76,12 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity dataSourceTableDetails(DataSource dbSource) {
+        if (!OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
+        }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
         if (instance==null || !instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
-        }
-        if (OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
         }
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dbSource.getDbDriver());
         String sql = otherEunm.tablesDetailsSql().replace("<tableName>",dbSource.getDbTableName());
@@ -103,12 +100,12 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY) {
+        if (!OtherEunm.DB_DRIVER_MAP.containsKey(dataSource.getDbDriver())){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dataSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
+        }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
         if (instance==null || !instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
-        }
-        if (OtherEunm.DB_DRIVER_MAP.containsKey(dataSource.getDbDriver())){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dataSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
         }
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dataSource.getDbDriver());
         String tablesCountSql = otherEunm.tablesCountSql().replace("<tableName>", dataSource.getDbTableName());
