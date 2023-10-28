@@ -21,4 +21,5 @@ hazelcast-client:
     hazelcast.logging.type: log4j2
   network:
     cluster-members:
-      - seatunnel:5801
+      - 192.168.99.31:31208
+#      - localhost:5801
