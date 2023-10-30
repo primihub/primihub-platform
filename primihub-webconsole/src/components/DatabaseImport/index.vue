@@ -15,7 +15,7 @@
       </template>
       <template v-else-if="form.dbType !== ''">
         <el-form-item
-          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3"
+          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3 || form.dbType === 4"
           prop="dbDriver"
           label="驱动类"
         >
@@ -111,28 +111,39 @@ export default {
           label: 'MYSQL5.7+',
           value: 1
         },
-        {
-          label: 'Hive',
-          value: 3
-        }
         // {
         //   label: 'SQLite',
         //   value: 2
         // }
+        {
+          label: 'Hive',
+          value: 3
+        },
+        {
+          label: '达梦',
+          value: 4
+        }
+
       ],
       dbDriverMap: {
         // MySQL 数据库
         0: { dbDriver: 'com.mysql.jdbc.Driver' },
         // MySQL5.7+ 数据库
         1: { dbDriver: 'com.mysql.cj.jdbc.Driver' },
-        3: { dbDriver: 'org.apache.hive.jdbc.HiveDriver' }
+        // Hive
+        3: { dbDriver: 'org.apache.hive.jdbc.HiveDriver' },
+        // 达梦
+        4: { dbDriver: 'dm.jdbc.driver.DmDriver' }
       },
       dbUrlMap: {
         // MySQL 数据库
         0: { dbUrl: 'jdbc:mysql://ip:port/dbName?characterEncoding=UTF-8&useUnicode=true&useSSL=false' },
         // MySQL5.7+ 数据库
         1: { dbUrl: 'jdbc:mysql://ip:port/dbName?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai' },
-        3: { dbUrl: 'jdbc:hive2://ip:port/default' }
+        // Hive
+        3: { dbUrl: 'jdbc:hive2://ip:port/default' },
+        // 达梦
+        4: { dbUrl: 'jdbc:dm://ip:port/JEECG-BOOT' }
       },
       tableNames: [],
       dataList: [],
