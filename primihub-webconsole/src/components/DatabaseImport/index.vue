@@ -15,7 +15,7 @@
       </template>
       <template v-else-if="form.dbType !== ''">
         <el-form-item
-          v-if="form.dbType === 0 || form.dbType === 1 "
+          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3"
           prop="dbDriver"
           label="驱动类"
         >
@@ -110,6 +110,10 @@ export default {
         {
           label: 'MYSQL5.7+',
           value: 1
+        },
+        {
+          label: 'Hive',
+          value: 3
         }
         // {
         //   label: 'SQLite',
@@ -120,7 +124,8 @@ export default {
         // MySQL 数据库
         0: { dbDriver: 'com.mysql.jdbc.Driver' },
         // MySQL5.7+ 数据库
-        1: { dbDriver: 'com.mysql.cj.jdbc.Driver' }
+        1: { dbDriver: 'com.mysql.cj.jdbc.Driver' },
+        3: { dbDriver: 'org.apache.hive.jdbc.HiveDriver' }
       },
       dbUrlMap: {
         // MySQL 数据库
