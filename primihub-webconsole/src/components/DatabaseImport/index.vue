@@ -15,7 +15,7 @@
       </template>
       <template v-else-if="form.dbType !== ''">
         <el-form-item
-          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3 || form.dbType === 4 || form.dbType === 5"
+          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3 || form.dbType === 4 || form.dbType === 5 || form.dbType === 6"
           prop="dbDriver"
           label="驱动类"
         >
@@ -126,6 +126,10 @@ export default {
         {
           label: 'SQL Server',
           value: 5
+        },
+        {
+          label: 'Oracle',
+          value: 6
         }
       ],
       dbDriverMap: {
@@ -138,7 +142,9 @@ export default {
         // 达梦
         4: { dbDriver: 'dm.jdbc.driver.DmDriver' },
         // SQL Server
-        5: { dbDriver: 'com.microsoft.sqlserver.jdbc.SQLServerDriver' }
+        5: { dbDriver: 'com.microsoft.sqlserver.jdbc.SQLServerDriver' },
+        // SQL Server
+        6: { dbDriver: 'oracle.jdbc.OracleDriver' }
       },
       dbUrlMap: {
         // MySQL 数据库
@@ -146,11 +152,13 @@ export default {
         // MySQL5.7+ 数据库
         1: { dbUrl: 'jdbc:mysql://ip:port/dbName?characterEncoding=UTF-8&useUnicode=true&useSSL=false&tinyInt1isBit=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai' },
         // Hive
-        3: { dbUrl: 'jdbc:hive2://ip:port/default' },
+        3: { dbUrl: 'jdbc:hive2://ip:port/dbName' },
         // 达梦
-        4: { dbUrl: 'jdbc:dm://ip:port/JEECG-BOOT' },
-        // SQL Server jdbc:sqlserver://192.168.99.31:32692;DatabaseName=jeecg
-        5: { dbUrl: 'dbc:sqlserver://ip:port;DatabaseName=jeecg' }
+        4: { dbUrl: 'jdbc:dm://ip:port/dbName' },
+        // SQL Server
+        5: { dbUrl: 'dbc:sqlserver://ip:port;DatabaseName=dbName' },
+        // Oracle
+        6: { dbUrl: 'jdbc:oracle:thin:@ip:port/dbName' }
       },
       tableNames: [],
       dataList: [],
@@ -199,17 +207,19 @@ export default {
       this.form.dbUsername = ''
       this.form.dbPassword = ''
       this.connectState = 0
+      // this.$refs.form && this.$refs.form.resetFields()
     },
     handleDbTypeChange(val) {
       const dbDriver = this.dbDriverMap[val]
       const dbUrl = this.dbUrlMap[val]?.dbUrl
+      console.log('dbUrl', this.dbUrlMap[val])
       this.exampleDBUrl = dbUrl
       this.form.dbUrl = dbUrl || ''
       this.form.dbDriver = dbDriver ? dbDriver.dbDriver : ''
 
       this.reset()
 
-      if (this.form.dbType === 0 || this.form.dbType === 1) {
+      if (this.form.dbType !== 3) {
         this.rules = this.rules1
       } else {
         this.rules = this.rules2
