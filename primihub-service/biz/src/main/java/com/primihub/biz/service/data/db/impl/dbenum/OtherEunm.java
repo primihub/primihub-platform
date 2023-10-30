@@ -113,6 +113,42 @@ public enum OtherEunm implements OtherTemplate {
         public String template() {
             return "seatunnel_base.ftl";
         }
+    },
+    ORACLE{
+        @Override
+        public String tablesSql() {
+            return "SELECT owner||'.'||table_name FROM all_tables where tablespace_name = 'USERS'";
+        }
+
+        @Override
+        public String tablesColumnsSql() {
+            return null;
+        }
+
+        @Override
+        public String tablesCountSql() {
+            return "select count(*) total from <tableName>";
+        }
+
+        @Override
+        public String tablesCountYSql() {
+            return "select count(*) ytotal from <tableName>";
+        }
+
+        @Override
+        public String tablesDetailsSql() {
+            return "select a.* from ( select t.*,rownum from <tableName> t where rownum <= 50 ) a where rownum >= 0";
+        }
+
+        @Override
+        public String driver() {
+            return "oracle.jdbc.OracleDriver";
+        }
+
+        @Override
+        public String template() {
+            return "seatunnel_base.ftl";
+        }
     }
 
     ;

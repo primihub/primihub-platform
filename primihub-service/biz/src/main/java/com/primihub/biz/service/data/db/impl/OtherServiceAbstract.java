@@ -188,12 +188,12 @@ public class OtherServiceAbstract extends AbstractDataDBService {
                     }
                     break;
                 }
-                if ((System.currentTimeMillis() - start)>=3000L){
+                if ((System.currentTimeMillis() - start)>=30000L){
                     log.info("Timeout exit traceId:{} jobPipelineStatusStr:{}",traceId,jobPipelineStatusStr);
                     baseResult = BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"获取数据集信息超时!");
                     break;
                 }
-                Thread.sleep(10L);
+                Thread.sleep(50L);
             }
         }catch (Exception e){
             baseResult = BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,e.getMessage());

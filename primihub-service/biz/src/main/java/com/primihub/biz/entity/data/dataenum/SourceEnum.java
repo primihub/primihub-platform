@@ -14,6 +14,7 @@ public enum SourceEnum {
     hive(3,"hive", OtherServiceAbstract.class),
     dm(4,"达梦", OtherServiceAbstract.class),
     sql_server(5,"SqlServer", OtherServiceAbstract.class),
+    oracle(6,"oracle", OtherServiceAbstract.class),
     ;
     private Integer sourceType;
     private String sourceName;
