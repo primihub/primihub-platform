@@ -5,6 +5,12 @@
   },
   "source":[
     {
+      <#if dbusername!="">
+        "user" : "${dbusername}",
+      </#if>
+      <#if dbpassword!="">
+        "password" : "${dbpassword}",
+      </#if>
       "driver" : "${driver}",
       "parallelism" : 1,
       "query" : "${sql}",

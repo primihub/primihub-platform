@@ -38,7 +38,44 @@ public enum OtherEunm implements OtherTemplate {
 
         @Override
         public String template() {
-            return "hive.ftl";
+            return "seatunnel_base.ftl";
+        }
+    },
+
+    DM{
+        @Override
+        public String tablesSql() {
+            return "SELECT TABLE_NAME FROM ALL_TABLES WHERE OWNER = '<database>'";
+        }
+
+        @Override
+        public String tablesColumnsSql() {
+            return "SELECT COLUMN_NAME FROM ALL_TAB_COLUMNS WHERE OWNER = '<database>' AND TABLE_NAME = '<tableName>'";
+        }
+
+        @Override
+        public String tablesCountSql() {
+            return "select count(*) total from \\\"<database>\\\".\\\"<tableName>\\\"";
+        }
+
+        @Override
+        public String tablesCountYSql() {
+            return "select count(*) ytotal from \\\"<database>\\\".\\\"<tableName>\\\"";
+        }
+
+        @Override
+        public String tablesDetailsSql() {
+            return "select TOP 50 * from \\\"<database>\\\".\\\"<tableName>\\\"";
+        }
+
+        @Override
+        public String driver() {
+            return "dm.jdbc.driver.DmDriver";
+        }
+
+        @Override
+        public String template() {
+            return "seatunnel_base.ftl";
         }
     }
 

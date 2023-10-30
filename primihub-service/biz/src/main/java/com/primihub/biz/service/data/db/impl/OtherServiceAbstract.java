@@ -17,6 +17,8 @@ import com.primihub.sdk.util.FreemarkerTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.seatunnel.SeaTunnelEngineProxy;
+import org.apache.seatunnel.engine.client.job.JobMetricsRunner;
+import org.apache.seatunnel.engine.core.job.JobDAGInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -57,7 +59,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+"当前驱动器还未开发,请持续关注我们的发布信息");
         }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
-        if (instance==null || !instance.open()){
+        if (!instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
         }
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dbSource.getDbDriver());
@@ -85,11 +87,11 @@ public class OtherServiceAbstract extends AbstractDataDBService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+"当前驱动器还未开发,请持续关注我们的发布信息");
         }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
-        if (instance==null || !instance.open()){
+        if (!instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
         }
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dbSource.getDbDriver());
-        String sql = otherEunm.tablesDetailsSql().replace("<tableName>",dbSource.getDbTableName());
+        String sql = otherEunm.tablesDetailsSql().replace("<database>",dbSource.getDbName()).replace("<tableName>",dbSource.getDbTableName());
         BaseResultEntity baseResultEntity = restoreJobContent(dbSource, sql, otherEunm);
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
@@ -109,11 +111,11 @@ public class OtherServiceAbstract extends AbstractDataDBService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dataSource.getDbDriver()+"当前驱动器还未开发,请持续关注我们的发布信息");
         }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
-        if (instance==null || !instance.open()){
+        if (!instance.open()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持,开源版仅支持csv、mysql、sqllite数据源，如需支持其他数据源请查询企业版相关信息");
         }
         OtherEunm otherEunm = OtherEunm.DB_DRIVER_MAP.get(dataSource.getDbDriver());
-        String tablesCountSql = otherEunm.tablesCountSql().replace("<tableName>", dataSource.getDbTableName());
+        String tablesCountSql = otherEunm.tablesCountSql().replace("<database>",dataSource.getDbName()).replace("<tableName>", dataSource.getDbTableName());
         BaseResultEntity baseResultEntity = restoreJobContent(dataSource, tablesCountSql, otherEunm);
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
@@ -121,7 +123,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         List<Map<String, Object>> result = (List<Map<String, Object>> )baseResultEntity.getResult();
         Map<String, Object> map = new HashMap<>();
         map.put("total",result.get(0).get("total"));
-        String tablesCountYSql = otherEunm.tablesCountYSql().replace("<tableName>", dataSource.getDbTableName());
+        String tablesCountYSql = otherEunm.tablesCountYSql().replace("<database>",dataSource.getDbName()).replace("<tableName>", dataSource.getDbTableName());
         baseResultEntity = restoreJobContent(dataSource, tablesCountYSql, otherEunm);
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             return baseResultEntity;
@@ -136,6 +138,8 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         map.put("traceId",traceId);
         map.put("driver",dataSource.getDbDriver());
         map.put("url",dataSource.getDbUrl());
+        map.put("dbusername",dataSource.getDbUsername());
+        map.put("dbpassword",dataSource.getDbPassword());
         map.put("sql",sql);
         map.put("host",environment.getProperty("spring.rabbitmq.host"));
         map.put("port",environment.getProperty("spring.rabbitmq.port"));
@@ -156,17 +160,25 @@ public class OtherServiceAbstract extends AbstractDataDBService {
             Long jobInstanceId = System.currentTimeMillis();
             Long jobEngineId = System.currentTimeMillis();
             SeaTunnelEngineProxy.getInstance().restoreJobContent(content,jobInstanceId,jobEngineId);
+            long start = System.currentTimeMillis();
             while (true){
                 String jobPipelineStatusStr =  SeaTunnelEngineProxy.getInstance().getJobPipelineStatusStr(jobEngineId.toString());
                 JSONObject jsonObject = JSONObject.parseObject(jobPipelineStatusStr);
                 String jobStatus = jsonObject.getString("jobStatus");
-                if ("FAILING".equals(jobStatus)){
+                if ("FAILING".equals(jobStatus) || "FAILED".equals(jobStatus)){
                     // 失败
                     baseResult = BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,jsonObject.getString("errorMessage"));
                     break;
                 }else if ("FINISHED".equals(jobStatus)){
                     String key = RedisKeyConstant.SEATUNNEL_DATA_LIST_KEY.replace("<traceId>", traceId);
-                    List<String> datas = primaryStringRedisTemplate.opsForList().range(key, 0, 50);
+                    JobMetricsRunner.JobMetricsSummary jobMetricsSummary = SeaTunnelEngineProxy.getInstance().getJobMetricsSummary(jobEngineId);
+                    while (jobMetricsSummary.getSourceReadCount() != getRedisKeySize(key)){
+                        if ((System.currentTimeMillis() - start)>=3000L){
+                            break;
+                        }
+                        Thread.sleep(10L);
+                    }
+                    List<String> datas = primaryStringRedisTemplate.opsForList().range(key, Long.MIN_VALUE, Long.MAX_VALUE);
                     if (datas==null || datas.size()==0){
                         baseResult = BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"无数据");
                     }else {
@@ -174,11 +186,24 @@ public class OtherServiceAbstract extends AbstractDataDBService {
                     }
                     break;
                 }
+                if ((System.currentTimeMillis() - start)>=3000L){
+                    log.info("Timeout exit traceId:{} jobPipelineStatusStr:{}",traceId,jobPipelineStatusStr);
+                    baseResult = BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"获取数据集信息超时!");
+                    break;
+                }
+                Thread.sleep(10L);
             }
         }catch (Exception e){
             baseResult = BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,e.getMessage());
             e.printStackTrace();
         }
         return baseResult;
+    }
+
+
+    private Long getRedisKeySize(String key){
+        Long size = primaryStringRedisTemplate.opsForList().size(key);
+        log.info("size:{}",size);
+        return size==null?0L:size;
     }
 }
