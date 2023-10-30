@@ -19,7 +19,7 @@
           prop="dbDriver"
           label="驱动类"
         >
-          <el-input v-model="form.dbDriver" placeholder="请输入驱动类" />
+          <el-input v-model="form.dbDriver" disabled placeholder="请输入驱动类" />
         </el-form-item>
         <el-form-item
           prop="dbUrl"
@@ -216,6 +216,9 @@ export default {
       this.exampleDBUrl = dbUrl
       this.form.dbUrl = dbUrl || ''
       this.form.dbDriver = dbDriver ? dbDriver.dbDriver : ''
+      this.$nextTick(() => {
+        this.$refs.form.clearValidate()
+      })
 
       this.reset()
 
