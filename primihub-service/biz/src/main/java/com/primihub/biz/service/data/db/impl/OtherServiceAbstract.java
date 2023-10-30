@@ -175,10 +175,10 @@ public class OtherServiceAbstract extends AbstractDataDBService {
                     String key = RedisKeyConstant.SEATUNNEL_DATA_LIST_KEY.replace("<traceId>", traceId);
                     JobMetricsRunner.JobMetricsSummary jobMetricsSummary = SeaTunnelEngineProxy.getInstance().getJobMetricsSummary(jobEngineId);
                     while (jobMetricsSummary.getSourceReadCount() != getRedisKeySize(key)){
-                        if ((System.currentTimeMillis() - start)>=3000L){
+                        if ((System.currentTimeMillis() - start)>=30000L){
                             break;
                         }
-                        Thread.sleep(10L);
+                        Thread.sleep(50L);
                     }
                     List<String> datas = primaryStringRedisTemplate.opsForList().range(key, Long.MIN_VALUE, Long.MAX_VALUE);
                     if (datas==null || datas.size()==0){
@@ -205,7 +205,6 @@ public class OtherServiceAbstract extends AbstractDataDBService {
 
     private Long getRedisKeySize(String key){
         Long size = primaryStringRedisTemplate.opsForList().size(key);
-        log.info("size:{}",size);
         return size==null?0L:size;
     }
 }
