@@ -54,7 +54,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
     @Override
     public BaseResultEntity dataSourceTables(DataSource dbSource) {
         if (!OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+"当前驱动器还未开发,请持续关注我们的发布信息");
         }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
         if (instance==null || !instance.open()){
@@ -82,7 +82,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
     @Override
     public BaseResultEntity dataSourceTableDetails(DataSource dbSource) {
         if (!OtherEunm.DB_DRIVER_MAP.containsKey(dbSource.getDbDriver())){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dbSource.getDbDriver()+"当前驱动器还未开发,请持续关注我们的发布信息");
         }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
         if (instance==null || !instance.open()){
@@ -106,7 +106,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
     @Override
     public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY) {
         if (!OtherEunm.DB_DRIVER_MAP.containsKey(dataSource.getDbDriver())){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dataSource.getDbDriver()+":当前驱动器还未开发,请持续关注我们的发布信息");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, dataSource.getDbDriver()+"当前驱动器还未开发,请持续关注我们的发布信息");
         }
         SeaTunnelEngineProxy instance = SeaTunnelEngineProxy.getInstance();
         if (instance==null || !instance.open()){
@@ -128,7 +128,7 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         }
         result = (List<Map<String, Object>> )baseResultEntity.getResult();
         map.put("ytotal",result.get(0).get("ytotal"));
-        return null;
+        return BaseResultEntity.success(map);
     }
 
     public Map<String,Object> getTemplatesParam(DataSource dataSource,String sql,String traceId){
