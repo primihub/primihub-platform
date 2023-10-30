@@ -15,7 +15,7 @@
       </template>
       <template v-else-if="form.dbType !== ''">
         <el-form-item
-          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3 || form.dbType === 4"
+          v-if="form.dbType === 0 || form.dbType === 1 || form.dbType === 3 || form.dbType === 4 || form.dbType === 5"
           prop="dbDriver"
           label="驱动类"
         >
@@ -122,8 +122,11 @@ export default {
         {
           label: '达梦',
           value: 4
+        },
+        {
+          label: 'SQL Server',
+          value: 5
         }
-
       ],
       dbDriverMap: {
         // MySQL 数据库
@@ -133,7 +136,9 @@ export default {
         // Hive
         3: { dbDriver: 'org.apache.hive.jdbc.HiveDriver' },
         // 达梦
-        4: { dbDriver: 'dm.jdbc.driver.DmDriver' }
+        4: { dbDriver: 'dm.jdbc.driver.DmDriver' },
+        // SQL Server
+        5: { dbDriver: 'com.microsoft.sqlserver.jdbc.SQLServerDriver' }
       },
       dbUrlMap: {
         // MySQL 数据库
@@ -143,7 +148,9 @@ export default {
         // Hive
         3: { dbUrl: 'jdbc:hive2://ip:port/default' },
         // 达梦
-        4: { dbUrl: 'jdbc:dm://ip:port/JEECG-BOOT' }
+        4: { dbUrl: 'jdbc:dm://ip:port/JEECG-BOOT' },
+        // SQL Server jdbc:sqlserver://192.168.99.31:32692;DatabaseName=jeecg
+        5: { dbUrl: 'dbc:sqlserver://ip:port;DatabaseName=jeecg' }
       },
       tableNames: [],
       dataList: [],
@@ -254,6 +261,11 @@ export default {
               this.form.dbName = res.result.dbSource.dbName
             } else {
               this.connectState = 1
+              this.$message({
+                message: res.msg,
+                type: 'error',
+                duration: 5000
+              })
             }
           }).catch(error => {
             this.connectState = 2
