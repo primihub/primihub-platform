@@ -1,6 +1,5 @@
 package com.primihub.biz.entity.data.dataenum;
 
-import com.primihub.biz.service.data.db.impl.HiveServiceAbstract;
 import com.primihub.biz.service.data.db.impl.MySqlServiceAbstract;
 import com.primihub.biz.service.data.db.impl.OtherServiceAbstract;
 import com.primihub.biz.service.data.db.impl.SqliteServiceAbstract;
@@ -14,6 +13,7 @@ public enum SourceEnum {
     sqlite(2,"sqlite", SqliteServiceAbstract.class),
     hive(3,"hive", OtherServiceAbstract.class),
     dm(4,"达梦", OtherServiceAbstract.class),
+    sql_server(5,"SqlServer", OtherServiceAbstract.class),
     ;
     private Integer sourceType;
     private String sourceName;

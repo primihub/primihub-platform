@@ -77,6 +77,42 @@ public enum OtherEunm implements OtherTemplate {
         public String template() {
             return "seatunnel_base.ftl";
         }
+    },
+    SQLSERVER{
+        @Override
+        public String tablesSql() {
+            return "SELECT name FROM sysobjects WHERE xtype='U'";
+        }
+
+        @Override
+        public String tablesColumnsSql() {
+            return "SELECT name FROM SysColumns WHERE id=Object_Id('<tableName>')";
+        }
+
+        @Override
+        public String tablesCountSql() {
+            return "select count(*) total from <tableName>";
+        }
+
+        @Override
+        public String tablesCountYSql() {
+            return "select count(*) ytotal from <tableName>";
+        }
+
+        @Override
+        public String tablesDetailsSql() {
+            return "select TOP 50 * from <tableName>";
+        }
+
+        @Override
+        public String driver() {
+            return "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+        }
+
+        @Override
+        public String template() {
+            return "seatunnel_base.ftl";
+        }
     }
 
     ;
