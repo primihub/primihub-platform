@@ -158,8 +158,10 @@ export default {
             }
             return item.values
           } else {
-            const log = JSON.parse(item.values[0][1]).log
-            return log.replace(/\[\d+m/ig, '')
+            let log = JSON.parse(item.values[0][1]).log
+            log = log.replace(/\[\d+m/ig, '')
+            log = log.replace(/\\+/ig, '')
+            return log
           }
         })
         this.logData = this.logData.concat(formatData)
