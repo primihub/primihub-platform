@@ -1,6 +1,6 @@
 <template>
   <div class="log">
-    <el-button size="small" type="danger" plain style="margin-bottom: 10px" @click="showErrorLog">ERROR ({{ errorLog.length }})</el-button>
+    <el-button :disabled="errorLog.length === 0" size="small" type="danger" plain style="margin-bottom: 10px" @click="showErrorLog">ERROR ({{ errorLog.length }})</el-button>
     <div class="log-container">
       <template v-if="logData.length>0">
         <p v-for="(item,index) in logData" :id="(logData.length === index+1)?'scrollLog':''" :key="index" class="item">
@@ -13,7 +13,10 @@
         </p>
       </template>
       <template v-else>
-        <p>暂无日志数据</p>
+        <p>
+          {{ text }}
+          <i v-if="logData.length === 0" class="el-icon-loading" />
+        </p>
       </template>
     </div>
   </div>
@@ -37,24 +40,38 @@ export default {
   },
   data() {
     return {
+      text: '日志加载中', // 暂无日志数据
       ws: null,
       logData: [],
       query: '',
       start: '',
       errorLog: [],
       logType: '',
-      logValueType: 'string'
+      logValueType: 'string',
+      lockReconnect: false,
+      connectTimer: null,
+      serverTimeout: null,
+      heartbeatTimer: null,
+      timeout: 3 * 1000, // 3秒一次心跳
+      destroyed: false
     }
   },
-  async mounted() {
+  async created() {
+    console.log('显示')
     await this.getTaskLogInfo()
     this.socketInit()
   },
-  destroyed() {
+  beforeDestroy() {
     this.ws && this.ws.close()
+    this.destroyed = true
+    // 清除时间
+    clearInterval(this.heartbeatTimer)
+    clearInterval(this.connectTimer)
+    clearTimeout(this.serverTimeout)
   },
   methods: {
     socketInit() {
+      this.text = '数据加载中'
       const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
       const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
@@ -65,17 +82,71 @@ export default {
       this.ws.onclose = this.close
     },
     open: function() {
-      console.log('socket连接成功')
+      console.log('socket连接成功', this.ws.readyState)
+      this.heartbeatStart()
+      setTimeout(() => {
+        if (this.ws.readyState === 1 && this.logData.length === 0) {
+          this.reconnect()
+        }
+      }, 2000)
     },
     error: function() {
       console.log('连接错误')
+      // 关闭心跳链接
+      clearInterval(this.heartbeatTimer)
+      this.text = '暂无数据'
     },
     close: function(e) {
       this.ws.close()
       console.log('socket已经关闭', e)
+      if (!this.destroyed) {
+        this.reconnect()
+      }
+    },
+    reconnect() {
+      if (this.lockReconnect) {
+        return
+      }
+      this.lockReconnect = true
+      // 没连接上会一直重连，设置延迟避免请求过多
+      this.connectTimer && clearInterval(this.connectTimer)
+      this.connectTimer = setInterval(() => {
+        this.socketInit()// 新连接
+        this.lockReconnect = false
+      }, 5000)
+    },
+    reset() {
+      // 关闭心跳定时器
+      clearInterval(this.heartbeatTimer)
+      // 关闭重连定时器
+      clearInterval(this.connectTimer)
+      clearTimeout(this.serverTimeout)
+      this.heartbeatStart() // 重启心跳
+    },
+    heartbeatStart() { // 开启心跳
+      this.heartbeatTimer && clearInterval(this.heartbeatTimer)
+      this.serverTimeout && clearTimeout(this.serverTimeout)
+      this.heartbeatTimer = setInterval(() => {
+        if (this.ws.readyState === 1) {
+          this.ws.send(JSON.stringify({
+            data: {
+              messageType: 'heartCheck'
+            }
+          }))
+        } else {
+          this.reconnect()
+        }
+        this.serverTimeout = setTimeout(() => {
+          // 超时关闭
+          this.ws.close()
+          this.destroyed = true
+        }, this.timeout)
+      }, this.timeout)
     },
     getMessage: function(msg) {
       if (msg.data.length > 0) {
+        this.logData = []
+        this.reset()// 收到服务器信息，心跳重置
         const data = JSON.parse(msg.data).streams
         const formatData = data.map(item => {
           this.logValueType = typeof item.values[0][1]
@@ -87,7 +158,8 @@ export default {
             }
             return item.values
           } else {
-            return item.values
+            const log = JSON.parse(item.values[0][1]).log
+            return log.replace(/\[\d+m/ig, '')
           }
         })
         this.logData = this.logData.concat(formatData)
@@ -99,14 +171,13 @@ export default {
     },
     filterErrorLog() {
       if (this.logValueType === 'string') {
-        this.errorLog = this.logData.filter(item => item[0][1].indexOf('ERROR') !== -1)
+        this.errorLog = this.logData.filter(item => item.indexOf('ERROR') !== -1)
       } else {
         this.errorLog = this.logData.filter(item => item.log.indexOf('ERROR') !== -1)
       }
       this.$emit('error', this.errorLog)
     },
     send: function(order) {
-      console.log(order)
       this.ws.send(order)
     },
     async getTaskLogInfo() {
@@ -123,15 +194,15 @@ export default {
         }
       }
     },
-    scrollToTarget(target, block = 'end') {
+    scrollToTarget(target, block = 'start') {
       const element = document.getElementById(target)
-      element.scrollIntoView({ behavior: 'smooth', block })
+      element && element.scrollIntoView({ behavior: 'smooth', block })
     },
     showErrorLog() {
       this.logType = 'ERROR'
       this.query += `|="ERROR"`
       this.logData = []
-
+      this.reset()
       this.socketInit()
     }
   }
@@ -163,7 +234,7 @@ export default {
   height: 500px;
   .item{
     display: inline-block;
-    margin-bottom: 10px;
+    margin: 10px 0;
     line-height: 1.5;
     word-break:break-all;
     .state-error{
