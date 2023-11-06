@@ -642,6 +642,7 @@ public class DataResourceService {
         map.put("dbType",dataSource.getDbType());
         map.put("dbUrl",dataSource.getDbUrl());
         map.put("tableName", dataSource.getDbTableName());
+        map.put("dbDriver",dataSource.getDbDriver());
         if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
             map.put("db_path",dataSource.getDbUrl());
         }else {
