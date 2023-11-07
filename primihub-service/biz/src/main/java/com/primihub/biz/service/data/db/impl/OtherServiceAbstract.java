@@ -124,14 +124,16 @@ public class OtherServiceAbstract extends AbstractDataDBService {
         }
         List<Map<String, Object>> result = (List<Map<String, Object>> )baseResultEntity.getResult();
         Map<String, Object> map = new HashMap<>();
-        map.put("total",result.get(0).get("total"));
-        String tablesCountYSql = otherEunm.tablesCountYSql().replace("<database>",dataSource.getDbName()).replace("<tableName>", dataSource.getDbTableName());
-        baseResultEntity = restoreJobContent(dataSource, tablesCountYSql, otherEunm);
-        if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-            return baseResultEntity;
+        map.put("total",result.get(0).get(result.get(0).keySet().stream().collect(Collectors.toList()).get(0)));
+        if (isY){
+            String tablesCountYSql = otherEunm.tablesCountYSql().replace("<database>",dataSource.getDbName()).replace("<tableName>", dataSource.getDbTableName());
+            baseResultEntity = restoreJobContent(dataSource, tablesCountYSql, otherEunm);
+            if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                return baseResultEntity;
+            }
+            result = (List<Map<String, Object>> )baseResultEntity.getResult();
+            map.put("ytotal",result.get(0).get(result.get(0).keySet().stream().collect(Collectors.toList()).get(0)));
         }
-        result = (List<Map<String, Object>> )baseResultEntity.getResult();
-        map.put("ytotal",result.get(0).get("ytotal"));
         return BaseResultEntity.success(map);
     }
 
