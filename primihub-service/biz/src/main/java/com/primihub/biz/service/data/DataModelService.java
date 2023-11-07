@@ -132,7 +132,12 @@ public class DataModelService {
             if (StringUtils.isBlank(fileContent)){
                 map.put("anotherQuotas",new HashMap());
             }else {
-                map.put("anotherQuotas",JSONObject.parseObject(fileContent));
+                try {
+                    map.put("anotherQuotas",JSONObject.parseObject(fileContent));
+                }catch (Exception e){
+                    log.info("anotherQuotas json 内容:{} 转换失败:{}",fileContent,e.getMessage());
+                    map.put("anotherQuotas",new HashMap());
+                }
             }
         } else {
             map.put("anotherQuotas",new HashMap());
