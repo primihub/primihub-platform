@@ -232,12 +232,15 @@ public class DataResourceService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getDataResource(Long resourceId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+    public BaseResultEntity getDataResource(String resourceId) {
+        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+        if (dataResource==null){
+            dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+        }
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
-        List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(resourceId);
+        List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(dataResource.getResourceId());
         DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource);
         SysUser sysUser = sysUserService.getSysUserById(dataResourceVo.getUserId());
         dataResourceVo.setUserName(sysUser == null?"":sysUser.getUserName());
@@ -265,7 +268,8 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
-        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(dataResource.getResourceId());}}));
+        Long resourceId1 = dataResource.getResourceId();
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(resourceId1);}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }

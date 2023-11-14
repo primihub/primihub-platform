@@ -154,8 +154,8 @@ public class ResourceController {
      * @return
      */
     @GetMapping("getdataresource")
-    public BaseResultEntity getDataResource(Long resourceId){
-        if (resourceId==null){
+    public BaseResultEntity getDataResource(String resourceId){
+        if (StringUtils.isBlank(resourceId)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
         return dataResourceService.getDataResource(resourceId);
