@@ -137,7 +137,7 @@ public enum OtherEunm implements OtherTemplate {
 
         @Override
         public String tablesDetailsSql() {
-            return "select a.* from ( select t.*,rownum from <tableName> t where rownum <= 50 ) a where rownum >= 0";
+            return "SELECT * FROM (SELECT t.* FROM <tableName> t WHERE ROWNUM <= 50) a";
         }
 
         @Override
