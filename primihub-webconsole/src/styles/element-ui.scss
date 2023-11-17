@@ -66,10 +66,11 @@
 .el-pagination__jump{
   margin-left: 0;
 }
-.el-table .cell{
-  // line-height: 1.5;
-}
 .el-table th.el-table__cell{
   background-color: #EEEEEE;
   color: #333333;
+}
+.el-tabs__item:focus.is-active.is-focus:not(:active) {
+  -webkit-box-shadow: none;
+  box-shadow: none;
 }

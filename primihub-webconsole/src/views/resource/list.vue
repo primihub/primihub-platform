@@ -1,7 +1,6 @@
 <template>
   <div class="container">
     <div class="search-area">
-      <el-button v-if="hasUploadAuth" type="primary" class="upload-button" @click="toResourceCreatePage"> <i class="el-icon-upload" /> 添加资源</el-button>
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
         <el-form-item label="资源ID">
           <el-input v-model.number="query.resourceId" size="small" placeholder="请输入资源ID" />
@@ -53,7 +52,15 @@
       </el-form>
     </div>
     <div class="resource">
+      <div class="tabs">
+        <el-tabs v-model="activeName" @tab-click="handleTabClick">
+          <el-tab-pane label="个人资源列表" name="PLAIN_USER" />
+          <el-tab-pane label="机构资源列表" name="ORGAN_ADMIN" />
+        </el-tabs>
+        <el-button v-if="hasUploadAuth" class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toResourceCreatePage">添加资源</el-button>
+      </div>
       <el-table
+        v-loading="loading"
         :data="resourceList"
         :row-class-name="tableRowDisabled"
         empty-text="暂无数据"
@@ -86,7 +93,7 @@
         </el-table-column>
         <el-table-column
           label="数据信息"
-          min-width="200"
+          min-width="120"
         >
           <template slot-scope="{row}">
             特征量：{{ row.fileColumns }}<br>
@@ -112,6 +119,7 @@
           prop="resourceAuthType"
           label="可见性"
           align="center"
+          min-width="100"
         >
           <template slot-scope="{row}">
             {{ row.resourceAuthType | authTypeFilter }}
@@ -152,6 +160,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { resourceAuthorizationType } from '@/const'
 import { getResourceList, getResourceTags, deleteResource, resourceStatusChange } from '@/api/resource'
 import Pagination from '@/components/Pagination'
 import TagsSelect from '@/components/TagsSelect'
@@ -160,6 +169,8 @@ export default {
   components: { Pagination, TagsSelect },
   data() {
     return {
+      loading: false,
+      activeName: 'PLAIN_USER',
       query: {
         fileContainsY: '', resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0, resourceAuthType: ''
       },
@@ -171,16 +182,7 @@ export default {
         label: '数据库导入',
         value: 2
       }],
-      resourceAuthTypeOptions: [{
-        label: '公开',
-        value: 1
-      }, {
-        label: '私有',
-        value: 2
-      }, {
-        label: '指定机构可见',
-        value: 3
-      }],
+      resourceAuthTypeOptions: resourceAuthorizationType,
       YValueOptions: [{
         label: '包含',
         value: 1
@@ -212,7 +214,8 @@ export default {
       return this.buttonPermissionList.includes('ResourceDelete')
     },
     ...mapGetters([
-      'buttonPermissionList'
+      'buttonPermissionList',
+      'isOrganAdmin'
     ])
   },
   async created() {
@@ -220,6 +223,9 @@ export default {
     await this.getResourceTags()
   },
   methods: {
+    handleTabClick() {
+      this.fetchData()
+    },
     reset() {
       this.isReset = true
       for (const key in this.query) {
@@ -324,7 +330,7 @@ export default {
       this.searchName = searchName
     },
     async fetchData() {
-      this.resourceList = []
+      this.loading = true
       const { resourceName, tag, userName, resourceSource, selectTag, resourceAuthType, fileContainsY } = this.query
       const resourceId = Number(this.query.resourceId)
       if (resourceId !== '' && isNaN(resourceId)) {
@@ -345,7 +351,8 @@ export default {
         selectTag,
         derivation: 0,
         resourceAuthType,
-        fileContainsY
+        fileContainsY,
+        type: this.activeName
       }
       const res = await getResourceList(params)
       if (res.code === 0) {
@@ -357,6 +364,7 @@ export default {
         }
         this.isReset = false
       }
+      this.loading = false
     },
     handlePagination(data) {
       this.pageNo = data.page

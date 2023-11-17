@@ -295,17 +295,18 @@ export const asyncRoutes = [
         meta: { title: '我的资源' }
       },
       {
+        path: 'unionList',
+        name: 'UnionList',
+        component: () => import('@/views/resource/unionList'),
+        meta: { title: '授权给我的资源' }
+      },
+      {
         path: 'derivedDataList',
         name: 'DerivedDataList',
         component: () => import('@/views/resource/derivedDataList'),
         meta: { title: '衍生数据资源' }
       },
-      {
-        path: 'unionList',
-        name: 'UnionList',
-        component: () => import('@/views/resource/unionList'),
-        meta: { title: '协作方资源' }
-      },
+
       {
         path: 'create',
         name: 'ResourceUpload',
@@ -329,6 +330,17 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/resource/detail')
+      },
+      {
+        path: 'resourceAuthList/:id',
+        name: 'ResourceAuthList',
+        meta: {
+          title: '资源授权列表',
+          activeMenu: '/resource/list',
+          parent: { name: 'ResourceDetail' }
+        },
+        hidden: true,
+        component: () => import('@/views/resource/authList')
       },
       {
         path: 'unionResourceDetail/:id',

@@ -9,14 +9,26 @@
   width: auto!important;
 }
 ::v-deep .el-form--inline .el-form-item{
-  margin: 10px 35px 10px 0;
+  margin: 0px 35px 10px 0;
+}
+::v-deep .el-tabs__item {
+  font-size: 16px;
+  height: 50px;
+  line-height: 50px;
 }
 .upload-button{
   margin:0 0 20px 0px;
 }
 .resource {
-  padding: 0 30px;
-  background-color: #fff;
+  .tabs{
+    position: relative;
+    height: 60px;
+  }
+  .add-button{
+    position: absolute;
+    right: 0;
+    top: 0px;
+  }
 }
 .tag{
   margin: 0 2px;
@@ -28,8 +40,9 @@
   margin-left: 20px;
 }
 .search-area, .resource{
-  padding: 30px 20px 20px 20px;
+  padding: 20px 40px 20px 40px;
   background-color: #fff;
+  border-radius: 12px;
 }
 .containsy-tag{
   margin-top: 3px;

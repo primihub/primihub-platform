@@ -51,16 +51,18 @@
         </div>
       </el-form-item>
     </el-form>
-    <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
-
     <div class="main">
       <div class="tab-container">
         <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#1677FF" @select="handleSelect">
           <el-menu-item index=""><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
           <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
           <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
+          <el-menu-item v-if="isOrganAdmin" index="3"><h2>机构下的<span>（{{ inOrgan }}）</span></h2></el-menu-item>
         </el-menu>
-        <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
+        <div>
+          <el-button type="text" class="type" @click="toggleType"><i :class="{'el-icon-set-up':projectType === 'card','el-icon-menu':projectType === 'table' }" /></el-button>
+          <el-button v-if="hasCreateAuth" class="add-button" icon="el-icon-plus" type="primary" @click="toProjectCreatePage">新建项目</el-button>
+        </div>
       </div>
 
       <div v-loading="listLoading" class="project-list">
@@ -138,6 +140,12 @@
             <el-table-column
               prop="taskNum"
               label="任务数量"
+              align="center"
+            />
+            <el-table-column
+              v-if="isOrganAdmin"
+              prop="taskInitiator"
+              label="发起人"
               align="center"
             />
             <el-table-column
@@ -226,7 +234,7 @@ export default {
         label: '部分可用'
       }],
       organList: [],
-      activeIndex: '0',
+      activeIndex: '',
       listLoading: false,
       searchForm: {
         projectId: '',
@@ -244,6 +252,7 @@ export default {
       total: 0,
       totalNum: 0,
       other: 0,
+      inOrgan: 0,
       own: 0,
       pageCount: 0,
       noData: false,
@@ -266,7 +275,8 @@ export default {
     },
     ...mapGetters([
       'buttonPermissionList',
-      'userOrganId'
+      'userOrganId',
+      'isOrganAdmin'
     ])
   },
   async created() {
@@ -470,12 +480,13 @@ h2 {
   background-color: #fff;
   display: flex;
   flex-wrap: wrap;
+  border-radius: 12px;
 }
 .add-button {
-  margin-right: auto;
-  height: 38px;
-  margin-bottom: 20px;
-  margin-top: 20px;
+  // margin-right: auto;
+  // height: 38px;
+  // margin-bottom: 20px;
+  // margin-top: 20px;
 }
 .button {
   margin: 0 3px;
@@ -504,13 +515,14 @@ h2 {
 
 .main{
   background-color: #fff;
+  border-radius: 12px;
+  margin-top: 20px;
+  padding: 20px 48px;
 }
 .tab-container{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #fff;
-  padding: 0 30px;
 }
 .buttons{
   // margin-left: auto;
@@ -530,7 +542,6 @@ h2 {
   // margin-top: 20px;
   min-height: 200px;
   background-color: #fff;
-  margin: 0 30px 0 30px;
   padding-top: 30px;
   border-top: 1px solid #e6e6e6;
 }

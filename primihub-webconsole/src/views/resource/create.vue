@@ -1,6 +1,5 @@
 <template>
   <div v-loading="loading" class="app-container">
-    <h2><span v-if="isEditPage">编辑</span><span v-else>新建</span>资源</h2>
     <el-form
       ref="dataForm"
       :model="dataForm"
@@ -8,6 +7,7 @@
       label-width="120px"
       class="demo-dataForm"
     >
+      <div class="section-title">基本信息</div>
       <el-form-item label="资源名称" prop="resourceName">
         <div class="item-wrap-normal">
           <el-input
@@ -58,18 +58,15 @@
       <el-form-item label="授权方式" prop="resourceAuthType">
         <div class="item-wrap-normal auth-container">
           <el-radio-group v-model="dataForm.resourceAuthType" @change="handleAuthTypeChange">
-            <el-radio :label="1">公开</el-radio>
-            <el-radio :label="2">私有</el-radio>
-            <el-radio :label="3">
-              指定机构可见
-              <template v-if="dataForm.resourceAuthType === 3">
-                <OrganSelect :value="authOrganList" style="display:inline-block; margin-left: 5px;" size="small" @change="handleOrganChange" />
-              </template>
-            </el-radio>
+            <el-radio v-for="item in resourceAuthTypeOptions" :key="item.value" :label="item.value">{{ item.label }}</el-radio>
           </el-radio-group>
-
+          <div v-if="dataForm.resourceAuthType !== 1" class="flex">
+            <el-button type="primary" @click="openAuthDialog">指定授权</el-button>
+            <div v-if="organValue.length > 0 && userValue.length > 0" style="margin-left: 10px;">已授权{{ organValue.length }}个机构，{{ userValue.length }}个用户</div>
+          </div>
         </div>
       </el-form-item>
+      <div class="section-title">数据引入</div>
       <template v-if="!isEditPage">
         <el-form-item label="资源来源" prop="resourceSource">
           <div class="item-wrap-normal">
@@ -120,16 +117,57 @@
         <el-button @click="goBack">取消</el-button>
       </el-form-item>
     </el-form>
+    <el-dialog
+      title="选择授权对象 / 选择机构"
+      :visible.sync="dialogVisible"
+      width="50%"
+    >
+      <template v-if="stepActive === 1">
+        <div class="text-center">
+          <el-transfer
+            ref="organTransfer"
+            v-model="organValue"
+            v-loading="organLoading"
+            class="transfer-container"
+            filterable
+            :left-default-checked="organLeftDefaultChecked"
+            :right-default-checked="organRightDefaultChecked"
+            :titles="['已建立连接机构', '已选']"
+            :format="{
+              noChecked: '${total}',
+              hasChecked: '${checked}/${total}'
+            }"
+            :data="organList"
+            @change="handleChange($event, 'organ')"
+          >
+            <span slot-scope="{ option }">{{ option.label }}</span>
+          </el-transfer>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="handleCancel">取消</el-button>
+          <el-button type="primary" @click="handleStep">下一步</el-button>
+        </span>
+      </template>
+      <template v-else>
+        <AuthorizationUserTransfer :value="userValue" @change="handleChange($event, 'user')" />
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="handleStep">上一步</el-button>
+          <el-button @click="handleAuthConfirm">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { saveResource, getResourceDetail, resourceFilePreview, displayDatabaseSourceType } from '@/api/resource'
+import { getAvailableOrganList } from '@/api/center'
+import { resourceAuthorizationType } from '@/const'
 import Upload from '@/components/Upload'
 import EditResourceTable from '@/components/EditResourceTable'
 import ResourcePreviewTable from '@/components/ResourcePreviewTable'
 import DatabaseImport from '@/components/DatabaseImport'
-import OrganSelect from '@/components/OrganSelect'
+import AuthorizationUserTransfer from '@/components/authorizationUserTransfer'
 
 export default {
   components: {
@@ -137,10 +175,17 @@ export default {
     EditResourceTable,
     ResourcePreviewTable,
     DatabaseImport,
-    OrganSelect
+    AuthorizationUserTransfer
   },
   data() {
     return {
+      organLeftDefaultChecked: [],
+      organRightDefaultChecked: [],
+      organLoading: false,
+      stepActive: 1,
+      dialogVisible: false,
+      organValue: [],
+      userValue: [],
       isEditPage: false,
       fileUrl: '',
       dataForm: {
@@ -198,8 +243,6 @@ export default {
       }],
       dataList: [], // resource preview
       fieldList: [], // resource field info
-      cascaderValue: [],
-      showCascader: false,
       props: {
         multiple: true,
         checkStrictly: false,
@@ -209,7 +252,10 @@ export default {
         lazy: true
       },
       authOrganList: [],
-      showDatabaseRadio: false
+      showDatabaseRadio: false,
+      organList: [],
+      userList: [],
+      resourceAuthTypeOptions: resourceAuthorizationType
     }
   },
   async created() {
@@ -221,6 +267,54 @@ export default {
     await this.displayDatabaseSourceType()
   },
   methods: {
+    async openAuthDialog() {
+      this.dialogVisible = true
+      await this.getAvailableOrganList()
+    },
+    handleAuthConfirm() {
+      this.stepActive = 1
+      this.dialogVisible = false
+      this.userValue = this.userRightDefaultChecked
+      console.log('organValue', this.organValue)
+      console.log('userValue', this.userValue)
+    },
+    handleCancel() {
+      this.dialogVisible = false
+      this.stepActive = 1
+    },
+    handleStep() {
+      if (this.stepActive === 1 && this.organValue.length === 0) {
+        this.$message.error('请先选择机构')
+        return
+      }
+      this.stepActive = this.stepActive === 1 ? 2 : 1
+      console.log('this.userValue', this.userValue)
+      this.$nextTick(() => {
+        this.$refs.organTransfer && this.$refs.organTransfer.clearQuery('left')
+        this.$refs.organTransfer && this.$refs.organTransfer.clearQuery('right')
+        this.$refs.userTransfer && this.$refs.userTransfer.clearQuery('left')
+        this.$refs.userTransfer && this.$refs.userTransfer.clearQuery('right')
+      })
+    },
+    handleChange(value, name) {
+      if (name === 'organ') {
+        this.organRightDefaultChecked = value
+      } else {
+        this.userRightDefaultChecked = value
+      }
+    },
+    async getAvailableOrganList() {
+      this.organLoading = true
+      const { result } = await getAvailableOrganList()
+      this.organList = result.map(item => {
+        return {
+          key: item.globalId,
+          label: item.globalName
+        }
+      })
+      this.organLoading = false
+      console.log('organList', this.organList)
+    },
     async displayDatabaseSourceType() {
       const res = await displayDatabaseSourceType()
       if (res.code === 0) {
@@ -317,6 +411,11 @@ export default {
               resourceId: this.$route.params.id
             })
           }
+          const assignOrganList = this.organValue.map(item => this.organList.find(organ => organ.key === item))
+          this.dataForm.dataResourceAssign = {
+            assignOrganList,
+            assignUserList: []
+          }
           this.loading = true
           saveResource(this.dataForm).then(res => {
             this.loading = false
@@ -372,24 +471,20 @@ export default {
         name: 'ResourceList'
       })
     },
-    async handleAuthTypeChange(value) {
-      if (value === 3) {
-        this.showCascader = true
-        this.resourceAuthType = value
-      }
-    },
-    handleOrganChange(data) {
-      this.dataForm.fusionOrganList = data
+    async handleAuthTypeChange() {
+      this.organValue = []
+      this.userValue = []
     }
   }
 }
 </script>
 <style lang="scss" scoped>
+@import "~@/styles/variables.scss";
 ::v-deep .el-loading-mask{
   z-index: 1;
 }
 ::v-deep .el-tag{
-  margin: 0 3px;
+  margin-right: 6px;
 }
 ::v-deep .el-upload-dragger{
   width: 250px;
@@ -397,7 +492,57 @@ export default {
   .el-icon-upload{
     margin: 20px 0;
   }
-  // padding: 20px;
+}
+::v-deep .el-transfer-panel{
+  width: 245px;
+}
+::v-deep .el-transfer__buttons{
+  .el-button{
+    display: block;
+    padding: 5px 5px;
+  }
+  .el-button--primary.is-disabled{
+    background-color: #fff;
+    color: #333;
+    border-color: #eee;
+  }
+  .el-button+.el-button{
+    margin-left: 0;
+  }
+}
+.app-container{
+  padding: 25px 48px;
+}
+.section-title{
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 20px;
+  position: relative;
+  padding-bottom: 15px;
+  &:before{
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 26px;
+    background-color: $mainColor;
+    border-radius: 0px 5px 5px 0px;
+    margin-right: 10px;
+    transform: translateY(7px);
+  }
+  &::after{
+    content: "";
+    display: block;
+    height: 1px;
+    background: #eee;
+    width: 100%;
+    left: 0;
+    position: absolute;
+    bottom: 0;
+  }
+}
+.transfer-container{
+  text-align: left;
+  display: inline-block;
 }
 .item-wrap-normal {
   width: 660px;
@@ -414,23 +559,10 @@ export default {
 .el-upload__text{
   display: inline-block;
 }
-.el-tag + .el-tag {
-  // max-width: 50px;
-  overflow: hidden;
-  vertical-align: middle;
-  // margin-left: 10px;
-}
-.button-new-tag {
-  margin-left: 10px;
-  height: 32px;
-  line-height: 30px;
-  padding-top: 0;
-  padding-bottom: 0;
-}
 .input-new-tag {
   width: 90px;
-  margin-left: 10px;
-  vertical-align: bottom;
+  margin-right: 10px;
+  vertical-align: middle;
 }
 .data-container{
   padding: 0 30px 30px;
@@ -439,6 +571,7 @@ export default {
   font-size: 12px;
   color: #999;
   line-height: 1;
+  margin-top: 5px;
 }
 .auth-container{
   position: relative;

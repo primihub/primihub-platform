@@ -27,6 +27,12 @@
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="form.roleName" autocomplete="off" />
         </el-form-item>
+        <el-form-item label="角色类型" prop="roleName">
+          <el-radio-group v-model="form.roleType">
+            <el-radio label="PLAIN_USER">普通用户</el-radio>
+            <el-radio label="ORGAN_ADMIN">机构管理员</el-radio>
+          </el-radio-group>
+        </el-form-item>
         <el-form-item label="角色权限" prop="rolePermission">
           <el-tree
             ref="tree"
@@ -75,6 +81,7 @@ export default {
       form: {
         roleId: '',
         roleName: '',
+        roleType: 'PLAIN_USER',
         grantAuthArray: [],
         cancelAuthArray: []
 
@@ -119,11 +126,13 @@ export default {
 
   methods: {
     async getRoles() {
+      console.log(this.$store.state.user.roleType)
       this.listLoading = true
       const params = {
         pageSize: this.pageSize,
         roleName: this.form.roleName,
-        pageNum: this.pageNum
+        pageNum: this.pageNum,
+        roleType: this.$store.state.user.roleType
       }
       const res = await getRoles(params)
       if (res.code === 0) {
@@ -162,7 +171,6 @@ export default {
     getDefaultChecked(data) {
       for (const key in data) {
         const item = data[key]
-        console.log(item)
         if (item.isGrant) {
           this.defaultCheckedKeys.push(item.authId)
         }
@@ -189,6 +197,7 @@ export default {
       this.dialogTitle = '编辑角色'
       this.dialogType = 'edit'
       this.form.roleId = row.roleId
+      this.form.roleType = row.roleType || 'PLAIN_USER'
       await this.getRoleTree()
       this.dialogFormVisible = true
     },

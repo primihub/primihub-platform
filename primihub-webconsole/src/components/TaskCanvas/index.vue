@@ -563,7 +563,26 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('cell:removed', () => {
+        graph.on('edge:removed', ({ cell }) => {
+          console.log('cell', cell)
+          if (!this.graphData.cells.find(item => item.id === cell.id)) {
+            return
+          }
+          this.needSave = true
+          if (!this.destroyed) {
+            this.saveFn()
+            this.$notify.closeAll()
+            this.$notify({
+              message: '删除成功',
+              type: 'success',
+              duration: 1000
+            })
+          }
+        })
+        graph.on('node:removed', ({ cell }) => {
+          console.log('cell', cell.store.data.componentCode)
+          console.log('cell id', this.graph.getCellById(cell.id))
+          this.deleteNode(cell.store.data.componentCode)
           this.needSave = true
           if (!this.destroyed) {
             this.saveFn()
@@ -594,7 +613,7 @@ export default {
           })
         })
         graph.bindKey('backspace', () => {
-          this.deleteNode()
+          this.deleteNode(this.nodeData.componentCode)
           setTimeout(() => {
             this.$notify.closeAll()
           }, 1000)
@@ -610,15 +629,14 @@ export default {
         })
       }
     },
-    deleteNode() {
+    deleteNode(node) {
       const cells = this.graph.getSelectedCells()
       if (cells.length) {
         this.graph.removeCells(cells)
       }
-      const currentCode = this.nodeData.componentCode
       // remove duplicates
       this.selectComponentList = [...new Set(this.selectComponentList)]
-      const index = this.selectComponentList.indexOf(currentCode)
+      const index = this.selectComponentList.indexOf(node)
       if (index !== -1) {
         this.selectComponentList.splice(index, 1)
       }

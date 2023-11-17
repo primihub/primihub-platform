@@ -3,7 +3,7 @@
     <el-input
       v-model.trim="tagValue"
       class="tag-input"
-      maxlength="9"
+      maxlength="32"
       :disabled="disabledInput"
       :clearable="true"
       show-word-limit

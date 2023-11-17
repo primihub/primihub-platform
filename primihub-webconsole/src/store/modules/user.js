@@ -21,7 +21,8 @@ const getDefaultState = () => {
     avatar: '',
     organChange: false,
     showValidation: false,
-    registerType: 0
+    registerType: 0,
+    roleType: 'ORGAN_ADMIN' // ORGAN_ADMIN，PLAIN_USER
   }
 }
 
@@ -42,6 +43,9 @@ const mutations = {
   },
   SET_USER_NAME: (state, name) => {
     state.userName = name
+  },
+  SET_ROLE_TYPE: (state, type) => {
+    state.roleType = type
   },
   SET_USER_ORGAN_NAME: (state, name) => {
     state.userOrganName = name
@@ -135,6 +139,7 @@ const actions = {
       commit('SET_USER_NAME', userData.userName)
       commit('SET_USER_ORGAN_ID', userData.organIdList)
       commit('SET_USER_ORGAN_NAME', userData.organIdListDesc)
+      commit('SET_ROLE_TYPE', userData.roleType || state.roleType)
       resolve(userData)
     })
   },

@@ -19,6 +19,14 @@
           <div class="desc-label">结果名称:</div>
           <div class="desc-content">{{ taskData.resultName }}</div>
         </div>
+        <div class="desc-col">
+          <div class="desc-label">任务发起人:</div>
+          <div class="desc-content">{{ taskData.taskInitiator }}</div>
+        </div>
+        <div class="desc-col">
+          <div class="desc-label">任务发起时间:</div>
+          <div class="desc-content">{{ taskData.createDate }}</div>
+        </div>
       </div>
     </div>
     <div class="detail">

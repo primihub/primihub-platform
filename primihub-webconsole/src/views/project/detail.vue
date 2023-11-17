@@ -23,6 +23,9 @@
           </template>
           <template v-else>{{ projectDesc }}</template>
         </el-descriptions-item>
+        <el-descriptions-item label="项目发起人">
+          {{ taskInitiator }}
+        </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
     </section>
@@ -134,6 +137,7 @@ export default {
       userName: '',
       createDate: '',
       activeName: '',
+      taskInitiator: '',
       participationIdentity: '',
       selectedData: [],
       resourceList: [],
@@ -418,7 +422,7 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectDesc, userName, createDate, organs, creator, status, projectId } = this.list
+          const { projectName, projectDesc, userName, createDate, organs, creator, status, projectId, taskInitiator } = this.list
           this.projectId = projectId
           this.creator = creator
           this.projectName = projectName
@@ -426,6 +430,7 @@ export default {
           this.projectDesc = projectDesc
           this.userName = userName
           this.createDate = createDate
+          this.taskInitiator = taskInitiator
           this.organs = organs
           this.selectedOrganId = this.selectedOrganId || this.userOrganId
           this.activeName = this.selectedOrganId
