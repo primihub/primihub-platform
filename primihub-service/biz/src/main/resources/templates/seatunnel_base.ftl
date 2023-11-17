@@ -1,7 +1,8 @@
 {
   "env":{
     "job.mode":"STREAMING",
-    "job.name":"SeaTunnel_Job"
+    "job.name":"SeaTunnel_Job",
+    "checkpoint.timeout" : 3600000
   },
   "source":[
     {
@@ -15,8 +16,7 @@
       "parallelism" : 1,
       "query" : "${sql}",
       "connection_check_timeout_sec" : 30,
-      "batch_size":1,
-      "fetch_size" : "1",
+      "fetch_size" : "10000",
       "plugin_name" : "Jdbc",
       "url" : "${url}"
     }
