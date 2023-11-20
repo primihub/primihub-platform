@@ -268,7 +268,8 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
-        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(dataResource.getResourceId());}}));
+        DataResource finalDataResource = dataResource;
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(finalDataResource.getResourceId());}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }
