@@ -486,6 +486,7 @@ public class DataAsyncService implements ApplicationContextAware {
         map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
         map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
         map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
+        map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
         map.put("predictFileName", modelOutputPathDto.getPredictFileName());
         try {
             TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
