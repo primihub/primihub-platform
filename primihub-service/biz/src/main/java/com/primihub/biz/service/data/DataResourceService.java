@@ -234,7 +234,7 @@ public class DataResourceService {
 
     public BaseResultEntity getDataResource(String resourceId) {
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
-        if (dataResource==null){
+        if (dataResource == null){
             dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
         }
         if (dataResource == null) {
@@ -268,8 +268,7 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
-        Long resourceId1 = dataResource.getResourceId();
-        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(resourceId1);}}));
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(dataResource.getResourceId());}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }
@@ -646,7 +645,6 @@ public class DataResourceService {
         map.put("dbType",dataSource.getDbType());
         map.put("dbUrl",dataSource.getDbUrl());
         map.put("tableName", dataSource.getDbTableName());
-        map.put("dbDriver",dataSource.getDbDriver());
         if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
             map.put("db_path",dataSource.getDbUrl());
         }else {

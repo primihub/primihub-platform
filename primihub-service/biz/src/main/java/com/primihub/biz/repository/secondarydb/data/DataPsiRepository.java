@@ -17,6 +17,8 @@ public interface DataPsiRepository {
 
     DataPsiTask selectPsiTaskById(Long id);
 
+    DataPsiTask selectPsiTaskByTaskId(String id);
+
     DataPsi selectPsiById(Long id);
 
     Long selectPsiTaskPageCount(DataPsiQueryReq req);
