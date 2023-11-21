@@ -64,6 +64,10 @@ public class OrganController {
         if (StringUtils.isBlank(publicKey)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
         }
+        // 解决 "+" 在传输中替换为 " " 的问题
+        if (publicKey.contains(" ")) {
+            publicKey = publicKey.replace(" ", "+");
+        }
         return sysOrganService.joiningPartners(gateway,publicKey);
     }
 

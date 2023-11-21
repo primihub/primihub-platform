@@ -192,7 +192,9 @@ public class SysOrganService {
 
     public BaseResultEntity joiningPartners(String gateway, String publicKey) {
         SysOrgan sysOrgan = new SysOrgan();
-        sysOrgan.setExamineState(0);
+        // 0待审核 1同意 2拒绝
+        // 改为不需要审核，直接连接，但是后续还是可以通过断开连接来断开
+        sysOrgan.setExamineState(1);
         sysOrgan.setEnable(0);
         sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         sysOrgan.setOrganGateway(gateway);
@@ -320,7 +322,8 @@ public class SysOrganService {
             sysOrgan.setEnable(0);
             sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         }
-        sysOrgan.setExamineState(examineState);
+        // 自动同意
+        sysOrgan.setExamineState(1);
         if (StringUtils.isNotBlank(examineMsg)){
             sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
         }

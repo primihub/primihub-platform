@@ -12,6 +12,7 @@ import com.primihub.biz.convert.DataSourceConvert;
 import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
+import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
@@ -26,6 +27,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
+import com.primihub.biz.service.share.RemoteShareService;
 import com.primihub.biz.service.sys.SysUserService;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
@@ -76,6 +78,8 @@ public class DataResourceService {
     private FusionResourceService fusionResourceService;
     @Autowired
     private TaskHelper taskHelper;
+    @Autowired
+    private RemoteShareService remoteShareService;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -180,6 +184,11 @@ public class DataResourceService {
             map.put("resourceFusionId",dataResource.getResourceFusionId());
             map.put("resourceName",dataResource.getResourceName());
             map.put("resourceDesc",dataResource.getResourceDesc());
+
+            // 传送任务
+            if (dataResource.getResourceAuthType().equals(DataResourceAuthType.PUBLIC.getAuthType())) {
+                remoteShareService.transDataResource(dataResource.getResourceId(), null);
+            }
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
             e.printStackTrace();
@@ -229,6 +238,13 @@ public class DataResourceService {
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
         map.put("resourceDesc",dataResource.getResourceDesc());
+
+        if (Objects.equals(dataResource.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType()) || Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
+            if (Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
+                remoteShareService.transDataResource(dataResource.getResourceId(), ResourceStateEnum.AVAILABLE.getStateType());
+            }
+            remoteShareService.transDataResource(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType());
+        }
         return BaseResultEntity.success(map);
     }
 
@@ -679,6 +695,8 @@ public class DataResourceService {
             dataResourcePrRepository.editResource(dataResource);
             fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+
+            remoteShareService.transDataResource(resourceId, null);
         }
         return BaseResultEntity.success();
     }
@@ -875,6 +893,51 @@ public class DataResourceService {
         }
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         return BaseResultEntity.success();
+    }
+
+    /**
+     * 组装传输实体
+     * @param resourceId
+     * @return
+     */
+    public Map getDataResourceToTransfer(Long resourceId, Integer resourceState) {
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        if (dataResource == null) {
+            return null;
+        }
+        if (resourceState != null) {
+            dataResource.setResourceState(resourceState);
+        }
+        List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(resourceId);
+        DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource, organConfiguration.getSysLocalOrganName());
+        dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
+                .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
+                .collect(Collectors.toList());
+        Map<String, Object> map = new HashMap<>();
+        try {
+            // 数据库格式或者是csv格式
+            if (dataResource.getResourceSource() == 2) {
+                DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                log.info("{}-{}", dataResource.getDbId(), JSONObject.toJSONString(dataSource));
+                if (dataSource != null) {
+                    BaseResultEntity baseResultEntity = dataSourceService.dataSourceTableDetails(dataSource);
+                    if (baseResultEntity.getCode() == 0) {
+                        map.putAll((Map<String, Object>) baseResultEntity.getResult());
+                    }
+                }
+            } else {
+                List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), DataConstant.READ_DATA_ROW);
+                map.put("dataList", csvData);
+            }
+        } catch (Exception e) {
+            log.info("资源id:{}-文件读取失败：{}", dataResource.getResourceId(), e.getMessage());
+            map.put("dataList", new ArrayList());
+        }
+        map.put("resource", dataResourceVo);
+        // 不需要获取授权信息
+        map.put("fieldList", dataFileFieldList);
+        return map;
     }
 }
 
