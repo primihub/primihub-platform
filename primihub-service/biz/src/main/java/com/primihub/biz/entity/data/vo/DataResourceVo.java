@@ -122,4 +122,8 @@ public class DataResourceVo {
      * 中心节点资源id
      */
     private String resourceFusionId;
+    /**
+     * organFusionId
+     */
+    private String organFusionId;
 }

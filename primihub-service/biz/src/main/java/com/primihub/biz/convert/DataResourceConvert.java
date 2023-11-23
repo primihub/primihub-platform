@@ -122,7 +122,7 @@ public class DataResourceConvert {
         return vo;
     }
 
-    public static DataResourceVo dataResourcePoConvertVo(DataResource po, String organName){
+    public static DataResourceVo dataResourcePoConvertVo(DataResource po, String organFusionId, String organName){
         DataResourceVo vo = new DataResourceVo();
         vo.setCreateDate(po.getCreateDate());
         vo.setDbId(po.getDbId());
@@ -137,6 +137,7 @@ public class DataResourceConvert {
         vo.setFileYRatio(po.getFileYRatio());
         vo.setOrganId(po.getOrganId());
         vo.setOrganName(organName);
+        vo.setOrganFusionId(organFusionId);
         vo.setResourceAuthType(po.getResourceAuthType());
         vo.setResourceSource(po.getResourceSource());
         vo.setResourceDesc(po.getResourceDesc());

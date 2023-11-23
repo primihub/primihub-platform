@@ -19,6 +19,7 @@ import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
+import com.primihub.biz.entity.event.RemoteDataResourceEvent;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -36,9 +37,11 @@ import com.primihub.sdk.task.TaskHelper;
 import com.primihub.sdk.task.dataenum.FieldTypeEnum;
 import com.primihub.sdk.task.param.TaskDataSetParam;
 import com.primihub.sdk.task.param.TaskParam;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
@@ -79,7 +82,7 @@ public class DataResourceService {
     @Autowired
     private TaskHelper taskHelper;
     @Autowired
-    private RemoteShareService remoteShareService;
+    private ApplicationContext applicationContext;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -187,7 +190,7 @@ public class DataResourceService {
 
             // 传送任务
             if (dataResource.getResourceAuthType().equals(DataResourceAuthType.PUBLIC.getAuthType())) {
-                remoteShareService.transDataResource(dataResource.getResourceId(), null);
+                applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), null));
             }
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
@@ -241,9 +244,9 @@ public class DataResourceService {
 
         if (Objects.equals(dataResource.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType()) || Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
             if (Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
-                remoteShareService.transDataResource(dataResource.getResourceId(), ResourceStateEnum.AVAILABLE.getStateType());
+                applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.AVAILABLE.getStateType()));
             }
-            remoteShareService.transDataResource(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType());
+            applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType()));
         }
         return BaseResultEntity.success(map);
     }
@@ -696,7 +699,7 @@ public class DataResourceService {
             fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
 
-            remoteShareService.transDataResource(resourceId, null);
+            applicationContext.publishEvent(new RemoteDataResourceEvent(resourceId, null));
         }
         return BaseResultEntity.success();
     }
@@ -909,7 +912,7 @@ public class DataResourceService {
             dataResource.setResourceState(resourceState);
         }
         List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(resourceId);
-        DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource, organConfiguration.getSysLocalOrganName());
+        DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource, organConfiguration.getSysLocalOrganId() ,organConfiguration.getSysLocalOrganName());
         dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
         List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
                 .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
@@ -937,6 +940,13 @@ public class DataResourceService {
         map.put("resource", dataResourceVo);
         // 不需要获取授权信息
         map.put("fieldList", dataFileFieldList);
+        Map<String, String> nodeInfoMap = new HashMap<String, String>() {
+            {
+                put("gateway", organConfiguration.getSysLocalOrganInfo().getGatewayAddress());
+                put("publicKey", organConfiguration.getSysLocalOrganInfo().getPublicKey());
+            }
+        };
+        map.put("nodeInfo", JSON.toJSONString(nodeInfoMap));
         return map;
     }
 }

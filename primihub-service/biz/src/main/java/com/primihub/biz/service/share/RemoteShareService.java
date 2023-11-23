@@ -1,6 +1,7 @@
 package com.primihub.biz.service.share;
 
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.entity.event.RemoteDataResourceEvent;
 import com.primihub.biz.service.data.DataResourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,8 @@ import java.util.*;
 @Slf4j
 public class RemoteShareService {
 
-    private static final String remoteAddress = "http://192.168.99.40:10000";
-    private static final String remoteUrl = "/dataset/share";
+    private static final String remoteAddress = "http://192.168.99.12:31210";
+    private static final String remoteUrl = "/dataShare/share";
 
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
@@ -33,10 +34,15 @@ public class RemoteShareService {
      *          1).公开->私有或者授权
      *          2).私有或者授权 -> 公开
      */
-    public void transDataResource(Long resourceId, Integer resourceState) {
-        Map transMap = resourceService.getDataResourceToTransfer(resourceId, resourceState);
+    @org.springframework.context.event.EventListener(RemoteDataResourceEvent.class)
+    public void transDataResource(RemoteDataResourceEvent event) {
+        Long resourceId = event.getResourceId();
+        if (resourceId == null) {
+            log.error("本次数据资源传送 没有数据id 请修改代码逻辑");
+        }
+        Map transMap = resourceService.getDataResourceToTransfer(event.getResourceId(), event.getResourceState());
         if (transMap==null) {
-            log.info("未找到id: {} 的数据资源，传送失败", resourceId);
+            log.info("未找到id: {} 的数据资源，传送失败", event.getResourceId());
         }
         transDataResource(resourceId, transMap, 1);
     }
