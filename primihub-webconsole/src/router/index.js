@@ -308,6 +308,12 @@ export const asyncRoutes = [
       },
 
       {
+        path: 'availableResources',
+        name: 'AvailableResources',
+        component: () => import('@/views/resource/availableResources'),
+        meta: { title: '可申请的资源' }
+      },
+      {
         path: 'create',
         name: 'ResourceUpload',
         hidden: true,

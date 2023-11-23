@@ -15,3 +15,10 @@ export function getHomepage(params) {
     params
   })
 }
+export function getSetting(params) {
+  return request({
+    url: `/dataShare/config/get`,
+    method: 'get',
+    params
+  })
+}

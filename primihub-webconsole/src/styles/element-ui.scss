@@ -70,7 +70,7 @@
   background-color: #EEEEEE;
   color: #333333;
 }
-.el-tabs__item:focus.is-active.is-focus:not(:active) {
-  -webkit-box-shadow: none;
-  box-shadow: none;
+
+.el-message-box__status.el-icon-info{
+  color: #E6A23C;
 }

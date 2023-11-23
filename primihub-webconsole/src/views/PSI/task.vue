@@ -104,13 +104,23 @@
                         :value="item.fieldName"
                       >
                         <template slot="default">
-                          <div class="flex justify-content-between">
-                            <span class="option-label">{{ item.fieldName }}</span>
-                            <span class="option-desc">
-                              <el-tooltip class="item" effect="dark" :content="item.fieldDesc" placement="top-start">
-                                <span>{{ item.fieldDesc ? item.fieldDesc.length>8 ? item.fieldDesc.slice(0,8)+'...' : item.fieldDesc : '' }}</span>
-                              </el-tooltip>
-                            </span>
+                          <div class="option-item">
+                            <template v-if="item.fieldDesc">
+                              <div class="option-label" :style="{'max-width': item.fieldDesc ? '200px' : '100%'}">
+                                <el-tooltip class="item" effect="dark" :content="item.fieldName" placement="top-start">
+                                  <span>{{ item.fieldName }}</span>
+                                </el-tooltip>
+                              </div>
+                              <div class="option-desc">
+                                <el-tooltip class="item" effect="dark" :content="item.fieldDesc" placement="top-start">
+                                  <span>{{ item.fieldDesc ? item.fieldDesc.length>8 ? item.fieldDesc.slice(0,8)+'...' : item.fieldDesc : '' }}</span>
+                                </el-tooltip>
+                              </div>
+                            </template>
+
+                            <div v-else>
+                              <span class="option-label">{{ item.fieldName }}</span>
+                            </div>
                           </div>
                         </template>
                       </el-option>
@@ -126,13 +136,23 @@
                         :value="item.fieldName"
                       >
                         <template slot="default">
-                          <div class="flex justify-content-between">
-                            <span class="option-label">{{ item.fieldName }}</span>
-                            <span class="option-desc">
-                              <el-tooltip class="item" effect="dark" :content="item.fieldDesc" placement="top-start">
-                                <span>{{ item.fieldDesc ? item.fieldDesc.length>8 ? item.fieldDesc.slice(0,8)+'...' : item.fieldDesc : '' }}</span>
-                              </el-tooltip>
-                            </span>
+                          <div class="option-item">
+                            <template v-if="item.fieldDesc">
+                              <div class="option-label" :style="{'max-width': item.fieldDesc ? '200px' : '100%'}">
+                                <el-tooltip class="item" effect="dark" :content="item.fieldName" placement="top-start">
+                                  <span>{{ item.fieldName }}</span>
+                                </el-tooltip>
+                              </div>
+                              <div class="option-desc">
+                                <el-tooltip class="item" effect="dark" :content="item.fieldDesc" placement="top-start">
+                                  <span>{{ item.fieldDesc ? item.fieldDesc.length>8 ? item.fieldDesc.slice(0,8)+'...' : item.fieldDesc : '' }}</span>
+                                </el-tooltip>
+                              </div>
+                            </template>
+
+                            <div v-else>
+                              <span class="option-label">{{ item.fieldName }}</span>
+                            </div>
                           </div>
                         </template>
                       </el-option>
@@ -849,16 +869,21 @@ export default {
   margin: 30px;
   text-align: right;
 }
+.option-item{
+  display: flex;
+  justify-content: space-between;
+}
 .option-label{
-  max-width: 120px;
-  flex-shrink: 0;
+  max-width: 100%;
+  // flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .option-desc{
-  width: 30%;
+  width: 80px;
   color: #999;
+  margin-left: 10px;
 }
 .search-input{
   width: 300px;
