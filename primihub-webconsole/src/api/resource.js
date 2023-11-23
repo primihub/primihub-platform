@@ -55,6 +55,13 @@ export function getResourceList(params) {
     params
   })
 }
+export function getDataSetList(params) {
+  return request({
+    url: '/dataShare/list',
+    method: 'get',
+    params
+  })
+}
 export function getResourceDetail(resourceId) {
   return request({
     url: '/data/resource/getdataresource',
@@ -64,6 +71,15 @@ export function getResourceDetail(resourceId) {
     }
   })
 }
+// export function getResourceDetail(resourceId) {
+//   return request({
+//     url: '/dataShare/info/{resourceFusionId}',
+//     method: 'get',
+//     params: {
+//       resourceId
+//     }
+//   })
+// }
 export function getOriginList(params) {
   return Promise.resolve([])
 }
