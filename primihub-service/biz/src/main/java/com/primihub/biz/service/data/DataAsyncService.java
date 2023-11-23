@@ -294,25 +294,21 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg(taskParam.getError());
                 }
-                DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
-                psiTask.setTaskState(task1.getTaskState());
-                if (task1.getTaskState() != 4) {
-                    if (FileUtil.isFileExists(psiTask.getFilePath())) {
-                        psiTask.setTaskState(1);
-                    } else {
-                        psiTask.setTaskState(3);
+                if (!dataTask.getTaskState().equals(TaskStateEnum.CANCEL.getStateType()) && !dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
+                    if (!FileUtil.isFileExists(psiTask.getFilePath())) {
+                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     }
                 }
             } catch (Exception e) {
-                psiTask.setTaskState(3);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
         } else {
-            psiTask.setTaskState(3);
+            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
         }
+        psiTask.setTaskState(dataTask.getTaskState());
         dataPsiPrRepository.updateDataPsiTask(psiTask);
-        dataTask.setTaskState(psiTask.getTaskState());
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
     }

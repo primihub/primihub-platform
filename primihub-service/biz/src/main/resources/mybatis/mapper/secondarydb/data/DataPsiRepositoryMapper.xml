@@ -96,4 +96,12 @@
         where
             id = #{id}
     </select>
+    <select id="selectPsiTaskByTaskId" resultType="com.primihub.biz.entity.data.po.DataPsiTask">
+        SELECT
+            id,psi_id as psiId,task_id as taskId,task_state as taskState,ascription,ascription_type as ascriptionType,file_path filePath,file_content fileContent,create_date createDate
+        FROM
+            data_psi_task
+        WHERE
+            task_id = #{id}
+    </select>
 </mapper>
