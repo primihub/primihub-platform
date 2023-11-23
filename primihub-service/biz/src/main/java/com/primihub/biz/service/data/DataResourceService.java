@@ -438,14 +438,14 @@ public class DataResourceService {
         if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
             return FieldTypeEnum.DOUBLE;
         }
-        if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
-            return FieldTypeEnum.DOUBLE;
+        if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
+            return FieldTypeEnum.INTEGER;
         }
         if (DataConstant.RESOURCE_PATTERN_LONG.matcher(fieldVal).find()) {
             return FieldTypeEnum.LONG;
         }
-        if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
-            return FieldTypeEnum.INTEGER;
+        if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
         }
         return FieldTypeEnum.STRING;
     }
