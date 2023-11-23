@@ -431,12 +431,10 @@ public class DataResourceService {
     }
 
 
+
     public FieldTypeEnum getFieldType(String fieldVal) {
         if (StringUtils.isBlank(fieldVal)) {
             return FieldTypeEnum.STRING;
-        }
-        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
-            return FieldTypeEnum.DOUBLE;
         }
         if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
             return FieldTypeEnum.INTEGER;
@@ -445,6 +443,9 @@ public class DataResourceService {
             return FieldTypeEnum.LONG;
         }
         if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
+        }
+        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
             return FieldTypeEnum.DOUBLE;
         }
         return FieldTypeEnum.STRING;
