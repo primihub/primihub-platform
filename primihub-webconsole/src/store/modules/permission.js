@@ -48,7 +48,7 @@ function getRoutes(routers, rootList) {
       realRoutes.push(curRoutes)
     }
   })
-  return routers
+  return realRoutes
 }
 
 /**
