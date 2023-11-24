@@ -991,7 +991,9 @@ export default {
     setFeaturesValue() {
       if (this.nodeData.componentTypes[this.featureConfigIndex]) {
         this.nodeData.componentTypes[this.featureConfigIndex].inputValue = JSON.stringify(this.featureItems)
-        this.handleChange()
+        if (this.options.isEditable) {
+          this.handleChange()
+        }
       }
     }
   }
