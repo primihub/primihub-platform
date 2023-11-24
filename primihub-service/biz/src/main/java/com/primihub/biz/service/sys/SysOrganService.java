@@ -252,7 +252,8 @@ public class SysOrganService {
             sysOrgan.setPublicKey(info.get("publicKey").toString());
             sysOrgan.setOrganId(info.get("organId").toString());
             sysOrgan.setOrganName(info.get("organName").toString());
-            sysOrgan.setExamineState(0);
+            // 同意
+            sysOrgan.setExamineState(1);
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
         }else {
@@ -263,12 +264,18 @@ public class SysOrganService {
             sysOrgan.setOrganName(info.get("organName").toString());
             if (info.containsKey("examineState")){
                 sysOrgan.setExamineState((Integer) info.get("examineState"));
+            } else {
+                // 默认同意
+                sysOrgan.setExamineState(1);
             }
             if (info.containsKey("examineMsg")){
                 sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+ info.get("examineMsg").toString());
             }
             if (info.containsKey("enable")){
                 sysOrgan.setEnable((Integer) info.get("enable"));
+            } else {
+                // 默认开启
+                sysOrgan.setEnable(0);
             }
             sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             sysAsyncService.applyForJoinNode(sysOrgan);
