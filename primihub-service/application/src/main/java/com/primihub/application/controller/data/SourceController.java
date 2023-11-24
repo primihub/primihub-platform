@@ -64,12 +64,12 @@ public class SourceController {
             if (StringUtils.isBlank(req.getDbDriver())) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Driver");
             }
-            if (StringUtils.isBlank(req.getDbUsername())) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Username");
-            }
-            if (StringUtils.isBlank(req.getDbPassword())) {
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Password");
-            }
+//            if (StringUtils.isBlank(req.getDbUsername())) {
+//                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Username");
+//            }
+//            if (StringUtils.isBlank(req.getDbPassword())) {
+//                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Password");
+//            }
         }
         if (StringUtils.isBlank(req.getDbUrl())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"Url");

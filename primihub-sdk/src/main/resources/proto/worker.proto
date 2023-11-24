@@ -8,13 +8,13 @@ package primihub.rpc;
 import "common.proto";
 import "psi.proto";
 import "pir.proto";
-
 message PushTaskRequest {
   bytes intended_worker_id = 1;
   Task task = 2;
   int64 sequence_number = 3;
   int64 client_processed_up_to = 4;
   bytes submit_client_id = 5;
+  bool manual_launch = 6;
 }
 
 message PushTaskReply {
@@ -82,6 +82,8 @@ message TaskStatus {
     RUNNING = 0;
     SUCCESS = 1;
     FAIL = 2;
+    NONEXIST = 3;
+    FINISHED = 4;
   }
   TaskContext task_info = 1;
   string party = 2;
@@ -97,7 +99,8 @@ service VMNode {
   // task operation
   rpc SubmitTask(PushTaskRequest) returns (PushTaskReply);
   rpc KillTask(KillTaskRequest) returns (KillTaskResponse);
-  rpc ExecuteTask(stream ExecuteTaskRequest) returns (stream ExecuteTaskResponse);
+  rpc ExecuteTask(PushTaskRequest) returns (PushTaskReply);
+  rpc StopTask(TaskContext) returns (Empty);
   // task status operation
   rpc FetchTaskStatus(TaskContext) returns (TaskStatusReply);
   rpc UpdateTaskStatus(TaskStatus) returns (Empty);

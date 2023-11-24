@@ -45,6 +45,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>2.3.7.RELEASE</version>
                 <configuration>
+                    <includeSystemScope>true</includeSystemScope>
                     <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
                     <mainClass>com.primihub.application.PlatformApplication</mainClass>
                 </configuration>

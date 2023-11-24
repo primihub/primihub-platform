@@ -282,8 +282,11 @@ public class DataTaskService {
     }
 
 
-    public BaseResultEntity cancelTask(Long taskId) {
-        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+    public BaseResultEntity cancelTask(String taskId) {
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+        if (rawDataTask==null){
+            rawDataTask = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+        }
         if (rawDataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
         }
@@ -296,7 +299,7 @@ public class DataTaskService {
             rawDataTask.setTaskEndTime(System.currentTimeMillis());
             dataTaskPrRepository.updateDataTask(rawDataTask);
             if (rawDataTask.getTaskType().equals(TaskTypeEnum.PSI.getTaskType())){
-                DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
+                DataPsiTask task = dataPsiRepository.selectPsiTaskByTaskId(rawDataTask.getTaskIdName());
                 task.setTaskState(rawDataTask.getTaskState());
                 dataPsiPrRepository.updateDataPsiTask(task);
             }
