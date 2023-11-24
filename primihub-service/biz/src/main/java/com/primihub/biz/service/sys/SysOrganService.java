@@ -231,6 +231,8 @@ public class SysOrganService {
             }else {
                 sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
             }
+            // 无需审核时，需主动同步
+            sysAsyncService.applyForJoinNode(sysOrgan);
         }catch (Exception e){
             e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
