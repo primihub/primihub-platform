@@ -439,7 +439,7 @@ export default {
         keyboard: true
       }
       this.graph = new Graph(options)
-      // window.graph = this.graph
+      window.graph = this.graph
       if (this.components.length > 0) {
         this.registerStartNode()
         this.addStartNode()
