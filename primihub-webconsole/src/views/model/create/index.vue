@@ -88,7 +88,6 @@ export default {
   async mounted() {
     this.isDraft = this.isEdit ? 1 : 0
     this.modelId = Number(this.$route.query.modelId) || 0
-    // await this.init()
   },
   destroyed() {
     clearTimeout(this.taskTimer)

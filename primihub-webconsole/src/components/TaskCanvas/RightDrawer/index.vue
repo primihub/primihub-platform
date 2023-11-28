@@ -616,7 +616,7 @@ export default {
       })
       this.processingType.map((item) => {
         const current = this.featureItems.find(feature => feature.type === item.key)
-        item.disabled = !!current
+        this.$set(item, 'disabled', !!current)
       })
       this.handleChange('exception')
     },
