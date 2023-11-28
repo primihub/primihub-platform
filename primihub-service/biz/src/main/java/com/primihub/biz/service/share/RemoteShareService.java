@@ -1,5 +1,6 @@
 package com.primihub.biz.service.share;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.entity.event.RemoteDataResourceEvent;
 import com.primihub.biz.service.data.DataResourceService;
@@ -36,6 +37,7 @@ public class RemoteShareService {
      */
     @org.springframework.context.event.EventListener(RemoteDataResourceEvent.class)
     public void transDataResource(RemoteDataResourceEvent event) {
+        log.info("spring event 接受的数据: {}", JSON.toJSONString(event));
         Long resourceId = event.getResourceId();
         if (resourceId == null) {
             log.error("本次数据资源传送 没有数据id 请修改代码逻辑");

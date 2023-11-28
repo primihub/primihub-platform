@@ -242,11 +242,16 @@ public class DataResourceService {
         map.put("resourceName",dataResource.getResourceName());
         map.put("resourceDesc",dataResource.getResourceDesc());
 
-        if (Objects.equals(dataResource.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType()) || Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
+        if (Objects.equals(dataResource.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType()) || Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PRIVATE.getAuthType())) {
             if (Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
-                applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.AVAILABLE.getStateType()));
+                RemoteDataResourceEvent remoteDataResourceEvent = new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.AVAILABLE.getStateType());
+                applicationContext.publishEvent(remoteDataResourceEvent);
+                log.info("spring event publish : {}", JSONObject.toJSONString(remoteDataResourceEvent));
+            } else {
+                RemoteDataResourceEvent remoteDataResourceEvent = new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType());
+                applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType()));
+                log.info("spring event publish : {}", JSONObject.toJSONString(remoteDataResourceEvent));
             }
-            applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType()));
         }
         return BaseResultEntity.success(map);
     }
