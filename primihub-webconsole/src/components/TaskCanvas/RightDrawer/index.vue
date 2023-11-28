@@ -143,7 +143,7 @@
               </el-select>
             </el-col>
             <el-col v-if="param.inputType === 'button'" :span="24">
-              <p class="tips">横向联邦需可信第三方(arbiter方)参与</p>
+              <p class="tips">{{ flText }}需可信第三方(arbiter方)参与</p>
               <span v-if="arbiterOrganName" class="label-text"><i class="el-icon-office-building" /> {{ arbiterOrganName }}</span>
               <el-button v-if="options.isEditable" type="primary" size="mini" class="block" @click="openProviderOrganDialog">请选择</el-button>
             </el-col>
@@ -210,7 +210,7 @@
     <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedDataAlignFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
 
     <!-- MPC_MPC_STATISTICS component dialog -->
-    <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :selected-features="selectFeatures" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
+    <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
   </div>
 </template>
 
@@ -285,7 +285,6 @@ export default {
       dataAlignParam: {},
       modelParams: [],
       defaultComponentConfig: [],
-      selectFeatures: [],
       selectType: 'radio',
       emptyMissingData: {
         selectedExceptionFeatures: [],
@@ -353,7 +352,8 @@ export default {
           { required: true, trigger: 'change' }
         ]
       },
-      selectedProviderOrgans: []
+      selectedProviderOrgans: [],
+      flText: ''
     }
   },
   computed: {
@@ -416,6 +416,7 @@ export default {
         } else if (newVal.componentCode === MODEL) {
           this.getDataSetComValue()
           this.getModelParams(newVal)
+          this.flText = this.filterModelValue()
         } else if (newVal.componentCode === DATA_ALIGN) {
           this.getDataSetComValue()
           this.getFeaturesOptions()
@@ -467,6 +468,13 @@ export default {
         }
       }
     },
+    filterModelValue() {
+      if (this.modelTypeValue === '2' || this.modelTypeValue === '5' || this.modelTypeValue === '9') {
+        return '纵向联邦'
+      } else {
+        return '横向联邦'
+      }
+    },
     getModelParams(data) {
       const modelType = data.componentTypes.find(item => item.typeCode === MODEL_TYPE)
       const currentData = modelType && modelType.inputValues.find(item => item.key === modelType.inputValue)
@@ -491,11 +499,13 @@ export default {
       this.modelTypeValue = val
       // reset before params
       this.resetModelParams()
+      this.flText = this.filterModelValue()
       this.handleChange()
     },
     handleParamChange(val) {
       this.modelEncryptionType = val
       this.getModelParams(this.nodeData)
+      this.flText = this.filterModelValue()
       this.handleChange()
     },
     getFeaturesItem() {
@@ -504,7 +514,7 @@ export default {
           organId: item.organId,
           organName: item.organName,
           resourceId: item.resourceId,
-          resourceField: item.resourceField && item.resourceField.map(resource => {
+          resourceField: item?.resourceField && item?.resourceField.map(resource => {
             return {
               fieldName: resource.fieldName,
               fieldType: resource.fieldType
@@ -571,19 +581,12 @@ export default {
       })
       this.processingType.map((item) => {
         const current = this.featureItems.find(feature => feature.type === item.key)
-        item.disabled = !!current
+        this.$set(item, 'disabled', !!current)
       })
       this.handleChange('exception')
     },
     removeFilling(index) {
       this.featureItems.splice(index, 1)
-      this.featureItems.forEach(item => {
-        if (item.features[0].checked.length > 0) {
-          this.selectFeatures = [...item.features[0].checked]
-        } else {
-          this.selectFeatures = []
-        }
-      })
       this.setFeaturesValue()
       this.handleChange()
     },
@@ -853,27 +856,12 @@ export default {
     save() {
       this.$emit('save')
     },
-    setSelectFeaturesStatus() {
-      const selected = []
-      // set checkbox disabled element
-      const featureItems = this.featureItems.filter(feature => feature.type !== this.featureItems[this.featureIndex].type)
-      featureItems.forEach(item => {
-        const checked = item.features[0].checked
-        if (checked.length > 0) {
-          for (let i = 0; i < checked.length; i++) {
-            selected.push(checked[i])
-          }
-        }
-      })
-      this.selectFeatures = selected
-    },
     openMultiFeaturesDialog(index) {
       if (this.inputValue === '') {
         this.$message.error('请先添加选择数据集组件')
         return
       }
       this.featureIndex = index
-      this.setSelectFeaturesStatus()
       this.multiFeaturesVisible = true
     },
     openFeaturesDialog(code, index) {
@@ -902,6 +890,9 @@ export default {
       this.featureItems[this.featureIndex].features = data
       this.multiFeaturesVisible = false
       this.setFeaturesValue()
+      if (this.options.isEditable) {
+        this.handleChange()
+      }
     },
     compareFeature(arr, arr2) {
       if (!arr2) return
@@ -939,11 +930,13 @@ export default {
     handleTypeChange(index, value) {
       this.featureItems[index].type = value
       this.setFeaturesValue()
+      if (this.options.isEditable) {
+        this.handleChange()
+      }
     },
     setFeaturesValue() {
       if (this.nodeData.componentTypes[this.featureConfigIndex]) {
         this.nodeData.componentTypes[this.featureConfigIndex].inputValue = JSON.stringify(this.featureItems)
-        this.handleChange()
       }
     }
   }

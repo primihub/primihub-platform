@@ -450,6 +450,7 @@ export default {
       // 居中显示画布
       // this.graph.centerContent({ padding: { left: 200, top: -200 }})
       this.projectId = Number(this.$route.params.id) || 0
+      this.$emit('mounted')
     },
     registerStartNode() {
       this.startNode = this.components.filter(item => item.componentCode === 'start')[0]

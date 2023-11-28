@@ -8,7 +8,7 @@
         <div id="stencil" />
       </div>
       <div class="center-container">
-        <TaskCanvas :model-id="modelId" :options="taskOptions" :components-detail="componentDetail" @selectComponents="handleSelectComponents" @saveParams="getSaveParams" />
+        <TaskCanvas ref="canvasRef" :model-id="modelId" :options="taskOptions" :components-detail="componentDetail" @mounted="init" @selectComponents="handleSelectComponents" @saveParams="getSaveParams" />
       </div>
     </div>
     <div class="footer-buttons">
@@ -88,13 +88,12 @@ export default {
   async mounted() {
     this.isDraft = this.isEdit ? 1 : 0
     this.modelId = Number(this.$route.query.modelId) || 0
-    await this.init()
   },
   destroyed() {
     clearTimeout(this.taskTimer)
     this.selectComponentList = []
     this.destroyed = true
-    window.graph.dispose()
+    this.graph && this.graph.dispose()
     console.log('destroyed model')
   },
   methods: {
@@ -196,7 +195,7 @@ export default {
         // 默认true, 但是会抖动
         copyStyles: false,
         // 解决生成图片样式丢失问题，官方临时解决方案 https://antv-x6.gitee.io/zh/docs/tutorial/epilog#%E5%AF%BC%E5%87%BA%E5%9B%BE%E7%89%87%E6%A0%B7%E5%BC%8F%E7%BC%BA%E5%A4%B1
-        stylesheet: ` 
+        stylesheet: `
             .start-node {
               color: #00a387;
               font-weight: bold;
@@ -252,7 +251,7 @@ export default {
       })
     },
     async init() {
-      this.graph = window.graph
+      this.graph = this.$refs.canvasRef.graph
       // 获取左侧组件列表
       await this.getModelComponentsInfo()
 
@@ -265,7 +264,7 @@ export default {
       const height = document.querySelector('#stencil').offsetHeight
       this.stencil = new Addon.Stencil({
         title: '',
-        target: window.graph,
+        target: this.graph,
         stencilGraphHeight: height,
         x: 50,
         collapsable: true,
@@ -301,7 +300,7 @@ export default {
     },
     initShape() {
       const imageNodes = this.componentsList?.map((item) =>
-        window.graph.createNode({
+        this.graph.createNode({
           id: item.frontComponentId,
           componentCode: item.componentCode,
           shape: 'dag-node',
