@@ -1,10 +1,14 @@
 package com.primihub.biz.entity.base;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.List;
 
-public class PageDataEntity {
+@ApiModel("分页结构")
+public class PageDataEntity<T> {
 
-    public PageDataEntity(int total, int pageSize, int index, List data) {
+    public PageDataEntity(int total, int pageSize, int index, List<T> data) {
         this.total = total;
         this.pageSize = pageSize;
         this.index = index;
@@ -14,23 +18,28 @@ public class PageDataEntity {
     /**
      * 总共的数据量
      */
+    @ApiModelProperty(value = "总共的数据量")
     private int total;
     /**
      * 每页显示多少条
      */
+    @ApiModelProperty(value = "每页显示多少条")
     private int pageSize;
     /**
      * 共有多少页
      */
+    @ApiModelProperty(value = "共有多少页")
     private int totalPage;
     /**
      * 当前是第几页
      */
+    @ApiModelProperty(value = "当前是第几页")
     private int index;
     /**
      * 数据
      */
-    private List data;
+    @ApiModelProperty(value = "数据")
+    private List<T> data;
 
     public int getTotal() {
         return total;
@@ -64,11 +73,11 @@ public class PageDataEntity {
         this.index = index;
     }
 
-    public List getData() {
+    public List<T> getData() {
         return data;
     }
 
-    public void setData(List data) {
+    public void setData(List<T> data) {
         this.data = data;
     }
 }

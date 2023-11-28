@@ -72,6 +72,16 @@ spring:
             - BaseParam
             - SysAuth
             - SysLog
+        - id: swagger-url-proxy
+          uri: lb://platform
+          predicates:
+            - Path=/platform/**
+          filters:
+            - StripPrefix=1
+            - BaseParam
+            - SysAuth
+            - SysLog
+
 logging:
   level:
     root: debug

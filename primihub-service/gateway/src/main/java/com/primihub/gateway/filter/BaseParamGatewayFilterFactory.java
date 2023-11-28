@@ -36,12 +36,21 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
 
     public static final String REQUEST_TIME_START="requestTimeStart";
     public static final AntPathMatcher MATCHER = new AntPathMatcher(File.separator);
-    public static final String SHARE_URL = "/shareData/**";
+    public static final String[] PATTERN_URLS = new String[]{"/shareData/**","/v2/**"};
 
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
     private CodecConfigurer codecConfigurer;
+
+    public boolean checkUri(String requestURI){
+        for (String url : PATTERN_URLS) {
+            if(MATCHER.match(url,requestURI)){
+                return true;
+            }
+        }
+        return false;
+    }
 
     @Override
     public GatewayFilter apply(Object config) {
@@ -49,7 +58,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
 //            log.info(currentRawPath);
             MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
-            if (MATCHER.match(SHARE_URL,currentRawPath)){
+            if (checkUri(currentRawPath)){
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
                             Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
