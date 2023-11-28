@@ -314,16 +314,23 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String param) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames) {
         Date date = new Date();
         try {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
             TaskPIRParam pirParam = new TaskPIRParam();
-            pirParam.setQueryParam(param.split(","));
-            pirParam.setServerData(resourceId);
+            pirParam.setQueryParam(dataPirTask.getRetrievalId().split(","));
+            pirParam.setServerData(dataPirTask.getResourceId());
             pirParam.setOutputFullFilename(dataTask.getTaskResultPath());
+            List<String> columns = Arrays.asList(resourceColumnNames.toLowerCase().split(","));
+            List<String> keyColumns = Arrays.asList(dataPirTask.getKeyColumns().toLowerCase().split(","));
+            pirParam.setKeyColumns(keyColumns.stream().map(columns::indexOf).toArray(Integer[]::new));
+            if (StringUtils.isNotBlank(dataPirTask.getLabelColumns())){
+                List<String> labelColumns = Arrays.asList(dataPirTask.getLabelColumns().toLowerCase().split(","));
+                pirParam.setLabelColumns(labelColumns.stream().map(columns::indexOf).toArray(Integer[]::new));
+            }
             TaskParam taskParam = new TaskParam();
             taskParam.setTaskContentParam(pirParam);
             taskParam.setTaskId(dataTask.getTaskIdName());

@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data.component.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
@@ -187,12 +188,22 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskReq.getDataTask().setTaskResultContent(JSONObject.toJSONString(outputPathDto));
             Integer batchSize = 128;
             Integer numlters = 5;
+            List<String> columnsExclude = null;
             try {
                 if (taskReq.getValueMap().containsKey("batchSize")){
                     batchSize = Integer.parseInt(taskReq.getValueMap().get("batchSize"));
                 }
                 if (taskReq.getValueMap().containsKey("maxIter")){
                     numlters = Integer.parseInt(taskReq.getValueMap().get("maxIter"));
+                }
+                if (taskReq.getValueMap().containsKey("ColumnsExclude")){
+                    try {
+                        columnsExclude = JSONArray.parseArray(taskReq.getValueMap().get("ColumnsExclude"), String.class);
+                    }catch (Exception e){
+                        log.info("ColumnsExclude convert json exception:{}",e.getMessage());
+                        e.printStackTrace();
+                    }
+
                 }
             }catch (Exception e){
                 log.info(e.getMessage());
@@ -207,6 +218,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             mpcParam.setParamMap(new HashMap<>());
             mpcParam.getParamMap().put("BatchSize",batchSize);
             mpcParam.getParamMap().put("NumIters",numlters);
+            mpcParam.getParamMap().put("ColumnsExclude",columnsExclude);
             mpcParam.getParamMap().put("modelName",outputPathDto.getHostModelFileName());
             taskParam.setTaskContentParam(mpcParam);
             taskHelper.submit(taskParam);

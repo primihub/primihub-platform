@@ -42,6 +42,9 @@ public class DataPirTaskVo {
 
     private String taskName;
 
+    private String keyColumns;
+    private String labelColumns;
+
 
     /**
      * 任务状态(0未开始 1成功 2查询中 3失败)

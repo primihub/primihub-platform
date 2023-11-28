@@ -3,6 +3,7 @@ package com.primihub.application.controller.data;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.service.data.PirService;
 import lombok.extern.slf4j.Slf4j;
@@ -28,17 +29,20 @@ public class PirController {
     private PirService pirService;
 
     @RequestMapping("pirSubmitTask")
-    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam,String taskName){
-        if (StringUtils.isBlank(resourceId)){
+    public BaseResultEntity pirSubmitTask(DataPirReq req){
+        if (StringUtils.isBlank(req.getResourceId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
-        if (StringUtils.isBlank(pirParam)){
+        if (StringUtils.isBlank(req.getPirParam())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
         }
-        if (StringUtils.isBlank(taskName)){
+        if (StringUtils.isBlank(req.getTaskName())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
         }
-        return pirService.pirSubmitTask(resourceId,pirParam,taskName);
+        if (StringUtils.isBlank(req.getKeyColumns())){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyColumns");
+        }
+        return pirService.pirSubmitTask(req);
     }
     @RequestMapping("getPirTaskList")
     public BaseResultEntity getPirTaskList(DataPirTaskReq req){
