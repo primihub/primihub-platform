@@ -5,12 +5,16 @@ import com.alibaba.nacos.spring.context.annotation.config.NacosPropertySources;
 import com.primihub.biz.config.base.SwaggerConfig;
 import com.primihub.biz.config.base.TemplatesConfig;
 import com.primihub.biz.config.grpc.GrpcConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.config.mq.SingleTaskChannelConsumer;
 import com.primihub.biz.config.thread.ThreadPoolConfig;
 import com.primihub.biz.service.sys.*;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfiguration;
+import org.springframework.cloud.stream.binding.BindingService;
+import org.springframework.cloud.stream.config.BindingServiceConfiguration;
+import org.springframework.cloud.stream.function.FunctionConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 
@@ -18,7 +22,7 @@ import org.springframework.context.annotation.FilterType;
         @NacosPropertySource(dataId = "base.json" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "database.yaml" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "redis.yaml" ,autoRefreshed = true)})
-@SpringBootApplication(scanBasePackages="com.primihub",exclude = {HazelcastAutoConfiguration.class})
+@SpringBootApplication(scanBasePackages="com.primihub",exclude = {HazelcastAutoConfiguration.class, BindingServiceConfiguration.class, FunctionConfiguration.class})
 @ComponentScan(
     basePackages = {"com.primihub"},
     excludeFilters = {
