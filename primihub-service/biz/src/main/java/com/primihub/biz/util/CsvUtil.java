@@ -2,14 +2,14 @@ package com.primihub.biz.util;
 
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.opencsv.CSVWriter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CsvUtil {
@@ -37,6 +37,18 @@ public class CsvUtil {
         }
         return list;
 
+    }
+
+    public static boolean csvWrite(String filePath,List<String> data){
+        try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
+            // 数据写入文件
+            writer.writeAll(data.stream().map(d -> d.split(",")).collect(Collectors.toList()));
+            return true;
+        } catch (IOException e) {
+            log.info("csv 写入文件失败:{}",e.getMessage());
+            e.printStackTrace();
+        }
+        return false;
     }
 
 //    public static void main(String[] args) throws Exception {

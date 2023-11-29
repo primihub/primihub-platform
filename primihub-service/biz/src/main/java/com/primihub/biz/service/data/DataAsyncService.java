@@ -357,8 +357,8 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
             updateTaskState(dataTask);
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
-            StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/");
-            String fileName = dataTask.getTaskIdName()+".csv";
+            StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
+            dataTask.setTaskResultPath(sb.toString());
             List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
             Map<String,String> jobMap = new HashMap<>();
             List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
@@ -387,10 +387,10 @@ public class DataAsyncService implements ApplicationContextAware {
             }
             if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                 List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
-                log.info("数据写入文件sb:{} - fileName:{} -  pirTaskResultDataSize:{}",sb.toString(),fileName,pirTaskResultData.size());
-                FileUtil.writeFile(sb.toString(),fileName,pirTaskResultData);
-                sb.append(fileName);
-                dataTask.setTaskResultPath(sb.toString());
+                log.info("数据写入文件sb:{} -  pirTaskResultDataSize:{}",sb.toString(),pirTaskResultData.size());
+                boolean b = CsvUtil.csvWrite(sb.toString(), pirTaskResultData);
+                log.info("数据写入文件结果:{}",b);
+
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
