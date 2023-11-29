@@ -23,7 +23,10 @@ import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.primaryredis.data.DataRedisRepository;
-import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.service.sys.SysEmailService;
@@ -44,12 +47,13 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -343,6 +347,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 taskHelper.submit(taskParam);
                 if (taskParam.getSuccess()){
                     dataRedisRepository.pirTaskResultHandle(dataTask.getTaskIdName(),CsvUtil.csvReader(sb.toString(), null));
+                    Files.delete(Paths.get(sb.toString()));
                 }
                 return taskParam;
             }
@@ -387,9 +392,9 @@ public class DataAsyncService implements ApplicationContextAware {
             }
             if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
                 List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
-                log.info("数据写入文件sb:{} -  pirTaskResultDataSize:{}",sb.toString(),pirTaskResultData.size());
+//                log.info("数据写入文件sb:{} -  pirTaskResultDataSize:{}",sb.toString(),pirTaskResultData.size());
                 boolean b = CsvUtil.csvWrite(sb.toString(), pirTaskResultData);
-                log.info("数据写入文件结果:{}",b);
+//                log.info("数据写入文件结果:{}",b);
 
             }
         } catch (Exception e) {

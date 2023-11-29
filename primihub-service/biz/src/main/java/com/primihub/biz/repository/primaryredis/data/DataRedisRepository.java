@@ -15,7 +15,7 @@ public class DataRedisRepository {
     private StringRedisTemplate stringRedisTemplate;
 
     public void pirTaskResultHandle(String taskId, List<String[]> datas){
-        log.info("开始处理数据:taskId:{} -size:{}",taskId,datas.size());
+//        log.info("开始处理数据:taskId:{} -size:{}",taskId,datas.size());
         String setKey = RedisKeyConstant.PIR_TASK_DATA_SET.replace("<taskId>", taskId);
         String listKey = RedisKeyConstant.PIR_TASK_DATA_LIST.replace("<taskId>", taskId);
         for (String[] data : datas) {
@@ -34,7 +34,7 @@ public class DataRedisRepository {
     }
 
     public void deletePirTaskResultKey(String taskId){
-        log.info("删除处理数据:taskId:{}",taskId);
+//        log.info("删除处理数据:taskId:{}",taskId);
         String setKey = RedisKeyConstant.PIR_TASK_DATA_SET.replace("<taskId>", taskId);
         String listKey = RedisKeyConstant.PIR_TASK_DATA_LIST.replace("<taskId>", taskId);
         stringRedisTemplate.delete(setKey);
