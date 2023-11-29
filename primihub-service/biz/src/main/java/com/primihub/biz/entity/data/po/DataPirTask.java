@@ -20,10 +20,6 @@ public class DataPirTask {
 
     private String retrievalId;
 
-    private String keyColumns;
-
-    private String labelColumns;
-
     @JsonIgnore
     private Integer isDel;
 

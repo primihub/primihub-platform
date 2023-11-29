@@ -78,8 +78,6 @@
             dpt.resource_name resourceName,
             dpt.retrieval_id retrievalId,
             dpt.create_date createDate,
-            dpt.key_columns keyColumns,
-            dpt.label_columns labelColumns,
             dt.task_state taskState
         from
              data_pir_task dpt,
@@ -155,8 +153,6 @@
             resource_id as resourceId,
             resource_name as resourceName,
             retrieval_id as retrievalId,
-            key_columns as keyColumns,
-            label_columns as labelColumns,
             create_date as createDate
         FROM
             data_pir_task

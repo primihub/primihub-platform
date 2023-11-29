@@ -242,8 +242,6 @@ CREATE TABLE `data_pir_task` (
                                  `resource_id` varchar(64) DEFAULT null COMMENT '资源ID',
                                  `resource_name` varchar(64) DEFAULT null COMMENT '资源名称',
                                  `retrieval_id` varchar(255) DEFAULT NULL COMMENT '检索ID',
-                                 `key_columns` varchar(255) DEFAULT NULL COMMENT '检索列名',
-                                 `label_columns` varchar(255) DEFAULT NULL COMMENT '结果列表 为空则是全部',
                                  `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
                                  `create_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                                  `update_date` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '修改时间',

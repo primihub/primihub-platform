@@ -15,7 +15,7 @@ import java.nio.charset.StandardCharsets;
 
 public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
 
-    private final static String QUERY_CONFIG_JSON = "{ \"SERVER\": {\"key_columns\": <key_columns>, \"label_columns\": <label_columns> } }";
+    private final static String QUERY_CONFIG_JSON = "{ \"SERVER\": {\"key_columns\": <key_columns>} }";
 
     private final static Logger log = LoggerFactory.getLogger(AbstractPirGRPCExecute.class);
 
@@ -56,9 +56,6 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
                 return;
             }
             queryConfig = QUERY_CONFIG_JSON.replace("<key_columns>",param.getTaskContentParam().getKeyColumnsString());
-            if (param.getTaskContentParam().getLabelColumns() != null && param.getTaskContentParam().getLabelColumns().length!=0) {
-                queryConfig = queryConfig.replace("<label_columns>",param.getTaskContentParam().getLabelColumnsString());
-            }
             Common.ParamValue aueryConfigParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(queryConfig.getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("clientData", clientDataParamValue)
@@ -94,12 +91,14 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
             }else {
                 param.setError(reply.getMsgInfo().toStringUtf8());
                 param.setSuccess(false);
-                param.setEnd(true);
             }
             log.info("grpc end {} - time:{}", param.toString(), System.currentTimeMillis());
         } catch (Exception e) {
+            param.setSuccess(false);
+            param.setError(e.getMessage());
             log.info("grpc pir Exception:{}",e.getMessage());
             e.printStackTrace();
         }
+        param.setEnd(true);
     }
 }

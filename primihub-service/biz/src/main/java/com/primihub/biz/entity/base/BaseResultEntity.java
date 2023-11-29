@@ -10,9 +10,9 @@ import lombok.Setter;
 @Setter
 @Getter
 public class BaseResultEntity<T> {
-    @ApiModelProperty(value = "结果编码")
+    @ApiModelProperty(value = "结果编码",example = "0")
     private Integer code;
-    @ApiModelProperty(value = "结果消息")
+    @ApiModelProperty(value = "结果消息",example = "请求成功")
     private String msg;
     @ApiModelProperty(value = "结果数据")
     private T result;

@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -68,12 +69,10 @@ public class PirService {
         dataTaskPrRepository.saveDataTask(dataTask);
         DataPirTask dataPirTask = new DataPirTask();
         dataPirTask.setTaskId(dataTask.getTaskId());
-        dataPirTask.setRetrievalId(req.getPirParam());
+        dataPirTask.setRetrievalId(JSONObject.toJSONString(req.getKeyQuerys()));
         dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(req.getResourceId());
-        dataPirTask.setKeyColumns(req.getKeyColumns());
-        dataPirTask.setLabelColumns(req.getLabelColumns());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
         dataAsyncService.pirGrpcTask(dataTask,dataPirTask,resourceColumnNames);
         Map<String, Object> map = new HashMap<>();

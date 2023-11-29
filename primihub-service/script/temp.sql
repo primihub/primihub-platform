@@ -13,8 +13,3 @@ ALTER TABLE `privacy`.`data_resource`
 -- 2022-11-30
 ALTER TABLE `privacy`.`data_mr`
     ADD COLUMN `take_part_type` tinyint(4) NOT NULL DEFAULT '0' COMMENT '参与类型 0使用数据 1衍生数据';
-
--- 2023-11-28
-ALTER TABLE `privacy`.`data_pir_task`
-    ADD COLUMN `key_columns` varchar(255) NULL AFTER `update_date`,
-ADD COLUMN `label_columns` varchar(255) NULL AFTER `key_columns`;

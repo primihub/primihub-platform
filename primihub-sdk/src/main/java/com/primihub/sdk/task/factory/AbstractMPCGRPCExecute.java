@@ -103,5 +103,6 @@ public class AbstractMPCGRPCExecute extends AbstractGRPCExecuteFactory {
             log.info("grpc Exception:{}", e.getMessage());
             e.printStackTrace();
         }
+        taskParam.setEnd(true);
     }
 }

@@ -55,9 +55,9 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
     @Override
     public GatewayFilter apply(Object config) {
         return ((exchange, chain) -> {
+            exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
-//            log.info(currentRawPath);
-            MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
+            log.info(currentRawPath);
             if (checkUri(currentRawPath)){
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
@@ -72,6 +72,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                         })
                 );
             }
+            MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
             if(mediaType==null){
                 MultiValueMap<String, String> queryParams=exchange.getRequest().getQueryParams();
 
@@ -105,7 +106,6 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                 if(sign!=null){
                     exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
                 }
-                exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
                             Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
@@ -277,7 +277,6 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                         }
                                     }
 
-                                    exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
                                     return chain.filter(exchange.mutate().request(mutatedRequest.mutate().header("ip", WebFluxUtil.getIpAddress(exchange.getRequest())).build()).build()).then(
                                             Mono.fromRunnable(()->{
                                                 Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);

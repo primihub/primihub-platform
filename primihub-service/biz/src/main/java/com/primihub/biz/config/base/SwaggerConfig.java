@@ -6,11 +6,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
-import springfox.documentation.builders.ApiInfoBuilder;
-import springfox.documentation.builders.PathSelectors;
-import springfox.documentation.builders.RequestHandlerSelectors;
-import springfox.documentation.builders.ResponseMessageBuilder;
+import springfox.documentation.builders.*;
+import springfox.documentation.schema.ModelRef;
 import springfox.documentation.service.Contact;
+import springfox.documentation.service.Parameter;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -18,6 +17,7 @@ import springfox.documentation.service.ResponseMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 @Configuration
 @EnableSwagger2
@@ -45,6 +45,31 @@ public class SwaggerConfig {
                 .build()
                 .enable(swaggerEnable)
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList)
+                .globalOperationParameters(getParameter());
+    }
+
+
+    private List<Parameter> getParameter() {
+        List<Parameter> params = new ArrayList<>();
+        params.add(new ParameterBuilder().name("token")
+                .description("请求令牌")
+                .modelRef(new ModelRef("String"))
+                .parameterType("header")
+                .defaultValue("excalibur_forever_ABCDEFGHIJKLMN")
+                .required(false).build());
+        params.add(new ParameterBuilder().name("timestamp")
+                .description("时间戳")
+                .modelRef(new ModelRef("String"))
+                .parameterType("header")
+                .defaultValue(System.currentTimeMillis()+"")
+                .required(false).build());
+        params.add(new ParameterBuilder().name("nonce")
+                .description("随机数")
+                .modelRef(new ModelRef("String"))
+                .parameterType("header")
+                .defaultValue((new Random().nextInt(900) + 100)+"")
+                .required(false).build());
+        return params;
     }
 }

@@ -32,6 +32,11 @@ public class GatewayFilterFactoryTool {
         return GatewayFilterFactoryTool.writeJsonToResponse(exchange,JSON.toJSON(entity).toString());
     }
 
+    public static Mono<Void> writeFailureJsonToResponse(ServerWebExchange exchange,BaseResultEnum baseResultEnum,String error){
+        BaseResultEntity entity= BaseResultEntity.failure(baseResultEnum,error);
+        return GatewayFilterFactoryTool.writeJsonToResponse(exchange,JSON.toJSON(entity).toString());
+    }
+
     public static Mono<Void> writeJsonToResponse(ServerWebExchange exchange,String json){
         HttpHeaders httpHeaders = exchange.getResponse().getHeaders();
         httpHeaders.add("Content-Type", "application/json; charset=UTF-8");

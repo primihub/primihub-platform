@@ -78,9 +78,10 @@ spring:
             - Path=/platform/**
           filters:
             - StripPrefix=1
-            - BaseParam
+#            - BaseParam
+            - Swagger
             - SysAuth
-            - SysLog
+#            - SysLog
 
 logging:
   level:
