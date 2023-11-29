@@ -385,7 +385,9 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }
             }
-            FileUtil.writeFile(sb.toString(),fileName,dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName()));
+            List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
+            log.info("数据写入文件sb:{} - fileName:{} -  pirTaskResultDataSize:{}",sb.toString(),fileName,pirTaskResultData.size());
+            FileUtil.writeFile(sb.toString(),fileName,pirTaskResultData);
             sb.append(fileName);
             dataTask.setTaskResultPath(sb.toString());
         } catch (Exception e) {
@@ -394,7 +396,7 @@ public class DataAsyncService implements ApplicationContextAware {
             log.info("grpc pirSubmitTask Exception:{}", e.getMessage());
             e.printStackTrace();
         }finally {
-            dataRedisRepository.deletePirTaskResultK(dataTask.getTaskIdName());
+            dataRedisRepository.deletePirTaskResultKey(dataTask.getTaskIdName());
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
