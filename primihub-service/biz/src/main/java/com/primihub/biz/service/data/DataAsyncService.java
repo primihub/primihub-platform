@@ -385,11 +385,13 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }
             }
-            List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
-            log.info("数据写入文件sb:{} - fileName:{} -  pirTaskResultDataSize:{}",sb.toString(),fileName,pirTaskResultData.size());
-            FileUtil.writeFile(sb.toString(),fileName,pirTaskResultData);
-            sb.append(fileName);
-            dataTask.setTaskResultPath(sb.toString());
+            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+                List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
+                log.info("数据写入文件sb:{} - fileName:{} -  pirTaskResultDataSize:{}",sb.toString(),fileName,pirTaskResultData.size());
+                FileUtil.writeFile(sb.toString(),fileName,pirTaskResultData);
+                sb.append(fileName);
+                dataTask.setTaskResultPath(sb.toString());
+            }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
