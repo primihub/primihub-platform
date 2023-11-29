@@ -19,9 +19,9 @@ public class DataRedisRepository {
         String listKey = RedisKeyConstant.PIR_TASK_DATA_LIST.replace("<taskId>", taskId);
         for (String[] data : datas) {
             String dataStr = String.join(",",data);
-            int dataHashCode = dataStr.hashCode();
+            String dataHashCode = String.valueOf(dataStr.hashCode());
             if(stringRedisTemplate.opsForSet().isMember(setKey, dataHashCode) == Boolean.FALSE){
-                stringRedisTemplate.opsForSet().add(setKey,String.valueOf(dataHashCode));
+                stringRedisTemplate.opsForSet().add(setKey,dataHashCode);
                 stringRedisTemplate.opsForList().rightPush(listKey,dataStr);
             }
         }
