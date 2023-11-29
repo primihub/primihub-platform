@@ -55,9 +55,9 @@ public class PirController {
             if (keyQuery.getQuery()==null){
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.query");
             }
-            if (keyQuery.getKey().length!=keyQuery.getQuery().size()){
-                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"The number of key queries is not equal");
-            }
+//            if (keyQuery.getKey().length!=keyQuery.getQuery().size()){
+//                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"The number of key queries is not equal");
+//            }
         }
         return pirService.pirSubmitTask(param);
     }
