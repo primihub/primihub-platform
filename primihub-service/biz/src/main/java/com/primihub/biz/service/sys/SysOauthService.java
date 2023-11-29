@@ -128,7 +128,7 @@ public class SysOauthService {
         return BaseResultEntity.success(url);
     }
 
-    public BaseResultEntity authLogin(LoginParam loginParam) {
+    public BaseResultEntity authLogin(LoginParam loginParam,String ip) {
         loginParam.setToken(loginParam.getTokenKey());
         ResponseModel verification = captchaService.verification(loginParam);
         if (!verification.isSuccess()) {
@@ -140,7 +140,7 @@ public class SysOauthService {
         if (sysUser == null) {
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         }
-        return sysUserService.baseLogin(sysUser);
+        return sysUserService.baseLogin(sysUser,ip);
     }
 
     public boolean validateVerificationCode(Integer code, String userAccount, String verificationCode) {

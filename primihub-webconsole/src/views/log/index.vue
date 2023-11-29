@@ -11,6 +11,7 @@
             start-placeholder="开始日期"
             end-placeholder="结束日期"
             value-format="yyyy-MM-dd HH:mm:ss"
+            :default-time="['00:00:00', '23:59:59']"
           />
 
         </el-form-item>
@@ -197,9 +198,7 @@ export default {
         this.taskList = result.data
         this.total = result.total
         this.pageCount = result.totalPage
-        setTimeout(() => {
-          this.listLoading = false
-        }, 200)
+        this.listLoading = false
       }).catch(() => {
         this.listLoading = false
       })
@@ -228,6 +227,10 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+.el-date-editor--datetimerange.el-input, .el-date-editor--datetimerange.el-input__inner{
+  width: 360px;
+  padding: 3px 5px;
+}
 .search-area {
   padding: 30px 0px 10px 20px;
   background-color: #fff;
@@ -253,7 +256,7 @@ export default {
   margin-right: 3px;
 }
 .status-default{
-  background-color: #409EFF;
+  background-color: #1677FF;
 }
 .status-end{
   background-color: #909399;

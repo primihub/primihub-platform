@@ -1,6 +1,7 @@
 package com.primihub.biz.repository.secondarydb.data;
 
 
+import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.req.DataTaskReq;
@@ -27,4 +28,7 @@ public interface DataTaskRepository {
     List<DataTaskVo> selectDataTaskList(DataTaskReq req);
 
     Integer selectDataTaskListCount(DataTaskReq req);
+
+
+    DataPirTask selectPirTaskById(Long id);
 }

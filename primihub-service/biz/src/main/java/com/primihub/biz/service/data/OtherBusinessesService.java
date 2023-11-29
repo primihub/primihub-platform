@@ -186,7 +186,7 @@ public class OtherBusinessesService {
             log.info("gatewayAddress i:{} api url:{} Exception:{}",i,gatewayAddressAndApi,e.getMessage());
             e.printStackTrace();
             if (i<=3){
-                return syncGatewayApiData(vo,gatewayAddressAndApi,publicKey,i++);
+                return syncGatewayApiData(vo,gatewayAddressAndApi,publicKey,i+1);
             }
         }
         log.info("gatewayAddress api url:{} end:{}",gatewayAddressAndApi,System.currentTimeMillis());

@@ -1,7 +1,7 @@
 <template>
   <div v-loading="listLoading" class="container">
     <section class="infos">
-      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
+      <el-descriptions :column="2" title="基本信息">
         <el-descriptions-item label="项目ID">
           {{ projectId }}
         </el-descriptions-item>

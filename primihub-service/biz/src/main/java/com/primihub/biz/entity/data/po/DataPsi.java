@@ -32,7 +32,7 @@ public class DataPsi {
     /**
      * 本机构资源id
      */
-    private Long ownResourceId;
+    private String ownResourceId;
 
     /**
      * 本机构资源关键字
@@ -96,6 +96,8 @@ public class DataPsi {
     private String remarks;
 
     private Long userId;
+
+    private String teeOrganId;
     /**
      * 是否删除
      */

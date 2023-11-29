@@ -347,7 +347,7 @@ export default {
 }
 
 ::v-deep .x6-widget-minimap-viewport{
-  border-color: #409EFF;
+  border-color: #1677FF;
 }
 .center-container{
   flex: 1;
@@ -370,7 +370,7 @@ export default {
 }
 .graph-container {
   position: relative;
-  height: calc(100vh - 80px - 80px);
+  height: calc(100vh - 80px - 103px);
   padding: 0;
   overflow: hidden;
   display: flex;

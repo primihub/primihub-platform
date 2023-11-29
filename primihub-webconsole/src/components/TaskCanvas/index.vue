@@ -265,10 +265,10 @@ export default {
         })
         return
       }
-      this.startData = cells.filter(item => item.componentCode === 'start')[0]
+      const startData = cells.filter(item => item.componentCode === 'start')[0]
       this.nodeData = this.startNode
-      this.graphData.cells = []
-      this.graphData.cells.push(this.startData)
+      this.graphData.cells.splice(0)
+      this.graphData.cells.push(startData)
       this.graph.fromJSON(this.graphData)
       this.selectComponentList = []
       this.$emit('selectComponents', this.selectComponentList)
@@ -489,7 +489,7 @@ export default {
       // 60 = start node width
       const x = this.width * 0.5 - 90
       if (this.components) {
-        this.startData = this.components.find(item => item.componentCode === 'start')
+        this.startData = this.components.find(item => item.componentCode === START_NODE)
         this.startData && this.graph.addNode({
           x: x,
           y: 100,
@@ -564,11 +564,6 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('node:removed', (a, b) => {
-          console.log('node:removed', a)
-          this.needSave = true
-          this.deleteNode()
-        })
         graph.on('cell:removed', () => {
           this.needSave = true
           if (!this.destroyed) {
@@ -601,6 +596,9 @@ export default {
         })
         graph.bindKey('backspace', () => {
           this.deleteNode()
+          setTimeout(() => {
+            this.$notify.closeAll()
+          }, 1000)
         })
 
         graph.on('edge:connected', ({ edge }) => {
@@ -626,7 +624,8 @@ export default {
         this.selectComponentList.splice(index, 1)
       }
       this.$emit('selectComponents', this.selectComponentList)
-      this.nodeData = this.startNode
+      this.nodeData = this.startData
+      console.log('graphData', this.startData)
     },
     initToolBarEvent() {
       // 画布不可编辑只可点击
@@ -650,6 +649,7 @@ export default {
     checkModelStatisticsValidated(jointStatisticalCom) {
       let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
       featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
+      console.log('featureValues', featureValues)
       const emptyType = featureValues.find(item => item.type === '')
       const emptyFeature = featureValues.find(item => item.features[0].checked.length === 0)
       if (emptyFeature) {
@@ -668,13 +668,7 @@ export default {
       const { cells } = data
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
-      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
-      if (jointStatisticalCom) {
-        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
-      }
-
       const startCom = modelComponents.find(item => item.componentCode === START_NODE)
-
       const modelSelectCom = modelComponents.find(item => item.componentCode === MODEL)
       const taskName = startCom.componentValues.find(item => item.key === TASK_NAME)?.val
       const modelName = modelSelectCom?.componentValues.find(item => item.key === MODEL_NAME)?.val
@@ -687,31 +681,54 @@ export default {
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
-      const fileContainsY = providerResource.fileHandleField?.includes('y')
-      // LR features must select
-      if (initiateResource.calculationField.length === 1 && initiateResource.calculationField.includes('y')) { // has Y
+      const fileContainsY = providerResource?.fileHandleField?.includes('y')
+      const initiateCalculationField = initiateResource?.calculationField || []
+      const providerCalculationField = providerResource?.calculationField || []
+
+      const notSelectResource = value.find(item => item.resourceId === undefined)
+
+      const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
+      if (jointStatisticalCom) {
+        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+      }
+      if (!initiateResource) {
+        this.$message({
+          message: '请选择发起方数据集',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (!providerResource) {
+        this.$message({
+          message: '请选择协作方数据集',
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (notSelectResource && notSelectResource.participationIdentity === 1) {
+        this.$message.error('请选择发起方数据集')
+        this.modelRunValidated = false
+        return
+      } else if (notSelectResource && notSelectResource.participationIdentity === 2) {
+        this.$message.error('请选择协作方数据集')
+        this.modelRunValidated = false
+        return
+      } else if (initiateCalculationField && initiateCalculationField.length === 1 && initiateCalculationField.includes('y')) { // has Y
         this.$message.error('请选择发起方数据特征')
         this.modelRunValidated = false
         return
-      } else if (fileContainsY && providerResource.calculationField.length === 1 && providerResource.calculationField.includes('y') || !fileContainsY && providerResource.calculationField.length === 0) { // has Y
+      } else if (fileContainsY && providerCalculationField && providerCalculationField.length === 1 || !fileContainsY && providerCalculationField.length === 0) { // has Y
         this.$message.error('请选择协作方数据特征')
         this.modelRunValidated = false
         return
-      } else if (modelType === '3' && xor(initiateResource.calculationField, providerResource.calculationField).length > 0) { // LR select features must be same
+      } else if (modelType === '3' && xor(initiateCalculationField, providerCalculationField).length > 0) { // LR select features must be same
         this.$message.error('选择特征需一致')
         this.modelRunValidated = false
         return
       }
       // check start node target component is't dataSet
       const line = modelPointComponents.find(item => item.input.cell === startCom.frontComponentId)
-      if (!line) {
-        this.$message({
-          message: '模型选择流程不合规',
-          type: 'error'
-        })
-        this.modelRunValidated = false
-        return
-      } else if (line?.output.cell !== dataSetCom.frontComponentId) {
+      if (line && line.output.cell !== dataSetCom.frontComponentId) {
         this.$message({
           message: '流程错误:请先选择数据集组件',
           type: 'error'
@@ -728,7 +745,7 @@ export default {
         this.modelRunValidated = false
         return
       }
-      if (initiateResource.organId === arbiterOrganId || providerResource.organId === arbiterOrganId) {
+      if (initiateResource && initiateResource.organId === arbiterOrganId || providerResource && providerResource.organId === arbiterOrganId) {
         this.$message({
           message: '请选择正确的可信第三方(arbiter方)',
           type: 'error'
@@ -771,13 +788,6 @@ export default {
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,
-          type: 'error'
-        })
-        this.modelRunValidated = false
-      } else if (!(initiateResource && providerResource)) {
-        const msg = !initiateResource ? '请选择发起方数据集' : !providerResource ? '请选择协作方数据集' : '请选择数据集'
-        this.$message({
-          message: msg,
           type: 'error'
         })
         this.modelRunValidated = false
@@ -1046,6 +1056,7 @@ export default {
     async saveFn() { // 0 草稿
       const data = this.graph.toJSON()
       const { cells } = data
+      this.startData = cells.find(item => item.componentCode === START_NODE)?.data
       if (this.modelStartRun) { // 模型运行中不可操作
         this.$message({
           message: '模型运行中',

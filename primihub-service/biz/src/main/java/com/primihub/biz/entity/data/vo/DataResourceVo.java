@@ -118,4 +118,8 @@ public class DataResourceVo {
      * 资源状态 目前有 0上线 1下线
      */
     private Integer resourceState;
+    /**
+     * 中心节点资源id
+     */
+    private String resourceFusionId;
 }

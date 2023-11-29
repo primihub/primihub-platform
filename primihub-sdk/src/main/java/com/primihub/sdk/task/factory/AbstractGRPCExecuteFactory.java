@@ -113,7 +113,7 @@ public abstract class AbstractGRPCExecuteFactory {
                         List<String> getList = cacheService.get(key);
                         getList.addAll(taskStatus);
                         cacheService.put(key,getList);
-                        if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){
+                        if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())||taskStatus.contains(TaskStatus.StatusCode.NONEXIST.name())){
                             param.setSuccess(false);
                             List<TaskStatus> taskStatusFails = taskStatusReply.getTaskStatusList().stream().filter(t -> t.getStatus() == TaskStatus.StatusCode.FAIL).collect(Collectors.toList());
                             StringBuilder sb = new StringBuilder();
@@ -123,13 +123,12 @@ public abstract class AbstractGRPCExecuteFactory {
                             }
                             param.setError(sb.toString());
                             isContinue = false;
-                        }else {
-                            long success = getNumberOfSuccessfulTasks(key,cacheService);
-                            log.info("taskid:{} - requestId:{} - num:{} - success:{}",param.getTaskId(),param.getRequestId(),partyCount,success);
-                            if (partyCount <= success){
-                                isContinue = false;
-                            }
                         }
+                    }
+                    long success = getNumberOfSuccessfulTasks(key,cacheService);
+                    log.info("taskid:{} - requestId:{} - num:{} - success:{}",param.getTaskId(),param.getRequestId(),partyCount,success);
+                    if (partyCount <= success){
+                        isContinue = false;
                     }
                 }
                 Thread.sleep(1000L);

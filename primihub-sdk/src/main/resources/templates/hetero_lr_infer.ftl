@@ -6,7 +6,7 @@
 		"host":"Bob"
 	},
 	"common_params": {
-		"model": "VFL_logistic_regression",
+		"model": "${model}",
 		"process": "predict",
 		"task_name": "VFL_logistic_regression_predict"
 	},

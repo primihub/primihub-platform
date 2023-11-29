@@ -10,6 +10,7 @@ import java.util.Map;
 public class TaskMPCParam {
     private List<String> resourceIds;
     private String taskName = "MPC";
+    private String taskCode = "MPC";
     private Map<String,Object> paramMap;
 
     public List<String> getResourceIds() {
@@ -34,6 +35,14 @@ public class TaskMPCParam {
 
     public void setParamMap(Map<String, Object> paramMap) {
         this.paramMap = paramMap;
+    }
+
+    public String getTaskCode() {
+        return taskCode;
+    }
+
+    public void setTaskCode(String taskCode) {
+        this.taskCode = taskCode;
     }
 
     @Override

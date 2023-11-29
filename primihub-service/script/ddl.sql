@@ -181,7 +181,7 @@ DROP TABLE IF EXISTS `data_psi`;
 CREATE TABLE `data_psi`  (
                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT 'psi 主键',
                              `own_organ_id` varchar(255) DEFAULT NULL COMMENT '本机构id',
-                             `own_resource_id` bigint(20) DEFAULT NULL COMMENT '本机构资源id',
+                             `own_resource_id` varchar(255) DEFAULT NULL COMMENT '本机构资源id',
                              `own_keyword` varchar(255) DEFAULT NULL COMMENT '本机构资源关键字',
                              `other_organ_id` varchar(255) DEFAULT NULL COMMENT '其他机构id',
                              `other_resource_id` varchar(255) DEFAULT NULL COMMENT '其他机构资源id',
@@ -193,6 +193,7 @@ CREATE TABLE `data_psi`  (
                              `output_content` int(11) DEFAULT '0' COMMENT '输出内容 默认0 0交集 1差集',
                              `output_format` varchar(255) DEFAULT NULL COMMENT '输出格式',
                              `result_organ_ids` varchar(255) DEFAULT NULL COMMENT '结果获取方 多机构","号间隔',
+                             `tee_organ_id` varchar(255) DEFAULT NULL COMMENT 'tee 机构ID',
                              `remarks` varchar(255) DEFAULT NULL COMMENT '备注',
                              `user_id` bigint(20) DEFAULT NULL COMMENT '用户id',
                              `is_del` tinyint(4) DEFAULT '0' COMMENT '是否删除',
@@ -412,7 +413,7 @@ INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_aut
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1018, '匿踪查询列表', 'PrivateSearchList', 2, 1016, 1016, '1016,1018', '/pir/downloadPirTask', 'own', 2, 1, 1, 1, 0, '2022-09-14 08:41:41.229', '2022-09-14 08:41:41.230');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1019, '隐私求交', 'PSI', 1, 0, 1019, '1019', '', 'own', 4, 0, 1, 1, 0, '2022-09-14 08:41:41.232', '2022-09-14 08:41:41.234');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1020, '求交任务', 'PSITask', 2, 1019, 1019, '1019,1020', '/psi/getPsiResourceAllocationList', 'own', 1, 1, 1, 1, 0, '2022-09-14 08:41:41.236', '2022-09-14 08:41:41.237');
-INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1021, '求交结果', 'PSIResult', 2, 1019, 1019, '1019,1021', '/psi/getPsiTaskList', 'own', 2, 1, 1, 1, 0, '2022-09-14 08:41:41.238', '2022-09-14 08:41:41.240');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1021, '求交结果', 'PSIList', 2, 1019, 1019, '1019,1021', '/psi/getPsiTaskList', 'own', 2, 1, 1, 1, 0, '2022-09-14 08:41:41.238', '2022-09-14 08:41:41.240');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1022, '资源管理', 'ResourceMenu', 1, 0, 1022, '1022', '', 'own', 5, 0, 1, 1, 0, '2022-09-14 08:41:41.241', '2022-09-14 08:41:41.243');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1023, '资源概览', 'ResourceList', 2, 1022, 1022, '1022,1023', '/resource/getdataresourcelist', 'own', 1, 1, 1, 1, 0, '2022-09-14 08:41:41.244', '2022-09-14 08:41:41.246');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1024, '资源详情', 'ResourceDetail', 3, 1022, 1022, '1022,1024', '/resource/getdataresource', 'own', 2, 1, 1, 1, 0, '2022-09-14 08:41:41.247', '2022-09-14 08:41:41.248');
@@ -455,6 +456,8 @@ INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_aut
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1061, '衍生数据资源详情', 'DerivedDataResourceDetail', 2, 1060, 1022, '1022,1060,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-10-30 10:34:38.945', '2022-10-30 10:34:38.945');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1062, '日志列表', 'LogList', 2, 1058, 1058, '1058,1061', ' ', 'own', 2, 2, 1, 0, 0, '2022-11-14 13:44:39.353', '2022-11-14 13:44:39.353');
 INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1063, '界面设置', 'UISetting', 2, 1029, 1029, '1029，1063', ' ', 'own', 2, 2, 0, 0, 0, '2022-12-01 10:55:42.000', '2022-12-01 10:55:46.000');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1064, '隐私求交任务详情', 'PSIDetail', 2, 1019, 1019, '1019，1064', ' ', 'own', 2, 2, 0, 0, 0, '2023-09-27 15:48:54.000', '2023-09-27 15:48:57.586');
+INSERT INTO `sys_auth` (`auth_id`, `auth_name`, `auth_code`, `auth_type`, `p_auth_id`, `r_auth_id`, `full_path`, `auth_url`, `data_auth_code`, `auth_index`, `auth_depth`, `is_show`, `is_editable`, `is_del`, `c_time`, `u_time`) VALUES (1065, '隐匿查询任务详情', 'PIRDetail', 2, 1016, 1016, '1016，1065', ' ', 'own', 2, 2, 0, 0, 0, '2023-09-27 15:48:54.000', '2023-09-27 15:48:57.586');
 
 DROP TABLE IF EXISTS `sys_ra`;
 CREATE TABLE `sys_ra`  (
@@ -571,6 +574,10 @@ INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) 
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1101, 1000, 1062, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1102, 1, 1063, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1103, 1, 1058, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1104, 1, 1064, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1105, 1, 1065, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1106, 1000, 1064, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
+INSERT INTO `sys_ra` (`id`, `role_id`, `auth_id`, `is_del`, `c_time`, `u_time`) VALUES (1107, 1000, 1065, 0, '2022-10-27 10:47:26.136', '2022-10-27 10:47:26.136');
 
 DROP TABLE IF EXISTS `sys_role`;
 CREATE TABLE `sys_role`  (
@@ -612,13 +619,14 @@ CREATE TABLE `sys_user`  (
                              `c_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) COMMENT '创建时间',
                              `u_time` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3) COMMENT '更改时间',
                              `auth_uuid` varchar(255) DEFAULT NULL COMMENT '第三方uuid',
+                             `ip` varchar(255) DEFAULT NULL COMMENT '第三方uuid',
                              `register_type` tinyint(4) NOT NULL COMMENT '注册类型1：管理员创建 2：邮箱 3：手机',
                              PRIMARY KEY (`user_id`) USING BTREE,
                              UNIQUE INDEX `ix_unique_user_account`(`user_account`) USING BTREE COMMENT '账户名称唯一索引',
                              KEY `ix_index_auth_uuid` (`auth_uuid`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 1000 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
-INSERT INTO `sys_user` VALUES (1, 'admin', 'a0f34ffac5a82245e4fca2e21f358a42', 'admin', '1', 0, 1, 0, '2022-03-25 17:55:53.048', '2022-07-18 17:13:02.377','' ,1);
+INSERT INTO `sys_user` VALUES (1, 'admin', 'a0f34ffac5a82245e4fca2e21f358a42', 'admin', '1', 0, 1, 0, '2022-03-25 17:55:53.048', '2022-07-18 17:13:02.377','' ,'',1);
 
 DROP TABLE IF EXISTS `sys_file`;
 CREATE TABLE `sys_file`  (

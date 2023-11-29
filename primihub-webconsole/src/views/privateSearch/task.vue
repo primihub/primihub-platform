@@ -1,19 +1,18 @@
 <template>
   <div class="container">
     <div class="steps">
-      <el-steps :active="active" finish-status="success" align-center>
-        <el-step title="查询条件" />
-        <el-step title="查询结果" />
-      </el-steps>
-      <div v-if="active === 0" class="search-area">
+      <div class="search-area">
         <el-form ref="form" :model="form" :rules="rules" label-width="110px" class="demo-form">
           <div class="select-resource">
+            <el-form-item label="任务名称" prop="taskName">
+              <el-input v-model="form.taskName" maxlength="32" show-word-limit placeholder="请输入任务名称,限32字" />
+            </el-form-item>
             <div class="dialog-con">
               <el-form-item label="选择查询资源" prop="resourceName">
                 <el-row type="flex" :gutter="10">
                   <el-col :span="12">
                     <el-form-item prop="organId">
-                      <el-select v-model="form.organId" style="width: 100%" placeholder="请选择机构" clearable @change="handleOrganChange" @clear="handleClear('organId')">
+                      <el-select v-model="form.organId" style="width: 100%" placeholder="请选择机构" clearable @change="handleOrganChange">
                         <el-option
                           v-for="item in organList"
                           :key="item.globalId"
@@ -27,19 +26,37 @@
                   <el-col :span="12">
                     <el-form-item>
                       <div class="custom-input" :style="{'color': resourceName === '请选择机构下资源' ? '#C0C4CC' : '#606266'}" :class="{'disabled': form.organId === '' }" @click="openDialog"><span class="resource-name">{{ resourceName }}</span><i class="el-icon-arrow-down" /></div>
+                      <el-popover
+                        class="popover-container"
+                        placement="top-start"
+                        title="隐匿查询步骤:"
+                        width="400"
+                        trigger="hover"
+                      >
+                        <div>
+                          <p>(1)添加资源：被查询机构先在其节点里【资源管理】菜单下添加数据资源</p>
+                          <p>(2)资源授权：被查询机构向查询发起方授权资源权限，设置资源公开或指定机构可见</p>
+                          <p>(3)发起查询：查询发起方在本方【隐匿查询】菜单下发起隐匿查询任务，并查看结果。</p>
+                          <p>您可以通过搜索框查找机构开放给您的资源，如您未找到，请到对应机构先添加资源。</p>
+                        </div>
+                        <div slot="reference">
+                          <svg-icon icon-class="problem" />
+                        </div>
+                      </el-popover>
                     </el-form-item>
                   </el-col>
                 </el-row>
+
               </el-form-item>
               <el-form-item v-if="form.selectResources" class="resource-container" label="已选资源" prop="selectResources">
                 <ResourceItemSimple :data="selectResources" :show-close="true" class="select-item" @delete="handleDelete" />
               </el-form-item>
             </div>
             <el-form-item label="关键词" prop="pirParam">
-              <el-input v-model="form.pirParam" placeholder="请输入关键词" />
+              <tags-input :selected-data="tagValueList" @change="handleKeywordChange" />
             </el-form-item>
             <el-form-item>
-              <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用英文,分隔。例: a,b,c</p>
+              <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，输入关键词后Enter即可。</p>
             </el-form-item>
             <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
           </div>
@@ -89,12 +106,14 @@ import { getResourceList } from '@/api/fusionResource'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
+import tagsInput from '@/components/TagsInput/index.vue'
 
 export default {
   components: {
     ResourceItemSimple,
     ResourceTableSingleSelect,
-    Pagination
+    Pagination,
+    tagsInput
   },
   data() {
     return {
@@ -111,7 +130,8 @@ export default {
         organId: '',
         resourceName: '',
         pirParam: '',
-        selectResources: null
+        selectResources: null,
+        taskName: ''
       },
       selectResources: null, // selected resource id list
       total: 0,
@@ -120,17 +140,21 @@ export default {
       pageSize: 5,
       pageCount: 0,
       rules: {
+        taskName: [
+          { required: true, message: '请输入任务名称', trigger: 'blur' }
+        ],
         organId: [
-          { required: true, message: '请选择机构', trigger: 'blur' }
+          { required: true, message: '请选择机构', trigger: 'change' }
         ],
         resourceName: [
           { required: true, message: '请选择机构下资源', trigger: 'blur' }
         ],
         pirParam: [
-          { required: true, message: '请输入关键词' },
+          { required: true, message: '请输入关键词', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内' }
         ]
-      }
+      },
+      tagValueList: []
     }
   },
   computed: {
@@ -141,10 +165,22 @@ export default {
       'buttonPermissionList'
     ])
   },
+  watch: {
+    tagValueList(val) {
+      if (val.length > 0) {
+        this.form.pirParam = val.join(',')
+      } else {
+        this.form.pirParam = ''
+      }
+    }
+  },
   async created() {
     await this.getAvailableOrganList()
   },
   methods: {
+    handleKeywordChange(val) {
+      this.form.pirParam = val
+    },
     handleDelete() {
       this.form.resourceId = ''
       this.form.resourceName = ''
@@ -205,8 +241,12 @@ export default {
       this.selectResources = data
     },
     async openDialog() {
-      await this.getResourceList()
-      this.dialogVisible = true
+      if (this.form.organId) {
+        await this.getResourceList()
+        this.dialogVisible = true
+      } else {
+        this.$refs.form.validateField('organId')
+      }
     },
     async getAvailableOrganList() {
       this.organLoading = true
@@ -220,7 +260,6 @@ export default {
       this.form.selectResources = null
     },
     next() {
-      console.log('next', this.selectResources)
       if (!this.selectResources) {
         this.$message({
           message: '请选择资源',
@@ -239,13 +278,14 @@ export default {
           }
           pirSubmitTask({
             resourceId: this.selectResources.resourceId,
-            pirParam: this.form.pirParam.replace(/(\s|,)+$/g, '')
+            pirParam: this.form.pirParam.replace(/(\s|,)+$/g, ''),
+            taskName: this.form.taskName
           }).then(res => {
             if (res.code === 0) {
               this.listLoading = false
               this.taskId = res.result.taskId
               this.$emit('next', this.taskId)
-              this.toTaskListPage()
+              this.toTaskDetailPage(this.taskId)
             } else {
               this.$message({
                 message: res.msg,
@@ -263,9 +303,10 @@ export default {
         }
       })
     },
-    toTaskListPage() {
+    toTaskDetailPage(id) {
       this.$router.push({
-        name: 'PrivateSearchList'
+        name: 'PIRDetail',
+        params: { id }
       })
     }
   }
@@ -279,15 +320,6 @@ export default {
 }
 ::v-deep .el-dialog__body{
   padding: 10px 20px;
-}
-::v-deep .el-table,::v-deep .el-divider__text, .el-link{
-  font-size: 12px!important;
-}
-::v-deep .el-table td.el-table__cell div{
-  line-height: 1.5;
-}
-::v-deep .table.el-table .el-table__cell{
-  padding: 5px 0;
 }
 .custom-input{
   display: flex;
@@ -326,6 +358,13 @@ export default {
 }
 .dialog-con{
   text-align: left;
+  .popover-container{
+    position: absolute;
+    top: 12px;
+    right: -22px;
+    font-size: 16px;
+    line-height: 1;
+  }
 }
 .resource-box{
   display: flex;

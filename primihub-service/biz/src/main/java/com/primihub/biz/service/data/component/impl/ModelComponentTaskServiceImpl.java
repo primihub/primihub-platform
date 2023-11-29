@@ -191,8 +191,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 if (taskReq.getValueMap().containsKey("batchSize")){
                     batchSize = Integer.parseInt(taskReq.getValueMap().get("batchSize"));
                 }
-                if (taskReq.getValueMap().containsKey("numlters")){
-                    numlters = Integer.parseInt(taskReq.getValueMap().get("numlters"));
+                if (taskReq.getValueMap().containsKey("maxIter")){
+                    numlters = Integer.parseInt(taskReq.getValueMap().get("maxIter"));
                 }
             }catch (Exception e){
                 log.info(e.getMessage());
@@ -202,6 +202,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             taskParam.setJobId(jobId);
             TaskMPCParam mpcParam = new TaskMPCParam();
             mpcParam.setTaskName("logistic_regression");
+            mpcParam.setTaskCode("logistic_regression");
             mpcParam.setResourceIds(resourceIds);
             mpcParam.setParamMap(new HashMap<>());
             mpcParam.getParamMap().put("BatchSize",batchSize);

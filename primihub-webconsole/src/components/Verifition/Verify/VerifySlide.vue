@@ -239,8 +239,8 @@ export default {
       this.startMoveTime = +new Date() // 开始滑动的时间
       if (this.isEnd === false) {
         this.text = ''
-        this.moveBlockBackgroundColor = '#409EFF'
-        this.leftBarBorderColor = '#409EFF'
+        this.moveBlockBackgroundColor = '#1677FF'
+        this.leftBarBorderColor = '#1677FF'
         this.leftBarBackGroundColor = 'rgb(64, 158, 255, .3)'
         e.stopPropagation()
         this.status = true

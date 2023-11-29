@@ -34,6 +34,11 @@
           </template>
         </el-form-item>
       </template>
+      <template v-else-if="nodeData.componentCode === FIT_TRANSFORM">
+        <el-form-item :label="nodeData.componentName">
+          <FitTransformCom :column-data="FitTransformData" :node-data="nodeData.componentTypes" @change="handleFitTransform" />
+        </el-form-item>
+      </template>
       <template v-else-if="nodeData.componentCode === DATA_ALIGN">
         <el-form-item :label="nodeData.componentTypes[0].typeName">
           <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
@@ -221,7 +226,8 @@ import ResourceDec from '@/components/ResourceDec'
 import CooperateOrganDialog from '@/components/CooperateOrganDialog'
 import FeatureSelectDialog from '@/components/FeatureSelectDialog'
 import FeatureMultiSelectDialog from '@/components/FeatureMultiSelectDialog'
-import { DATA_SET, DATA_ALIGN, MODEL, MPC_STATISTICS, ARBITER_ORGAN, DATA_SET_SELECT_DATA, MODEL_TYPE, MULTIPLE_SELECT_FEATURE, MPC_STATISTICS_TYPE, ENCRYPTION_TYPE } from '@/const/componentCode.js'
+import FitTransformCom from '@/components/TaskCanvas/components/FitTransformCom'
+import { DATA_SET, DATA_ALIGN, MODEL, MPC_STATISTICS, ARBITER_ORGAN, DATA_SET_SELECT_DATA, MODEL_TYPE, MULTIPLE_SELECT_FEATURE, MPC_STATISTICS_TYPE, ENCRYPTION_TYPE, FIT_TRANSFORM } from '@/const/componentCode.js'
 
 export default {
   components: {
@@ -229,7 +235,8 @@ export default {
     ResourceDec,
     CooperateOrganDialog,
     FeatureSelectDialog,
-    FeatureMultiSelectDialog
+    FeatureMultiSelectDialog,
+    FitTransformCom
   },
   props: {
     graphData: {
@@ -279,6 +286,8 @@ export default {
       MODEL_TYPE,
       MULTIPLE_SELECT_FEATURE,
       MPC_STATISTICS_TYPE,
+      FIT_TRANSFORM,
+      FitTransformData: [],
       featuresOptions: [],
       dataAlignTypeInputValues: {},
       dataAlignTypeValue: '',
@@ -417,6 +426,7 @@ export default {
           this.getDataSetComValue()
           this.getModelParams(newVal)
           this.flText = this.filterModelValue()
+          console.log(this.flText)
         } else if (newVal.componentCode === DATA_ALIGN) {
           this.getDataSetComValue()
           this.getFeaturesOptions()
@@ -429,6 +439,9 @@ export default {
             this.getFeaturesItem()
             this.setFeaturesValue()
           }
+        } else if (newVal.componentCode === FIT_TRANSFORM) {
+          this.getDataSetComValue()
+          this.getFillTransformData()
         }
       }
     }
@@ -438,6 +451,25 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    handleFitTransform() {
+      this.handleChange()
+    },
+    getFillTransformData() {
+      let calculationFields = []
+      let resourceFields = []
+      this.FitTransformData = []
+      if (!this.inputValue) return
+      this.inputValue.map(item => {
+        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
+        calculationFields = [...new Set([...calculationFields, ...item.calculationField])]
+      })
+      calculationFields.forEach(item => {
+        const selectColumn = resourceFields.find(field => field.fieldName === item)
+        if (selectColumn) {
+          this.FitTransformData.push(selectColumn)
+        }
+      })
+    },
     getFeaturesOptions() {
       const calculationField = this.selectedProviderOrgans[0] && this.selectedProviderOrgans[0].calculationField
       if (this.selectedProviderOrgans.length > 0 && calculationField && this.initiateOrgan.calculationField) {
@@ -500,12 +532,14 @@ export default {
       // reset before params
       this.resetModelParams()
       this.flText = this.filterModelValue()
+      console.log(this.flText)
       this.handleChange()
     },
     handleParamChange(val) {
       this.modelEncryptionType = val
       this.getModelParams(this.nodeData)
       this.flText = this.filterModelValue()
+      console.log(this.flText)
       this.handleChange()
     },
     getFeaturesItem() {

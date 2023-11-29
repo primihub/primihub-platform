@@ -10,12 +10,16 @@ public class AddressInfoEntity {
     private BigDecimal lat;
     private BigDecimal lon;
     private String country;
+    private String city;
+    private String region;
 
-    public AddressInfoEntity(String ip, BigDecimal lat, BigDecimal lon, String country) {
+    public AddressInfoEntity(String ip, BigDecimal lat, BigDecimal lon, String country,String city, String region) {
         this.ip = ip;
         this.lat = lat;
         this.lon = lon;
         this.country = country;
+        this.city = city;
+        this.region = region;
     }
 
     public AddressInfoEntity() {

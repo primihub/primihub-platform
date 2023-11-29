@@ -15,6 +15,7 @@ import me.zhyd.oauth.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,11 +39,11 @@ public class OauthController {
     }
 
     @RequestMapping("authLogin")
-    public BaseResultEntity authLogin(LoginParam loginParam){
+    public BaseResultEntity authLogin(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getAuthPublicKey()==null|| "".equals(loginParam.getAuthPublicKey().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
         }
-        return sysOauthService.authLogin(loginParam);
+        return sysOauthService.authLogin(loginParam,ip);
     }
     @RequestMapping("authRegister")
     public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam){

@@ -54,7 +54,7 @@ public class AbstractMPCGRPCExecute extends AbstractGRPCExecuteFactory {
                     .setType(Common.TaskType.ACTOR_TASK)
                     .setParams(paramsBuilder.build())
                     .setName(mpcParam.getTaskName())
-                    .setCode(ByteString.copyFrom(mpcParam.getTaskName().getBytes(StandardCharsets.UTF_8)))
+                    .setCode(ByteString.copyFrom(mpcParam.getTaskCode().getBytes(StandardCharsets.UTF_8)))
                     .setLanguage(Common.Language.PROTO)
                     .setTaskInfo(taskBuild)
                     .putAllPartyDatasets(assembleModelMpcDatasets(mpcParam.getResourceIds()))

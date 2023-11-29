@@ -165,8 +165,8 @@ export default {
   margin: 10px 0;
   border: 1px solid #dcdfe6;
   &.active{
-    border-color: #409eff;
-    color: #409eff;
+    border-color: #1677FF;
+    color: #1677FF;
   }
   &:hover {
     box-shadow: 2px 4px 8px rgba(0,0,0,.05);

@@ -39,8 +39,8 @@
           size="small"
           type="daterange"
           range-separator="至"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
           value-format="yyyy-MM-dd HH:mm:ss"
         />
       </el-form-item>
@@ -55,8 +55,8 @@
 
     <div class="main">
       <div class="tab-container">
-        <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#4596ff" @select="handleSelect">
-          <el-menu-item index="0"><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
+        <el-menu :default-active="activeIndex" class="select-menu" mode="horizontal" active-text-color="#1677FF" @select="handleSelect">
+          <el-menu-item index=""><h2>全部项目<span>（{{ totalNum }}）</span></h2></el-menu-item>
           <el-menu-item index="1"><h2>我发起的<span>（{{ own }}）</span></h2></el-menu-item>
           <el-menu-item index="2"><h2>我协作的<span>（{{ other }}）</span></h2></el-menu-item>
         </el-menu>
@@ -379,6 +379,8 @@ export default {
     },
     searchProject() {
       this.pageNo = 1
+      this.queryType = this.searchForm.queryType
+      this.activeIndex = this.queryType !== '' ? this.queryType : '0'
       this.fetchData()
     },
     reset() {
@@ -391,10 +393,9 @@ export default {
       this.searchForm.startDate = ''
       this.searchForm.endDate = ''
       this.pageNo = 1
-      this.organList = []
       this.fetchData()
     },
-    fetchData(type) {
+    fetchData() {
       this.listLoading = true
       this.projectList = []
       const { projectName, organId, status, createDate, projectId, queryType } = this.searchForm
@@ -402,7 +403,7 @@ export default {
         projectId,
         projectName,
         organId,
-        queryType: type || queryType,
+        queryType,
         status,
         startDate: createDate && createDate[0],
         endDate: createDate && createDate[1],
@@ -429,15 +430,11 @@ export default {
       })
     },
     handleSelect(key) {
+      console.log(key)
       this.queryType = key
-      this.searchForm.queryType = ''
-      this.searchForm.projectName = ''
-      this.searchForm.organId = ''
-      this.searchForm.status = ''
-      this.searchForm.startDate = ''
-      this.searchForm.endDate = ''
+      this.searchForm.queryType = this.queryType
       this.pageNo = 1
-      this.fetchData(this.queryType)
+      this.fetchData()
     },
     handlePagination(data) {
       this.pageNo = data.page

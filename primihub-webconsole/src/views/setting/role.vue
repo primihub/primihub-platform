@@ -154,7 +154,7 @@ export default {
     removeHideRole(data) {
       return data.map(item => {
         const index = item.children.findIndex(c => c.isShow === 0)
-        item.children.splice(index, 1)
+        index !== -1 && item.children.splice(index, 1)
         return item
       })
     },

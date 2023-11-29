@@ -97,6 +97,9 @@ export default {
         if (result.length === 0) {
           clearInterval(this.timer)
         }
+      }).catch(error => {
+        console.log(error)
+        clearInterval(this.timer)
       })
     },
     getUserInfo() {
