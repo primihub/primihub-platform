@@ -90,8 +90,13 @@ public class DataCopyService implements ApplicationContextAware {
                 Object object = context.getBean(enu.getBeanName());
                 Class<? extends Object> clazz = object.getClass();
                 try {
+                    // // TODO: 2023/11/30
+                    log.info("本次查找备份：{}-{}", startOffset, endOffset);
                     Method method = clazz.getMethod(enu.getFunctionName(), Long.class,Long.class);
+                    // todo step 2
                     Object result = method.invoke(object,task.getTaskType()==1?startOffset:endOffset,endOffset);
+                    // todo
+                    log.info("本次查找备份结果：{}-{}, {}", startOffset, endOffset, JSON.toJSONString(result));
                     copyDto.setCopyPart(JSON.toJSONString(result));
 //                    log.info(copyDto.getCopyPart());
                 } catch (Exception e) {
