@@ -30,7 +30,7 @@ public class FusionResourceController {
 
     @ApiOperation(value = "根据资源唯一ID获取资源详情",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @ApiImplicitParam(name = "resourceId", value = "资源唯一ID", dataType = "String", paramType = "query")
-    @GetMapping(value = "getDataResource",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @GetMapping(value = "getDataResource")
     public BaseResultEntity getDataResource(String resourceId){
         if (StringUtils.isBlank(resourceId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
