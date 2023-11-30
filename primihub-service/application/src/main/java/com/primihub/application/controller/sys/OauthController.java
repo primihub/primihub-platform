@@ -8,20 +8,19 @@ import com.primihub.biz.entity.sys.enumeration.VerificationCodeEnum;
 import com.primihub.biz.entity.sys.param.LoginParam;
 import com.primihub.biz.entity.sys.param.SaveOrUpdateUserParam;
 import com.primihub.biz.service.sys.SysOauthService;
+import io.swagger.annotations.Api;
 import me.zhyd.oauth.model.AuthCallback;
 import me.zhyd.oauth.request.AuthRequest;
 import me.zhyd.oauth.utils.AuthStateUtils;
 import me.zhyd.oauth.utils.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+@Api(value = "第三方授权接入接口",tags = "第三方授权接入接口")
 @RequestMapping("oauth")
 @RestController
 public class OauthController {
@@ -33,19 +32,19 @@ public class OauthController {
     private String interiorCode;
 
 
-    @RequestMapping("getAuthList")
+    @GetMapping("getAuthList")
     public BaseResultEntity getOauthList(){
         return BaseResultEntity.success(sysOauthService.getOauthList());
     }
 
-    @RequestMapping("authLogin")
+    @GetMapping("authLogin")
     public BaseResultEntity authLogin(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getAuthPublicKey()==null|| "".equals(loginParam.getAuthPublicKey().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
         }
         return sysOauthService.authLogin(loginParam,ip);
     }
-    @RequestMapping("authRegister")
+    @GetMapping("authRegister")
     public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam){
         if(saveOrUpdateUserParam.getAuthPublicKey()==null|| "".equals(saveOrUpdateUserParam.getAuthPublicKey())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
@@ -66,7 +65,7 @@ public class OauthController {
         return sysOauthService.authRegister(saveOrUpdateUserParam);
     }
 
-    @RequestMapping("/{source}/render")
+    @GetMapping("/{source}/render")
     public void renderAuth(HttpServletResponse response, @PathVariable("source") String source) throws IOException {
         if (StringUtils.isEmpty(source) && !OAuthSourceEnum.AUTH_MAP.containsKey(source)){
             oauthError(response,"来源");
@@ -80,7 +79,7 @@ public class OauthController {
         }
     }
 
-    @RequestMapping("/{source}/callback")
+    @GetMapping("/{source}/callback")
     public void oauthLogin(AuthCallback callback,HttpServletResponse response,@PathVariable("source") String source) throws IOException {
         if (StringUtils.isEmpty(source) && !OAuthSourceEnum.AUTH_MAP.containsKey(source)){
             oauthError(response,"来源");

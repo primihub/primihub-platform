@@ -14,6 +14,7 @@ import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.share.ShareService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Map;
 
+@Api(value = "数据同步接口 - 多节点可用,单节点不可用",tags = "数据同步接口")
 @RequestMapping("shareData")
 @RestController
 @Slf4j
@@ -43,7 +45,7 @@ public class ShareDataController {
     @Autowired
     private ShareService shareService;
 
-    @RequestMapping("/healthConnection")
+    @PostMapping("/healthConnection")
     public BaseResultEntity healthConnection(@RequestBody Object time){
         log.info("healthConnection - {}",time);
         return BaseResultEntity.success(shareService.getServiceState());
@@ -53,7 +55,7 @@ public class ShareDataController {
      * 创建编辑项目接口
      * @return
      */
-    @RequestMapping("syncProject")
+    @PostMapping("syncProject")
     public BaseResultEntity syncProject(@RequestBody ShareProjectVo vo){
         return dataProjectService.syncProject(vo);
     }
@@ -62,12 +64,12 @@ public class ShareDataController {
      * 创建编辑项目接口
      * @return
      */
-    @RequestMapping("syncModel")
+    @PostMapping("syncModel")
     public BaseResultEntity syncModel(@RequestBody ShareModelVo vo){
         return dataModelService.syncModel(vo);
     }
 
-    @RequestMapping("apply")
+    @PostMapping("apply")
     public BaseResultEntity applyForJoinNode(@RequestBody Map<String,Object> info){
         if (info==null){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"info");

@@ -13,6 +13,7 @@ import com.primihub.biz.entity.data.req.DerivationResourceReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.sdk.task.dataenum.FieldTypeEnum;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +27,7 @@ import java.io.IOException;
 /**
  * 资源管理
  */
+@Api(value = "资源集接口",tags = "资源集接口")
 @RequestMapping("resource")
 @RestController
 public class ResourceController {
@@ -175,7 +177,7 @@ public class ResourceController {
         return dataResourceService.deleteDataResource(resourceId);
     }
 
-    @RequestMapping("resourceFilePreview")
+    @GetMapping("resourceFilePreview")
     public BaseResultEntity resourceFilePreview(Long fileId,String resourceId){
         if (StringUtils.isBlank(resourceId)){
             if(fileId==null||fileId==0L) {
@@ -191,7 +193,7 @@ public class ResourceController {
      * @param resourceId
      * @return
      */
-    @RequestMapping("getDataResourceFieldPage")
+    @GetMapping("getDataResourceFieldPage")
     public BaseResultEntity getDataResourceFieldPage(@RequestHeader("userId") Long userId,
                                                      Long resourceId,
                                                      PageReq req){
@@ -208,7 +210,7 @@ public class ResourceController {
      * 修改字段信息
      * @return
      */
-    @RequestMapping("updateDataResourceField")
+    @GetMapping("updateDataResourceField")
     public BaseResultEntity updateDataResourceField(DataResourceFieldReq req){
         if (req.getFieldId()==null||req.getFieldId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldId");
@@ -224,7 +226,7 @@ public class ResourceController {
     }
 
 
-    @RequestMapping("resourceStatusChange")
+    @GetMapping("resourceStatusChange")
     public BaseResultEntity resourceStatusChange(Long resourceId,Integer resourceState){
         if (resourceId==null||resourceId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
@@ -238,7 +240,7 @@ public class ResourceController {
         return dataResourceService.resourceStatusChange(resourceId,resourceState);
     }
 
-    @RequestMapping("displayDatabaseSourceType")
+    @GetMapping("displayDatabaseSourceType")
     public BaseResultEntity displayDatabaseSourceType(){
         return dataResourceService.displayDatabaseSourceType();
     }
@@ -251,7 +253,7 @@ public class ResourceController {
         return dataResourceService.noticeResource(resourceId);
     }
 
-    @RequestMapping("download")
+    @GetMapping("download")
     public void download(HttpServletResponse response, Long resourceId) throws Exception{
         DataResource dataResource = dataResourceService.getDataResourceUrl(resourceId);
         if (dataResource == null || StringUtils.isBlank(dataResource.getUrl())){

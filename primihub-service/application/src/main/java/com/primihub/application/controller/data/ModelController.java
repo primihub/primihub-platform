@@ -6,13 +6,19 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.service.data.DataModelService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 /**
  * 模型管理
  */
+@Api(value = "模型接口",tags = "模型接口")
 @RequestMapping("model")
 @RestController
 public class ModelController {
@@ -20,10 +26,14 @@ public class ModelController {
     @Autowired
     private DataModelService dataModelService;
 
-    /**
-     * 获取模型列表
-     * @return
-     */
+
+    @ApiOperation(value = "获取模型列表",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="projectName", value = "项目名称", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name="modelName", value = "模型名称", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name="taskStatus", value = "任务状态", dataType = "Integer", paramType = "query"),
+            @ApiImplicitParam(name="projectId", value = "项目ID", dataType = "Long", paramType = "query")
+    })
     @GetMapping("getmodellist")
     public BaseResultEntity getDataModelList(String projectName,
                                              String modelName,
@@ -33,10 +43,12 @@ public class ModelController {
         return dataModelService.getDataModelList(req,projectName,modelName,taskStatus,projectId);
     }
 
-    /**
-     * 获取模型详情
-     * @return
-     */
+
+    @ApiOperation(value = "获取模型详情",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="userId", value = "用户ID,不用填写getaway处理", dataType = "Long", paramType = "header"),
+            @ApiImplicitParam(name="taskId", value = "任务ID", dataType = "Long", paramType = "query")
+    })
     @GetMapping("getdatamodel")
     public BaseResultEntity getDataModel(@RequestHeader("userId") Long userId,Long taskId){
         if (taskId==null||taskId==0L){
@@ -48,19 +60,20 @@ public class ModelController {
         return dataModelService.getDataModel(taskId,userId);
     }
 
-    /**
-     * 获取模型详情
-     * @return
-     */
+
+    @ApiOperation(value = "获取模型组件列表",httpMethod = "GET")
     @GetMapping("getModelComponent")
     public BaseResultEntity getModelComponent(){
         return dataModelService.getModelComponent();
     }
 
-    /**
-     * 获取模型详情
-     * @return
-     */
+
+    @ApiOperation(value = "获取模型组件列表详情",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="userId", value = "用户ID,不用填写getaway处理", dataType = "Long", paramType = "header"),
+            @ApiImplicitParam(name="modelId", value = "模型ID", dataType = "Long", paramType = "query"),
+            @ApiImplicitParam(name="projectId", value = "项目ID", dataType = "Long", paramType = "query")
+    })
     @GetMapping("getModelComponentDetail")
     public BaseResultEntity getModelComponentDetail(@RequestHeader("userId") Long userId,
                                                     Long modelId,
@@ -70,10 +83,9 @@ public class ModelController {
         }
         return dataModelService.getModelComponentDetail(modelId,userId,projectId);
     }
-    /**
-     * 创建模型
-     * @return
-     */
+
+
+    @ApiOperation(value = "获取模型组件列表详情",httpMethod = "GET",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("saveModelAndComponent")
     public BaseResultEntity saveModelAndComponent(@RequestHeader("userId") Long userId,
                                                   @RequestBody BaseJsonParam<DataModelAndComponentReq> req){
@@ -83,11 +95,9 @@ public class ModelController {
         return dataModelService.saveModelAndComponent(userId,req.getParam());
     }
 
-    /***
-     *  删除模型
-     * @param modelId
-     * @return
-     */
+
+    @ApiOperation(value = "删除模型",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name="modelId", value = "模型ID", dataType = "Long", paramType = "query")
     @GetMapping("deleteModel")
     public BaseResultEntity deleteModel(Long modelId){
         if (modelId==null||modelId==0L){
@@ -96,11 +106,12 @@ public class ModelController {
         return dataModelService.deleteModel(modelId);
     }
 
-    /**
-     * 运行模型
-     * @param modelId
-     * @return
-     */
+
+    @ApiOperation(value = "运行模型",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="userId", value = "用户ID,不用填写getaway处理", dataType = "Long", paramType = "header"),
+            @ApiImplicitParam(name="modelId", value = "模型ID", dataType = "Long", paramType = "query")
+    })
     @GetMapping("runTaskModel")
     public BaseResultEntity runTaskModel(@RequestHeader("userId") Long userId,Long modelId){
         if (modelId==null||modelId==0L){
@@ -109,11 +120,9 @@ public class ModelController {
         return dataModelService.runTaskModel(modelId,userId);
     }
 
-    /**
-     * 重启模型
-     * @param taskId
-     * @return
-     */
+
+    @ApiOperation(value = "重启模型",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name="taskId", value = "任务ID", dataType = "Long", paramType = "query")
     @GetMapping("restartTaskModel")
     public BaseResultEntity restartTaskModel(Long taskId){
         if (taskId==null||taskId==0L){
@@ -122,11 +131,9 @@ public class ModelController {
         return dataModelService.restartTaskModel(taskId);
     }
 
-    /**
-     * 获取运行模型信息
-     * @param taskId
-     * @return
-     */
+
+    @ApiOperation(value = "获取运行模型信息",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name="taskId", value = "任务ID", dataType = "Long", paramType = "query")
     @GetMapping("getTaskModelComponent")
     public BaseResultEntity getTaskModelComponent(Long taskId){
         if (taskId==null||taskId==0L){
@@ -135,7 +142,7 @@ public class ModelController {
         return dataModelService.getTaskModelComponent(taskId);
     }
 
-    @RequestMapping("getModelPrediction")
+    @GetMapping("getModelPrediction")
     public BaseResultEntity getModelPrediction(Long modelId){
         if (modelId==null||modelId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
@@ -143,13 +150,10 @@ public class ModelController {
         return dataModelService.getModelPrediction(modelId);
     }
 
-    /**
-     * 运行成功的模型列表
-     * @param userId
-     * @param req
-     * @return
-     */
-    @RequestMapping("getModelTaskSuccessList")
+
+    @ApiOperation(value = "运行成功的模型列表",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name="userId", value = "用户ID,不用填写getaway处理", dataType = "Long", paramType = "header")
+    @GetMapping("getModelTaskSuccessList")
     public BaseResultEntity getModelTaskSuccessList(@RequestHeader("userId") Long userId,ModelTaskSuccessReq req){
         if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -158,7 +162,7 @@ public class ModelController {
         return dataModelService.getModelTaskSuccessList(req);
     }
 
-    @RequestMapping("saveOrUpdateComponentDraft")
+    @GetMapping("saveOrUpdateComponentDraft")
     public BaseResultEntity saveOrUpdateComponentDraft(@RequestHeader("userId") Long userId, ComponentDraftReq req){
         if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -173,7 +177,7 @@ public class ModelController {
         return dataModelService.saveOrUpdateComponentDraft(req);
     }
 
-    @RequestMapping("getComponentDraftList")
+    @GetMapping("getComponentDraftList")
     public BaseResultEntity getComponentDraftList(@RequestHeader("userId") Long userId){
         if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -181,7 +185,7 @@ public class ModelController {
         return dataModelService.getComponentDraftList(userId);
     }
 
-    @RequestMapping("deleteComponentDraft")
+    @GetMapping("deleteComponentDraft")
     public BaseResultEntity deleteComponentDraft(@RequestHeader("userId") Long userId,Long draftId){
         if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -192,13 +196,12 @@ public class ModelController {
         return dataModelService.deleteComponentDraft(draftId,userId);
     }
 
-    /**
-     * 修改模型描述
-     * @param modelId   模型ID
-     * @param modelDesc 模型描述
-     * @return
-     */
-    @RequestMapping("updateModelDesc")
+    @ApiOperation(value = "修改模型描述",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParams({
+            @ApiImplicitParam(name="modelId", value = "模型ID", dataType = "Long", paramType = "query"),
+            @ApiImplicitParam(name="modelDesc", value = "模型描述", dataType = "String", paramType = "query")
+    })
+    @GetMapping("updateModelDesc")
     public BaseResultEntity updateModelDesc(Long modelId,String modelDesc){
         if (modelId==null||modelId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");

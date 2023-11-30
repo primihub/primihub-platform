@@ -8,9 +8,13 @@ import com.primihub.biz.repository.primaryredis.sys.SysAuthPrimaryRedisRepositor
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.test.TestService;
 import com.primihub.biz.util.FileUtil;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +28,7 @@ import java.util.Map;
 /**
  * 测试接口
  */
+@Api(value = "测试接口",tags = "测试接口")
 @Slf4j
 @RestController
 public class TestController {
@@ -37,18 +42,14 @@ public class TestController {
     @Autowired
     private DataResourceService dataResourceService;
 
-    @RequestMapping("/healthConnection")
+    @ApiOperation(value = "检测通信",httpMethod = "GET")
+    @GetMapping("/healthConnection")
     public BaseResultEntity healthConnection(){
         return BaseResultEntity.success(System.currentTimeMillis());
     }
 
-    @RequestMapping("/testPublish")
-    public BaseResultEntity testPublish(){
-        testService.testPublish();
-        return BaseResultEntity.success();
-    }
-
-    @RequestMapping("/testStream")
+    @ApiOperation(value = "stream mq send test",httpMethod = "GET")
+    @GetMapping("/testStream")
     public BaseResultEntity testStream(){
         BaseFunctionHandleEntity entity=new BaseFunctionHandleEntity();
         entity.setHandleType(BaseFunctionHandleEnum.Test.getHandleType());
@@ -57,25 +58,25 @@ public class TestController {
         return BaseResultEntity.success();
     }
 
-    @RequestMapping("/testJsonParam")
-    public BaseResultEntity testJsonParam(@RequestBody BaseJsonParam<Map> baseJsonParam, HttpServletRequest request){
-        return BaseResultEntity.success(baseJsonParam.getParam());
-    }
-
-    @RequestMapping("/testDelete")
+    @ApiOperation(value = "删除菜单权限Redis缓存",httpMethod = "GET")
+    @GetMapping("/testDelete")
     public BaseResultEntity testDelete(){
         sysAuthPrimaryRedisRepository.deleteSysAuthForBfs();
         return BaseResultEntity.success();
     }
 
-    @RequestMapping("/testFormatResources")
+    @ApiOperation(value = "重新加载资源集",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name = "tag", value = "触发类型(grpc,copy) 默认grpc", dataType = "String", paramType = "query")
+    @GetMapping("/testFormatResources")
     public BaseResultEntity formatResources(String tag){
         testService.formatResources(tag);
         return BaseResultEntity.success();
     }
 
-    @RequestMapping("/testFile")
-    public BaseResultEntity testFile(String filePath,Integer severalLines) throws Exception {
+    @ApiOperation(value = "加载文件信息",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name = "filePath", value = "文件路径", dataType = "String", paramType = "query")
+    @GetMapping("/testFile")
+    public BaseResultEntity testFile(String filePath) throws Exception {
         if (StringUtils.isBlank(filePath)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
         }
@@ -83,7 +84,9 @@ public class TestController {
         return BaseResultEntity.success(resourceFileData);
     }
 
-    @RequestMapping("/testFileMd5")
+    @ApiOperation(value = "加载文件MD5",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name = "filePath", value = "文件路径", dataType = "String", paramType = "query")
+    @GetMapping("/testFileMd5")
     public BaseResultEntity testFileMd5(String filePath){
         if (StringUtils.isBlank(filePath)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL);
@@ -95,6 +98,8 @@ public class TestController {
      * 注册后端node上的测试资源
      * @return
      */
+    @ApiOperation(value = "注册后端node上的测试资源",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name = "id", value = "资源ID", dataType = "String", paramType = "query")
     @GetMapping("/testDataSet")
     public BaseResultEntity testDataSet(String id){
         return testService.testDataSet(id);
@@ -105,6 +110,8 @@ public class TestController {
      * @param taskId
      * @return
      */
+    @ApiOperation(value = "取消运行任务",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name = "taskId", value = "任务ID", dataType = "String", paramType = "query")
     @GetMapping("/killTask")
     public BaseResultEntity killTask(String taskId){
         if (StringUtils.isBlank(taskId)) {

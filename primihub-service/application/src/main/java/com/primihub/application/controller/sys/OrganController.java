@@ -6,8 +6,10 @@ import com.primihub.biz.entity.sys.param.ChangeLocalOrganInfoParam;
 import com.primihub.biz.entity.sys.param.ChangeOtherOrganInfoParam;
 import com.primihub.biz.entity.sys.param.OrganParam;
 import com.primihub.biz.service.sys.SysOrganService;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +19,7 @@ import java.util.Map;
 /**
  * 机构
  */
+@Api(value = "机构(节点)接口",tags = "机构(节点)接口")
 @RequestMapping("organ")
 @RestController
 public class OrganController {
@@ -24,17 +27,17 @@ public class OrganController {
     @Autowired
     private SysOrganService sysOrganService;
 
-    @RequestMapping("getLocalOrganInfo")
+    @GetMapping("getLocalOrganInfo")
     public BaseResultEntity getLocalOrganInfo(){
         return sysOrganService.getLocalOrganInfo();
     }
 
-    @RequestMapping("changeLocalOrganInfo")
+    @GetMapping("changeLocalOrganInfo")
     public BaseResultEntity changeLocalOrganInfo(ChangeLocalOrganInfoParam changeLocalOrganInfoParam){
         return sysOrganService.changeLocalOrganInfo(changeLocalOrganInfoParam);
     }
 
-    @RequestMapping("changeHomepage")
+    @GetMapping("changeHomepage")
     public BaseResultEntity changeHomepage(@RequestBody Map<String,Object> homeMap){
         homeMap.remove("token");
         homeMap.remove("timestamp");
@@ -45,7 +48,7 @@ public class OrganController {
         return sysOrganService.changeHomepage(homeMap);
     }
 
-    @RequestMapping("getHomepage")
+    @GetMapping("getHomepage")
     public BaseResultEntity getHomepage(){
         return sysOrganService.getHomepage();
     }
@@ -56,7 +59,7 @@ public class OrganController {
      * @param publicKey
      * @return
      */
-    @RequestMapping("joiningPartners")
+    @GetMapping("joiningPartners")
     public BaseResultEntity joiningPartners(String gateway,String publicKey){
         if (StringUtils.isBlank(gateway)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
@@ -72,7 +75,7 @@ public class OrganController {
      * @param param
      * @return
      */
-    @RequestMapping("getOrganList")
+    @GetMapping("getOrganList")
     public BaseResultEntity getOrganList(OrganParam param){
         return sysOrganService.getOrganList(param);
     }
@@ -81,7 +84,7 @@ public class OrganController {
      * 查询可用合作机构列表
      * @return
      */
-    @RequestMapping("getAvailableOrganList")
+    @GetMapping("getAvailableOrganList")
     public BaseResultEntity getAvailableOrganList(){
         return sysOrganService.getAvailableOrganList();
     }
@@ -90,7 +93,7 @@ public class OrganController {
      * 修改合作机构网关和公钥
      * @return
      */
-    @RequestMapping("changeOtherOrganInfo")
+    @GetMapping("changeOtherOrganInfo")
     public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam){
         return sysOrganService.changeOtherOrganInfo(changeOtherOrganInfoParam);
     }
@@ -101,7 +104,7 @@ public class OrganController {
      * @param examineMsg        审核意见
      * @return
      */
-    @RequestMapping("examineJoining")
+    @GetMapping("examineJoining")
     public BaseResultEntity examineJoining(Long id,Integer examineState,String examineMsg){
         if (id==null || id==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
@@ -121,7 +124,7 @@ public class OrganController {
      * @param status
      * @return
      */
-    @RequestMapping("enableStatus")
+    @GetMapping("enableStatus")
     public BaseResultEntity enableStatus(Long id,Integer status){
         if (id==null || id==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
