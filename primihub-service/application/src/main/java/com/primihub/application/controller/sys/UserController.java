@@ -21,7 +21,7 @@ public class UserController {
     @Value("${primihub.interior.code:null}")
     private String interiorCode;
 
-    @GetMapping("login")
+    @PostMapping("login")
     public BaseResultEntity login(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getUserAccount()==null|| "".equals(loginParam.getUserAccount().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
