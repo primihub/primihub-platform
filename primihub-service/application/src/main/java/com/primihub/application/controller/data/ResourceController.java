@@ -215,7 +215,7 @@ public class ResourceController {
      * 修改字段信息
      * @return
      */
-    @GetMapping("updateDataResourceField")
+    @PostMapping("updateDataResourceField")
     public BaseResultEntity updateDataResourceField(DataResourceFieldReq req){
         if (req.getFieldId()==null||req.getFieldId()==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fieldId");
@@ -231,7 +231,7 @@ public class ResourceController {
     }
 
 
-    @GetMapping("resourceStatusChange")
+    @PostMapping("resourceStatusChange")
     public BaseResultEntity resourceStatusChange(Long resourceId,Integer resourceState){
         if (resourceId==null||resourceId==0L){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");

@@ -40,7 +40,7 @@ public class UserController {
         return sysUserService.logout(token,userId);
     }
 
-    @GetMapping("saveOrUpdateUser")
+    @PostMapping("saveOrUpdateUser")
     public BaseResultEntity saveOrUpdateUser(SaveOrUpdateUserParam saveOrUpdateUserParam){
         if(saveOrUpdateUserParam.getUserId()!=null){
             if(saveOrUpdateUserParam.getUserId()<0) {
@@ -53,7 +53,7 @@ public class UserController {
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 
-    @GetMapping("deleteSysUser")
+    @PostMapping("deleteSysUser")
     public BaseResultEntity deleteSysUser(Long userId){
         if(userId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -74,7 +74,7 @@ public class UserController {
         return sysUserService.findUserPage(findUserPageParam,pageNum,pageSize);
     }
 
-    @GetMapping("initPassword")
+    @PostMapping("initPassword")
     public BaseResultEntity initPassword(Long userId){
         if(userId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -85,7 +85,7 @@ public class UserController {
         return sysUserService.initPassword(userId);
     }
 
-    @GetMapping("updatePassword")
+    @PostMapping("updatePassword")
     public BaseResultEntity updatePassword(@RequestHeader("userId") Long userId,
                                            String password,
                                            String validateKeyName){
@@ -112,7 +112,7 @@ public class UserController {
         return sysUserService.findUserByAccount(userAccount);
     }
 
-    @GetMapping("register")
+    @PostMapping("register")
     public BaseResultEntity register(SaveOrUpdateUserParam saveOrUpdateUserParam){
         if(saveOrUpdateUserParam.getVerificationCode()==null|| "".equals(saveOrUpdateUserParam.getVerificationCode())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"verificationCode");
@@ -139,7 +139,7 @@ public class UserController {
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 
-    @GetMapping("sendVerificationCode")
+    @PostMapping("sendVerificationCode")
     public BaseResultEntity sendVerificationCode(SendVerificationCodeParam sendVerificationCodeParam){
         if((sendVerificationCodeParam.getCellphone()==null|| "".equals(sendVerificationCodeParam.getCellphone()))&&(sendVerificationCodeParam.getEmail()==null|| "".equals(sendVerificationCodeParam.getEmail()))) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"cellphone or email");
@@ -153,7 +153,7 @@ public class UserController {
         return sysUserService.sendVerificationCode(sendVerificationCodeParam);
     }
 
-    @GetMapping("forgetPassword")
+    @PostMapping("forgetPassword")
     public BaseResultEntity forgetPassword(ForgetPasswordParam forgetPasswordParam){
         if(forgetPasswordParam.getUserAccount()==null|| "".equals(forgetPasswordParam.getUserAccount())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
@@ -178,7 +178,7 @@ public class UserController {
         }
         return sysUserService.forgetPassword(forgetPasswordParam);
     }
-    @GetMapping("changeUserAccount")
+    @PostMapping("changeUserAccount")
     public BaseResultEntity changeUserAccount(SaveOrUpdateUserParam param,@RequestHeader("userId") Long userId){
         if (userId == null || userId<=0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -200,7 +200,7 @@ public class UserController {
         return sysUserService.changeUserAccount(param);
     }
 
-    @GetMapping("relieveUserAccount")
+    @PostMapping("relieveUserAccount")
     public BaseResultEntity relieveUserAccount(@RequestHeader("userId") Long userId){
         if (userId == null || userId<=0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");

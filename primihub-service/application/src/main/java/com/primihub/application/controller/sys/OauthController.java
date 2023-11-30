@@ -37,14 +37,14 @@ public class OauthController {
         return BaseResultEntity.success(sysOauthService.getOauthList());
     }
 
-    @GetMapping("authLogin")
+    @PostMapping("authLogin")
     public BaseResultEntity authLogin(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getAuthPublicKey()==null|| "".equals(loginParam.getAuthPublicKey().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");
         }
         return sysOauthService.authLogin(loginParam,ip);
     }
-    @GetMapping("authRegister")
+    @PostMapping("authRegister")
     public BaseResultEntity authRegister(SaveOrUpdateUserParam saveOrUpdateUserParam){
         if(saveOrUpdateUserParam.getAuthPublicKey()==null|| "".equals(saveOrUpdateUserParam.getAuthPublicKey())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authPublicKey");

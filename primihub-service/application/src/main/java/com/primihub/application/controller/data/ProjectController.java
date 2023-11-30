@@ -79,7 +79,7 @@ public class ProjectController {
      * 项目机构、资源审核接口
      * @return
      */
-    @GetMapping("approval")
+    @PostMapping("approval")
     public BaseResultEntity approval(DataProjectApprovalReq req){
         if (req.getId()==null || req.getId() == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
@@ -97,7 +97,7 @@ public class ProjectController {
      * 删除项目资源
      * @return
      */
-    @GetMapping("removeResource")
+    @PostMapping("removeResource")
     public BaseResultEntity removeResource(Long id){
         if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
@@ -109,7 +109,7 @@ public class ProjectController {
      * 删除项目机构协作者
      * @return
      */
-    @GetMapping("removeOrgan")
+    @PostMapping("removeOrgan")
     public BaseResultEntity removeOrgan(Long id){
         if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
@@ -124,7 +124,7 @@ public class ProjectController {
      * @param id
      * @return
      */
-    @GetMapping("closeProject")
+    @PostMapping("closeProject")
     public BaseResultEntity closeProject(Long id){
         if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");
@@ -137,7 +137,7 @@ public class ProjectController {
      * @param id
      * @return
      */
-    @GetMapping("openProject")
+    @PostMapping("openProject")
     public BaseResultEntity openProject(Long id){
         if (id==null || id == 0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"id");

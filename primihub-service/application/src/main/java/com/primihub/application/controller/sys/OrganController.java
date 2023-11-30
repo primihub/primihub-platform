@@ -9,10 +9,7 @@ import com.primihub.biz.service.sys.SysOrganService;
 import io.swagger.annotations.Api;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -32,12 +29,12 @@ public class OrganController {
         return sysOrganService.getLocalOrganInfo();
     }
 
-    @GetMapping("changeLocalOrganInfo")
+    @PostMapping("changeLocalOrganInfo")
     public BaseResultEntity changeLocalOrganInfo(ChangeLocalOrganInfoParam changeLocalOrganInfoParam){
         return sysOrganService.changeLocalOrganInfo(changeLocalOrganInfoParam);
     }
 
-    @GetMapping("changeHomepage")
+    @PostMapping("changeHomepage")
     public BaseResultEntity changeHomepage(@RequestBody Map<String,Object> homeMap){
         homeMap.remove("token");
         homeMap.remove("timestamp");
@@ -93,7 +90,7 @@ public class OrganController {
      * 修改合作机构网关和公钥
      * @return
      */
-    @GetMapping("changeOtherOrganInfo")
+    @PostMapping("changeOtherOrganInfo")
     public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam){
         return sysOrganService.changeOtherOrganInfo(changeOtherOrganInfoParam);
     }

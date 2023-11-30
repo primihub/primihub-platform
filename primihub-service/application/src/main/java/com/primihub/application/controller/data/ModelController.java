@@ -162,7 +162,7 @@ public class ModelController {
         return dataModelService.getModelTaskSuccessList(req);
     }
 
-    @GetMapping("saveOrUpdateComponentDraft")
+    @PostMapping("saveOrUpdateComponentDraft")
     public BaseResultEntity saveOrUpdateComponentDraft(@RequestHeader("userId") Long userId, ComponentDraftReq req){
         if (userId==null||userId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
