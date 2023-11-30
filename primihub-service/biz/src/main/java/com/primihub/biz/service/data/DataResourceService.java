@@ -479,8 +479,11 @@ public class DataResourceService {
     }
 
     public Object findFusionCopyResourceList(Long startOffset, Long endOffset){
+        log.info("本方机构：{}, 查找fusionCopy的， startOffset :{}, endOffset:{}", organConfiguration.getSysLocalOrganName(), startOffset, endOffset);
         List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
+        log.info("本地查找出的资源: {}", resourceList.size());
         Set<String> ids = resourceList.stream().map(DataResource::getResourceFusionId).collect(Collectors.toSet());
+        log.info("远程查找备份的资源ids: {}", ids);
         BaseResultEntity result = fusionResourceService.getCopyResource(ids);
         log.info(JSONObject.toJSONString(result));
         return result.getResult();
