@@ -1,7 +1,10 @@
 package com.primihub.biz.config.base;
 
 
+import com.github.xiaoymin.swaggerbootstrapui.annotations.EnableSwaggerBootstrapUI;
+import com.google.common.base.Predicate;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,10 +24,8 @@ import java.util.Random;
 
 @Configuration
 @EnableSwagger2
+@EnableSwaggerBootstrapUI
 public class SwaggerConfig {
-
-    @Value("${swagger2.enable:false}")
-    private boolean swaggerEnable;
 
     @Bean
     public Docket controllerApi() {
@@ -43,7 +44,6 @@ public class SwaggerConfig {
                 .apis(RequestHandlerSelectors.basePackage("com.primihub"))
                 .paths(PathSelectors.any())
                 .build()
-                .enable(swaggerEnable)
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
                 .globalResponseMessage(RequestMethod.POST,responseMessageList)
                 .globalOperationParameters(getParameter());
