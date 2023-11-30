@@ -57,7 +57,7 @@ public class TaskController {
         return dataTaskService.updateTaskDesc(taskId,taskDesc);
     }
 
-    @GetMapping("deleteTask")
+    @PostMapping("deleteTask")
     public BaseResultEntity deleteTask(Long taskId){
         if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
