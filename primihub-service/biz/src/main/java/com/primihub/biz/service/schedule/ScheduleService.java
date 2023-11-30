@@ -51,6 +51,7 @@ public class ScheduleService {
             Date tenMinuteAgo= DateUtil.changeDate(date, Calendar.MINUTE,-3);
             List<DataFusionCopyTask> notFinishedTask=dataCopyService.selectNotFinishedTask(threeDayAgo,tenMinuteAgo);
             for(DataFusionCopyTask task:notFinishedTask){
+                log.info("本次recall的任务id: {}", task.getId());
                 dataCopyService.handleFusionCopyTask(task);
             }
             result.put("fusionMsg","本节点处理");
