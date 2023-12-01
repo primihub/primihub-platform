@@ -35,11 +35,6 @@
           label="资源名称"
         />
         <el-table-column
-          prop="organId"
-          label="机构ID"
-          min-width="110"
-        />
-        <el-table-column
           prop="organName"
           label="资源所属机构"
           min-width="120"

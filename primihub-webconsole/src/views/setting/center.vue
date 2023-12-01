@@ -66,7 +66,7 @@
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
               <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link> -->
               <el-link v-if="row.examineState === 1 && row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
-              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply (row)">启用</el-link>
+              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply (row)">重新连接</el-link>
             </div>
           </template>
         </el-table-column>
@@ -436,7 +436,7 @@ export default {
       })
       if (result.code === 0) {
         this.getOrganList()
-        this.$message.success('已重新启用')
+        this.$message.success('已重新连接')
         this.closeConnectDialog()
       } else {
         this.organInfoChanged = true
