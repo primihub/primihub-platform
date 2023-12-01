@@ -59,11 +59,12 @@ public class RemoteShareService {
         if (profile == null) {
             profile = "";
         }
-        if (profile.trim().startsWith("test") || profile.trim().startsWith("dev")) {
-            remoteAddress = remoteAddress2;
-        } else {
-            remoteAddress = remoteAddress1;
-        }
+//        if (profile.trim().startsWith("test") || profile.trim().startsWith("dev")) {
+//            remoteAddress = remoteAddress2;
+//        } else {
+//            remoteAddress = remoteAddress1;
+//        }
+        remoteAddress = remoteAddress1;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> request = new HttpEntity(transMap, headers);
