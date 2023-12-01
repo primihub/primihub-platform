@@ -148,9 +148,11 @@ export default {
       }
       joiningPartners(params).then(res => {
         if (res.code === 0) {
+          this.$message.success('连接成功')
           setTimeout(() => {
-            this.$message.success('连接成功')
-            this.fetchData()
+            this.$router.push({
+              name: 'UnionList'
+            })
           }, 300)
         } else {
           this.$message.error(res.msg)
@@ -167,7 +169,7 @@ export default {
       if (releaseType !== 3) {
         await this.getSetting()
       }
-      const messageHtmlStr = releaseType === 3 ? '<p style="font-size: 16px; font-weight:bold;">确认发起节点连接获取对方公开数据集</p> <p>向对方节点发起连接申请，获取对方公开数据集</p>' : `<p style="font-size: 16px; font-weight:bold;">该数据集来自中间平台，请联系工作人员获取</p> <p>工作人员电话：${this.telephoneNumber}</p>`
+      const messageHtmlStr = releaseType === 3 ? '<p style="font-size: 16px; font-weight:bold;">确认发起节点连接获取对方公开数据集</p> <p>向对方节点发起连接申请，获取对方全部公开数据集</p>' : `<p style="font-size: 16px; font-weight:bold;">该数据集来自中间平台，请联系工作人员获取</p> <p>工作人员电话：${this.telephoneNumber}</p>`
       this.$confirm(messageHtmlStr, '获取数据集', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
