@@ -12,4 +12,6 @@ public class RedisKeyConstant {
     // task key
     public final static String TASK_STATUS_KEY = "ts:<taskId>:<jobId>";
     public final static String TASK_STATUS_LIST_KEY = "ts:list";
+
+    public final static String SEATUNNEL_DATA_LIST_KEY = "se:dl:<traceId>";
 }

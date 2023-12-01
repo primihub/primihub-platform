@@ -113,7 +113,7 @@ public abstract class AbstractGRPCExecuteFactory {
                         List<String> getList = cacheService.get(key);
                         getList.addAll(taskStatus);
                         cacheService.put(key,getList);
-                        if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())){
+                        if (taskStatus.contains(TaskStatus.StatusCode.FAIL.name())||taskStatus.contains(TaskStatus.StatusCode.NONEXIST.name())){
                             param.setSuccess(false);
                             List<TaskStatus> taskStatusFails = taskStatusReply.getTaskStatusList().stream().filter(t -> t.getStatus() == TaskStatus.StatusCode.FAIL).collect(Collectors.toList());
                             StringBuilder sb = new StringBuilder();

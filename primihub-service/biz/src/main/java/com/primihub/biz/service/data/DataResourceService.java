@@ -232,12 +232,15 @@ public class DataResourceService {
         return BaseResultEntity.success(map);
     }
 
-    public BaseResultEntity getDataResource(Long resourceId) {
-        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+    public BaseResultEntity getDataResource(String resourceId) {
+        DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
+        if (dataResource == null){
+            dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+        }
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
-        List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(resourceId);
+        List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(dataResource.getResourceId());
         DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource);
         SysUser sysUser = sysUserService.getSysUserById(dataResourceVo.getUserId());
         dataResourceVo.setUserName(sysUser == null?"":sysUser.getUserName());
@@ -265,7 +268,8 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
-        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(dataResource.getResourceId());}}));
+        DataResource finalDataResource = dataResource;
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(finalDataResource.getResourceId());}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }
@@ -427,21 +431,22 @@ public class DataResourceService {
     }
 
 
+
     public FieldTypeEnum getFieldType(String fieldVal) {
         if (StringUtils.isBlank(fieldVal)) {
             return FieldTypeEnum.STRING;
         }
-        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
-            return FieldTypeEnum.DOUBLE;
-        }
-        if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
-            return FieldTypeEnum.DOUBLE;
+        if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
+            return FieldTypeEnum.INTEGER;
         }
         if (DataConstant.RESOURCE_PATTERN_LONG.matcher(fieldVal).find()) {
             return FieldTypeEnum.LONG;
         }
-        if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
-            return FieldTypeEnum.INTEGER;
+        if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
+        }
+        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
         }
         return FieldTypeEnum.STRING;
     }
@@ -642,6 +647,7 @@ public class DataResourceService {
         map.put("dbType",dataSource.getDbType());
         map.put("dbUrl",dataSource.getDbUrl());
         map.put("tableName", dataSource.getDbTableName());
+        map.put("dbDriver",dataSource.getDbDriver());
         if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
             map.put("db_path",dataSource.getDbUrl());
         }else {

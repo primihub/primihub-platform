@@ -37,8 +37,7 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
 
     @Override
     public BaseResultEntity healthConnection(DataSource dbSource) {
-        String url = dbSource.getDbUrl();
-        String dataBaseName = (String) DataUtil.getJDBCData(url).get("database");
+        String dataBaseName = (String) DataUtil.getJDBCData(dbSource.getDbUrl()).get("database");
         if (StringUtils.isBlank(dataBaseName)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"解析数据库名称失败");
         }
@@ -95,16 +94,6 @@ public class MySqlServiceAbstract extends AbstractDataDBService {
                 jdbcDataSource.close();
             }
         }
-    }
-
-    public static void main(String[] args) {
-        TreeSet treeSet = new TreeSet();
-        treeSet.add("zhang");
-        treeSet.add("id");
-        treeSet.add("d");
-        treeSet.add("ad");
-        treeSet.add("y");
-        System.out.println(JSONObject.toJSONString(treeSet));
     }
 
     @Override
