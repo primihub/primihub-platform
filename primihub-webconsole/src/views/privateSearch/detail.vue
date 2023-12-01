@@ -28,7 +28,9 @@
         </div>
         <div class="desc-col">
           <div class="desc-label">关键词:</div>
-          <div class="desc-content">{{ taskData.retrievalId }}</div>
+          <div class="desc-content">
+            {{ searchKeyword.length ? searchKeyword.join('，') : taskData.retrievalId }}
+          </div>
         </div>
       </div>
 
@@ -78,6 +80,7 @@ import { getPirTaskDetail } from '@/api/PIR'
 import { getToken } from '@/utils/auth'
 import ResourcePreviewDialog from '@/components/ResourcePreviewDialog'
 import FlowStep from '@/components/FlowStep'
+import { checkIsJsonString } from '@/utils/index'
 
 const intersection = require('@/assets/intersection.svg')
 const diffsection = require('@/assets/diffsection.svg')
@@ -112,7 +115,8 @@ export default {
         status: 'wait'
       }],
       taskError: [],
-      taskTypeText: '计算'
+      taskTypeText: '计算',
+      searchKeyword: ''
     }
   },
   computed: {
@@ -150,6 +154,21 @@ export default {
           this.taskData = res.result
           this.taskState = this.taskData.taskState
           this.previewList = this.taskData.list
+
+          // format search keyword
+          if (checkIsJsonString(this.taskData.retrievalId)) {
+            const searchKeyword = JSON.parse(this.taskData.retrievalId)
+            const searchQuery = searchKeyword.map(item => {
+              const query = item.query.map(val => {
+                return val.join(' | ')
+              })
+              return query.join('、')
+            })
+            console.log('searchQuery', searchQuery)
+            this.searchKeyword = searchQuery
+          }
+
+          // format error info
           this.taskError = this.taskData.taskError ? this.taskData.taskError.split('\n') : []
           switch (this.taskState) {
             case 1:
