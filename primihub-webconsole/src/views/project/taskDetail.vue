@@ -290,12 +290,21 @@ export default {
       return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
     },
     toResourceDetailPage(row) {
-      this.$router.push({
-        name: 'UnionResourceDetail',
-        params: {
-          id: row.resourceId
-        }
-      })
+      if (row.participationIdentity === 2) {
+        this.$router.push({
+          name: 'UnionResourceDetail',
+          params: {
+            id: row.resourceId
+          }
+        })
+      } else {
+        this.$router.push({
+          name: 'ResourceDetail',
+          params: {
+            id: row.resourceId
+          }
+        })
+      }
     },
     async download() {
       const timestamp = new Date().getTime()

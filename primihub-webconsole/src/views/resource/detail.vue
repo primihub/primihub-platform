@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div v-loading="loading" class="app-container">
     <h2>资源详情</h2>
     <div class="detail">
       <el-descriptions title="资源信息" :column="2" label-class-name="detail-title">
@@ -55,6 +55,7 @@ export default {
   },
   data() {
     return {
+      loading: false,
       resource: {},
       dialogVisible: false,
       resourceAuthType: 1,
@@ -81,6 +82,7 @@ export default {
   },
   methods: {
     async fetchData() {
+      this.loading = true
       const res = await getResourceDetail(this.resourceId)
       if (res.code === 0) {
         this.result = res.result
@@ -89,6 +91,7 @@ export default {
         this.dataList = this.result.dataList || []
         this.fieldList = this.result.fieldList || []
       }
+      this.loading = false
     },
     async getDataResource() {
       const res = await getDataResource({

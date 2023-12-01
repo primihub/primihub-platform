@@ -62,9 +62,9 @@
         >
           <template slot-scope="{row}">
             <div class="buttons">
-              <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleAgree(row)">同意</el-link>
+              <!-- <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleAgree(row)">同意</el-link>
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
-              <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link>
+              <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link> -->
               <el-link v-if="row.examineState === 1 && row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
               <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply (row)">重新连接</el-link>
             </div>
@@ -407,17 +407,6 @@ export default {
         if (valid) {
           await this.changeOtherOrganInfo()
           console.log('partnersForm', this.partnersForm)
-
-          // if (!this.reconnect) {
-          //   const params = { id: this.applyId, applyId: this.connectApplyId, status: this.partnersForm.enable ? 0 : 1 }
-          //   const res = await enableStatus(params)
-          //   if (res.code === 0) {
-          //     this.setConnectionStatus(this.applyId, 1)
-          //     this.$message.success(this.partnersForm.enable ? '已断开连接' : '已重新申请连接')
-          //   }
-          // } else {
-          //   this.reExamineJoining()
-          // }
         }
       })
     },
@@ -446,8 +435,8 @@ export default {
         examineState: this.examineState
       })
       if (result.code === 0) {
-        this.setExamineState()
-        this.$message.success('已重新申请连接')
+        this.getOrganList()
+        this.$message.success('已重新连接')
         this.closeConnectDialog()
       } else {
         this.organInfoChanged = true
@@ -455,10 +444,6 @@ export default {
         // this.dialogTitle = '修改节点信息'
         this.$message.error(result.msg)
       }
-    },
-    setExamineState() {
-      const index = this.organList.findIndex(item => item.id === this.applyId)
-      this.organList[index].examineState = this.examineState
     },
     joiningPartners(publicKey, gateway, id, applyId) {
       this.loading = true

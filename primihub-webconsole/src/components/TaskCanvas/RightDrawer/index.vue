@@ -616,7 +616,7 @@ export default {
       })
       this.processingType.map((item) => {
         const current = this.featureItems.find(feature => feature.type === item.key)
-        item.disabled = !!current
+        this.$set(item, 'disabled', !!current)
       })
       this.handleChange('exception')
     },
@@ -991,7 +991,9 @@ export default {
     setFeaturesValue() {
       if (this.nodeData.componentTypes[this.featureConfigIndex]) {
         this.nodeData.componentTypes[this.featureConfigIndex].inputValue = JSON.stringify(this.featureItems)
-        this.handleChange()
+        if (this.options.isEditable) {
+          this.handleChange()
+        }
       }
     }
   }
