@@ -28,7 +28,6 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
-import com.primihub.biz.service.share.RemoteShareService;
 import com.primihub.biz.service.sys.SysUserService;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
@@ -37,7 +36,6 @@ import com.primihub.sdk.task.TaskHelper;
 import com.primihub.sdk.task.dataenum.FieldTypeEnum;
 import com.primihub.sdk.task.param.TaskDataSetParam;
 import com.primihub.sdk.task.param.TaskParam;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -298,8 +296,8 @@ public class DataResourceService {
             map.put("dataList",new ArrayList());
         }
         map.put("resource",dataResourceVo);
-        Long id = dataResource.getResourceId();
-        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(id);}}));
+        DataResource finalDataResource = dataResource;
+        map.put("fusionOrganList",dataResourceRepository.findAuthOrganByResourceId(new ArrayList(){{add(finalDataResource.getResourceId());}}));
         map.put("fieldList",dataFileFieldList);
         return BaseResultEntity.success(map);
     }
@@ -461,21 +459,22 @@ public class DataResourceService {
     }
 
 
+
     public FieldTypeEnum getFieldType(String fieldVal) {
         if (StringUtils.isBlank(fieldVal)) {
             return FieldTypeEnum.STRING;
         }
-        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
-            return FieldTypeEnum.DOUBLE;
-        }
-        if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
-            return FieldTypeEnum.DOUBLE;
+        if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
+            return FieldTypeEnum.INTEGER;
         }
         if (DataConstant.RESOURCE_PATTERN_LONG.matcher(fieldVal).find()) {
             return FieldTypeEnum.LONG;
         }
-        if (DataConstant.RESOURCE_PATTERN_INTEGER.matcher(fieldVal).find()) {
-            return FieldTypeEnum.INTEGER;
+        if (DataConstant.RESOURCE_PATTERN_DOUBLE.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
+        }
+        if (DataConstant.RESOURCE_PATTERN_SCIENTIFIC_NOTATION.matcher(fieldVal).find()) {
+            return FieldTypeEnum.DOUBLE;
         }
         return FieldTypeEnum.STRING;
     }
@@ -679,6 +678,7 @@ public class DataResourceService {
         map.put("dbType",dataSource.getDbType());
         map.put("dbUrl",dataSource.getDbUrl());
         map.put("tableName", dataSource.getDbTableName());
+        map.put("dbDriver",dataSource.getDbDriver());
         if (SourceEnum.sqlite.getSourceType().equals(dataSource.getDbType())){
             map.put("db_path",dataSource.getDbUrl());
         }else {
