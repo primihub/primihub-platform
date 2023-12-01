@@ -295,10 +295,10 @@ public class DataResourceService {
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"未查询到资源信息");
         }
-        Integer count = dataResourceRepository.queryResourceProjectRelationCount(dataResource.getResourceFusionId());
-        if (count>0){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该资源已关联项目");
-        }
+//        Integer count = dataResourceRepository.queryResourceProjectRelationCount(dataResource.getResourceFusionId());
+//        if (count>0){
+//            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"该资源已关联项目");
+//        }
         if (dataResource.getResourceSource().equals(1)){
             SysFile sysFile = sysFileSecondarydbRepository.selectSysFileByFileId(dataResource.getFileId());
             try {
@@ -310,6 +310,7 @@ public class DataResourceService {
         }
         dataResourcePrRepository.deleteResource(resourceId);
         dataResource.setIsDel(1);
+        dataResource.setResourceState(1);
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         return BaseResultEntity.success("删除资源成功");
     }
