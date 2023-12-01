@@ -894,12 +894,9 @@ public class DataResourceService {
 
     public BaseResultEntity saveFusionResource(DataFusionCopyDto dto) {
         try {
-            // // TODO: 2023/11/30
-            log.info("step 3 同步保存的资源列表：--------------------");
             log.info(dto.getCopyPart());
             List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
             BaseResultEntity resultEntity = fusionResourceService.saveResource(dto.getOrganId(), dataResourceCopyVos);
-            log.info("step 4 保存结果如下：---------------------------------");
             log.info(JSONObject.toJSONString(resultEntity));
         }catch (Exception e){
             e.printStackTrace();

@@ -6,6 +6,8 @@ import com.primihub.biz.entity.event.RemoteDataResourceEvent;
 import com.primihub.biz.service.data.DataResourceService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,10 +21,11 @@ import java.util.*;
 @Service
 @Slf4j
 public class RemoteShareService {
-
-    private static final String remoteAddress = "http://192.168.99.12:31210";
+    private static final String remoteAddress2 = "http://192.168.99.12:31210";
+    private static final String remoteAddress1 = "http://27.185.28.52:32210";
     private static final String remoteUrl = "/dataShare/share";
-
+    @Resource
+    private Environment environment;
     @Resource(name="soaRestTemplate")
     private RestTemplate restTemplate;
     @Autowired
@@ -50,6 +53,17 @@ public class RemoteShareService {
     }
 
     public void transDataResource(Long resourceId, Map transMap, int count) {
+        String remoteAddress;
+        String profile = environment.getProperty(AbstractEnvironment.ACTIVE_PROFILES_PROPERTY_NAME);
+        log.info("当前的profile: {}", profile);
+        if (profile == null) {
+            profile = "";
+        }
+        if (profile.trim().startsWith("test") || profile.trim().startsWith("dev")) {
+            remoteAddress = remoteAddress2;
+        } else {
+            remoteAddress = remoteAddress1;
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<Map<String, Object>> request = new HttpEntity(transMap, headers);
@@ -64,10 +78,4 @@ public class RemoteShareService {
         }
     }
 
-    /**
-     * 将旧有的数据上传 todo
-     */
-    public void transBatchDataResourceBefore() {
-
-    }
 }
