@@ -192,7 +192,9 @@ public class SysOrganService {
 
     public BaseResultEntity joiningPartners(String gateway, String publicKey) {
         SysOrgan sysOrgan = new SysOrgan();
-        sysOrgan.setExamineState(0);
+        // 0待审核 1同意 2拒绝
+        // 改为不需要审核，直接连接，但是后续还是可以通过断开连接来断开
+        sysOrgan.setExamineState(1);
         sysOrgan.setEnable(0);
         sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         sysOrgan.setOrganGateway(gateway);
@@ -229,6 +231,8 @@ public class SysOrganService {
             }else {
                 sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
             }
+            // 无需审核时，需主动同步
+            sysAsyncService.applyForJoinNode(sysOrgan);
         }catch (Exception e){
             e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
@@ -250,9 +254,11 @@ public class SysOrganService {
             sysOrgan.setPublicKey(info.get("publicKey").toString());
             sysOrgan.setOrganId(info.get("organId").toString());
             sysOrgan.setOrganName(info.get("organName").toString());
-            sysOrgan.setExamineState(0);
+            // 同意
+            sysOrgan.setExamineState(1);
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+            sysAsyncService.applyForJoinNode(sysOrgan);
         }else {
             sysOrgan.setApplyId(info.get("applyId").toString());
             sysOrgan.setOrganGateway(info.get("gateway").toString());
@@ -261,12 +267,18 @@ public class SysOrganService {
             sysOrgan.setOrganName(info.get("organName").toString());
             if (info.containsKey("examineState")){
                 sysOrgan.setExamineState((Integer) info.get("examineState"));
+            } else {
+                // 默认同意
+                sysOrgan.setExamineState(1);
             }
             if (info.containsKey("examineMsg")){
                 sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+ info.get("examineMsg").toString());
             }
             if (info.containsKey("enable")){
                 sysOrgan.setEnable((Integer) info.get("enable"));
+            } else {
+                // 默认开启
+                sysOrgan.setEnable(0);
             }
             sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             sysAsyncService.applyForJoinNode(sysOrgan);
@@ -320,7 +332,8 @@ public class SysOrganService {
             sysOrgan.setEnable(0);
             sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         }
-        sysOrgan.setExamineState(examineState);
+        // 自动同意
+        sysOrgan.setExamineState(1);
         if (StringUtils.isNotBlank(examineMsg)){
             sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
         }
@@ -417,5 +430,54 @@ public class SysOrganService {
             sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
         }
         return BaseResultEntity.success("修改成功");
+    }
+
+    public BaseResultEntity joiningPartnersForResource(String gateway, String publicKey) {
+        SysOrgan sysOrgan = new SysOrgan();
+        sysOrgan.setExamineState(1);
+        sysOrgan.setEnable(0);
+        sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
+        sysOrgan.setOrganGateway(gateway);
+        sysOrgan.setPublicKey(publicKey);
+        SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+        Map<String,Object> map = new HashMap<>();
+        map.put("organId",sysLocalOrganInfo.getOrganId());
+        map.put("organName",sysLocalOrganInfo.getOrganName());
+        map.put("gateway",sysLocalOrganInfo.getGatewayAddress());
+        map.put("publicKey",sysLocalOrganInfo.getPublicKey());
+        if (sysLocalOrganInfo.getAddressInfo()!=null){
+            map.put("country",sysLocalOrganInfo.getAddressInfo().getCountry());
+            map.put("lat",sysLocalOrganInfo.getAddressInfo().getLat());
+            map.put("lon",sysLocalOrganInfo.getAddressInfo().getLon());
+        }
+        map.put("applyId",sysOrgan.getApplyId());
+        try {
+//            log.info(JSONObject.toJSONString(map));
+            BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
+            if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+            }
+            Map<String,Object> resultMap = (Map<String,Object>)baseResultEntity.getResult();
+            // 得到一个返回的机构id
+            sysOrgan.setOrganId(resultMap.get("organId").toString());
+            if (organConfiguration.getSysLocalOrganId().equals(sysOrgan.getOrganId())){
+                return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方不可以是本机构!!!");
+            }
+            sysOrgan.setOrganName(resultMap.get("organName").toString());
+            SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
+//            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
+            if (sysOrgan1!=null){
+                sysOrgan.setId(sysOrgan1.getId());
+                sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
+            }else {
+                sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
+            }
+            // 无需审核时，需主动同步
+            sysAsyncService.applyForJoinNode(sysOrgan);
+        }catch (Exception e){
+            e.printStackTrace();
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+        }
+        return BaseResultEntity.success();
     }
 }

@@ -12,12 +12,14 @@ import com.primihub.biz.convert.DataSourceConvert;
 import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.entity.data.dataenum.DataResourceAuthType;
+import com.primihub.biz.entity.data.dataenum.ResourceStateEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
+import com.primihub.biz.entity.event.RemoteDataResourceEvent;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -37,6 +39,7 @@ import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +79,8 @@ public class DataResourceService {
     private FusionResourceService fusionResourceService;
     @Autowired
     private TaskHelper taskHelper;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     public BaseResultEntity getDataResourceList(DataResourceReq req, Long userId){
         Map<String,Object> paramMap = new HashMap<>();
@@ -180,6 +185,11 @@ public class DataResourceService {
             map.put("resourceFusionId",dataResource.getResourceFusionId());
             map.put("resourceName",dataResource.getResourceName());
             map.put("resourceDesc",dataResource.getResourceDesc());
+
+            // 传送任务
+            if (dataResource.getResourceAuthType().equals(DataResourceAuthType.PUBLIC.getAuthType())) {
+                applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), null));
+            }
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
             e.printStackTrace();
@@ -229,13 +239,31 @@ public class DataResourceService {
         map.put("resourceId",dataResource.getResourceId());
         map.put("resourceName",dataResource.getResourceName());
         map.put("resourceDesc",dataResource.getResourceDesc());
+
+        if (Objects.equals(dataResource.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType()) || Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PRIVATE.getAuthType())) {
+            if (Objects.equals(req.getResourceAuthType(), DataResourceAuthType.PUBLIC.getAuthType())) {
+                RemoteDataResourceEvent remoteDataResourceEvent = new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.AVAILABLE.getStateType());
+                applicationContext.publishEvent(remoteDataResourceEvent);
+                log.info("spring event publish : {}", JSONObject.toJSONString(remoteDataResourceEvent));
+            } else {
+                RemoteDataResourceEvent remoteDataResourceEvent = new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType());
+                applicationContext.publishEvent(new RemoteDataResourceEvent(dataResource.getResourceId(), ResourceStateEnum.NOT_AVAILABLE.getStateType()));
+                log.info("spring event publish : {}", JSONObject.toJSONString(remoteDataResourceEvent));
+            }
+        }
         return BaseResultEntity.success(map);
     }
 
     public BaseResultEntity getDataResource(String resourceId) {
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
         if (dataResource == null){
-            dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+            try {
+                long l = Long.parseLong(resourceId);
+                dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+            } catch (Exception e) {
+                log.info("找不到资源：{}", resourceId);
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+            }
         }
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
@@ -456,8 +484,11 @@ public class DataResourceService {
     }
 
     public Object findFusionCopyResourceList(Long startOffset, Long endOffset){
+        log.info("本方机构：{}, 查找fusionCopy的， startOffset :{}, endOffset:{}", organConfiguration.getSysLocalOrganName(), startOffset, endOffset);
         List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
+        log.info("本地查找出的资源: {}", resourceList.size());
         Set<String> ids = resourceList.stream().map(DataResource::getResourceFusionId).collect(Collectors.toSet());
+        log.info("远程查找备份的资源ids: {}", ids);
         BaseResultEntity result = fusionResourceService.getCopyResource(ids);
         log.info(JSONObject.toJSONString(result));
         return result.getResult();
@@ -685,6 +716,8 @@ public class DataResourceService {
             dataResourcePrRepository.editResource(dataResource);
             fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(dataResource.getResourceId(), dataResource.getResourceId()));
             singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
+
+            applicationContext.publishEvent(new RemoteDataResourceEvent(resourceId, null));
         }
         return BaseResultEntity.success();
     }
@@ -881,6 +914,58 @@ public class DataResourceService {
         }
         singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
         return BaseResultEntity.success();
+    }
+
+    /**
+     * 组装传输实体
+     * @param resourceId
+     * @return
+     */
+    public Map getDataResourceToTransfer(Long resourceId, Integer resourceState) {
+        DataResource dataResource = dataResourceRepository.queryDataResourceById(resourceId);
+        if (dataResource == null) {
+            return null;
+        }
+        if (resourceState != null) {
+            dataResource.setResourceState(resourceState);
+        }
+        List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(resourceId);
+        DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource, organConfiguration.getSysLocalOrganId() ,organConfiguration.getSysLocalOrganName());
+        dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
+                .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
+                .collect(Collectors.toList());
+        Map<String, Object> map = new HashMap<>();
+        try {
+            // 数据库格式或者是csv格式
+            if (dataResource.getResourceSource() == 2) {
+                DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+                log.info("{}-{}", dataResource.getDbId(), JSONObject.toJSONString(dataSource));
+                if (dataSource != null) {
+                    BaseResultEntity baseResultEntity = dataSourceService.dataSourceTableDetails(dataSource);
+                    if (baseResultEntity.getCode() == 0) {
+                        map.putAll((Map<String, Object>) baseResultEntity.getResult());
+                    }
+                }
+            } else {
+                List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(dataResource.getUrl(), DataConstant.READ_DATA_ROW);
+                map.put("dataList", csvData);
+            }
+        } catch (Exception e) {
+            log.info("资源id:{}-文件读取失败：{}", dataResource.getResourceId(), e.getMessage());
+            map.put("dataList", new ArrayList());
+        }
+        map.put("resource", dataResourceVo);
+        // 不需要获取授权信息
+        map.put("fieldList", dataFileFieldList);
+        Map<String, String> nodeInfoMap = new HashMap<String, String>() {
+            {
+                put("gateway", organConfiguration.getSysLocalOrganInfo().getGatewayAddress());
+                put("publicKey", organConfiguration.getSysLocalOrganInfo().getPublicKey());
+            }
+        };
+        map.put("nodeInfo", JSON.toJSONString(nodeInfoMap));
+        return map;
     }
 }
 

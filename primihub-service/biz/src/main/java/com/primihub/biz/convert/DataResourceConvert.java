@@ -121,6 +121,37 @@ public class DataResourceConvert {
         vo.setResourceFusionId(po.getResourceFusionId());
         return vo;
     }
+
+    public static DataResourceVo dataResourcePoConvertVo(DataResource po, String organFusionId, String organName){
+        DataResourceVo vo = new DataResourceVo();
+        vo.setCreateDate(po.getCreateDate());
+        vo.setDbId(po.getDbId());
+        vo.setFileId(po.getFileId());
+        vo.setFileSize(po.getFileSize());
+        vo.setFileSuffix(po.getFileSuffix());
+        vo.setFileColumns(po.getFileColumns());
+        vo.setFileRows(po.getFileRows());
+        vo.setFileHandleStatus(po.getFileHandleStatus());
+        vo.setFileContainsY(po.getFileContainsY());
+        vo.setFileYRows(po.getFileYRows());
+        vo.setFileYRatio(po.getFileYRatio());
+        vo.setOrganId(po.getOrganId());
+        vo.setOrganName(organName);
+        vo.setOrganFusionId(organFusionId);
+        vo.setResourceAuthType(po.getResourceAuthType());
+        vo.setResourceSource(po.getResourceSource());
+        vo.setResourceDesc(po.getResourceDesc());
+        vo.setResourceName(po.getResourceName());
+        vo.setResourceId(po.getResourceId());
+        vo.setResourceNum(po.getResourceNum());
+        vo.setUserId(po.getUserId());
+        vo.setUrl(po.getUrl());
+        vo.setFileHandleField(StringUtils.isBlank(po.getFileHandleField())?new String[]{}:po.getFileHandleField().split(","));
+        vo.setResourceState(po.getResourceState());
+        vo.setResourceHashCode(po.getResourceHashCode());
+        vo.setResourceFusionId(po.getResourceFusionId());
+        return vo;
+    }
     public static DataFileFieldVo DataFileFieldPoConvertVo(DataFileField fileField){
         DataFileFieldVo dataFileFieldVo = new DataFileFieldVo();
         dataFileFieldVo.setFieldId(fileField.getFieldId());

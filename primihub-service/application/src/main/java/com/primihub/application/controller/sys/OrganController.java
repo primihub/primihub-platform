@@ -64,7 +64,32 @@ public class OrganController {
         if (StringUtils.isBlank(publicKey)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
         }
+        // 解决 "+" 在传输中替换为 " " 的问题
+        if (publicKey.contains(" ")) {
+            publicKey = publicKey.replace(" ", "+");
+        }
         return sysOrganService.joiningPartners(gateway,publicKey);
+    }
+
+    /**
+     * 加入合作方
+     * @param gateway
+     * @param publicKey
+     * @return
+     */
+    @RequestMapping("joiningPartnersForResource")
+    public BaseResultEntity joiningPartnersForResource(String gateway,String publicKey){
+        if (StringUtils.isBlank(gateway)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
+        }
+        if (StringUtils.isBlank(publicKey)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
+        }
+        // 解决 "+" 在传输中替换为 " " 的问题
+        if (publicKey.contains(" ")) {
+            publicKey = publicKey.replace(" ", "+");
+        }
+        return sysOrganService.joiningPartnersForResource(gateway,publicKey);
     }
 
     /**
