@@ -8,6 +8,18 @@
     </div>
     <!--右侧工具栏-->
     <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <el-dialog
+      title="错误提示"
+      :visible.sync="dialogVisible"
+      width="30%"
+      :close-on-click-modal="false"
+    >
+      <h3><i class="el-icon-error error-icon" />数据资源不可用</h3>
+      <p>{{ runTaskErrorMessage }}</p>
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -129,6 +141,8 @@ export default {
   },
   data() {
     return {
+      dialogVisible: false,
+      runTaskErrorMessage: '',
       defaultComponentsConfig: [],
       defaultConfig: [],
       showDataConfig: false,
@@ -807,10 +821,15 @@ export default {
       }
       runTaskModel({ modelId: this.currentModelId }).then(res => {
         if (res.code !== 0) {
-          this.$message({
-            message: res.msg,
-            type: 'error'
-          })
+          if (res.code === 1007) {
+            this.dialogVisible = true
+            this.runTaskErrorMessage = res.msg
+          } else {
+            this.$message({
+              message: res.msg,
+              type: 'error'
+            })
+          }
           return
         } else {
           this.currentTaskId = res.result.taskId
@@ -1055,7 +1074,6 @@ export default {
       }
       return obj
     },
-    // 保存模板文件
     async saveFn() { // 0 草稿
       const data = this.graph.toJSON()
       const { cells } = data
@@ -1289,8 +1307,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+::v-deep .el-dialog__body{
+  padding: 10px 20px;
+  p{
+    line-height: 1.5;
+  }
+}
 ::v-deep .x6-graph-scroller{
   overflow-x: hidden;
+}
+.error-icon{
+  color: #F56C6C;
+  margin-right: 5px;
 }
 .canvas{
   display: flex;

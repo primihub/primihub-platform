@@ -134,19 +134,35 @@
         <el-table-column
           label="操作"
           fixed="right"
-          width="160"
+          width="200"
           align="center"
         >
           <template slot-scope="{row}">
             <el-button type="text" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
             <el-button v-if="hasEditPermission && row.resourceState === 0" type="text" @click="toResourceEditPage(row.resourceId)">编辑</el-button>
             <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+            <el-button type="text" @click="handleResourceDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
-
+    <el-dialog
+      title="删除确认"
+      :visible.sync="dialogVisible"
+      width="40%"
+      :close-on-click-modal="false"
+      @before-close="cancelDelete"
+    >
+      <h3>应用该数据的项目将受影响，您确定删除？</h3>
+      <p>删除后，项目中将不能使用该资源；但已项目里已运行的任务，其结果将不受影响。</p>
+      <p class="margin-bottom-5 margin-top-5">请输入资源名称再次确认</p>
+      <el-input v-model="deleteResourceName" placeholder="请输入资源名称，名称一致才可删除" />
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="cancelDelete">取 消</el-button>
+        <el-button type="primary" @click="confirmDelete">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -160,6 +176,7 @@ export default {
   components: { Pagination, TagsSelect },
   data() {
     return {
+      dialogVisible: false,
       query: {
         fileContainsY: '', resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0, resourceAuthType: ''
       },
@@ -195,7 +212,8 @@ export default {
       pageNo: 1,
       pageSize: 10,
       resourceName: '',
-      isReset: false
+      isReset: false,
+      deleteResourceName: ''
     }
   },
   computed: {
@@ -269,23 +287,30 @@ export default {
         this.fetchData()
       }
     },
-    handleResourceDelete(resourceId) {
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.confirmDelete(resourceId)
-        this.fetchData()
-      }).catch(() => {})
+    handleResourceDelete({ resourceId, resourceName }) {
+      this.dialogVisible = true
+      this.resourceId = resourceId
+      this.resourceName = resourceName
     },
-    confirmDelete(resourceId) {
-      deleteResource(resourceId).then(res => {
+    cancelDelete() {
+      this.dialogVisible = false
+      this.deleteResourceName = ''
+      this.resourceId = ''
+      this.resourceName = ''
+    },
+    confirmDelete() {
+      if (this.deleteResourceName !== this.resourceName) {
+        this.$message.error('资源名称不一致，请核验')
+        return
+      }
+      deleteResource(this.resourceId).then(res => {
         if (res.code === 0) {
           this.$message({
             message: '删除成功',
             type: 'success'
           })
+          this.dialogVisible = false
+          this.fetchData()
         } else {
           this.$message({
             message: res.msg,
