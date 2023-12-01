@@ -259,7 +259,13 @@ public class DataResourceService {
     public BaseResultEntity getDataResource(String resourceId) {
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
         if (dataResource == null){
-            dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+            try {
+                long l = Long.parseLong(resourceId);
+                dataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(resourceId));
+            } catch (Exception e) {
+                log.info("找不到资源：{}", resourceId);
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
+            }
         }
         if (dataResource == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
