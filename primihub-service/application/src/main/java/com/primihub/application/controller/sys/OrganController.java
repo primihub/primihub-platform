@@ -77,7 +77,7 @@ public class OrganController {
      * @param publicKey
      * @return
      */
-    @RequestMapping("joiningPartnersForResource")
+    @GetMapping("joiningPartnersForResource")
     public BaseResultEntity joiningPartnersForResource(String gateway,String publicKey){
         if (StringUtils.isBlank(gateway)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
