@@ -306,14 +306,12 @@ export default {
       }
       deleteResource(this.resourceId).then(res => {
         if (res.code === 0) {
-          setTimeout(() => {
-            this.$message({
-              message: '删除成功',
-              type: 'success'
-            })
-            this.fetchData()
-            this.dialogVisible = false
-          }, 3000)
+          this.$message({
+            message: '删除成功',
+            type: 'success'
+          })
+          this.fetchData()
+          this.dialogVisible = false
         } else {
           this.$message({
             message: res.msg,
