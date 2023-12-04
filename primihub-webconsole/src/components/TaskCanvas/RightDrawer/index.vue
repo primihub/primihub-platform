@@ -437,7 +437,9 @@ export default {
             this.$message.error('请先选择数据集')
           } else {
             this.getFeaturesItem()
-            this.setFeaturesValue()
+            if (this.options.isEditable) {
+              this.handleChange()
+            }
           }
         } else if (newVal.componentCode === FIT_TRANSFORM) {
           this.getDataSetComValue()

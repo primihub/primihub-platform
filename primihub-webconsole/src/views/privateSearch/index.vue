@@ -58,7 +58,7 @@
         <el-table-column
           prop="organName"
           label="参与机构"
-          align="center"
+          min-width="100"
         />
         <el-table-column
           prop="resourceName"
@@ -86,7 +86,7 @@
           min-width="150"
         >
           <template slot-scope="{row}">
-            {{ row.searchKeyword && row.searchKeyword.length > 0 ? row.searchKeyword.join('，') : row.retrievalId }}
+            <el-tooltip :content="row.searchKeyword && row.searchKeyword.length > 0 ? row.searchKeyword.join('，') : row.retrievalId" placement="top"><span>{{ row.searchKeyword && row.searchKeyword.length > 0 ? row.searchKeyword.join('，') : row.retrievalId }}</span></el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="发起时间" prop="createDate" min-width="120px">
@@ -329,6 +329,13 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+::v-deep .el-table .cell{
+  word-break: break-all;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
 ::v-deep .el-input--suffix .el-input__inner{
   padding-right: 0;
 }

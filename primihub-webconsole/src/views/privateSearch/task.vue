@@ -98,7 +98,7 @@
                     <div class="label">关键词</div>
                     <div class="flex query-input" @keyup.enter="handleKeyInputConfirm(index)">
                       <div v-for="(keyword,i) in item.keywords" :key="i" class="input-item" style="flex: 1;">
-                        <el-input v-model="keyword.value" maxlength="30" :placeholder="`请输入${keyword.fieldDesc}`" />
+                        <el-input v-model="keyword.value" maxlength="30" placeholder="请输入关键词" />
                       </div>
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export default {
       this.checkQuery(index, keywordValue)
       if (this.isOK) {
         this.searchGroup[index].query.push(keywordValue)
-        this.searchGroup[index].tagValue.push(keywordValue.join(','))
+        this.searchGroup[index].tagValue.push(keywordValue.join(' | '))
         // 清空关键词输入
         this.searchGroup[index].keywords.map(item => {
           item.value = ''
@@ -590,12 +590,6 @@ export default {
   }
 }
 .group{
-  // background-color: #fcfcfc;
-  // border-radius: 4px;
-
-  // border-top: 1px solid #dcdfe6;
-  // border-bottom: 1px solid #dcdfe6;
-
   &-item{
     flex: 1;
     background-color: #f8f8f9;
@@ -605,7 +599,7 @@ export default {
 .tips{
   color: #999;
   padding-left:110px;
-  margin-right: 112px;
+  margin-right: 88px;
   line-height: 1.5;
   background-color: #f8f8f9;
   height: 30px;
@@ -629,9 +623,9 @@ export default {
 .search-button {
   background-color: #f6f6f6;
   border-radius: 6px;
-  padding: 0px 15px;
-  height: 40px;
-  line-height: 40px;
+  padding: 0px 10px;
+  height: 35px;
+  line-height: 35px;
   margin-left: 10px;
 }
 .query-input{
@@ -678,7 +672,7 @@ export default {
     height: 40px;
     line-height: 40px;
     padding: 3px 16px 3px 16px;
-    background-color: #F6F6F6;
+    background-color: #fff;
     margin-right: 10px;
     color: #666;
     border-radius: 5px;
