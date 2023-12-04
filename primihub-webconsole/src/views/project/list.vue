@@ -226,7 +226,7 @@ export default {
         label: '部分可用'
       }],
       organList: [],
-      activeIndex: '0',
+      activeIndex: '',
       listLoading: false,
       searchForm: {
         projectId: '',

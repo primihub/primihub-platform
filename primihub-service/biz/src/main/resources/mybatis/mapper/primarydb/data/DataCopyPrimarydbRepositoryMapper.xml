@@ -2,6 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository">
     <insert id="saveCopyInfo" parameterType="com.primihub.biz.entity.data.po.DataFusionCopyTask">
+        <selectKey order="AFTER" resultType="long" keyProperty="id">
+            select last_insert_id()
+        </selectKey>
         insert into data_fusion_copy_task (task_type,current_offset,target_offset,task_table,server_address,organ_id,latest_error_msg,is_del,c_time,u_time)
         values
             (#{taskType},#{currentOffset},#{targetOffset},#{taskTable},#{serverAddress},#{organId},#{latestErrorMsg},0,now(),now())

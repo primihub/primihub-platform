@@ -450,6 +450,7 @@ export default {
       // 居中显示画布
       // this.graph.centerContent({ padding: { left: 200, top: -200 }})
       this.projectId = Number(this.$route.params.id) || 0
+      this.$emit('mounted')
     },
     registerStartNode() {
       this.startNode = this.components.filter(item => item.componentCode === 'start')[0]
@@ -648,17 +649,20 @@ export default {
     checkModelStatisticsValidated(jointStatisticalCom) {
       let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
       featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
-      console.log('featureValues', featureValues)
-      const emptyType = featureValues.find(item => item.type === '')
-      const emptyFeature = featureValues.find(item => item.features[0].checked.length === 0)
-      if (emptyFeature) {
-        this.$message.error('联合统计所选统计项特征不能为空，请核验')
-        return false
-      } else if (emptyType) {
-        this.$message.error('联合统计所选统计项不能为空，请核验')
-        return false
-      } else {
-        return true
+      for (let i = 0; i < featureValues.length; i++) {
+        const feature = featureValues[i]
+        if (feature.type === '') {
+          this.$message.error('联合统计所选统计项不能为空，请核验')
+          return false
+        } else if (feature.features.find(item => item.checked.length === 0)) {
+          this.$message.error('联合统计所选统计项特征不能为空，请核验')
+          return false
+        } else if (feature.features.length < 3) {
+          this.$message.error('联合统计需选择三方特征，请核验')
+          return false
+        } else {
+          return true
+        }
       }
     },
     checkRunValidated() {

@@ -20,7 +20,7 @@
         <el-descriptions-item label="特征量">{{ resource.resourceColumnCount }}</el-descriptions-item>
         <el-descriptions-item label="正例样本数量">{{ resource.resourceYRowsCount ? resource.resourceYRowsCount : 0 }}</el-descriptions-item>
         <el-descriptions-item label="正例样本比例">{{ resource.resourceYRatio ? resource.resourceYRatio : 0 }}%</el-descriptions-item>
-        <el-descriptions-item label="数据来源">{{ resource.resourceAuthType | sourceFilter }}</el-descriptions-item>
+        <el-descriptions-item label="数据来源">{{ resource.resourceType | sourceFilter }}</el-descriptions-item>
         <el-descriptions-item label="是否包含Y值">{{ resource.resourceContainsY === 1? '是': '否' }}</el-descriptions-item>
       </el-descriptions>
     </div>

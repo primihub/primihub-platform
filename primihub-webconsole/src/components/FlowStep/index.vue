@@ -1,9 +1,9 @@
 <template>
-  <div class="step-container">
+  <div class="step-container" @mouseover="handleStepOver" @mouseleave="showError = false">
     <el-steps :active="active" simple finish-status="success" process-status="wait">
-      <el-step v-for="(step) in data" :key="step.step" icon="el-icon-loading" :title="step.title" :status="step.status" @mouseover.native="handleStepOver(step)" @mouseleave.native="showError = false" />
+      <el-step v-for="(step) in data" :key="step.step" icon="el-icon-loading" :title="step.title" :status="step.status" />
     </el-steps>
-    <div v-if="showError" class="task-error">
+    <div v-if="showError" class="task-error" @mouseenter="showError = true">
       <p>错误信息：</p>
       <p v-for="(item,index) in errorText" :key="index">
         {{ item }}
@@ -39,11 +39,6 @@ export default {
       taskError: ''
     }
   },
-
-  mounted() {
-
-  },
-
   methods: {
     handleStepOver() {
       if (this.taskState !== 3) {
@@ -57,16 +52,23 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.step-container{
+  cursor: pointer;
+}
 .task-error{
-  width: 300px;
+  width: 320px;
   padding: 10px;
   color: #fff;
   background-color: rgba($color: #000000, $alpha: .7);
   position: absolute;
   top: 40px;
-  left: calc((100% / 2) - 100px);
+  max-height: 280px;
+  left: calc((100% / 2) - 125px);
   border-radius: 4px;
   font-size: 12px;
+  word-break: break-all;
+  overflow-y: scroll;
+  margin-bottom: 20px;
 }
 .el-steps--simple{
   margin:  5px 0;
