@@ -52,7 +52,7 @@
         </el-form-item>
       </el-form>
     </div>
-    <div class="resource">
+    <div v-loading="loading" class="resource">
       <el-table
         :data="resourceList"
         :row-class-name="tableRowDisabled"
@@ -176,6 +176,7 @@ export default {
   components: { Pagination, TagsSelect },
   data() {
     return {
+      loading: false,
       dialogVisible: false,
       query: {
         fileContainsY: '', resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0, resourceAuthType: ''
@@ -305,12 +306,14 @@ export default {
       }
       deleteResource(this.resourceId).then(res => {
         if (res.code === 0) {
-          this.$message({
-            message: '删除成功',
-            type: 'success'
-          })
-          this.dialogVisible = false
-          this.fetchData()
+          setTimeout(() => {
+            this.$message({
+              message: '删除成功',
+              type: 'success'
+            })
+            this.fetchData()
+            this.dialogVisible = false
+          }, 3000)
         } else {
           this.$message({
             message: res.msg,
@@ -349,6 +352,7 @@ export default {
       this.searchName = searchName
     },
     async fetchData() {
+      this.loading = true
       this.resourceList = []
       const { resourceName, tag, userName, resourceSource, selectTag, resourceAuthType, fileContainsY } = this.query
       const resourceId = Number(this.query.resourceId)
@@ -382,6 +386,7 @@ export default {
         }
         this.isReset = false
       }
+      this.loading = false
     },
     handlePagination(data) {
       this.pageNo = data.page

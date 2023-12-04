@@ -219,15 +219,12 @@ export default {
       }).then(() => {
         deleteTask(row.taskId).then(res => {
           if (res.code === 0) {
-            const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
-            if (posIndex !== -1) {
-              this.dataList.splice(posIndex, 1)
-            }
             this.$message({
               message: '删除成功',
               type: 'success',
               duration: 1000
             })
+            this.fetchData()
             clearInterval(this.timer)
           }
         })
