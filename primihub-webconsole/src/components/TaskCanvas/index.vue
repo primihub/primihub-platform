@@ -854,7 +854,16 @@ export default {
         this.taskTimer = window.setInterval(() => {
           setTimeout(this.getTaskModelComponent(), 0)
         }, 1500)
+      } else if (res.code === 1007) {
+        this.dialogVisible = true
+        this.runTaskErrorMessage = res.msg
+      } else {
+        this.$message({
+          message: res.msg,
+          type: 'error'
+        })
       }
+      this.$emit('complete')
     },
     getTaskModelComponent() {
       getTaskModelComponent({ taskId: this.taskId }).then(res => {
