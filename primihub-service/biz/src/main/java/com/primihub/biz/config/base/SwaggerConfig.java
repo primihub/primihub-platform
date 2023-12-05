@@ -6,11 +6,12 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.bind.annotation.RequestMethod;
-import springfox.documentation.builders.*;
-import springfox.documentation.schema.ModelRef;
+import springfox.documentation.builders.ApiInfoBuilder;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.builders.ResponseMessageBuilder;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
-import springfox.documentation.service.Parameter;
 import springfox.documentation.service.ResponseMessage;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
@@ -18,7 +19,6 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 @Configuration
 @EnableSwagger2
@@ -28,8 +28,6 @@ public class SwaggerConfig {
     private static ApiInfo apiInfo;
 
     private static List<ResponseMessage> responseMessageList =  new ArrayList<>();
-
-    private static List<Parameter> params = new ArrayList<>();
 
     static {
         apiInfo = new ApiInfoBuilder()
@@ -41,24 +39,6 @@ public class SwaggerConfig {
         for (BaseResultEnum value : BaseResultEnum.values()) {
             responseMessageList.add(new ResponseMessageBuilder().code(value.getReturnCode()).message(value.getMessage()).build());
         }
-        params.add(new ParameterBuilder().name("token")
-                .description("请求令牌")
-                .modelRef(new ModelRef("String"))
-                .parameterType("header")
-                .defaultValue("excalibur_forever_ABCDEFGHIJKLMN")
-                .required(false).build());
-        params.add(new ParameterBuilder().name("timestamp")
-                .description("时间戳")
-                .modelRef(new ModelRef("String"))
-                .parameterType("header")
-                .defaultValue(System.currentTimeMillis()+"")
-                .required(false).build());
-        params.add(new ParameterBuilder().name("nonce")
-                .description("随机数")
-                .modelRef(new ModelRef("String"))
-                .parameterType("header")
-                .defaultValue((new Random().nextInt(900) + 100)+"")
-                .required(false).build());
     }
 
     @Bean
@@ -70,8 +50,7 @@ public class SwaggerConfig {
                 .paths(PathSelectors.any())
                 .build()
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList)
-                .globalOperationParameters(params);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList);
     }
 
     @Bean
@@ -84,8 +63,7 @@ public class SwaggerConfig {
                 .build()
                 .groupName("sys 系统接口")
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList)
-                .globalOperationParameters(params);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList);
     }
     @Bean
     public Docket dataApi() {
@@ -97,8 +75,7 @@ public class SwaggerConfig {
                 .build()
                 .groupName("data 业务接口")
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList)
-                .globalOperationParameters(params);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList);
     }
 
     @Bean
@@ -111,8 +88,7 @@ public class SwaggerConfig {
                 .build()
                 .groupName("test 测试接口")
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList)
-                .globalOperationParameters(params);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList);
     }
 
     @Bean
@@ -125,8 +101,7 @@ public class SwaggerConfig {
                 .build()
                 .groupName("share 协同接口")
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList)
-                .globalOperationParameters(params);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList);
     }
 
     @Bean
@@ -139,8 +114,7 @@ public class SwaggerConfig {
                 .build()
                 .groupName("schedule 调度接口")
                 .globalResponseMessage(RequestMethod.GET,responseMessageList)
-                .globalResponseMessage(RequestMethod.POST,responseMessageList)
-                .globalOperationParameters(params);
+                .globalResponseMessage(RequestMethod.POST,responseMessageList);
     }
 
 }

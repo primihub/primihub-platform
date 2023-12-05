@@ -69,36 +69,6 @@ public class SwaggerGatewayFilterFactory extends AbstractGatewayFilterFactory {
                         })
                 );
             }
-            HttpHeaders headers = exchange.getRequest().getHeaders();
-            String timestamp=headers.getFirst(BaseParamEnum.TIMESTAMP.getColumnName());
-            if(timestamp==null|| "".equals(timestamp.trim())) {
-                return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TIMESTAMP);
-            }
-            String nonce=headers.getFirst(BaseParamEnum.NONCE.getColumnName());
-            if(nonce==null|| "".equals(nonce.trim())) {
-                return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.NONCE);
-            }
-
-            String token=headers.getFirst(BaseParamEnum.TOKEN.getColumnName());
-            if(!(baseConfiguration.getTokenValidateUriBlackList()!=null
-                    && baseConfiguration.getTokenValidateUriBlackList().contains(currentRawPath))
-                    &&(token==null|| "".equals(token.trim()))){
-                return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.TOKEN);
-            }
-            String sign=headers.getFirst(BaseParamEnum.SIGN.getColumnName());
-            if((baseConfiguration.getNeedSignUriList()!=null
-                    && baseConfiguration.getNeedSignUriList().contains(currentRawPath))
-                    &&(sign==null|| "".equals(sign.trim()))){
-                return GatewayFilterFactoryTool.writeFailureJsonToResponse(exchange,BaseResultEnum.LACK_OF_PARAM,BaseParamEnum.SIGN);
-            }
-            exchange.getAttributes().put(BaseParamEnum.TIMESTAMP.getColumnName(),timestamp);
-            exchange.getAttributes().put(BaseParamEnum.NONCE.getColumnName(),nonce);
-            if(token!=null){
-                exchange.getAttributes().put(BaseParamEnum.TOKEN.getColumnName(),token);
-            }
-            if(sign!=null){
-                exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
-            }
             return chain.filter(exchange).then(
                     Mono.fromRunnable(()->{
                         Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
