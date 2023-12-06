@@ -10,12 +10,12 @@
                 <el-input v-model="form.taskName" style="flex: 1;" maxlength="32" show-word-limit placeholder="请输入任务名称,限32字" />
               </div>
             </el-form-item>
-            <div class="dialog-con" style="width: calc(100% - 155px);">
+            <div class="dialog-con" style="width: calc(100% - 105px);">
               <el-form-item prop="resourceName">
                 <div class="flex">
                   <div class="label">选择查询资源</div>
-                  <el-row type="flex" :gutter="10" style="flex: 1;">
-                    <el-col :span="12">
+                  <el-row type="flex" :gutter="10" style="flex: 1;align-items: center;">
+                    <el-col :span="11">
                       <el-form-item prop="organId">
                         <el-select v-model="form.organId" style="width: 100%" placeholder="请选择机构" clearable @change="handleOrganChange">
                           <el-option
@@ -27,98 +27,124 @@
                         </el-select>
                       </el-form-item>
                     </el-col>
-                    <el-col :span="12">
+                    <el-col :span="11">
                       <el-form-item>
                         <div class="custom-input" :style="{'color': resourceName === '请选择机构下资源' ? '#C0C4CC' : '#606266'}" :class="{'disabled': form.organId === '' }" @click="openDialog"><span class="resource-name">{{ resourceName }}</span><i class="el-icon-arrow-down" /></div>
-                        <el-popover
-                          class="popover-container"
-                          placement="top-start"
-                          title="隐匿查询步骤:"
-                          width="400"
-                          trigger="hover"
-                        >
-                          <div>
-                            <p>(1)添加资源：被查询机构先在其节点里【资源管理】菜单下添加数据资源</p>
-                            <p>(2)资源授权：被查询机构向查询发起方授权资源权限，设置资源公开或指定机构可见</p>
-                            <p>(3)发起查询：查询发起方在本方【隐匿查询】菜单下发起隐匿查询任务，并查看结果。</p>
-                            <p>您可以通过搜索框查找机构开放给您的资源，如您未找到，请到对应机构先添加资源。</p>
-                          </div>
-                          <div slot="reference">
-                            <svg-icon icon-class="problem" />
-                          </div>
-                        </el-popover>
+
                       </el-form-item>
+                    </el-col>
+                    <el-col :span="2">
+                      <el-popover
+                        class="popover-container"
+                        placement="bottom"
+                        title="隐匿查询步骤:"
+                        width="400"
+                        trigger="hover"
+                      >
+                        <div>
+                          <p>(1)添加资源：被查询机构先在其节点里【资源管理】菜单下添加数据资源</p>
+                          <p>(2)资源授权：被查询机构向查询发起方授权资源权限，设置资源公开或指定机构可见</p>
+                          <p>(3)发起查询：查询发起方在本方【隐匿查询】菜单下发起隐匿查询任务，并查看结果。</p>
+                          <p>您可以通过搜索框查找机构开放给您的资源，如您未找到，请到对应机构先添加资源。</p>
+                        </div>
+                        <div slot="reference">
+                          <svg-icon icon-class="problem" />
+                        </div>
+                      </el-popover>
                     </el-col>
                   </el-row>
                 </div>
-
               </el-form-item>
               <el-form-item v-if="form.selectResources" class="resource-container" label="已选资源" prop="selectResources">
                 <ResourceItemSimple :data="selectResources" :show-close="true" class="select-item" @delete="handleDelete" />
               </el-form-item>
             </div>
-            <div v-for="(item, index) in searchGroup" :key="index" class="group flex">
-              <div class="group-item">
-                <el-form-item prop="key">
-                  <div class="flex">
-                    <div class="label">查询主键</div>
-                    <el-select v-model="item.key" style="width: 100%;flex: 1;" multiple no-data-text="暂无数据" placeholder="请选择查询主键" clearable @change="handleKeyChange($event,index)">
-                      <el-option
-                        v-for="(options,i) in primaryKeysOptions"
-                        :key="i"
-                        :label="options.fieldName"
-                        :value="options.fieldName"
-                      >
-                        <template slot="default">
-                          <div class="option-item">
-                            <template v-if="options.fieldDesc">
-                              <div class="option-label" :style="{'max-width': options.fieldDesc ? '200px' : '100%'}">
-                                <el-tooltip class="item" effect="dark" :content="options.fieldName" placement="top-start">
-                                  <span>{{ options.fieldName }}</span>
-                                </el-tooltip>
-                              </div>
-                              <div class="option-desc">
-                                <el-tooltip class="item" effect="dark" :content="options.fieldDesc" placement="top-start">
-                                  <span>{{ options.fieldDesc ? options.fieldDesc.length>8 ? options.fieldDesc.slice(0,8)+'...' : options.fieldDesc : '' }}</span>
-                                </el-tooltip>
-                              </div>
-                            </template>
+            <div v-for="(item, index) in searchGroup" :key="index" class="group">
+              <div class="flex">
+                <div class="group-item">
+                  <el-form-item prop="key">
+                    <div class="flex">
+                      <div class="label">查询主键</div>
+                      <el-select v-model="item.key" style="width: 100%;flex: 1;" multiple no-data-text="暂无数据" placeholder="请选择查询主键" clearable @change="handleKeyChange($event,index)">
+                        <el-option
+                          v-for="(options,i) in primaryKeysOptions"
+                          :key="i"
+                          :label="options.fieldName"
+                          :value="options.fieldName"
+                        >
+                          <template slot="default">
+                            <div class="option-item">
+                              <template v-if="options.fieldDesc">
+                                <div class="option-label" :style="{'max-width': options.fieldDesc ? '200px' : '100%'}">
+                                  <el-tooltip class="item" effect="dark" :content="options.fieldName" placement="top-start">
+                                    <span>{{ options.fieldName }}</span>
+                                  </el-tooltip>
+                                </div>
+                                <div class="option-desc">
+                                  <el-tooltip class="item" effect="dark" :content="options.fieldDesc" placement="top-start">
+                                    <span>{{ options.fieldDesc ? options.fieldDesc.length>8 ? options.fieldDesc.slice(0,8)+'...' : options.fieldDesc : '' }}</span>
+                                  </el-tooltip>
+                                </div>
+                              </template>
 
-                            <div v-else>
-                              <span class="option-label">{{ options.fieldName }}</span>
+                              <div v-else>
+                                <span class="option-label">{{ options.fieldName }}</span>
+                              </div>
                             </div>
-                          </div>
-                        </template>
-                      </el-option>
-                    </el-select>
-                  </div>
-                </el-form-item>
-                <el-form-item prop="query">
-                  <div class="flex" style="width: 100%;">
-                    <div class="label">关键词</div>
-                    <div class="flex query-input" @keyup.enter="handleKeyInputConfirm(index)">
-                      <div v-for="(keyword,i) in item.keywords" :key="i" class="input-item" style="flex: 1;">
-                        <el-input v-model="keyword.value" maxlength="30" placeholder="请输入关键词" />
+                          </template>
+                        </el-option>
+                      </el-select>
+                    </div>
+
+                  </el-form-item>
+                  <el-form-item>
+                    <p v-if="item.key.length >= 2" class="tips">同时满足以上{{ item.key.length }}个查询主键的条件查询</p>
+                  </el-form-item>
+                  <el-form-item prop="query">
+                    <div class="flex" style="width: 100%;">
+                      <div class="label">关键词</div>
+                      <div class="flex query-input" @keyup.enter="handleKeyInputConfirm(index)">
+                        <div v-for="(keyword,i) in item.keywords" :key="i" class="input-item" style="flex: 1;">
+                          <el-input v-model="keyword.value" maxlength="30" placeholder="请输入关键词" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div class="tag-container">
-                    <div v-for="(tag, i) in item.tagValue" :key="i" class="tag-item">
-                      {{ tag }}
-                      <i class="el-icon-circle-close icon-pd-10" @click="removeTag(i,index)" />
+                    <el-form-item>
+                      <p class="tips">基于关键词的精准查询，输入关键词后Enter即可。</p>
+                    </el-form-item>
+                    <div class="tag-container">
+                      <div v-for="(tag, i) in item.tagValue" :key="i" class="tag-item">
+                        {{ tag }}
+                        <i class="el-icon-circle-close icon-pd-10" @click="removeTag(i,index)" />
+                      </div>
                     </div>
-                  </div>
 
-                </el-form-item>
+                  </el-form-item>
+                </div>
+                <div style="margin-left: 12px;">
+                  <div class="flex align-center button-group">
+                    <el-button circle class="search-button" :disabled="searchGroup.length === 1" plain icon="el-icon-minus" @click="decreaseKeyType(index)" />
+                    <el-button circle class="search-button" :disabled="searchGroup.length === 10" plain icon="el-icon-plus" @click="addKeyType" />
+                  </div>
+                  <el-popover
+                    class="popover-container"
+                    placement="bottom"
+                    width="300"
+                    trigger="hover"
+                  >
+                    <div>
+                      <p>(1)系统同时支持10个或条件组的查询</p>
+                      <p>(2)系统支持每个条件组同时满足最多3个查询主键的且查询</p>
+                      <p>(3)系统支持每个条件组最多支持10个关键词</p>
+                    </div>
+                    <div slot="reference">
+                      <svg-icon icon-class="problem" />
+                    </div>
+                  </el-popover>
+                </div>
               </div>
-              <div class="flex align-center">
-                <el-button circle class="search-button" :disabled="searchGroup.length === 1" plain icon="el-icon-minus" @click="decreaseKeyType(index)" />
-                <el-button circle class="search-button" :disabled="searchGroup.length === 10" plain icon="el-icon-plus" @click="addKeyType" />
-              </div>
+              <p v-if="searchGroup.length>1 && index !== searchGroup.length -1" class="or">或</p>
             </div>
-            <el-form-item>
-              <p class="tips">基于关键词的精准查询，输入关键词后Enter即可。</p>
-            </el-form-item>
             <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
           </div>
         </el-form>
@@ -268,6 +294,7 @@ export default {
     },
     // value 查询关键词数组
     checkQuery(index, value) {
+      const current = this.searchGroup[index]
       console.log('checkQuery', value)
       if (value.length === 0) {
         this.$message({
@@ -275,8 +302,11 @@ export default {
           type: 'error'
         })
         this.isOK = false
-      } else if (value.length !== this.searchGroup[index].key.length) {
+      } else if (value.length !== current.key.length) {
         this.$message.error('查询主键需跟关键词数量保持一致，请核验')
+        this.isOK = false
+      } else if (current.tagValue.length >= 10) {
+        this.$message.error('查询关键词最多10个，请核验')
         this.isOK = false
       } else {
         this.isOK = true
@@ -541,13 +571,15 @@ export default {
 }
 .dialog-con{
   text-align: left;
-  .popover-container{
-    position: absolute;
-    top: 12px;
-    right: -22px;
-    font-size: 16px;
-    line-height: 1;
-  }
+}
+.popover-container{
+  // position: absolute;
+  // top: 12px;
+  // right: -22px;
+  font-size: 16px;
+  line-height: 1;
+  display: flex;
+  // margin-left: 15px;
 }
 .no-data{
   color: #999;
@@ -595,14 +627,26 @@ export default {
     background-color: #f8f8f9;
     padding: 20px 40px 0 0;
   }
+  ::v-deep .el-form-item{
+    margin-bottom: 10px;
+  }
 }
 .tips{
   color: #999;
   padding-left:110px;
-  margin-right: 88px;
-  line-height: 1.5;
+  margin-right: 94px;
   background-color: #f8f8f9;
-  height: 30px;
+}
+.or{
+  color: #333;
+  padding: 20px 0 20px 50px;
+  // height: 50px;
+  text-align: left;
+  background-color: #f8f8f9;
+  margin-right: 94px;
+  border-top: 1px solid #dcdfe6;
+  border-bottom: 1px solid #dcdfe6;
+
 }
 .option-item{
   display: flex;
@@ -620,13 +664,16 @@ export default {
   color: #999;
   margin-left: 10px;
 }
+.button-group{
+  padding-top: 20px;
+  margin-bottom: 10px;
+}
 .search-button {
   background-color: #f6f6f6;
   border-radius: 6px;
   padding: 0px 10px;
   height: 35px;
   line-height: 35px;
-  margin-left: 10px;
 }
 .query-input{
   border: 1px solid #dcdfe6;
@@ -667,6 +714,7 @@ export default {
   flex-wrap: wrap;
   width: 100%;
   margin-left: 110px;
+  padding-right: 110px;
   .tag-item {
     margin-top: 10px;
     height: 40px;

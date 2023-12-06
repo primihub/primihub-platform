@@ -28,8 +28,23 @@
         </div>
         <div class="desc-col">
           <div class="desc-label">关键词:</div>
-          <div class="desc-content">
+          <div class="desc-content flex">
             {{ searchKeyword.length ? searchKeyword.join('，') : taskData.retrievalId }}
+            <el-popover
+              class="popover-container"
+              placement="bottom"
+              width="300"
+              trigger="hover"
+            >
+              <div>
+                <p>“，”用来分隔不同的查询主键组</p>
+                <p>“、”用来分隔一组相同查询主键条件下的多个关键词</p>
+                <p>“|”用来分隔一组相同查询主键下一个关键词里的多个查询分词</p>
+              </div>
+              <div slot="reference">
+                <svg-icon style="font-size: 16px;" icon-class="problem" />
+              </div>
+            </el-popover>
           </div>
         </div>
       </div>
