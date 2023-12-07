@@ -135,6 +135,7 @@ public abstract class AbstractGRPCExecuteFactory {
             }
         }catch (Exception e){
             param.setSuccess(false);
+            param.setError(e.getMessage());
             e.printStackTrace();
         }
         cacheService.invalidate(key);

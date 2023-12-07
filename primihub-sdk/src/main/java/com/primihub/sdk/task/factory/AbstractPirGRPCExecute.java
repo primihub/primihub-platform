@@ -82,6 +82,8 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
             }
             log.info("grpc end {} - time:{}", param.toString(), System.currentTimeMillis());
         } catch (Exception e) {
+            param.setSuccess(false);
+            param.setError(e.getMessage());
             log.info("grpc pir Exception:{}",e.getMessage());
             e.printStackTrace();
         }

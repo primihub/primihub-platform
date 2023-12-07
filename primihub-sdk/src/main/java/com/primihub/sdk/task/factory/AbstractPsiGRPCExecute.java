@@ -106,6 +106,8 @@ public class AbstractPsiGRPCExecute extends AbstractGRPCExecuteFactory {
                 param.setEnd(true);
             }
         } catch (Exception e) {
+            param.setSuccess(false);
+            param.setError(e.getMessage());
             log.info("grpc Exception:{}",e.getMessage());
             e.printStackTrace();
         }

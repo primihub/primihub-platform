@@ -28,16 +28,23 @@ public class AbstractKillGRPCExecute extends AbstractGRPCExecuteFactory {
 
     @Override
     public void execute(Channel channel, TaskParam taskParam) {
-        Common.TaskContext taskContext = assembleTaskContext(taskParam);
-        KillTaskRequest request = KillTaskRequest.newBuilder().setTaskInfo(taskContext).setExecutor(KillTaskRequest.ExecutorType.CLIENT).build();
-        log.info("kill start request:{}",request.toString());
-        KillTaskResponse response = runVMNodeGrpc(o -> o.killTask(request), channel);
-        if (response.getRetCode() == Common.retcode.SUCCESS){
-            taskParam.setSuccess(true);
-        }else {
+        try {
+            Common.TaskContext taskContext = assembleTaskContext(taskParam);
+            KillTaskRequest request = KillTaskRequest.newBuilder().setTaskInfo(taskContext).setExecutor(KillTaskRequest.ExecutorType.CLIENT).build();
+            log.info("kill start request:{}",request.toString());
+            KillTaskResponse response = runVMNodeGrpc(o -> o.killTask(request), channel);
+            if (response.getRetCode() == Common.retcode.SUCCESS){
+                taskParam.setSuccess(true);
+            }else {
+                taskParam.setSuccess(false);
+                taskParam.setError(response.getMsgInfoBytes().toStringUtf8());
+            }
+            log.info("kill end response:{}",response.toString());
+        }catch (Exception e){
             taskParam.setSuccess(false);
-            taskParam.setError(response.getMsgInfoBytes().toStringUtf8());
+            taskParam.setError(e.getMessage());
+            log.info("kill grpc Exception:{}", e.getMessage());
         }
-        log.info("kill end response:{}",response.toString());
+
     }
 }
