@@ -1,6 +1,5 @@
 package com.primihub.sdk.task.factory;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.protobuf.ByteString;
 import com.primihub.sdk.task.cache.CacheService;
 import com.primihub.sdk.task.param.TaskMPCParam;
