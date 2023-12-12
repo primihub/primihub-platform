@@ -114,8 +114,9 @@ public class ShareDataController {
         return testService.batchSaveTestDataSet(dataSets);
     }
 
+    @ApiOperation(value = "网关通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("verifyGateway")
-    public BaseResultEntity verifyGatewayConnection(String uniqueIdentification){
+    public BaseResultEntity verifyGatewayConnection(@RequestBody String uniqueIdentification){
         if (org.apache.commons.lang3.StringUtils.isBlank(uniqueIdentification)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"uniqueIdentification");
         }
