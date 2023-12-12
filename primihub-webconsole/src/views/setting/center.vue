@@ -386,19 +386,23 @@ export default {
       }
       this.$refs['organForm'].validate(async valid => {
         if (valid) {
-          await changeLocalOrganInfo(params)
-          const message = this.dialogType === 'edit' ? '更新成功' : '添加成功'
-          this.$message({
-            type: 'success',
-            message
-          })
-          this.closeOrganDialog()
-          await this.getLocalOrganInfo()
-          const userInfo = JSON.parse(localStorage.getItem(USER_INFO))
-          userInfo.organIdList = this.organId
-          userInfo.organIdListDesc = this.organName
-          localStorage.setItem(USER_INFO, JSON.stringify(userInfo))
-          this.$store.commit('user/SET_ORGAN_CHANGE', true)
+          const res = await changeLocalOrganInfo(params)
+          if (res.code === 0) {
+            const message = this.dialogType === 'edit' ? '更新成功' : '添加成功'
+            this.$message({
+              type: 'success',
+              message
+            })
+            this.closeOrganDialog()
+            await this.getLocalOrganInfo()
+            const userInfo = JSON.parse(localStorage.getItem(USER_INFO))
+            userInfo.organIdList = this.organId
+            userInfo.organIdListDesc = this.organName
+            localStorage.setItem(USER_INFO, JSON.stringify(userInfo))
+            this.$store.commit('user/SET_ORGAN_CHANGE', true)
+          } else {
+            this.$message.error(res.msg)
+          }
         }
       })
     },
