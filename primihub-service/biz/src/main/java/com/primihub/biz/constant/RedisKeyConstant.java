@@ -14,4 +14,7 @@ public class RedisKeyConstant {
     public final static String TASK_STATUS_LIST_KEY = "ts:list";
 
     public final static String SEATUNNEL_DATA_LIST_KEY = "se:dl:<traceId>";
+
+    public final static String PIR_TASK_DATA_SET = "pir:t:d:s:<taskId>";
+    public final static String PIR_TASK_DATA_LIST = "pir:t:d:l:<taskId>";
 }

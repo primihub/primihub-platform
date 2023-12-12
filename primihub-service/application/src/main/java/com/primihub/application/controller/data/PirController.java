@@ -1,16 +1,23 @@
 package com.primihub.application.controller.data;
 
+import com.primihub.biz.entity.base.BaseJsonParam;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
+import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
+import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.service.data.PirService;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -19,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLEncoder;
 
+@Api(value = "匿踪查询接口",tags = "匿踪查询接口")
 @RequestMapping("pir")
 @RestController
 @Slf4j
@@ -27,21 +35,37 @@ public class PirController {
     @Autowired
     private PirService pirService;
 
-    @RequestMapping("pirSubmitTask")
-    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam,String taskName){
-        if (StringUtils.isBlank(resourceId)){
+    @ApiOperation(value = "提交匿踪查询任务",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "pirSubmitTask",consumes = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResultEntity pirSubmitTask(@RequestBody BaseJsonParam<DataPirReq> req){
+        DataPirReq param = req.getParam();
+        if (StringUtils.isBlank(param.getResourceId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
-        if (StringUtils.isBlank(pirParam)){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
-        }
-        if (StringUtils.isBlank(taskName)){
+        if (StringUtils.isBlank(param.getTaskName())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
         }
-        return pirService.pirSubmitTask(resourceId,pirParam,taskName);
+        if (param.getKeyQuerys() == null || param.getKeyQuerys().size()==0){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys");
+        }
+        for (DataPirKeyQuery keyQuery : param.getKeyQuerys()) {
+            if (keyQuery.getKey()==null){
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.key");
+            }
+            if (keyQuery.getQuery()==null){
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.query");
+            }
+//            if (keyQuery.getKey().length!=keyQuery.getQuery().size()){
+//                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"The number of key queries is not equal");
+//            }
+        }
+        return pirService.pirSubmitTask(param);
     }
-    @RequestMapping("getPirTaskList")
-    public BaseResultEntity getPirTaskList(DataPirTaskReq req){
+
+
+    @ApiOperation(value = "匿踪查询任务列表")
+    @GetMapping("getPirTaskList")
+    public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getPirTaskList(DataPirTaskReq req){
         if (req.getTaskState()!=null){
             if(!TaskStateEnum.TASK_STATE_MAP.containsKey(req.getTaskState())) {
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"taskState");
@@ -59,16 +83,23 @@ public class PirController {
      * @param taskId
      * @return
      */
-    @GetMapping("getPirTaskDetail")
-    public BaseResultEntity getPirTaskDetail(Long taskId){
+    @ApiOperation(value = "匿踪任务详情",httpMethod = "GET",consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @ApiImplicitParam(name = "taskId", value = "任务ID", dataType = "Long", paramType = "query")
+    @GetMapping(value = "getPirTaskDetail")
+    public BaseResultEntity<DataPirTaskDetailVo> getPirTaskDetail(Long taskId){
         if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
         return pirService.getPirTaskDetail(taskId);
     }
 
+    @ApiOperation(value = "匿踪查询任务结果文件下载")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "taskId", value = "任务ID", dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "taskDate", value = "任务创建日期", dataType = "String", paramType = "query")
+    })
     @GetMapping("downloadPirTask")
-    public void downloadPirTask(HttpServletResponse response, String taskId,String taskDate) {
+    public void downloadPirTask(HttpServletResponse response,String taskId,String taskDate) {
         if (StringUtils.isBlank(taskId)||StringUtils.isBlank(taskDate)) {
             return;
         }

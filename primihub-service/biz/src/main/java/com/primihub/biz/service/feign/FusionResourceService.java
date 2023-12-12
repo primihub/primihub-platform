@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+//@FeignClient(name = "fusion",contextId = "resource",url = "http://192.168.99.13:32132")
 @FeignClient(name = "fusion",contextId = "resource")
 public interface FusionResourceService {
     @RequestMapping("/fusionResource/getResourceList")

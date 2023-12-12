@@ -6,6 +6,7 @@ import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.service.data.DataPsiService;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import java.util.UUID;
 /**
  * 隐私求交
  */
+@Api(value = "隐私求交接口",tags = "隐私求交接口")
 @RequestMapping("psi")
 @RestController
 @Slf4j

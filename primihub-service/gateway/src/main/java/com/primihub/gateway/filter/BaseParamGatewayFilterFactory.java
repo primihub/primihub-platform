@@ -36,20 +36,29 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
 
     public static final String REQUEST_TIME_START="requestTimeStart";
     public static final AntPathMatcher MATCHER = new AntPathMatcher(File.separator);
-    public static final String SHARE_URL = "/shareData/**";
+    public static final String[] PATTERN_URLS = new String[]{"/shareData/**","/v2/**"};
 
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
     private CodecConfigurer codecConfigurer;
 
+    public boolean checkUri(String requestURI){
+        for (String url : PATTERN_URLS) {
+            if(MATCHER.match(url,requestURI)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public GatewayFilter apply(Object config) {
         return ((exchange, chain) -> {
+            exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
-//            log.info(currentRawPath);
-            MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
-            if (MATCHER.match(SHARE_URL,currentRawPath)){
+            log.info(currentRawPath);
+            if (checkUri(currentRawPath)){
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
                             Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
@@ -63,6 +72,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                         })
                 );
             }
+            MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
             if(mediaType==null){
                 MultiValueMap<String, String> queryParams=exchange.getRequest().getQueryParams();
 
@@ -96,7 +106,6 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                 if(sign!=null){
                     exchange.getAttributes().put(BaseParamEnum.SIGN.getColumnName(),sign);
                 }
-                exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
                             Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
@@ -268,7 +277,6 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                                         }
                                     }
 
-                                    exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
                                     return chain.filter(exchange.mutate().request(mutatedRequest.mutate().header("ip", WebFluxUtil.getIpAddress(exchange.getRequest())).build()).build()).then(
                                             Mono.fromRunnable(()->{
                                                 Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);

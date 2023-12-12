@@ -5,14 +5,13 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.enumeration.VerificationCodeEnum;
 import com.primihub.biz.entity.sys.param.*;
 import com.primihub.biz.service.sys.SysUserService;
+import io.swagger.annotations.Api;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@Api(value = "用户接口",tags = "用户接口")
 @RequestMapping("user")
 @RestController
 public class UserController {
@@ -22,7 +21,7 @@ public class UserController {
     @Value("${primihub.interior.code:null}")
     private String interiorCode;
 
-    @RequestMapping("login")
+    @PostMapping("login")
     public BaseResultEntity login(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getUserAccount()==null|| "".equals(loginParam.getUserAccount().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
@@ -36,12 +35,12 @@ public class UserController {
         return sysUserService.login(loginParam,ip);
     }
 
-    @RequestMapping("logout")
+    @GetMapping("logout")
     public BaseResultEntity logout(@RequestHeader(value = "token",defaultValue = "") String token,@RequestHeader(value = "userId",defaultValue = "-1") Long userId){
         return sysUserService.logout(token,userId);
     }
 
-    @RequestMapping("saveOrUpdateUser")
+    @PostMapping("saveOrUpdateUser")
     public BaseResultEntity saveOrUpdateUser(SaveOrUpdateUserParam saveOrUpdateUserParam){
         if(saveOrUpdateUserParam.getUserId()!=null){
             if(saveOrUpdateUserParam.getUserId()<0) {
@@ -54,7 +53,7 @@ public class UserController {
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 
-    @RequestMapping("deleteSysUser")
+    @PostMapping("deleteSysUser")
     public BaseResultEntity deleteSysUser(Long userId){
         if(userId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -65,7 +64,7 @@ public class UserController {
         return sysUserService.deleteSysUser(userId);
     }
 
-    @RequestMapping("findUserPage")
+    @GetMapping("findUserPage")
     public BaseResultEntity findUserPage(FindUserPageParam findUserPageParam,
                                          @RequestParam(defaultValue = "1") Integer pageNum,
                                          @RequestParam(defaultValue = "10")Integer pageSize){
@@ -75,7 +74,7 @@ public class UserController {
         return sysUserService.findUserPage(findUserPageParam,pageNum,pageSize);
     }
 
-    @RequestMapping("initPassword")
+    @PostMapping("initPassword")
     public BaseResultEntity initPassword(Long userId){
         if(userId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -86,7 +85,7 @@ public class UserController {
         return sysUserService.initPassword(userId);
     }
 
-    @RequestMapping("updatePassword")
+    @PostMapping("updatePassword")
     public BaseResultEntity updatePassword(@RequestHeader("userId") Long userId,
                                            String password,
                                            String validateKeyName){
@@ -105,7 +104,7 @@ public class UserController {
         return sysUserService.updatePassword(userId,password,validateKeyName);
     }
 
-    @RequestMapping("findUserByAccount")
+    @GetMapping("findUserByAccount")
     public BaseResultEntity findUserByAccount(String userAccount){
         if(userAccount==null|| "".equals(userAccount.trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
@@ -113,7 +112,7 @@ public class UserController {
         return sysUserService.findUserByAccount(userAccount);
     }
 
-    @RequestMapping("register")
+    @PostMapping("register")
     public BaseResultEntity register(SaveOrUpdateUserParam saveOrUpdateUserParam){
         if(saveOrUpdateUserParam.getVerificationCode()==null|| "".equals(saveOrUpdateUserParam.getVerificationCode())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"verificationCode");
@@ -140,7 +139,7 @@ public class UserController {
         return sysUserService.saveOrUpdateUser(saveOrUpdateUserParam);
     }
 
-    @RequestMapping("sendVerificationCode")
+    @PostMapping("sendVerificationCode")
     public BaseResultEntity sendVerificationCode(SendVerificationCodeParam sendVerificationCodeParam){
         if((sendVerificationCodeParam.getCellphone()==null|| "".equals(sendVerificationCodeParam.getCellphone()))&&(sendVerificationCodeParam.getEmail()==null|| "".equals(sendVerificationCodeParam.getEmail()))) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"cellphone or email");
@@ -154,7 +153,7 @@ public class UserController {
         return sysUserService.sendVerificationCode(sendVerificationCodeParam);
     }
 
-    @RequestMapping("forgetPassword")
+    @PostMapping("forgetPassword")
     public BaseResultEntity forgetPassword(ForgetPasswordParam forgetPasswordParam){
         if(forgetPasswordParam.getUserAccount()==null|| "".equals(forgetPasswordParam.getUserAccount())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
@@ -179,7 +178,7 @@ public class UserController {
         }
         return sysUserService.forgetPassword(forgetPasswordParam);
     }
-    @RequestMapping("changeUserAccount")
+    @PostMapping("changeUserAccount")
     public BaseResultEntity changeUserAccount(SaveOrUpdateUserParam param,@RequestHeader("userId") Long userId){
         if (userId == null || userId<=0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
@@ -201,7 +200,7 @@ public class UserController {
         return sysUserService.changeUserAccount(param);
     }
 
-    @RequestMapping("relieveUserAccount")
+    @PostMapping("relieveUserAccount")
     public BaseResultEntity relieveUserAccount(@RequestHeader("userId") Long userId){
         if (userId == null || userId<=0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");

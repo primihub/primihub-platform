@@ -11,6 +11,7 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
@@ -21,10 +22,15 @@ import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.*;
-import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.repository.primaryredis.data.DataRedisRepository;
+import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
+import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
+import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.service.sys.SysEmailService;
+import com.primihub.biz.util.CsvUtil;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
@@ -43,9 +49,14 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -76,8 +87,6 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private DataPsiPrRepository dataPsiPrRepository;
     @Autowired
-    private DataPsiRepository dataPsiRepository;
-    @Autowired
     private OtherBusinessesService otherBusinessesService;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
@@ -97,6 +106,10 @@ public class DataAsyncService implements ApplicationContextAware {
     private SysUserSecondarydbRepository sysUserSecondarydbRepository;
     @Autowired
     private SysEmailService sysEmailService;
+    @Autowired
+    private ThreadPoolTaskExecutor primaryThreadPool;
+    @Autowired
+    private DataRedisRepository dataRedisRepository;
     @Autowired
     private TaskHelper taskHelper;
 
@@ -313,32 +326,84 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(dataTask);
     }
 
+    public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job){
+        FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = new FutureTask<>(new Callable<TaskParam<TaskPIRParam>>() {
+            @Override
+            public TaskParam<TaskPIRParam> call() throws Exception {
+                StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(SnowflakeId.getInstance().nextId()).append(".csv");
+                TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
+                taskParam.setTaskId(dataTask.getTaskIdName());
+                taskParam.setJobId(String.valueOf(job));
+                String[] querys = new String[dataPirKeyQuery.getQuery().size()];
+                for (int i = 0; i < dataPirKeyQuery.getQuery().size(); i++) {
+                    querys[i] = String.join(",", dataPirKeyQuery.getQuery().get(i));
+                }
+                taskParam.getTaskContentParam().setQueryParam(querys);
+                taskParam.getTaskContentParam().setServerData(dataPirTask.getResourceId());
+                taskParam.getTaskContentParam().setOutputFullFilename(sb.toString());
+                List<String> columns = Arrays.asList(resourceColumnNames.toLowerCase().split(","));
+                List<String> keyColumns = Arrays.asList(dataPirKeyQuery.getKey());
+                taskParam.getTaskContentParam().setKeyColumns(keyColumns.stream().map(columns::indexOf).toArray(Integer[]::new));
+                taskHelper.submit(taskParam);
+                if (taskParam.getSuccess()){
+                    dataRedisRepository.pirTaskResultHandle(dataTask.getTaskIdName(),CsvUtil.csvReader(sb.toString(), null));
+                    Files.delete(Paths.get(sb.toString()));
+                }
+                return taskParam;
+            }
+        });
+        return pirTaskFutureTask;
+    }
+
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String param) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames) {
         Date date = new Date();
         try {
+            dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+            updateTaskState(dataTask);
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
-            TaskPIRParam pirParam = new TaskPIRParam();
-            pirParam.setQueryParam(param.split(","));
-            pirParam.setServerData(resourceId);
-            pirParam.setOutputFullFilename(dataTask.getTaskResultPath());
-            TaskParam taskParam = new TaskParam();
-            taskParam.setTaskContentParam(pirParam);
-            taskParam.setTaskId(dataTask.getTaskIdName());
-            taskHelper.submit(taskParam);
-            if (taskParam.getSuccess()){
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            }else {
-                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
+            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
+            Map<String,String> jobMap = new HashMap<>();
+            List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
+            for (int i = 0; i < dataPirKeyQueries.size(); i++) {
+                FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i);
+                primaryThreadPool.submit(pirTaskFutureTask);
+                futureTasks.add(pirTaskFutureTask);
+                jobMap.put(i+"",String.join("+",dataPirKeyQueries.get(i).getKey()));
+            }
+            List<TaskParam<TaskPIRParam>> listTaskParams = new ArrayList<>();
+            for (FutureTask<TaskParam<TaskPIRParam>> futureTask : futureTasks) {
+                listTaskParams.add(futureTask.get());
+            }
+            for (TaskParam<TaskPIRParam> listTaskParam : listTaskParams) {
+                if (dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())){
+                    if (!listTaskParam.getSuccess()){
+                        dataTask.setTaskErrorMsg("\n【"+jobMap.get(listTaskParam.getJobId())+"】匹配规则出错:"+listTaskParam.getError());
+                    }
+                }
+                if (!listTaskParam.getSuccess()){
+                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    dataTask.setTaskErrorMsg("\n【"+jobMap.get(listTaskParam.getJobId())+"】匹配规则出错:"+listTaskParam.getError());
+                }else {
+                    dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                }
+            }
+            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+                List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
+//                log.info("数据写入文件sb:{} -  pirTaskResultDataSize:{}",sb.toString(),pirTaskResultData.size());
+                boolean b = CsvUtil.csvWrite(sb.toString(), pirTaskResultData);
+//                log.info("数据写入文件结果:{}",b);
+
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}", e.getMessage());
             e.printStackTrace();
+        }finally {
+            dataRedisRepository.deletePirTaskResultKey(dataTask.getTaskIdName());
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);

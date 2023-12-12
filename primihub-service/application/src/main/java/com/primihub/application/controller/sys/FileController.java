@@ -4,7 +4,9 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.CreateFileParam;
 import com.primihub.biz.service.sys.SysFileService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 文件上传
  */
+@Api(value = "文件接口",tags = "文件接口")
 @RequestMapping("file")
 @RestController
 public class FileController {
@@ -54,7 +57,7 @@ public class FileController {
         return sysFileService.createFile(createFileParam);
     }
 
-    @RequestMapping("getFileById")
+    @GetMapping("getFileById")
     public BaseResultEntity getFileById(Long fileId){
         if(fileId==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");

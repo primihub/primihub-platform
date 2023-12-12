@@ -79,7 +79,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             List<LinkedHashMap<String, Object>> availableList = voList.stream().filter(data -> Integer.parseInt(data.get("available").toString())==1).collect(Collectors.toList());
 //            log.info("availableList - size :{}",availableList.size());
             if (!availableList.isEmpty()) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"来自"+availableList.get(0).getOrDefault("organName","").toString()+"的联邦资源["+availableList.get(0).get("resourceId").toString()+"],不可使用");
             }
             String modelType = taskReq.getValueMap().get("modelType");
             if ("3".equals(modelType)){
