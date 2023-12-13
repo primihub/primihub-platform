@@ -348,7 +348,7 @@ public class DataTaskService {
 
     public void generateLogFile(File file,DataTask dataTask){
         try {
-            List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime()/1000);
+            List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime() * 1_000_000);
             if (lokiLogList==null || lokiLogList.isEmpty()) {
                 return;
             }
@@ -386,11 +386,10 @@ public class DataTaskService {
 
     public List<String[]> getLokiLogList(String taskId,Long start){
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
-        if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
-        ||StringUtils.isBlank(lokiConfig.getContainer())) {
+        if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())) {
             return null;
         }
-        String query = "query={job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
+        String query = getQueryParam(lokiConfig,taskId);
         String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&"+query;
         log.info(url);
         LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
@@ -464,7 +463,7 @@ public class DataTaskService {
             }else {
                 try {
                     String query = getQueryParam(lokiConfig,taskId);
-                    String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime()/1000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
+                    String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime() * 1_000_000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
                     log.info(url);
                     webSocketService.connect(taskId,url);
                 }catch (Exception e){

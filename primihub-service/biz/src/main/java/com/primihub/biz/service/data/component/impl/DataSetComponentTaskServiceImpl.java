@@ -114,8 +114,8 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
             }else {
                 taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_DATASET , modelProjectResourceVo.getResourceId());
             }
-            String fileNaame = StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"None":modelProjectResourceVo.getCalculationField();
-            taskReq.getFreemarkerMap().put(DataConstant.PYTHON_CALCULATION_FIELD+i,fileNaame);
+            String fileName = StringUtils.isBlank(modelProjectResourceVo.getCalculationField())?"null":modelProjectResourceVo.getCalculationField();
+            taskReq.getFreemarkerMap().put(DataConstant.PYTHON_CALCULATION_FIELD+i,fileName);
             DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
             dataModelResource.setTaskId(taskReq.getDataTask().getTaskId());
             dataModelResource.setResourceId(modelProjectResourceVo.getResourceId());

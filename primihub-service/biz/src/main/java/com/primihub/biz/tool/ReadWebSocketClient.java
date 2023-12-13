@@ -1,6 +1,8 @@
 package com.primihub.biz.tool;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.service.sys.SysSseEmitterService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
@@ -45,7 +47,8 @@ public class ReadWebSocketClient extends WebSocketClient {
     public void onMessage(String message) {
         log.info("1[websocket][{}] 收到消息",taskId);
         if (sseEmitterService!=null){
-            sseEmitterService.sendMessage(taskId,message);
+//            sseEmitterService.sendMessage(taskId,message);
+            sendMessage(message);
             log.info("1[websocket-sse][{}] 发送消息",taskId);
         }else {
             log.info("1[websocket][{}] - 无连接",taskId);
@@ -57,12 +60,21 @@ public class ReadWebSocketClient extends WebSocketClient {
     public void onMessage(ByteBuffer bytes) {
         log.info("2[websocket][{}] 收到消息",taskId);
         if (sseEmitterService!=null){
-            sseEmitterService.sendMessage(taskId,getByteString(bytes));
+            sendMessage(getByteString(bytes));
+//            sseEmitterService.sendMessage(taskId,);
             log.info("2[websocket-sse][{}] 发送消息",taskId);
         }else {
             log.info("2[websocket][{}] - 无连接",taskId);
         }
 
+    }
+
+    public void sendMessage(String message){
+        JSONObject.parseObject(message).getJSONArray("streams").toJavaList(LokiStreamEntity.class).forEach(lokiStreamEntity -> {
+            if (lokiStreamEntity!=null && lokiStreamEntity.getValues()!=null && lokiStreamEntity.getValues().length==2){
+                sseEmitterService.sendMessage(taskId,lokiStreamEntity.getValues()[1]);
+            }
+        });
     }
 
     @Override
@@ -105,4 +117,10 @@ public class ReadWebSocketClient extends WebSocketClient {
         this.sseEmitterService = sseEmitterService;
     }
 
+}
+
+
+@Data
+class LokiStreamEntity {
+    private String[] values;
 }
