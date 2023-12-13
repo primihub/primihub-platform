@@ -428,11 +428,15 @@ public class DataTaskService {
     public SseEmitter connectSseTask(String taskId) {
         boolean isReal = true;
         DataTask dataTask = null;
+        log.info("开始创建sse 流通信:{}",taskId);
         if (StringUtils.isBlank(taskId)){
             taskId = SnowflakeId.getInstance().toString();
             isReal = false;
         }else {
-            dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+            if (dataTask==null){
+                dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            }
             if (dataTask==null){
                 taskId = String.valueOf(SnowflakeId.getInstance().nextId());
                 isReal = false;
@@ -443,9 +447,12 @@ public class DataTaskService {
         if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
             sseEmitterService.removeKey(taskId);
         }
+        log.info("创建sse 流通信:{}",taskId);
         SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        log.info("发送消息:{}",taskId);
         sseEmitterService.sendMessage(taskId,String.format("Task:%s Start log output",taskId));
         if (!isReal){
+            log.info("发送消息1:{}",taskId);
             sseEmitterService.sendMessage(taskId,"未查询到任务信息");
         }else {
             // 创建web
