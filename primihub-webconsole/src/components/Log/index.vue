@@ -15,7 +15,7 @@
       <template v-else>
         <p>
           {{ text }}
-          <i v-if="logData.length === 0" class="el-icon-loading" />
+          <i v-if="logData.length === 0 && text === '日志加载中'" class="el-icon-loading" />
         </p>
       </template>
     </div>
@@ -71,7 +71,11 @@ export default {
   },
   methods: {
     socketInit() {
-      this.text = '数据加载中'
+      if (!this.address) {
+        this.text = '暂无数据'
+        return
+      }
+      this.text = '日志加载中'
       const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
       const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
       this.ws = new WebSocket(url)
@@ -92,8 +96,11 @@ export default {
     },
     error: function() {
       console.log('连接错误')
-      // 关闭心跳链接
+      // 关闭心跳定时器
       clearInterval(this.heartbeatTimer)
+      // 关闭重连定时器
+      clearInterval(this.connectTimer)
+      clearTimeout(this.serverTimeout)
       this.text = '暂无数据'
     },
     close: function(e) {
@@ -121,7 +128,6 @@ export default {
       // 关闭重连定时器
       clearInterval(this.connectTimer)
       clearTimeout(this.serverTimeout)
-      this.heartbeatStart() // 重启心跳
     },
     heartbeatStart() { // 开启心跳
       this.heartbeatTimer && clearInterval(this.heartbeatTimer)
@@ -140,7 +146,7 @@ export default {
           // 超时关闭
           this.ws.close()
           this.destroyed = true
-        }, this.timeout)
+        }, 3000)
       }, this.timeout)
     },
     getMessage: function(msg) {
