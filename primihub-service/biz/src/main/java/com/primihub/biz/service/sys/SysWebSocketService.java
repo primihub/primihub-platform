@@ -41,7 +41,7 @@ public class SysWebSocketService {
                 public void run() {
                     if(webSocketClient.isClosed()){
                         log.error("{}:断线重连",key);
-                        sseEmitterService.sendMessage(key,"loki WebSocket 连接断开,请刷新后重试!");
+                        sseEmitterService.sendMessage(key,"{\"log\":\"loki WebSocket 连接断开,请刷新后重试!\"}");
                         sseEmitterService.removeKey(key);
                         this.cancel();
                     }

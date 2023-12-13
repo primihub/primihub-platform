@@ -416,7 +416,7 @@ public class DataTaskService {
 
     public SseEmitter connectSseTask1(String taskId){
         SseEmitter sseEmitter = sseEmitterService.connect(taskId);
-        sseEmitterService.sendMessage(taskId,String.format("Task:%s Start log output",taskId));
+        sseEmitterService.sendMessage(taskId,String.format("{\"log\":\"Task:%s Start log output\"}",taskId));
         return sseEmitter;
     }
 
@@ -426,39 +426,41 @@ public class DataTaskService {
 
     public SseEmitter connectSseTask(String taskId) {
         boolean isReal = true;
-        DataTask dataTask = null;
         log.info("开始创建sse 流通信:{}",taskId);
-        if (StringUtils.isBlank(taskId)){
-            taskId = SnowflakeId.getInstance().toString();
-            isReal = false;
-        }else {
-            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
-            if (dataTask==null){
-                dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
-            }
-            if (dataTask==null){
-                taskId = String.valueOf(SnowflakeId.getInstance().nextId());
-                isReal = false;
-            }else {
-                taskId = dataTask.getTaskIdName();
-            }
-        }
+//        DataTask dataTask = null;
+//        if (StringUtils.isBlank(taskId)){
+//            taskId = SnowflakeId.getInstance().toString();
+//            isReal = false;
+//        }else {
+//            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+//            if (dataTask==null){
+//                dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+//            }
+//            if (dataTask==null){
+//                taskId = String.valueOf(SnowflakeId.getInstance().nextId());
+//                isReal = false;
+//            }else {
+//                taskId = dataTask.getTaskIdName();
+//            }
+//        }
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskStartTime(1702443898043L);
         if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
             sseEmitterService.removeKey(taskId);
         }
         log.info("创建sse 流通信:{}",taskId);
         SseEmitter sseEmitter = sseEmitterService.connect(taskId);
         log.info("发送消息:{}",taskId);
-        sseEmitterService.sendMessage(taskId,String.format("Task:%s Start log output",taskId));
+        sseEmitterService.sendMessage(taskId,String.format("{\"log\":\"Task:%s Start log output\"}",taskId));
         if (!isReal){
             log.info("发送消息1:{}",taskId);
-            sseEmitterService.sendMessage(taskId,"未查询到任务信息");
+            sseEmitterService.sendMessage(taskId,"{\"log\":\"未查询到任务信息\"}");
             sseEmitterService.removeKey(taskId);
         }else {
             // 创建web
             LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
             if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())){
-                sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
+                sseEmitterService.sendMessage(taskId,"{\"log\":\"请确认日志loki配置,请检查base.json文件\"}");
                 sseEmitterService.removeKey(taskId);
             }else {
                 try {
