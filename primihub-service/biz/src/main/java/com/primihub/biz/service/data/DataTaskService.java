@@ -48,10 +48,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.Resource;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -385,13 +382,13 @@ public class DataTaskService {
         }
     }
 
-    public List<String[]> getLokiLogList(String taskId,Long start){
+    public List<String[]> getLokiLogList(String taskId,Long start) throws UnsupportedEncodingException {
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
         if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())) {
             return null;
         }
         String query = getQueryParam(lokiConfig,taskId);
-        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&query="+query;
+        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
         log.info(url);
         LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
         if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0) {
