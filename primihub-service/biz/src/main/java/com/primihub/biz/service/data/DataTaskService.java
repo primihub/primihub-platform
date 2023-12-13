@@ -454,12 +454,13 @@ public class DataTaskService {
         if (!isReal){
             log.info("发送消息1:{}",taskId);
             sseEmitterService.sendMessage(taskId,"未查询到任务信息");
+            sseEmitterService.removeKey(taskId);
         }else {
             // 创建web
             LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
-            if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
-                    ||StringUtils.isBlank(lokiConfig.getContainer())){
+            if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())){
                 sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
+                sseEmitterService.removeKey(taskId);
             }else {
                 try {
                     String query = getQueryParam(lokiConfig,taskId);
