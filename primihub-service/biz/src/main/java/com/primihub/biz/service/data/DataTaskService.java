@@ -390,7 +390,7 @@ public class DataTaskService {
             return null;
         }
         String query = getQueryParam(lokiConfig,taskId);
-        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&"+query;
+        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&query="+query;
         log.info(url);
         LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
         if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0) {
@@ -427,24 +427,24 @@ public class DataTaskService {
     public SseEmitter connectSseTask(String taskId) {
         boolean isReal = true;
         log.info("开始创建sse 流通信:{}",taskId);
-//        DataTask dataTask = null;
-//        if (StringUtils.isBlank(taskId)){
-//            taskId = SnowflakeId.getInstance().toString();
-//            isReal = false;
-//        }else {
-//            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
-//            if (dataTask==null){
-//                dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
-//            }
-//            if (dataTask==null){
-//                taskId = String.valueOf(SnowflakeId.getInstance().nextId());
-//                isReal = false;
-//            }else {
-//                taskId = dataTask.getTaskIdName();
-//            }
-//        }
-        DataTask dataTask = new DataTask();
-        dataTask.setTaskStartTime(1702443898043L);
+        DataTask dataTask = null;
+        if (StringUtils.isBlank(taskId)){
+            taskId = SnowflakeId.getInstance().toString();
+            isReal = false;
+        }else {
+            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+            if (dataTask==null){
+                dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            }
+            if (dataTask==null){
+                taskId = String.valueOf(SnowflakeId.getInstance().nextId());
+                isReal = false;
+            }else {
+                taskId = dataTask.getTaskIdName();
+            }
+        }
+//        DataTask dataTask = new DataTask();
+//        dataTask.setTaskStartTime(1702443898043L);
         if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
             sseEmitterService.removeKey(taskId);
         }
