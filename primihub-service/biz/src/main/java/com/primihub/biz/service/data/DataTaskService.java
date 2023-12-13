@@ -381,6 +381,7 @@ public class DataTaskService {
             fos.close();
         }catch (Exception e){
             log.info(e.getMessage());
+            e.printStackTrace();
         }
     }
 
