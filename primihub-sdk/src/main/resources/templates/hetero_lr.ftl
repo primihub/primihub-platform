@@ -21,7 +21,7 @@
 	"role_params": {
 		"Bob": {
 			"data_set": "${label_dataset}",
-			"selected_column": null,
+			"selected_column": ${label_field0},
 			"id": "id",
 			"label": "y",
 			"model_path": "${hostModelFileName}",
@@ -29,7 +29,7 @@
 		},
 		"Charlie": {
 			"data_set": "${guest_dataset}",
-			"selected_column": null,
+			"selected_column": ${label_field1},
 			"id": "id",
 			"model_path": "${guestModelFileName}"
 		},

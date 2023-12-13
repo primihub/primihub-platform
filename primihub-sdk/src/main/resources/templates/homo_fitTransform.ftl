@@ -12,7 +12,7 @@
         "FL_type": "H",
         "task_name": "HFL_simpleimpute_fit_transform",
         "task": "classification",
-        "selected_column": null,
+        "selected_column": ${label_field0},
         "id": "id",
         "label": "y",
         "preprocess_column": null,
