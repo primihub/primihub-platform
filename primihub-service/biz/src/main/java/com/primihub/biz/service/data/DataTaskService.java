@@ -311,7 +311,7 @@ public class DataTaskService {
     public BaseResultEntity getTaskLogInfo(Long taskId) {
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
         if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())
-                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer())) {
+                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer())|| StringUtils.isBlank(lokiConfig.getApp())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"请检查loki配置信息");
         }
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
@@ -322,6 +322,7 @@ public class DataTaskService {
         map.put("address",lokiConfig.getAddress());
         map.put("job",lokiConfig.getJob());
         map.put("container",lokiConfig.getContainer());
+        map.put("app",lokiConfig.getApp());
         map.put("taskIdName", rawDataTask.getTaskIdName());
         if (rawDataTask.getTaskStartTime()==null){
             map.put("start",(System.currentTimeMillis()/1000));
@@ -414,7 +415,17 @@ public class DataTaskService {
         return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
     }
 
-    public SseEmitter connectSseTask(String taskId,Integer all) {
+    public SseEmitter connectSseTask1(String taskId){
+        SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        sseEmitterService.sendMessage(taskId,String.format("Task:%s Start log output",taskId));
+        return sseEmitter;
+    }
+
+    public void send(String taskId){
+        sseEmitterService.sendMessage(taskId,"测试1");
+    }
+
+    public SseEmitter connectSseTask(String taskId) {
         boolean isReal = true;
         DataTask dataTask = null;
         if (StringUtils.isBlank(taskId)){
@@ -433,6 +444,7 @@ public class DataTaskService {
             sseEmitterService.removeKey(taskId);
         }
         SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        sseEmitterService.sendMessage(taskId,String.format("Task:%s Start log output",taskId));
         if (!isReal){
             sseEmitterService.sendMessage(taskId,"未查询到任务信息");
         }else {
@@ -443,12 +455,7 @@ public class DataTaskService {
                 sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
             }else {
                 try {
-                    String query = "";
-                    if (all == 1){
-                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"}";
-                    }else {
-                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
-                    }
+                    String query = getQueryParam(lokiConfig,taskId);
                     String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime()/1000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
                     log.info(url);
                     webSocketService.connect(taskId,url);
@@ -459,6 +466,25 @@ public class DataTaskService {
             }
         }
         return sseEmitter;
+    }
+
+    private String getQueryParam(LokiConfig lokiConfig,String taskId){
+        StringBuilder sb = new StringBuilder().append("{");
+        if (StringUtils.isNotEmpty(lokiConfig.getJob())){
+            sb.append("job").append("=").append("\"").append(lokiConfig.getJob()).append("\"");
+        }
+        if (StringUtils.isNotEmpty(lokiConfig.getContainer())){
+            sb.append("container").append("=").append("\"").append(lokiConfig.getContainer()).append("\"");
+        }
+        if (StringUtils.isNotEmpty(lokiConfig.getNamespace())){
+            sb.append("namespace").append("=").append("\"").append(lokiConfig.getNamespace()).append("\"");
+        }
+        if (StringUtils.isNotEmpty(lokiConfig.getApp())){
+            sb.append("app").append("=").append("\"").append(lokiConfig.getApp()).append("\"");
+        }
+        sb.append("} ");
+        sb.append("|= ").append("\"").append(taskId).append("\"");
+        return sb.toString();
     }
 
     public void removeSseTask(String taskId) {

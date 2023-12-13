@@ -7,4 +7,6 @@ public class LokiConfig {
     private String address;
     private String job;
     private String container;
+    private String namespace;
+    private String app;
 }
