@@ -307,8 +307,7 @@ public class DataTaskService {
 
     public BaseResultEntity getTaskLogInfo(Long taskId) {
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
-        if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())
-                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer())|| StringUtils.isBlank(lokiConfig.getApp())) {
+        if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"请检查loki配置信息");
         }
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
