@@ -321,9 +321,9 @@ public class DataTaskService {
         map.put("app",lokiConfig.getApp());
         map.put("taskIdName", rawDataTask.getTaskIdName());
         if (rawDataTask.getTaskStartTime()==null){
-            map.put("start",(System.currentTimeMillis()/1000));
+            map.put("start",(System.currentTimeMillis()* 1_000_000));
         }else {
-            map.put("start",(rawDataTask.getTaskStartTime()/1000));
+            map.put("start",(rawDataTask.getTaskStartTime()* 1_000_000));
         }
         return BaseResultEntity.success(map);
     }
@@ -367,7 +367,7 @@ public class DataTaskService {
                     }
                 }
                 if (lokiLogList.size()==100){
-                    lokiLogList = getLokiLogList(dataTask.getTaskIdName(), ts/1000);
+                    lokiLogList = getLokiLogList(dataTask.getTaskIdName(), ts* 1_000_000);
                 }else {
                     next = false;
                 }
