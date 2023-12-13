@@ -489,8 +489,8 @@ public class DataTaskService {
         if (StringUtils.isNotEmpty(lokiConfig.getApp())){
             sb.append("app").append("=").append("\"").append(lokiConfig.getApp()).append("\"");
         }
-        sb.append("} ");
-        sb.append("|= ").append("\"").append(taskId).append("\"");
+        sb.append("}");
+        sb.append("|=").append("\"").append(taskId).append("\"");
         return sb.toString();
     }
 
