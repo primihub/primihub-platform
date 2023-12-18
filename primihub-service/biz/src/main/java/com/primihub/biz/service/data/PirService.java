@@ -11,11 +11,14 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +43,7 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam) {
+    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam,String taskName) {
         BaseResultEntity dataResource = otherBusinessesService.getDataResource(resourceId);
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
@@ -53,7 +56,7 @@ public class PirService {
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(pirDataResource.get("resourceName").toString());
+        dataTask.setTaskName(taskName);
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
@@ -93,4 +96,34 @@ public class PirService {
         }
         return BaseResultEntity.success(new PageDataEntity(tolal,req.getPageSize(),req.getPageNo(),dataPirTaskVos));
     }
+
+    public BaseResultEntity getPirTaskDetail(Long taskId) {
+        DataPirTask task = dataTaskRepository.selectPirTaskById(taskId);
+        if (task==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务信息");
+        }
+        DataTask dataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+        if (dataTask==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务详情");
+        }
+        DataPirTaskDetailVo vo = new DataPirTaskDetailVo();
+        List<LinkedHashMap<String, Object>> list = null;
+        if (StringUtils.isNotEmpty(dataTask.getTaskResultPath())){
+            vo.setList(FileUtil.getCsvData(dataTask.getTaskResultPath(), 50));
+        }
+        vo.setTaskName(dataTask.getTaskName());
+        vo.setTaskIdName(dataTask.getTaskIdName());
+        vo.setTaskState(dataTask.getTaskState());
+        vo.setOrganName(task.getProviderOrganName());
+        vo.setResourceName(task.getResourceName());
+        vo.setResourceId(task.getResourceId());
+        vo.setRetrievalId(task.getRetrievalId());
+        vo.setTaskError(dataTask.getTaskErrorMsg());
+        vo.setCreateDate(dataTask.getCreateDate());
+        vo.setTaskStartTime(dataTask.getTaskStartTime());
+        vo.setTaskEndTime(dataTask.getTaskEndTime());
+        return BaseResultEntity.success(vo);
+    }
+
+
 }

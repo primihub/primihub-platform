@@ -1,5 +1,5 @@
 <template>
-  <div :class="{'hidden':hidden}" class="pagination-container">
+  <div :style="{'justify-content': position === 'right' ? 'flex-end' :position === 'left' ? 'start': 'center'}" :class="{'hidden':hidden}" class="pagination-container">
     <el-pagination
       :background="background"
       :current-page.sync="currentPage"
@@ -23,6 +23,10 @@ import { scrollTo } from '@/utils/scroll-to'
 export default {
   name: 'Pagination',
   props: {
+    position: {
+      type: String,
+      default: 'center'
+    },
     pageCount: {
       type: Number,
       default: 1
@@ -102,7 +106,6 @@ export default {
 .pagination-container {
   padding: 32px 0;
   display: flex;
-  justify-content: flex-end;
 }
 .pagination-container.hidden {
   display: none;

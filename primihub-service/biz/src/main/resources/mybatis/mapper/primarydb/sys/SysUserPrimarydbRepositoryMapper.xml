@@ -43,4 +43,8 @@
         update sys_user set user_account=#{userAccount} where user_id=#{userId}
     </update>
 
+    <update id="updateUserIp">
+        update sys_user set ip=#{ip} where user_id=#{userId}
+    </update>
+
 </mapper>

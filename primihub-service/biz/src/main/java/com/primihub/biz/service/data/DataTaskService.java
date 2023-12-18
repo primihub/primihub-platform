@@ -33,6 +33,8 @@ import com.primihub.biz.service.sys.SysWebSocketService;
 import com.primihub.biz.util.comm.CommStorageUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
+import com.primihub.sdk.task.TaskHelper;
+import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,6 +93,10 @@ public class DataTaskService {
     private OtherBusinessesService otherBusinessesService;
     @Autowired
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
+    @Autowired
+    private DataPsiRepository dataPsiRepository;
+    @Autowired
+    private DataPsiPrRepository dataPsiPrRepository;
 
     public List<DataFileField> batchInsertDataFileField(DataResource dataResource) {
         List<DataFileField> fileFieldList = new ArrayList<>();
@@ -130,6 +136,7 @@ public class DataTaskService {
         DataFusionCopyTask task = new DataFusionCopyTask(1,1L,maxId, DataFusionCopyEnum.FUSION_RESOURCE.getTableName(), sysOrgan.getOrganGateway(),sysOrgan.getOrganId());
         dataCopyPrimarydbRepository.saveCopyInfo(task);
         dataCopyService.handleFusionCopyTask(task);
+
     }
 
     public void singleDataFusionResource(String paramStr){
@@ -171,9 +178,6 @@ public class DataTaskService {
                     }
                     String url = CommonConstant.PROJECT_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                     String publicKey = sysOrgan.getPublicKey();
-                    if (publicKey==null){
-                        url = url+"?ignore=ignore";
-                    }
                     organNames.add(sysOrgan.getOrganName());
                     log.info("projectId:{} - OrganId:{} gatewayAddress api start:{}",dataProjectOrgan.getProjectId(),dataProjectOrgan.getOrganId(),System.currentTimeMillis());
                     otherBusinessesService.syncGatewayApiData(shareProjectVo,url,publicKey);
@@ -214,9 +218,6 @@ public class DataTaskService {
                     log.info("OrganId:{} gatewayAddress api start:{}",organId,System.currentTimeMillis());
                     String url = CommonConstant.MODEL_SYNC_API_URL.replace("<address>", gatewayAddress.toString());
                     String publicKey = sysOrgan.getPublicKey();
-                    if (publicKey==null){
-                        url = url+"?ignore=ignore";
-                    }
                     otherBusinessesService.syncGatewayApiData(shareModelVo,url,publicKey);
                     log.info("modelUUID:{} - OrganId:{} gatewayAddress api end:{}",shareModelVo.getDataModel().getModelUUID(),organId,System.currentTimeMillis());
                 }
@@ -281,17 +282,30 @@ public class DataTaskService {
     }
 
 
-    public BaseResultEntity cancelTask(Long taskId) {
-        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
+    public BaseResultEntity cancelTask(String taskId) {
+        DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+        if (rawDataTask==null){
+            rawDataTask = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+        }
         if (rawDataTask==null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无任务信息");
         }
         if (!rawDataTask.getTaskState().equals(TaskStateEnum.IN_OPERATION.getStateType())) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法取消,任务状态不是运行中");
         }
-        rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
-        dataTaskPrRepository.updateDataTask(rawDataTask);
-        return BaseResultEntity.success(taskId);
+        TaskParam taskParam = dataAsyncService.getTaskHelper().killTask(rawDataTask.getTaskIdName());
+        if (taskParam.getSuccess()){
+            rawDataTask.setTaskState(TaskStateEnum.CANCEL.getStateType());
+            rawDataTask.setTaskEndTime(System.currentTimeMillis());
+            dataTaskPrRepository.updateDataTask(rawDataTask);
+            if (rawDataTask.getTaskType().equals(TaskTypeEnum.PSI.getTaskType())){
+                DataPsiTask task = dataPsiRepository.selectPsiTaskByTaskId(rawDataTask.getTaskIdName());
+                task.setTaskState(rawDataTask.getTaskState());
+                dataPsiPrRepository.updateDataPsiTask(task);
+            }
+            return BaseResultEntity.success(taskId);
+        }
+        return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,taskParam.getError());
     }
 
     public BaseResultEntity getTaskLogInfo(Long taskId) {

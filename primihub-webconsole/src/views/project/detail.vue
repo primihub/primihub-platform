@@ -1,7 +1,7 @@
 <template>
   <div v-loading="listLoading" class="container">
     <section class="infos">
-      <el-descriptions :column="2" label-class-name="detail-title" title="基本信息">
+      <el-descriptions :column="2" title="基本信息">
         <el-descriptions-item label="项目ID">
           {{ projectId }}
         </el-descriptions-item>
@@ -43,7 +43,7 @@
                 :this-institution="thisInstitution"
                 :creator="creator"
                 :show-preview-button="thisInstitution"
-                :show-delete-button="thisInstitution"
+                :show-delete-button="showResourceDelBtn"
                 :selected-data="selectedData"
                 row-key="resourceId"
                 :data="resourceList[selectedOrganId]"
@@ -148,6 +148,7 @@ export default {
       tableButtons: ['preview'],
       userInfo: [],
       organs: [],
+      showResourceDelBtn: false,
       currentOrgan: [],
       differents: [],
       saveParams: {
@@ -427,6 +428,8 @@ export default {
           this.userName = userName
           this.createDate = createDate
           this.organs = organs
+          // 发起方拥有资源删除权限
+          this.showResourceDelBtn = this.userOrganId === this.organs.find(item => item.participationIdentity === 1).organId
           this.selectedOrganId = this.selectedOrganId || this.userOrganId
           this.activeName = this.selectedOrganId
           this.resourceList[this.selectedOrganId] = this.organs.filter(item => item.organId === this.selectedOrganId)[0].resources

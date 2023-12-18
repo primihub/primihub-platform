@@ -7,12 +7,13 @@
     </div>
     <div class="main">
       <el-descriptions :column="2">
-        <el-descriptions-item label-class-name="label-item" label="是否包含Y值">{{ data.resourceContainsY === 1? '是' : '否' }}</el-descriptions-item>
+        <!-- <el-descriptions-item label-class-name="label-item" label="是否包含Y值">{{ data.resourceContainsY === 1? '是' : '否' }}</el-descriptions-item> -->
         <el-descriptions-item label="特征量">{{ data.resourceColumnCount || 0 }}</el-descriptions-item>
         <el-descriptions-item label="样本量">{{ data.resourceRowsCount || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="正例样本数量">{{ data.resourceYRowsCount || 0 }}</el-descriptions-item>
-        <el-descriptions-item label="正例样本比例">{{ data.resourceYRatio || 0 }}%</el-descriptions-item>
+        <!-- <el-descriptions-item label="正例样本数量">{{ data.resourceYRowsCount || 0 }}</el-descriptions-item>
+        <el-descriptions-item label="正例样本比例">{{ data.resourceYRatio || 0 }}%</el-descriptions-item> -->
         <el-descriptions-item label="创建时间">{{ data.createDate }}</el-descriptions-item>
+        <el-descriptions-item label="资源描述">{{ data.resourceDesc }}</el-descriptions-item>
       </el-descriptions>
     </div>
   </div>

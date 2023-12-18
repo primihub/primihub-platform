@@ -39,7 +39,9 @@ public class BasicIPInfoHelper {
         if (StringUtils.isBlank(lat)||StringUtils.isBlank(lon)||StringUtils.isBlank(country)){
             return null;
         }
-        return new AddressInfoEntity(ip,new BigDecimal(lat),new BigDecimal(lon),country);
+        String city = body.getString("city");
+        String region = body.getString("region");
+        return new AddressInfoEntity(ip,new BigDecimal(lat),new BigDecimal(lon),country,city,region);
     }
 
     public static void main(String[] args) {

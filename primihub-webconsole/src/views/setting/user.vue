@@ -201,6 +201,7 @@ export default {
       this.dialogVisible = true
     },
     async addUser() {
+      this.userInfo.userId = ''
       this.dialogTitle = '新增用户'
       this.dialogVisible = true
       this.dialogFlag = 'add'

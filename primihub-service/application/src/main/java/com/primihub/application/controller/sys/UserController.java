@@ -23,7 +23,7 @@ public class UserController {
     private String interiorCode;
 
     @RequestMapping("login")
-    public BaseResultEntity login(LoginParam loginParam){
+    public BaseResultEntity login(LoginParam loginParam,@RequestHeader(value = "ip",defaultValue = "") String ip){
         if(loginParam.getUserAccount()==null|| "".equals(loginParam.getUserAccount().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
         }
@@ -33,7 +33,7 @@ public class UserController {
         if(loginParam.getValidateKeyName()==null|| "".equals(loginParam.getValidateKeyName().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"validateKeyName");
         }
-        return sysUserService.login(loginParam);
+        return sysUserService.login(loginParam,ip);
     }
 
     @RequestMapping("logout")

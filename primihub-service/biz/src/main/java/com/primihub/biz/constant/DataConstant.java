@@ -39,6 +39,7 @@ public class DataConstant {
     public final static Pattern RESOURCE_PATTERN_INTEGER = Pattern.compile("^-?\\d{1,9}$");
     public final static Pattern RESOURCE_PATTERN_LONG = Pattern.compile("^-?\\d{10,}$");
     public final static Pattern RESOURCE_PATTERN_DOUBLE = Pattern.compile("^-?\\d+\\.\\d+$");
+    public final static Pattern RESOURCE_PATTERN_SCIENTIFIC_NOTATION = Pattern.compile("^[-+]?\\d+(\\.\\d+)?([eE][-+]?\\d+)?$");
     public final static Integer READ_DATA_ROW = 50;
     public final static Integer COPY_PAGE_NUM = 20;
 
@@ -46,5 +47,7 @@ public class DataConstant {
     public final static String COMPONENT_BEAN_NAME_SUFFIX = "ComponentTaskServiceImpl";
 
     public final static String TASK_LOG_FILE_NAME = "taskLog.log";
+
+    public final static String UTF8_BOM = "\uFEFF";
 
 }

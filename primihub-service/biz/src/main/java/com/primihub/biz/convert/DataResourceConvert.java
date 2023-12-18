@@ -1,5 +1,7 @@
 package com.primihub.biz.convert;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.DataResourceTag;
@@ -116,6 +118,7 @@ public class DataResourceConvert {
         vo.setFileHandleField(StringUtils.isBlank(po.getFileHandleField())?new String[]{}:po.getFileHandleField().split(","));
         vo.setResourceState(po.getResourceState());
         vo.setResourceHashCode(po.getResourceHashCode());
+        vo.setResourceFusionId(po.getResourceFusionId());
         return vo;
     }
     public static DataFileFieldVo DataFileFieldPoConvertVo(DataFileField fileField){
@@ -161,7 +164,7 @@ public class DataResourceConvert {
         vo.setResourceName(dataResource.getResourceName());
         if (fileFieldList!=null&&fileFieldList.size()>0){
             for (DataFileField dataFileField : fileFieldList) {
-                vo.getKeywordList().add(dataFileField.getFieldName());
+                vo.getKeywordList().add(dataResourceFieldPoConvertCopyVo(dataFileField));
             }
         }
         return vo;
@@ -218,10 +221,7 @@ public class DataResourceConvert {
         vo.setResourceId(fr.getOrDefault("resourceId","").toString());
         vo.setResourceName(fr.getOrDefault("resourceName","").toString());
         vo.setOrganId(fr.getOrDefault("organId","").toString());
-        Object resourceColumnNameList = fr.get("resourceColumnNameList");
-        if (resourceColumnNameList!=null&&StringUtils.isNotBlank(resourceColumnNameList.toString())){
-            vo.getKeywordList().addAll(Arrays.asList(resourceColumnNameList.toString().split(",")));
-        }
+        vo.getKeywordList().addAll(JSONArray.parseArray(JSON.toJSONString(fr.get("fieldList")), DataResourceFieldCopyVo.class));
         return vo;
     }
 

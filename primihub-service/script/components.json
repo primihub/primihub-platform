@@ -315,7 +315,7 @@
             },
             {
               "key": "3",
-              "val": "横向-LR",
+              "val": "横向-逻辑回归",
               "param": [
                 {
                   "is_show": 0,
@@ -499,7 +499,7 @@
             },
             {
               "key": "4",
-              "val": "MPC-LR",
+              "val": "MPC-逻辑回归",
               "param": [
                 {
                   "is_show": 0,
@@ -541,7 +541,7 @@
             },
             {
               "key": "5",
-              "val": "纵向-LR",
+              "val": "纵向-逻辑回归",
               "param": [
                 {
                   "is_show": 0,
@@ -981,6 +981,277 @@
                     {
                       "key": "sgd",
                       "val": "sgd"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "8",
+              "val": "横向-线性回归",
+              "param": [
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "arbiterOrgan",
+                  "type_name": "可信第三方选择",
+                  "input_type": "button",
+                  "input_value": "",
+                  "input_values": []
+                },
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "encryption",
+                  "type_name": "加密方式",
+                  "input_type": "select",
+                  "input_value": "Plaintext",
+                  "input_values": [
+                    {
+                      "key": "Plaintext",
+                      "val": "明文"
+                    },
+                    {
+                      "key": "DPSGD",
+                      "val": "DPSGD",
+                      "param": [
+                        {
+                          "is_show": 1,
+                          "is_required": 0,
+                          "type_code": "delta",
+                          "type_name": "Params.Delta",
+                          "input_type": "text",
+                          "input_value": "0.0001",
+                          "input_values": []
+                        },
+                        {
+                          "is_show": 1,
+                          "is_required": 0,
+                          "type_code": "noiseMultiplier",
+                          "type_name": "Params.NoiseMultiplier",
+                          "input_type": "text",
+                          "input_value": "2.0",
+                          "input_values": []
+                        },
+                        {
+                          "is_show": 1,
+                          "is_required": 0,
+                          "type_code": "l2NormClip",
+                          "type_name": "Params.L2NormClip",
+                          "input_type": "text",
+                          "input_value": "1.0",
+                          "input_values": []
+                        },
+                        {
+                          "is_show": 1,
+                          "is_required": 0,
+                          "type_code": "secureMode",
+                          "type_name": "Params.SecureMode",
+                          "input_type": "radio",
+                          "input_value": "true",
+                          "input_values": [
+                            {
+                              "key": "true",
+                              "val": "true"
+                            },
+                            {
+                              "key": "false",
+                              "val": "false"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "key": "Paillier",
+                      "val": "Paillier",
+                      "param": [
+                        {
+                          "is_show": 0,
+                          "is_required": 0,
+                          "type_code": "nLength",
+                          "type_name": "Params.NLength",
+                          "input_type": "select",
+                          "input_value": "1024",
+                          "input_values": [
+                            {
+                              "key": "512",
+                              "val": "512"
+                            },
+                            {
+                              "key": "1024",
+                              "val": "1024"
+                            },
+                            {
+                              "key": "2048",
+                              "val": "2048"
+                            },
+                            {
+                              "key": "3072",
+                              "val": "3072"
+                            },
+                            {
+                              "key": "4096",
+                              "val": "4096"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "learningRate",
+                  "type_name": "Params.LearningRate",
+                  "input_type": "text",
+                  "input_value": "1.0",
+                  "input_values": []
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "alpha",
+                  "type_name": "Params.Alpha",
+                  "input_type": "text",
+                  "input_value": "0.0001",
+                  "input_values": []
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "batchSize",
+                  "type_name": "Params.BatchSize",
+                  "input_type": "number",
+                  "input_value": "100",
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    }
+                  ]
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "globalEpoch",
+                  "type_name": "Params.GlobalEpoch",
+                  "input_type": "number",
+                  "input_value": 5,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    },
+                    {
+                      "key": "max",
+                      "val": 1000
+                    }
+                  ]
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "localEpoch",
+                  "type_name": "Params.LocalEpoch",
+                  "input_type": "number",
+                  "input_value": 1,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    },
+                    {
+                      "key": "max",
+                      "val": 10
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "key": "9",
+              "val": "纵向-线性回归",
+              "param": [
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "encryption",
+                  "type_name": "加密方式",
+                  "input_type": "select",
+                  "input_value": "Plaintext",
+                  "input_values": [
+                    {
+                      "key": "Plaintext",
+                      "val": "明文"
+                    },
+                    {
+                      "key": "CKKS",
+                      "val": "CKKS",
+                      "param": [
+                        {
+                          "is_show": 0,
+                          "is_required": 0,
+                          "type_code": "arbiterOrgan",
+                          "type_name": "可信第三方选择",
+                          "input_type": "button",
+                          "input_value": "",
+                          "input_values": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "learningRate",
+                  "type_name": "Params.LearningRate",
+                  "input_type": "text",
+                  "input_value": 0.1,
+                  "input_values": []
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "alpha",
+                  "type_name": "Params.Alpha",
+                  "input_type": "text",
+                  "input_value": "0.0001",
+                  "input_values": []
+                },
+                {
+                  "is_show": 1,
+                  "is_required": 0,
+                  "type_code": "epoch",
+                  "type_name": "Params.Epoch",
+                  "input_type": "number",
+                  "input_value": 5,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
+                    },
+                    {
+                      "key": "max",
+                      "val": 1000
+                    }
+                  ]
+                },
+                
+                {
+                  "is_show": 0,
+                  "is_required": 0,
+                  "type_code": "batchSize",
+                  "type_name": "Params.BatchSize",
+                  "input_type": "number",
+                  "input_value": 1,
+                  "input_values": [
+                    {
+                      "key": "min",
+                      "val": 1
                     }
                   ]
                 }

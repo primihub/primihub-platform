@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h3>字段信息</h3>
     <el-table
       :data="data"
       class="table-list"
@@ -25,6 +24,9 @@
             v-model="row.fieldDesc"
             :disabled="!isEditable"
             size="mini"
+            :maxlength="12"
+            placeholder="请输入描述"
+            show-word-limit
             @change="handleChange(row)"
           />
         </template>

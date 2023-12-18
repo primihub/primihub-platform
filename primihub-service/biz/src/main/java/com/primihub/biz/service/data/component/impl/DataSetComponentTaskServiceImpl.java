@@ -94,6 +94,7 @@ public class DataSetComponentTaskServiceImpl extends BaseComponentServiceImpl im
                 }
             }
         }catch (Exception e){
+            e.printStackTrace();
             log.info("modelId:{} Failed to convert JSON :{}",taskReq.getDataModel().getModelId(),e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"模型选择资源转换失败");
         }

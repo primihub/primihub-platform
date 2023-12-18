@@ -239,6 +239,9 @@ public class SysOrganService {
     public BaseResultEntity applyForJoinNode(Map<String, Object> info) {
         log.info(JSONObject.toJSONString(info));
 //        SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByApplyId(info.get("applyId").toString());
+        if (organConfiguration.getSysLocalOrganId().equals(info.get("organId").toString())){
+            return BaseResultEntity.success();
+        }
         SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(info.get("organId").toString());
         if (sysOrgan==null){
             sysOrgan = new SysOrgan();

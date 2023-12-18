@@ -47,6 +47,9 @@ public interface FusionResourceService {
     @RequestMapping("/fusionResource/getTestDataSet")
     BaseResultEntity getTestDataSet(@RequestParam("id")String id);
 
+    @RequestMapping("/fusionResource/getDataSets")
+    BaseResultEntity getDataSets(@RequestBody Set<String> id);
+
     @PostMapping("/fusionResource/batchSaveTestDataSet")
     BaseResultEntity batchSaveTestDataSet(@RequestBody List<DataSet> dataSets);
 }

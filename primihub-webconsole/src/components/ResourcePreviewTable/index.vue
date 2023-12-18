@@ -1,13 +1,14 @@
 <template>
   <div>
-    <h3>数据资源预览</h3>
+    <!-- <h3>数据资源预览</h3> -->
     <el-table
       :data="data"
       border
       v-bind="$attrs"
       class="table-list"
+      :empty-text="emptyText"
     >
-      <el-table-column align="center" label="序号" type="index" width="50" />
+      <el-table-column v-if="data.length >0" align="center" label="序号" type="index" width="50" />
       <el-table-column
         v-for="(item,index) in tableHeader"
         :key="index"
@@ -33,6 +34,10 @@ export default {
       default() {
         return []
       }
+    },
+    emptyText: {
+      type: String,
+      default: '暂无数据'
     }
   },
   computed: {

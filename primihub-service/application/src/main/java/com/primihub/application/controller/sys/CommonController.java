@@ -25,4 +25,9 @@ public class CommonController {
         return BaseResultEntity.success(trackingID);
     }
 
+    @RequestMapping("getCollectList")
+    public BaseResultEntity getCollectList(){
+        return sysCommonService.getCollectList();
+    }
+
 }

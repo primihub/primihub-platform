@@ -1,5 +1,4 @@
 // cover some element-ui styles
-
 .el-breadcrumb__inner,
 .el-breadcrumb__inner a {
   font-weight: 400 !important;
@@ -67,9 +66,14 @@
 .el-pagination__jump{
   margin-left: 0;
 }
-.el-table{
-  font-size: 14px;
-}
 .el-table .cell{
+  // line-height: 1.5;
+}
+.el-table th.el-table__cell{
+  background-color: #EEEEEE;
+  color: #333333;
+}
+.el-tooltip__popper{
+  max-width: 300px;
   line-height: 1.5;
 }

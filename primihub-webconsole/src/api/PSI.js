@@ -43,8 +43,8 @@ export function getPsiTaskDetails(params) {
   return request({
     url: '/data/psi/getPsiTaskDetails',
     method: 'get',
-    showLoading: false,
-    params
+    params,
+    showLoading: false
   })
 }
 export function getOrganPsiTask(params) {
@@ -61,7 +61,6 @@ export function downloadPsiTask(params) {
     params
   })
 }
-
 export function cancelTask(taskId) {
   return request({
     url: '/data/task/cancelTask',

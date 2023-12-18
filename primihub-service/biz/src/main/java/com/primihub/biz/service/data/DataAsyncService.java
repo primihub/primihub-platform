@@ -3,8 +3,6 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.google.protobuf.ByteString;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
@@ -37,8 +35,6 @@ import com.primihub.sdk.task.param.TaskComponentParam;
 import com.primihub.sdk.task.param.TaskPIRParam;
 import com.primihub.sdk.task.param.TaskPSIParam;
 import com.primihub.sdk.task.param.TaskParam;
-import java_worker.PushTaskReply;
-import java_worker.PushTaskRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
@@ -48,10 +44,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer;
-import primihub.rpc.Common;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -101,13 +94,15 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private FreeMarkerConfigurer freeMarkerConfigurer;
-    @Autowired
     private SysUserSecondarydbRepository sysUserSecondarydbRepository;
     @Autowired
     private SysEmailService sysEmailService;
     @Autowired
     private TaskHelper taskHelper;
+
+    public TaskHelper getTaskHelper(){
+        return taskHelper;
+    }
 
 
     public BaseResultEntity executeBeanMethod(boolean isCheck, DataComponentReq req, ComponentTaskReq taskReq) {
@@ -208,8 +203,11 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi) {
-        DataResource ownDataResource = dataResourceRepository.queryDataResourceById(dataPsi.getOwnResourceId());
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,String taskName) {
+        DataResource ownDataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
+        if (ownDataResource==null){
+            ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
+        }
         String resourceId, resourceColumnNameList;
         int available;
         if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())) {
@@ -229,11 +227,42 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(psiTask.getTaskId());
-        dataTask.setTaskName(dataPsi.getResultName());
+        if (taskName == null){
+            dataTask.setTaskName(dataPsi.getResultName());
+        }else {
+            dataTask.setTaskName(taskName);
+        }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTaskPrRepository.saveDataTask(dataTask);
+        String teeResourceId = "";
+        if (dataPsi.getTag().equals(2)){
+            DataFResourceReq fresourceReq = new DataFResourceReq();
+            fresourceReq.setOrganId(dataPsi.getTeeOrganId());
+            BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
+            if (resourceList.getCode()!=0) {
+                psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataPsiPrRepository.updateDataPsiTask(psiTask);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskEndTime(System.currentTimeMillis());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:"+resourceList.getMsg());
+                dataTaskPrRepository.updateDataTask(dataTask);
+                return;
+            }
+            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
+            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
+            if (resourceDataList==null || resourceDataList.size()==0) {
+                psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataPsiPrRepository.updateDataPsiTask(psiTask);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskEndTime(System.currentTimeMillis());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:机构下无资源信息");
+                dataTaskPrRepository.updateDataTask(dataTask);
+                return;
+            }
+            teeResourceId = resourceDataList.get(0).get("resourceId").toString();
+        }
         psiTask.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         log.info("psi available:{}", available);
@@ -252,6 +281,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 List<String> serverFields = Arrays.asList(resourceColumnNameList.split(","));
                 List<String> otherKeyword = Arrays.asList(dataPsi.getOtherKeyword().split(","));
                 psiParam.setServerData(resourceId);
+                psiParam.setTeeData(teeResourceId);
                 psiParam.setServerIndex(otherKeyword.stream().map(serverFields::indexOf).toArray(Integer[]::new));
                 psiParam.setOutputFullFilename(psiTask.getFilePath());
                 TaskParam taskParam = new TaskParam();
@@ -264,25 +294,21 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg(taskParam.getError());
                 }
-                DataPsiTask task1 = dataPsiRepository.selectPsiTaskById(psiTask.getId());
-                psiTask.setTaskState(task1.getTaskState());
-                if (task1.getTaskState() != 4) {
-                    if (FileUtil.isFileExists(psiTask.getFilePath())) {
-                        psiTask.setTaskState(1);
-                    } else {
-                        psiTask.setTaskState(3);
+                if (!dataTask.getTaskState().equals(TaskStateEnum.CANCEL.getStateType()) && !dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
+                    if (!FileUtil.isFileExists(psiTask.getFilePath())) {
+                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     }
                 }
             } catch (Exception e) {
-                psiTask.setTaskState(3);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 log.info("grpc Exception:{}", e.getMessage());
                 e.printStackTrace();
             }
         } else {
-            psiTask.setTaskState(3);
+            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
         }
+        psiTask.setTaskState(dataTask.getTaskState());
         dataPsiPrRepository.updateDataPsiTask(psiTask);
-        dataTask.setTaskState(psiTask.getTaskState());
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
     }
@@ -452,21 +478,12 @@ public class DataAsyncService implements ApplicationContextAware {
         DataTask modelTask = dataTaskRepository.selectDataTaskByTaskId(dataReasoning.getTaskId());
         // 推理模板参数
         ModelOutputPathDto modelOutputPathDto = JSONObject.parseObject(modelTask.getTaskResultContent(), ModelOutputPathDto.class);
-        map.put("predictFileName", modelOutputPathDto.getPredictFileName());
+        map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
+        map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
         map.put("hostModelFileName", modelOutputPathDto.getHostModelFileName());
-        if (modelTypeEnum == ModelTypeEnum.V_XGBOOST) {
-            map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
-            map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-            map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
-            map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
-        } else if (modelTypeEnum == ModelTypeEnum.HETERO_LR) {
-            map.put("indicatorFileName", modelOutputPathDto.getIndicatorFileName());
-            map.put("guestModelFileName", modelOutputPathDto.getGuestModelFileName());
-        } else if (modelTypeEnum == ModelTypeEnum.REGRESSION_BINARY || modelTypeEnum == ModelTypeEnum.CLASSIFICATION_BINARY) {
-            map.remove(PYTHON_GUEST_DATASET);
-        } else {
-            map.remove(PYTHON_GUEST_DATASET);
-        }
+        map.put("guestLookupTable", modelOutputPathDto.getGuestLookupTable());
+        map.put("hostLookupTable", modelOutputPathDto.getHostLookupTable());
+        map.put("predictFileName", modelOutputPathDto.getPredictFileName());
         try {
             TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
             taskParam.setTaskId(dataTask.getTaskIdName());
