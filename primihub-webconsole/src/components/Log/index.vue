@@ -52,8 +52,9 @@ export default {
       connectTimer: null,
       serverTimeout: null,
       heartbeatTimer: null,
-      timeout: 3 * 1000, // 3秒一次心跳
-      destroyed: false
+      timeout: 5 * 1000, // 5秒一次心跳
+      destroyed: false,
+      connectCount: 0
     }
   },
   async created() {
@@ -71,10 +72,17 @@ export default {
   },
   methods: {
     socketInit() {
+      console.log('init connectCount', this.connectCount)
       if (!this.address) {
         this.text = '暂无数据'
         return
       }
+      if (this.connectCount === 10) {
+        this.text = '暂无数据'
+        this.reset()
+        return
+      }
+      this.connectCount += 1
       this.text = '日志加载中'
       const protocol = document.location.protocol === 'https:' ? 'wss' : 'ws'
       const url = `${protocol}://${this.address}/loki/api/v1/tail?start=${this.start}&query=${this.query}&limit=1000`
@@ -86,7 +94,7 @@ export default {
       this.ws.onclose = this.close
     },
     open: function() {
-      console.log('socket连接成功', this.ws.readyState)
+      console.log('socket连接成功', this.connectCount)
       this.heartbeatStart()
       setTimeout(() => {
         if (this.ws.readyState === 1 && this.logData.length === 0) {
