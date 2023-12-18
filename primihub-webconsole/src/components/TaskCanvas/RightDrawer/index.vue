@@ -215,7 +215,7 @@
     <FeatureSelectDialog v-if="featuresDialogVisible" :visible.sync="featuresDialogVisible" :data="featuresOptions" :selected-data="selectedDataAlignFeatures" @submit="handleFeatureDialogSubmit" @close="handleFeatureDialogClose" />
 
     <!-- MPC_MPC_STATISTICS component dialog -->
-    <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :selected-features="selectFeatures" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
+    <FeatureMultiSelectDialog v-if="multiFeaturesVisible" :visible.sync="multiFeaturesVisible" :data="featureItems[featureIndex].features" @submit="handleMultiFeatureDialogSubmit" @close="handleMultiFeatureDialogClose" />
   </div>
 </template>
 
@@ -294,7 +294,6 @@ export default {
       dataAlignParam: {},
       modelParams: [],
       defaultComponentConfig: [],
-      selectFeatures: [],
       selectType: 'radio',
       emptyMissingData: {
         selectedExceptionFeatures: [],
@@ -622,13 +621,6 @@ export default {
     },
     removeFilling(index) {
       this.featureItems.splice(index, 1)
-      this.featureItems.forEach(item => {
-        if (item.features[0].checked.length > 0) {
-          this.selectFeatures = [...item.features[0].checked]
-        } else {
-          this.selectFeatures = []
-        }
-      })
       this.setFeaturesValue()
       this.handleChange()
     },
@@ -901,27 +893,12 @@ export default {
     save() {
       this.$emit('save')
     },
-    setSelectFeaturesStatus() {
-      const selected = []
-      // set checkbox disabled element
-      const featureItems = this.featureItems.filter(feature => feature.type !== this.featureItems[this.featureIndex].type)
-      featureItems.forEach(item => {
-        const checked = item.features[0].checked
-        if (checked.length > 0) {
-          for (let i = 0; i < checked.length; i++) {
-            selected.push(checked[i])
-          }
-        }
-      })
-      this.selectFeatures = selected
-    },
     openMultiFeaturesDialog(index) {
       if (this.inputValue === '') {
         this.$message.error('请先添加选择数据集组件')
         return
       }
       this.featureIndex = index
-      this.setSelectFeaturesStatus()
       this.multiFeaturesVisible = true
     },
     openFeaturesDialog(code, index) {
