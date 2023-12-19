@@ -807,9 +807,6 @@ export default {
         this.dialogVisible = false
         return
       }
-      if (data.fileHandleField.includes('id')) {
-        data.fileHandleField = data.fileHandleField.filter(v => v !== 'id')
-      }
       if (this.participationIdentity === 1) {
         // is not first select
         if (this.initiateOrgan.resourceId !== data.resourceId) {
