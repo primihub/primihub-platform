@@ -159,7 +159,6 @@ export default {
     },
     getMessage: function(msg) {
       if (msg.data.length > 0) {
-        this.logData = []
         this.reset()// 收到服务器信息，心跳重置
         const data = JSON.parse(msg.data).streams
         const formatData = data.map(item => {
