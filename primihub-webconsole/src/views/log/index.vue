@@ -74,7 +74,7 @@
           <template slot-scope="{row}">
             <div class="buttons">
               <!-- <el-link :disabled="row.status === 2" type="primary" @click="download(row.taskId)">下载</el-link> -->
-              <el-link type="primary" @click="openDialog(row.taskId)">查看</el-link>
+              <el-link type="primary" @click="openDialog(row)">查看</el-link>
             </div>
 
           </template>
@@ -86,7 +86,7 @@
         :visible.sync="dialogVisible"
         :before-close="handleClose"
       >
-        <TaskLog v-if="dialogVisible" class="log-wrapper" :task-id="taskId" />
+        <TaskLog v-if="dialogVisible" class="log-wrapper" :task-id="taskId" :task-state="taskState" />
       </el-dialog>
     </div>
   </div>
@@ -136,7 +136,9 @@ export default {
           label: '联合预测'
         }
       ],
-      dialogVisible: false
+      dialogVisible: false,
+      taskId: 0,
+      taskState: 0
     }
   },
   computed: {
@@ -219,8 +221,9 @@ export default {
     handleClose() {
       this.dialogVisible = false
     },
-    openDialog(taskId) {
+    openDialog({ taskId, taskState }) {
       this.taskId = taskId + ''
+      this.taskState = taskState
       this.dialogVisible = true
     }
   }

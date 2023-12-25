@@ -7,7 +7,7 @@
   >
     <el-tabs v-model="activeName">
       <el-tab-pane v-for="(item,index) in selectedData" :key="index" :label="item.organName" :name="item.organId">
-        <checkbox :select-data="selectedFeatures" :organ-id="item.organId" :options="filterData(item.resourceField)" :checked="item.checked" @change="handleChange" />
+        <checkbox :organ-id="item.organId" :options="filterData(item.resourceField)" :checked="item.checked" @change="handleChange" />
       </el-tab-pane>
     </el-tabs>
     <span slot="footer" class="dialog-footer">
@@ -29,10 +29,6 @@ export default {
   },
   props: {
     data: {
-      type: Array,
-      default: () => []
-    },
-    selectedFeatures: {
       type: Array,
       default: () => []
     }
