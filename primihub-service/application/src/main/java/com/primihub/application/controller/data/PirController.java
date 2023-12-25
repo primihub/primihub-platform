@@ -36,30 +36,18 @@ public class PirController {
     private PirService pirService;
 
     @ApiOperation(value = "提交匿踪查询任务",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PostMapping(value = "pirSubmitTask",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResultEntity pirSubmitTask(@RequestBody BaseJsonParam<DataPirReq> req){
-        DataPirReq param = req.getParam();
-        if (StringUtils.isBlank(param.getResourceId())){
+    @RequestMapping("pirSubmitTask")
+    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam,String taskName){
+        if (StringUtils.isBlank(resourceId)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
-        if (StringUtils.isBlank(param.getTaskName())){
+        if (StringUtils.isBlank(pirParam)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
+        }
+        if (StringUtils.isBlank(taskName)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
         }
-        if (param.getKeyQuerys() == null || param.getKeyQuerys().size()==0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys");
-        }
-        for (DataPirKeyQuery keyQuery : param.getKeyQuerys()) {
-            if (keyQuery.getKey()==null){
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.key");
-            }
-            if (keyQuery.getQuery()==null){
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.query");
-            }
-//            if (keyQuery.getKey().length!=keyQuery.getQuery().size()){
-//                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"The number of key queries is not equal");
-//            }
-        }
-        return pirService.pirSubmitTask(param);
+        return pirService.pirSubmitTask(resourceId,pirParam,taskName);
     }
 
 
