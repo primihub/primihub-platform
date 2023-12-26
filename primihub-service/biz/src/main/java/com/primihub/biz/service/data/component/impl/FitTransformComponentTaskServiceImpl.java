@@ -50,7 +50,9 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
-        taskReq.getFreemarkerMap().putAll(getComponentVals(req.getComponentValues()));
+        Map<String, String> componentVals = getComponentVals(req.getComponentValues());
+        log.info("componentVals:{}", componentVals);
+        taskReq.getFreemarkerMap().putAll(componentVals);
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
         List<ModelDerivationDto> newest = taskReq.getNewest();
         log.info("ids:{}", ids);

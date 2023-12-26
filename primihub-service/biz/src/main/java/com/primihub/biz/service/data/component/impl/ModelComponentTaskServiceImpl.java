@@ -143,6 +143,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         taskParam.setTaskId(taskReq.getDataTask().getTaskIdName());
         taskParam.setJobId(String.valueOf(taskReq.getJob()));
         taskParam.getTaskContentParam().setModelType(modelType);
+        log.info("------- 执行任务参数, freemarkerMap:{}", JSONObject.toJSONString(taskReq.getFreemarkerMap()));
         taskParam.getTaskContentParam().setFreemarkerMap(taskReq.getFreemarkerMap());
         taskHelper.submit(taskParam);
         if (taskParam.getSuccess()){
