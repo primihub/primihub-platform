@@ -6,7 +6,6 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
-import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
@@ -38,16 +37,21 @@ public class PirController {
     @ApiOperation(value = "提交匿踪查询任务",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @RequestMapping("pirSubmitTask")
     public BaseResultEntity pirSubmitTask(String resourceId,String pirParam,String taskName){
+//    public BaseResultEntity pirSubmitTask(@RequestBody BaseJsonParam<DataPirReq> req){
+        // 查询条件
+        DataPirReq param = new DataPirReq();
         if (StringUtils.isBlank(resourceId)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
-        }
-        if (StringUtils.isBlank(pirParam)){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
         }
         if (StringUtils.isBlank(taskName)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
         }
-        return pirService.pirSubmitTask(resourceId,pirParam,taskName);
+        if (StringUtils.isBlank(pirParam)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
+        }
+        param.setResourceId(resourceId);
+        param.setTaskName(taskName);
+        return pirService.pirSubmitTask(param, pirParam);
     }
 
 
