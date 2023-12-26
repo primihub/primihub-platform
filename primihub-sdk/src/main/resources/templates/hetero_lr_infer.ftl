@@ -8,6 +8,7 @@
 	"common_params": {
 		"model": "${model}",
 		"process": "predict",
+        "psi": null,
 		"task_name": "VFL_logistic_regression_predict"
 	},
 	"role_params": {
