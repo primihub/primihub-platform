@@ -334,6 +334,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setJobId(String.valueOf(job));
+                // 查询目标值，同组查询目标值使用逗号的字符串隔开
                 String[] querys = new String[dataPirKeyQuery.getQuery().size()];
                 for (int i = 0; i < dataPirKeyQuery.getQuery().size(); i++) {
                     querys[i] = String.join(",", dataPirKeyQuery.getQuery().get(i));
@@ -356,7 +357,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries) {
         Date date = new Date();
         try {
             dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
@@ -364,7 +365,7 @@ public class DataAsyncService implements ApplicationContextAware {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
-            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
+//            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
             Map<String,String> jobMap = new HashMap<>();
             List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
             for (int i = 0; i < dataPirKeyQueries.size(); i++) {

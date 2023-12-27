@@ -7,6 +7,7 @@ import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
@@ -45,7 +46,7 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(DataPirReq req) {
+    public BaseResultEntity pirSubmitTask(DataPirReq req, String pirParam) {
         BaseResultEntity dataResource = otherBusinessesService.getDataResource(req.getResourceId());
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
@@ -55,10 +56,22 @@ public class PirService {
         if (available == 1) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
         }
+        // dataResource columnName list
         String resourceColumnNames = pirDataResource.getOrDefault("resourceColumnNameList", "").toString();
         if (StringUtils.isBlank(resourceColumnNames)){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表失败");
         }
+        String[] resourceColumnNameArray = resourceColumnNames.split(",");
+        if (resourceColumnNameArray.length == 0) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表为空");
+        }
+
+        String[] queryColumnNames = {
+                resourceColumnNameArray[0]
+        };
+        // convert pirparam to query array
+        List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(pirParam,queryColumnNames);
+
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
@@ -69,15 +82,30 @@ public class PirService {
         dataTaskPrRepository.saveDataTask(dataTask);
         DataPirTask dataPirTask = new DataPirTask();
         dataPirTask.setTaskId(dataTask.getTaskId());
-        dataPirTask.setRetrievalId(JSONObject.toJSONString(req.getKeyQuerys()));
+        // retrievalId will rent in web ,need to be readable
+        dataPirTask.setRetrievalId(pirParam);
         dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(req.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask,dataPirTask,resourceColumnNames);
+        dataAsyncService.pirGrpcTask(dataTask,dataPirTask,resourceColumnNames,dataPirKeyQueries);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);
+    }
+
+    private static List<DataPirKeyQuery> convertPirParamToQueryArray(String pirParam, String[] resourceColumnNameArray) {
+        DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
+        dataPirKeyQuery.setKey(resourceColumnNameArray);
+        String[] array = {
+                pirParam
+        };
+        List<String[]> queries = new ArrayList<>(resourceColumnNameArray.length);
+        for (int i = 0; i < resourceColumnNameArray.length; i++) {
+            queries.add(i, array);
+        }
+        dataPirKeyQuery.setQuery(queries);
+        return Collections.singletonList(dataPirKeyQuery);
     }
 
     public BaseResultEntity getPirTaskList(DataPirTaskReq req) {

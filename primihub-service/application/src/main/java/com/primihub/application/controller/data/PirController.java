@@ -6,7 +6,6 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
-import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
@@ -36,30 +35,23 @@ public class PirController {
     private PirService pirService;
 
     @ApiOperation(value = "提交匿踪查询任务",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
-    @PostMapping(value = "pirSubmitTask",consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResultEntity pirSubmitTask(@RequestBody BaseJsonParam<DataPirReq> req){
-        DataPirReq param = req.getParam();
-        if (StringUtils.isBlank(param.getResourceId())){
+    @RequestMapping("pirSubmitTask")
+    public BaseResultEntity pirSubmitTask(String resourceId,String pirParam,String taskName){
+//    public BaseResultEntity pirSubmitTask(@RequestBody BaseJsonParam<DataPirReq> req){
+        // 查询条件
+        DataPirReq param = new DataPirReq();
+        if (StringUtils.isBlank(resourceId)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
-        if (StringUtils.isBlank(param.getTaskName())){
+        if (StringUtils.isBlank(taskName)){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
         }
-        if (param.getKeyQuerys() == null || param.getKeyQuerys().size()==0){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys");
+        if (StringUtils.isBlank(pirParam)) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
         }
-        for (DataPirKeyQuery keyQuery : param.getKeyQuerys()) {
-            if (keyQuery.getKey()==null){
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.key");
-            }
-            if (keyQuery.getQuery()==null){
-                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.query");
-            }
-//            if (keyQuery.getKey().length!=keyQuery.getQuery().size()){
-//                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"The number of key queries is not equal");
-//            }
-        }
-        return pirService.pirSubmitTask(param);
+        param.setResourceId(resourceId);
+        param.setTaskName(taskName);
+        return pirService.pirSubmitTask(param, pirParam);
     }
 
 

@@ -2,7 +2,7 @@ server:
   port: 8082
 nacos:
   config:
-    server-addr: localhost:8848
+    server-addr: 192.168.99.10:31048
     namespace: dev2
     max-retry: 3
     config-long-poll-timeout: 1000
@@ -17,7 +17,7 @@ spring:
   cloud:
     nacos:
       discovery:
-        server-addr: localhost:8848
+        server-addr: 192.168.99.10:31048
         namespace: dev2
 logging:
   level:
