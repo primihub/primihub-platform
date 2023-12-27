@@ -298,7 +298,7 @@ export const asyncRoutes = [
         path: 'unionList',
         name: 'UnionList',
         component: () => import('@/views/resource/unionList'),
-        meta: { title: '协作方资源' }
+        meta: { title: '授权给我的资源' }
       },
       {
         path: 'availableResources',
@@ -335,6 +335,17 @@ export const asyncRoutes = [
         },
         hidden: true,
         component: () => import('@/views/resource/detail')
+      },
+      {
+        path: 'resourceAuthList/:id',
+        name: 'ResourceAuthList',
+        meta: {
+          title: '资源授权列表',
+          activeMenu: '/resource/list',
+          parent: { name: 'ResourceDetail' }
+        },
+        hidden: true,
+        component: () => import('@/views/resource/authList')
       },
       {
         path: 'unionResourceDetail/:id',

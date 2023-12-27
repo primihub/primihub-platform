@@ -2,6 +2,7 @@
   <div class="app-container">
     <h2>资源详情</h2>
     <div class="detail">
+      <el-button v-if="$store.getters.isOrganAdmin" class="button" type="primary" @click="toResourceAuthPage">资源授权使用记录</el-button>
       <el-descriptions title="资源信息" :column="2">
         <el-descriptions-item label="资源ID">{{ resource.resourceId }}</el-descriptions-item>
         <el-descriptions-item label="资源名称">{{ resource.resourceName }}</el-descriptions-item>
@@ -45,6 +46,13 @@ export default {
     await this.getDataResource()
   },
   methods: {
+    toResourceAuthPage() {
+      const { resourceName } = this.resource
+      this.$router.push({
+        name: 'ResourceAuthList',
+        query: { resourceName: encodeURIComponent(resourceName) }
+      })
+    },
     async getDataResource() {
       const res = await getDataResource({
         resourceId: this.resourceId
@@ -86,8 +94,13 @@ export default {
   justify-content: space-between;
 }
 .detail {
-  padding: 20px 0 20px 20px;
-  border-top: 1px solid #f0f0f0;
+  position: relative;
+  padding: 20px 0 20px 0px;
+  .button{
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
 }
 .auth-dialog{
   width: 100%;

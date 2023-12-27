@@ -252,7 +252,7 @@
 
 <script>
 import { getPsiResourceAllocationList, saveDataPsi } from '@/api/PSI'
-import { getResourceList } from '@/api/fusionResource'
+import { getCoopResourceList } from '@/api/fusionResource'
 import { getAvailableOrganList } from '@/api/center'
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
@@ -467,7 +467,7 @@ export default {
     },
     searchResource() {
       this.pageNo = 1
-      this.getResourceList()
+      this.getCoopResourceList()
     },
     openDialog(role) {
       this.searchKeyword = ''
@@ -481,16 +481,16 @@ export default {
         this.selectResources.resourceId = role === 'own' ? this.formData.ownResourceId : this.formData.otherResourceId
       }
       this.dialogVisible = true
-      this.getResourceList()
+      this.getCoopResourceList()
     },
-    async getResourceList() {
+    async getCoopResourceList() {
       const params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         organId: this.role === 'own' ? this.formData.ownOrganId : this.formData.otherOrganId,
         resourceName: this.searchKeyword
       }
-      const { code, result } = await getResourceList(params)
+      const { code, result } = await getCoopResourceList(params)
       if (code === 0) {
         const { data, total, totalPage } = result
         this.total = total
@@ -508,7 +508,7 @@ export default {
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.getResourceList()
+      this.getCoopResourceList()
     },
     async getAvailableOrganList() {
       this.loading = true

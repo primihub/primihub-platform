@@ -55,6 +55,13 @@ export function getResourceList(params) {
     params
   })
 }
+export function getDataResourceAssignmentDetail(params) {
+  return request({
+    url: '/data/resource/getDataResourceAssignmentDetail',
+    method: 'get',
+    params
+  })
+}
 export function getDataSetList(params) {
   return request({
     url: '/dataShare/list',

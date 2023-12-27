@@ -47,8 +47,16 @@
       </el-form>
     </div>
     <div class="list">
-      <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐匿查询</el-button>
+      <div class="tabs">
+        <el-tabs v-if="isOrganAdmin" v-model="activeName" @tab-click="handleTabClick">
+          <el-tab-pane label="个人任务列表" name="2" />
+          <el-tab-pane label="机构任务列表" name="1" />
+        </el-tabs>
+        <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐匿查询</el-button>
+      </div>
+
       <el-table
+        v-loading="loading"
         :data="dataList"
       >
         <el-table-column
@@ -99,6 +107,7 @@
             <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
           </template>
         </el-table-column>
+        <el-table-column v-if="isOrganAdmin" prop="userName" label="发起人" />
         <el-table-column label="发起时间" prop="createDate" min-width="120px">
           <template slot-scope="{row}">
             <span>{{ row.createDate.split(' ')[0] }}</span><br>
@@ -136,6 +145,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { getAvailableOrganList } from '@/api/center'
 import { getPirTaskList } from '@/api/PIR'
 import { deleteTask, cancelTask } from '@/api/task'
@@ -150,6 +160,8 @@ export default {
   },
   data() {
     return {
+      loading: false,
+      activeName: '2',
       organLoading: false,
       sysLocalOrganInfo: null,
       fusionList: [],
@@ -184,6 +196,11 @@ export default {
       startInterval: true
     }
   },
+  computed: {
+    ...mapGetters([
+      'isOrganAdmin'
+    ])
+  },
   async created() {
     this.timer = window.setInterval(() => {
       setTimeout(this.fetchData(), 0)
@@ -191,10 +208,14 @@ export default {
     this.fetchData()
     await this.getAvailableOrganList()
   },
+
   destroyed() {
     clearInterval(this.timer)
   },
   methods: {
+    handleTabClick() {
+      this.fetchData()
+    },
     handleDateChange(val) {
       if (!val) {
         this.query.createDate = []
@@ -228,15 +249,12 @@ export default {
       }).then(() => {
         deleteTask(row.taskId).then(res => {
           if (res.code === 0) {
-            const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
-            if (posIndex !== -1) {
-              this.dataList.splice(posIndex, 1)
-            }
             this.$message({
               message: '删除成功',
               type: 'success',
               duration: 1000
             })
+            this.fetchData()
             clearInterval(this.timer)
           }
         })
@@ -270,6 +288,7 @@ export default {
       })
     },
     fetchData() {
+      this.loading = true
       const { taskState, organName, resourceName, retrievalId, taskName } = this.query
       let params = {
         taskName,
@@ -278,7 +297,8 @@ export default {
         resourceName,
         retrievalId,
         pageNo: this.pageNo,
-        pageSize: this.pageSize
+        pageSize: this.pageSize,
+        queryType: this.activeName === '2' ? 0 : '1'
       }
       if (this.query.createDate && this.query.createDate.length > 0) {
         const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
@@ -300,9 +320,11 @@ export default {
           this.startInterval = false
           clearInterval(this.timer)
         }
+        this.loading = false
       }).catch(err => {
         console.log(err)
         clearInterval(this.timer)
+        this.loading = false
       })
     },
     handlePagination(data) {
@@ -332,6 +354,12 @@ export default {
 ::v-deep .el-input--suffix .el-input__inner{
   padding-right: 0;
 }
+::v-deep .el-tabs__item {
+  font-size: 16px;
+  height: 50px;
+  line-height: 50px;
+}
+
 .search-area {
   padding: 48px 40px 20px 40px;
   background-color: #fff;
@@ -349,6 +377,10 @@ export default {
   border-top: 1px solid #eee;
   background-color: #fff;
   border-radius: 12px;
+  .tabs{
+    position: relative;
+    height: 60px;
+  }
 }
 .info{
   font-size: 12px;
@@ -360,7 +392,9 @@ export default {
   justify-content: center;
 }
 .add-button{
-  margin-bottom: 25px;
+  position: absolute;
+  right: 0;
+  top: 0px;
 }
 .tool-buttons{
   display: flex;

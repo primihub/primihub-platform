@@ -60,7 +60,12 @@
         />
         <el-table-column
           prop="organName"
-          label="机构名称"
+          align="center"
+          label="资源所属机构"
+        />
+        <el-table-column
+          prop="organName"
+          label="被授权人"
         />
         <el-table-column
           label="资源ID"
@@ -113,6 +118,7 @@
           prop="resourceAuthType"
           label="可见性"
           align="center"
+          min-width="100"
         >
           <template slot-scope="{row}">
             {{ row.resourceAuthType | authTypeFilter }}
@@ -127,29 +133,40 @@
             {{ row.createDate }}
           </template>
         </el-table-column>
+        <el-table-column
+          label="操作"
+          fixed="right"
+          width="160"
+          align="center"
+        >
+          <template slot-scope="{row}">
+            <el-button type="text" @click="toResourceDetailPage(row.resourceId)">查看</el-button>
+          </template>
+        </el-table-column>
       </el-table>
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </div>
-
+    <!-- <authorizationUserDialog :visible.sync="dialogVisible" :resource-id="resourceId" @close="closeAuthDialog" @cancel="closeAuthDialog" @submit="handleAuthConfirm" /> -->
   </div>
 </template>
 
 <script>
-import { getResourceList, getResourceTagList } from '@/api/fusionResource'
+import { mapGetters } from 'vuex'
+import { getDataResourceAssignedToMe, getResourceTagList } from '@/api/fusionResource'
 import { getAvailableOrganList } from '@/api/center'
 import Pagination from '@/components/Pagination'
 import TagsSelect from '@/components/TagsSelect'
+// import authorizationUserDialog from '@/components/authorizationUserDialog'
 
 export default {
   components: { Pagination, TagsSelect },
   data() {
     return {
+      dialogVisible: false,
+      resourceId: 0,
+      userValue: [],
       loading: false,
       tags: [],
-      cascaderOptions: [],
-      sysLocalOrganInfo: null,
-      fusionList: [],
-      groupList: [],
       organList: [],
       query: {
         resourceId: '',
@@ -157,7 +174,6 @@ export default {
         tagName: '',
         userName: '',
         resourceSource: '',
-        groupId: 0,
         organId: '',
         resourceAuthType: '',
         fileContainsY: ''
@@ -176,7 +192,6 @@ export default {
         label: '不包含',
         value: 0
       }],
-      cascaderValue: [],
       resourceList: [],
       total: 0,
       pageCount: 0,
@@ -185,7 +200,6 @@ export default {
       resourceName: '',
       resourceSortType: 0,
       resourceAuthType: 0,
-      groupId: 0,
       organId: 0,
       isReset: false
     }
@@ -193,7 +207,10 @@ export default {
   computed: {
     hasViewPermission() {
       return this.$store.getters.buttonPermissionList.includes('UnionResourceDetail')
-    }
+    },
+    ...mapGetters([
+      'isOrganAdmin'
+    ])
   },
   async created() {
     await this.getAvailableOrganList()
@@ -201,6 +218,17 @@ export default {
     await this.fetchData()
   },
   methods: {
+    closeAuthDialog() {
+      this.dialogVisible = false
+    },
+    handleAuthConfirm(data) {
+      this.userValue = data
+      this.dialogVisible = false
+    },
+    addAuthorization({ resourceId }) {
+      this.resourceId = resourceId
+      this.dialogVisible = true
+    },
     handleClear() {
       this.fetchData()
     },
@@ -253,24 +281,31 @@ export default {
         tagName,
         resourceSource,
         organId,
-        fileContainsY
+        fileContainsY,
+        queryType: this.isOrganAdmin === 2 ? 0 : 1
       }
-      const { code, result } = await getResourceList(params)
-      if (code === -1) {
-        this.$message({
-          message: '资源同步中',
-          type: 'warning'
-        })
-      }
-      if (code === 0) {
-        const { data, total, totalPage } = result
-        this.total = total
-        this.pageCount = totalPage
-        if (data.length > 0) {
-          this.resourceList = data
+      getDataResourceAssignedToMe(params).then(res => {
+        const { code, result } = res
+        if (code === 0) {
+          const { data, total, totalPage } = result
+          this.total = total
+          this.pageCount = totalPage
+          if (data.length > 0) {
+            this.resourceList = data
+          }
         }
-      }
-      this.loading = false
+        this.loading = false
+      })
+      // const { code, result } = await getDataResourceAssignedToMe(params)
+      // if (code === 0) {
+      //   const { data, total, totalPage } = result
+      //   this.total = total
+      //   this.pageCount = totalPage
+      //   if (data.length > 0) {
+      //     this.resourceList = data
+      //   }
+      // }
+      // this.loading = false
     },
     handlePagination(data) {
       this.pageNo = data.page

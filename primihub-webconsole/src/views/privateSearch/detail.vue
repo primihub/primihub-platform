@@ -11,6 +11,14 @@
           <div class="desc-label">任务ID:</div>
           <div class="desc-content">{{ taskData.taskIdName }}</div>
         </div>
+        <div class="desc-col">
+          <div class="desc-label">任务发起人:</div>
+          <div class="desc-content">{{ taskData.userName }}</div>
+        </div>
+        <div class="desc-col">
+          <div class="desc-label">任务发起时间:</div>
+          <div class="desc-content">{{ taskData.createDate }}</div>
+        </div>
       </div>
     </div>
     <div class="detail">

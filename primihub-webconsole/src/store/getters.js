@@ -4,6 +4,7 @@ const getters = {
   token: state => state.user.token,
   avatar: state => state.user.avatar,
   userName: state => state.user.userName,
+  isOrganAdmin: state => state.user.roleType === 1,
   userOrganId: state => state.user.userOrganId,
   userOrganName: state => state.user.userOrganName,
   userAccount: state => state.user.userAccount,

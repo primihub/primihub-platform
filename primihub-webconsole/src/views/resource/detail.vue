@@ -2,6 +2,7 @@
   <div v-loading="loading" class="app-container">
     <h2>资源详情</h2>
     <div class="detail">
+      <el-button class="button" type="primary" @click="toResourceAuthPage">资源授权使用记录</el-button>
       <el-descriptions title="资源信息" :column="2" label-class-name="detail-title">
         <el-descriptions-item label="资源ID">{{ resource.resourceId }}</el-descriptions-item>
         <el-descriptions-item label="资源名称">{{ resource.resourceName }}</el-descriptions-item>
@@ -107,8 +108,14 @@ export default {
     },
     cancel() {
       this.dialogVisible = false
+    },
+    toResourceAuthPage() {
+      const { resourceName } = this.resource
+      this.$router.push({
+        name: 'ResourceAuthList',
+        query: { resourceName: encodeURIComponent(resourceName) }
+      })
     }
-
   }
 }
 </script>
@@ -135,9 +142,18 @@ export default {
 .justify-content-between{
   justify-content: space-between;
 }
+.app-container{
+  padding: 25px 30px;
+}
 .detail {
-  padding: 20px 0 20px 20px;
-  border-top: 1px solid #f0f0f0;
+  position: relative;
+  padding: 20px 0 20px 0px;
+  .button{
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+  // border-top: 1px solid #f0f0f0;
 }
 .auth-dialog{
   width: 100%;

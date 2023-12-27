@@ -23,6 +23,9 @@
           </template>
           <template v-else>{{ projectDesc }}</template>
         </el-descriptions-item>
+        <el-descriptions-item label="项目发起人">
+          {{ userName }}
+        </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
     </section>
@@ -418,7 +421,7 @@ export default {
         if (res.code === 0) {
           this.listLoading = false
           this.list = res.result
-          const { projectName, projectDesc, userName, createDate, organs, creator, status, projectId } = this.list
+          const { projectName, projectDesc, createDate, organs, creator, status, projectId, userName } = this.list
           this.projectId = projectId
           this.creator = creator
           this.projectName = projectName

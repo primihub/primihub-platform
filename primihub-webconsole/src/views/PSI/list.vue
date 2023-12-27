@@ -44,9 +44,17 @@
       </el-form>
     </div>
     <div class="organ-container">
-      <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐私求交</el-button>
+      <div class="tabs">
+        <el-tabs v-if="isOrganAdmin" v-model="activeName" @tab-click="handleTabClick">
+          <el-tab-pane label="个人任务列表" name="2" />
+          <el-tab-pane label="机构任务列表" name="1" />
+        </el-tabs>
+        <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐私求交</el-button>
+      </div>
+
       <div class="organ">
         <el-table
+          v-loading="loading"
           :data="allDataPsiTask"
           class="table-list"
         >
@@ -79,6 +87,7 @@
             </template>
           </el-table-column>
           <el-table-column label="任务类型" prop="ascription" />
+          <el-table-column v-if="isOrganAdmin" prop="userName" label="发起人" />
           <el-table-column label="发起时间" prop="createDate" min-width="120px">
             <template slot-scope="{row}">
               <span>{{ row.createDate.split(' ')[0] }}</span><br>
@@ -120,8 +129,9 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
 import { getAvailableOrganList } from '@/api/center'
-import { getPsiTaskDetails, getPsiTaskList, delPsiTask, cancelTask } from '@/api/PSI'
+import { getPsiTaskList, delPsiTask, cancelTask } from '@/api/PSI'
 import PSITaskDetail from '@/components/PSITaskDetail'
 import Pagination from '@/components/Pagination'
 
@@ -143,6 +153,8 @@ export default {
   },
   data() {
     return {
+      loading: false,
+      activeName: '2',
       query: {
         organId: '',
         retrievalId: '',
@@ -182,6 +194,11 @@ export default {
       ]
     }
   },
+  computed: {
+    ...mapGetters([
+      'isOrganAdmin'
+    ])
+  },
   async created() {
     this.getPsiTaskList()
     await this.getAvailableOrganList()
@@ -193,6 +210,9 @@ export default {
     clearInterval(this.timer)
   },
   methods: {
+    handleTabClick() {
+      this.getPsiTaskList()
+    },
     handleDateChange(val) {
       if (!val) {
         this.query.createDate = []
@@ -262,10 +282,9 @@ export default {
           type: 'success',
           duration: 1000
         })
-        this.$emit('cancel', { taskId: row.taskId })
       }
     },
-    handleDelete(data) {
+    handleDelete() {
       // last page && all deleted, to the first page
       if (this.taskData.length === 0 && (this.pageNo === this.totalPage)) {
         this.pageNo = 1
@@ -276,10 +295,12 @@ export default {
       this.getPsiTaskList()
     },
     getPsiTaskList() {
+      this.loading = true
       let params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
-        resultName: this.resultName
+        resultName: this.resultName,
+        roleType: this.activeName
       }
       if (this.query.createDate && this.query.createDate.length > 0) {
         const startDate = this.query.createDate.length > 0 ? this.query.createDate[0] : ''
@@ -318,16 +339,11 @@ export default {
         if (result.length === 0) {
           clearInterval(this.timer)
         }
+        this.loading = false
       }).catch(error => {
         console.log(error)
         clearInterval(this.timer)
-      })
-    },
-    openDialog(id) {
-      this.taskId = id
-      getPsiTaskDetails({ taskId: this.taskId }).then(res => {
-        this.taskData = res.result
-        this.dialogVisible = true
+        this.loading = false
       })
     },
     handlePagination(data) {
@@ -346,6 +362,11 @@ export default {
 ::v-deep .el-input--suffix .el-input__inner{
   padding-right: 0;
 }
+::v-deep .el-tabs__item {
+  font-size: 16px;
+  height: 50px;
+  line-height: 50px;
+}
 .el-date-editor--datetimerange.el-input, .el-date-editor--datetimerange.el-input__inner{
   width: 360px;
   padding: 3px 5px;
@@ -359,7 +380,6 @@ export default {
 }
 .el-table{
   cursor: pointer;
-  margin-top: 24px;
 }
 .app-container{
   min-width: 1000px
@@ -371,6 +391,15 @@ export default {
   margin-top: 20px;
   .resource-name{
     color: #1989fa;
+  }
+  .tabs{
+    position: relative;
+    height: 60px;
+  }
+  .add-button{
+    position: absolute;
+    right: 0;
+    top: 0px;
   }
 }
 .pagination-container{

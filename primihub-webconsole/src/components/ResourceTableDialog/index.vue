@@ -39,6 +39,7 @@
         prop="resourceAuthType"
         label="可见性"
         align="center"
+        min-width="100"
       >
         <template slot-scope="{row}">
           {{ row.resourceAuthType | authTypeFilter }}

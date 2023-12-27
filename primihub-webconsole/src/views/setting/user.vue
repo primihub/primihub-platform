@@ -23,7 +23,7 @@
       <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNum" :total="itemTotalCount" @pagination="handlePagination" />
     </div>
     <!-- 新增/编辑用户弹窗 -->
-    <el-dialog :visible.sync="dialogVisible" custom-class="user-dialog" :title="dialogTitle" closable :before-close="closeDialog">
+    <el-dialog :visible.sync="dialogVisible" :close-on-click-modal="false" custom-class="user-dialog" :title="dialogTitle" closable :before-close="closeDialog">
       <el-form ref="userForm" :model="userInfo" label-width="100px" :rules="rules" label-position="right">
         <el-form-item label="账户名" prop="userAccount">
           <el-input v-model="userInfo.userAccount" :disabled="dialogFlag === 'edit'" />

@@ -134,7 +134,8 @@ export default {
         startDate: createDate && createDate[0],
         endDate: createDate && createDate[1],
         taskIdName: this.query.taskIdName,
-        tag: this.query.tag
+        tag: this.query.tag,
+        queryType: this.$store.getters.isOrganAdmin ? '1' : '0'
       }
       const { code, result } = await getDerivationResourceList(params)
       if (code === 0) {
