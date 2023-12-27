@@ -334,6 +334,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setJobId(String.valueOf(job));
+                // 查询目标值，同组查询目标值使用逗号的字符串隔开
                 String[] querys = new String[dataPirKeyQuery.getQuery().size()];
                 for (int i = 0; i < dataPirKeyQuery.getQuery().size(); i++) {
                     querys[i] = String.join(",", dataPirKeyQuery.getQuery().get(i));
@@ -356,31 +357,54 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, String resourceId, String param) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries) {
         Date date = new Date();
         try {
+            dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+            updateTaskState(dataTask);
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
-            TaskPIRParam pirParam = new TaskPIRParam();
-            pirParam.setQueryParam(param.split(","));
-            pirParam.setServerData(resourceId);
-            pirParam.setOutputFullFilename(dataTask.getTaskResultPath());
-            TaskParam taskParam = new TaskParam();
-            taskParam.setTaskContentParam(pirParam);
-            taskParam.setTaskId(dataTask.getTaskIdName());
-            taskHelper.submit(taskParam);
-            if (taskParam.getSuccess()){
-                dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            }else {
-                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
+//            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
+            Map<String,String> jobMap = new HashMap<>();
+            List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
+            for (int i = 0; i < dataPirKeyQueries.size(); i++) {
+                FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i);
+                primaryThreadPool.submit(pirTaskFutureTask);
+                futureTasks.add(pirTaskFutureTask);
+                jobMap.put(i+"",String.join("+",dataPirKeyQueries.get(i).getKey()));
+            }
+            List<TaskParam<TaskPIRParam>> listTaskParams = new ArrayList<>();
+            for (FutureTask<TaskParam<TaskPIRParam>> futureTask : futureTasks) {
+                listTaskParams.add(futureTask.get());
+            }
+            for (TaskParam<TaskPIRParam> listTaskParam : listTaskParams) {
+                if (dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())){
+                    if (!listTaskParam.getSuccess()){
+                        dataTask.setTaskErrorMsg("\n【"+jobMap.get(listTaskParam.getJobId())+"】匹配规则出错:"+listTaskParam.getError());
+                    }
+                }
+                if (!listTaskParam.getSuccess()){
+                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    dataTask.setTaskErrorMsg("\n【"+jobMap.get(listTaskParam.getJobId())+"】匹配规则出错:"+listTaskParam.getError());
+                }else {
+                    dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                }
+            }
+            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+                List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
+//                log.info("数据写入文件sb:{} -  pirTaskResultDataSize:{}",sb.toString(),pirTaskResultData.size());
+                boolean b = CsvUtil.csvWrite(sb.toString(), pirTaskResultData);
+//                log.info("数据写入文件结果:{}",b);
+
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}", e.getMessage());
             e.printStackTrace();
+        }finally {
+            dataRedisRepository.deletePirTaskResultKey(dataTask.getTaskIdName());
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
