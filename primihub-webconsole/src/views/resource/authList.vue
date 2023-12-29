@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="resource">
-      <el-button v-if="resourceAuthType !== '1' && activeName === '1'" class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="addAuthorization">添加授权</el-button>
+      <el-button v-if="resourceAuthType !== 1 && activeName === '1'" class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="addAuthorization">添加授权</el-button>
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane label="资源使用情况" name="0">
           <div class="resource-info flex margin-bottom-5">
@@ -190,7 +190,7 @@ export default {
     this.resourceId = this.$route.params.id || ''
     this.resourceFusionId = this.$route.query.id || this.resourceId || ''
     this.resourceName = decodeURIComponent(this.$route.query.resourceName)
-    this.resourceAuthType = this.$route.query.resourceAuthType || ''
+    this.resourceAuthType = this.$route.query.resourceAuthType
     console.log('resourceId', this.resourceId)
     await this.getDataResourceUsage()
   },

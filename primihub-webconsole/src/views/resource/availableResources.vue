@@ -401,6 +401,7 @@ export default {
     },
     async getDataSetList() {
       this.loading = true
+      this.resourceList = []
       const otherOrganId = this.organList.map(item => item.globalId)
       const organName = this.organList.find(item => item.globalId === this.query.organId)?.globalName
       const params = {
