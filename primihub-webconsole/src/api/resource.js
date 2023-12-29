@@ -1,5 +1,12 @@
 import request from '@/utils/request'
 
+export function getDataResourceAssignedToMe(params) {
+  return request({
+    url: '/data/resource/getDataResourceAssignedToMe',
+    method: 'get',
+    params
+  })
+}
 export function getDerivationResourceData(params) {
   return request({
     url: '/data/resource/getDerivationResourceData',
@@ -21,10 +28,25 @@ export function displayDatabaseSourceType(params) {
     params
   })
 }
+export function getDataResourceUsage(params) {
+  return request({
+    url: '/data/resource/getDataResourceUsage',
+    method: 'get',
+    params
+  })
+}
 
 export function healthConnection(data) {
   return request({
     url: '/data/dbsource/healthConnection',
+    method: 'post',
+    type: 'json',
+    data
+  })
+}
+export function saveDataResourceAssignment(data) {
+  return request({
+    url: '/data/resource/saveDataResourceAssignment',
     method: 'post',
     type: 'json',
     data
@@ -55,11 +77,41 @@ export function getResourceList(params) {
     params
   })
 }
+export function getDataResourceToApply(params) {
+  return request({
+    url: '/data/resource/getDataResourceToApply',
+    method: 'get',
+    params
+  })
+}
 export function getDataResourceAssignmentDetail(params) {
   return request({
     url: '/data/resource/getDataResourceAssignmentDetail',
     method: 'get',
     params
+  })
+}
+export function saveDataResourceUserAssignment(params) {
+  return request({
+    url: '/data/resource/saveDataResourceUserAssignment',
+    method: 'post',
+    data: params,
+    type: 'json'
+  })
+}
+export function saveDataResourceAssign(params) {
+  return request({
+    url: '/data/resource/saveDataResourceAssign',
+    method: 'post',
+    data: params,
+    type: 'json'
+  })
+}
+export function changeDataResourceAuthStatus(params) {
+  return request({
+    url: '/data/resource/changeDataResourceAuthStatus',
+    method: 'post',
+    data: params
   })
 }
 export function getDataSetList(params) {

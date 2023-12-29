@@ -2,7 +2,7 @@
   <div class="container">
     <div class="search-area">
       <el-form :model="query" label-width="100px" :inline="true" @keyup.enter.native="search">
-        <el-form-item label="机构">
+        <el-form-item v-if="isOrganAdmin" label="机构">
           <el-select v-model="query.organId" size="small" placeholder="请选择" clearable @change="handleOrganChange" @clear="handleClear">
             <el-option
               v-for="item in organList"
@@ -48,6 +48,10 @@
       </el-form>
     </div>
     <div class="resource">
+      <el-tabs v-if="!isOrganAdmin" v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="机构内资源" name="0" />
+        <el-tab-pane label="其他机构资源" name="1" />
+      </el-tabs>
       <el-table
         v-loading="loading"
         :data="resourceList"
@@ -64,7 +68,7 @@
           label="资源所属机构"
         />
         <el-table-column
-          prop="organName"
+          prop="userName"
           label="被授权人"
         />
         <el-table-column
@@ -72,11 +76,8 @@
           min-width="160"
         >
           <template slot-scope="{row}">
-            <template v-if="hasViewPermission">
+            <template>
               <el-link type="primary" @click="toResourceDetailPage(row.resourceId)">{{ row.resourceId }}</el-link><br>
-            </template>
-            <template v-else>
-              {{ row.resourceId }}<br>
             </template>
           </template>
         </el-table-column>
@@ -89,8 +90,14 @@
           label="标签"
         >
           <template slot-scope="{row}">
-            <el-tag v-for="(tag,index) in row.resourceTag" :key="index" type="success" size="mini" class="tag">{{ tag }}</el-tag>
+            <template v-if="row.tags">
+              <el-tag v-for="tag in row.tags" :key="tag.tagId" type="success" size="mini" class="tag">{{ tag.tagName }}</el-tag>
+            </template>
+            <template v-else>
+              <el-tag v-for="(tag,index) in row.resourceTag" :key="index" type="success" size="mini" class="tag">{{ tag }}</el-tag>
+            </template>
           </template>
+
         </el-table-column>
         <el-table-column
           label="数据信息"
@@ -111,10 +118,10 @@
           align="center"
         >
           <template slot-scope="{row}">
-            {{ row.resourceType | sourceFilter }}
+            {{ row.resourceSource ? row.resourceSource : row.resourceType | sourceFilter }}
           </template>
         </el-table-column>
-        <el-table-column
+        <!-- <el-table-column
           prop="resourceAuthType"
           label="可见性"
           align="center"
@@ -123,7 +130,7 @@
           <template slot-scope="{row}">
             {{ row.resourceAuthType | authTypeFilter }}
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           label="上传者"
           min-width="160"
@@ -144,15 +151,17 @@
           </template>
         </el-table-column>
       </el-table>
-      <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
+
     </div>
+    <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     <!-- <authorizationUserDialog :visible.sync="dialogVisible" :resource-id="resourceId" @close="closeAuthDialog" @cancel="closeAuthDialog" @submit="handleAuthConfirm" /> -->
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import { getDataResourceAssignedToMe, getResourceTagList } from '@/api/fusionResource'
+import { getFusionDataResourceAssignedToMe, getResourceTagList } from '@/api/fusionResource'
+import { getDataResourceAssignedToMe } from '@/api/resource'
 import { getAvailableOrganList } from '@/api/center'
 import Pagination from '@/components/Pagination'
 import TagsSelect from '@/components/TagsSelect'
@@ -162,6 +171,8 @@ export default {
   components: { Pagination, TagsSelect },
   data() {
     return {
+      params: {},
+      activeName: '0',
       dialogVisible: false,
       resourceId: 0,
       userValue: [],
@@ -205,9 +216,6 @@ export default {
     }
   },
   computed: {
-    hasViewPermission() {
-      return this.$store.getters.buttonPermissionList.includes('UnionResourceDetail')
-    },
     ...mapGetters([
       'isOrganAdmin'
     ])
@@ -215,9 +223,22 @@ export default {
   async created() {
     await this.getAvailableOrganList()
     await this.getResourceTagList()
-    await this.fetchData()
+    await this.firstFetchData()
   },
   methods: {
+    handleClick() {
+      // this.pageNo = 1
+      // this.totalPage = 0
+      // this.total = 1
+      // this.pageCount = 1
+      this.reset()
+      console.log(this.activeName)
+      if (this.activeName === '1') {
+        this.getFusionDataResourceAssignedToMe()
+      } else {
+        this.getDataResourceAssignedToMe()
+      }
+    },
     closeAuthDialog() {
       this.dialogVisible = false
     },
@@ -242,7 +263,7 @@ export default {
     },
     async search() {
       this.pageNo = 1
-      await this.fetchData()
+      this.fetchData()
     },
     async getResourceTagList() {
       const { result } = await getResourceTagList()
@@ -273,7 +294,7 @@ export default {
       this.loading = true
       this.resourceList = []
       const { resourceId, resourceName, tagName, organId, resourceSource, fileContainsY } = this.query
-      const params = {
+      this.params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         resourceId,
@@ -282,9 +303,38 @@ export default {
         resourceSource,
         organId,
         fileContainsY,
-        queryType: this.isOrganAdmin === 2 ? 0 : 1
+        queryType: this.isOrganAdmin ? '1' : '0'
       }
-      getDataResourceAssignedToMe(params).then(res => {
+      if (this.activeName === '1') {
+        this.getFusionDataResourceAssignedToMe()
+      } else {
+        this.getDataResourceAssignedToMe()
+      }
+    },
+    async firstFetchData() {
+      this.loading = true
+      this.resourceList = []
+      const { resourceId, resourceName, tagName, organId, resourceSource, fileContainsY } = this.query
+      this.params = {
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
+        resourceId,
+        resourceName,
+        tagName,
+        resourceSource,
+        organId,
+        fileContainsY,
+        queryType: this.isOrganAdmin ? '1' : '0'
+      }
+      if (this.isOrganAdmin) {
+        this.getFusionDataResourceAssignedToMe()
+      } else {
+        this.getDataResourceAssignedToMe()
+      }
+    },
+    getFusionDataResourceAssignedToMe() {
+      console.log(this.params)
+      getFusionDataResourceAssignedToMe(this.params).then(res => {
         const { code, result } = res
         if (code === 0) {
           const { data, total, totalPage } = result
@@ -296,20 +346,31 @@ export default {
         }
         this.loading = false
       })
-      // const { code, result } = await getDataResourceAssignedToMe(params)
-      // if (code === 0) {
-      //   const { data, total, totalPage } = result
-      //   this.total = total
-      //   this.pageCount = totalPage
-      //   if (data.length > 0) {
-      //     this.resourceList = data
-      //   }
-      // }
-      // this.loading = false
+    },
+    getDataResourceAssignedToMe() {
+      console.log(this.params)
+      getDataResourceAssignedToMe(this.params).then(res => {
+        const { code, result } = res
+        if (code === 0) {
+          const { data, total, totalPage } = result
+          this.total = total
+          this.pageCount = totalPage
+          if (data.length > 0) {
+            this.resourceList = data
+          }
+        }
+        this.loading = false
+      })
     },
     handlePagination(data) {
       this.pageNo = data.page
-      this.fetchData()
+      this.params.pageNo = this.pageNo
+      console.log(this.pageNo)
+      if (this.activeName === '1') {
+        this.getFusionDataResourceAssignedToMe()
+      } else {
+        this.getDataResourceAssignedToMe()
+      }
     },
     toResourceDetailPage(id) {
       this.$router.push({

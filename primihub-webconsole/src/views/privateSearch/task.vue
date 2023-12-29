@@ -102,7 +102,7 @@
 import { mapGetters } from 'vuex'
 import { pirSubmitTask } from '@/api/PIR'
 import { getAvailableOrganList } from '@/api/center'
-import { getCoopResourceList } from '@/api/fusionResource'
+import { getResourceList } from '@/api/fusionResource'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
@@ -212,7 +212,7 @@ export default {
         organId: this.form.organId,
         resourceName: this.searchKeyword
       }
-      const { code, result } = await getCoopResourceList(params)
+      const { code, result } = await getResourceList(params)
       if (code === 0) {
         const { data, total, totalPage } = result
         this.total = total

@@ -62,7 +62,7 @@
           </el-radio-group>
           <div v-if="dataForm.resourceAuthType !== 1" class="flex">
             <el-button type="primary" @click="openAuthDialog">指定授权</el-button>
-            <div v-if="organValue.length > 0 && userValue.length > 0" style="margin-left: 10px;">已授权{{ organValue.length }}个机构，{{ userValue.length }}个用户</div>
+            <div v-if="organValue.length > 0 || userValue.length > 0" style="margin-left: 10px;">已授权 <span v-if="organValue.length > 0">{{ organValue.length }}个机构</span> <template v-if="organValue.length > 0 && userValue.length > 0">，</template><span v-if="userValue.length > 0">{{ userValue.length }}个用户</span></div>
           </div>
         </div>
       </el-form-item>
@@ -179,6 +179,7 @@ export default {
   },
   data() {
     return {
+      resourceAuthType: '',
       organLeftDefaultChecked: [],
       organRightDefaultChecked: [],
       organLoading: false,
@@ -196,8 +197,7 @@ export default {
         resourceSource: 1,
         resourceAuthType: 1,
         fileId: -1, // 文件id
-        fieldList: [],
-        fusionOrganList: []
+        fieldList: []
       },
       dataRules: {
         resourceName: [
@@ -270,11 +270,17 @@ export default {
     async openAuthDialog() {
       this.dialogVisible = true
       await this.getAvailableOrganList()
+      this.$nextTick(() => {
+        this.organRightDefaultChecked = this.organValue
+        console.log('organRightDefaultChecked', this.organRightDefaultChecked)
+      })
     },
     handleAuthConfirm() {
       this.stepActive = 1
       this.dialogVisible = false
-      this.userValue = this.userRightDefaultChecked
+      if (this.userRightDefaultChecked.length > 0) {
+        this.userValue = this.userRightDefaultChecked
+      }
       console.log('organValue', this.organValue)
       console.log('userValue', this.userValue)
     },
@@ -283,10 +289,6 @@ export default {
       this.stepActive = 1
     },
     handleStep() {
-      if (this.stepActive === 1 && this.organValue.length === 0) {
-        this.$message.error('请先选择机构')
-        return
-      }
       this.stepActive = this.stepActive === 1 ? 2 : 1
       console.log('this.userValue', this.userValue)
       this.$nextTick(() => {
@@ -412,23 +414,27 @@ export default {
             })
           }
           if (this.dataForm.resourceAuthType !== 1) {
-            this.organValue.forEach(item => {
-              const current = this.organList.find(organ => organ.key === item)
-              console.log(current, item)
-              this.fusionOrganList.push({
-                organGlobalId: current.key,
-                organName: current.label
+            if (this.organValue.length > 0) {
+              this.organValue.forEach(item => {
+                const current = this.organList.find(organ => organ.key === item)
+                console.log(current, item)
+                this.fusionOrganList.push({
+                  organGlobalId: current.key,
+                  organName: current.label
+                })
               })
-            })
-            if (this.fusionOrganList.length > 0) {
-              this.dataForm.fusionOrganList = this.fusionOrganList
+              this.dataForm = Object.assign(this.dataForm, {
+                fusionOrganList: this.fusionOrganList
+              })
+              // this.dataForm.fusionOrganList = this.fusionOrganList
             }
-
-            this.dataForm.userAssignList = this.userValue.map(item => {
-              return {
-                userId: item
-              }
-            })
+            if (this.userValue.length > 0) {
+              this.dataForm.userAssignList = this.userValue.map(item => {
+                return {
+                  userId: item
+                }
+              })
+            }
           }
 
           this.loading = true
@@ -464,22 +470,19 @@ export default {
     async getResourceDetail() {
       this.loading = true
       const { result = {}} = await getResourceDetail(this.resourceId)
-      const { resource, dataList, fieldList, fusionOrganList } = result
+      const { resource, dataList, fieldList, fusionOrganList, userAssignList } = result
       const { resourceName, resourceDesc, resourceAuthType, resourceSource, tags, fileId, url } = resource
       this.resource = resource
       this.dataForm.resourceName = resourceName
       this.dataForm.resourceDesc = resourceDesc
       this.dataForm.resourceAuthType = resourceAuthType
+      this.resourceAuthType = resourceAuthType
       this.dataForm.resourceSource = resourceSource
       this.dataForm.fileId = fileId
       this.dataList = dataList || []
       this.fieldList = fieldList || []
-      this.fusionOrganList = fusionOrganList.map(item => {
-        return {
-          organGlobalId: item.organGlobalId,
-          organName: item.organName
-        }
-      })
+      this.organValue = fusionOrganList.map(item => item.organGlobalId)
+      this.userValue = userAssignList.map(item => item.userId)
       this.dataForm.fieldList = this.formatParams()
       tags.forEach(item => {
         this.dataForm.tags.push(item.tagName)
@@ -492,9 +495,14 @@ export default {
         name: 'ResourceList'
       })
     },
-    async handleAuthTypeChange() {
-      this.organValue = []
-      this.userValue = []
+    async handleAuthTypeChange(value) {
+      console.log(value, this.resourceAuthType)
+      if (value !== this.resourceAuthType) {
+        debugger
+        this.stepActive = 1
+        this.organValue = []
+        this.userValue = []
+      }
     }
   }
 }

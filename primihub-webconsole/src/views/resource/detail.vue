@@ -110,10 +110,10 @@ export default {
       this.dialogVisible = false
     },
     toResourceAuthPage() {
-      const { resourceName } = this.resource
+      const { resourceName, resourceFusionId, resourceAuthType } = this.resource
       this.$router.push({
         name: 'ResourceAuthList',
-        query: { resourceName: encodeURIComponent(resourceName) }
+        query: { id: resourceFusionId, resourceName: encodeURIComponent(resourceName), resourceAuthType }
       })
     }
   }

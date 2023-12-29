@@ -1,5 +1,13 @@
 import request from '@/utils/request'
 
+export function getFusionDataResourceToApply(params) {
+  return request({
+    url: '/data/fusionResource/getDataResourceToApply',
+    method: 'get',
+    showLoading: false,
+    params
+  })
+}
 export function getResourceList(params) {
   return request({
     url: '/data/fusionResource/getResourceList',
@@ -31,9 +39,9 @@ export function getDataResource(params) {
   })
 }
 
-export function getDataResourceAssignedToMe(params) {
+export function getFusionDataResourceAssignedToMe(params) {
   return request({
-    url: '/data/resource/getDataResourceAssignedToMe',
+    url: '/data/fusionResource/getDataResourceAssignedToMe',
     method: 'get',
     params
   })

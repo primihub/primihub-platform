@@ -1,95 +1,182 @@
 <template>
   <div class="container">
     <div class="resource">
-      <div class="resource-info flex margin-bottom-5">
-        <div>资源ID: {{ resourceId }}
-          资源名称: {{ resourceName }}</div>
-        <el-button v-if="isOrganAdmin" class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="addAuthorization">添加授权</el-button>
-      </div>
-      <el-table
-        v-loading="loading"
-        :data="resourceList"
-        :row-class-name="tableRowDisabled"
-        empty-text="暂无数据"
-        border
-      >
-        <el-table-column
-          prop="resourceId"
-          label="被授权人"
-        />
-        <el-table-column
-          prop="organName"
-          label="被授权人所在机构"
-        />
-        <el-table-column
-          prop="applyTime"
-          label="申请授权时间"
-        />
-        <!-- 0申请中，1审核通过，2审核拒绝 -->
-        <el-table-column
-          prop="auditStatus"
-          label="授权状态"
-        >
-          <template slot-scope="{row}">
-            {{ row.auditStatus === 1 ? '已授权' : row.auditStatus === 2 ? '已拒绝' : '申请待确认' }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="assignTime"
-          label="授权时间"
-        />
-        <el-table-column
-          label="操作"
-          fixed="right"
-          width="160"
-          align="center"
-        >
-          <template slot-scope="{row}">
-            <!-- <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button> -->
-            <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '取消授权': '确认授权' }}</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <el-button v-if="resourceAuthType !== '1' && activeName === '1'" class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="addAuthorization">添加授权</el-button>
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="资源使用情况" name="0">
+          <div class="resource-info flex margin-bottom-5">
+            <div class="flex">
+              <p class="margin-right-10 ">资源ID: {{ $route.params.id }}</p>
+              <p>资源名称: {{ resourceName }}</p>
+            </div>
+
+          </div>
+          <el-table
+            :data="resourceUseList"
+            empty-text="暂无数据"
+            border
+          >
+            <el-table-column
+              label="序号"
+              type="index"
+              width="50"
+              align="center"
+            />
+            <el-table-column
+              prop="taskName"
+              label="使用任务"
+            />
+            <el-table-column
+              prop="taskId"
+              label="任务ID"
+            />
+            <el-table-column
+              prop="projectName"
+              label="所属项目"
+            >
+              <template slot-scope="{row}">
+                <el-link type="primary" @click="toProjectPage(row)">{{ row.projectName }}</el-link>
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="assignTime"
+              label="使用时间"
+            />
+          </el-table>
+        </el-tab-pane>
+        <el-tab-pane label="资源授权情况" name="1">
+          <div class="resource-info flex margin-bottom-5">
+            <div class="flex">
+              <p class="margin-right-10 ">资源ID: {{ $route.params.id }}</p>
+              <p>资源名称: {{ resourceName }}</p>
+            </div>
+          </div>
+          <el-table
+            :data="resourceList"
+            empty-text="暂无数据"
+            border
+          >
+            <el-table-column
+              label="序号"
+              type="index"
+              width="50"
+              align="center"
+            />
+            <el-table-column
+              prop="userName"
+              label="被授权人"
+            />
+            <el-table-column
+              prop="organName"
+              label="被授权人所在机构"
+            />
+            <el-table-column
+              prop="applyTime"
+              label="申请授权时间"
+            />
+            <!-- 0申请中，1审核通过，2审核拒绝 -->
+            <el-table-column
+              prop="auditStatus"
+              label="授权状态"
+            >
+              <template slot-scope="{row}">
+                {{ row.auditStatus === 1 ? '已授权' : row.auditStatus === 2 ? '已拒绝' : '申请待确认' }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="assignTime"
+              label="授权时间"
+            />
+            <el-table-column
+              label="操作"
+              fixed="right"
+              width="160"
+              align="center"
+            >
+              <template slot-scope="{row}">
+                <el-button v-if="row.auditStatus === 1 || row.auditStatus === 0" type="text" @click="changeResourceStatus(2)">取消授权</el-button>
+                <el-button v-if="row.auditStatus === 0" type="text" @click="changeResourceStatus(1)">确认授权</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
     </div>
-    <authorizationUserDialog :visible.sync="dialogVisible" :resource-id="resourceId" @close="closeAuthDialog" @cancel="closeAuthDialog" @submit="handleAuthConfirm" />
     <pagination v-show="pageCount>1" :limit.sync="pageSize" :page-count="pageCount" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
+    <el-dialog
+      title="选择授权对象 / 选择机构"
+      :visible.sync="dialogVisible"
+      width="700px"
+    >
+      <template v-if="stepActive === 1">
+        <div class="flex">
+          <el-transfer
+            ref="organTransfer"
+            v-model="organValue"
+            v-loading="organLoading"
+            class="transfer-container"
+            filterable
+            :left-default-checked="organLeftDefaultChecked"
+            :right-default-checked="organRightDefaultChecked"
+            :titles="['已建立连接机构', '已选']"
+            :format="{
+              noChecked: '${total}',
+              hasChecked: '${checked}/${total}'
+            }"
+            :data="organList"
+            @change="handleChange($event, 'organ')"
+          >
+            <span slot-scope="{ option }">{{ option.label }}</span>
+          </el-transfer>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="closeAuthDialog">取消</el-button>
+          <el-button type="primary" @click="handleStep">下一步</el-button>
+        </span>
+      </template>
+      <template v-else>
+        <AuthorizationUserTransfer :value="userValue" @change="handleChange($event, 'user')" />
+        <span slot="footer" class="dialog-footer">
+          <el-button type="primary" @click="handleStep">上一步</el-button>
+          <el-button @click="handleAuthConfirm">确定</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import { getDataResourceAssignmentDetail, getResourceTags, deleteResource, resourceStatusChange } from '@/api/resource'
+import { getAvailableOrganList } from '@/api/center'
+import { getDataResourceUsage, getDataResourceAssignmentDetail, changeDataResourceAuthStatus, saveDataResourceAssignment } from '@/api/resource'
 import Pagination from '@/components/Pagination'
-import authorizationUserDialog from '@/components/authorizationUserDialog'
+import AuthorizationUserTransfer from '@/components/authorizationUserTransfer'
 
 export default {
-  components: { Pagination, authorizationUserDialog },
+  components: { Pagination, AuthorizationUserTransfer },
   data() {
     return {
+      organList: [],
+      stepActive: 1,
+      organLeftDefaultChecked: [],
+      organRightDefaultChecked: [],
+      organLoading: false,
+      organValue: [],
       userValue: [],
       resourceId: 0,
+      resourceFusionId: '',
       dialogVisible: false,
       loading: false,
-      activeName: '2',
-      query: {
-        fileContainsY: '', resourceId: '', resourceName: '', tag: null, userName: '', resourceSource: '', selectTag: 0, resourceAuthType: ''
-      },
-      tags: [],
-      resourceSourceList: [{
-        label: '文件上传',
-        value: 1
-      }, {
-        label: '数据库导入',
-        value: 2
-      }],
+      activeName: '0',
       resourceList: [],
       currentPage: 1,
       total: 0,
       pageCount: 0,
       pageNo: 1,
-      pageSize: 10,
+      pageSize: 5,
       resourceName: '',
-      isReset: false
+      resourceAuthType: '',
+      resourceUseList: []
     }
   },
   computed: {
@@ -101,106 +188,121 @@ export default {
   async created() {
     console.log(this.$route.query)
     this.resourceId = this.$route.params.id || ''
+    this.resourceFusionId = this.$route.query.id || this.resourceId || ''
     this.resourceName = decodeURIComponent(this.$route.query.resourceName)
+    this.resourceAuthType = this.$route.query.resourceAuthType || ''
     console.log('resourceId', this.resourceId)
-    await this.fetchData()
-    await this.getResourceTags()
+    await this.getDataResourceUsage()
   },
   methods: {
+    toProjectPage({ projectId }) {
+      this.$router.push({
+        name: 'ProjectDetail',
+        params: { id: projectId || 90 }
+      })
+    },
+    handleChange(value, name) {
+      if (name === 'organ') {
+        this.organRightDefaultChecked = value
+      } else {
+        this.userRightDefaultChecked = value
+      }
+    },
+    async getAvailableOrganList() {
+      this.organLoading = true
+      const { result } = await getAvailableOrganList()
+      this.organList = result.map(item => {
+        return {
+          key: item.globalId,
+          label: item.globalName
+        }
+      })
+      this.organLoading = false
+      console.log('organList', this.organList)
+    },
+    handleStep() {
+      this.stepActive = this.stepActive === 1 ? 2 : 1
+      console.log('this.userValue', this.userValue)
+      this.$nextTick(() => {
+        this.$refs.organTransfer && this.$refs.organTransfer.clearQuery('left')
+        this.$refs.organTransfer && this.$refs.organTransfer.clearQuery('right')
+        this.$refs.userTransfer && this.$refs.userTransfer.clearQuery('left')
+        this.$refs.userTransfer && this.$refs.userTransfer.clearQuery('right')
+      })
+    },
+    handleClick() {
+      console.log(this.activeName)
+      if (this.activeName === '1') {
+        this.getAuthList()
+      } else {
+        this.getDataResourceUsage()
+      }
+      this.pageNo = 1
+      this.total = 0
+      this.pageCount = 1
+    },
     closeAuthDialog() {
       this.dialogVisible = false
     },
-    handleAuthConfirm(data) {
-      this.userValue = data
+    handleAuthConfirm() {
+      this.stepActive = 1
       this.dialogVisible = false
+      let params = {
+        resourceId: this.resourceId,
+        resourceFusionId: this.resourceFusionId
+        // fusionOrganList: [],
+        // userAssignList: []
+      }
+      if (this.userRightDefaultChecked.length > 0) {
+        this.userValue = this.userRightDefaultChecked
+        const userAssignList = this.userValue.map(item => {
+          return {
+            userId: item
+          }
+        })
+        params = Object.assign(params, { userAssignList })
+      }
+      if (this.organValue.length > 0) {
+        const fusionOrganList = []
+        this.organValue.forEach(item => {
+          const current = this.organList.find(organ => organ.key === item)
+          console.log(current, item)
+          fusionOrganList.push({
+            organGlobalId: current.key,
+            organName: current.label
+          })
+        })
+        params = Object.assign(params, { fusionOrganList })
+      }
+      saveDataResourceAssignment(params).then(res => {
+        if (res.code === 0) {
+          this.userValue = []
+          this.$message.success('授权成功')
+        } else {
+          this.$message.error('授权失败')
+        }
+      })
+      console.log('organValue', this.organValue)
+      console.log('userValue', this.userValue)
     },
     addAuthorization() {
       this.dialogVisible = true
+      this.getAvailableOrganList()
     },
-    handleTabClick() {
-      this.fetchData()
-    },
-    reset() {
-      this.isReset = true
-      for (const key in this.query) {
-        this.query[key] = ''
-      }
-      this.pageNo = 1
-      this.fetchData()
-    },
-    tableRowDisabled({ row }) {
-      if (row.resourceState === 1) {
-        return 'resource-disabled'
-      } else {
-        return ''
-      }
-    },
-    changeResourceStatus({ resourceId, resourceState }) {
-      resourceState = resourceState === 0 ? 1 : 0
-      resourceStatusChange({ resourceId, resourceState }).then(res => {
-        if (res.code === 0) {
-          this.$message({
-            message: resourceState === 0 ? '上线成功' : '下线成功',
-            type: 'success'
-          })
-          const posIndex = this.resourceList.findIndex(item => item.resourceId === resourceId)
-          this.resourceList[posIndex].resourceState = resourceState
-        }
+    changeResourceStatus(auditStatus) {
+      changeDataResourceAuthStatus({
+        auditStatus,
+        resourceId: this.resourceId,
+        queryType: this.isOrganAdmin ? '1' : '2'
       })
     },
-    async getResourceTags() {
-      const { result } = await getResourceTags()
-      this.tags = result && result.map((item, index) => {
-        return {
-          value: index,
-          label: item
-        }
-      })
-    },
-    handleTagChange(tagName) {
-      this.query.tag = tagName
-      this.query.selectTag = 0
-    },
-    searchResource(tagName) {
-      this.pageNo = 1
-      if (tagName !== '') {
-        this.query.tag = tagName
-        this.query.selectTag = 1
-        this.fetchData()
-      }
-    },
-    handleResourceDelete(resourceId) {
-      this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.confirmDelete(resourceId)
-        this.fetchData()
-      }).catch(() => {})
-    },
-    confirmDelete(resourceId) {
-      deleteResource(resourceId).then(res => {
-        if (res.code === 0) {
-          this.$message({
-            message: '删除成功',
-            type: 'success'
-          })
-        } else {
-          this.$message({
-            message: res.msg,
-            type: 'error'
-          })
-        }
-      })
-    },
-    async fetchData() {
+    async getAuthList() {
       this.loading = true
       const params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
-        resourceFusionId: this.resourceId,
-        queryType: 1
+        resourceFusionId: this.resourceFusionId,
+        queryType: this.isOrganAdmin ? '1' : '2'
       }
       try {
         const res = await getDataResourceAssignmentDetail(params)
@@ -218,9 +320,36 @@ export default {
         this.loading = false
       }
     },
+    async getDataResourceUsage() {
+      this.loading = true
+      const params = {
+        pageNo: this.pageNo,
+        pageSize: this.pageSize,
+        resourceId: this.resourceId
+      }
+      try {
+        const res = await getDataResourceUsage(params)
+        if (res.code === 0) {
+          const { data, total, totalPage } = res.result
+          this.total = total
+          this.pageCount = totalPage
+          if (data.length > 0) {
+            this.resourceUseList = data
+          }
+          this.isReset = false
+        }
+        this.loading = false
+      } catch (e) {
+        this.loading = false
+      }
+    },
     handlePagination(data) {
       this.pageNo = data.page
-      this.fetchData()
+      if (this.activeName === '1') {
+        this.getAuthList()
+      } else {
+        this.getDataResourceUsage()
+      }
     }
   }
 }
@@ -229,6 +358,7 @@ export default {
 @import "~@/styles/resource.scss";
 .resource{
   position: relative;
+  padding-top: 30px;
   .resource-info{
     padding: 10px 0;
     display: flex;
@@ -236,7 +366,9 @@ export default {
     justify-content: space-between;
   }
   .add-button{
-    position: relative;
+    right: 40px;
+    top: 30px;
+    z-index: 10;
   }
   .resource-info{
     margin-bottom: 10px;

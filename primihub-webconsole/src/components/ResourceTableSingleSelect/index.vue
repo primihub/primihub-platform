@@ -7,11 +7,10 @@
       :data="data"
       v-bind="$attrs"
       highlight-current-row
-      :row-class-name="tableRowClassName"
     >
       <el-table-column label="选择" width="55" align="center">
         <template slot-scope="{row}">
-          <el-radio v-model="radioSelect" :disabled="row.auditStatus !== undefined && row.auditStatus !== 1" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
+          <el-radio v-model="radioSelect" :label="row.resourceId" @change="handleRadioChange(row)"><i /></el-radio>
         </template>
       </el-table-column>
       <el-table-column
@@ -36,7 +35,7 @@
         prop="resourceDesc"
         label="资源描述"
       />
-      <el-table-column
+      <!-- <el-table-column
         v-if="showStatus"
         prop="auditStatus"
         label="审核状态"
@@ -45,7 +44,7 @@
         <template slot-scope="{row}">
           {{ row.auditStatus | resourceAuditStatusFilter }}
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column
         v-if="showPreviewButton"
         label="操作"
@@ -132,13 +131,6 @@ export default {
     },
     closeDialog() {
       this.previewDialogVisible = false
-    },
-    tableRowClassName({ row }) {
-      if (row.auditStatus !== undefined && row.auditStatus !== 1) {
-        return 'row-disabled'
-      } else {
-        return ''
-      }
     },
     handleRadioChange(row) {
       this.currentRow = row

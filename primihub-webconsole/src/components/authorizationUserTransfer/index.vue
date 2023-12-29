@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { getUserList } from '@/api/userAdmin'
+import { findUserPageSummary } from '@/api/user'
 
 export default {
   name: 'AuthorizationUserTransfer',
@@ -66,28 +66,15 @@ export default {
         pageSize: 100,
         pageNum: 1
       }
-      getUserList(params).then((res) => {
+      findUserPageSummary(params).then((res) => {
         if (res.code === 0) {
-          const { sysUserList } = res.result
-          const userList = sysUserList.map(item => {
+          const { data } = res.result
+          const userList = data.map(item => {
             return {
               key: item.userId,
               label: item.userName
             }
           })
-          // this.userList = sysUserList.map(item => {
-          //   return {
-          //     key: item.userId,
-          //     label: item.userName
-          //   }
-          // })
-          // if (this.userValue.length > 0) {
-          //   this.userValue.forEach((item) => {
-          //     this.userList.push(userList.find(user => user.userId !== item))
-          //   })
-          // } else {
-          //   this.userList = userList
-          // }
           this.userList = userList
           if (this.userValue.length > 0) {
             this.userRightDefaultChecked = this.userValue

@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div v-loading="loading" class="app-container">
     <el-form
       ref="dataForm"
       :model="dataForm"
@@ -47,7 +47,6 @@
       </el-form-item>
       <el-form-item>
         <el-button
-          :loading="loading"
           type="primary"
           :disabled="dataForm.providerOrganIds.length === 0"
           @click="submitForm"

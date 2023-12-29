@@ -28,8 +28,8 @@ const taskStatusFilter = (status) => {
 const authTypeFilter = (type) => {
   const typeMap = {
     1: '公开',
-    2: '不公开',
-    3: '授权使用（半公开）'
+    2: '私有',
+    3: '授权使用'
   }
   return typeMap[type]
 }

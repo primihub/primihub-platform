@@ -1,7 +1,7 @@
 <template>
   <el-dialog
     title="选择授权对象 / 选择机构"
-    width="50%"
+    width="700px"
     v-bind="$attrs"
     @close="handleClose"
   >
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import { saveDataResourceUserAssignment } from '@/api/resource'
 import AuthorizationUserTransfer from '@/components/authorizationUserTransfer'
 export default {
   name: 'AuthorizationUserDialog',
@@ -47,14 +48,19 @@ export default {
       this.userValue = []
     },
     handleAuthConfirm() {
-      if (this.userValue.length === 0) {
+      if (this.userValue && this.userValue.length === 0) {
         this.$message.error('请选择授权对象')
         return
       } else {
         this.$emit('submit', this.userValue)
-        // TODO add authorization api
-        this.$message.success('授权成功')
-        this.userValue = []
+        saveDataResourceUserAssignment({ resourceFusionId: this.resourceId, userId: this.userValue }).then(res => {
+          if (res.code === 0) {
+            this.$message.success('授权成功')
+            this.userValue = []
+          } else {
+            this.$message.error('授权失败')
+          }
+        })
       }
     }
   }

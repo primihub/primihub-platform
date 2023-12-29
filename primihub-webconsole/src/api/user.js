@@ -1,5 +1,11 @@
 import request from '@/utils/request'
 
+export function findUserPageSummary() {
+  return request({
+    url: '/sys/user/findUserPageSummary',
+    method: 'GET'
+  })
+}
 export function getAuthList() {
   return request({
     url: '/sys/oauth/getAuthList',

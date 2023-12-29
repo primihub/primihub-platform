@@ -341,7 +341,6 @@ export const asyncRoutes = [
         name: 'ResourceAuthList',
         meta: {
           title: '资源授权列表',
-          activeMenu: '/resource/list',
           parent: { name: 'ResourceDetail' }
         },
         hidden: true,
