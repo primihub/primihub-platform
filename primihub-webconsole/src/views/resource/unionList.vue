@@ -224,13 +224,10 @@ export default {
     await this.getAvailableOrganList()
     await this.getResourceTagList()
     await this.firstFetchData()
+    this.activeName = this.isOrganAdmin ? '1' : '0'
   },
   methods: {
     handleClick() {
-      // this.pageNo = 1
-      // this.totalPage = 0
-      // this.total = 1
-      // this.pageCount = 1
       this.reset()
       console.log(this.activeName)
       if (this.activeName === '1') {
@@ -305,6 +302,8 @@ export default {
         fileContainsY,
         queryType: this.isOrganAdmin ? '1' : '0'
       }
+      console.log(this.activeName)
+      debugger
       if (this.activeName === '1') {
         this.getFusionDataResourceAssignedToMe()
       } else {
@@ -366,6 +365,7 @@ export default {
       this.pageNo = data.page
       this.params.pageNo = this.pageNo
       console.log(this.pageNo)
+      console.log(this.activeName)
       if (this.activeName === '1') {
         this.getFusionDataResourceAssignedToMe()
       } else {

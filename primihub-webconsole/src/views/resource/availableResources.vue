@@ -201,7 +201,7 @@
 </template>
 
 <script>
-import { getDataResourceToApply, getDataSetList, saveDataResourceAssign } from '@/api/resource'
+import { getDataResourceToApply, getDataSetList, saveDataResourceAssignLocal, saveDataResourceAssign } from '@/api/resource'
 import { getFusionDataResourceToApply } from '@/api/fusionResource'
 import { joiningPartners } from '@/api/center'
 import { getAvailableOrganList } from '@/api/center'
@@ -291,20 +291,19 @@ export default {
     applyResource(row) {
       console.log(row)
       if (this.activeName === '0') {
-        // TODO 申请机构内资源
-        // saveDataResourceUserAssignment({ resourceFusionId: row.resourceId, userId: this.userValue }).then(res => {
-        //   if (res.code === 0) {
-        //     this.$message.success('授权成功')
-        //     this.userValue = []
-        //   } else {
-        //     this.$message.success('授权失败')
-        //   }
-        // })
+        // 申请机构内资源
+        saveDataResourceAssignLocal({ resourceId: row.resourceId, organId: row.organId }).then(res => {
+          if (res.code === 0) {
+            this.$message.success('授权成功')
+            this.fetchData()
+          } else {
+            this.$message.error('授权失败')
+          }
+        })
       } else if (this.activeName === '1') {
         saveDataResourceAssign({ resourceFusionId: row.resourceId, organId: row.organId }).then(res => {
           if (res.code === 0) {
             this.$message.success('授权成功')
-            this.userValue = []
             this.fetchData()
           } else {
             this.$message.success('授权失败')
@@ -421,17 +420,20 @@ export default {
         if (data.length > 0) {
           this.resourceList = data
         }
+      } else {
+        this.resourceList = []
       }
       this.loading = false
     },
     async getFusionDataResourceToApply() {
       this.loading = true
-      // const otherOrganId = this.organList.map(item => item.globalId)
+      this.resourceList = []
       const organName = this.organList.find(item => item.globalId === this.query.organId)?.globalName
       const params = {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         organName: organName || '',
+        organId: this.query.organId,
         resourceName: this.query.resourceName,
         tagName: this.query.tagName
       }

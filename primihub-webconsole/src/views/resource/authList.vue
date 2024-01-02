@@ -1,16 +1,24 @@
 <template>
   <div class="container">
     <div class="resource">
+      <div>
+        <div class="resource-info flex margin-bottom-5">
+          <div class="flex">
+            <p class="margin-right-10 ">资源ID: {{ $route.params.id }}</p>
+            <p>资源名称: {{ resourceName }}</p>
+          </div>
+        </div>
+      </div>
       <el-button v-if="resourceAuthType !== 1 && activeName === '1'" class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="addAuthorization">添加授权</el-button>
       <el-tabs v-model="activeName" @tab-click="handleClick">
         <el-tab-pane label="资源使用情况" name="0">
-          <div class="resource-info flex margin-bottom-5">
+          <!-- <div class="resource-info flex margin-bottom-5">
             <div class="flex">
               <p class="margin-right-10 ">资源ID: {{ $route.params.id }}</p>
               <p>资源名称: {{ resourceName }}</p>
             </div>
 
-          </div>
+          </div> -->
           <el-table
             :data="resourceUseList"
             empty-text="暂无数据"
@@ -31,26 +39,24 @@
               label="任务ID"
             />
             <el-table-column
-              prop="projectName"
+              prop="dataProjectName"
               label="所属项目"
             >
               <template slot-scope="{row}">
-                <el-link type="primary" @click="toProjectPage(row)">{{ row.projectName }}</el-link>
+                <el-link type="primary" @click="toProjectPage(row)">{{ row.dataProjectName }}</el-link>
               </template>
             </el-table-column>
             <el-table-column
-              prop="assignTime"
+              prop="usageTime"
               label="使用时间"
             />
           </el-table>
         </el-tab-pane>
         <el-tab-pane label="资源授权情况" name="1">
-          <div class="resource-info flex margin-bottom-5">
-            <div class="flex">
-              <p class="margin-right-10 ">资源ID: {{ $route.params.id }}</p>
-              <p>资源名称: {{ resourceName }}</p>
-            </div>
-          </div>
+          <el-tabs v-model="childActiveName" @tab-click="handleChildClick">
+            <el-tab-pane label="授权给机构" name="1" />
+            <el-tab-pane label="授权给用户" name="2" />
+          </el-tabs>
           <el-table
             :data="resourceList"
             empty-text="暂无数据"
@@ -63,12 +69,13 @@
               align="center"
             />
             <el-table-column
+              v-if="childActiveName === '2'"
               prop="userName"
               label="被授权人"
             />
             <el-table-column
               prop="organName"
-              label="被授权人所在机构"
+              :label="childActiveName === '2' ? '被授权人所在机构' : '被授权机构'"
             />
             <el-table-column
               prop="applyTime"
@@ -168,6 +175,7 @@ export default {
       dialogVisible: false,
       loading: false,
       activeName: '0',
+      childActiveName: '1',
       resourceList: [],
       currentPage: 1,
       total: 0,
@@ -195,10 +203,10 @@ export default {
     await this.getDataResourceUsage()
   },
   methods: {
-    toProjectPage({ projectId }) {
+    toProjectPage({ dataProjectId }) {
       this.$router.push({
         name: 'ProjectDetail',
-        params: { id: projectId || 90 }
+        params: { id: dataProjectId || 90 }
       })
     },
     handleChange(value, name) {
@@ -237,6 +245,13 @@ export default {
       } else {
         this.getDataResourceUsage()
       }
+      this.pageNo = 1
+      this.total = 0
+      this.pageCount = 1
+    },
+    handleChildClick() {
+      console.log(this.childActiveName)
+      this.getAuthList()
       this.pageNo = 1
       this.total = 0
       this.pageCount = 1
@@ -302,7 +317,7 @@ export default {
         pageNo: this.pageNo,
         pageSize: this.pageSize,
         resourceFusionId: this.resourceFusionId,
-        queryType: this.isOrganAdmin ? '1' : '2'
+        queryType: this.childActiveName
       }
       try {
         const res = await getDataResourceAssignmentDetail(params)

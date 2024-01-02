@@ -52,6 +52,14 @@ export function saveDataResourceAssignment(data) {
     data
   })
 }
+export function saveDataResourceAssignLocal(data) {
+  return request({
+    url: '/data/resource/saveDataResourceAssignLocal',
+    method: 'post',
+    type: 'json',
+    data
+  })
+}
 
 export function tableDetails(data) {
   return request({
