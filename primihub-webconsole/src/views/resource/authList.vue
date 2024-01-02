@@ -101,8 +101,8 @@
               align="center"
             >
               <template slot-scope="{row}">
-                <el-button v-if="row.auditStatus === 1 || row.auditStatus === 0" type="text" @click="changeResourceStatus(2)">取消授权</el-button>
-                <el-button v-if="row.auditStatus === 0" type="text" @click="changeResourceStatus(1)">确认授权</el-button>
+                <el-button v-if="row.auditStatus === 1 || row.auditStatus === 0" type="text" @click="changeResourceStatus(2, row)">取消授权</el-button>
+                <el-button v-if="row.auditStatus === 0" type="text" @click="changeResourceStatus(1, row)">确认授权</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -265,8 +265,6 @@ export default {
       let params = {
         resourceId: this.resourceId,
         resourceFusionId: this.resourceFusionId
-        // fusionOrganList: [],
-        // userAssignList: []
       }
       if (this.userRightDefaultChecked.length > 0) {
         this.userValue = this.userRightDefaultChecked
@@ -293,6 +291,7 @@ export default {
         if (res.code === 0) {
           this.userValue = []
           this.$message.success('授权成功')
+          this.getAuthList()
         } else {
           this.$message.error('授权失败')
         }
@@ -304,12 +303,25 @@ export default {
       this.dialogVisible = true
       this.getAvailableOrganList()
     },
-    changeResourceStatus(auditStatus) {
-      changeDataResourceAuthStatus({
+    changeResourceStatus(auditStatus, { organGlobalId, userId }) {
+      let params = {
         auditStatus,
         resourceId: this.resourceId,
         queryType: this.isOrganAdmin ? '1' : '2'
-      })
+      }
+      if (organGlobalId) {
+        params = Object.assign(params, {
+          organId: organGlobalId
+        })
+      }
+
+      if (userId) {
+        params = Object.assign(params, {
+          userId: userId
+        })
+      }
+
+      changeDataResourceAuthStatus(params)
     },
     async getAuthList() {
       this.loading = true
