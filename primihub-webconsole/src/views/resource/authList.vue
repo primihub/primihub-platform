@@ -348,11 +348,20 @@ export default {
       }
     },
     async getDataResourceUsage() {
+      console.log('type', typeof this.resourceId)
       this.loading = true
-      const params = {
+      let params = {
         pageNo: this.pageNo,
-        pageSize: this.pageSize,
-        resourceId: this.resourceId
+        pageSize: this.pageSize
+      }
+      if (typeof this.resourceId === 'string') {
+        params = Object.assign(params, {
+          resourceFusionId: this.resourceId
+        })
+      } else {
+        params = Object.assign(params, {
+          resourceId: this.resourceId
+        })
       }
       try {
         const res = await getDataResourceUsage(params)

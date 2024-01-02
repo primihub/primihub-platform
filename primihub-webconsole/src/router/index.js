@@ -350,7 +350,7 @@ export const asyncRoutes = [
         path: 'unionResourceDetail/:id',
         name: 'UnionResourceDetail',
         meta: {
-          title: '协作方资源详情',
+          title: '资源详情',
           activeMenu: '/resource/unionList'
         },
         hidden: true,
