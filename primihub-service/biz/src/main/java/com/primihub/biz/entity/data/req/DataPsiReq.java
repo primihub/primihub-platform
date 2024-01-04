@@ -81,6 +81,7 @@ public class DataPsiReq {
      * 0、ECDH
      * 1、KKRT
      * 2、TEE
+     * 3、VOLE
      */
     private Integer psiTag;
 
