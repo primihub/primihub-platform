@@ -15,13 +15,12 @@ import com.primihub.biz.service.share.ShareService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +44,7 @@ public class ShareDataController {
     @Autowired
     private ShareService shareService;
 
+    @ApiOperation(value = "通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("/healthConnection")
     public BaseResultEntity healthConnection(@RequestBody Object time){
         log.info("healthConnection - {}",time);
@@ -112,6 +112,15 @@ public class ShareDataController {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"shareData - dataSets");
         }
         return testService.batchSaveTestDataSet(dataSets);
+    }
+
+    @ApiOperation(value = "网关通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("verifyGateway")
+    public BaseResultEntity verifyGatewayConnection(@RequestBody String uniqueIdentification){
+        if (org.apache.commons.lang3.StringUtils.isBlank(uniqueIdentification)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"uniqueIdentification");
+        }
+        return sysOrganService.verifyGatewayConnection(uniqueIdentification);
     }
 
 

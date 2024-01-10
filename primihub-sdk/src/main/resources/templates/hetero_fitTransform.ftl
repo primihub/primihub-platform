@@ -15,7 +15,7 @@
   "role_params": {
     "Bob": {
       "data_set": "${label_dataset}",
-      "selected_column": null,
+      "selected_column": ${label_field0},
       "id": "id",
       "label": "y",
       "preprocess_column": null,
@@ -45,7 +45,7 @@
     },
     "Charlie": {
       "data_set": "${guest_dataset}",
-      "selected_column": null,
+      "selected_column": ${label_field1},
       "id": "id",
       "preprocess_column": null,
       "preprocess_dataset_id": "${new_guest_dataset}",

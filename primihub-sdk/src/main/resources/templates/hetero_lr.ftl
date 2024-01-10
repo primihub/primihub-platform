@@ -11,6 +11,7 @@
 		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
+        "psi": null,
 		"learning_rate": ${learningRate!1},
 		"alpha": ${alpha!0.0001},
 		"epoch": ${epoch!10},
@@ -21,7 +22,7 @@
 	"role_params": {
 		"Bob": {
 			"data_set": "${label_dataset}",
-			"selected_column": null,
+			"selected_column": ${label_field0},
 			"id": "id",
 			"label": "y",
 			"model_path": "${hostModelFileName}",
@@ -29,7 +30,7 @@
 		},
 		"Charlie": {
 			"data_set": "${guest_dataset}",
-			"selected_column": null,
+			"selected_column": ${label_field1},
 			"id": "id",
 			"model_path": "${guestModelFileName}"
 		},

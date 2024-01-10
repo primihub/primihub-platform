@@ -48,10 +48,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.annotation.Resource;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -310,8 +307,7 @@ public class DataTaskService {
 
     public BaseResultEntity getTaskLogInfo(Long taskId) {
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
-        if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())
-                || StringUtils.isBlank(lokiConfig.getJob()) || StringUtils.isBlank(lokiConfig.getContainer())) {
+        if (lokiConfig == null || StringUtils.isBlank(lokiConfig.getAddress())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"请检查loki配置信息");
         }
         DataTask rawDataTask = dataTaskRepository.selectDataTaskByTaskId(taskId);
@@ -322,11 +318,12 @@ public class DataTaskService {
         map.put("address",lokiConfig.getAddress());
         map.put("job",lokiConfig.getJob());
         map.put("container",lokiConfig.getContainer());
+        map.put("app",lokiConfig.getApp());
         map.put("taskIdName", rawDataTask.getTaskIdName());
         if (rawDataTask.getTaskStartTime()==null){
-            map.put("start",(System.currentTimeMillis()/1000));
+            map.put("start",(System.currentTimeMillis()* 1_000_000));
         }else {
-            map.put("start",(rawDataTask.getTaskStartTime()/1000));
+            map.put("start",(rawDataTask.getTaskStartTime()* 1_000_000));
         }
         return BaseResultEntity.success(map);
     }
@@ -347,7 +344,7 @@ public class DataTaskService {
 
     public void generateLogFile(File file,DataTask dataTask){
         try {
-            List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime()/1000);
+            List<String[]> lokiLogList = getLokiLogList(dataTask.getTaskIdName(), dataTask.getTaskStartTime() * 1_000_000);
             if (lokiLogList==null || lokiLogList.isEmpty()) {
                 return;
             }
@@ -370,7 +367,7 @@ public class DataTaskService {
                     }
                 }
                 if (lokiLogList.size()==100){
-                    lokiLogList = getLokiLogList(dataTask.getTaskIdName(), ts/1000);
+                    lokiLogList = getLokiLogList(dataTask.getTaskIdName(), ts* 1_000_000);
                 }else {
                     next = false;
                 }
@@ -380,17 +377,17 @@ public class DataTaskService {
             fos.close();
         }catch (Exception e){
             log.info(e.getMessage());
+            e.printStackTrace();
         }
     }
 
-    public List<String[]> getLokiLogList(String taskId,Long start){
+    public List<String[]> getLokiLogList(String taskId,Long start) throws UnsupportedEncodingException {
         LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
-        if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
-        ||StringUtils.isBlank(lokiConfig.getContainer())) {
+        if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())) {
             return null;
         }
-        String query = "query={job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
-        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&"+query;
+        String query = getQueryParam(lokiConfig,taskId);
+        String url = "http://"+lokiConfig.getAddress()+"/loki/api/v1/query_range?start="+start+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
         log.info(url);
         LokiDto lokiDto = restTemplate.getForObject(url, LokiDto.class);
         if (lokiDto==null || lokiDto.getData()==null || lokiDto.getData().getResult()==null || lokiDto.getData().getResult().size()==0) {
@@ -414,14 +411,28 @@ public class DataTaskService {
         return BaseResultEntity.success(new PageDataEntity(count, req.getPageSize(), req.getPageNo(),dataTaskVos));
     }
 
-    public SseEmitter connectSseTask(String taskId,Integer all) {
+    public SseEmitter connectSseTask1(String taskId){
+        SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        sseEmitterService.sendMessage(taskId,String.format("{\"log\":\"Task:%s Start log output\"}",taskId));
+        return sseEmitter;
+    }
+
+    public void send(String taskId){
+        sseEmitterService.sendMessage(taskId,"测试1");
+    }
+
+    public SseEmitter connectSseTask(String taskId) {
         boolean isReal = true;
+        log.info("开始创建sse 流通信:{}",taskId);
         DataTask dataTask = null;
         if (StringUtils.isBlank(taskId)){
             taskId = SnowflakeId.getInstance().toString();
             isReal = false;
         }else {
-            dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            dataTask = dataTaskRepository.selectDataTaskByTaskIdName(taskId);
+            if (dataTask==null){
+                dataTask  = dataTaskRepository.selectDataTaskByTaskId(Long.valueOf(taskId));
+            }
             if (dataTask==null){
                 taskId = String.valueOf(SnowflakeId.getInstance().nextId());
                 isReal = false;
@@ -429,27 +440,29 @@ public class DataTaskService {
                 taskId = dataTask.getTaskIdName();
             }
         }
+//        DataTask dataTask = new DataTask();
+//        dataTask.setTaskStartTime(1702443898043L);
         if(CommStorageUtil.getSseEmitterMap().containsKey(taskId)){
             sseEmitterService.removeKey(taskId);
         }
+        log.info("创建sse 流通信:{}",taskId);
         SseEmitter sseEmitter = sseEmitterService.connect(taskId);
+        log.info("发送消息:{}",taskId);
+        sseEmitterService.sendMessage(taskId,String.format("{\"log\":\"Task:%s Start log output\"}",taskId));
         if (!isReal){
-            sseEmitterService.sendMessage(taskId,"未查询到任务信息");
+            log.info("发送消息1:{}",taskId);
+            sseEmitterService.sendMessage(taskId,"{\"log\":\"未查询到任务信息\"}");
+            sseEmitterService.removeKey(taskId);
         }else {
             // 创建web
             LokiConfig lokiConfig = baseConfiguration.getLokiConfig();
-            if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())|| StringUtils.isBlank(lokiConfig.getJob())
-                    ||StringUtils.isBlank(lokiConfig.getContainer())){
-                sseEmitterService.sendMessage(taskId,"确实日志loki配置,请检查base.json文件");
+            if (lokiConfig==null || StringUtils.isBlank(lokiConfig.getAddress())){
+                sseEmitterService.sendMessage(taskId,"{\"log\":\"请确认日志loki配置,请检查base.json文件\"}");
+                sseEmitterService.removeKey(taskId);
             }else {
                 try {
-                    String query = "";
-                    if (all == 1){
-                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"}";
-                    }else {
-                        query = "{job =\""+lokiConfig.getJob()+"\", container=\""+lokiConfig.getContainer()+"\"} |= \""+taskId+"\"";
-                    }
-                    String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime()/1000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
+                    String query = getQueryParam(lokiConfig,taskId);
+                    String url = "ws://"+lokiConfig.getAddress()+"/loki/api/v1/tail?start="+(dataTask.getTaskStartTime() * 1_000_000)+"&direction=forward&query="+URLEncoder.encode(query, "UTF-8");
                     log.info(url);
                     webSocketService.connect(taskId,url);
                 }catch (Exception e){
@@ -459,6 +472,25 @@ public class DataTaskService {
             }
         }
         return sseEmitter;
+    }
+
+    private String getQueryParam(LokiConfig lokiConfig,String taskId){
+        StringBuilder sb = new StringBuilder().append("{");
+        if (StringUtils.isNotEmpty(lokiConfig.getJob())){
+            sb.append("job").append("=").append("\"").append(lokiConfig.getJob()).append("\"");
+        }
+        if (StringUtils.isNotEmpty(lokiConfig.getContainer())){
+            sb.append("container").append("=").append("\"").append(lokiConfig.getContainer()).append("\"");
+        }
+        if (StringUtils.isNotEmpty(lokiConfig.getNamespace())){
+            sb.append("namespace").append("=").append("\"").append(lokiConfig.getNamespace()).append("\"");
+        }
+        if (StringUtils.isNotEmpty(lokiConfig.getApp())){
+            sb.append("app").append("=").append("\"").append(lokiConfig.getApp()).append("\"");
+        }
+        sb.append("}");
+        sb.append("|=").append("\"").append(taskId).append("\"");
+        return sb.toString();
     }
 
     public void removeSseTask(String taskId) {

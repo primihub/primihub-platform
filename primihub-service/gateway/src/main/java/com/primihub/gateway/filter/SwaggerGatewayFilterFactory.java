@@ -55,20 +55,20 @@ public class SwaggerGatewayFilterFactory extends AbstractGatewayFilterFactory {
             exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
             log.info(currentRawPath);
-            if (checkUri(currentRawPath)){
-                return chain.filter(exchange).then(
-                        Mono.fromRunnable(()->{
-                            Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
-                            if(requestTimeStart!=null){
-                                StringBuilder sb=new StringBuilder(exchange.getRequest().getURI().getRawPath())
-                                        .append(":")
-                                        .append(System.currentTimeMillis() -requestTimeStart)
-                                        .append("ms");
-                                log.info(sb.toString());
-                            }
-                        })
-                );
-            }
+//            if (checkUri(currentRawPath)){
+//                return chain.filter(exchange).then(
+//                        Mono.fromRunnable(()->{
+//                            Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
+//                            if(requestTimeStart!=null){
+//                                StringBuilder sb=new StringBuilder(exchange.getRequest().getURI().getRawPath())
+//                                        .append(":")
+//                                        .append(System.currentTimeMillis() -requestTimeStart)
+//                                        .append("ms");
+//                                log.info(sb.toString());
+//                            }
+//                        })
+//                );
+//            }
             return chain.filter(exchange).then(
                     Mono.fromRunnable(()->{
                         Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);

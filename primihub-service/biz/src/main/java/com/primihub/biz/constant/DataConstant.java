@@ -16,6 +16,7 @@ public class DataConstant {
     public final static String FREEMARKER_PYTHON_HETERO_LR_INFER_PATH= "hetero_lr_infer.ftl";
     public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH= "homo_nn_binary.ftl";
     public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH= "homo_nn_binary_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HETERO_FITTRANSFORM_PATH= "hetero_fitTransform.ftl";
 
     public final static String FREEMARKER_PYTHON_EXCEPTION_PATH= "exception.ftl";
     public final static String FREEMARKER_PYTHON_DATA_ALIGN_PATH= "data_align.ftl";
@@ -30,6 +31,7 @@ public class DataConstant {
             FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH,
             FREEMARKER_PYTHON_EXCEPTION_PATH,
             FREEMARKER_PYTHON_DATA_ALIGN_PATH,
+            FREEMARKER_PYTHON_HETERO_FITTRANSFORM_PATH
     };
     // python dataset host、guest
     public final static String PYTHON_LABEL_DATASET = "label_dataset";

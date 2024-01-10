@@ -95,28 +95,6 @@ public class TaskController {
         return  dataTaskService.cancelTask(taskId);
     }
 
-    /**
-     * 用于创建连接
-     */
-    @GetMapping(value = "sseConnect/{taskId}",produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter connect(@PathVariable String taskId,Integer all) {
-        if (all==null) {
-            all = 0;
-        }
-        return dataTaskService.connectSseTask(taskId,all);
-    }
-
-    /**
-     * 关闭连接
-     */
-    @GetMapping("sseClose/{taskId}")
-    public BaseResultEntity close(@PathVariable("taskId") String taskId) {
-        if (StringUtils.isBlank(taskId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
-        }
-        dataTaskService.removeSseTask(taskId);
-        return BaseResultEntity.success();
-    }
 
     @GetMapping("getTaskLogInfo")
     public BaseResultEntity getTaskLogInfo(Long taskId){
