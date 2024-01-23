@@ -127,7 +127,8 @@ export default {
         file.ignored = true
       } else if (file.size > this.maxSize) {
         var s = this.fileShow(this.maxSize);
-        var msg = '上传文件不能大于1'+ s +'，请重新上传'
+        var msg = '上传文件不能大于'+ s +'，请重新上传'
+        console.log(msg);
         this.$message({
           message: msg,
           type: 'warning'
