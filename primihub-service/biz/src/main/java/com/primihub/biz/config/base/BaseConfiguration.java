@@ -57,5 +57,5 @@ public class BaseConfiguration {
      */
     private Boolean openDynamicTuning = false;
 
-    private Integer uploadSize = 10;
+    private Integer uploadSize = 100;
 }
