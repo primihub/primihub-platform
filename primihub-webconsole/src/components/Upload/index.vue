@@ -126,8 +126,10 @@ export default {
         })
         file.ignored = true
       } else if (file.size > this.maxSize) {
+        var s = this.fileShow(this.maxSize);
+        var msg = '上传文件不能大于1'+ s +'，请重新上传'
         this.$message({
-          message: '上传文件不能大于1MB，请重新上传',
+          message: msg,
           type: 'warning'
         })
         file.ignored = true
@@ -243,6 +245,12 @@ export default {
         })
       }
       return false
+    },
+    fileShow(val) {
+      var k = 1024;
+      var sizes = ['B','KB','MB','GB','PB','TB','EB','ZB','YB'],
+        i = Math.floor(Math.log(val) / Math.log(k));
+      return (val / Math.pow(k,i)).toPrecision(3) + "" + sizes[i]
     }
   }
 }
