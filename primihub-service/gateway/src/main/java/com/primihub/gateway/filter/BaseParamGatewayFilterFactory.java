@@ -139,7 +139,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                         } else {
                             resolvableType = ResolvableType.forClass(MultiValueMap.class);
                         }
-                        return HandlerStrategies.builder().codecs((c) -> c.defaultCodecs().maxInMemorySize(baseConfiguration.getUploadSize()*1024*1024)).build().messageReaders()
+                        return HandlerStrategies.builder().codecs((c) -> c.defaultCodecs().maxInMemorySize(100*1024*1024)).build().messageReaders()
 //                        return HandlerStrategies.withDefaults().messageReaders()
                                 .stream()
                                 .filter(reader -> reader.canRead(resolvableType, exchange.getRequest().getHeaders().getContentType())).findFirst()
