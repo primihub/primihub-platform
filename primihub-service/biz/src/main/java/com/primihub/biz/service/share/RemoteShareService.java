@@ -12,6 +12,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -26,19 +27,20 @@ public class RemoteShareService {
     private static final String remoteUrl = "/dataShare/share";
     @Resource
     private Environment environment;
-    @Resource(name="soaRestTemplate")
+    @Resource(name = "soaRestTemplate")
     private RestTemplate restTemplate;
     @Autowired
     DataResourceService resourceService;
+
     /**
      * 什么时候调用：
-     *      1.创建资源+公开
-     *      2.资源进行上下线+公开
-     *      3.修改资源
-     *          1).公开->私有或者授权
-     *          2).私有或者授权 -> 公开
+     * 1.创建资源+公开
+     * 2.资源进行上下线+公开
+     * 3.修改资源
+     * 1).公开->私有或者授权
+     * 2).私有或者授权 -> 公开
      */
-    @org.springframework.context.event.EventListener(RemoteDataResourceEvent.class)
+//    @org.springframework.context.event.EventListener(RemoteDataResourceEvent.class)
     public void transDataResource(RemoteDataResourceEvent event) {
         log.info("spring event 接受的数据: {}", JSON.toJSONString(event));
         Long resourceId = event.getResourceId();
@@ -46,7 +48,7 @@ public class RemoteShareService {
             log.error("本次数据资源传送 没有数据id 请修改代码逻辑");
         }
         Map transMap = resourceService.getDataResourceToTransfer(event.getResourceId(), event.getResourceState());
-        if (transMap==null) {
+        if (transMap == null) {
             log.info("未找到id: {} 的数据资源，传送失败", event.getResourceId());
         }
         transDataResource(resourceId, transMap, 1);
@@ -64,18 +66,22 @@ public class RemoteShareService {
         } else {
             remoteAddress = remoteAddress1;
         }
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<Map<String, Object>> request = new HttpEntity(transMap, headers);
-        log.info("传送地址：{}， 传送的资源Id: {}", remoteAddress+remoteUrl, resourceId);
-        Map map = restTemplate.postForObject(remoteAddress + remoteUrl, request, Map.class);
-        log.info("传送地址：{}， 传送的资源Id: {}， 返回结果：{}", remoteAddress+remoteUrl, resourceId, JSONObject.toJSONString(map));
-        if (map.get("code") == null || !map.get("code").toString().equals("0")) {
-            if (count<=3) {
-                transDataResource(resourceId, transMap, count+1);
+        Map map = null;
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            HttpEntity<Map<String, Object>> request = new HttpEntity(transMap, headers);
+            log.info("传送地址：{}， 传送的资源Id: {}， 传送次数：{}", remoteAddress + remoteUrl, resourceId, count);
+            map = restTemplate.postForObject(remoteAddress + remoteUrl, request, Map.class);
+            log.info("传送地址：{}， 传送的资源Id: {}， 返回结果：{}", remoteAddress + remoteUrl, resourceId, JSONObject.toJSONString(map));
+        } catch (Exception e) {
+            log.error("OpenMPC数据共享连接失败，传送地址：{}", remoteAddress + remoteUrl);
+        }
+        if (map == null || map.get("code") == null || !map.get("code").toString().equals("0")) {
+            if (count <= 3) {
+                transDataResource(resourceId, transMap, count + 1);
             }
-            log.info("传送地址：{}， 传送的资源Id: {}，重试次数用完，未传送成功", remoteAddress+remoteUrl, resourceId);
+            log.info("传送地址：{}， 传送的资源Id: {}，重试次数用完，未传送成功", remoteAddress + remoteUrl, resourceId);
         }
     }
-
 }
