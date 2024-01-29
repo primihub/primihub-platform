@@ -52,8 +52,8 @@ nacos:
 rest:
   template:
     connection:
-      connect-timeout: 30000
-      read-timeout: 30000
+      connect-timeout: 10000
+      read-timeout: 10000
 
 logging:
   level:
