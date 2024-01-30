@@ -79,7 +79,7 @@ public class SysAsyncService {
             // TODO 该机构下的数据进行下线处理
         }else if (sysOrgan.getExamineState()==1){
             fusionOrganService.organData(sysOrgan.getOrganId(),sysOrgan.getOrganName());
-            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
+            singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan))).build());
         }
     }
 }

@@ -410,7 +410,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     public void sendShareModelTask(ShareModelVo shareModelVo) {
-        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(), shareModelVo))).build());
+        singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(), shareModelVo))).build());
     }
 
     public void deleteModel(ShareModelVo vo) {
