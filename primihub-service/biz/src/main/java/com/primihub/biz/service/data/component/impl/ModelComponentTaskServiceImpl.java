@@ -198,7 +198,8 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
                 }
                 if (taskReq.getValueMap().containsKey("ColumnsExclude")){
                     try {
-                        columnsExclude = JSONArray.parseArray(taskReq.getValueMap().get("ColumnsExclude"), String.class);
+                        String[] split = StringUtils.split(taskReq.getValueMap().get("ColumnsExclude"), ",");
+                        columnsExclude = Arrays.asList(split);
                     }catch (Exception e){
                         log.info("ColumnsExclude convert json exception:{}",e.getMessage());
                         e.printStackTrace();
