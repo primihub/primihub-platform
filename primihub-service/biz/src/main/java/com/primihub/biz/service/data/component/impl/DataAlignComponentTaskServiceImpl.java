@@ -192,6 +192,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 if (clientData.getFileHandleField().contains("id")&&serverData.getFileHandleField().contains("id")){
                     fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
                 }else {
+                     log.error("[{}]-{}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐特征中无ID/id属性");
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"数据对齐特征中无ID/id属性");
                 }
             }else {

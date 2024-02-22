@@ -381,21 +381,43 @@ public class DataModelService {
         }
         ComponentTaskReq taskReq = new ComponentTaskReq(dataModel);
         DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
+        List<DataComponentReq> modelComponents = modelComponentReq.getModelComponents();
+        List<String> zComponentCodeList= new ArrayList<>();
+        Map<String, DataComponentReq> modelComponentMap = new HashMap<>();
+        if (modelComponents != null && !modelComponents.isEmpty()) {
+            modelComponentMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
+            // 将组件中的`componentCode`按照组件顺序进行排序
+            List<DataComponentReq> zComponentList = modelComponents.stream().filter(dataComponentReq -> dataComponentReq.getInput().isEmpty()).collect(Collectors.toList());
+            zComponentCodeList= new ArrayList<>();
+            if (zComponentList.isEmpty()) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
+            }
+            // 开头的code
+            zComponentCodeList.add(zComponentList.get(0).getComponentCode());
+
+            // 递归方法，排序componentCode
+            sortComponent(zComponentList.get(0).getOutput(), zComponentCodeList, modelComponentMap);
+            log.info("sort后的组件顺序:{}", zComponentCodeList);
+        } else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"未查询到模型组件信息");
+        }
         if (modelComponentReq==null) {
+            log.info("{}-{}", BaseResultEnum.DATA_RUN_TASK_FAIL.getMessage(), "组件解析失败");
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"组件解析失败");
         }
-        Set<String> mandatorySet = componentsConfiguration.getModelComponents().stream()
+        /*Set<String> mandatorySet = componentsConfiguration.getModelComponents().stream()
                 .filter(modelComponent -> modelComponent.getIsMandatory() == 0)
                 .map(ModelComponent::getComponentCode)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toSet());*/
 //        Set<String> reqSet = modelComponentReq.getModelComponents().stream().map(DataComponentReq::getComponentCode).collect(Collectors.toSet());
 //        mandatorySet.removeAll(reqSet);
 //        if (!mandatorySet.isEmpty()) {
 //            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"缺少必选组件,请检查组件");
 //        }
-        for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
-            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
+        for (String componentCode : zComponentCodeList) {
+            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponentMap.get(componentCode), taskReq);
             if (baseResultEntity.getCode()!=0){
+                log.error("{}-[{}]", "组件执行结果失败", JSONObject.toJSONString(baseResultEntity));
                 return baseResultEntity;
             }
         }
@@ -422,6 +444,16 @@ public class DataModelService {
         returnMap.put("modelId",modelId);
         returnMap.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(returnMap);
+    }
+
+    private void sortComponent(List<DataComponentRelationReq> dataComponentRelationReqs, List<String> zComponentCodeList,  Map<String, DataComponentReq> componentMap) {
+        if (dataComponentRelationReqs.isEmpty()) {
+            return;
+        }
+        DataComponentRelationReq dataComponentRelationReq = dataComponentRelationReqs.get(0);
+        zComponentCodeList.add(dataComponentRelationReq.getComponentCode());
+        DataComponentReq dataComponentReq = componentMap.get(dataComponentRelationReq.getComponentCode());
+        sortComponent(dataComponentReq.getOutput(), zComponentCodeList, componentMap);
     }
 
     public BaseResultEntity restartTaskModel(Long taskId) {
