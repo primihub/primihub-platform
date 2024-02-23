@@ -43,7 +43,7 @@ export default {
   props: {
     maxSize: {
       type: Number,
-      default: 1024 * 1024 * 1
+      default: 1024 * 1024 * 100
     },
     single: {
       type: Boolean,
