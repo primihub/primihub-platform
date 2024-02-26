@@ -380,6 +380,7 @@ public class SysOrganService {
         if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             // 合作方通信失败，此时需要将通信状态设置为已断开
             sysOrgan.setEnable(1);
+            sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
         }
         sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
