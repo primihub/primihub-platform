@@ -377,6 +377,8 @@ export default {
       this.partnersForm.organName = ''
       this.partnersForm.organId = ''
       this.connectDialogVisible = false
+      // 刷新机构列表
+      this.getOrganList()
     },
     organConfirmDialog() {
       const params = {
