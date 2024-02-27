@@ -135,6 +135,7 @@
               <el-radio v-for="(radio,index) in param.inputValues" :key="index" :disabled="!options.isEditable" :label="radio.val" />
             </el-radio-group>
             <el-col v-if="param.inputType === 'text'" :span="12">
+              <p style="font-size: 12px;" v-if="param.typeCode === 'ColumnsExclude'">将数据中需排除的字段名，填于此处，多个排除字段之间使用英文逗号隔开填写</p>
               <el-input v-model="param.inputValue" :disabled="!options.isEditable" size="mini" @change="handleChange" />
             </el-col>
             <el-col v-if="param.inputType === 'select'" :span="12">
