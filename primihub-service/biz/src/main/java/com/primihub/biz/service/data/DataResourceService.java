@@ -150,6 +150,10 @@ public class DataResourceService {
             if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!"".equals(sysLocalOrganInfo.getOrganId().trim())){
                 dataResource.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
+            if (dataResource.getResourceFusionId() == null || dataResource.getResourceFusionId().trim().isEmpty()) {
+                log.error("保存资源失败，原因：{}", "机构Id未生成");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"初始化资源Id失败，请确认机构Id已生成");
+            }
             List<DataFileField> dataFileFieldList = new ArrayList<>();
             for (DataResourceFieldReq field : fieldList) {
                 dataFileFieldList.add(DataResourceConvert.DataFileFieldReqConvertPo(field, 0L, dataResource.getResourceId()));
@@ -190,7 +194,6 @@ public class DataResourceService {
 
         }catch (Exception e){
             log.info("save DataResource Exception：{}",e.getMessage());
-            e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE);
         }
 
