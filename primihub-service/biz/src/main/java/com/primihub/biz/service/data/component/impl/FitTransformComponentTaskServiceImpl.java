@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service("fitTransformComponentTaskServiceImpl")
@@ -66,12 +67,20 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                 fitTransformEntityMap.remove(modelDerivationDto.getOriginalResourceId());
             }
             log.info("newids:{}", ids);
+            log.info("fitTransform-2:{}", JSONObject.toJSONString(fitTransformEntityMap));
         }
+        Map<String, ModelDerivationDto> oldResourceIdMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
         try {
             GrpcComponentDto labelDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
+            if (labelDatasetDto == null) {
+                labelDatasetDto = fitTransformEntityMap.get(oldResourceIdMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET)).getNewResourceId());
+            }
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET,labelDatasetDto.getNewDataSetId());
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET+"_path",labelDatasetDto.getOutputFilePath());
             GrpcComponentDto guestDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
+            if (guestDatasetDto == null) {
+                guestDatasetDto = fitTransformEntityMap.get(oldResourceIdMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET)).getNewResourceId());
+            }
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_GUEST_DATASET,guestDatasetDto.getNewDataSetId());
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_GUEST_DATASET+"_path",guestDatasetDto.getOutputFilePath());
             TaskParam<TaskComponentParam> taskParam = new TaskParam<>(new TaskComponentParam());
@@ -119,10 +128,9 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     }
                 }
             }
-            HashSet dids = new HashSet(){{
-                add(labelDatasetDto.getNewDataSetId());
-                add(guestDatasetDto.getNewDataSetId());
-            }};
+            HashSet dids = new HashSet();
+            dids.add(labelDatasetDto.getNewDataSetId());
+            dids.add(guestDatasetDto.getNewDataSetId());
             while (true){
                 // 休眠一秒等待数据集同步
                 BaseResultEntity dataSets = fusionResourceService.getDataSets(dids);
