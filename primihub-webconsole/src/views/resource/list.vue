@@ -318,6 +318,7 @@ export default {
             type: 'error'
           })
         }
+        this.deleteResourceName = ''
       })
     },
     handleDelete(id) {
