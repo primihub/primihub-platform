@@ -170,10 +170,12 @@ public class SysUserService {
         Long userId=saveOrUpdateUserParam.getUserId();
         SysUser sysUser;
         if(userId==null){
-            if(saveOrUpdateUserParam.getUserAccount()==null|| "".equals(saveOrUpdateUserParam.getUserAccount().trim())) {
+            saveOrUpdateUserParam.setUserAccount(saveOrUpdateUserParam.getUserAccount().trim());
+            saveOrUpdateUserParam.setUserName(saveOrUpdateUserParam.getUserName().trim());
+            if(saveOrUpdateUserParam.getUserAccount()==null|| saveOrUpdateUserParam.getUserAccount().isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userAccount");
             }
-            if(saveOrUpdateUserParam.getUserName()==null|| "".equals(saveOrUpdateUserParam.getUserName().trim())) {
+            if(saveOrUpdateUserParam.getUserName()==null|| saveOrUpdateUserParam.getUserName().isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userName");
             }
             if(saveOrUpdateUserParam.getIsForbid()==null) {
