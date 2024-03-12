@@ -134,9 +134,9 @@ public class SysOrganService {
                     }
                 }
                 String uniqueIdentification = UUID.randomUUID().toString();
-                String data = String.format("{'uniqueIdentification':%s}", uniqueIdentification);
+                //String data = String.format("{'uniqueIdentification':%s}", uniqueIdentification);
                 sysCommonPrimaryRedisRepository.setValue(RedisKeyConstant.ORGAN_VERIFY_GATEWAY_UUID,uniqueIdentification);
-                BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(data, sysLocalOrganInfo.getGatewayAddress() + "/share/shareData/verifyGateway", null);
+                BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(uniqueIdentification, sysLocalOrganInfo.getGatewayAddress() + "/share/shareData/verifyGateway", null);
                 if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                     return baseResultEntity;
                 }
