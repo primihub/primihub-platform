@@ -83,10 +83,14 @@ public class ScheduleService {
                     sysOrgan.setNodeState(0);
                     sysOrgan.setFusionState(0);
                 }
+                if ((sysOrgan.getPlatformState() | sysOrgan.getNodeState() | sysOrgan.getFusionState()) == 0) {
+                    sysOrgan.setEnable(1);
+                }
             }catch (Exception e){
                 sysOrgan.setPlatformState(0);
                 sysOrgan.setNodeState(0);
                 sysOrgan.setFusionState(0);
+                sysOrgan.setEnable(1);
                 log.info("机构ID:{} - 机构名称:{} - 机构网关地址:{} - 状态获取失败",sysOrgan.getOrganId(),sysOrgan.getOrganName(),sysOrgan.getOrganGateway());
                 e.printStackTrace();
             }
