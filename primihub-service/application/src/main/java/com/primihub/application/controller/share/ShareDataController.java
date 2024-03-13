@@ -114,6 +114,13 @@ public class ShareDataController {
         return testService.batchSaveTestDataSet(dataSets);
     }
 
+    @PostMapping("verifyGateway")
+    public BaseResultEntity verifyGatewayConnection(@RequestBody String uniqueIdentification){
+        if (org.apache.commons.lang3.StringUtils.isBlank(uniqueIdentification)){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"uniqueIdentification");
+        }
+        return sysOrganService.verifyGatewayConnection(uniqueIdentification);
+    }
 
 
 }

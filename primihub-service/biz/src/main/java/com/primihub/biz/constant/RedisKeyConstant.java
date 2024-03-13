@@ -17,4 +17,6 @@ public class RedisKeyConstant {
 
     public final static String PIR_TASK_DATA_SET = "pir:t:d:s:<taskId>";
     public final static String PIR_TASK_DATA_LIST = "pir:t:d:l:<taskId>";
+
+    public final static String ORGAN_VERIFY_GATEWAY_UUID = "organ_verify_gateway_uuid";
 }

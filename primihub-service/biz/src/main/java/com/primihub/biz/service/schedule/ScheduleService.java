@@ -1,5 +1,6 @@
 package com.primihub.biz.service.schedule;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -73,8 +74,8 @@ public class ScheduleService {
         for (SysOrgan sysOrgan : sysOrgans) {
             try {
                 BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(data, sysOrgan.getOrganGateway() + "/share/shareData/healthConnection", sysOrgan.getPublicKey());
-                if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-                    Set<String> services = (Set<String>) baseResultEntity.getResult();
+                if (baseResultEntity != null && baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                    Set<String> services = new HashSet<>((Collection) baseResultEntity.getResult());
                     sysOrgan.setPlatformState(services.contains("platform")?1:0);
                     sysOrgan.setNodeState(services.contains("node")?1:0);
                     sysOrgan.setFusionState(services.contains("fusion")?1:0);

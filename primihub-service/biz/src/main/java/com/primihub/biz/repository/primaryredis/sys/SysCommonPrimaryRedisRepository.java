@@ -52,4 +52,7 @@ public class SysCommonPrimaryRedisRepository {
         return primaryStringRedisTemplate.opsForValue().get(key);
     }
 
+    public void setValue(String key,String value){
+        primaryStringRedisTemplate.opsForValue().set(key,value);
+    }
 }
