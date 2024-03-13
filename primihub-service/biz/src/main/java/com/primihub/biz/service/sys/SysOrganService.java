@@ -7,6 +7,7 @@ import com.alibaba.nacos.api.config.ConfigService;
 import com.alibaba.nacos.api.config.ConfigType;
 import com.alibaba.nacos.api.exception.NacosException;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.convert.SysBaseConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -131,6 +132,13 @@ public class SysOrganService {
                     }catch (Exception e){
                         log.info("Exception in obtaining address will not be reported");
                     }
+                }
+                String uniqueIdentification = UUID.randomUUID().toString();
+                //String data = String.format("{'uniqueIdentification':%s}", uniqueIdentification);
+                sysCommonPrimaryRedisRepository.setValue(RedisKeyConstant.ORGAN_VERIFY_GATEWAY_UUID,uniqueIdentification);
+                BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(uniqueIdentification, sysLocalOrganInfo.getGatewayAddress() + "/share/shareData/verifyGateway", null);
+                if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                    return baseResultEntity;
                 }
                 configService.publishConfig(SysConstant.SYS_ORGAN_INFO_NAME, group, JSON.toJSONString(sysLocalOrganInfo), ConfigType.JSON.getType());
                 sysAsyncService.collectBaseData();
@@ -467,6 +475,17 @@ public class SysOrganService {
         }catch (Exception e){
             e.printStackTrace();
             return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方建立通信失败,请检查gateway和publicKey是否正确匹配！！！");
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity verifyGatewayConnection(String uniqueIdentification) {
+        String value = sysCommonPrimaryRedisRepository.getKey(RedisKeyConstant.ORGAN_VERIFY_GATEWAY_UUID);
+        if (StringUtils.isBlank(value)){
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"校验网关通信唯一ID为空,请检查网关地址是否正确!!!");
+        }
+        if (!uniqueIdentification.equals(value)){
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"校验网关通信唯一ID不一致,请检查网关地址是否正确!!!");
         }
         return BaseResultEntity.success();
     }
