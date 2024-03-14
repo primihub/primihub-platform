@@ -18,6 +18,7 @@ public enum BaseResultEnum implements ResultEnumType<Integer,String> {
     PASSWORD_NOT_CORRECT(109,"密码不正确"),
     OLD_PASSWORD_NOT_CORRECT(110,"旧密码不正确"),
     NO_ORGAN_DATA(111,"没有机构信息请重新生成"),
+    ORGAN_CONNECTION_FAILURE(122,"机构连接失败"),
     HANDLE_RIGHT_NOW(112,"正在被操作"),
     NOT_IN_THE_WHITE_LIST(113,"不在短信服务白名单中"),
     FIVE_MINUTES_LATER(114,"请在五分钟后重试"),

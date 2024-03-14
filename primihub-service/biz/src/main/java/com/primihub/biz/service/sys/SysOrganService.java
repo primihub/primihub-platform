@@ -136,6 +136,9 @@ public class SysOrganService {
                 String uniqueIdentification = UUID.randomUUID().toString();
                 sysCommonPrimaryRedisRepository.setValue(RedisKeyConstant.ORGAN_VERIFY_GATEWAY_UUID,uniqueIdentification);
                 BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(uniqueIdentification, sysLocalOrganInfo.getGatewayAddress() + "/share/shareData/verifyGateway", null);
+                if (baseResultEntity == null) {
+                    return BaseResultEntity.failure(BaseResultEnum.ORGAN_CONNECTION_FAILURE, "无法连接到该节点");
+                }
                 if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                     return baseResultEntity;
                 }
