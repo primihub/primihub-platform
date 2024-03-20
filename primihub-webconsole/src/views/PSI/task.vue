@@ -366,6 +366,10 @@ export default {
         {
           value: 2,
           label: 'TEE'
+        },
+        {
+          value: 3,
+          label: 'VOLE'
         }
       ]
     }
