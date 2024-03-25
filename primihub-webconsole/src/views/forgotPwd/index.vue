@@ -50,7 +50,7 @@ export default {
 .container {
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/login-bg.jpg");
+  background-image: url("~@images/login-bg.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;

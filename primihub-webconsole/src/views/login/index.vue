@@ -253,7 +253,7 @@ $cursor: #000;
 .login-container {
   width: 100vw;
   height: 100vh;
-  background-image: url("/images/bg.png");
+  background-image: url("~@images/bg.png");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
