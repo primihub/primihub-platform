@@ -71,6 +71,15 @@ export default {
     clearTimeout(this.serverTimeout)
   },
   methods: {
+    // 判断是否为json字符串
+    isJSONString(str) {
+      try {
+        JSON.parse(str)
+        return true
+      } catch (e) {
+        return false
+      }
+    },
     socketInit() {
       console.log('init connectCount', this.connectCount)
       if (!this.address) {
@@ -171,7 +180,9 @@ export default {
             }
             return item.values
           } else {
-            let log = JSON.parse(item.values[0][1]).log
+            const valuesStr = item.values[0][1]
+            // 如果是字符串对象，解析后取log值；如果是普通字符串，直接赋值
+            let log = this.isJSONString(valuesStr) ? JSON.parse(valuesStr).log : valuesStr
             log = log.replace(/\[\d+m/ig, '')
             log = log.replace(/\\+/ig, '')
             return log
