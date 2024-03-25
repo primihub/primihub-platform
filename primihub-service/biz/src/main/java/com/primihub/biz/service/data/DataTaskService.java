@@ -324,9 +324,9 @@ public class DataTaskService {
         map.put("container",lokiConfig.getContainer());
         map.put("taskIdName", rawDataTask.getTaskIdName());
         if (rawDataTask.getTaskStartTime()==null){
-            map.put("start",(System.currentTimeMillis()/1000));
+            map.put("start",(System.currentTimeMillis() * 1_000_000));
         }else {
-            map.put("start",(rawDataTask.getTaskStartTime()/1000));
+            map.put("start",(rawDataTask.getTaskStartTime() * 1_000_000));
         }
         return BaseResultEntity.success(map);
     }
