@@ -1,5 +1,6 @@
 package com.primihub.biz.repository.primarydb.data;
 
+import com.primihub.biz.entity.data.po.DataExamTask;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
 import org.springframework.stereotype.Repository;
@@ -16,5 +17,7 @@ public interface DataTaskPrRepository {
     void saveDataPirTask(DataPirTask DataPirTask);
 
     void deleteDataPirTask(Long taskId);
+
+    void saveDataExamTask(DataExamTask dataExamTask);
 
 }
