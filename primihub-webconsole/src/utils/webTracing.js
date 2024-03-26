@@ -5,7 +5,7 @@ import WebTracing, { options } from '@web-tracing/vue2'
 export function setUpTracing() {
   const developEnv = process.env.NODE_ENV === 'development'
   getHomepage().then(res => {
-    const isOpenTracing = res.result.isOpenTracing
+    const isOpenTracing = res.result?.isOpenTracing
     if (!developEnv && isOpenTracing) {
       Vue.use(WebTracing, {
         dsn: '/ali/log/save',

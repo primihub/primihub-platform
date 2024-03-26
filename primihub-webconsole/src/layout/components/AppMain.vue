@@ -238,7 +238,7 @@ export default {
 </style>
 
 <style lang="scss">
-@import "~@/styles/variables.scss";
+@import "~@/styles/variables.module.scss";
 .hamburger-container {
   line-height: 46px;
   height: 100%;

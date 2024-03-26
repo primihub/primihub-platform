@@ -68,7 +68,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../../styles/variables.scss";
+@import "../../styles/variables.module.scss";
 p {
   margin-block-start:0;
   margin-block-end:0;

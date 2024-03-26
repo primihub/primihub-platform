@@ -35,10 +35,7 @@ module.exports = {
     port: port,
     open: true,
     client: {
-      overlay: {
-        warnings: false,
-        errors: true
-      }
+      overlay: false
     },
     proxy: {
       '/dev-api': {
