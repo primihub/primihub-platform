@@ -29,7 +29,12 @@ public class ExamController {
         return examService.getExamTaskList(req);
     }
 
-    @PostMapping(value = "submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * 第一步：发起任务
+     * @param dataExamReq
+     * @return
+     */
+    @PostMapping(value = "/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity submitExamTask(@RequestBody DataExamReq dataExamReq) {
         if (StringUtils.isBlank(dataExamReq.getResourceId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
@@ -43,20 +48,26 @@ public class ExamController {
         return examService.submitExamTask(dataExamReq);
     }
 
-    @GetMapping(value = "getExamTaskDetail")
-    public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(Long taskId){
-        if (taskId==null||taskId==0L) {
+    @GetMapping(value = "/getExamTaskDetail")
+    public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId){
+        if (StringUtils.isBlank(taskId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
         return examService.getExamTaskDetail(taskId);
     }
 
-    @PostMapping(value = "processExamTask")
+    /**
+     * 第二步：处理任务
+     */
+    @PostMapping(value = "/processExamTask")
     public BaseResultEntity processExamTask(@RequestBody DataExamReq dataExamReq) {
         return examService.processExamTask(dataExamReq);
     }
 
-    @PostMapping(value = "finishExamTask")
+    /**
+     * 第三步：结束任务
+     */
+    @PostMapping(value = "/finishExamTask")
     public BaseResultEntity finishExamTask(@RequestBody DataExamReq dataExamReq) {
         return examService.finishExamTask(dataExamReq);
     }

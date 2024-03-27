@@ -159,4 +159,14 @@
         WHERE
             task_id = #{id}
     </select>
+
+    <select id="selectDataExamTaskPage" resultType="com.primihub.biz.entity.data.vo.DataExamTaskVo" parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
+        select
+        *
+        from
+        data_exam_task
+        <include refid="selectDataExamTaskWhere"/>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
 </mapper>

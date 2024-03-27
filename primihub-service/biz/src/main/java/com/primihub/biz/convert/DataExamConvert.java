@@ -7,10 +7,7 @@ import com.primihub.biz.entity.data.po.DataProjectOrgan;
 import com.primihub.biz.entity.data.po.DataProjectResource;
 import com.primihub.biz.entity.data.req.DataExamReq;
 import com.primihub.biz.entity.data.req.DataProjectReq;
-import com.primihub.biz.entity.data.vo.DataProjectDetailsVo;
-import com.primihub.biz.entity.data.vo.DataProjectListVo;
-import com.primihub.biz.entity.data.vo.DataProjectOrganVo;
-import com.primihub.biz.entity.data.vo.DataProjectResourceVo;
+import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.util.plain.SnowFlakeUtil;
@@ -130,5 +127,9 @@ public class DataExamConvert {
     }
 
 
-
+    public static DataExamTaskVo convertPoToVo(DataExamTask task) {
+        DataExamTaskVo vo = new DataExamTaskVo();
+        // todo
+        return vo;
+    }
 }

@@ -20,4 +20,6 @@ public interface DataTaskPrRepository {
 
     void saveDataExamTask(DataExamTask dataExamTask);
 
+    void updateDataExamTask(DataExamTask dataExamTask);
+
 }

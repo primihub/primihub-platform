@@ -9,5 +9,9 @@ public class DataExamReq {
     private String resourceId;
     private String taskName;
     private String targetOrganId;
+    private String originOrganId;
+    private String taskId;
+    private Integer taskState;
+    private String targetResourceId;
 }
 
