@@ -86,4 +86,8 @@ public class BaseResultEntity<T> {
         return new BaseResultEntity(baseResultEnum,extraInfo);
     }
 
+    public static boolean isSuccess(BaseResultEntity result) {
+        return result != null && result.getCode() == 0;
+    }
+
 }

@@ -3,6 +3,8 @@ package com.primihub.biz.entity.data.req;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Set;
+
 @Getter
 @Setter
 public class DataExamReq {
@@ -13,5 +15,6 @@ public class DataExamReq {
     private String taskId;
     private Integer taskState;
     private String targetResourceId;
+    private Set<String> fieldValueSet;
 }
 

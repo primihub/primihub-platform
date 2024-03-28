@@ -48,7 +48,7 @@ public interface DataResourceRepository {
 
     List<DataFileField> queryDataFileField(Map<String,Object> paramMap);
 
-    List<DataFileField> queryDataFileFieldByFileId(@Param("resourceId")Long resourceId);
+    List<DataFileField> queryDataFileFieldByResourceId(@Param("resourceId")Long resourceId);
 
     DataFileField queryDataFileFieldById(Long id);
 

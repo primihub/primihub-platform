@@ -30,12 +30,10 @@ public class ExamController {
     }
 
     /**
-     * 第一步：发起任务
-     * @param dataExamReq
-     * @return
+     * 一，创建审核任务
      */
-    @PostMapping(value = "/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResultEntity submitExamTask(@RequestBody DataExamReq dataExamReq) {
+    @PostMapping(value = "/saveExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResultEntity saveExamTask(@RequestBody DataExamReq dataExamReq) {
         if (StringUtils.isBlank(dataExamReq.getResourceId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
         }
@@ -44,6 +42,19 @@ public class ExamController {
         }
         if (StringUtils.isBlank(dataExamReq.getTargetOrganId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"targetOrganId");
+        }
+        return examService.saveExamTask(dataExamReq);
+    }
+
+    /**
+     * 二：发起任务
+     * @param dataExamReq
+     * @return
+     */
+    @PostMapping(value = "/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public BaseResultEntity submitExamTask(@RequestBody DataExamReq dataExamReq) {
+        if (StringUtils.isBlank(dataExamReq.getTaskId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
         }
         return examService.submitExamTask(dataExamReq);
     }
@@ -57,7 +68,8 @@ public class ExamController {
     }
 
     /**
-     * 第二步：处理任务
+     * 三：处理任务
+     * 这里要 mock 两个数据源
      */
     @PostMapping(value = "/processExamTask")
     public BaseResultEntity processExamTask(@RequestBody DataExamReq dataExamReq) {

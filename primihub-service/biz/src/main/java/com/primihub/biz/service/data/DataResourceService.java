@@ -231,7 +231,7 @@ public class DataResourceService {
             dataSource = dataResourceRepository.queryDataSourceById(dbId);
             log.info("{}-{}",dbId,JSONObject.toJSONString(dataSource));
         }
-        TaskParam taskParam = resourceSynGRPCDataSet(dataSource, dataResource, dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId()));
+        TaskParam taskParam = resourceSynGRPCDataSet(dataSource, dataResource, dataResourceRepository.queryDataFileFieldByResourceId(dataResource.getResourceId()));
         if (!taskParam.getSuccess()){
             return BaseResultEntity.failure(BaseResultEnum.DATA_EDIT_FAIL,"无法将资源注册到数据集中:"+taskParam.getError());
         }
@@ -275,7 +275,7 @@ public class DataResourceService {
         SysUser sysUser = sysUserService.getSysUserById(dataResourceVo.getUserId());
         dataResourceVo.setUserName(sysUser == null?"":sysUser.getUserName());
         dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
-        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByResourceId(dataResource.getResourceId())
                 .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
                 .collect(Collectors.toList());
         Map<String,Object> map = new HashMap<>();
@@ -817,7 +817,7 @@ public class DataResourceService {
                 }
                 derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
                 dataResourcePrRepository.saveResource(derivationDataResource);
-                List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
+                List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByResourceId(dataResource.getResourceId());
                 for (DataFileField dataFileField : dataFileFields) {
                     dataFileField.setFileId(null);
                     dataFileField.setResourceId(derivationDataResource.getResourceId());
@@ -945,7 +945,7 @@ public class DataResourceService {
         List<DataResourceTag> dataResourceTags = dataResourceRepository.queryTagsByResourceId(resourceId);
         DataResourceVo dataResourceVo = DataResourceConvert.dataResourcePoConvertVo(dataResource, organConfiguration.getSysLocalOrganId() ,organConfiguration.getSysLocalOrganName());
         dataResourceVo.setTags(dataResourceTags.stream().map(DataResourceConvert::dataResourceTagPoConvertListVo).collect(Collectors.toList()));
-        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId())
+        List<DataFileFieldVo> dataFileFieldList = dataResourceRepository.queryDataFileFieldByResourceId(dataResource.getResourceId())
                 .stream().map(DataResourceConvert::DataFileFieldPoConvertVo)
                 .collect(Collectors.toList());
         Map<String, Object> map = new HashMap<>();

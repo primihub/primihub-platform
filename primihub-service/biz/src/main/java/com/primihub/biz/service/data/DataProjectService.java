@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
-import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
 import com.primihub.biz.convert.DataResourceConvert;
@@ -24,13 +23,8 @@ import com.primihub.biz.service.sys.SysUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -547,7 +541,7 @@ public class DataProjectService {
             dataDerivationResourceVo.setUserName(sysUser==null?"":sysUser.getUserName());
             dataDerivationResourceVo.setOrganId(sysLocalOrganInfo.getOrganId());
             dataDerivationResourceVo.setOrganName(sysLocalOrganInfo.getOrganName());
-            dataDerivationResourceVo.setFileFields(dataResourceRepository.queryDataFileFieldByFileId(dataDerivationResourceVo.getId()).stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
+            dataDerivationResourceVo.setFileFields(dataResourceRepository.queryDataFileFieldByResourceId(dataDerivationResourceVo.getId()).stream().map(DataResourceConvert::DataFileFieldPoConvertVo).collect(Collectors.toList()));
         }
         return BaseResultEntity.success(dataDerivationResourceVos);
     }

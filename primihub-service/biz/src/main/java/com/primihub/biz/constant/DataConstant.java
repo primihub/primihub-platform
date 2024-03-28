@@ -52,4 +52,7 @@ public class DataConstant {
 
     public final static String UTF8_BOM = "\uFEFF";
 
+    /** lpy */
+    public final static String INPUT_FIELD_NAME = "IdNum";
+
 }

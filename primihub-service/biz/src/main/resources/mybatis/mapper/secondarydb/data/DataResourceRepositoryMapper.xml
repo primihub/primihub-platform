@@ -221,7 +221,7 @@
         <if test="grouping!=null">and `grouping` = #{grouping}</if>
         <if test="protectionStatus!=null">and `protectionStatus` = #{protectionStatus}</if>
     </select>
-    <select id="queryDataFileFieldByFileId" resultType="com.primihub.biz.entity.data.po.DataFileField">
+    <select id="queryDataFileFieldByResourceId" resultType="com.primihub.biz.entity.data.po.DataFileField">
         select
             field_id as fieldId,
             file_id as fileId,
