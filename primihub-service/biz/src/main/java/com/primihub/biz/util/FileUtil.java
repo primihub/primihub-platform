@@ -2,17 +2,13 @@ package com.primihub.biz.util;
 
 import com.primihub.biz.constant.DataConstant;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Slf4j
 public class FileUtil {
@@ -294,6 +290,32 @@ public class FileUtil {
             log.info("{}-IOException: {}",filePath,e.getMessage());
         }
         return list;
+    }
+
+    public static void convertToCsv(List<HashMap<String, Object>> data, String filePath) throws IOException {
+        try (FileWriter writer = new FileWriter(filePath)) {
+            // 写入表头
+            HashMap<String, Object> firstRow = data.get(0);
+            for (String key : firstRow.keySet()) {
+                writer.append(key);
+                writer.append(",");
+            }
+            writer.append("\n");
+
+            // 写入数据行
+            for (HashMap<String, Object> row : data) {
+                for (Object value : row.values()) {
+                    writer.append(value.toString());
+                    writer.append(",");
+                }
+                writer.append("\n");
+            }
+
+            writer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
 

@@ -1,40 +1,48 @@
 package com.primihub.biz.service.data;
 
 
+import com.alibaba.fastjson.JSON;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.convert.DataExamConvert;
-import com.primihub.biz.entity.base.BaseResultEntity;
-import com.primihub.biz.entity.base.BaseResultEnum;
-import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.convert.DataResourceConvert;
+import com.primihub.biz.entity.base.*;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
-import com.primihub.biz.entity.data.po.DataExamTask;
-import com.primihub.biz.entity.data.po.DataFileField;
-import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataExamReq;
 import com.primihub.biz.entity.data.req.DataExamTaskReq;
-import com.primihub.biz.entity.data.vo.DataExamTaskVo;
-import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
-import com.primihub.biz.entity.data.vo.DataPirTaskVo;
-import com.primihub.biz.entity.data.vo.DataResourceCsvVo;
+import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
+import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
+import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
+import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.Resource;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
@@ -65,6 +73,18 @@ public class ExamService {
     private DataResourceRepository dataResourceRepository;
     @Autowired
     private SysFileSecondarydbRepository fileRepository;
+    @Resource(name="soaRestTemplate")
+    private RestTemplate restTemplate;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
+    @Autowired
+    private SysFilePrimarydbRepository sysFilePrimarydbRepository;
+    @Autowired
+    private DataResourceService dataResourceService;
+    @Autowired
+    private DataResourcePrRepository dataResourcePrRepository;
+    @Autowired
+    private SingleTaskChannel singleTaskChannel;
 
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
@@ -152,50 +172,178 @@ public class ExamService {
     }
 
     public BaseResultEntity processExamTask(DataExamReq req) {
-        req.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        sendEndExamTask(req);
-
-        // 检查源数据集是否存在
-        BaseResultEntity fusionResult = fusionResourceService.getDataResource(req.getResourceId(), req.getOriginOrganId());
-        if (fusionResult.getCode() != 0 || fusionResult.getResult() == null ) {
-            log.info("未找到预处理源数据 resourceId: [{}]", req.getResourceId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"resourceId");
+        if (CollectionUtils.isEmpty(req.getFieldValueSet())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "fieldValue");
         }
 
-        // 生成任务实体记录
-        DataExamTask task = new DataExamTask();
-        task.setTaskId(req.getTaskId());
-        task.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        task.setTaskName(req.getTaskName());
-        task.setTargetOrganId(req.getTargetOrganId());
-        task.setOriginResourceId(req.getResourceId());
-        task.setOriginOrganId(req.getOriginOrganId());
-        dataTaskPrRepository.saveDataExamTask(task);
         req.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-
         sendEndExamTask(req);
 
-        Map<String, Object> otherDataResource = (LinkedHashMap) fusionResult.getResult();
         // futureTask
-        startFutureExamTask(otherDataResource, req);
+        startFutureExamTask(req);
 
         return BaseResultEntity.success();
     }
 
-    private void startFutureExamTask(Map<String, Object> otherDataResource, DataExamReq req) {
-        FutureTask<Object> task = new FutureTask<Object>(() -> {
-            System.out.println("执行任务");
+    private DataResource generateTargetResource(Map returnMap) {
+        List<HashMap<String, Object>> metaData = new ArrayList<>();
 
-            // 先返回执行
-            // 生成新的数据集
-            // todo 预处理流程
-            String targetResourceId = mockExam(otherDataResource);
+        SysFile sysFile = new SysFile();
+        sysFile.setFileSource(1);
+        sysFile.setFileSuffix("csv");
+        sysFile.setFileName(UUID.randomUUID().toString());
+        Date date=new Date();
+        StringBuilder sb =new StringBuilder().append(baseConfiguration.getUploadUrlDirPrefix()).append(1)
+                .append("/").append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
+        sysFile.setFileArea("local");
+//        sysFile.setFileSize();
+//        sysFile.setFileCurrentSize();
+        sysFile.setIsDel(0);
 
+        try {
+            File tempFile=new File(sb.toString());
+            if(!tempFile.exists()) {
+                tempFile.mkdirs();
+            }
+            FileUtil.convertToCsv(metaData, sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
+            sysFile.setFileUrl(sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
+        } catch (IOException e) {
+            log.error("upload",e);
+            return null;
+//            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"写硬盘失败");
+        }
 
-            // 结束任务
+        sysFilePrimarydbRepository.insertSysFile(sysFile);
+
+        // resourceFilePreview
+        BaseResultEntity resultEntity = dataResourceService.getDataResourceCsvVo(sysFile);
+        DataResourceCsvVo csvVo = (DataResourceCsvVo) resultEntity.getResult();
+
+        Map<String,Object> map = new HashMap<>();
+        try {
+            DataResource po = new DataResource();
+            po.setResourceName("生成资源");
+            po.setResourceDesc("生成资源");
+            po.setResourceAuthType(1);  // 公开
+            po.setResourceSource(1);    // 文件
+//            po.setUserId();
+//            po.setOrganId();
+            po.setFileId(sysFile.getFileId());
+            po.setFileSize(0);
+            po.setFileSuffix("");
+            po.setFileColumns(0);
+            po.setFileRows(0);
+            po.setFileHandleStatus(0);
+            po.setResourceNum(0);
+            po.setDbId(0L);
+            po.setUrl("");
+//            po.setPublicOrganId();    // 可见机构列表
+            po.setResourceState(0);
+            List<DataFileFieldVo> fieldList = csvVo.getFieldList();
+            BaseResultEntity handleDataResourceFileResult = null;
+            DataSource dataSource = null;
+            po.setFileId(sysFile.getFileId());
+            po.setFileSize(sysFile.getFileSize().intValue());
+            po.setFileSuffix(sysFile.getFileSuffix());
+            po.setFileColumns(0);
+            po.setFileRows(0);
+            po.setFileHandleStatus(0);
+            po.setResourceNum(0);
+            po.setDbId(0L);
+            po.setUrl(sysFile.getFileUrl());
+//            po.setPublicOrganId();
+            po.setResourceState(0);
+
+            handleDataResourceFileResult = dataResourceService.handleDataResourceFile(po, sysFile.getFileUrl());
+            if (handleDataResourceFileResult.getCode()!=0) {
+                // todo 错误处理
+//                return handleDataResourceFileResult;
+                return null;
+            }
+
+            SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!"".equals(sysLocalOrganInfo.getOrganId().trim())){
+                po.setResourceFusionId(organConfiguration.generateUniqueCode());
+            }
+            List<DataFileField> dataFileFieldList = new ArrayList<>();
+            for (DataFileFieldVo field : fieldList) {
+                dataFileFieldList.add(DataResourceConvert.DataFileFieldVoConvertPo(field, 0L, po.getResourceId()));
+            }
+            TaskParam taskParam = dataResourceService.resourceSynGRPCDataSet(dataSource, po, dataFileFieldList);
+            if (!taskParam.getSuccess()){
+                // todo 错误处理
+//                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中:"+taskParam.getError());
+                return null;
+            }
+            if (dataSource!=null){
+                dataResourcePrRepository.saveSource(dataSource);
+                po.setDbId(dataSource.getId());
+            }
+            dataResourcePrRepository.saveResource(po);
+            for (DataFileField field : dataFileFieldList) {
+                field.setResourceId(po.getResourceId());
+            }
+            dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFieldList);
+            List<String> tags = new ArrayList<String>() {
+                {
+                    add("examine");
+                }
+            };
+            for (String tagName : tags) {
+                DataResourceTag dataResourceTag = new DataResourceTag(tagName);
+                dataResourcePrRepository.saveResourceTag(dataResourceTag);
+                dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),po.getResourceId());
+            }
+            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),dataResourceService.findCopyResourceList(po.getResourceId(), po.getResourceId()));
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),po))).build());
+
+            return po;
+        }catch (Exception e){
+            // todo
+            log.info("save DataResource Exception：{}",e.getMessage());
+            e.printStackTrace();
+//            return BaseResultEntity.failure(BaseResultEnum.FAILURE);
+            return null;
+        }
+    }
+
+    private Map getDataFromCMCCSource(String cmccScoreUrl) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
+        ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
+        return exchange.getBody();
+    }
+
+    private Map getDataFromFirstSource(String firstUrl) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
+        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
+        return exchange.getBody();
+    }
+
+    private void startFutureExamTask(DataExamReq req) {
+        // 进行预处理，使用异步
+        FutureTask<Object> task = new FutureTask<>(() -> {
+            Set<String> fieldValueSet = req.getFieldValueSet();
+            Map resultMap = null;
+            Map returnMap = null;
+            try {
+                resultMap = getDataFromFirstSource(DataConstant.FIRST_URL);
+                returnMap = getDataFromCMCCSource(DataConstant.CMCC_SCORE_URL);
+            } catch (Exception e) {
+                log.info("处理预审核处理出错: [{}]", e.getMessage());
+                req.setTaskState(TaskStateEnum.FAIL.getStateType());
+                sendEndExamTask(req);
+            }
+            // 生成数据源
+            DataResource dataResource = generateTargetResource(returnMap);
+
+            req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+            req.setTargetResourceId(dataResource.getResourceFusionId());
             sendEndExamTask(req);
-
-            return new Object();
+            return null;
         });
         primaryThreadPool.submit(task);
     }
@@ -211,10 +359,6 @@ public class ExamService {
             return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/data/exam/finishExamTask", organ.getPublicKey());
         }
         return null;
-    }
-
-    private String mockExam(Map<String, Object> otherDataResource) {
-        return "mockResourceId";
     }
 
     private BaseResultEntity getTargetResource(String resourceId, String organId) {
@@ -276,12 +420,5 @@ public class ExamService {
         po.setTaskState(TaskStateEnum.INIT.getStateType());
         dataTaskPrRepository.saveDataExamTask(po);
         return BaseResultEntity.success();
-    }
-
-    private void checkCSVContainIdNum(DataExamReq req) {
-
-
-
-
     }
 }

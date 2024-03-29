@@ -55,4 +55,7 @@ public class DataConstant {
     /** lpy */
     public final static String INPUT_FIELD_NAME = "IdNum";
 
+    public static final String FIRST_URL = "FIRST_URL";
+    public static final String CMCC_SCORE_URL = "CMCC_SCORE_URL";
+
 }

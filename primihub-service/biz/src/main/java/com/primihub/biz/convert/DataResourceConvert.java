@@ -173,6 +173,13 @@ public class DataResourceConvert {
         return dataFileField;
     }
 
+    public static DataFileField DataFileFieldVoConvertPo(DataFileFieldVo req, Long fileId, Long resourceId){
+        DataFileField dataFileField = DataFileFieldVoConvertPo(req, FieldTypeEnum.getEnumByTypeName(req.getFieldType()));
+        dataFileField.setFileId(fileId);
+        dataFileField.setResourceId(resourceId);
+        return dataFileField;
+    }
+
     public static DataFileField DataFileFieldReqConvertPo(DataResourceFieldReq req,FieldTypeEnum fieldTypeEnum){
         DataFileField dataFileField = new DataFileField();
         dataFileField.setFieldName(req.getFieldName());
@@ -185,6 +192,21 @@ public class DataResourceConvert {
         dataFileField.setRelevance(req.getRelevance());
         dataFileField.setGrouping(req.getGrouping());
         dataFileField.setProtectionStatus(req.getProtectionStatus());
+        return dataFileField;
+    }
+
+    public static DataFileField DataFileFieldVoConvertPo(DataFileFieldVo req,FieldTypeEnum fieldTypeEnum){
+        DataFileField dataFileField = new DataFileField();
+        dataFileField.setFieldName(req.getFieldName());
+        dataFileField.setFieldId(req.getFieldId());
+        dataFileField.setFieldAs(req.getFieldAs());
+        if (fieldTypeEnum!=null) {
+            dataFileField.setFieldType(fieldTypeEnum.getCode());
+        }
+        dataFileField.setFieldDesc(req.getFieldDesc());
+        dataFileField.setRelevance(req.getRelevance()?1:0);
+        dataFileField.setGrouping(req.getGrouping()?1:0);
+        dataFileField.setProtectionStatus(req.getProtectionStatus()?1:0);
         return dataFileField;
     }
 
