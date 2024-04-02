@@ -109,6 +109,7 @@ public class DataCopyService implements ApplicationContextAware {
                             errorMsg = "机构信息查询null";
                         }else {
                             BaseResultEntity resultEntity = otherBusinessesService.syncGatewayApiData(copyDto, task.getServerAddress() + "/share/shareData/saveFusionResource", sysOrgan.getPublicKey());
+                            log.info("本次查找备份结果：{}-{}, 其中与其他机构同步结果： {}", startOffset, endOffset, JSON.toJSONString(resultEntity));
                             if (!resultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                                 isSuccess = false;
                                 if (++errorCount >= 3) {
@@ -125,6 +126,7 @@ public class DataCopyService implements ApplicationContextAware {
                     }
                 }
                 if(isSuccess) {
+                    log.info("传输成功一样：执行修改任务：taskId: {}, endOffset: {}", task.getId(), endOffset);
                     dataCopyPrimarydbRepository.updateCopyInfo(task.getId(),endOffset,"success");
                     if (task.getTaskType() == 1) {
                         startOffset=startOffset+DataConstant.COPY_PAGE_NUM;

@@ -1,0 +1,46 @@
+server:
+  port: 8091
+spring:
+  application:
+    name: platform
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        namespace: dev1
+nacos:
+  config:
+    server-addr: localhost:8848
+    namespace: dev1
+    max-retry: 3
+    config-long-poll-timeout: 1000
+    config-retry-time: 1000
+    auto-refresh: true
+    username: nacos
+    password: nacos
+    context-path: /nacos
+    group: DEFAULT_GROUP
+    file-extension: yaml
+aj:
+  captcha:
+    jigsaw: classpath:images/yyjigsaw
+    cache-type: redis
+    water-mark: PrimiHub
+    slip-offset: 5
+    aes-status: true
+    interference-options: 2
+    req-frequency-limit-enable: true
+    req-get-lock-limit: 30
+    req-get-lock-seconds: 30
+    req-get-minute-limit: 10
+    req-check-minute-limit: 10
+    req-verify-minute-limit: 10
+    type: BLOCKPUZZLE
+logging:
+  level:
+    root: info
+    mybatis.mapper: debug
+    com.primihub.biz.repository: debug
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

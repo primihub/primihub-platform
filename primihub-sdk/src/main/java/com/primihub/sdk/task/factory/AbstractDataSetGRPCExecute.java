@@ -51,9 +51,12 @@ public class AbstractDataSetGRPCExecute extends AbstractGRPCExecuteFactory {
                 param.setSuccess(false);
             }
         }catch (Exception e){
+            param.setSuccess(false);
+            param.setError(e.getMessage());
             log.info("dataServiceGrpcException:{}",e.getMessage());
             e.printStackTrace();
         }
+        param.setEnd(true);
         log.info("end dataServiceGrpc fparam:{} - time:{}",param.toString(),System.currentTimeMillis());
     }
 }

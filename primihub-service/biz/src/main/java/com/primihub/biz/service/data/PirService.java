@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -10,6 +11,7 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
 import com.primihub.biz.entity.data.po.DataTask;
+import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
@@ -43,8 +45,8 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(String resourceId, String pirParam,String taskName) {
-        BaseResultEntity dataResource = otherBusinessesService.getDataResource(resourceId);
+    public BaseResultEntity pirSubmitTask(DataPirReq req) {
+        BaseResultEntity dataResource = otherBusinessesService.getDataResource(req.getResourceId());
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
         }
@@ -53,22 +55,26 @@ public class PirService {
         if (available == 1) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
         }
+        String resourceColumnNames = pirDataResource.getOrDefault("resourceColumnNameList", "").toString();
+        if (StringUtils.isBlank(resourceColumnNames)){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表失败");
+        }
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(taskName);
+        dataTask.setTaskName(req.getTaskName());
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
         dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTaskPrRepository.saveDataTask(dataTask);
         DataPirTask dataPirTask = new DataPirTask();
         dataPirTask.setTaskId(dataTask.getTaskId());
-        dataPirTask.setRetrievalId(pirParam);
+        dataPirTask.setRetrievalId(JSONObject.toJSONString(req.getKeyQuerys()));
         dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
-        dataPirTask.setResourceId(resourceId);
+        dataPirTask.setResourceId(req.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask,resourceId,pirParam);
+        dataAsyncService.pirGrpcTask(dataTask,dataPirTask,resourceColumnNames);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);

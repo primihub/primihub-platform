@@ -2,10 +2,6 @@ package com.primihub.biz.service.test;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.nacos.api.NacosFactory;
-import com.alibaba.nacos.api.config.ConfigService;
-import com.alibaba.nacos.api.config.ConfigType;
-import com.alibaba.nacos.api.exception.NacosException;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
@@ -16,11 +12,8 @@ import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.sys.po.DataSet;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
-import com.primihub.biz.repository.primarydb.test.TestPrimaryRepository;
-import com.primihub.biz.repository.primaryredis.test.TestRedisRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
-import com.primihub.biz.repository.secondarydb.test.TestSecondaryRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
@@ -29,25 +22,15 @@ import com.primihub.sdk.task.TaskHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import java.io.File;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @Slf4j
 public class TestService {
-    @Autowired
-    private TestPrimaryRepository testPrimaryRepository;
-    @Autowired
-    private TestSecondaryRepository testSecondaryRepository;
-    @Autowired
-    private TestRedisRepository testRedisRepository;
     @Autowired
     private DataResourceService dataResourceService;
     @Autowired
@@ -66,30 +49,6 @@ public class TestService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private TaskHelper taskHelper;
-    @Resource
-    private Environment environment;
-
-    public void testPublish(){
-        String serverAddr=environment.getProperty("nacos.config.server-addr");
-        String group=environment.getProperty("nacos.config.group");
-        try {
-            ConfigService configService=NacosFactory.createConfigService(serverAddr);
-            configService.publishConfig("xyz",group,"{\"groupId\":\"123456\"}", ConfigType.JSON.getType());
-            System.out.println(configService.getConfig("xyz",group,3000));
-        } catch (NacosException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public Map test(){
-        testPrimaryRepository.insertTest();
-        testRedisRepository.testIncr();
-        return testSecondaryRepository.testFindOneData();
-    }
-
-    public Map runFeign(){
-        return new HashMap();
-    }
 
 
     public void formatResources(String tag) {
@@ -117,7 +76,7 @@ public class TestService {
         if (tag.contains("copy")){
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
+                singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
             }
         }
     }

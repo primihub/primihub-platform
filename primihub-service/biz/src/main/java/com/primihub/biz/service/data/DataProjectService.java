@@ -139,7 +139,7 @@ public class DataProjectService {
     }
 
     public void sendTask(ShareProjectVo shareProjectVo){
-        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_PROJECT_DATA_TASK.getHandleType(),shareProjectVo))).build());
+        singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_PROJECT_DATA_TASK.getHandleType(),shareProjectVo))).build());
     }
 
     public Boolean updateProjectProviderOrganName(List<DataProjectOrganReq> organList,DataProject dataProject){

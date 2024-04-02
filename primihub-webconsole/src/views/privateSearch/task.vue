@@ -193,12 +193,14 @@ import { getResourceList } from '@/api/fusionResource'
 import ResourceItemSimple from '@/components/ResourceItemSimple'
 import ResourceTableSingleSelect from '@/components/ResourceTableSingleSelect'
 import Pagination from '@/components/Pagination'
+import tagsInput from '@/components/TagsInput/index.vue'
 
 export default {
   components: {
     ResourceItemSimple,
     ResourceTableSingleSelect,
-    Pagination
+    Pagination,
+    tagsInput
   },
   data() {
     return {
@@ -244,7 +246,8 @@ export default {
         resourceName: [
           { required: true, message: '请选择机构下资源', trigger: 'blur' }
         ]
-      }
+      },
+      tagValueList: []
     }
   },
   computed: {
@@ -254,6 +257,15 @@ export default {
     ...mapGetters([
       'buttonPermissionList'
     ])
+  },
+  watch: {
+    tagValueList(val) {
+      if (val.length > 0) {
+        this.form.pirParam = val.join(',')
+      } else {
+        this.form.pirParam = ''
+      }
+    }
   },
   async created() {
     await this.getAvailableOrganList()
@@ -571,6 +583,13 @@ export default {
 }
 .dialog-con{
   text-align: left;
+  .popover-container{
+    position: absolute;
+    top: 12px;
+    right: -22px;
+    font-size: 16px;
+    line-height: 1;
+  }
 }
 .popover-container{
   // position: absolute;

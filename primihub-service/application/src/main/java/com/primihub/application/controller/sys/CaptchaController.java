@@ -8,6 +8,7 @@ import com.anji.captcha.util.StringUtils;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.BaseCaptchaParam;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * 图片验证码
  */
+@Api(value = "图片验证码接口",tags = "图片验证码接口")
 @RestController
 @RequestMapping("/captcha")
 public class CaptchaController {
@@ -63,10 +65,6 @@ public class CaptchaController {
         }
     }
 
-    //@PostMapping("/verify")
-    public ResponseModel verify(@RequestBody CaptchaVO data, HttpServletRequest request) {
-        return captchaService.verification(data);
-    }
 
     public static final String getRemoteId(HttpServletRequest request) {
         String xfwd = request.getHeader("X-Forwarded-For");

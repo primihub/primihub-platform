@@ -19,8 +19,8 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 100MB
+      max-request-size: 100MB
       file-size-threshold: 1MB
   cloud:
     nacos:
@@ -72,6 +72,17 @@ spring:
             - BaseParam
             - SysAuth
             - SysLog
+        - id: swagger-url-proxy
+          uri: lb://platform
+          predicates:
+            - Path=/platform/**
+          filters:
+            - StripPrefix=1
+#            - BaseParam
+            - Swagger
+            - SysAuth
+#            - SysLog
+
 logging:
   level:
     root: debug

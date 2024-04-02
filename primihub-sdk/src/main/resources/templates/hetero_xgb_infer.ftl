@@ -3,13 +3,12 @@
 		"guest": [
 			"Charlie"
 		],
-		"host": [
-			"Bob"
-		]
+		"host": "Bob"
 	},
 	"common_params": {
 		"model": "HeteroXGBInfer",
 		"task_name": "predict",
+		"psi": null,
 		"metric_path": "${indicatorFileName}",
 		"model_pred": "${predictFileName}"
 	},

@@ -112,8 +112,12 @@
         </foreach>
     </delete>
 
-    <delete id="deleteResource">
+    <!--<delete id="deleteResource">
         delete from data_resource where resource_id = #{resourceId}
+    </delete>-->
+
+    <delete id="deleteResource">
+        update data_resource set is_del = 1,resource_state=1 where resource_id = #{resourceId}
     </delete>
 
     <delete id="deleteResourceTag">

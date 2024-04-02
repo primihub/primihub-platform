@@ -1,15 +1,22 @@
 package com.primihub.biz.entity.base;
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 
 
+@ApiModel("统一返回结构")
 @Setter
 @Getter
 public class BaseResultEntity<T> {
+    @ApiModelProperty(value = "结果编码",example = "0")
     private Integer code;
+    @ApiModelProperty(value = "结果消息",example = "请求成功")
     private String msg;
+    @ApiModelProperty(value = "结果数据")
     private T result;
+    @ApiModelProperty(value = "结果补充消息")
     private String extra;
 
     public BaseResultEntity() {

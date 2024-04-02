@@ -6,10 +6,13 @@ import com.primihub.biz.entity.sys.enumeration.AuthTypeEnum;
 import com.primihub.biz.entity.sys.param.AlterAuthNodeStatusParam;
 import com.primihub.biz.entity.sys.param.CreateAuthNodeParam;
 import com.primihub.biz.service.sys.SysAuthService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Api(value = "权限接口",tags = "权限接口")
 @RequestMapping("auth")
 @RestController
 public class AuthController {
@@ -17,7 +20,7 @@ public class AuthController {
     @Autowired
     private SysAuthService sysAuthService;
 
-    @RequestMapping("createAuthNode")
+    @GetMapping("createAuthNode")
     public BaseResultEntity createAuthNode(CreateAuthNodeParam createAuthNodeParam){
         if(createAuthNodeParam.getAuthName()==null|| "".equals(createAuthNodeParam.getAuthName().trim())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authName");
@@ -49,7 +52,7 @@ public class AuthController {
         return sysAuthService.createAuthNode(createAuthNodeParam);
     }
 
-    @RequestMapping("alterAuthNodeStatus")
+    @GetMapping("alterAuthNodeStatus")
     public BaseResultEntity alterAuthNodeStatus(AlterAuthNodeStatusParam alterAuthNodeStatusParam){
         if(alterAuthNodeStatusParam.getAuthId()==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"authId");
@@ -64,17 +67,17 @@ public class AuthController {
         return sysAuthService.alterAuthNodeStatus(alterAuthNodeStatusParam);
     }
 
-    @RequestMapping("deleteAuthNode")
+    @GetMapping("deleteAuthNode")
     public BaseResultEntity deleteAuthNode(Long authId){
         return sysAuthService.deleteAuthNode(authId);
     }
 
-    @RequestMapping("getAuthTree")
+    @GetMapping("getAuthTree")
     public BaseResultEntity getAuthTree(){
         return sysAuthService.getAuthTree();
     }
 
-    @RequestMapping("generateAllAuth")
+    @GetMapping("generateAllAuth")
     public BaseResultEntity generateAllAuth(){
         return sysAuthService.generateAllAuth();
     }

@@ -3,6 +3,8 @@ package com.primihub.sdk.task.param;
 import com.primihub.sdk.task.annotation.TaskTypeExample;
 import com.primihub.sdk.task.factory.AbstractPirGRPCExecute;
 
+import java.util.Arrays;
+
 /**
  * pir 匿踪查询组装类
  */
@@ -24,6 +26,8 @@ public class TaskPIRParam {
      * 文件内容输出路径
      */
     private String outputFullFilename;
+
+    private Integer[] keyColumns;
 
     public String[] getQueryParam() {
         return queryParam;
@@ -57,6 +61,18 @@ public class TaskPIRParam {
         this.outputFullFilename = outputFullFilename;
     }
 
+    public Integer[] getKeyColumns() {
+        return keyColumns;
+    }
+
+    public String getKeyColumnsString() {
+        return Arrays.toString(keyColumns);
+    }
+
+    public void setKeyColumns(Integer[] keyColumns) {
+        this.keyColumns = keyColumns;
+    }
+
     @Override
     public String toString() {
         return "PirTaskParam{" +
@@ -64,6 +80,7 @@ public class TaskPIRParam {
                 ", serverData='" + serverData + '\'' +
                 ", pirType=" + pirType +
                 ", outputFullFilename='" + outputFullFilename + '\'' +
+                ", keyColumns='" + getKeyColumnsString() + '\'' +
                 '}';
     }
 }

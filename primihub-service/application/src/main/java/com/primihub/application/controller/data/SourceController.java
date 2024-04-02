@@ -5,8 +5,11 @@ import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.SourceEnum;
 import com.primihub.biz.entity.data.req.DataSourceReq;
 import com.primihub.biz.service.data.DataSourceService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * 数据集数据库接口
  */
+@Api(value = "数据集数据库接口",tags = "数据集数据库接口")
 @RequestMapping("dbsource")
 @RestController
 public class SourceController {
@@ -26,7 +30,8 @@ public class SourceController {
      * @param req
      * @return
      */
-    @PostMapping("healthConnection")
+    @ApiOperation(value = "检测数据库连接",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "healthConnection",consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity healthConnection(@RequestBody DataSourceReq req){
         BaseResultEntity baseResultEntity = checkDataSourceReq(req);
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
@@ -40,7 +45,8 @@ public class SourceController {
      * @param req
      * @return
      */
-    @PostMapping("tableDetails")
+    @ApiOperation(value = "数据库表详情",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "tableDetails",consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity dataSourceTableDetails(@RequestBody DataSourceReq req){
         BaseResultEntity baseResultEntity = checkDataSourceReq(req);
         if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {

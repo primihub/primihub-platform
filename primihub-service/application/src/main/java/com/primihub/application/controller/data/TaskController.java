@@ -12,6 +12,7 @@ import com.primihub.biz.entity.data.req.DataTaskReq;
 import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.service.data.DataTaskService;
+import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.util.UUID;
 /**
  * 任务接口
  */
+@Api(value = "任务接口",tags = "任务接口")
 @RequestMapping("task")
 @RestController
 @Slf4j
@@ -44,7 +46,7 @@ public class TaskController {
      * @param taskDesc  任务描述信息
      * @return
      */
-    @RequestMapping("updateTaskDesc")
+    @GetMapping("updateTaskDesc")
     public BaseResultEntity updateTaskDesc(Long taskId,String taskDesc){
         if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
@@ -55,7 +57,7 @@ public class TaskController {
         return dataTaskService.updateTaskDesc(taskId,taskDesc);
     }
 
-    @RequestMapping("deleteTask")
+    @PostMapping("deleteTask")
     public BaseResultEntity deleteTask(Long taskId){
         if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
@@ -63,7 +65,7 @@ public class TaskController {
         return dataTaskService.deleteTaskData(taskId);
     }
 
-    @RequestMapping("getTaskData")
+    @GetMapping("getTaskData")
     public BaseResultEntity getTaskData(Long taskId){
         if (taskId==null||taskId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
@@ -71,7 +73,7 @@ public class TaskController {
         return dataTaskService.getTaskData(taskId);
     }
 
-    @RequestMapping("getModelTaskList")
+    @GetMapping("getModelTaskList")
     public BaseResultEntity getModelTaskList(Long modelId, PageReq req){
         if (modelId==null||modelId==0L) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"modelId");
@@ -79,7 +81,7 @@ public class TaskController {
         return dataTaskService.getModelTaskList(modelId,req);
     }
 
-    @RequestMapping("getTaskList")
+    @GetMapping("getTaskList")
     public BaseResultEntity getTaskList(DataTaskReq req){
         return dataTaskService.getTaskList(req);
     }

@@ -3,13 +3,12 @@
         "guest": [
             "Charlie"
         ],
-        "host": [
-            "Bob"
-        ]
+        "host": "Bob"
     },
     "common_params": {
         "model": "HeteroXGB",
         "task_name": "train",
+        "psi": null,
         "num_tree": ${numTree!5},
         "max_depth": ${maxDepth!5},
         "reg_lambda": ${regLambda!1},

@@ -36,6 +36,10 @@ aj:
     req-check-minute-limit: 10
     req-verify-minute-limit: 10
     type: BLOCKPUZZLE
+
+
+swagger2:
+  enable: true
 logging:
   level:
     root: info

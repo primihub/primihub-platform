@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 
 public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
 
+    private final static String QUERY_CONFIG_JSON = "{ \"SERVER\": {\"key_columns\": <key_columns>} }";
+
     private final static Logger log = LoggerFactory.getLogger(AbstractPirGRPCExecute.class);
 
     private CacheService cacheService;
@@ -45,11 +47,22 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
             Common.ParamValue serverDataParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(param.getTaskContentParam().getServerData().getBytes(StandardCharsets.UTF_8))).build();
             Common.ParamValue pirTagParamValue = Common.ParamValue.newBuilder().setValueInt32(1).build();
             Common.ParamValue outputFullFilenameParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(param.getTaskContentParam().getOutputFullFilename().getBytes(StandardCharsets.UTF_8))).build();
+            String queryConfig = "";
+            if (param.getTaskContentParam().getKeyColumns() == null || param.getTaskContentParam().getKeyColumns().length==0){
+                param.setError("KeyColumns 不可以为空");
+                param.setSuccess(false);
+                param.setEnd(true);
+                log.info("grpc end {} - time:{}", param.toString(), System.currentTimeMillis());
+                return;
+            }
+            queryConfig = QUERY_CONFIG_JSON.replace("<key_columns>",param.getTaskContentParam().getKeyColumnsString());
+            Common.ParamValue aueryConfigParamValue = Common.ParamValue.newBuilder().setValueString(ByteString.copyFrom(queryConfig.getBytes(StandardCharsets.UTF_8))).build();
             Common.Params params = Common.Params.newBuilder()
                     .putParamMap("clientData", clientDataParamValue)
                     .putParamMap("serverData", serverDataParamValue)
                     .putParamMap("pirType", pirTagParamValue)
                     .putParamMap("outputFullFilename", outputFullFilenameParamValue)
+                    .putParamMap("QueryConfig", aueryConfigParamValue)
                     .build();
             Common.TaskContext taskBuild = assembleTaskContext(param);
             Common.Task task = Common.Task.newBuilder()
@@ -78,12 +91,14 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
             }else {
                 param.setError(reply.getMsgInfo().toStringUtf8());
                 param.setSuccess(false);
-                param.setEnd(true);
             }
             log.info("grpc end {} - time:{}", param.toString(), System.currentTimeMillis());
         } catch (Exception e) {
+            param.setSuccess(false);
+            param.setError(e.getMessage());
             log.info("grpc pir Exception:{}",e.getMessage());
             e.printStackTrace();
         }
+        param.setEnd(true);
     }
 }
