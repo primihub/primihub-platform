@@ -39,5 +39,5 @@ public interface DataTaskRepository {
 
     Integer selectDataExamTaskCount(DataExamTaskReq req);
 
-    DataExamTask selectDataExamByTaskId(String taskId);
+    DataExamTask selectDataExamByTaskId(@Param("taskId")String taskId);
 }
