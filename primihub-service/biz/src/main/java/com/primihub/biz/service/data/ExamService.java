@@ -340,13 +340,11 @@ public class ExamService {
             // 将JSON字符串解析为List<Map>
 
             List<Map<String, Object>> result = list.stream().filter(map -> map.get("phone") != null && targetPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
-            Map<String, Map<String, Object>> phoneScoreMap = result.stream().collect(Collectors.toMap(stringObjectMap -> {
-                return (String) stringObjectMap.get("phone");
-            }, Function.identity()));
+            Map<String, Map<String, Object>> phoneScoreMap = result.stream().collect(Collectors.toMap(stringObjectMap -> (String) stringObjectMap.get("phone"), Function.identity()));
             List<String> existPhoneNumList = result.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String) stringObjectMap.get("phone")).collect(Collectors.toList());
             List<Map<String, Object>> collect = resultList.stream().filter(map -> map.get("phone") != null && existPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
             collect.forEach(map -> {
-                map.put("score", phoneScoreMap.get(map.get("phone")));
+                map.put("score", phoneScoreMap.get(map.get("phone")).getOrDefault("score", 0));
             });
             return collect;
         } catch (IOException e) {

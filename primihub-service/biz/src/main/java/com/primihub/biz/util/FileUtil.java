@@ -297,18 +297,24 @@ public class FileUtil {
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
             // 写入表头
             String[] header = data.get(0).keySet().toArray(new String[0]);
+            StringBuilder headerStr = new StringBuilder();
             for (String s : header) {
-                writer.append(s);
-                writer.append(",");
+                headerStr.append(s);
+                headerStr.append(",");
             }
+            String substring = headerStr.substring(0, headerStr.length() - 1);
+            writer.append(substring);
             writer.append("\n");
 
             // 写入数据行
             for (Map<String, Object> row : data) {
+                StringBuilder sb = new StringBuilder();
                 for (Object value : row.values()) {
-                    writer.append(value.toString());
-                    writer.append(",");
+                    sb.append(value.toString());
+                    sb.append(",");
                 }
+                String str = sb.substring(0, sb.length() - 1);
+                writer.append(str);
                 writer.append("\n");
             }
 
