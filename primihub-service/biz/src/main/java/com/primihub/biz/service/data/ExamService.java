@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
@@ -33,7 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.data.repository.init.ResourceReader;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -43,10 +45,12 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -85,6 +89,8 @@ public class ExamService {
     private DataResourcePrRepository dataResourcePrRepository;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
@@ -185,8 +191,8 @@ public class ExamService {
         return BaseResultEntity.success();
     }
 
-    private DataResource generateTargetResource(Map returnMap) {
-        List<HashMap<String, Object>> metaData = new ArrayList<>();
+//    private DataResource generateTargetResource(Map returnMap) {
+        private DataResource generateTargetResource(List<Map<String, Object>> metaData) {
 
         SysFile sysFile = new SysFile();
         sysFile.setFileSource(1);
@@ -222,8 +228,8 @@ public class ExamService {
         Map<String,Object> map = new HashMap<>();
         try {
             DataResource po = new DataResource();
-            po.setResourceName("生成资源");
-            po.setResourceDesc("生成资源");
+            po.setResourceName("预处理生成资源");
+            po.setResourceDesc("预处理生成资源");
             po.setResourceAuthType(1);  // 公开
             po.setResourceSource(1);    // 文件
 //            po.setUserId();
@@ -307,38 +313,80 @@ public class ExamService {
         }
     }
 
-    private Map getDataFromCMCCSource(String cmccScoreUrl) {
-        HttpHeaders headers = new HttpHeaders();
+    private  List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl,  List<Map<String, Object>> resultList) {
+        /*HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
         ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
-        return exchange.getBody();
+        return exchange.getBody();*/
+        List<String> targetPhoneNumList = resultList.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String)stringObjectMap.get("phone")).collect(Collectors.toList());
+        String resourcePath = ResourceReader.class.getClassLoader().getResource("mock/score.json").getPath();
+        File jsonFile = new File(resourcePath);
+
+        try {
+            // 读取JSON文件内容为字符串
+            String jsonString = new String(Files.readAllBytes(jsonFile.toPath()));
+            // 将JSON字符串解析为List<Map>
+            List<Map<String, Object>> list = JSON.parseObject(jsonString, new TypeReference<List<Map<String, Object>>>() {});
+
+            List<Map<String, Object>> result = list.stream().filter(map -> map.get("phone") != null && targetPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
+            Map<String, Map<String, Object>> phoneScoreMap = result.stream().collect(Collectors.toMap(stringObjectMap -> {
+                return (String)stringObjectMap.get("phone");
+            }, Function.identity()));
+            List<String> existPhoneNumList = result.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String)stringObjectMap.get("phone")).collect(Collectors.toList());
+            List<Map<String, Object>> collect = resultList.stream().filter(map -> map.get("phone") != null && existPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
+            collect.forEach(map -> {
+                map.put("score", phoneScoreMap.get(map.get("phone")));
+            });
+            return collect;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("数据处理出错");
     }
 
-    private Map getDataFromFirstSource(String firstUrl) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
-        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
-        return exchange.getBody();
+    private List<Map<String, Object>> getDataFromFirstSource(String firstUrl,  Set<String> fieldValueSet) {
+        /**HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
+//        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
+//        return exchange.getBody();
+         */
+
+        String resourcePath = ResourceReader.class.getClassLoader().getResource("mock/data.json").getPath();
+        File jsonFile = new File(resourcePath);
+
+        try {
+            // 读取JSON文件内容为字符串
+            String jsonString = new String(Files.readAllBytes(jsonFile.toPath()));
+            // 将JSON字符串解析为List<Map>
+            List<Map<String, Object>> list = JSON.parseObject(jsonString, new TypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> result = list.stream().filter(map -> map.get("code") != null && fieldValueSet.contains((String) (map.get("code")))).collect(Collectors.toList());
+            return result;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        throw new RuntimeException("数据处理出错");
     }
 
     private void startFutureExamTask(DataExamReq req) {
         // 进行预处理，使用异步
         FutureTask<Object> task = new FutureTask<>(() -> {
             Set<String> fieldValueSet = req.getFieldValueSet();
-            Map resultMap = null;
+//            Map resultMap = null;
+            List<Map<String, Object>> resultList = null;
+            List<Map<String, Object>> resultList2 = null;
             Map returnMap = null;
             try {
-                resultMap = getDataFromFirstSource(DataConstant.FIRST_URL);
-                returnMap = getDataFromCMCCSource(DataConstant.CMCC_SCORE_URL);
+                resultList = getDataFromFirstSource(DataConstant.FIRST_URL, fieldValueSet);
+                resultList2  = getDataFromCMCCSource(DataConstant.CMCC_SCORE_URL, resultList);
             } catch (Exception e) {
                 log.info("处理预审核处理出错: [{}]", e.getMessage());
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
                 sendEndExamTask(req);
             }
             // 生成数据源
-            DataResource dataResource = generateTargetResource(returnMap);
+            DataResource dataResource = generateTargetResource(resultList2);
 
             req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
             req.setTargetResourceId(dataResource.getResourceFusionId());
