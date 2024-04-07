@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.*;
 /**
  * 预审核管理
  */
-@RequestMapping("/examine")
+@RequestMapping
 @RestController
 @Slf4j
 public class ExamController {
 
     @Autowired
     private ExamService examService;
-    @GetMapping("/getExamTaskList")
+    @GetMapping("/examine/getExamTaskList")
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req){
         return examService.getExamTaskList(req);
     }
@@ -32,7 +32,7 @@ public class ExamController {
     /**
      * 一，创建审核任务
      */
-    @PostMapping(value = "/saveExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/examine/saveExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity saveExamTask(@RequestBody DataExamReq dataExamReq) {
         if (StringUtils.isBlank(dataExamReq.getResourceId())){
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
@@ -51,7 +51,7 @@ public class ExamController {
      * @param dataExamReq
      * @return
      */
-    @PostMapping(value = "/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/examine/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity submitExamTask(@RequestBody DataExamReq dataExamReq) {
         if (StringUtils.isBlank(dataExamReq.getTaskId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
@@ -59,7 +59,7 @@ public class ExamController {
         return examService.submitExamTask(dataExamReq);
     }
 
-    @GetMapping(value = "/getExamTaskDetail")
+    @GetMapping(value = "/examine/getExamTaskDetail")
     public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId){
         if (StringUtils.isBlank(taskId)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
@@ -71,7 +71,7 @@ public class ExamController {
      * 三：处理任务
      * 这里要 mock 两个数据源
      */
-    @PostMapping(value = "/processExamTask")
+    @PostMapping(value = "/shareData/processExamTask")
     public BaseResultEntity processExamTask(@RequestBody DataExamReq dataExamReq) {
         return examService.processExamTask(dataExamReq);
     }
@@ -79,7 +79,7 @@ public class ExamController {
     /**
      * 第四步：结束任务
      */
-    @PostMapping(value = "/finishExamTask")
+    @PostMapping(value = "/shareData/finishExamTask")
     public BaseResultEntity finishExamTask(@RequestBody DataExamReq dataExamReq) {
         return examService.finishExamTask(dataExamReq);
     }
