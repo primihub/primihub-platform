@@ -125,7 +125,7 @@ public class ExamService {
         DataExamReq req = DataExamConvert.convertPoToReq(po);
         req.setFieldValueSet(targetFieldValueSet);
         // 发送给对方机构
-        return sendExamTask(param);
+        return sendExamTask(req);
     }
 
     private  BaseResultEntity<Set<String>> getDataResourceCsvTargetFieldList(SysFile sysFile) {
