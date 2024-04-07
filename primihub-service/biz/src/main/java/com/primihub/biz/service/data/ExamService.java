@@ -166,7 +166,7 @@ public class ExamService {
         }
 
         for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(param, organ.getOrganGateway() + "/data/exam/processExamTask", organ.getPublicKey());
+            return otherBusinessesService.syncGatewayApiData(param, organ.getOrganGateway() + "/data/examine/processExamTask", organ.getPublicKey());
         }
         return null;
     }
@@ -404,7 +404,7 @@ public class ExamService {
         }
 
         for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/data/exam/finishExamTask", organ.getPublicKey());
+            return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/data/examine/finishExamTask", organ.getPublicKey());
         }
         return null;
     }
