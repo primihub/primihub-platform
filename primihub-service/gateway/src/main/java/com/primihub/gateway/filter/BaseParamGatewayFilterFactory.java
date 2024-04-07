@@ -75,6 +75,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
                         })
                 );
             }
+            if ()
             MediaType mediaType = exchange.getRequest().getHeaders().getContentType();
             if(mediaType==null){
                 MultiValueMap<String, String> queryParams=exchange.getRequest().getQueryParams();
