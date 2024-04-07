@@ -1,5 +1,6 @@
 package com.primihub.application.controller.data;
 
+import com.alibaba.fastjson.JSON;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
@@ -81,6 +82,7 @@ public class ExamController {
      */
     @PostMapping(value = "/shareData/finishExamTask")
     public BaseResultEntity finishExamTask(@RequestBody DataExamReq dataExamReq) {
+        log.info(JSON.toJSONString(dataExamReq));
         return examService.finishExamTask(dataExamReq);
     }
 

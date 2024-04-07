@@ -2,7 +2,7 @@ package com.primihub.biz.service.data;
 
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
@@ -45,7 +45,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
@@ -91,6 +91,8 @@ public class ExamService {
     private SingleTaskChannel singleTaskChannel;
     @Autowired
     private ResourceLoader resourceLoader;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
@@ -320,14 +322,13 @@ public class ExamService {
         ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
         return exchange.getBody();*/
         List<String> targetPhoneNumList = resultList.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String)stringObjectMap.get("phone")).collect(Collectors.toList());
-        String resourcePath = ResourceReader.class.getClassLoader().getResource("mock/score.json").getPath();
-        File jsonFile = new File(resourcePath);
 
         try {
+            InputStream inputStream = ResourceReader.class.getClassLoader().getResourceAsStream("mock/score.json");
+            List<Map<String, Object>> list = objectMapper.readValue(inputStream, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {
+            });
             // 读取JSON文件内容为字符串
-            String jsonString = new String(Files.readAllBytes(jsonFile.toPath()));
             // 将JSON字符串解析为List<Map>
-            List<Map<String, Object>> list = JSON.parseObject(jsonString, new TypeReference<List<Map<String, Object>>>() {});
 
             List<Map<String, Object>> result = list.stream().filter(map -> map.get("phone") != null && targetPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
             Map<String, Map<String, Object>> phoneScoreMap = result.stream().collect(Collectors.toMap(stringObjectMap -> {
@@ -353,14 +354,11 @@ public class ExamService {
 //        return exchange.getBody();
          */
 
-        String resourcePath = ResourceReader.class.getClassLoader().getResource("mock/data.json").getPath();
-        File jsonFile = new File(resourcePath);
-
         try {
             // 读取JSON文件内容为字符串
-            String jsonString = new String(Files.readAllBytes(jsonFile.toPath()));
-            // 将JSON字符串解析为List<Map>
-            List<Map<String, Object>> list = JSON.parseObject(jsonString, new TypeReference<List<Map<String, Object>>>() {});
+            InputStream inputStream = ResourceReader.class.getClassLoader().getResourceAsStream("mock/data.json");
+            List<Map<String, Object>> list = objectMapper.readValue(inputStream, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {
+            });
             List<Map<String, Object>> result = list.stream().filter(map -> map.get("code") != null && fieldValueSet.contains((String) (map.get("code")))).collect(Collectors.toList());
             return result;
         } catch (IOException e) {
@@ -372,6 +370,7 @@ public class ExamService {
     private void startFutureExamTask(DataExamReq req) {
         // 进行预处理，使用异步
         FutureTask<Object> task = new FutureTask<>(() -> {
+            log.info("====================== 预处理开始");
             Set<String> fieldValueSet = req.getFieldValueSet();
 //            Map resultMap = null;
             List<Map<String, Object>> resultList = null;
@@ -391,6 +390,7 @@ public class ExamService {
             req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
             req.setTargetResourceId(dataResource.getResourceFusionId());
             sendEndExamTask(req);
+            log.info("====================== 预处理结束");
             return null;
         });
         primaryThreadPool.submit(task);
