@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -293,7 +294,7 @@ public class FileUtil {
     }
 
     public static void convertToCsv(List<Map<String, Object>> data, String filePath) throws IOException {
-        try (FileWriter writer = new FileWriter(filePath)) {
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
             // 写入表头
             String[] header = data.get(0).keySet().toArray(new String[0]);
             for (String s : header) {

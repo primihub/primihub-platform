@@ -205,8 +205,8 @@ public class ExamService {
         StringBuilder sb = new StringBuilder().append(baseConfiguration.getUploadUrlDirPrefix()).append(1)
                 .append("/").append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
         sysFile.setFileArea("local");
-//        sysFile.setFileSize();
-//        sysFile.setFileCurrentSize();
+        sysFile.setFileSize(0L);
+        sysFile.setFileCurrentSize(0L);
         sysFile.setIsDel(0);
 
         try {
@@ -216,7 +216,7 @@ public class ExamService {
             }
             FileUtil.convertToCsv(metaData, sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
             log.info("写入csv文件===========================");
-            sysFile.setFileUrl(sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
+            sysFile.setFileUrl(sb.toString());
         } catch (IOException e) {
             log.error("upload", e);
             return null;
