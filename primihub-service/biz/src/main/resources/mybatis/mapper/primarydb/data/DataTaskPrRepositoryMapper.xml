@@ -35,4 +35,16 @@
     <delete id="deleteDataPirTask">
         delete from data_pir_task where task_id = #{taskId}
     </delete>
+
+    <insert id="saveDataExamTask" parameterType="com.primihub.biz.entity.data.po.DataExamTask" keyProperty="id" useGeneratedKeys="true">
+        insert into data_exam_task (task_id, task_name,
+                                    task_state,
+                                    origin_organ_id,
+                                    origin_resource_id,
+                                    target_organ_id,
+                                    target_resource_id,
+                                    is_del, create_date, update_date)
+        values (#{taskId}, #{taskName}, #{taskState}, #{originOrganId}, #{originResourceId}, #{targetOrganId},
+                #{targetResourceId}, 0, now(), now())
+    </insert>
 </mapper>

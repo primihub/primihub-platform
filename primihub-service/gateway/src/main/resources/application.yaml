@@ -1,18 +1,5 @@
 server:
   port: 8080
-nacos:
-  config:
-    server-addr: localhost:8848
-    namespace:
-    max-retry: 3
-    config-long-poll-timeout: 1000
-    config-retry-time: 1000
-    auto-refresh: true
-    username: nacos
-    password: nacos
-    context-path: /nacos
-    group: DEFAULT_GROUP
-    file-extension: yaml
 spring:
   application:
     name: gateway
@@ -23,11 +10,6 @@ spring:
       max-request-size: 100MB
       file-size-threshold: 1MB
   cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-        namespace:
-        service: gateway
     gateway:
       globalcors:
         cors-configurations:
