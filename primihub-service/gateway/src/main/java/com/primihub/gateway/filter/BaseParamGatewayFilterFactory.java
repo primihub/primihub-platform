@@ -27,6 +27,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 
 @Slf4j
@@ -38,6 +39,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
     public static final AntPathMatcher MATCHER = new AntPathMatcher(File.separator);
     public static final String SHARE_URL = "/shareData/**";
 //    public static final String[] PATTERN_URLS = new String[]{"/shareData/**","/v2/**"};
+    public static final String[] EXAM_URL = new String[]{"/data/examine/processExamTask", "/data/examine/finishExamTask"};
 
     @Autowired
     private BaseConfiguration baseConfiguration;
@@ -59,7 +61,7 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
             exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
 //            log.info(currentRawPath);
-            if (MATCHER.match(SHARE_URL,currentRawPath)){
+            if (MATCHER.match(SHARE_URL,currentRawPath) || Arrays.asList(EXAM_URL).contains(currentRawPath)){
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{
                             Long requestTimeStart=exchange.getAttribute(REQUEST_TIME_START);
