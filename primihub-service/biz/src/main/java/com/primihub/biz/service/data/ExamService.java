@@ -166,7 +166,7 @@ public class ExamService {
         }
 
         for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(param, organ.getOrganGateway() + "/share/dataShare/processExamTask", organ.getPublicKey());
+            return otherBusinessesService.syncGatewayApiData(param, organ.getOrganGateway() + "/share/shareData/processExamTask", organ.getPublicKey());
         }
         return null;
     }
