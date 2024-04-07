@@ -292,10 +292,10 @@ public class FileUtil {
         return list;
     }
 
-    public static void convertToCsv(List<HashMap<String, Object>> data, String filePath) throws IOException {
+    public static void convertToCsv(List<Map<String, Object>> data, String filePath) throws IOException {
         try (FileWriter writer = new FileWriter(filePath)) {
             // 写入表头
-            HashMap<String, Object> firstRow = data.get(0);
+           Map<String, Object> firstRow = data.get(0);
             for (String key : firstRow.keySet()) {
                 writer.append(key);
                 writer.append(",");
@@ -303,7 +303,7 @@ public class FileUtil {
             writer.append("\n");
 
             // 写入数据行
-            for (HashMap<String, Object> row : data) {
+            for (Map<String, Object> row : data) {
                 for (Object value : row.values()) {
                     writer.append(value.toString());
                     writer.append(",");

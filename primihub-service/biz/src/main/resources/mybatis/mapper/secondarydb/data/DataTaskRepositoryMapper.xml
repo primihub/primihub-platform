@@ -162,9 +162,18 @@
 
     <select id="selectDataExamTaskPage" resultType="com.primihub.biz.entity.data.vo.DataExamTaskVo" parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
         select
-        *
+        id,
+        task_id taskId,
+        task_state taskState,
+        task_name as taskName,
+        origin_organ_id as originOrganId,
+        origin_resource_id as originResourceId,
+        target_organ_id targetOrganId,
+        target_resource_id targetResourceId,
+        create_date createDate,
+        update_date updateDate
         from
-        data_exam_task det
+        data_exam_task
         <include refid="selectDataExamTaskWhere"/>
         ORDER BY id desc
         LIMIT #{offset},#{pageSize}
@@ -173,4 +182,30 @@
         where
         1 = 1
     </sql>
+
+    <select id="selectDataExamTaskCount" resultType="java.lang.Integer" parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
+        select
+        count(id)
+        from
+        data_exam_task
+        <include refid="selectDataExamTaskWhere"/>
+    </select>
+
+    <select id="selectDataExamByTaskId" resultType="com.primihub.biz.entity.data.po.DataExamTask">
+        select
+            id,
+            task_id taskId,
+            task_state taskState,
+            task_name as taskName,
+            origin_organ_id as originOrganId,
+            origin_resource_id as originResourceId,
+            target_organ_id targetOrganId,
+            target_resource_id targetResourceId,
+            create_date createDate,
+            update_date updateDate
+        FROM
+            data_exam_task
+        WHERE
+            task_id = #{taskId}
+    </select>
 </mapper>
