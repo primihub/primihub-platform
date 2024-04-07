@@ -51,4 +51,5 @@ aj:
     type: BLOCKPUZZLE
 logging:
   level:
-    root: info
+    root: debug
+    org.mybatis: debug

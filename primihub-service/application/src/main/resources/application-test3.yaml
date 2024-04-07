@@ -50,4 +50,5 @@ aj:
     req-verify-minute-limit: 60
 logging:
   level:
-    root: info
+    root: debug
+    org.mybatis: debug
