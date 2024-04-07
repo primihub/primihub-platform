@@ -75,3 +75,7 @@
 .el-message-box__status.el-icon-info{
   color: #E6A23C;
 }
+
+.el-link + .el-link{
+  margin-left: 10px;
+}

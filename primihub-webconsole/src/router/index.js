@@ -102,6 +102,38 @@ export const constantRoutes = [
 
 export const asyncRoutes = [
   {
+    path: '/preprocessing',
+    component: Layout,
+    name: 'Preprocessing',
+    redirect: '/preprocessing/list',
+    meta: { title: '预处理', icon: 'el-icon-search' },
+    children: [{
+      path: 'list',
+      name: 'PreprocessingList',
+      component: () => import('@/views/preprocessing/index'),
+      meta: { title: '预处理', breadcrumb: false }
+    }, {
+      path: 'task',
+      name: 'PreprocessingTask',
+      hidden: true,
+      component: () => import('@/views/preprocessing/task'),
+      meta: {
+        title: '预处理任务',
+        activeMenu: '/preprocessing/list',
+        parent: { name: 'PreprocessingList' }
+      }
+    }, {
+      path: 'detail/:id',
+      name: 'PreprocessingDetail',
+      component: () => import('@/views/preprocessing/detail'),
+      meta: {
+        title: '任务详情',
+        activeMenu: '/preprocessing/list'
+      },
+      hidden: true
+    }]
+  },
+  {
     path: '/privateSearch',
     component: Layout,
     name: 'PrivateSearch',

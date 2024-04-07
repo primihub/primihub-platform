@@ -39,7 +39,7 @@ module.exports = {
     },
     proxy: {
       '/dev-api': {
-        target: '',
+        target: 'http://172.21.1.16:8081',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
