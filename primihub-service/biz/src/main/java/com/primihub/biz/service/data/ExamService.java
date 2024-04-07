@@ -77,7 +77,7 @@ public class ExamService {
     private DataResourceRepository dataResourceRepository;
     @Autowired
     private SysFileSecondarydbRepository fileRepository;
-    @Resource(name="soaRestTemplate")
+    @Resource(name = "soaRestTemplate")
     private RestTemplate restTemplate;
     @Autowired
     private BaseConfiguration baseConfiguration;
@@ -97,10 +97,10 @@ public class ExamService {
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
         if (dataExamTaskVos.isEmpty()) {
-            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),Collections.emptyList()));
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(), Collections.emptyList()));
         }
         Integer total = dataTaskRepository.selectDataExamTaskCount(req);
-        return BaseResultEntity.success(new PageDataEntity(total,req.getPageSize(),req.getPageNo(),dataExamTaskVos));
+        return BaseResultEntity.success(new PageDataEntity(total, req.getPageSize(), req.getPageNo(), dataExamTaskVos));
     }
 
     public BaseResultEntity submitExamTask(DataExamReq param) {
@@ -130,10 +130,10 @@ public class ExamService {
         return sendExamTask(req);
     }
 
-    private  BaseResultEntity<Set<String>> getDataResourceCsvTargetFieldList(SysFile sysFile) {
+    private BaseResultEntity<Set<String>> getDataResourceCsvTargetFieldList(SysFile sysFile) {
         try {
             List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), 1);
-            if (fileContent==null|| fileContent.isEmpty()) {
+            if (fileContent == null || fileContent.isEmpty()) {
                 log.info("csv文件解析失败");
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL);
             }
@@ -154,9 +154,9 @@ public class ExamService {
             // stream.filter 结果为ture的元素留下
             Set<String> targetFieldValueSet = csvData.stream().map(stringObjectLinkedHashMap -> stringObjectLinkedHashMap.getOrDefault(DataConstant.INPUT_FIELD_NAME, StringUtils.EMPTY)).map(String::valueOf).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
             return BaseResultEntity.success(targetFieldValueSet);
-        }catch (Exception e){
-            log.info("fileUrl:[{}] Exception Message : {}",sysFile.getFileUrl(),e);
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL,"请检查文件编码格式");
+        } catch (Exception e) {
+            log.info("fileUrl:[{}] Exception Message : {}", sysFile.getFileUrl(), e);
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, "请检查文件编码格式");
         }
     }
 
@@ -164,7 +164,7 @@ public class ExamService {
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(param.getTargetOrganId());
         if (CollectionUtils.isEmpty(sysOrgans)) {
             log.info("查询机构ID: [{}] 失败，未查询到结果", param.getTargetOrganId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"organ");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
         }
 
         for (SysOrgan organ : sysOrgans) {
@@ -193,41 +193,45 @@ public class ExamService {
         return BaseResultEntity.success();
     }
 
-//    private DataResource generateTargetResource(Map returnMap) {
-        private DataResource generateTargetResource(List<Map<String, Object>> metaData) {
+    //    private DataResource generateTargetResource(Map returnMap) {
+    private DataResource generateTargetResource(List<Map<String, Object>> metaData) {
+        log.info("开始生成数据源===========================");
 
         SysFile sysFile = new SysFile();
         sysFile.setFileSource(1);
         sysFile.setFileSuffix("csv");
         sysFile.setFileName(UUID.randomUUID().toString());
-        Date date=new Date();
-        StringBuilder sb =new StringBuilder().append(baseConfiguration.getUploadUrlDirPrefix()).append(1)
-                .append("/").append(DateUtil.formatDate(date,DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
+        Date date = new Date();
+        StringBuilder sb = new StringBuilder().append(baseConfiguration.getUploadUrlDirPrefix()).append(1)
+                .append("/").append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
         sysFile.setFileArea("local");
 //        sysFile.setFileSize();
 //        sysFile.setFileCurrentSize();
         sysFile.setIsDel(0);
 
         try {
-            File tempFile=new File(sb.toString());
-            if(!tempFile.exists()) {
+            File tempFile = new File(sb.toString());
+            if (!tempFile.exists()) {
                 tempFile.mkdirs();
             }
             FileUtil.convertToCsv(metaData, sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
+            log.info("写入csv文件===========================");
             sysFile.setFileUrl(sb.append(sysFile.getFileName()).append(".").append(sysFile.getFileSuffix()).toString());
         } catch (IOException e) {
-            log.error("upload",e);
+            log.error("upload", e);
             return null;
 //            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"写硬盘失败");
         }
 
+        log.info("sysFile: {}", JSON.toJSONString(sysFile));
         sysFilePrimarydbRepository.insertSysFile(sysFile);
+        log.info("sysFile: {}", JSON.toJSONString(sysFile));
 
         // resourceFilePreview
         BaseResultEntity resultEntity = dataResourceService.getDataResourceCsvVo(sysFile);
+        log.info("resultEntity: {}", JSON.toJSONString(resultEntity));
         DataResourceCsvVo csvVo = (DataResourceCsvVo) resultEntity.getResult();
 
-        Map<String,Object> map = new HashMap<>();
         try {
             DataResource po = new DataResource();
             po.setResourceName("预处理生成资源");
@@ -263,14 +267,16 @@ public class ExamService {
             po.setResourceState(0);
 
             handleDataResourceFileResult = dataResourceService.handleDataResourceFile(po, sysFile.getFileUrl());
-            if (handleDataResourceFileResult.getCode()!=0) {
+            log.info("{}", JSON.toJSONString(handleDataResourceFileResult));
+            if (handleDataResourceFileResult.getCode() != 0) {
+                log.info("{}", JSON.toJSONString(handleDataResourceFileResult));
                 // todo 错误处理
 //                return handleDataResourceFileResult;
                 return null;
             }
 
             SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-            if (sysLocalOrganInfo!=null&&sysLocalOrganInfo.getOrganId()!=null&&!"".equals(sysLocalOrganInfo.getOrganId().trim())){
+            if (sysLocalOrganInfo != null && sysLocalOrganInfo.getOrganId() != null && !"".equals(sysLocalOrganInfo.getOrganId().trim())) {
                 po.setResourceFusionId(organConfiguration.generateUniqueCode());
             }
             List<DataFileField> dataFileFieldList = new ArrayList<>();
@@ -278,12 +284,14 @@ public class ExamService {
                 dataFileFieldList.add(DataResourceConvert.DataFileFieldVoConvertPo(field, 0L, po.getResourceId()));
             }
             TaskParam taskParam = dataResourceService.resourceSynGRPCDataSet(dataSource, po, dataFileFieldList);
-            if (!taskParam.getSuccess()){
+            log.info("{}", JSON.toJSONString(taskParam));
+            if (!taskParam.getSuccess()) {
+                log.info("{}", JSON.toJSONString(taskParam));
                 // todo 错误处理
 //                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中:"+taskParam.getError());
                 return null;
             }
-            if (dataSource!=null){
+            if (dataSource != null) {
                 dataResourcePrRepository.saveSource(dataSource);
                 po.setDbId(dataSource.getId());
             }
@@ -300,28 +308,29 @@ public class ExamService {
             for (String tagName : tags) {
                 DataResourceTag dataResourceTag = new DataResourceTag(tagName);
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
-                dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),po.getResourceId());
+                dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(), po.getResourceId());
             }
-            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),dataResourceService.findCopyResourceList(po.getResourceId(), po.getResourceId()));
-            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),po))).build());
+            log.info("存入数据库成功======================");
+            fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), dataResourceService.findCopyResourceList(po.getResourceId(), po.getResourceId()));
+            singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(), po))).build());
 
             return po;
-        }catch (Exception e){
+        } catch (Exception e) {
             // todo
-            log.info("save DataResource Exception：{}",e.getMessage());
+            log.info("save DataResource Exception：{}", e.getMessage());
             e.printStackTrace();
 //            return BaseResultEntity.failure(BaseResultEnum.FAILURE);
             return null;
         }
     }
 
-    private  List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl,  List<Map<String, Object>> resultList) {
+    private List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl, List<Map<String, Object>> resultList) {
         /*HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
         ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
         return exchange.getBody();*/
-        List<String> targetPhoneNumList = resultList.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String)stringObjectMap.get("phone")).collect(Collectors.toList());
+        List<String> targetPhoneNumList = resultList.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String) stringObjectMap.get("phone")).collect(Collectors.toList());
 
         try {
             InputStream inputStream = ResourceReader.class.getClassLoader().getResourceAsStream("mock/score.json");
@@ -332,9 +341,9 @@ public class ExamService {
 
             List<Map<String, Object>> result = list.stream().filter(map -> map.get("phone") != null && targetPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
             Map<String, Map<String, Object>> phoneScoreMap = result.stream().collect(Collectors.toMap(stringObjectMap -> {
-                return (String)stringObjectMap.get("phone");
+                return (String) stringObjectMap.get("phone");
             }, Function.identity()));
-            List<String> existPhoneNumList = result.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String)stringObjectMap.get("phone")).collect(Collectors.toList());
+            List<String> existPhoneNumList = result.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String) stringObjectMap.get("phone")).collect(Collectors.toList());
             List<Map<String, Object>> collect = resultList.stream().filter(map -> map.get("phone") != null && existPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
             collect.forEach(map -> {
                 map.put("score", phoneScoreMap.get(map.get("phone")));
@@ -346,12 +355,12 @@ public class ExamService {
         throw new RuntimeException("数据处理出错");
     }
 
-    private List<Map<String, Object>> getDataFromFirstSource(String firstUrl,  Set<String> fieldValueSet) {
+    private List<Map<String, Object>> getDataFromFirstSource(String firstUrl, Set<String> fieldValueSet) {
         /**HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_JSON);
-//        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
-//        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
-//        return exchange.getBody();
+         //        headers.setContentType(MediaType.APPLICATION_JSON);
+         //        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
+         //        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
+         //        return exchange.getBody();
          */
 
         try {
@@ -378,18 +387,28 @@ public class ExamService {
             Map returnMap = null;
             try {
                 resultList = getDataFromFirstSource(DataConstant.FIRST_URL, fieldValueSet);
-                resultList2  = getDataFromCMCCSource(DataConstant.CMCC_SCORE_URL, resultList);
+                log.info("====================== resultList: {}", resultList.size());
+                resultList2 = getDataFromCMCCSource(DataConstant.CMCC_SCORE_URL, resultList);
+                log.info("====================== resultList2 {}", resultList2.size());
             } catch (Exception e) {
                 log.info("处理预审核处理出错: [{}]", e.getMessage());
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
                 sendEndExamTask(req);
+                log.info("====================== FAIL");
             }
             // 生成数据源
             DataResource dataResource = generateTargetResource(resultList2);
+            if (dataResource == null) {
+                req.setTaskState(TaskStateEnum.FAIL.getStateType());
+                sendEndExamTask(req);
+                log.info("====================== FAIL");
+            }
+            log.info("====================== dataResource");
 
             req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
             req.setTargetResourceId(dataResource.getResourceFusionId());
             sendEndExamTask(req);
+            log.info("====================== SUCCESS");
             log.info("====================== 预处理结束");
             return null;
         });
@@ -400,7 +419,7 @@ public class ExamService {
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOriginOrganId());
         if (CollectionUtils.isEmpty(sysOrgans)) {
             log.info("查询机构ID: [{}] 失败，未查询到结果", req.getOriginOrganId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"organ");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
         }
 
         for (SysOrgan organ : sysOrgans) {
@@ -411,9 +430,9 @@ public class ExamService {
 
     private BaseResultEntity getTargetResource(String resourceId, String organId) {
         BaseResultEntity fusionResult = fusionResourceService.getDataResource(resourceId, organId);
-        if (fusionResult.getCode() != 0 || fusionResult.getResult() == null ) {
+        if (fusionResult.getCode() != 0 || fusionResult.getResult() == null) {
             log.info("未找到预处理源数据 resourceId: [{}]", resourceId);
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"resourceId");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "resourceId");
         }
         return fusionResult;
     }
@@ -438,8 +457,8 @@ public class ExamService {
 
     public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId) {
         DataExamTask task = dataTaskRepository.selectDataExamByTaskId(taskId);
-        if (task==null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务信息");
+        if (task == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到任务信息");
         }
         DataExamTaskVo vo = DataExamConvert.convertPoToVo(task);
         return BaseResultEntity.success(vo);

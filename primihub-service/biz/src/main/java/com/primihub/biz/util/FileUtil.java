@@ -295,9 +295,9 @@ public class FileUtil {
     public static void convertToCsv(List<Map<String, Object>> data, String filePath) throws IOException {
         try (FileWriter writer = new FileWriter(filePath)) {
             // 写入表头
-           Map<String, Object> firstRow = data.get(0);
-            for (String key : firstRow.keySet()) {
-                writer.append(key);
+            String[] header = data.get(0).keySet().toArray(new String[0]);
+            for (String s : header) {
+                writer.append(s);
                 writer.append(",");
             }
             writer.append("\n");
