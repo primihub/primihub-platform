@@ -24,8 +24,8 @@ export default {
       organId: '', // 自有机构id
       dialogVisible: false,
       resourceName: '请选择资源',
-      selectedResource: '',
-      currentSelectResource: '',
+      selectedResource: '', // 已经选择的资源
+      currentSelectResource: '', // 当前单选的资源
       form: {
         targetOrganId: '',
         resourceId: '',
@@ -110,18 +110,13 @@ export default {
       }
     },
 
-    /** dialog: 资源名称赋值 */
-    handleSearchNameChange(searchName) {
-      this.form.resourceName = searchName
-    },
-
     /** dialog：关闭弹窗 */
     handleDialogCancel() {
       this.dialogVisible = false
       this.searchKeyword = ''
       this.pageNo = 1
       if (!this.currentSelectResource) {
-        this.form.resourceName = ''
+        this.resourceName = '请选择资源'
       }
     },
 
@@ -209,9 +204,10 @@ export default {
                 />
               </el-select>
             </el-form-item>
-            <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="handelTaskSubmit">确认提交<i class="el-icon-search el-icon--right" /></el-button>
+            <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="handelTaskSubmit">确认提交</el-button>
           </div>
         </el-form>
+
         <!--  dialog -->
         <el-dialog
           title="选择资源"
@@ -227,7 +223,6 @@ export default {
                 v-model="searchKeyword"
                 placeholder="请输入内容"
                 class="search"
-                @change="handleSearchNameChange"
                 @keyup.enter.native="searchResource"
               >
                 <el-button slot="append" icon="el-icon-search" @click="searchResource" />

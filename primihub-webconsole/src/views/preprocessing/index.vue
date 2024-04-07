@@ -139,57 +139,32 @@ export default {
           label="任务名称"
         >
           <template slot-scope="{row}">
-            <el-tooltip :content="row.taskName" placement="top"><el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link></el-tooltip>
+            <el-tooltip :content="row.taskName" placement="top"><span>{{ row.taskName }}</span></el-tooltip>
           </template>
         </el-table-column>
         <el-table-column
-          prop="organName"
-          label="参与机构"
+          prop="originOrganId"
+          label="发起机构"
           align="center"
         />
         <el-table-column
-          prop="resourceName"
-          label="被查询资源名称"
-          min-width="120"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.resourceName" placement="top"><span>{{ row.resourceName }}</span></el-tooltip>
-          </template>
-        </el-table-column>
+          prop="targetOrganId"
+          label="目标机构"
+          align="center"
+        />
         <el-table-column
           prop="resourceId"
-          label="被查询资源ID"
+          label="原始资源ID"
           min-width="150"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.resourceId" placement="top">
-              <el-link :disabled="row.available === 1" type="primary" @click="toResourceDetail(row)">{{ row.resourceId }}</el-link>
-            </el-tooltip>
-          </template>
-        </el-table-column>
+        />
         <el-table-column
-          prop="retrievalId"
-          label="查询关键词"
-          min-width="100"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
-          </template>
-        </el-table-column>
-        <el-table-column label="发起时间" prop="createDate" min-width="120px">
-          <template slot-scope="{row}">
-            <span>{{ row.createDate && row.createDate.split(' ')[0] }}</span><br>
-            <span>{{ row.createDate && row.createDate.split(' ')[1] }}</span><br>
-          </template>
-        </el-table-column>
-        <el-table-column label="任务耗时">
-          <template slot-scope="{row}">
-            {{ row.consuming | timeFilter }}
-          </template>
-        </el-table-column>
+          prop="targetResourceId"
+          label="生成资源ID"
+          min-width="150"
+        />
         <el-table-column
           prop="taskState"
-          label="查询状态"
+          label="任务状态"
           min-width="120px"
         >
           <template slot-scope="{row}">
@@ -200,6 +175,7 @@ export default {
         <el-table-column label="操作" fixed="right" min-width="120px" align="center">
           <template slot-scope="{row}">
             <el-link v-if="row.taskState === 0" type="primary" @click="handelSubmitExamTask(row.taskId)">发起</el-link>
+            <span v-else> - </span>
           </template>
         </el-table-column>
       </el-table>
