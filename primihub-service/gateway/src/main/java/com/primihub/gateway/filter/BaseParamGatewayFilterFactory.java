@@ -58,7 +58,8 @@ public class BaseParamGatewayFilterFactory extends AbstractGatewayFilterFactory 
         return ((exchange, chain) -> {
             exchange.getAttributes().put(REQUEST_TIME_START,System.currentTimeMillis());
             String currentRawPath=exchange.getRequest().getURI().getRawPath();
-//            log.info(currentRawPath);
+            log.info(currentRawPath);
+            log.info("{}", MATCHER.match(SHARE_URL, currentRawPath));
             if (MATCHER.match(SHARE_URL,currentRawPath)){
                 return chain.filter(exchange).then(
                         Mono.fromRunnable(()->{

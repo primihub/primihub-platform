@@ -250,7 +250,9 @@ public class DataResourceConvert {
         }
         dataResourceCopyVo.setResourceState(dataResource.getResourceState());
         dataResourceCopyVo.setResourceHashCode(dataResource.getResourceHashCode());
-        dataResourceCopyVo.setUserName(sysUser.getUserName());
+        if (sysUser != null && StringUtils.isNotBlank(sysUser.getUserName())) {
+            dataResourceCopyVo.setUserName(sysUser.getUserName());
+        }
         return dataResourceCopyVo;
     }
 

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
@@ -293,21 +294,27 @@ public class FileUtil {
     }
 
     public static void convertToCsv(List<Map<String, Object>> data, String filePath) throws IOException {
-        try (FileWriter writer = new FileWriter(filePath)) {
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
             // 写入表头
-           Map<String, Object> firstRow = data.get(0);
-            for (String key : firstRow.keySet()) {
-                writer.append(key);
-                writer.append(",");
+            String[] header = data.get(0).keySet().toArray(new String[0]);
+            StringBuilder headerStr = new StringBuilder();
+            for (String s : header) {
+                headerStr.append(s);
+                headerStr.append(",");
             }
+            String substring = headerStr.substring(0, headerStr.length() - 1);
+            writer.append(substring);
             writer.append("\n");
 
             // 写入数据行
             for (Map<String, Object> row : data) {
+                StringBuilder sb = new StringBuilder();
                 for (Object value : row.values()) {
-                    writer.append(value.toString());
-                    writer.append(",");
+                    sb.append(value.toString());
+                    sb.append(",");
                 }
+                String str = sb.substring(0, sb.length() - 1);
+                writer.append(str);
                 writer.append("\n");
             }
 

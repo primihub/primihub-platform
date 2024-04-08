@@ -47,4 +47,20 @@
         values (#{taskId}, #{taskName}, #{taskState}, #{originOrganId}, #{originResourceId}, #{targetOrganId},
                 #{targetResourceId}, 0, now(), now())
     </insert>
+
+    <update id="updateDataExamTask" parameterType="com.primihub.biz.entity.data.po.DataExamTask">
+        update data_exam_task
+        <set>
+            <if test="taskId!=null and taskId != ''">task_id= #{taskId},</if>
+            <if test="taskName!=null and taskName != ''">task_name = #{taskName},</if>
+            <if test="taskState!=null">task_state = #{taskState},</if>
+            <if test="isDel!=null">is_del = #{isDel},</if>
+            <if test="originOrganId!=null and originOrganId != ''">origin_organ_id = #{originOrganId},</if>
+            <if test="originResourceId!=null and originResourceId != ''">origin_resource_id = #{originResourceId},</if>
+            <if test="targetOrganId!=null and targetOrganId != ''">target_organ_id = #{targetOrganId},</if>
+            <if test="targetResourceId!=null and targetResourceId != ''">target_resource_id = #{targetResourceId},</if>
+            update_date = now()
+        </set>
+        where id = #{id}
+    </update>
 </mapper>
