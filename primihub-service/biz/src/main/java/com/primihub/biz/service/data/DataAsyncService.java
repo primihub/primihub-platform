@@ -171,10 +171,11 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataComponent.setComponentState(2);
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
                 dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-                dataComponent.setComponentState(1);
                 executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
                 if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
                     dataComponent.setComponentState(3);
+                } else {
+                    dataComponent.setComponentState(1);
                 }
                 dataComponent.setEndTime(System.currentTimeMillis());
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));

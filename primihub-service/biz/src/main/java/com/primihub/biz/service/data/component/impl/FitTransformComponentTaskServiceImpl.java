@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data.component.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
@@ -55,10 +56,12 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         List<String> ids = taskReq.getFusionResourceList().stream().map(data -> data.get("resourceId").toString()).collect(Collectors.toList());
         List<ModelDerivationDto> newest = taskReq.getNewest();
         log.info("ids:{}", ids);
+        log.info("newest:{}", JSON.toJSONString(newest));
         String path = baseConfiguration.getRunModelFileUrlDirPrefix()+taskReq.getDataTask().getTaskIdName() + File.separator + "fitTransform";
         Map<String, GrpcComponentDto> fitTransformEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(),path);
         fitTransformEntityMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
         log.info("fitTransform-1:{}", JSONObject.toJSONString(fitTransformEntityMap));
+        Map<String, ModelDerivationDto> oldResourceIdMap = new HashMap<>();
         if (newest!=null && newest.size()!=0){
             ids = new ArrayList<>();
             for (ModelDerivationDto modelDerivationDto : newest) {
@@ -68,17 +71,18 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
             }
             log.info("newids:{}", ids);
             log.info("fitTransform-2:{}", JSONObject.toJSONString(fitTransformEntityMap));
+            oldResourceIdMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
         }
-        Map<String, ModelDerivationDto> oldResourceIdMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
+        log.info("freemarkerMap:{}", JSON.toJSONString(taskReq.getFreemarkerMap()));
         try {
             GrpcComponentDto labelDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
-            if (labelDatasetDto == null) {
+            if (labelDatasetDto == null && oldResourceIdMap.size() > 0) {
                 labelDatasetDto = fitTransformEntityMap.get(oldResourceIdMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET)).getNewResourceId());
             }
-            taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET,labelDatasetDto.getNewDataSetId());
-            taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET+"_path",labelDatasetDto.getOutputFilePath());
+            taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET, labelDatasetDto.getNewDataSetId());
+            taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET+"_path", labelDatasetDto.getOutputFilePath());
             GrpcComponentDto guestDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
-            if (guestDatasetDto == null) {
+            if (guestDatasetDto == null && oldResourceIdMap.size() > 0) {
                 guestDatasetDto = fitTransformEntityMap.get(oldResourceIdMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET)).getNewResourceId());
             }
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_GUEST_DATASET,guestDatasetDto.getNewDataSetId());
