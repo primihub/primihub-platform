@@ -73,7 +73,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
             log.info("fitTransform-2:{}", JSONObject.toJSONString(fitTransformEntityMap));
             oldResourceIdMap = newest.stream().collect(Collectors.toMap(ModelDerivationDto::getOriginalResourceId, Function.identity()));
         }
-        log.info("freemarkerMap", JSON.toJSONString(taskReq.getFreemarkerMap()));
+        log.info("freemarkerMap:{}", JSON.toJSONString(taskReq.getFreemarkerMap()));
         try {
             GrpcComponentDto labelDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
             if (labelDatasetDto == null && !oldResourceIdMap.isEmpty()) {
