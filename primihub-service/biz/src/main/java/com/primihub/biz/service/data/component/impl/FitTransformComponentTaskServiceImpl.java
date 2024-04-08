@@ -76,13 +76,13 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         log.info("freemarkerMap:{}", JSON.toJSONString(taskReq.getFreemarkerMap()));
         try {
             GrpcComponentDto labelDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET));
-            if (labelDatasetDto == null && !oldResourceIdMap.isEmpty()) {
+            if (labelDatasetDto == null && oldResourceIdMap.size() > 0) {
                 labelDatasetDto = fitTransformEntityMap.get(oldResourceIdMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_LABEL_DATASET)).getNewResourceId());
             }
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET, labelDatasetDto.getNewDataSetId());
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_LABEL_DATASET+"_path", labelDatasetDto.getOutputFilePath());
             GrpcComponentDto guestDatasetDto = fitTransformEntityMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET));
-            if (guestDatasetDto == null && !oldResourceIdMap.isEmpty()) {
+            if (guestDatasetDto == null && oldResourceIdMap.size() > 0) {
                 guestDatasetDto = fitTransformEntityMap.get(oldResourceIdMap.get(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_GUEST_DATASET)).getNewResourceId());
             }
             taskReq.getFreemarkerMap().put("new_"+DataConstant.PYTHON_GUEST_DATASET,guestDatasetDto.getNewDataSetId());
