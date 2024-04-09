@@ -23,19 +23,6 @@
                   prop="resourceId"
                   label="资源ID"
                   align="center"
-                  width="180"
-                />
-                <el-table-column
-                  prop="resourceContainsY"
-                  align="center"
-                  label="是否包含Y值"
-                >
-                  <template slot-scope="{row}">{{ row.resourceContainsY === 1? '是' : '否' }}</template>
-                </el-table-column>
-                <el-table-column
-                  prop="resourceColumnCount"
-                  align="center"
-                  label="特征量"
                 />
                 <el-table-column
                   prop="resourceRowsCount"
@@ -45,11 +32,12 @@
               </el-table>
             </el-form-item>
           </div>
-          <el-form-item label="关键词" prop="pirParam">
-            <el-input v-model="form.pirParam" placeholder="请输入关键词" maxlength="50" show-word-limit />
+          <el-form-item label="查询内容" prop="pirParam">
+            <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10"/>
+            <el-input v-model="form.password" placeholder="请输入密码" type="password" show-password />
           </el-form-item>
           <el-form-item>
-            <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用英文,分隔。例: a,b,c</p>
+            <p :style="{color: '#999', lineHeight: 1}">利用隐匿查询技术在泄露密码库里查询确认您的账号密码是否泄露</p>
           </el-form-item>
           <el-form-item style="text-align: center">
             <el-button style="margin: 12px auto;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
@@ -94,6 +82,8 @@ export default {
       active: 1,
       form: {
         resourceName: '',
+        mobile: '',
+        password: '',
         pirParam: '',
         selectResources: []
       },
@@ -102,7 +92,7 @@ export default {
           { required: true, message: '请选择资源', trigger: 'blur' }
         ],
         pirParam: [
-          { required: true, message: '请输入关键词', trigger: 'blur' },
+          { required: true, message: '请输入查询内容', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
@@ -226,6 +216,9 @@ export default {
 <style lang="scss" scoped>
 ::v-deep .el-dialog__body{
   padding: 0px;
+}
+.mb10{
+  margin-bottom: 10px;
 }
 .form{
   margin-top: 30px;
