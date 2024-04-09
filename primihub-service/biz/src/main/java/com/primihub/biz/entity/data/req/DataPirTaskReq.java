@@ -25,10 +25,4 @@ public class DataPirTaskReq extends PageReq {
     @ApiModelProperty(value = "结束日期")
     private String endDate;
 
-    private String taskName;
-    @ApiModelProperty(value = "开始日期")
-    private String startDate;
-    @ApiModelProperty(value = "结束日期")
-    private String endDate;
-
 }
