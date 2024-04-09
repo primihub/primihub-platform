@@ -60,6 +60,7 @@
     "lokiConfig": {
         "address":"",
         "job":"primihub/application1",
-        "container":"application1"
+        "container":"application1",
+        "app": "application1"
     }
 }

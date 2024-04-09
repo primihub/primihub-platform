@@ -123,7 +123,7 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
             }
             log.info("freemarkerMap2:{}",JSONObject.toJSONString(taskReq.getFreemarkerMap()));
         }
-        taskReq.getFreemarkerMap().put("feature_names","None");
+        taskReq.getFreemarkerMap().put("feature_names","null");
         if (StringUtils.isNotBlank((String)taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD))){
             String field = (String) taskReq.getFreemarkerMap().get(DataConstant.PYTHON_CALCULATION_FIELD);
             log.info("field:{}",field);

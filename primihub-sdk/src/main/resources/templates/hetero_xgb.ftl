@@ -35,7 +35,7 @@
             "data_set": "${label_dataset}",
             "id": "id",
             "secure_bits": 112,
-            "selected_column": null,
+            "selected_column": ${label_field0},
             "objective": "linear",
             "base_score": 0.5,
             "amplify_ratio": 8,
@@ -47,7 +47,7 @@
             "data_set": "${guest_dataset}",
             "id": "id",
             "model_path": "${guestModelFileName}",
-            "selected_column": null,
+            "selected_column": ${label_field1},
             "lookup_table": "${guestLookupTable}",
             "label": null,
             "batch_size": 5

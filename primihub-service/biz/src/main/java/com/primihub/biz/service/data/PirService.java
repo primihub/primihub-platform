@@ -7,6 +7,7 @@ import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.DataPirTask;
@@ -78,6 +79,20 @@ public class PirService {
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);
+    }
+
+    private static List<DataPirKeyQuery> convertPirParamToQueryArray(String pirParam, String[] resourceColumnNameArray) {
+        DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
+        dataPirKeyQuery.setKey(resourceColumnNameArray);
+        String[] array = {
+                pirParam
+        };
+        List<String[]> queries = new ArrayList<>(resourceColumnNameArray.length);
+        for (int i = 0; i < resourceColumnNameArray.length; i++) {
+            queries.add(i, array);
+        }
+        dataPirKeyQuery.setQuery(queries);
+        return Collections.singletonList(dataPirKeyQuery);
     }
 
     public BaseResultEntity getPirTaskList(DataPirTaskReq req) {

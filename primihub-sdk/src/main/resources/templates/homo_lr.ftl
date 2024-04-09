@@ -21,7 +21,7 @@
 		"batch_size": ${batchSize!100},
 		"global_epoch": ${globalEpoch!100},
 		"local_epoch": ${localEpoch!1},
-		"selected_column": null,
+		"selected_column": ${label_field0},
 		"id": "${id!"id"}",
 		"label": "${label!"y"}",
 		"print_metrics": ${printMetrics!false?c}

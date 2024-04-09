@@ -41,7 +41,8 @@ public class SysWebSocketService {
                 public void run() {
                     if(webSocketClient.isClosed()){
                         log.error("{}:断线重连",key);
-                        sseEmitterService.sendMessage(key,"ws 连接断开,请刷新后重试!");
+                        sseEmitterService.sendMessage(key,"{\"log\":\"loki WebSocket 连接断开,请刷新后重试!\"}");
+                        sseEmitterService.removeKey(key);
                         this.cancel();
                     }
                 }
@@ -54,7 +55,7 @@ public class SysWebSocketService {
         }catch (Exception e){
             log.info("创建新的WebSocketClient连接，当前标识：{} e: {}", key,e.getMessage());
             e.printStackTrace();
-            return BaseResultEntity.failure(BaseResultEnum.DATA_LOG_FAIL,"创建长连接失败,请联系管理员");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_LOG_FAIL,"创建 loki WebSocket 长连接失败,请联系管理员");
         }
 
     }
