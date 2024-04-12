@@ -5,7 +5,7 @@
       ref="dataForm"
       :model="dataForm"
       :rules="dataRules"
-      label-width="120px"
+      label-width="110px"
       class="demo-dataForm"
     >
       <el-form-item label="资源名称" prop="resourceName">

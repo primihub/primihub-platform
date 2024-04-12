@@ -360,6 +360,48 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/y-resource',
+    component: Layout,
+    name: 'YResourceMenu',
+    redirect: '/y-resource/list',
+    meta: { title: '资源管理', icon: 'el-icon-s-operation' },
+    children: [
+      {
+        path: 'list',
+        name: 'YResourceOwnList',
+        component: () => import('@/views/y-resource/own/index'),
+        meta: { title: '本方资源' }
+      },
+      {
+        path: 'partner-list',
+        name: 'YResourcePartnerList',
+        component: () => import('@/views/y-resource/partner/index'),
+        meta: { title: '合作方资源' }
+      },
+      {
+        path: 'create',
+        name: 'YResourceCreate',
+        hidden: true,
+        component: () => import('@/views/y-resource/own/create'),
+        meta: { title: '新建资源', activeMenu: '/y-resource/list' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'YResourceDetail',
+        hidden: true,
+        component: () => import('@/views/y-resource/own/detail'),
+        meta: { title: '数据资源详情', activeMenu: '/y-resource/list' }
+      },
+      {
+        path: 'partner-detail/:id',
+        name: 'YPartnerResourceDetail',
+        hidden: true,
+        component: () => import('@/views/y-resource/partner/detail'),
+        meta: { title: '数据资源详情', activeMenu: '/y-resource/partner-list' }
+      }
+    ]
+  },
+  {
     path: '/setting',
     component: Layout,
     name: 'Setting',

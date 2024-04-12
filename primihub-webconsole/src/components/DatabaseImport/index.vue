@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form ref="form" :model="form" :rules="rules" label-width="100px" class="form">
+    <el-form ref="form" :model="form" :rules="rules" label-width="110px" class="form">
       <el-form-item
         prop="dbType"
         label="数据库类型"
@@ -26,7 +26,7 @@
           label="数据源地址"
         >
           <el-input v-model="form.dbUrl" placeholder="请输入数据源地址" />
-          <p style="color:#999;">示例：{{ exampleDBUrl }}</p>
+          <p class="data-source-example">示例：{{ exampleDBUrl }}</p>
         </el-form-item>
         <el-form-item
           prop="dbUsername"
@@ -35,6 +35,7 @@
           <el-input v-model="form.dbUsername" placeholder="请输入用户名" />
         </el-form-item>
         <el-form-item
+          class="db-password-wrapper"
           prop="dbPassword"
           label="密码"
         >
@@ -251,24 +252,30 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.data-source-example{
+  line-height: 24px;
+  color:#999;
+  word-break:break-all;
+}
+.db-password-wrapper{
+  ::v-deep .el-form-item__content{
+    display: flex;
+  }
+  .el-input{
+    width: calc(100% - 160px);
+  }
+}
 .form{
-  min-width: 1000px;
+  max-width: 770px;
   .el-select{
-    width: 600px;
+    width: 100%;
   }
   .el-form-item{
     margin-bottom: 22px;
     position: relative;
   }
-  .el-input{
-    width: 600px;
-  }
   .test-connect{
-    text-align: left;
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: calc(100% - 640px);
+    margin-left: 15px;
   }
   .state-icon{
     width: 6px;

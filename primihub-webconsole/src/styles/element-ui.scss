@@ -75,3 +75,70 @@
 .el-message-box__status.el-icon-info{
   color: #E6A23C;
 }
+
+// --------el-step
+.resource-step{
+  .el-step {
+    width: 100%;
+    position: relative;
+    left: 10%;
+  }
+  .el-step__main{
+    background-color: #fff;
+    padding: 0 8px;
+    position: absolute;
+    top: -7px;
+    left: 20px;
+  }
+  .el-step__head.is-process {
+    color: #c0c4cc;
+    border-color: #c0c4cc;
+  }
+  .el-step__title.is-process{
+    color: #c0c4cc;
+  }
+  .is-finish {
+    .el-step__line{
+      background: linear-gradient(to right, #1677ff 0%, #c0c4cc 80%);
+    }
+  }
+}
+
+//---------border radio
+.yy-border-radio{
+  .el-radio__label{
+    padding-left: 0;
+  }
+  .el-radio__inner{
+    display: none;
+  }
+  .el-radio{
+    margin-right: 15px;
+  }
+  .el-radio.is-bordered+.el-radio.is-bordered{
+    margin-left: 0;
+  }
+  .el-radio--mini.is-bordered{
+    padding: 6px 15px 0;
+  }
+}
+
+//---------border checkbox
+.yy-border-checkbox{
+  margin-top: 3px;
+  .el-checkbox__label{
+    padding-left: 0;
+  }
+  .el-checkbox__inner{
+    display: none;
+  }
+  .el-checkbox{
+    margin-right: 15px;
+  }
+  .el-checkbox.is-bordered+.el-checkbox.is-bordered{
+    margin-left: 0;
+  }
+  .el-checkbox--mini.is-bordered{
+    padding: 3px 15px 0;
+  }
+}
