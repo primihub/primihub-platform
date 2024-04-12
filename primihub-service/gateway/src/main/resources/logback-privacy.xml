@@ -10,6 +10,7 @@
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${normal-pattern}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
@@ -20,7 +21,8 @@
             <maxHistory>${maxHistory}</maxHistory>
         </rollingPolicy>
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <Pattern>${normal-pattern}</Pattern>
+            <pattern>${normal-pattern}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
