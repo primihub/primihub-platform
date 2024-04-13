@@ -1,16 +1,16 @@
 package com.primihub.biz.entity.data.req;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * 提交来访用户信息参数
+ */
 @Data
-@ApiModel("提交来访用户信息参数")
 public class DataVisitingUsersReq {
-    @ApiModelProperty(value = "key",required = true)
+    /** key */
     private String key;
-    @ApiModelProperty(value = "value",required = true)
+    /** value */
     private String value;
 
     public String getKeyValLowerCase(){

@@ -8,6 +8,11 @@ spring:
       discovery:
         server-addr: 192.168.99.10:31048
         namespace: dev1
+  rabbitmq:
+    host: 192.168.99.11
+    port: 32183
+    username: guest
+    password: guest
 nacos:
   config:
     server-addr: 192.168.99.10:31048

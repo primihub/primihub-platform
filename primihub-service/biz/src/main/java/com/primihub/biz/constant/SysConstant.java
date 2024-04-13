@@ -13,4 +13,6 @@ public class SysConstant {
     public static final String SYS_COLLECT_URL = SYS_COLLECT_BASE_URL + "/operate/addNode";
     public static final String SYS_COLLECT_KEY = "FkBPowl3QSZi9LukvMId88aoWud0ZVgA";
     public static final String SYS_QUERY_COLLECT_URL = SYS_COLLECT_BASE_URL + "/operate/getNodeList?key=Qg7T3TgGBtYIF2XJOViTgWSuohNnkakU";
+    /** [日志场景][日志含义]带业务参数的具体信息 */
+    public static final String LOG_PATTERN = "[scene_bind_feature][feature_exists]功能已经存在[tagSource='MIF_TAG',tagValue='123']";
 }
