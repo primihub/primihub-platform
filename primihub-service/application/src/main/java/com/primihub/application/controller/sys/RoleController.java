@@ -4,12 +4,12 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.sys.param.SaveOrUpdateRoleParam;
 import com.primihub.biz.service.sys.SysRoleService;
-import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
-@Api(value = "角色接口",tags = "角色接口")
+/**
+ * 角色接口
+ */
 @RequestMapping("role")
 @RestController
 public class RoleController {

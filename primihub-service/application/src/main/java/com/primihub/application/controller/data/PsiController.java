@@ -4,9 +4,11 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
-import com.primihub.biz.entity.data.req.*;
+import com.primihub.biz.entity.data.req.DataPsiQueryReq;
+import com.primihub.biz.entity.data.req.DataPsiReq;
+import com.primihub.biz.entity.data.req.DataResourceReq;
+import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataPsiService;
-import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +19,11 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.net.URLEncoder;
 import java.util.UUID;
 
 /**
- * 隐私求交
+ * 隐私求交接口
  */
-@Api(value = "隐私求交接口",tags = "隐私求交接口")
 @RequestMapping("psi")
 @RestController
 @Slf4j
