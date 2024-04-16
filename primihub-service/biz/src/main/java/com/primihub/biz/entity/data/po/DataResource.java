@@ -27,7 +27,7 @@ public class DataResource {
      */
     private Integer resourceAuthType;
     /**
-     * 资源来源 文件上传 数据库链接
+     * 资源来源 1.文件上传 2.数据库链接 3.衍生数据资源
      */
     private Integer resourceSource;
     /**

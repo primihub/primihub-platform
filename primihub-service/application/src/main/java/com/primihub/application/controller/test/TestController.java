@@ -2,7 +2,10 @@ package com.primihub.application.controller.test;
 
 import com.alibaba.fastjson.JSON;
 import com.primihub.biz.config.mq.SingleTaskChannel;
-import com.primihub.biz.entity.base.*;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
+import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.base.ResourceFileData;
 import com.primihub.biz.repository.primaryredis.sys.SysAuthPrimaryRedisRepository;
 import com.primihub.biz.service.data.DataResourceService;
@@ -17,13 +20,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.File;
-import java.util.Map;
 
 /**
  * 测试接口

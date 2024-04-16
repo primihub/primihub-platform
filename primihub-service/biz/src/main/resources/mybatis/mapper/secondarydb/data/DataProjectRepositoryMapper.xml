@@ -16,7 +16,7 @@
         <result column="create_date" property="createDate" />
         <result column="update_date" property="updateDate" />
     </resultMap>
-    <resultMap id="DataProjcetOrganBaseResultMap" type="com.primihub.biz.entity.data.po.DataProjectOrgan">
+    <resultMap id="DataProjectOrganBaseResultMap" type="com.primihub.biz.entity.data.po.DataProjectOrgan">
         <id column="id" property="id" />
         <result column="po_id" property="poId" />
         <result column="project_id" property="projectId" />
@@ -84,7 +84,7 @@
         </choose>
 
     </select>
-    <select id="selectDataProjcetOrganByProjectId" resultMap="DataProjcetOrganBaseResultMap">
+    <select id="selectDataProjectOrganByProjectId" resultMap="DataProjectOrganBaseResultMap">
         select
             <include refid="DataProjectOrganBaseColumnList"/>
         from
@@ -93,7 +93,7 @@
             project_id = #{projectId}
         ORDER BY id desc
     </select>
-    <select id="selectDataProjcetOrganByProjectIds" resultMap="DataProjcetOrganBaseResultMap">
+    <select id="selectDataProjectOrganByProjectIds" resultMap="DataProjectOrganBaseResultMap">
         select
         <include refid="DataProjectOrganBaseColumnList"/>
         from
@@ -123,7 +123,7 @@
         where is_del = 0
         <include refid="selectDataProjectCondition"/>
     </select>
-    <select id="selectDataProjcetOrganById" resultMap="DataProjcetOrganBaseResultMap">
+    <select id="selectDataProjectOrganById" resultMap="DataProjectOrganBaseResultMap">
         select
         <include refid="DataProjectOrganBaseColumnList"/>
         from
@@ -137,7 +137,7 @@
         from data_project_resource
         where id = #{id}
     </select>
-    <select id="selectDataProjcetOrganByProjectIdAndOrganId" resultMap="DataProjcetOrganBaseResultMap">
+    <select id="selectDataProjectOrganByProjectIdAndOrganId" resultMap="DataProjectOrganBaseResultMap">
         select
             <include refid="DataProjectOrganBaseColumnList"/>
         from

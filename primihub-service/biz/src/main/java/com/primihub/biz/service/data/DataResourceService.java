@@ -728,9 +728,10 @@ public class DataResourceService {
 
     public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId) {
         try {
-            Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getOriginalResourceId));
+            Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getResourceId));
             Set<String> resourceIds = map.keySet();
             DataResource dataResource = null;
+            // dataResource只是己方的数据，可以是衍生数据
             for (String resourceId : resourceIds) {
                 dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
                 if (dataResource!=null) {

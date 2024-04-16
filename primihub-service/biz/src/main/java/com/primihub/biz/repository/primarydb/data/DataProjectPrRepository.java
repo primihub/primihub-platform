@@ -13,9 +13,9 @@ public interface DataProjectPrRepository {
 
     void updateDataProject(DataProject dataProject);
 
-    void saveDataProjcetOrgan(DataProjectOrgan dataProjectOrgan);
+    void saveDataProjectOrgan(DataProjectOrgan dataProjectOrgan);
 
-    void updateDataProjcetOrgan(DataProjectOrgan dataProjectOrgan);
+    void updateDataProjectOrgan(DataProjectOrgan dataProjectOrgan);
 
     void saveDataProjectResource(DataProjectResource dataProjectResource);
 

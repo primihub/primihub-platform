@@ -41,11 +41,11 @@
             <if test="projectId!=null">project_id = #{projectId}</if>
         </where>
     </delete>
-    <insert id="saveDataProjcetOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
+    <insert id="saveDataProjectOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date)
         values (#{poId},#{projectId},#{organId},#{initiateOrganId},#{participationIdentity},#{auditStatus},#{auditOpinion},0,now(),now())
     </insert>
-    <update id="updateDataProjcetOrgan" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
+    <update id="updateDataProjectOrgan" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         update data_project_organ
         <set>
             <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
@@ -73,7 +73,7 @@
     </sql>
 
 
-    <sql id="DataProjcetOrganBaseColumnList">
+    <sql id="DataProjectOrganBaseColumnList">
         id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date
     </sql>
 

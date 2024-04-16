@@ -10,12 +10,6 @@ import java.util.UUID;
 @Data
 public class GrpcComponentDto {
 
-    public GrpcComponentDto(Map<String, Integer> columns, String resourceId) {
-        this.columns = columns;
-        this.dataSetId = resourceId;
-        this.newDataSetId = resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
-    }
-
     @JsonIgnore
     private Map<String, Integer> columns;
     @JsonIgnore
@@ -24,6 +18,11 @@ public class GrpcComponentDto {
     private String dataSetId;
     private String outputFilePath;
 
+    public GrpcComponentDto(Map<String, Integer> columns, String resourceId) {
+        this.columns = columns;
+        this.dataSetId = resourceId;
+        this.newDataSetId = resourceId.substring(0, 12) +"-"+ UUID.randomUUID().toString();
+    }
 
     public String getOutputFilePath() {
         if (outputFilePath == null){
