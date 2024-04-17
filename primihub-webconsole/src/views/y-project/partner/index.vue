@@ -2,11 +2,12 @@
 import List from './components/list.vue'
 import listFilter from './components/list-filter.vue'
 import ViewBox from '@/components/ViewBox'
-import { getResourceList } from '@/api/fusionResource'
 import Pagination from '@/components/Pagination'
+import { mapGetters } from 'vuex'
+import { getProjectList} from '@/api/project'
 
 export default {
-  name: 'YPartnerResource',
+  name: 'YOwnResource',
   components: {
     List,
     listFilter,
@@ -23,19 +24,26 @@ export default {
       pageSize: 10
     }
   },
+  computed: {
+    hasCreateAuth() {
+      return this.buttonPermissionList.includes('ProjectCreate')
+    },
+    ...mapGetters([
+      'buttonPermissionList'
+    ])
+  },
   mounted() {
-    this.getResourceData()
+    this.getTableData()
   },
   methods: {
     /** query resource list */
-    async getResourceData(){
+    async getTableData() {
       const params = {
         ...this.queryParams,
         pageNo: this.pageNo,
-        pageSize: this.pageSize,
+        pageSize: this.pageSize
       }
-      const { code, result } = await getResourceList(params)
-      if (code === -1) this.$message.warning('资源同步中')
+      const { code, result } = await getProjectList(params)
       if (code === 0) {
         const { data, total, totalPage } = result
         this.total = total
@@ -45,15 +53,22 @@ export default {
     },
 
     /** search */
-    searchResourceData(data){
+    searchData(data) {
       this.queryParams = { ...data }
-      this.getResourceData()
+      this.getTableData()
     },
 
     /** page or limit change */
     handlePagination({ page }) {
       this.pageNo = page
-      this.getResourceData()
+      this.getTableData()
+    },
+
+    /** go to create resource page */
+    toCreatePage() {
+      this.$router.push({
+        name: 'YResourceCreate'
+      })
     }
   }
 }
@@ -62,14 +77,11 @@ export default {
 <template>
   <ViewBox>
     <template v-slot:filter>
-      <listFilter @search="searchResourceData"/>
+      <listFilter @search="searchData" />
     </template>
     <template v-slot:list>
-      <List :data="dataList" @refresh="getResourceData()"/>
+      <List :data="dataList" @refresh="getTableData()" />
       <pagination :page-count="pageCount" :limit.sync="pageSize" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </template>
   </ViewBox>
 </template>
-
-<style lang="scss" scoped>
-</style>

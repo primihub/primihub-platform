@@ -15,6 +15,15 @@ export default {
   },
   mounted() {
     this.scopedSlots = this.$scopedSlots
+  },
+  methods: {
+    handelSave() {
+      this.$emit('save')
+    },
+
+    handelCancel() {
+      this.$emit('cancel')
+    }
   }
 }
 </script>
@@ -27,8 +36,8 @@ export default {
         <slot name="footer" />
       </div>
       <div v-else class="yy-form-btn-container">
-        <el-button>取消</el-button>
-        <el-button type="primary">保存</el-button>
+        <el-button @click="handelCancel">取消</el-button>
+        <el-button type="primary" @save="handelSave">保存</el-button>
       </div>
     </div>
   </div>

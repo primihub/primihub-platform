@@ -222,6 +222,90 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/y-project',
+    component: Layout,
+    name: 'YProjectMenu',
+    redirect: '/y-project/list',
+    meta: { title: '项目管理', icon: 'el-icon-menu' },
+    children: [
+      {
+        path: 'list',
+        name: 'YProjectOwnList',
+        component: () => import('@/views/y-project/own/index'),
+        meta: { title: '本方项目' }
+      },
+      {
+        path: 'partner-list',
+        name: 'YProjectPartnerList',
+        component: () => import('@/views/y-project/partner/index'),
+        meta: { title: '合作方项目' }
+      },
+      {
+        path: 'create',
+        name: 'YProjectCreate',
+        hidden: true,
+        component: () => import('@/views/y-project/own/create'),
+        meta: { title: '新建项目', activeMenu: '/y-project/list' }
+      },
+      {
+        path: 'detail/:id',
+        name: 'YProjectDetail',
+        hidden: true,
+        component: () => import('@/views/y-project/own/detail'),
+        meta: { title: '本方项目详情', activeMenu: '/y-project/list' },
+      },
+      {
+        path: 'detail/:id/create-PIR',
+        name: 'PIRTaskCreate',
+        hidden: true,
+        component: () => import('@/views/y-task/create/PIR-task'),
+        meta: { title: '创建任务流', activeMenu: '/y-project/list', parent: { name: 'YProjectDetail' } }
+      },
+      {
+        path: 'detail/:id/create-PSI',
+        name: 'PSITaskCreate',
+        hidden: true,
+        component: () => import('@/views/y-task/create/PSI-task'),
+        meta: { title: '创建任务流', activeMenu: '/y-project/list', parent: { name: 'YProjectDetail' } }
+      },
+      {
+        path: 'detail/:id/create-task',
+        name: 'TaskCreate',
+        hidden: true,
+        component: () => import('@/views/y-task/create/task'),
+        meta: { title: '创建任务流', activeMenu: '/y-project/list', parent: { name: 'YProjectDetail' } }
+      },
+      {
+        path: 'detail/:id/PIR/:taskId',
+        name: 'PIRTaskDetail',
+        hidden: true,
+        component: () => import('@/views/privateSearch/detail'),
+        meta: { title: '任务详情', activeMenu: '/y-project/list', parent: { name: 'YProjectDetail' } }
+      },
+      {
+        path: 'detail/:id/PSI/:taskId',
+        name: 'PSITaskDetail',
+        hidden: true,
+        component: () => import('@/views/PSI/detail'),
+        meta: { title: '任务详情', activeMenu: '/y-project/list', parent: { name: 'YProjectDetail' } }
+      },
+      {
+        path: 'detail/:id/task/:taskId',
+        name: 'TaskDetail',
+        hidden: true,
+        component: () => import('@/views/project/taskDetail'),
+        meta: { title: '任务详情', activeMenu: '/y-project/list', parent: { name: 'YProjectDetail' } }
+      },
+      {
+        path: 'partner-detail/:id',
+        name: 'YPartnerProjectDetail',
+        hidden: true,
+        component: () => import('@/views/y-project/partner/detail'),
+        meta: { title: '合作方项目详情', activeMenu: '/y-project/partner-list' }
+      }
+    ]
+  },
+  {
     path: '/model',
     component: Layout,
     name: 'Model',

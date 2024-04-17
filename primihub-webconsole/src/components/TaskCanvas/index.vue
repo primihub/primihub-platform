@@ -702,7 +702,7 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
-      const notSelectResource = value.find(item => item.resourceId === undefined)
+      const notSelectResource = value && value.find(item => item.resourceId === undefined)
 
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
       if (jointStatisticalCom) {

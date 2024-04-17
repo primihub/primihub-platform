@@ -16,7 +16,7 @@ export default {
   },
   data() {
     return {
-      resourceList: [],
+      dataList: [],
       queryParams: {},
       total: 0,
       pageCount: 0,
@@ -48,7 +48,7 @@ export default {
         const { data, total, totalPage } = result
         this.total = total
         this.pageCount = totalPage
-        this.resourceList = data
+        this.dataList = data
       }
     },
 
@@ -85,7 +85,7 @@ export default {
       </el-button>
     </template>
     <template v-slot:list>
-      <List :data="resourceList" @refresh="getResourceData()"/>
+      <List :data="dataList" @refresh="getResourceData()"/>
       <pagination :page-count="pageCount" :limit.sync="pageSize" :page.sync="pageNo" :total="total" @pagination="handlePagination" />
     </template>
   </ViewBox>

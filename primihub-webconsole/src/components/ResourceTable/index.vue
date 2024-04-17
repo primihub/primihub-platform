@@ -64,15 +64,15 @@
       v-if="showDeleteButton || showPreviewButton"
       label="操作"
       align="center"
-      min-width="120"
+      min-width="80"
     >
       <template slot-scope="{row}">
         <template v-if="thisInstitution && projectAuditStatus && row.auditStatus === 0">
-          <el-button :disabled="status === 2" size="mini" type="primary" @click="handleAgree(row)">同意</el-button>
-          <el-button :disabled="status === 2" size="mini" type="danger" @click="handleRefused(row)">拒绝</el-button>
+          <el-button :disabled="status === 2" type="text" @click="handleAgree(row)">同意</el-button>
+          <el-button :disabled="status === 2" type="text" @click="handleRefused(row)">拒绝</el-button>
         </template>
-        <el-button v-if="showPreviewButton" :disabled="status === 2" size="mini" type="primary" plain @click="handlePreview(row)">查看</el-button>
-        <el-button v-if="showDeleteButton" :disabled="status === 2" size="mini" type="danger" plain @click="handleRemove(row)">移除</el-button>
+        <el-button v-if="showPreviewButton" :disabled="status === 2" type="text" @click="handlePreview(row)">查看</el-button>
+        <el-button v-if="showDeleteButton" :disabled="status === 2" type="text" @click="handleRemove(row)">移除</el-button>
       </template>
     </el-table-column>
   </el-table>

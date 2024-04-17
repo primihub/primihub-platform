@@ -96,8 +96,8 @@ export default {
   width: 100%;
   .tag-item {
     margin-top: 10px;
-    height: 40px;
-    line-height: 40px;
+    height: 30px;
+    line-height: 30px;
     padding: 3px 16px 3px 16px;
     background-color: #F6F6F6;
     margin-right: 10px;
