@@ -486,6 +486,21 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/approval',
+    component: Layout,
+    name: 'ApprovalMenu',
+    redirect: '/approval/resource-list',
+    meta: { title: '', icon: 'el-icon-s-claim' },
+    children: [
+      {
+        path: 'resource-list',
+        name: 'ApprovalResourceList',
+        component: () => import('@/views/y-approval/resource/index'),
+        meta: { title: '授权管理' }
+      }
+    ]
+  },
+  {
     path: '/setting',
     component: Layout,
     name: 'Setting',

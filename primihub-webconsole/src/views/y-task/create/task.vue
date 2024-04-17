@@ -12,12 +12,9 @@
       </div>
     </div>
     <div class="footer-buttons">
-      <el-button type="primary" @click="importDraft">导入草稿</el-button>
-      <el-button plain @click="saveDraft">保存草稿</el-button>
-      <el-button plain @click="saveAsDraft">另存草稿</el-button>
+      <el-button>取消</el-button>
+      <el-button type="primary" @click="saveDraft">保存</el-button>
     </div>
-    <SaveDraftDialog v-if="draftDialogVisible" :draft-name="draftName" width="480px" :title="draftDialogTitle" :visible.sync="draftDialogVisible" @close="handleDraftDialogClose" @submit="handleDraftDialogSubmit" />
-    <ImportDraftDialog :visible.sync="importDraftDialogVisible" @close="handleImportDraftDialogClose" @submit="handleImportDraftDialogSubmit" />
   </div>
 </template>
 
@@ -64,10 +61,13 @@ export default {
         center: true,
         showMinimap: true,
         showSaveButton: true,
-        showComponentsDetails: this.isCopy
+        showComponentsDetails: this.isCopy,
+        toolbarOptions: {
+          position: 'center',
+          background: true,
+          buttons: ['run', 'zoomIn', 'zoomOut', 'reset', 'clear']
+        },
       },
-      draftDialogVisible: false,
-      draftDialogTitle: '保存为草稿',
       componentImage: '',
       draftName: '',
       saveDraftType: 0, // 0:保存  1:另存
@@ -120,31 +120,7 @@ export default {
         }
       })
     },
-    importDraft() {
-      this.importDraftDialogVisible = true
-    },
-    handleImportDraftDialogClose() {
-      this.importDraftDialogVisible = false
-    },
-    handleImportDraftDialogSubmit(data) {
-      this.draftId = data.draftId
-      this.draftName = data.draftName
-      this.componentJson = JSON.parse(data.componentJson)
-      // only same project can load data
-      if (this.componentJson.projectId !== this.projectId) {
-        this.componentJson = this.deleteComponentsVal(this.componentJson)
-      }
-      this.componentDetail = this.componentJson
-      this.importDraftDialogVisible = false
-    },
-    handleDraftDialogClose() {
-      this.draftDialogVisible = false
-    },
-    handleDraftDialogSubmit(data) {
-      this.draftDialogVisible = false
-      this.draftName = data.draftName
-      this.toPNG()
-    },
+
     beforeSaveDraft() {
       // 只有开始组件不可保存
       if (this.componentJson.modelComponents && this.componentJson.modelComponents.length > 1) {
@@ -157,27 +133,13 @@ export default {
         return false
       }
     },
+
     saveDraft() {
       if (this.beforeSaveDraft()) {
-        this.draftDialogTitle = '保存为草稿'
-        this.saveDraftType = 0
-        this.draftDialogVisible = true
+        this.toPNG()
       }
     },
-    saveAsDraft() {
-      if (this.beforeSaveDraft() && this.draftId === '') {
-        this.$message({
-          message: '请先保存草稿',
-          type: 'warning'
-        })
-        return
-      }
-      if (this.beforeSaveDraft()) {
-        this.draftDialogTitle = '保存为新草稿'
-        this.saveDraftType = 1
-        this.draftDialogVisible = true
-      }
-    },
+
     toPNG() {
       window.graph.toPNG((dataUri) => {
         this.componentImage = dataUri
@@ -250,6 +212,7 @@ export default {
          `
       })
     },
+
     async init() {
       this.graph = this.$refs.canvasRef.graph
       // 获取左侧组件列表
@@ -260,6 +223,7 @@ export default {
       this.initShape()
       this.projectId = Number(this.$route.query.projectId) || 0
     },
+
     initStencil() {
       const height = document.querySelector('#stencil').offsetHeight
       this.stencil = new Addon.Stencil({
@@ -298,6 +262,7 @@ export default {
       const stencilContainer = document.getElementById('stencil')
       stencilContainer.appendChild(this.stencil.container)
     },
+
     initShape() {
       const imageNodes = this.componentsList?.map((item) =>
         this.graph.createNode({
@@ -312,6 +277,7 @@ export default {
       )
       this.stencil.load(imageNodes)
     },
+
     // 获取左侧组件
     async getModelComponentsInfo() {
       const { result, code } = await getModelComponent()
@@ -320,9 +286,11 @@ export default {
         this.componentsList = result.slice(1)
       }
     },
+
     handleSelectComponents(data) {
       this.selectComponentList = data
     },
+
     deleteComponentsVal(data, name = 'dataSet') {
       const dataSetComIndex = data?.modelComponents.findIndex(item => item.componentCode === name)
       data?.modelComponents[dataSetComIndex]?.componentValues.map(item => {
@@ -331,6 +299,7 @@ export default {
       })
       return data
     },
+
     getSaveParams(data) {
       this.componentJson = data
     }
