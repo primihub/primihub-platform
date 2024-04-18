@@ -85,7 +85,7 @@ public class AbstractComponentGRPCExecute extends AbstractGRPCExecuteFactory {
                     .build();
             log.info("grpc PushTaskRequest :\n{}", request.toString());
             PushTaskReply reply = runVMNodeGrpc(o -> o.submitTask(request),channel);
-            log.info("grpc结果:{}", reply.toString());
+            log.info("grpc result: {}", reply.toString());
             if (reply.getRetCode()==0){
                 taskParam.setPartyCount(reply.getPartyCount());
                 if (taskParam.getOpenGetStatus()){
