@@ -1,7 +1,6 @@
 package com.primihub.biz.config.base;
 
 import com.alibaba.nacos.api.config.annotation.NacosConfigurationProperties;
-import com.primihub.biz.entity.data.vo.ModelComponent;
 import com.primihub.biz.entity.sys.config.BaseAuthConfig;
 import com.primihub.biz.entity.sys.config.LokiConfig;
 import com.primihub.sdk.config.GrpcClientConfig;
@@ -10,7 +9,6 @@ import lombok.Setter;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
