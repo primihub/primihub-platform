@@ -33,10 +33,10 @@ public class ResourceFileData {
         }
     }
 
-    public void addContentSzie(){
+    public void addContentSize(){
         fileContentSize++;
     }
-    public void addFileYRowSzie(){
+    public void addFileYRowSize(){
         resourceFileYRow++;
     }
 }
