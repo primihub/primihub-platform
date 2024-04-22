@@ -1,7 +1,5 @@
 package com.primihub.biz.constant;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class DataConstant {
@@ -51,11 +49,5 @@ public class DataConstant {
     public final static String TASK_LOG_FILE_NAME = "taskLog.log";
 
     public final static String UTF8_BOM = "\uFEFF";
-
-    /** lpy */
-    public final static String INPUT_FIELD_NAME = "IdNum";
-
-    public static final String FIRST_URL = "FIRST_URL";
-    public static final String CMCC_SCORE_URL = "CMCC_SCORE_URL";
 
 }
