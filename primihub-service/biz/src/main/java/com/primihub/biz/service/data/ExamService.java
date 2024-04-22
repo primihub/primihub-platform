@@ -25,6 +25,8 @@ import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
+import com.primihub.biz.service.PhoneClientService;
+import com.primihub.biz.service.data.db.AbstractDataDBService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
@@ -34,15 +36,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ResourceLoader;
 import org.springframework.data.repository.init.ResourceReader;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,8 +76,6 @@ public class ExamService {
     private DataResourceRepository dataResourceRepository;
     @Autowired
     private SysFileSecondarydbRepository fileRepository;
-    @Resource(name = "soaRestTemplate")
-    private RestTemplate restTemplate;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -90,9 +87,13 @@ public class ExamService {
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private ResourceLoader resourceLoader;
-    @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private DataSourceService dataSourceService;
+    @Autowired
+    private DataCoreService dataCoreService;
+    @Autowired
+    private PhoneClientService phoneClientService;
 
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
@@ -112,25 +113,64 @@ public class ExamService {
             log.info("预处理的资源查询为空 resourceId: [{}]", resourceId);
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
         }
-        SysFile sysFile = fileRepository.selectSysFileByFileId(Optional.ofNullable(dataResource.getFileId()).orElse(0L));
-        if (sysFile == null) {
-            log.info("预处理的资源查询为空 sysFileId: [{}]", dataResource.getFileId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "sysFile");
+        BaseResultEntity<Set<String>> result;
+        // 文件类型
+        if (dataResource.getResourceSource() == 1) {
+            SysFile sysFile = fileRepository.selectSysFileByFileId(Optional.ofNullable(dataResource.getFileId()).orElse(0L));
+            if (sysFile == null) {
+                log.info("预处理的资源查询为空 sysFileId: [{}]", dataResource.getFileId());
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "sysFile");
+            }
+            result = getTargetFieldValueListFromSysFile(sysFile);
+            if (!BaseResultEntity.isSuccess(result)) {
+                log.info("文件解析失败 sysFileId: [{}]", dataResource.getFileId());
+                return result;
+            }
         }
-        BaseResultEntity<Set<String>> result = getDataResourceCsvTargetFieldList(sysFile);
-        if (!BaseResultEntity.isSuccess(result)) {
-            log.info("文件解析失败 sysFileId: [{}]", dataResource.getFileId());
-            return result;
+        // db类型
+        else if (dataResource.getResourceSource() == 2) {
+            DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+            result = getTargetFieldValueListFromDb(dataSource);
+            if (!BaseResultEntity.isSuccess(result)) {
+                log.info("数据库表解析失败 dbId: [{}]", dataResource.getDbId());
+                return result;
+            }
+        } else {
+            log.info("预处理的资源类型错误 resourceId: [{}]", resourceId);
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
         }
-        Set<String> targetFieldValueSet = result.getResult();
 
+        Set<String> targetFieldValueSet = result.getResult();
         DataExamReq req = DataExamConvert.convertPoToReq(po);
         req.setFieldValueSet(targetFieldValueSet);
         // 发送给对方机构
         return sendExamTask(req);
     }
 
-    private BaseResultEntity<Set<String>> getDataResourceCsvTargetFieldList(SysFile sysFile) {
+    private BaseResultEntity<Set<String>> getTargetFieldValueListFromDb(DataSource dataSource) {
+        AbstractDataDBService abstractDataDBService = dataSourceService.getDBServiceImpl(dataSource.getDbType());
+
+        if (abstractDataDBService != null) {
+            BaseResultEntity result = abstractDataDBService.dataSourceTableDetails(dataSource);
+            if (result == null || result.getCode() != 0) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "解析数据库表失败");
+            }
+            Map<String, Object> resultMap = (Map<String, Object>) result.getResult();
+            List<Map<String, Object>> rowMap = (List<Map<String, Object>>) resultMap.getOrDefault("dataList", Collections.emptyList());
+            if (CollectionUtils.isEmpty(rowMap)) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "数据库表中没有记录");
+            }
+            Set<String> targetFieldValueSet = rowMap.stream()
+                    .map(map -> (String) map.getOrDefault(DataConstant.INPUT_FIELD_NAME, StringUtils.EMPTY))
+                    .filter(StringUtils::isNotEmpty)
+                    .collect(Collectors.toSet());
+            return BaseResultEntity.success(targetFieldValueSet);
+        } else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "您选择的数据库暂不支持");
+        }
+    }
+
+    private BaseResultEntity<Set<String>> getTargetFieldValueListFromSysFile(SysFile sysFile) {
         try {
             List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), 1);
             if (fileContent == null || fileContent.isEmpty()) {
@@ -171,12 +211,6 @@ public class ExamService {
             return otherBusinessesService.syncGatewayApiData(param, organ.getOrganGateway() + "/share/shareData/processExamTask", organ.getPublicKey());
         }
         return null;
-    }
-
-    private DataExamTask saveExamTaskReq(DataExamReq param) {
-        DataExamTask task = DataExamConvert.convertReqToPo(param, organConfiguration.getSysLocalOrganInfo());
-        dataTaskPrRepository.saveDataExamTask(task);
-        return task;
     }
 
     public BaseResultEntity processExamTask(DataExamReq req) {
@@ -379,7 +413,12 @@ public class ExamService {
         FutureTask<Object> task = new FutureTask<>(() -> {
             log.info("====================== 预处理开始");
             Set<String> fieldValueSet = req.getFieldValueSet();
-//            Map resultMap = null;
+
+            Set<DataCore> existedDataCoreSet = dataCoreMapper.selectExistedDataCore(fieldValueSet);
+            // 先过滤出存在手机号的数据
+            List<Map<String, Object>> objectList = phoneClientService.findSM3PhoneForSM3IdNum(fieldValueSet);
+
+
             List<Map<String, Object>> resultList = null;
             List<Map<String, Object>> resultList2 = null;
             Map returnMap = null;

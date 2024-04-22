@@ -19,50 +19,52 @@ import org.springframework.stereotype.Service;
 public class DataSourceService implements ApplicationContextAware {
 
     private static ApplicationContext context;
+
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        context=applicationContext;
+        context = applicationContext;
     }
 
     public BaseResultEntity healthConnection(DataSourceReq req) {
-        AbstractDataDBService abstractDataDBService =getDBServiceImpl(req.getDbType());
-        if (abstractDataDBService != null){
+        AbstractDataDBService abstractDataDBService = getDBServiceImpl(req.getDbType());
+        if (abstractDataDBService != null) {
             DataSource dataSource = DataSourceConvert.DataSourceReqConvertPo(req);
             return abstractDataDBService.healthConnection(dataSource);
         }
-        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
+        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "您选择的数据库暂不支持");
     }
 
     public BaseResultEntity dataSourceTableDetails(DataSourceReq req) {
-        AbstractDataDBService abstractDataDBService =getDBServiceImpl(req.getDbType());
-        if (abstractDataDBService != null){
+        AbstractDataDBService abstractDataDBService = getDBServiceImpl(req.getDbType());
+        if (abstractDataDBService != null) {
             DataSource dataSource = DataSourceConvert.DataSourceReqConvertPo(req);
             return abstractDataDBService.dataSourceTableDetails(dataSource);
         }
-        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
+        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "您选择的数据库暂不支持");
     }
 
 
-    private AbstractDataDBService getDBServiceImpl(Integer dbType){
+    public AbstractDataDBService getDBServiceImpl(Integer dbType) {
         SourceEnum sourceEnum = SourceEnum.SOURCE_MAP.get(dbType);
-        if (sourceEnum!=null) {
+        if (sourceEnum != null) {
             return (AbstractDataDBService) context.getBean(sourceEnum.getSourceServiceClass());
         }
         return null;
     }
 
-    public BaseResultEntity tableDataStatistics(DataSource dataSource,boolean isY){
-        AbstractDataDBService abstractDataDBService =getDBServiceImpl(dataSource.getDbType());
-        if (abstractDataDBService != null){
-            return abstractDataDBService.tableDataStatistics(dataSource,isY);
+    public BaseResultEntity tableDataStatistics(DataSource dataSource, boolean isY) {
+        AbstractDataDBService abstractDataDBService = getDBServiceImpl(dataSource.getDbType());
+        if (abstractDataDBService != null) {
+            return abstractDataDBService.tableDataStatistics(dataSource, isY);
         }
         return null;
     }
+
     public BaseResultEntity dataSourceTableDetails(DataSource dataSource) {
-        AbstractDataDBService abstractDataDBService =getDBServiceImpl(dataSource.getDbType());
-        if (abstractDataDBService != null){
+        AbstractDataDBService abstractDataDBService = getDBServiceImpl(dataSource.getDbType());
+        if (abstractDataDBService != null) {
             return abstractDataDBService.dataSourceTableDetails(dataSource);
         }
-        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL,"您选择的数据库暂不支持");
+        return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "您选择的数据库暂不支持");
     }
 }
