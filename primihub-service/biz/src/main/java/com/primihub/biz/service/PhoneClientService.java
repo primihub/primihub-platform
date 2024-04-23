@@ -1,19 +1,15 @@
 package com.primihub.biz.service;
 
 
-import com.primihub.biz.entity.data.po.DataCore;
-import com.primihub.biz.util.crypt.SM3Util;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Service
 public class PhoneClientService {
-    public Map<String, String> findSM3PhoneForSM3IdNum(Set<String> fieldValueSet) {
+    /*public Map<String, String> findSM3PhoneForSM3IdNum(Set<String> fieldValueSet) {
         HashSet<String> filteredValue = filterHashSet(fieldValueSet, 0.8);
         Set<DataCore> dataCoreSet = filteredValue.stream().map(value -> {
             DataCore dataCore = new DataCore();
@@ -25,7 +21,7 @@ public class PhoneClientService {
         }).collect(Collectors.toSet());
         return dataCoreSet;
 
-    }
+    }*/
 
     public <T> HashSet<T> filterHashSet(Set<T> originalSet, double filterPercentage) {
         int originalSize = originalSet.size();

@@ -9,7 +9,7 @@ public class RemoteRespVo {
 
 
 
-    class RespHead {
-        private String
-    }
+//    class RespHead {
+//        private String
+//    }
 }

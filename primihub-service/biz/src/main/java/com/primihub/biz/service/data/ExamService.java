@@ -7,6 +7,7 @@ import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
+import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.convert.DataExamConvert;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.*;
@@ -161,7 +162,7 @@ public class ExamService {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "数据库表中没有记录");
             }
             Set<String> targetFieldValueSet = rowMap.stream()
-                    .map(map -> (String) map.getOrDefault(DataConstant.INPUT_FIELD_NAME, StringUtils.EMPTY))
+                    .map(map -> (String) map.getOrDefault(RemoteConstant.INPUT_FIELD_NAME, StringUtils.EMPTY))
                     .filter(StringUtils::isNotEmpty)
                     .collect(Collectors.toSet());
             return BaseResultEntity.success(targetFieldValueSet);
@@ -186,13 +187,13 @@ public class ExamService {
             if (headers[0].startsWith(DataConstant.UTF8_BOM)) {
                 headers[0] = headers[0].substring(1);
             }
-            if (!Arrays.asList(headers).contains(DataConstant.INPUT_FIELD_NAME)) {
-                log.info("该资源字段不包括目的字段: [{}]", DataConstant.INPUT_FIELD_NAME);
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, DataConstant.INPUT_FIELD_NAME);
+            if (!Arrays.asList(headers).contains(RemoteConstant.INPUT_FIELD_NAME)) {
+                log.info("该资源字段不包括目的字段: [{}]", RemoteConstant.INPUT_FIELD_NAME);
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, RemoteConstant.INPUT_FIELD_NAME);
             }
             List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(), Math.toIntExact(sysFile.getFileSize()));
             // stream.filter 结果为ture的元素留下
-            Set<String> targetFieldValueSet = csvData.stream().map(stringObjectLinkedHashMap -> stringObjectLinkedHashMap.getOrDefault(DataConstant.INPUT_FIELD_NAME, StringUtils.EMPTY)).map(String::valueOf).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+            Set<String> targetFieldValueSet = csvData.stream().map(stringObjectLinkedHashMap -> stringObjectLinkedHashMap.getOrDefault(RemoteConstant.INPUT_FIELD_NAME, StringUtils.EMPTY)).map(String::valueOf).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
             return BaseResultEntity.success(targetFieldValueSet);
         } catch (Exception e) {
             log.info("fileUrl:[{}] Exception Message : {}", sysFile.getFileUrl(), e);
@@ -414,18 +415,18 @@ public class ExamService {
             log.info("====================== 预处理开始");
             Set<String> fieldValueSet = req.getFieldValueSet();
 
-            Set<DataCore> existedDataCoreSet = dataCoreMapper.selectExistedDataCore(fieldValueSet);
+//            Set<DataCore> existedDataCoreSet = dataCoreMapper.selectExistedDataCore(fieldValueSet);
             // 先过滤出存在手机号的数据
-            List<Map<String, Object>> objectList = phoneClientService.findSM3PhoneForSM3IdNum(fieldValueSet);
+//            List<Map<String, Object>> objectList = phoneClientService.findSM3PhoneForSM3IdNum(fieldValueSet);
 
 
             List<Map<String, Object>> resultList = null;
             List<Map<String, Object>> resultList2 = null;
             Map returnMap = null;
             try {
-                resultList = getDataFromFirstSource(DataConstant.FIRST_URL, fieldValueSet);
+                resultList = getDataFromFirstSource(RemoteConstant.FIRST_URL, fieldValueSet);
                 log.info("====================== resultList: {}", resultList.size());
-                resultList2 = getDataFromCMCCSource(DataConstant.CMCC_SCORE_URL, resultList);
+                resultList2 = getDataFromCMCCSource(RemoteConstant.REMOTE_SCORE_URL, resultList);
                 log.info("====================== resultList2 {}", resultList2.size());
             } catch (Exception e) {
                 log.info("处理预审核处理出错: [{}]", e.getMessage());
@@ -514,9 +515,9 @@ public class ExamService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataFileFields");
         }
         Set<String> fieldNameSet = dataFileFields.stream().map(DataFileField::getFieldName).collect(Collectors.toSet());
-        if (!fieldNameSet.contains(DataConstant.INPUT_FIELD_NAME)) {
-            log.info("该数据资源缺乏目的字段, [{}]", DataConstant.INPUT_FIELD_NAME);
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, DataConstant.INPUT_FIELD_NAME);
+        if (!fieldNameSet.contains(RemoteConstant.INPUT_FIELD_NAME)) {
+            log.info("该数据资源缺乏目的字段, [{}]", RemoteConstant.INPUT_FIELD_NAME);
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, RemoteConstant.INPUT_FIELD_NAME);
         }
 
         req.setTaskId(String.valueOf(SnowflakeId.getInstance().nextId()));
