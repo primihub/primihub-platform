@@ -4,7 +4,10 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.DataPsi;
 import com.primihub.biz.entity.data.po.DataPsiTask;
-import com.primihub.biz.entity.data.req.*;
+import com.primihub.biz.entity.data.req.DataPsiQueryReq;
+import com.primihub.biz.entity.data.req.DataPsiReq;
+import com.primihub.biz.entity.data.req.DataResourceReq;
+import com.primihub.biz.entity.data.req.PageReq;
 import com.primihub.biz.service.data.DataPsiService;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.OutputStream;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /**
@@ -172,7 +175,7 @@ public class PsiController {
             String fileName = dataPsi.getResultName()+".csv";
             FileInputStream inputStream = new FileInputStream(file);
             response.setHeader("content-Type","application/vnd.ms-excel");
-            response.setHeader("content-disposition", "attachment; fileName=" + new String(fileName.getBytes("UTF-8"),"iso-8859-1"));
+            response.setHeader("content-disposition", "attachment; fileName=" + new String(fileName.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1));
             ServletOutputStream outputStream = response.getOutputStream();
             int len = 0;
             byte[] data = new byte[1024];

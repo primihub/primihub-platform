@@ -118,6 +118,7 @@ public class ResourceController {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"fileId");
                 }
             }
+            // 数据库连接
             if (req.getResourceSource() == 2){
                 if (req.getDataSource() == null) {
                     return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"dataSource");

@@ -520,6 +520,7 @@ public class ExamService {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, RemoteConstant.INPUT_FIELD_NAME);
         }
 
+        // 生成预处理的流水Id
         req.setTaskId(String.valueOf(SnowflakeId.getInstance().nextId()));
         DataExamTask po = DataExamConvert.convertReqToPo(req, organConfiguration.getSysLocalOrganInfo());
         po.setTaskState(TaskStateEnum.INIT.getStateType());
