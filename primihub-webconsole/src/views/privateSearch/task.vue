@@ -444,11 +444,15 @@ export default {
         })
         return
       }
+
       if (this.searchGroup.find(item => item.query.length === 0)) {
         for (let i = 0; i < this.searchGroup.length; i++) {
           this.handleKeyInputConfirm(i)
         }
+      }else {
+        this.isOK = true
       }
+
       this.form.keyQuerys = this.searchGroup.map(item => {
         return {
           key: item.key,
