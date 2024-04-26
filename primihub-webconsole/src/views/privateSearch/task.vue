@@ -276,7 +276,12 @@ export default {
       this.searchGroup[groupIndex].tagValue.splice(tagIndex, 1)
       this.searchGroup[groupIndex].query.splice(tagIndex, 1)
     },
+
     handleKeyChange(value, index) {
+      // key change, query/tagValue is empty
+      this.searchGroup[index].query = []
+      this.searchGroup[index].tagValue = []
+
       if (this.searchGroup[index].key.length <= 3) {
         const keywords = []
         for (let i = 0; i < value.length; i++) {
@@ -460,6 +465,7 @@ export default {
         }
       })
       console.log('form', this.form)
+      return
       this.$refs.form.validate(valid => {
         if (valid) {
           this.listLoading = true
