@@ -45,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.messaging.support.MessageBuilder;
@@ -71,6 +72,9 @@ import static com.primihub.biz.constant.DataConstant.PYTHON_LABEL_DATASET;
 public class DataAsyncService implements ApplicationContextAware {
 
     private static ApplicationContext context;
+    @Qualifier("recordPrRepository")
+    @Autowired
+    private RecordPrRepository recordPrRepository;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -324,6 +328,125 @@ public class DataAsyncService implements ApplicationContextAware {
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
+    }
+
+    @Async
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,String taskName, PsiRecord psiRecord) {
+        DataResource ownDataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
+        if (ownDataResource==null){
+            ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
+        }
+        String resourceId, resourceColumnNameList;
+        int available;
+        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())) {
+            DataResource otherDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOtherResourceId()));
+            resourceId = StringUtils.isNotBlank(otherDataResource.getResourceFusionId()) ? otherDataResource.getResourceFusionId() : otherDataResource.getResourceId().toString();
+            resourceColumnNameList = otherDataResource.getFileHandleField();
+            available = otherDataResource.getResourceState();
+        } else {
+            BaseResultEntity dataResource = otherBusinessesService.getDataResource(dataPsi.getOtherResourceId());
+            if (dataResource.getCode() != 0) {
+                return;
+            }
+            Map<String, Object> otherDataResource = (LinkedHashMap) dataResource.getResult();
+            resourceId = otherDataResource.getOrDefault("resourceId", "1").toString();
+            resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList", "").toString();
+            available = Integer.parseInt(otherDataResource.getOrDefault("available", "1").toString());
+        }
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(psiTask.getTaskId());
+        if (taskName == null){
+            dataTask.setTaskName(dataPsi.getResultName());
+        }else {
+            dataTask.setTaskName(taskName);
+        }
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTaskPrRepository.saveDataTask(dataTask);
+        String teeResourceId = "";
+        if (dataPsi.getTag().equals(2)){
+            DataFResourceReq fresourceReq = new DataFResourceReq();
+            fresourceReq.setOrganId(dataPsi.getTeeOrganId());
+            BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
+            if (resourceList.getCode()!=0) {
+                psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataPsiPrRepository.updateDataPsiTask(psiTask);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskEndTime(System.currentTimeMillis());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:"+resourceList.getMsg());
+                dataTaskPrRepository.updateDataTask(dataTask);
+                return;
+            }
+            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
+            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
+            if (resourceDataList==null || resourceDataList.size()==0) {
+                psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataPsiPrRepository.updateDataPsiTask(psiTask);
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                dataTask.setTaskEndTime(System.currentTimeMillis());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:机构下无资源信息");
+                dataTaskPrRepository.updateDataTask(dataTask);
+                return;
+            }
+            teeResourceId = resourceDataList.get(0).get("resourceId").toString();
+        }
+        psiTask.setTaskState(2);
+        dataPsiPrRepository.updateDataPsiTask(psiTask);
+        log.info("psi available:{}", available);
+        if (available == 0) {
+            Date date = new Date();
+            StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/").append(psiTask.getTaskId()).append(".csv");
+            psiTask.setFilePath(sb.toString());
+            try {
+                TaskPSIParam psiParam = new TaskPSIParam();
+                psiParam.setPsiTag(dataPsi.getTag());
+                psiParam.setPsiType(dataPsi.getOutputContent());
+                psiParam.setClientData(ownDataResource.getResourceFusionId());
+                List<String> clientFields = Arrays.asList(ownDataResource.getFileHandleField().split(","));
+                List<String> ownKeyword = Arrays.asList(dataPsi.getOwnKeyword().split(","));
+                psiParam.setClientIndex(ownKeyword.stream().map(clientFields::indexOf).toArray(Integer[]::new));
+                List<String> serverFields = Arrays.asList(resourceColumnNameList.split(","));
+                List<String> otherKeyword = Arrays.asList(dataPsi.getOtherKeyword().split(","));
+                psiParam.setServerData(resourceId);
+                psiParam.setTeeData(teeResourceId);
+                psiParam.setServerIndex(otherKeyword.stream().map(serverFields::indexOf).toArray(Integer[]::new));
+                psiParam.setOutputFullFilename(psiTask.getFilePath());
+                TaskParam taskParam = new TaskParam();
+                taskParam.setTaskId(dataTask.getTaskIdName());
+                taskParam.setTaskContentParam(psiParam);
+                taskHelper.submit(taskParam);
+                if (taskParam.getSuccess()){
+                    dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                }else {
+                    dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    dataTask.setTaskErrorMsg(taskParam.getError());
+                }
+                if (!dataTask.getTaskState().equals(TaskStateEnum.CANCEL.getStateType()) && !dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
+                    if (!FileUtil.isFileExists(psiTask.getFilePath())) {
+                        dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    }
+                }
+            } catch (Exception e) {
+                dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+                log.info("grpc Exception:{}", e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
+        }
+        psiTask.setTaskState(dataTask.getTaskState());
+        dataPsiPrRepository.updateDataPsiTask(psiTask);
+        dataTask.setTaskEndTime(System.currentTimeMillis());
+        updateTaskState(dataTask);
+
+        psiRecord.setTaskState(dataTask.getTaskState());
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+        if (org.apache.commons.lang.StringUtils.isNotEmpty(psiTask.getFilePath())) {
+            list = FileUtil.getCsvData(psiTask.getFilePath(), 50);
+        }
+        psiRecord.setResultRowsNum(list.size());
+        recordPrRepository.updatePsiRecord(psiRecord);
     }
 
     public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job){
