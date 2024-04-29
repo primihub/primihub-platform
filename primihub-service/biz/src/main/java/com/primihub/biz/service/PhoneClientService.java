@@ -1,27 +1,22 @@
 package com.primihub.biz.service;
 
 
+import com.primihub.biz.util.crypt.SM3Util;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class PhoneClientService {
-    /*public Map<String, String> findSM3PhoneForSM3IdNum(Set<String> fieldValueSet) {
+    public Map<String, String> findSM3PhoneForSM3IdNum(Set<String> fieldValueSet) {
         HashSet<String> filteredValue = filterHashSet(fieldValueSet, 0.8);
-        Set<DataCore> dataCoreSet = filteredValue.stream().map(value -> {
-            DataCore dataCore = new DataCore();
-            dataCore.setIdNum(value);
-            String SM3PhoneNum = SM3Util.encrypt(generateRandomPhoneNumber());
-            dataCore.setPhoneNum(SM3PhoneNum);
-            // todo 处理Y值
-            return dataCore;
-        }).collect(Collectors.toSet());
-        return dataCoreSet;
+        Map<String, String> map = new HashMap<>();
+        filteredValue.forEach(value -> {
+            map.put(value, SM3Util.encrypt(generateRandomPhoneNumber()));
+        });
+        return map;
 
-    }*/
+    }
 
     public <T> HashSet<T> filterHashSet(Set<T> originalSet, double filterPercentage) {
         int originalSize = originalSet.size();
@@ -55,4 +50,5 @@ public class PhoneClientService {
 
         return phoneNumber.toString();
     }
+
 }

@@ -36,4 +36,9 @@ public class DataExamTask {
     @JsonIgnore
     private Date updateDate;
 
+    /**
+     * 文件字段是否包含y字段 0否 1是
+     */
+    private Integer containsY = 0;
+
 }

@@ -43,9 +43,12 @@
                                     origin_resource_id,
                                     target_organ_id,
                                     target_resource_id,
-                                    is_del, create_date, update_date)
+                                    contain_y,
+                                    is_del,
+                                    create_date,
+                                    update_date)
         values (#{taskId}, #{taskName}, #{taskState}, #{originOrganId}, #{originResourceId}, #{targetOrganId},
-                #{targetResourceId}, 0, now(), now())
+                #{targetResourceId}, #{containsY}, 0, now(), now())
     </insert>
 
     <update id="updateDataExamTask" parameterType="com.primihub.biz.entity.data.po.DataExamTask">

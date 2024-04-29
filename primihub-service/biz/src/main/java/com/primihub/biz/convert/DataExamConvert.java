@@ -1,19 +1,21 @@
 package com.primihub.biz.convert;
 
 import com.primihub.biz.entity.data.po.DataExamTask;
+import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.req.DataExamReq;
 import com.primihub.biz.entity.data.vo.DataExamTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 
 public class DataExamConvert {
 
-    public static DataExamTask convertReqToPo(DataExamReq req, SysLocalOrganInfo localOrganInfo) {
+    public static DataExamTask convertReqToPo(DataExamReq req, SysLocalOrganInfo localOrganInfo, DataResource dataResource) {
         DataExamTask po = new DataExamTask();
         po.setTaskId(req.getTaskId());
         po.setTaskName(req.getTaskName());
         po.setOriginResourceId(req.getResourceId());
         po.setOriginOrganId(localOrganInfo.getOrganId());
         po.setTargetOrganId(req.getTargetOrganId());
+        po.setContainsY(dataResource.getFileContainsY());
         return po;
     }
 

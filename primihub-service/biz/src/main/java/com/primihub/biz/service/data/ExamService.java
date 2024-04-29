@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
@@ -19,9 +20,11 @@ import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
+import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository;
+import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
@@ -37,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.repository.init.ResourceReader;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
@@ -45,12 +47,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -95,6 +95,10 @@ public class ExamService {
     private DataCoreService dataCoreService;
     @Autowired
     private PhoneClientService phoneClientService;
+    @Autowired
+    private DataCorePrimarydbRepository dataCorePrimarydbRepository;
+    @Autowired
+    private DataCoreRepository dataCoreRepository;
 
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
@@ -229,7 +233,7 @@ public class ExamService {
     }
 
     //    private DataResource generateTargetResource(Map returnMap) {
-    private DataResource generateTargetResource(List<Map<String, Object>> metaData) {
+    private DataResource generateTargetResource(List<Map> metaData) {
         log.info("开始生成数据源===========================");
 
         SysFile sysFile = new SysFile();
@@ -359,12 +363,12 @@ public class ExamService {
         }
     }
 
-    private List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl, List<Map<String, Object>> resultList) {
-        /*HttpHeaders headers = new HttpHeaders();
+  /*  private List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl, List<Map<String, Object>> resultList) {
+        *//*HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
         ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
-        return exchange.getBody();*/
+        return exchange.getBody();*//*
         List<String> targetPhoneNumList = resultList.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String) stringObjectMap.get("phone")).collect(Collectors.toList());
 
         try {
@@ -386,15 +390,15 @@ public class ExamService {
             e.printStackTrace();
         }
         throw new RuntimeException("数据处理出错");
-    }
+    }*/
 
-    private List<Map<String, Object>> getDataFromFirstSource(String firstUrl, Set<String> fieldValueSet) {
-        /**HttpHeaders headers = new HttpHeaders();
+    /*private List<Map<String, Object>> getDataFromFirstSource(String firstUrl, Set<String> fieldValueSet) {
+        *//**HttpHeaders headers = new HttpHeaders();
          //        headers.setContentType(MediaType.APPLICATION_JSON);
          //        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
          //        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
          //        return exchange.getBody();
-         */
+         *//*
 
         try {
             // 读取JSON文件内容为字符串
@@ -408,34 +412,35 @@ public class ExamService {
         }
         throw new RuntimeException("数据处理出错");
     }
-
+*/
     private void startFutureExamTask(DataExamReq req) {
         // 进行预处理，使用异步
         FutureTask<Object> task = new FutureTask<>(() -> {
             log.info("====================== 预处理开始");
             Set<String> fieldValueSet = req.getFieldValueSet();
 
-//            Set<DataCore> existedDataCoreSet = dataCoreMapper.selectExistedDataCore(fieldValueSet);
+            // 已经存在的数据
+            Set<DataCore> existentDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
+            Set<String> existentTargetValueSet = existentDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
+            // 不存在的数据
+            Set<String> nonexistentTargetValueSet = fieldValueSet.stream().filter(s -> !existentTargetValueSet.contains(s)).collect(Collectors.toSet());
+
+
             // 先过滤出存在手机号的数据
-//            List<Map<String, Object>> objectList = phoneClientService.findSM3PhoneForSM3IdNum(fieldValueSet);
+            Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(nonexistentTargetValueSet);
+            Set<DataCore> nonexistentDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
+                DataCore dataCore = new DataCore();
+                dataCore.setIdNum(entry.getKey());
+                dataCore.setPhoneNum(entry.getValue());
+                return dataCore;
+            }).collect(Collectors.toSet());
+            dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
 
-
-            List<Map<String, Object>> resultList = null;
-            List<Map<String, Object>> resultList2 = null;
-            Map returnMap = null;
-            try {
-                resultList = getDataFromFirstSource(RemoteConstant.FIRST_URL, fieldValueSet);
-                log.info("====================== resultList: {}", resultList.size());
-                resultList2 = getDataFromCMCCSource(RemoteConstant.REMOTE_SCORE_URL, resultList);
-                log.info("====================== resultList2 {}", resultList2.size());
-            } catch (Exception e) {
-                log.info("处理预审核处理出错: [{}]", e.getMessage());
-                req.setTaskState(TaskStateEnum.FAIL.getStateType());
-                sendEndExamTask(req);
-                log.info("====================== FAIL");
-            }
+            Set<DataCore> allDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
+            String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
+            List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
             // 生成数据源
-            DataResource dataResource = generateTargetResource(resultList2);
+            DataResource dataResource = generateTargetResource(maps);
             if (dataResource == null) {
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
                 sendEndExamTask(req);
@@ -522,7 +527,8 @@ public class ExamService {
 
         // 生成预处理的流水Id
         req.setTaskId(String.valueOf(SnowflakeId.getInstance().nextId()));
-        DataExamTask po = DataExamConvert.convertReqToPo(req, organConfiguration.getSysLocalOrganInfo());
+        // 这里没有定义 `containY`
+        DataExamTask po = DataExamConvert.convertReqToPo(req, organConfiguration.getSysLocalOrganInfo(), dataResourcePo);
         po.setTaskState(TaskStateEnum.INIT.getStateType());
         dataTaskPrRepository.saveDataExamTask(po);
         return BaseResultEntity.success();

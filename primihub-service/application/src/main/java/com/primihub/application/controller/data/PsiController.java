@@ -83,6 +83,54 @@ public class PsiController {
     }
 
     /**
+     * lpy PSI
+     * @param userId
+     * @param req
+     * @return
+     */
+    @PostMapping("saveDataPsi")
+    public BaseResultEntity saveDataPsi(@RequestHeader("userId") Long userId,
+                                        DataPsiReq req){
+        if (userId<=0) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"userId");
+        }
+        if (req.getOwnOrganId()==null) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownOrganId");
+        }
+        if (StringUtils.isBlank(req.getOwnResourceId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownResourceId");
+        }
+        if (StringUtils.isBlank(req.getOwnKeyword())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"ownKeyword");
+        }
+        if (req.getOtherOrganId()==null) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherOrganId");
+        }
+        if (req.getOtherResourceId()==null) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherResourceId");
+        }
+        if (StringUtils.isBlank(req.getOtherKeyword())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"otherKeyword");
+        }
+        if (StringUtils.isBlank(req.getResultName())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultName");
+        }
+        if (StringUtils.isBlank(req.getResultOrganIds())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resultOrganIds");
+        }
+        if (req.getPsiTag()==null) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"psiTag");
+        }
+        if (req.getPsiTag() == 2){
+            if (StringUtils.isBlank(req.getTeeOrganId())){
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"teeOrganId");
+            }
+        }
+        return dataPsiService.saveDataPsi(req,userId);
+    }
+
+
+    /**
      * 根据隐私求交(psi)ID修改结果名称
      * @param req
      * @return

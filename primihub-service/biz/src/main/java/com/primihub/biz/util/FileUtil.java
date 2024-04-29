@@ -14,7 +14,7 @@ import java.util.*;
 @Slf4j
 public class FileUtil {
 
-    public static Integer getFileLineNumber(String filePath){
+    public static Integer getFileLineNumber(String filePath) {
         try {
             FileReader fileReader = new FileReader(filePath);
             LineNumberReader lineNumberReader = new LineNumberReader(fileReader);
@@ -24,68 +24,70 @@ public class FileUtil {
             fileReader.close();
             return lineNumber;
         } catch (IOException e) {
-            log.info("{}-IOException",filePath,e.getMessage());
+            log.info("{}-IOException", filePath, e.getMessage());
         }
         return -0;
     }
 
-    public static boolean isFileExists(String filePath){
+    public static boolean isFileExists(String filePath) {
         File file = new File(filePath);
         boolean isFile = file.isFile();
-        if (!isFile){
+        if (!isFile) {
             isFile = !Files.notExists(Paths.get(filePath));
         }
         return isFile;
     }
 
-    public static String getFileContent(String filePath){
+    public static String getFileContent(String filePath) {
         try {
             File file = new File(filePath);
-            if (!file.exists()){
-                log.info("{}-不存在",filePath);
+            if (!file.exists()) {
+                log.info("{}-不存在", filePath);
                 return null;
             }
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath),charset(file)));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), charset(file)));
             StringBuilder sb = new StringBuilder();
             String str;
-            while((str = bufferedReader.readLine())!=null) {
-                sb.append(str+"\t\n");
+            while ((str = bufferedReader.readLine()) != null) {
+                sb.append(str + "\t\n");
             }
             bufferedReader.close();
             return sb.toString();
         } catch (IOException e) {
-            log.info("{}-IOException: {}",filePath,e.getMessage());
+            log.info("{}-IOException: {}", filePath, e.getMessage());
         }
         return null;
     }
 
-    public static List<String> getFileContent(String filePath,Integer severalLines) {
+    public static List<String> getFileContent(String filePath, Integer severalLines) {
         List<String> list = new ArrayList<>();
         try {
             File file = new File(filePath);
-            if (!file.exists()){
-                log.info("{}-不存在",filePath);
+            if (!file.exists()) {
+                log.info("{}-不存在", filePath);
                 return list;
             }
             String charsetName = charset(file);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath),charsetName));
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), charsetName));
             String str;
-            while((str = bufferedReader.readLine())!=null) {
+            while ((str = bufferedReader.readLine()) != null) {
                 list.add(str);
-                if (severalLines!=null&&severalLines>0){
-                    if (list.size()==severalLines) {
+                if (severalLines != null && severalLines > 0) {
+                    if (list.size() == severalLines) {
                         break;
                     }
                 }
             }
             bufferedReader.close();
         } catch (IOException e) {
-            log.info("{}-IOException: {}",filePath,e.getMessage());
+            log.info("{}-IOException: {}", filePath, e.getMessage());
         }
         return list;
     }
+
     /**
      * 判断文本文件的字符集，文件开头三个字节表明编码格式。
+     *
      * @return
      * @throws Exception
      * @throws Exception
@@ -125,7 +127,7 @@ public class FileUtil {
                     if (0xC0 <= read && read <= 0xDF) {
                         read = bis.read();
                         if (0x80 <= read && read <= 0xBF) // 双字节 (0xC0 - 0xDF)
-                            // (0x80 - 0xBF),也可能在GB编码内
+                        // (0x80 - 0xBF),也可能在GB编码内
                         {
                             continue;
                         } else {
@@ -155,52 +157,53 @@ public class FileUtil {
         return charset;
     }
 
-    public static void writeFile(String filePath,String fileNamePath,List<String> dataList) throws IOException {
-        File tempFile=new File(filePath);
-        if(!tempFile.exists()) {
+    public static void writeFile(String filePath, String fileNamePath, List<String> dataList) throws IOException {
+        File tempFile = new File(filePath);
+        if (!tempFile.exists()) {
             tempFile.mkdirs();
         }
-        FileOutputStream fos=new FileOutputStream(new File(fileNamePath));
-        OutputStreamWriter osw=new OutputStreamWriter(fos, "UTF-8");
-        BufferedWriter  bw=new BufferedWriter(osw);
-        for(String data:dataList){
-            bw.write(data+"\t\n");
+        FileOutputStream fos = new FileOutputStream(new File(fileNamePath));
+        OutputStreamWriter osw = new OutputStreamWriter(fos, "UTF-8");
+        BufferedWriter bw = new BufferedWriter(osw);
+        for (String data : dataList) {
+            bw.write(data + "\t\n");
         }
         bw.close();
         osw.close();
         fos.close();
     }
 
-    public static List<LinkedHashMap<String, Object>> getCsvData(String filePath, Integer pageSize){
+    public static List<LinkedHashMap<String, Object>> getCsvData(String filePath, Integer pageSize) {
         List<LinkedHashMap<String, Object>> dataList = new ArrayList<>();
-        try{
+        try {
             List<String[]> list = CsvUtil.csvReader(filePath, pageSize + 1);
             String[] fields = list.get(0);
             if (fields[0].startsWith(DataConstant.UTF8_BOM)) {
                 fields[0] = fields[0].substring(1);
             }
             log.info(Arrays.toString(fields));
-            for(int i=1;i<list.size();i++) {
+            for (int i = 1; i < list.size(); i++) {
                 String[] data = list.get(i);
                 log.info(Arrays.toString(data));
                 if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length))) {
-                    dataList.add(readValues(data,fields));
+                    dataList.add(readValues(data, fields));
                 }
             }
         } catch (Exception e) {
-            log.info("getCsvData",e);
+            log.info("getCsvData", e);
         }
         return dataList;
     }
 
 
-    public static LinkedHashMap<String,Object> readValues(String[] values, String[] headers){
-        LinkedHashMap<String,Object> map = new LinkedHashMap<>();
+    public static LinkedHashMap<String, Object> readValues(String[] values, String[] headers) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
         for (int i = 0; i < headers.length; i++) {
-            map.put(headers[i],values[i]);
+            map.put(headers[i], values[i]);
         }
         return map;
     }
+
     /**
      * 计算文件hash值
      */
@@ -260,7 +263,7 @@ public class FileUtil {
             }
             fis.close();
             //转换并返回包含16个元素字节数组,返回数值范围为-128到127
-            byte[] md5Bytes  = md.digest();
+            byte[] md5Bytes = md.digest();
             BigInteger bigInt = new BigInteger(1, md5Bytes);//1代表绝对值
             return bigInt.toString(16);//转换为16进制
         } catch (Exception e) {
@@ -270,36 +273,36 @@ public class FileUtil {
     }
 
 
-    public static List<String> getFileContentData(String filePath,Integer severalLines){
+    public static List<String> getFileContentData(String filePath, Integer severalLines) {
         List<String> list = new ArrayList<>();
         try {
             File file = new File(filePath);
-            if (!file.exists()){
-                log.info("{}-不存在",filePath);
+            if (!file.exists()) {
+                log.info("{}-不存在", filePath);
                 return list;
             }
             Scanner sc = new Scanner(file);
             while (sc.hasNext()) {
                 list.add(sc.nextLine());
-                if (severalLines!=null&&severalLines>0){
-                    if (list.size()==severalLines) {
+                if (severalLines != null && severalLines > 0) {
+                    if (list.size() == severalLines) {
                         break;
                     }
                 }
             }
         } catch (IOException e) {
-            log.info("{}-IOException: {}",filePath,e.getMessage());
+            log.info("{}-IOException: {}", filePath, e.getMessage());
         }
         return list;
     }
 
-    public static void convertToCsv(List<Map<String, Object>> data, String filePath) throws IOException {
+    public static void convertToCsv(List<Map> data, String filePath) throws IOException {
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(filePath), StandardCharsets.UTF_8))) {
             // 写入表头
-            String[] header = data.get(0).keySet().toArray(new String[0]);
+            Object[] header = data.get(0).keySet().toArray(new String[0]);
             StringBuilder headerStr = new StringBuilder();
-            for (String s : header) {
-                headerStr.append(s);
+            for (Object s : header) {
+                headerStr.append((String) s);
                 headerStr.append(",");
             }
             String substring = headerStr.substring(0, headerStr.length() - 1);
@@ -324,7 +327,6 @@ public class FileUtil {
             throw e;
         }
     }
-
 
 
     public static void main(String[] args) throws Exception {
