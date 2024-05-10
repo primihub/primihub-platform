@@ -9,4 +9,6 @@ import java.util.Set;
 public interface DataCoreRepository {
     // todo
     Set<DataCore> selectExistentDataCore(Set<String> fieldValueSet);
+
+    Set<DataCore> selectDataCoreFromIdNum(Set<String> idNumSet);
 }

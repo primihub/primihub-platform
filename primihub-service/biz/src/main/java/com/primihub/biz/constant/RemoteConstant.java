@@ -11,10 +11,11 @@ public class RemoteConstant {
     public static final String SECRET_ID = "secretId";
     public static final String SIGNATURE = "signature";
     public static final String PARAM = "param";
-    public static final String IMSI = "imsi";
     public static final String SECRET_ID_VALUE = "58644534";
     public static final String SECRET_KEY_VALUE = "cDVMxEGRC9sMPZP1xtKnGWShi2YqwWW9yoEBoqo5PS0=";
     public static final String SIGN_TEMPLATE = "requestRefId=<requestRefId>&secretId=<secretId>";
     public static final String HEAD = "head";
     public static final String REQUEST = "request";
+    public static final String MOBILE = "mobile";
+    public static final String EMPOWER_NO = "empowerNo";
 }

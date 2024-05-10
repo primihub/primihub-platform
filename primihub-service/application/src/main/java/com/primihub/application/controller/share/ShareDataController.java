@@ -4,12 +4,15 @@ package com.primihub.application.controller.share;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
+import com.primihub.biz.entity.data.req.DataPirCopyReq;
+import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.DataSet;
 import com.primihub.biz.service.data.DataModelService;
 import com.primihub.biz.service.data.DataProjectService;
 import com.primihub.biz.service.data.DataResourceService;
+import com.primihub.biz.service.data.PirService;
 import com.primihub.biz.service.share.ShareService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
@@ -45,6 +48,8 @@ public class ShareDataController {
     private TestService testService;
     @Autowired
     private ShareService shareService;
+    @Autowired
+    private PirService pirService;
 
     @ApiOperation(value = "通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("/healthConnection")
@@ -125,6 +130,31 @@ public class ShareDataController {
         return sysOrganService.verifyGatewayConnection(uniqueIdentification);
     }
 
+    /**
+     * #2 处理
+     */
+    @PostMapping(value = "/shareData/processPirPhase1")
+    public BaseResultEntity processPirPhase1(@RequestBody DataPirCopyReq req) {
+        return pirService.processPirPhase1(req);
+    }
+
+    /**
+     * #3 提交phase2
+     */
+    @PostMapping(value = "/shareData/submitPirPhase2")
+    public BaseResultEntity submitPirPhase2(@RequestBody DataPirCopyReq req) {
+        // 查询条件
+        DataPirReq param = new DataPirReq();
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getTargetResourceId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "resourceId");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getTaskName())) {
+            req.setTaskName("PIR任务-" + req.getPsiRecordId());
+        }
+        param.setResourceId(req.getTargetResourceId());
+        param.setTaskName(req.getTaskName());
+        return pirService.submitPirPhase2(param, req);
+    }
 
 
 }

@@ -443,7 +443,7 @@ public class DataAsyncService implements ApplicationContextAware {
         psiRecord.setTaskState(dataTask.getTaskState());
         List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         if (org.apache.commons.lang.StringUtils.isNotEmpty(psiTask.getFilePath())) {
-            list = FileUtil.getCsvData(psiTask.getFilePath(), 50);
+            list = FileUtil.getAllCsvData(psiTask.getFilePath());
         }
         psiRecord.setResultRowsNum(list.size());
         recordPrRepository.updatePsiRecord(psiRecord);

@@ -51,6 +51,22 @@ public class CsvUtil {
         return false;
     }
 
+    public static List<String[]> csvReader(String path) throws Exception {
+        List<String[]> list = new ArrayList<>();
+        try {
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(path), FileUtil.charset(new File(path)));
+            CSVReader csvReader = new CSVReaderBuilder(reader).build();
+            Iterator<String[]> iterator = csvReader.iterator();
+            while (iterator.hasNext()){
+                list.add(iterator.next());
+            }
+            csvReader.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return list;
+
+    }
 //    public static void main(String[] args) throws Exception {
 //        csvReader("/Users/zhongziqian/Downloads/qqqmo.csv",100);
 //    }

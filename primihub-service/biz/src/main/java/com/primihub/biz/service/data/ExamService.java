@@ -233,7 +233,7 @@ public class ExamService {
     }
 
     //    private DataResource generateTargetResource(Map returnMap) {
-    private DataResource generateTargetResource(List<Map> metaData) {
+    public DataResource generateTargetResource(List<Map> metaData) {
         log.info("开始生成数据源===========================");
 
         SysFile sysFile = new SysFile();

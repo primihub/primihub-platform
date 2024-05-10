@@ -341,4 +341,26 @@ public class FileUtil {
         long end2 = System.currentTimeMillis();
         System.out.println(end2 - start);
     }
+
+    public static List<LinkedHashMap<String, Object>> getAllCsvData(String filePath) {
+        List<LinkedHashMap<String, Object>> dataList = new ArrayList<>();
+        try {
+            List<String[]> list = CsvUtil.csvReader(filePath);
+            String[] fields = list.get(0);
+            if (fields[0].startsWith(DataConstant.UTF8_BOM)) {
+                fields[0] = fields[0].substring(1);
+            }
+            log.info(Arrays.toString(fields));
+            for (int i = 1; i < list.size(); i++) {
+                String[] data = list.get(i);
+                log.info(Arrays.toString(data));
+                if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length))) {
+                    dataList.add(readValues(data, fields));
+                }
+            }
+        } catch (Exception e) {
+            log.info("getCsvData", e);
+        }
+        return dataList;
+    }
 }

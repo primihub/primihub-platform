@@ -9,4 +9,5 @@ import java.util.Set;
 public interface DataCorePrimarydbRepository {
     // todo
     void saveDataCoreSet(Set<DataCore> nonexistentDataCoreSet);
+    void saveDataCore(DataCore dataCore);
 }

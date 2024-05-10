@@ -25,45 +25,48 @@ public class ExamController {
 
     @Autowired
     private ExamService examService;
+
     @GetMapping("/examine/getExamTaskList")
-    public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req){
+    public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         return examService.getExamTaskList(req);
     }
 
     /**
      * 一，创建审核任务
+     * role: 发起方
      */
     @PostMapping(value = "/examine/saveExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity saveExamTask(@RequestBody DataExamReq dataExamReq) {
-        if (StringUtils.isBlank(dataExamReq.getResourceId())){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"resourceId");
+        if (StringUtils.isBlank(dataExamReq.getResourceId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "resourceId");
         }
-        if (StringUtils.isBlank(dataExamReq.getTaskName())){
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskName");
+        if (StringUtils.isBlank(dataExamReq.getTaskName())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskName");
         }
         if (StringUtils.isBlank(dataExamReq.getTargetOrganId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"targetOrganId");
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "targetOrganId");
         }
         return examService.saveExamTask(dataExamReq);
     }
 
     /**
      * 二：发起任务
+     *
      * @param dataExamReq
      * @return
      */
     @PostMapping(value = "/examine/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
     public BaseResultEntity submitExamTask(@RequestBody DataExamReq dataExamReq) {
         if (StringUtils.isBlank(dataExamReq.getTaskId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskId");
         }
         return examService.submitExamTask(dataExamReq);
     }
 
     @GetMapping(value = "/examine/getExamTaskDetail")
-    public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId){
+    public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId) {
         if (StringUtils.isBlank(taskId)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"taskId");
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskId");
         }
         return examService.getExamTaskDetail(taskId);
     }
