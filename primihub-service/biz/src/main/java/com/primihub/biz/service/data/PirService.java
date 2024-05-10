@@ -1,7 +1,6 @@
 package com.primihub.biz.service.data;
 
 
-import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -69,7 +68,7 @@ public class PirService {
         String[] queryColumnNames = {
                 resourceColumnNameArray[0]
         };
-        // convert pirparam to query array
+        // convert pirParam to query array
         List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(pirParam,queryColumnNames);
 
         DataTask dataTask = new DataTask();
@@ -97,9 +96,8 @@ public class PirService {
     private static List<DataPirKeyQuery> convertPirParamToQueryArray(String pirParam, String[] resourceColumnNameArray) {
         DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
         dataPirKeyQuery.setKey(resourceColumnNameArray);
-        String[] array = {
-                pirParam
-        };
+        String[] split = pirParam.split(",");
+        String[] array = Arrays.stream(split).map(String::trim).filter(StringUtils::isNotBlank).toArray(String[]::new);
         List<String[]> queries = new ArrayList<>(resourceColumnNameArray.length);
         for (int i = 0; i < resourceColumnNameArray.length; i++) {
             queries.add(i, array);
