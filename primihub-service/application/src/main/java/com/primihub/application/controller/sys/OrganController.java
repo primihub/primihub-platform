@@ -157,8 +157,4 @@ public class OrganController {
         return sysOrganService.enableStatus(id,status);
     }
 
-    @GetMapping("marketInfo")
-    public BaseResultEntity getMarketInfo(){
-        return sysOrganService.getMarketInfo();
-    }
 }
