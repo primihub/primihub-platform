@@ -499,4 +499,15 @@ public class SysOrganService {
         }
         return BaseResultEntity.success();
     }
+
+    /**
+     * 应用市场信息
+     * @return
+     */
+    public BaseResultEntity getMarketInfo() {
+        if (organConfiguration.getMarketInfo() == null) {
+            return BaseResultEntity.success();
+        }
+        return BaseResultEntity.failure(BaseResultEnum.FAILURE,"应用市场信息填写有误或者填写错误");
+    }
 }
