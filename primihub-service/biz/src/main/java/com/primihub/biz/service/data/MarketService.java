@@ -1,5 +1,6 @@
 package com.primihub.biz.service.data;
 
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.MarketConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -29,6 +30,8 @@ public class MarketService {
     private DataMarketRepository dataMarketRepository;
     @Resource(name="primaryStringRedisTemplate")
     private StringRedisTemplate primaryStringRedisTemplate;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     public BaseResultEntity submitVisitingUsers(List<DataVisitingUsersReq> req) {
         Map<String, String> keySet = req.stream().collect(Collectors.toMap(DataVisitingUsersReq::getKeyValLowerCase, DataVisitingUsersReq::getValue));
@@ -117,5 +120,12 @@ public class MarketService {
             }
         }
         return new TreeMap<Object, Object>(primaryStringRedisTemplate.opsForHash().entries(MarketConstant.MARKET_DISPLAY_MAP_KEY));
+    }
+
+    public BaseResultEntity getMarketInfo() {
+        if (organConfiguration.getMarketInfo() == null) {
+            return BaseResultEntity.failure(BaseResultEnum.FAILURE,"应用市场信息未填写或者填写错误");
+        }
+        return BaseResultEntity.success(organConfiguration.getMarketInfo());
     }
 }
