@@ -11,4 +11,6 @@ public interface RecordPrRepository {
     void updatePsiRecord(PsiRecord psiRecord);
 
     void savePirRecord(PirRecord pirRecord);
+
+    void updatePirRecord(PirRecord pirRecord);
 }

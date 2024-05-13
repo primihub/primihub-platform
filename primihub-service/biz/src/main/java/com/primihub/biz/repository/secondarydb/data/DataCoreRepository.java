@@ -11,6 +11,6 @@ public interface DataCoreRepository {
     // todo
     Set<DataCore> selectExistentDataCore(Set<String> fieldValueSet);
 
-    Set<DataCore> selectDataCoreFromIdNum(Set<String> idNumSet);
+    Set<DataCore> selectDataCoreFromIdNum(Set<String> idNumSet, String scoreType);
     Set<DataCoreVo> selectDataCoreWithScore(String scoreType);
 }

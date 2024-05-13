@@ -25,6 +25,9 @@ public class RemoteRespVo {
     @Setter
     public class RespResp {
         private String truth_score;
+        private String yhgm_score;
+        private String yhxf_score;
+        private String yhhhwd_score;
     }
 
 }

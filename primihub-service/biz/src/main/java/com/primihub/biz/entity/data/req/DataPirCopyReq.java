@@ -12,6 +12,7 @@ public class DataPirCopyReq {
     private String scoreModelType;
     private String taskName;
     private String psiRecordId;
+    private String pirRecordId;
 
     /** idNum */
     private Set<String> targetValueSet;
@@ -19,5 +20,6 @@ public class DataPirCopyReq {
 
     // return
     private String targetResourceId;
+    private String targetOrganId;
     private String originOrganId;
 }

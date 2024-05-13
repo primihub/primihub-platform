@@ -4,6 +4,7 @@ package com.primihub.application.controller.share;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
+import com.primihub.biz.entity.data.po.PirRecord;
 import com.primihub.biz.entity.data.po.PsiRecord;
 import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
@@ -187,5 +188,13 @@ public class ShareDataController {
     @PostMapping(value = "submitPsiRecord")
     public BaseResultEntity submitPsiRecord(@RequestBody PsiRecord record) {
         return recordService.savePsiRecord(record);
+    }
+
+    /**
+     * 协作方
+     */
+    @PostMapping(value = "submitPirRecord")
+    public BaseResultEntity submitPirRecord(@RequestBody PirRecord record) {
+        return recordService.savePirRecord(record);
     }
 }

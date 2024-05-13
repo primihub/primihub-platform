@@ -4,9 +4,9 @@ public class RemoteConstant {
     /**
      * lpy
      */
-    public final static String INPUT_FIELD_NAME = "IdNum";
+    public final static String INPUT_FIELD_NAME = "idNum";
     public static final String FIRST_URL = "FIRST_URL";
-    public static final String REMOTE_SCORE_URL = "http://117.132.181.254:9000/AME000678";
+    public static final String REMOTE_SCORE_URL = "http://117.132.181.254:9000/";
     public static final String REQUEST_REF_ID = "requestRefId";
     public static final String SECRET_ID = "secretId";
     public static final String SIGNATURE = "signature";

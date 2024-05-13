@@ -2,6 +2,7 @@ package com.primihub.biz.service.data;
 
 
 import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.data.po.PirRecord;
 import com.primihub.biz.entity.data.po.PsiRecord;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
 import com.primihub.biz.repository.secondarydb.data.RecordRepository;
@@ -20,6 +21,16 @@ public class RecordService {
             recordPrRepository.savePsiRecord(psiRecord);
         } else {
             recordPrRepository.updatePsiRecord(psiRecord);
+        }
+        return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity savePirRecord(PirRecord record) {
+        PirRecord psiRecord = recordRepository.selectPirRecordByRecordId(record.getRecordId());
+        if (psiRecord == null) {
+            recordPrRepository.savePirRecord(psiRecord);
+        } else {
+            recordPrRepository.updatePirRecord(psiRecord);
         }
         return BaseResultEntity.success();
     }

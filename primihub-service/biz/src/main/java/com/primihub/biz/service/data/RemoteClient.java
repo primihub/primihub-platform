@@ -42,6 +42,11 @@ public class RemoteClient {
     private ScoreModelRepository scoreModelRepository;
 
     public RemoteRespVo queryFromRemote(String phoneNum,String scoreTypeValue) {
+        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreTypeValue);
+        if (scoreModel == null) {
+            log.error("scoreModelType not found : {}", scoreTypeValue);
+            return null;
+        }
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
@@ -49,7 +54,8 @@ public class RemoteClient {
         map.put(RemoteConstant.HEAD, resembleHeadMap());
         map.put(RemoteConstant.REQUEST, resembleRequestMap(phoneNum, clientConfiguration.getSecretKey()));
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
-        RemoteRespVo respVo = restTemplate.postForObject(RemoteConstant.REMOTE_SCORE_URL, request, RemoteRespVo.class);
+        String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
+        RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
                 && StringUtils.isNotBlank(respVo.getResponse())) {
             String jsonResponse = null;

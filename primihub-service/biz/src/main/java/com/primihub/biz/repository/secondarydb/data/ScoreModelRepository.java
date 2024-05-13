@@ -6,4 +6,6 @@ import java.util.Set;
 
 public interface ScoreModelRepository {
     Set<ScoreModel> selectAll();
+
+    ScoreModel selectScoreModelByScoreTypeValue(String scoreTypeValue);
 }

@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
-import com.primihub.biz.config.thread.ThreadPoolConfig;
 import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -27,6 +26,7 @@ import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
+import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.data.RecordRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
@@ -37,6 +37,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -60,11 +61,9 @@ public class PirService {
     @Autowired
     private RecordRepository recordRepository;
     @Autowired
-    private DataPsiService dataPsiRepository;
+    private DataPsiRepository dataPsiRepository;
     @Autowired
     private SysOrganSecondarydbRepository organSecondaryDbRepository;
-    @Autowired
-    private ThreadPoolConfig threadPoolConfig;
     @Autowired
     private RemoteClient remoteClient;
     @Qualifier("dataCoreRepository")
@@ -79,6 +78,8 @@ public class PirService {
     private RecordPrRepository recordPrRepository;
     @Autowired
     private OrganConfiguration organConfiguration;
+    @Autowired
+    private ThreadPoolTaskExecutor primaryThreadPool;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -214,28 +215,44 @@ public class PirService {
      */
     public BaseResultEntity submitPirPhase1(DataPirCopyReq req) {
         PsiRecord psiRecord = recordRepository.selectPsiRecordByRecordId(req.getPsiRecordId());
-        Long psiTaskId = psiRecord.getPsiTaskId();
+        String psiTaskId = psiRecord.getPsiTaskId();
 
-        // 获取目标值
-        DataPsiTask task = dataPsiRepository.selectPsiTaskById(psiTaskId);
+        DataPsiTask task = dataPsiRepository.selectPsiTaskByTaskId(psiTaskId);
         List<LinkedHashMap<String, Object>> list = null;
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(task.getFilePath())) {
-            list = FileUtil.getAllCsvData(task.getFilePath());
-            Set<String> phoneSet = list.stream().map(map -> String.valueOf(map.getOrDefault("phone", "")))
-                    .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
-            req.setTargetValueSet(phoneSet);
-        } else {
+        if (StringUtils.isEmpty(task.getFilePath())) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "psi结果为空");
         }
+        list = FileUtil.getAllCsvData(task.getFilePath());
+        Set<String> idNumSet = list.stream().map(map -> String.valueOf(map.getOrDefault(RemoteConstant.INPUT_FIELD_NAME, "")))
+                .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+        req.setTargetValueSet(idNumSet);
 
         req.setOriginOrganId(organConfiguration.getSysLocalOrganId());
         String targetOrganId = psiRecord.getTargetOrganId();
+
+        String recordId = Long.toString(SnowflakeId.getInstance().nextId());
+        PirRecord record = new PirRecord();
+        record.setRecordId(recordId);
+        record.setPirName("PIR-" + psiRecord.getRecordId());
+//        record.setPirTaskId(dataPsi.getId());
+        record.setTaskState(0);
+        record.setOriginOrganId(organConfiguration.getSysLocalOrganId());
+        record.setTargetOrganId(psiRecord.getTargetOrganId());
+        record.setStartTime(new Date());
+        record.setCommitRowsNum(idNumSet.size());
+        record.setResultRowsNum(0);
+        recordPrRepository.savePsiRecord(psiRecord);
+
+        req.setPirRecordId(recordId);
+        req.setTargetOrganId(psiRecord.getTargetOrganId());
+
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(targetOrganId);
         if (CollectionUtils.isEmpty(sysOrgans)) {
             log.info("查询机构ID: [{}] 失败，未查询到结果", targetOrganId);
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
         }
         for (SysOrgan organ : sysOrgans) {
+            otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/submitPirRecord", organ.getPublicKey());
             return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/processPirPhase1", organ.getPublicKey());
         }
         return null;
@@ -249,15 +266,14 @@ public class PirService {
      * @return
      */
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
-        // idNum
         Set<String> targetValueSet = req.getTargetValueSet();
-        Set<DataCore> dataCores = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet);
-        Map<String, DataCore> idNumDataCoreMap = dataCores.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
         String scoreModelType = req.getScoreModelType();
+        Set<DataCore> dataCores = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
+        Map<String, DataCore> idNumDataCoreMap = dataCores.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
 
-        for (Map.Entry<String, DataCore> entry : idNumDataCoreMap.entrySet()) {
-            if (entry.getValue().getScoreModelType() != null && Objects.equals(entry.getValue().getScoreModelType(), scoreModelType)) {
-                continue;
+        idNumDataCoreMap.entrySet().parallelStream().forEach(entry -> {
+            if (entry.getValue().getScore() != null) {
+                return;
             }
             RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModelType);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
@@ -265,7 +281,7 @@ public class PirService {
                 entry.getValue().setScore(Double.valueOf(respVo.getRespBody().getTruth_score()));
                 dataCorePrimarydbRepository.saveDataCore(entry.getValue());
             }
-        }
+        });
 
         Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
         // 成功后开始生成文件
@@ -290,6 +306,7 @@ public class PirService {
     /**
      * pir phase2 #3
      * 发起方
+     *
      * @param req
      * @return
      */
@@ -338,20 +355,23 @@ public class PirService {
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
         dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries);
 
-        PirRecord pirRecord = new PirRecord();
-        pirRecord.setPirName(req.getTaskName());
-        pirRecord.setPirTaskId(dataTask.getTaskId());
-        pirRecord.setTaskState(dataTask.getTaskState());
-        pirRecord.setStartTime(new Date());
-        pirRecord.setCommitRowsNum(req.getTargetValueSet().size());
+        String pirRecordId = req.getPirRecordId();
+        PirRecord record = recordRepository.selectPirRecordByRecordId(pirRecordId);
 
-        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(dataTask.getTaskResultPath())) {
-            list = FileUtil.getAllCsvData(dataTask.getTaskResultPath());
+        record.setTaskState(dataTask.getTaskState());
+        if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
+            List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+            if (org.apache.commons.lang.StringUtils.isNotEmpty(dataTask.getTaskResultPath())) {
+                list = FileUtil.getAllCsvData(dataTask.getTaskResultPath());
+            }
+            record.setResultRowsNum(list.size());
+            record.setEndTime(new Date());
         }
-        pirRecord.setResultRowsNum(list.size());
-        recordPrRepository.savePirRecord(pirRecord);
-
+        recordPrRepository.updatePirRecord(record);
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getTargetOrganId());
+        for (SysOrgan organ : sysOrgans) {
+            return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPsiRecord", organ.getPublicKey());
+        }
 
         Map<String, Object> map = new HashMap<>();
         map.put("taskId", dataTask.getTaskId());
