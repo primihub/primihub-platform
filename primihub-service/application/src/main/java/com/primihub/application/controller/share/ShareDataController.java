@@ -4,6 +4,7 @@ package com.primihub.application.controller.share;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
+import com.primihub.biz.entity.data.po.PsiRecord;
 import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
@@ -50,6 +51,8 @@ public class ShareDataController {
     private PirService pirService;
     @Autowired
     private RemoteClient remoteClient;
+    @Autowired
+    private RecordService recordService;
 
     @ApiOperation(value = "通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("/healthConnection")
@@ -157,7 +160,7 @@ public class ShareDataController {
     }
 
     /**
-     *
+     * 发起方
      * @param req
      * @return
      */
@@ -178,4 +181,11 @@ public class ShareDataController {
         return remoteClient.submitScoreModelType(req);
     }
 
+    /**
+     * 协作方
+     */
+    @PostMapping(value = "submitPsiRecord")
+    public BaseResultEntity submitPsiRecord(@RequestBody PsiRecord record) {
+        return recordService.savePsiRecord(record);
+    }
 }

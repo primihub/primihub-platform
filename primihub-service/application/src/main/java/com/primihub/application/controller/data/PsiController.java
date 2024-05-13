@@ -87,8 +87,8 @@ public class PsiController {
      * @param req
      * @return
      */
-    @PostMapping("saveDataPsi")
-    public BaseResultEntity saveDataPsi(@RequestHeader("userId") Long userId,
+    @PostMapping("submitPsiTask")
+    public BaseResultEntity submitPsiTask(@RequestHeader("userId") Long userId,
                                         DataPsiCopyReq req) {
         if (userId <= 0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "userId");

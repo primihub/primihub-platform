@@ -13,7 +13,7 @@ public class PsiRecord {
     private String recordId;
     private String psiName;
     private Long psiId;
-    private Long psiTaskId;
+    private String psiTaskId;
     // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
     private Integer taskState;
 

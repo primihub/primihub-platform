@@ -8,6 +8,8 @@ import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
@@ -15,6 +17,7 @@ import com.primihub.biz.entity.data.vo.DataPsiTaskVo;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataPsiPrRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
@@ -54,6 +57,10 @@ public class DataPsiService {
     private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
     @Autowired
     private RecordPrRepository recordPrRepository;
+    @Autowired
+    private DataTaskPrRepository dataTaskPrRepository;
+    @Autowired
+    private SysOrganSecondarydbRepository organSecondaryDbRepository;
 
     public BaseResultEntity getPsiResourceList(DataResourceReq req) {
         return dataResourceService.getDataResourceList(req, null);
@@ -128,10 +135,16 @@ public class DataPsiService {
 
     public BaseResultEntity saveDataPsi(DataPsiCopyReq req, Long userId) {
         DataExamTask examTask = dataTaskRepository.selectDataExamByTaskId(req.getExamTaskId());
-
-        DataResource dataResourcePo = dataResourceRepository.queryDataResourceByResourceFusionId(examTask.getOriginResourceId());
+        if (examTask == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask");
+        }
         if (examTask.getContainsY() != null && examTask.getContainsY() == 1) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
+        }
+
+        DataResource dataResourcePo = dataResourceRepository.queryDataResourceByResourceFusionId(examTask.getOriginResourceId());
+        if (dataResourcePo == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
         }
         if (dataResourcePo.getFileContainsY() != null && dataResourcePo.getFileContainsY() == 1) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
@@ -149,7 +162,7 @@ public class DataPsiService {
         dataPsi.setOutputNoRepeat(0);
         // ECDH
         dataPsi.setTag(0);
-        dataPsi.setResultName("PSI结果-" + examTask.getTaskName());
+        dataPsi.setResultName("PSI-" + examTask.getTaskId());
         // 输出内容 默认0 0交集 1差集
         dataPsi.setOutputContent(0);
         dataPsi.setOutputFormat("csv");
@@ -158,9 +171,10 @@ public class DataPsiService {
         dataPsi.setUserId(userId);
         dataPsiPrRepository.saveDataPsi(dataPsi);
 
+        String dataTaskId = Long.toString(SnowflakeId.getInstance().nextId());
         DataPsiTask task = new DataPsiTask();
         task.setPsiId(dataPsi.getId());
-        task.setTaskId(Long.toString(SnowflakeId.getInstance().nextId()));
+        task.setTaskId(dataTaskId);
         task.setTaskState(0);
         // 只有己方获取结果
         task.setAscriptionType(1);
@@ -169,16 +183,49 @@ public class DataPsiService {
         task.setCreateDate(new Date());
         dataPsiPrRepository.saveDataPsiTask(task);
 
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(task.getTaskId());
+        if (StringUtils.isBlank(req.getTaskName())) {
+            dataTask.setTaskName(dataPsi.getResultName());
+        }else {
+            dataTask.setTaskName(req.getTaskName());
+        }
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTaskPrRepository.saveDataTask(dataTask);
+
         PsiRecord psiRecord = new PsiRecord();
+        psiRecord.setRecordId(dataTaskId);
         psiRecord.setPsiName(dataPsi.getResultName());
-        psiRecord.setPsiTaskId(task.getId());
         psiRecord.setPsiId(dataPsi.getId());
-        psiRecord.setCommitRowsNum(dataResourcePo.getFileRows());
+        psiRecord.setPsiTaskId(task.getTaskId());
+        psiRecord.setTaskState(0);
+        psiRecord.setOriginOrganId(organConfiguration.getSysLocalOrganId());
+        psiRecord.setTargetOrganId(examTask.getTargetOrganId());
         psiRecord.setStartTime(new Date());
+        psiRecord.setCommitRowsNum(dataResourcePo.getFileRows());
         psiRecord.setResultRowsNum(0);
         recordPrRepository.savePsiRecord(psiRecord);
 
-        dataAsyncService.psiGrpcRun(task, dataPsi, req.getTaskName(), psiRecord);
+        dataAsyncService.psiGrpcRun(task, dataPsi, dataTask);
+
+        psiRecord.setTaskState(dataTask.getTaskState());
+        if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
+            List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+            if (org.apache.commons.lang.StringUtils.isNotEmpty(task.getFilePath())) {
+                list = FileUtil.getAllCsvData(task.getFilePath());
+            }
+            psiRecord.setResultRowsNum(list.size());
+            psiRecord.setEndTime(new Date());
+        }
+        recordPrRepository.updatePsiRecord(psiRecord);
+
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(examTask.getTargetOrganId());
+        for (SysOrgan organ : sysOrgans) {
+            return otherBusinessesService.syncGatewayApiData(psiRecord, organ.getOrganGateway() + "/share/shareData/submitPsiRecord", organ.getPublicKey());
+        }
+
         Map<String, Object> map = new HashMap<>();
         map.put("dataPsi", dataPsi);
         map.put("dataPsiTask", DataPsiConvert.DataPsiTaskConvertVo(task));
@@ -297,7 +344,7 @@ public class DataPsiService {
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         task.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(task);
-        dataAsyncService.psiGrpcRun(task, dataPsi, null);
+        dataAsyncService.psiGrpcRun(task, dataPsi, StringUtils.EMPTY);
         return BaseResultEntity.success();
     }
 

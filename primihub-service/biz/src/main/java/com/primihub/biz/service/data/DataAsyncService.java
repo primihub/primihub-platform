@@ -244,7 +244,7 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(psiTask.getTaskId());
-        if (taskName == null){
+        if (StringUtils.isBlank(taskName)){
             dataTask.setTaskName(dataPsi.getResultName());
         }else {
             dataTask.setTaskName(taskName);
@@ -331,7 +331,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,String taskName, PsiRecord psiRecord) {
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi, DataTask dataTask) {
         DataResource ownDataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
         if (ownDataResource==null){
             ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
@@ -353,17 +353,6 @@ public class DataAsyncService implements ApplicationContextAware {
             resourceColumnNameList = otherDataResource.getOrDefault("resourceColumnNameList", "").toString();
             available = Integer.parseInt(otherDataResource.getOrDefault("available", "1").toString());
         }
-        DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(psiTask.getTaskId());
-        if (taskName == null){
-            dataTask.setTaskName(dataPsi.getResultName());
-        }else {
-            dataTask.setTaskName(taskName);
-        }
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTaskPrRepository.saveDataTask(dataTask);
         String teeResourceId = "";
         if (dataPsi.getTag().equals(2)){
             DataFResourceReq fresourceReq = new DataFResourceReq();
@@ -439,14 +428,6 @@ public class DataAsyncService implements ApplicationContextAware {
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
-
-        psiRecord.setTaskState(dataTask.getTaskState());
-        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        if (org.apache.commons.lang.StringUtils.isNotEmpty(psiTask.getFilePath())) {
-            list = FileUtil.getAllCsvData(psiTask.getFilePath());
-        }
-        psiRecord.setResultRowsNum(list.size());
-        recordPrRepository.updatePsiRecord(psiRecord);
     }
 
     public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job){
