@@ -10,10 +10,12 @@ import java_data_service.DataSetServiceGrpc;
 import java_worker.TaskStatus;
 import java_worker.TaskStatusReply;
 import java_worker.VMNodeGrpc;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import primihub.rpc.Common;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -107,7 +109,23 @@ public abstract class AbstractGRPCExecuteFactory {
             while (isContinue){
                 TaskStatusReply taskStatusReply  = runVMNodeGrpc(o -> o.fetchTaskStatus(taskBuild),channel);
                 if (taskStatusReply!=null && taskStatusReply.getTaskStatusList()!=null&&!taskStatusReply.getTaskStatusList().isEmpty()){
-                    List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->t.getParty()!=null && !"".equals(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
+//                    List<String> taskStatus = taskStatusReply.getTaskStatusList().stream().filter(t->t.getParty()!=null && !"".equals(t.getParty())).map(TaskStatus::getStatus).map(Enum::name).collect(Collectors.toList());
+                    List<String> taskStatus = new ArrayList<String>();
+                    List<String> groupKeyList = taskStatusReply.getTaskStatusList().stream().map(TaskStatus::getParty).filter(StringUtils::isNotBlank).distinct().collect(Collectors.toList());
+                    Map<String, List<TaskStatus>> taskStatusGroup = taskStatusReply.getTaskStatusList().stream().filter(t -> StringUtils.isNotBlank(t.getParty())).collect(Collectors.groupingBy(TaskStatus::getParty));
+                    for (String party : groupKeyList) {
+                        List<TaskStatus> taskStatuses = taskStatusGroup.get(party);
+                        List<TaskStatus.StatusCode> statusEnumList = taskStatuses.stream().map(TaskStatus::getStatus).collect(Collectors.toList());
+                        boolean match = statusEnumList.stream().allMatch(TaskStatus.StatusCode.SUCCESS::equals);
+                        if (match) {
+                            taskStatus.add(TaskStatus.StatusCode.SUCCESS.name());
+                        } else {
+                            // 将未成功的状态全部传入
+                            List<String> noSuccessStatue = statusEnumList.stream().map(TaskStatus.StatusCode::name).collect(Collectors.toList());
+                            taskStatus.addAll(noSuccessStatue);
+                        }
+                    }
+
                     if (!taskStatus.isEmpty()){
                         log.info(taskStatusReply.toString());
                         List<String> getList = cacheService.get(key);
