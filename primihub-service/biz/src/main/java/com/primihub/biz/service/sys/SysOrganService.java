@@ -231,6 +231,7 @@ public class SysOrganService {
                 return BaseResultEntity.failure(BaseResultEnum.FAILURE,"合作方不可以是本机构!!!");
             }
             sysOrgan.setOrganName(resultMap.get("organName").toString());
+            sysOrgan.setExamineState(Integer.parseInt(resultMap.get("examineState").toString()));
             SysOrgan sysOrgan1 = sysOrganSecondarydbRepository.selectSysOrganByOrganId(sysOrgan.getOrganId());
 //            log.info("organid:{} - sysOrgan1:{}",sysOrgan.getOrganId(), JSONObject.toJSONString(sysOrgan1));
             if (sysOrgan1!=null){
