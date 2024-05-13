@@ -1,6 +1,7 @@
 package com.primihub.application.controller.data;
 
 import com.alibaba.fastjson.JSON;
+import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
@@ -40,11 +41,15 @@ public class ExamController {
         if (StringUtils.isBlank(dataExamReq.getResourceId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "resourceId");
         }
-        if (StringUtils.isBlank(dataExamReq.getTaskName())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskName");
-        }
         if (StringUtils.isBlank(dataExamReq.getTargetOrganId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "targetOrganId");
+        }
+        if (StringUtils.isBlank(dataExamReq.getTaskName())) {
+            StringBuffer sb = new StringBuffer();
+            sb.append("预处理任务").append(dataExamReq.getResourceId())
+                    .append(SysConstant.HYPHEN_DELIMITER)
+                    .append(dataExamReq.getTargetOrganId());
+            dataExamReq.setTaskName(sb.toString());
         }
         return examService.saveExamTask(dataExamReq);
     }

@@ -13,4 +13,5 @@ public class SysConstant {
     public static final String SYS_COLLECT_URL = SYS_COLLECT_BASE_URL + "/operate/addNode";
     public static final String SYS_COLLECT_KEY = "FkBPowl3QSZi9LukvMId88aoWud0ZVgA";
     public static final String SYS_QUERY_COLLECT_URL = SYS_COLLECT_BASE_URL + "/operate/getNodeList?key=Qg7T3TgGBtYIF2XJOViTgWSuohNnkakU";
+    public static final String HYPHEN_DELIMITER = "-";
 }
