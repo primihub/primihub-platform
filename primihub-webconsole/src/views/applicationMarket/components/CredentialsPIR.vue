@@ -33,8 +33,8 @@
             </el-form-item>
           </div>
           <el-form-item label="查询内容" prop="pirParam">
-            <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10"/>
-            <el-input v-model="form.password" placeholder="请输入密码" type="password" show-password />
+            <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10" @blur="() => form.password && (form.pirParam = `${form.mobile}:${form.password}`)"/>
+            <el-input v-model="form.password" placeholder="请输入密码" type="password" @blur="() => form.mobile && (form.pirParam = `${form.mobile}:${form.password}`)" show-password />
           </el-form-item>
           <el-form-item>
             <p :style="{color: '#999', lineHeight: 1}">利用隐匿查询技术在泄露密码库里查询确认您的账号密码是否泄露</p>
@@ -55,12 +55,12 @@
         <div v-if="fail" class="result">
           <p class="el-icon-error icon-error" />
           <p><strong>{{ form.pirParam }}</strong>不在泄漏的账号密码数据资源中</p>
-          <p class="search-tip">未发现以{{ form.pirParam }}为账号的风险</p>
+          <p class="search-tip">未发现{{ form.pirParam }}的泄漏风险</p>
         </div>
         <div v-else class="result">
           <p><i class="el-icon-success icon-success" /> </p>
           <p><strong>{{ form.pirParam }}</strong>在泄漏的账号密码数据资源中</p>
-          <p class="search-tip">建议更新以{{ form.pirParam }}为账号的账号密码</p>
+          <p class="search-tip">建议更新以{{ form.mobile }}为账号的账号密码{{ form.password }}</p>
         </div>
       </div>
     </el-dialog>
@@ -69,8 +69,9 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import { pirSubmitTask } from '@/api/PIR'
+import { pirSubmitTask, getPirTaskDetail } from '@/api/PIR'
 import { getDataResource } from '@/api/fusionResource'
+import CryptoJS from 'crypto-js'
 
 export default {
   data() {
@@ -91,106 +92,80 @@ export default {
         selectResources: [
           { required: true, message: '请选择资源', trigger: 'blur' }
         ],
+        mobile: [
+          { required: true, message: '请输入手机号', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
         pirParam: [
-          { required: true, message: '请输入查询内容', trigger: 'blur' },
+          { required: true, message: '请输入完整的查询内容', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
-      whiteList: ['邢运民', '李雪娜', '李俊', '成玉伟', '张亮', '蔡滔', '罗俊伟', '熊波', '侯嘉成', '许峰', '高严', '朱宇皓', '巫家麟', '陈状元', '刘冰齐', '代宏军', '朱龙', '马宁', '包云江', '董厅', '李文光', '高若城', '黄治顺', '胡国栋', '张凤然', '周向荣', '李俊英', '王鑫灿', '李春霞', '钟丽萍']
     }
   },
   computed: {
-    ...mapState('application', ['origin'])
+    ...mapState('application', ['marketInfo'])
   },
   async created() {
-    this.getLocationOrigin()
+    await this.getMarketInfo()
     this.setDefaultValue()
   },
   destroyed() {
     clearInterval(this.taskTimer)
   },
   methods: {
-    async setDefaultValue() {
-      const data = {
-        'node1': {
-          resourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e'
-        },
-        'node2': {
-          resourceId: '794e41ba0e63-fcec3208-cd95-4660-a651-0e2387cdb035'
-        },
-        'node3': {
-          resourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e'
-        },
-        'test1': {
-          resourceId: '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a'
-        }
-      }
-      if (this.origin !== 'other') {
-        console.log('this.origin', this.origin)
-        this.resourceId = data[this.origin].resourceId
-        await this.getDataResource()
-      } else {
-        this.resource = [{
-          'resourceId': '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a',
-          'resourceName': '账号密码测试数据',
-          'resourceDesc': '测试数据',
-          'resourceRowsCount': 30,
-          'resourceColumnCount': 2,
-          'resourceContainsY': null,
-          'resourceYRowsCount': null,
-          'resourceYRatio': null
-        }]
-      }
+     // 设置资源id
+     async setDefaultValue() {
+      this.resourceId = this.marketInfo.pir.resourceId
+      await this.getDataResource()
       this.form.selectResources = this.resource
     },
+
+    // 获取查询结果
+    async getPirTaskResult() {
+      const { code, result } = await getPirTaskDetail({ taskId: this.taskId })
+      let timer = null
+      if (code === 0) {
+        const { taskState, list } = result
+        if (taskState !== 2) {
+          this.loading = false
+          timer && window.clearTimeout(timer)
+          taskState === 1 && (this.dialogVisible = true, this.fail = list.length === 0)
+          taskState === 3 && this.$message.error('查询失败')
+          taskState === 4 && this.$message.warning('查询已取消')
+        } else {
+          timer = window.setTimeout(() => {
+            this.getPirTaskResult()
+          }, 1000)
+        }
+      }
+    },
+
+    // 查询
     next() {
       this.$refs.form.validate(valid => {
         if (valid) {
-          if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1 || this.form.pirParam.indexOf(';') !== -1) {
-            this.$message.error('多条件查询请使用英文,分隔')
-            return
-          }
+          // sha256加密
+          const hashParams = CryptoJS.SHA256(this.form.pirParam).toString()
+
           this.loading = true
-          const params = this.form.pirParam.split(';')
-          if (params.length > 0) {
-            for (let i = 0; i < params.length; i++) {
-              const item = params[i]
-              if (!this.whiteList.includes(item) && item !== '') {
-                this.fail = true
-              } else {
-                this.fail = false
-              }
-            }
-            setTimeout(() => {
-              this.loading = false
-              this.dialogVisible = true
-            }, 1000)
-          }
-          if (this.origin !== 'other') {
-          // if (this.origin === 'other') {
-            pirSubmitTask({
+          pirSubmitTask({
               resourceId: this.resource[0].resourceId,
-              // resourceId: 'ece67278c395-ada04eaa-46d2-4a84-a3b5-d3edfb656c19',
-              pirParam: this.form.pirParam
+              pirParam: hashParams
             }).then(res => {
               if (res.code === 0) {
                 this.taskId = res.result.taskId
+                this.getPirTaskResult()
               } else {
-                this.$emit('error', {
-                  taskId: this.taskId,
-                  pirParam: this.form.pirParam
-                })
-                this.$message({
-                  message: res.msg,
-                  type: 'error'
-                })
+                this.$message.error(res.msg)
                 this.loading = false
               }
             }).catch(err => {
               console.log(err)
               this.loading = false
-            })
-          }
+          })
         } else {
           console.log('error submit!!')
           return false
@@ -200,6 +175,8 @@ export default {
     handleClose() {
       this.dialogVisible = false
     },
+
+    // 获取资源信息
     async getDataResource() {
       const res = await getDataResource({
         resourceId: this.resourceId
@@ -208,7 +185,7 @@ export default {
         this.resource = [res.result]
       }
     },
-    ...mapActions('application', ['getLocationOrigin'])
+    ...mapActions('application', ['getMarketInfo'])
   }
 }
 </script>

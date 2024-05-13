@@ -20,7 +20,6 @@ export function pirSubmitTask(data) {
   return request({
     url: '/data/pir/pirSubmitTask',
     method: 'post',
-    type: 'json',
     data
   })
 }

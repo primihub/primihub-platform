@@ -80,11 +80,11 @@
       <div class="dialog-body">
         <div v-if="fail" class="result">
           <p class="el-icon-error icon-error" />
-          <p><strong>{{ form.pirParam }}</strong>不在 {{ form.selectResources[0].resourceName }}资源中</p>
+          <p><strong>{{ form.pirParam }}</strong>不在{{ form.selectResources[0].resourceName }} 资源中</p>
         </div>
         <div v-else class="result">
           <p><i class="el-icon-success icon-success" /> </p>
-          <p><strong>{{ form.pirParam }}</strong>在 {{ form.selectResources[0].resourceName }} 资源中</p>
+          <p><strong>{{ existKeyWords.join(',') }}</strong>在{{ form.selectResources[0].resourceName }} 资源中</p>
         </div>
       </div>
     </el-dialog>
@@ -93,8 +93,9 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import { pirSubmitTask } from '@/api/PIR'
+import { pirSubmitTask, getPirTaskDetail } from '@/api/PIR'
 import { getDataResource } from '@/api/fusionResource'
+import CryptoJS from 'crypto-js'
 
 export default {
   data() {
@@ -118,108 +119,101 @@ export default {
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
       },
-      whiteList: ['邢运民', '李雪娜', '李俊', '成玉伟', '张亮', '蔡滔', '罗俊伟', '熊波', '侯嘉成', '许峰', '高严', '朱宇皓', '巫家麟', '陈状元', '刘冰齐', '代宏军', '朱龙', '马宁', '包云江', '董厅', '李文光', '高若城', '黄治顺', '胡国栋', '张凤然', '周向荣', '李俊英', '王鑫灿', '李春霞', '钟丽萍']
-    }
+      keyWordsMap: {}, // Plain ciphertext of keywords
+      existKeyWords: []
+   }
   },
   computed: {
-    ...mapState('application', ['origin'])
+    ...mapState('application', ['marketInfo'])
   },
   async created() {
-    this.getLocationOrigin()
+    await this.getMarketInfo()
     this.setDefaultValue()
   },
   destroyed() {
     clearInterval(this.taskTimer)
   },
   methods: {
+    // 设置资源id
     async setDefaultValue() {
-      const data = {
-        'node1': {
-          resourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e'
-        },
-        'node2': {
-          resourceId: '794e41ba0e63-fcec3208-cd95-4660-a651-0e2387cdb035'
-        },
-        'node3': {
-          resourceId: '704a92e392fd-89fc0bd7-a4af-419d-b303-55604956628e'
-        },
-        'test1': {
-          resourceId: '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a'
-        }
-      }
-      if (this.origin !== 'other') {
-        console.log('this.origin', this.origin)
-        this.resourceId = data[this.origin].resourceId
-        await this.getDataResource()
-      } else {
-        this.resource = [{
-          'resourceId': '2b598a7e3298-d21b8fff-6c1d-4de1-9597-88c0c22d066a',
-          'resourceName': 'pir测试数据',
-          'resourceDesc': '测试数据',
-          'resourceRowsCount': 30,
-          'resourceColumnCount': 2,
-          'resourceContainsY': null,
-          'resourceYRowsCount': null,
-          'resourceYRatio': null
-        }]
-      }
+      this.resourceId = this.marketInfo.pir.resourceId
+      await this.getDataResource()
       this.form.selectResources = this.resource
     },
+
+    // 获取查询结果
+    async getPirTaskResult() {
+      const { code, result } = await getPirTaskDetail({ taskId: this.taskId })
+      let timer = null
+      if (code === 0) {
+        const { taskState, list } = result
+        if (taskState !== 2) {
+          this.loading = false
+          timer && window.clearTimeout(timer)
+          taskState === 3 && this.$message.error('查询失败')
+          taskState === 4 && this.$message.warning('查询已取消')
+          if (taskState === 1 ){
+            this.dialogVisible = true
+            list.forEach(item => {
+              const ele = this.keyWordsMap[item.value]
+              !this.existKeyWords.includes(ele) && this.existKeyWords.push(ele)
+            })
+            this.fail = list.length === 0
+          }
+        } else {
+          timer = window.setTimeout(() => {
+            this.getPirTaskResult()
+          }, 1000)
+        }
+      }
+    },
+
+    // 查询
     next() {
+      this.keyWordsMap = {} // reset keyWordsMap
+      this.existKeyWords = [] // reset existKeyWords
       this.$refs.form.validate(valid => {
         if (valid) {
           if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1 || this.form.pirParam.indexOf(';') !== -1) {
             this.$message.error('多条件查询请使用英文,分隔')
             return
           }
+
+          // sha256加密
+          const paramsList = this.form.pirParam.split(',')
+          const hashParams = paramsList.map(item => {
+            this.keyWordsMap[CryptoJS.SHA256(item).toString()] = item
+            return CryptoJS.SHA256(item)
+          }).join(',')
+
           this.loading = true
-          const params = this.form.pirParam.split(';')
-          if (params.length > 0) {
-            for (let i = 0; i < params.length; i++) {
-              const item = params[i]
-              if (!this.whiteList.includes(item) && item !== '') {
-                this.fail = true
-              } else {
-                this.fail = false
-              }
-            }
-            setTimeout(() => {
-              this.loading = false
-              this.dialogVisible = true
-            }, 1000)
-          }
-          if (this.origin !== 'other') {
-            pirSubmitTask({
+          pirSubmitTask({
               resourceId: this.resource[0].resourceId,
-              pirParam: this.form.pirParam
+              pirParam: hashParams
             }).then(res => {
               if (res.code === 0) {
                 this.taskId = res.result.taskId
+                this.getPirTaskResult()
               } else {
-                this.$emit('error', {
-                  taskId: this.taskId,
-                  pirParam: this.form.pirParam
-                })
-                this.$message({
-                  message: res.msg,
-                  type: 'error'
-                })
+                this.$message.error(res.msg)
                 this.loading = false
               }
             }).catch(err => {
               console.log(err)
               this.loading = false
-            })
-          }
+          })
         } else {
           console.log('error submit!!')
           return false
         }
       })
     },
+
     handleClose() {
       this.dialogVisible = false
     },
+
+    // 获取资源信息
     async getDataResource() {
       const res = await getDataResource({
         resourceId: this.resourceId
@@ -228,7 +222,7 @@ export default {
         this.resource = [res.result]
       }
     },
-    ...mapActions('application', ['getLocationOrigin'])
+    ...mapActions('application', ['getMarketInfo'])
   }
 }
 </script>
