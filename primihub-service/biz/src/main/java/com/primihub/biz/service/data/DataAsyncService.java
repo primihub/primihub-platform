@@ -331,7 +331,8 @@ public class DataAsyncService implements ApplicationContextAware {
         FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = new FutureTask<>(new Callable<TaskParam<TaskPIRParam>>() {
             @Override
             public TaskParam<TaskPIRParam> call() throws Exception {
-                StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(SnowflakeId.getInstance().nextId()).append(".csv");
+                StringBuffer sb = new StringBuffer().append(baseConfiguration.getResultUrlDirPrefix())
+                        .append(formatDate).append("/").append(SnowflakeId.getInstance().nextId()).append(".csv");
                 TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setJobId(String.valueOf(job));
@@ -369,6 +370,7 @@ public class DataAsyncService implements ApplicationContextAware {
 //            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
             Map<String,String> jobMap = new HashMap<>();
             List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
+            // 条件组，默认只有一个
             for (int i = 0; i < dataPirKeyQueries.size(); i++) {
                 FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i);
                 primaryThreadPool.submit(pirTaskFutureTask);

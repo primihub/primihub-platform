@@ -95,14 +95,12 @@ public class PirService {
 
     private static List<DataPirKeyQuery> convertPirParamToQueryArray(String pirParam, String[] resourceColumnNameArray) {
         DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
+        // 默认只有第一列
         dataPirKeyQuery.setKey(resourceColumnNameArray);
         String[] split = pirParam.split(",");
-        String[] array = Arrays.stream(split).map(String::trim).filter(StringUtils::isNotBlank).toArray(String[]::new);
-        List<String[]> queries = new ArrayList<>(resourceColumnNameArray.length);
-        for (int i = 0; i < resourceColumnNameArray.length; i++) {
-            queries.add(i, array);
-        }
-        dataPirKeyQuery.setQuery(queries);
+        List<String[]> singleValueQuery = Arrays.stream(split).map(String::trim).filter(StringUtils::isNotBlank)
+                .map(s -> new String[]{s}).collect(Collectors.toList());
+        dataPirKeyQuery.setQuery(singleValueQuery);
         return Collections.singletonList(dataPirKeyQuery);
     }
 
