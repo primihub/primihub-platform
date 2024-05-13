@@ -18,7 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -61,9 +63,17 @@ public class PirController {
     // todo 前端要添加一个营销模型分
     @RequestMapping("submitPirPhase1")
     public BaseResultEntity submitPirPhase1(DataPirCopyReq req) {
-        // 查询条件
         if (StringUtils.isBlank(req.getTaskName())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskName");
+            String taskName = "PIR任务-" + req.getPsiRecordId();
+            req.setTaskName(taskName);
+        }
+        // 营销分模型
+        if (StringUtils.isBlank(req.getScoreModelType())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "scoreModelType");
+        }
+        // PSI结果
+        if (StringUtils.isBlank(req.getPsiRecordId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "psiRecordId");
         }
         return pirService.submitPirPhase1(req);
     }

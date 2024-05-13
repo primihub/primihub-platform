@@ -10,14 +10,19 @@ import java.util.Date;
 @Setter
 public class PsiRecord {
     private Long id;
+    private String recordId;
     private String psiName;
     private Long psiId;
     private Long psiTaskId;
     // 任务状态(0未开始 1成功 2运行中 3失败 4取消)
     private Integer taskState;
 
+    private String originOrganId;
+    private String targetOrganId;
+
     private Date startTime;
     private Integer commitRowsNum;
+    private Date endTime;
     private Integer resultRowsNum;
 
 

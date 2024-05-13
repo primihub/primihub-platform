@@ -4,7 +4,12 @@ import com.alibaba.fastjson.JSONObject;
 import com.anji.captcha.util.StringUtils;
 import com.primihub.biz.config.base.ClientConfiguration;
 import com.primihub.biz.constant.RemoteConstant;
+import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
+import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
+import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
+import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.util.crypt.RemoteUtil;
 import com.primihub.biz.util.crypt.SM3Util;
 import com.primihub.biz.util.crypt.SM4Util;
@@ -22,6 +27,7 @@ import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -30,8 +36,12 @@ public class RemoteClient {
     private RestTemplate restTemplate;
     @Autowired
     private ClientConfiguration clientConfiguration;
+    @Autowired
+    private ScoreModelPrRepository scoreModelPrRepository;
+    @Autowired
+    private ScoreModelRepository scoreModelRepository;
 
-    public RemoteRespVo queryFromRemote(String phoneNum) {
+    public RemoteRespVo queryFromRemote(String phoneNum,String scoreTypeValue) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
@@ -75,5 +85,20 @@ public class RemoteClient {
         requestMap.put(RemoteConstant.PARAM, paramMap);
 
         return requestMap;
+    }
+
+    /**
+     *
+     * @param req
+     * @return
+     */
+    public BaseResultEntity submitScoreModelType(ScoreModel req) {
+        try {
+            scoreModelPrRepository.saveScoreModel(req);
+        } catch (Exception e) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "保存失败");
+        }
+        Set<ScoreModel> scoreModelSet = scoreModelRepository.selectAll();
+        return BaseResultEntity.success(scoreModelSet);
     }
 }

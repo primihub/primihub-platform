@@ -4,15 +4,13 @@ package com.primihub.application.controller.share;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
+import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.data.vo.ShareProjectVo;
 import com.primihub.biz.entity.sys.po.DataSet;
-import com.primihub.biz.service.data.DataModelService;
-import com.primihub.biz.service.data.DataProjectService;
-import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.PirService;
+import com.primihub.biz.service.data.*;
 import com.primihub.biz.service.share.ShareService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
@@ -50,6 +48,8 @@ public class ShareDataController {
     private ShareService shareService;
     @Autowired
     private PirService pirService;
+    @Autowired
+    private RemoteClient remoteClient;
 
     @ApiOperation(value = "通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("/healthConnection")
@@ -133,7 +133,7 @@ public class ShareDataController {
     /**
      * #2 处理
      */
-    @PostMapping(value = "/shareData/processPirPhase1")
+    @PostMapping(value = "processPirPhase1")
     public BaseResultEntity processPirPhase1(@RequestBody DataPirCopyReq req) {
         return pirService.processPirPhase1(req);
     }
@@ -141,7 +141,7 @@ public class ShareDataController {
     /**
      * #3 提交phase2
      */
-    @PostMapping(value = "/shareData/submitPirPhase2")
+    @PostMapping(value = "submitPirPhase2")
     public BaseResultEntity submitPirPhase2(@RequestBody DataPirCopyReq req) {
         // 查询条件
         DataPirReq param = new DataPirReq();
@@ -156,5 +156,26 @@ public class ShareDataController {
         return pirService.submitPirPhase2(param, req);
     }
 
+    /**
+     *
+     * @param req
+     * @return
+     */
+    @PostMapping(value = "submitScoreModelType")
+    public BaseResultEntity submitScoreModelType(@RequestBody ScoreModel req) {
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreModelCode())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreModelCode");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreModelName())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreModelName");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreModelType())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreModelType");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreKey())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreKey");
+        }
+        return remoteClient.submitScoreModelType(req);
+    }
 
 }

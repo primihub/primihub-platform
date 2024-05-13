@@ -4,6 +4,7 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.thread.ThreadPoolConfig;
 import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.convert.DataTaskConvert;
@@ -17,6 +18,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.vo.DataCoreVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
@@ -75,6 +77,8 @@ public class PirService {
     private ExamService examService;
     @Autowired
     private RecordPrRepository recordPrRepository;
+    @Autowired
+    private OrganConfiguration organConfiguration;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -143,12 +147,10 @@ public class PirService {
     private static List<DataPirKeyQuery> convertPirParamToQueryArray(String[] pirParamArray, String[] resourceColumnNameArray) {
         DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
         dataPirKeyQuery.setKey(resourceColumnNameArray);
-        String[] array = pirParamArray;
-        List<String[]> queries = new ArrayList<>(resourceColumnNameArray.length);
-        for (int i = 0; i < resourceColumnNameArray.length; i++) {
-            queries.add(i, array);
-        }
-        dataPirKeyQuery.setQuery(queries);
+        String[] split = pirParamArray;
+        List<String[]> singleValueQuery = Arrays.stream(split).map(String::trim).filter(StringUtils::isNotBlank)
+                .map(s -> new String[]{s}).collect(Collectors.toList());
+        dataPirKeyQuery.setQuery(singleValueQuery);
         return Collections.singletonList(dataPirKeyQuery);
     }
 
@@ -226,7 +228,8 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "psi结果为空");
         }
 
-        String targetOrganId = UUID.randomUUID().toString();
+        req.setOriginOrganId(organConfiguration.getSysLocalOrganId());
+        String targetOrganId = psiRecord.getTargetOrganId();
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(targetOrganId);
         if (CollectionUtils.isEmpty(sysOrgans)) {
             log.info("查询机构ID: [{}] 失败，未查询到结果", targetOrganId);
@@ -253,18 +256,20 @@ public class PirService {
         String scoreModelType = req.getScoreModelType();
 
         for (Map.Entry<String, DataCore> entry : idNumDataCoreMap.entrySet()) {
-            if (entry.getValue().getScore1() != null) {
+            if (entry.getValue().getScoreModelType() != null && Objects.equals(entry.getValue().getScoreModelType(), scoreModelType)) {
                 continue;
             }
-            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum());
+            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModelType);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
-                entry.getValue().setScore1(Double.valueOf(respVo.getRespBody().getTruth_score()));
+                entry.getValue().setScoreModelType(scoreModelType);
+                entry.getValue().setScore(Double.valueOf(respVo.getRespBody().getTruth_score()));
                 dataCorePrimarydbRepository.saveDataCore(entry.getValue());
             }
         }
 
+        Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
         // 成功后开始生成文件
-        String jsonArrayStr = JSON.toJSONString(dataCores);
+        String jsonArrayStr = JSON.toJSONString(voSet);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
         // 生成数据源
         DataResource dataResource = examService.generateTargetResource(maps);
@@ -284,7 +289,7 @@ public class PirService {
 
     /**
      * pir phase2 #3
-     *
+     * 发起方
      * @param req
      * @return
      */
