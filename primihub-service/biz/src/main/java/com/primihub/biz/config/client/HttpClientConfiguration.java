@@ -10,7 +10,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
-public class ClientConfiguration {
+public class HttpClientConfiguration {
 
     @Bean(name="primaryRestTemplate")
     @Primary
