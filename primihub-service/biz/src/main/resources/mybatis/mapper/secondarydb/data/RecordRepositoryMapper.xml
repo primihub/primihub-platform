@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.RecordRepository">
+
+    <select id="selectPsiRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select id,
+               record_id,
+               psi_name,
+               psi_id,
+               psi_task_id,
+               task_state,
+               origin_organ_id,
+               target_organ_id,
+               start_time,
+               commit_rows_num,
+               end_time,
+               result_rows_num,
+               is_del,
+               create_date,
+               update_date
+        from psi_record
+        where record_id = #{recordId}
+    </select>
+
+
+</mapper>
