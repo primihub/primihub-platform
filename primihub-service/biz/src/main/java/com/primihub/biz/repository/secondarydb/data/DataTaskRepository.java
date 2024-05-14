@@ -40,4 +40,6 @@ public interface DataTaskRepository {
     Integer selectDataExamTaskCount(DataExamTaskReq req);
 
     DataExamTask selectDataExamByTaskId(@Param("taskId")String taskId);
+
+    List<DataExamTaskVo> selectDataExamTaskList(DataExamTaskReq req);
 }

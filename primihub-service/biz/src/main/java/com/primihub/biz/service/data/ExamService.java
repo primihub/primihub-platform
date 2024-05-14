@@ -533,4 +533,13 @@ public class ExamService {
         dataTaskPrRepository.saveDataExamTask(po);
         return BaseResultEntity.success();
     }
+
+    /**
+     * @param req
+     * @return
+     */
+    public BaseResultEntity examTaskList(DataExamTaskReq req) {
+        List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskList(req);
+        return BaseResultEntity.success(dataExamTaskVos);
+    }
 }

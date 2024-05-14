@@ -3,43 +3,43 @@
 <mapper namespace="com.primihub.biz.repository.secondarydb.data.DataTaskRepository">
 
     <select id="selectDataTaskByTaskId" resultType="com.primihub.biz.entity.data.po.DataTask">
-        select
-            task_id as taskId,
-            task_id_name as taskIdName,
-            task_name as taskName,
-            task_desc as taskDesc,
-            task_state as taskState,
-            task_type as taskType,
-            task_result_path as taskResultPath,
-            task_result_content as taskResultContent,
-            task_start_time as taskStartTime,
-            task_end_time as taskEndTime,
-            task_user_id as taskUserId,
-            task_error_msg as taskErrorMsg,
-            is_cooperation as isCooperation,
-            is_del as isDel,
-            create_date as createDate,
-            update_date as updateDate
-        from data_task where task_id = #{taskId}
+        select task_id             as taskId,
+               task_id_name        as taskIdName,
+               task_name           as taskName,
+               task_desc           as taskDesc,
+               task_state          as taskState,
+               task_type           as taskType,
+               task_result_path    as taskResultPath,
+               task_result_content as taskResultContent,
+               task_start_time     as taskStartTime,
+               task_end_time       as taskEndTime,
+               task_user_id        as taskUserId,
+               task_error_msg      as taskErrorMsg,
+               is_cooperation      as isCooperation,
+               is_del              as isDel,
+               create_date         as createDate,
+               update_date         as updateDate
+        from data_task
+        where task_id = #{taskId}
     </select>
     <select id="selectDataTaskByTaskIds" resultType="com.primihub.biz.entity.data.po.DataTask">
         select
-            task_id as taskId,
-            task_id_name as taskIdName,
-            task_name as taskName,
-            task_desc as taskDesc,
-            task_state as taskState,
-            task_type as taskType,
-            task_result_path as taskResultPath,
-            task_result_content as taskResultContent,
-            task_start_time as taskStartTime,
-            task_end_time as taskEndTime,
-            task_user_id as taskUserId,
-            task_error_msg as taskErrorMsg,
-            is_cooperation as isCooperation,
-            is_del as isDel,
-            create_date as createDate,
-            update_date as updateDate
+        task_id as taskId,
+        task_id_name as taskIdName,
+        task_name as taskName,
+        task_desc as taskDesc,
+        task_state as taskState,
+        task_type as taskType,
+        task_result_path as taskResultPath,
+        task_result_content as taskResultContent,
+        task_start_time as taskStartTime,
+        task_end_time as taskEndTime,
+        task_user_id as taskUserId,
+        task_error_msg as taskErrorMsg,
+        is_cooperation as isCooperation,
+        is_del as isDel,
+        create_date as createDate,
+        update_date as updateDate
         from data_task where task_id in
         <foreach collection="taskIds" index="index" item="item" open="("
                  separator="," close=")">
@@ -47,63 +47,65 @@
         </foreach>
     </select>
     <select id="selectDataTaskByTaskIdName" resultType="com.primihub.biz.entity.data.po.DataTask">
-        select
-            task_id as taskId,
-            task_id_name as taskIdName,
-            task_name as taskName,
-            task_desc as taskDesc,
-            task_state as taskState,
-            task_type as taskType,
-            task_result_path as taskResultPath,
-            task_result_content as taskResultContent,
-            task_start_time as taskStartTime,
-            task_end_time as taskEndTime,
-            task_user_id as taskUserId,
-            task_error_msg as taskErrorMsg,
-            is_cooperation as isCooperation,
-            is_del as isDel,
-            create_date as createDate,
-            update_date as updateDate
-        from data_task where task_id_name = #{taskIdName}
+        select task_id             as taskId,
+               task_id_name        as taskIdName,
+               task_name           as taskName,
+               task_desc           as taskDesc,
+               task_state          as taskState,
+               task_type           as taskType,
+               task_result_path    as taskResultPath,
+               task_result_content as taskResultContent,
+               task_start_time     as taskStartTime,
+               task_end_time       as taskEndTime,
+               task_user_id        as taskUserId,
+               task_error_msg      as taskErrorMsg,
+               is_cooperation      as isCooperation,
+               is_del              as isDel,
+               create_date         as createDate,
+               update_date         as updateDate
+        from data_task
+        where task_id_name = #{taskIdName}
     </select>
-    <select id="selectDataPirTaskPage" resultType="com.primihub.biz.entity.data.vo.DataPirTaskVo" parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
+    <select id="selectDataPirTaskPage" resultType="com.primihub.biz.entity.data.vo.DataPirTaskVo"
+            parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
         select
-            dpt.task_id taskId,
-            dt.task_id_name taskIdName,
-            dt.task_start_time as taskStart,
-            dt.task_end_time as taskEnd,
-            dt.task_name as taskName,
-            dpt.provider_organ_name organName,
-            dpt.resource_id resourceId,
-            dpt.resource_name resourceName,
-            dpt.retrieval_id retrievalId,
-            dpt.create_date createDate,
-            dt.task_state taskState
+        dpt.task_id taskId,
+        dt.task_id_name taskIdName,
+        dt.task_start_time as taskStart,
+        dt.task_end_time as taskEnd,
+        dt.task_name as taskName,
+        dpt.provider_organ_name organName,
+        dpt.resource_id resourceId,
+        dpt.resource_name resourceName,
+        dpt.retrieval_id retrievalId,
+        dpt.create_date createDate,
+        dt.task_state taskState
         from
-             data_pir_task dpt,
-             data_task dt
+        data_pir_task dpt,
+        data_task dt
         <include refid="selectDataPirTaskWhere"/>
         ORDER BY id desc
         LIMIT #{offset},#{pageSize}
     </select>
-    <select id="selectDataPirTaskCount" resultType="java.lang.Integer" parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
+    <select id="selectDataPirTaskCount" resultType="java.lang.Integer"
+            parameterType="com.primihub.biz.entity.data.req.DataPirTaskReq">
         select
-            count(id)
+        count(id)
         from
-            data_pir_task dpt,
-            data_task dt
+        data_pir_task dpt,
+        data_task dt
         <include refid="selectDataPirTaskWhere"/>
     </select>
     <select id="selectDataTaskList" resultType="com.primihub.biz.entity.data.vo.DataTaskVo">
         select
-            task_id as taskId,
-            task_id_name as taskIdName,
-            task_name as taskName,
-            task_state as taskState,
-            task_type as taskType,
-            task_start_time as taskStartTime,
-            task_end_time as taskEndTime,
-            create_date as createDate
+        task_id as taskId,
+        task_id_name as taskIdName,
+        task_name as taskName,
+        task_state as taskState,
+        task_type as taskType,
+        task_start_time as taskStartTime,
+        task_end_time as taskEndTime,
+        create_date as createDate
         from data_task
         <include refid="selectDataTaskListWhere"/>
         ORDER BY task_id desc
@@ -111,21 +113,27 @@
     </select>
     <select id="selectDataTaskListCount" resultType="java.lang.Integer">
         select
-            count(task_id)
+        count(task_id)
         from data_task
         <include refid="selectDataTaskListWhere"/>
     </select>
     <sql id="selectDataPirTaskWhere">
         where
         dpt.task_id = dt.task_id
-        <if test="resourceName!=null and resourceName!=''"> and dpt.resource_name like CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')</if>
-        <if test="taskId!=null and taskId!=''"> and dt.task_id_name like CONCAT('%',#{taskId,jdbcType=VARCHAR},'%')</if>
-        <if test="organName!=null and organName!=''"> and dpt.provider_organ_name like CONCAT('%',#{organName,jdbcType=VARCHAR},'%')</if>
-        <if test="retrievalId!=null and retrievalId!=''"> and dpt.retrieval_id like CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')</if>
-        <if test="taskState!=null"> and dt.task_state = #{taskState}</if>
-        <if test="taskName!=null"> and dt.task_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')</if>
-        <if test="startDate!=null">and dpt.create_date &gt;=#{startDate} </if>
-        <if test="endDate!=null">and dpt.create_date &lt;=#{endDate} </if>
+        <if test="resourceName!=null and resourceName!=''">and dpt.resource_name like
+            CONCAT('%',#{resourceName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="taskId!=null and taskId!=''">and dt.task_id_name like CONCAT('%',#{taskId,jdbcType=VARCHAR},'%')</if>
+        <if test="organName!=null and organName!=''">and dpt.provider_organ_name like
+            CONCAT('%',#{organName,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="retrievalId!=null and retrievalId!=''">and dpt.retrieval_id like
+            CONCAT('%',#{retrievalId,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="taskState!=null">and dt.task_state = #{taskState}</if>
+        <if test="taskName!=null">and dt.task_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')</if>
+        <if test="startDate!=null">and dpt.create_date &gt;=#{startDate}</if>
+        <if test="endDate!=null">and dpt.create_date &lt;=#{endDate}</if>
     </sql>
     <sql id="selectDataTaskListWhere">
         where is_del = 0
@@ -147,20 +155,19 @@
     </sql>
 
     <select id="selectPirTaskById" resultType="com.primihub.biz.entity.data.po.DataPirTask">
-        SELECT
-            id,task_id as taskId,
-            provider_organ_name as providerOrganName,
-            resource_id as resourceId,
-            resource_name as resourceName,
-            retrieval_id as retrievalId,
-            create_date as createDate
-        FROM
-            data_pir_task
-        WHERE
-            task_id = #{id}
+        SELECT id,
+               task_id             as taskId,
+               provider_organ_name as providerOrganName,
+               resource_id         as resourceId,
+               resource_name       as resourceName,
+               retrieval_id        as retrievalId,
+               create_date         as createDate
+        FROM data_pir_task
+        WHERE task_id = #{id}
     </select>
 
-    <select id="selectDataExamTaskPage" resultType="com.primihub.biz.entity.data.vo.DataExamTaskVo" parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
+    <select id="selectDataExamTaskPage" resultType="com.primihub.biz.entity.data.vo.DataExamTaskVo"
+            parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
         select
         id,
         task_id taskId,
@@ -173,17 +180,19 @@
         create_date createDate,
         update_date updateDate
         from
-        data_exam_task
+        data_exam_task det
         <include refid="selectDataExamTaskWhere"/>
         ORDER BY id desc
         LIMIT #{offset},#{pageSize}
     </select>
     <sql id="selectDataExamTaskWhere">
-        where
-        1 = 1
+        <where>
+            <if test="taskName != null and taskName != ''">and det.taskName like like CONCAT('%',#{taskName},'%')</if>
+        </where>
     </sql>
 
-    <select id="selectDataExamTaskCount" resultType="java.lang.Integer" parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
+    <select id="selectDataExamTaskCount" resultType="java.lang.Integer"
+            parameterType="com.primihub.biz.entity.data.req.DataExamTaskReq">
         select
         count(id)
         from
@@ -192,20 +201,35 @@
     </select>
 
     <select id="selectDataExamByTaskId" resultType="com.primihub.biz.entity.data.po.DataExamTask">
-        select
-            id,
-            task_id taskId,
-            task_state taskState,
-            task_name as taskName,
-            origin_organ_id as originOrganId,
-            origin_resource_id as originResourceId,
-            target_organ_id targetOrganId,
-            target_resource_id targetResourceId,
-            create_date createDate,
-            update_date updateDate
+        select id,
+               task_id               taskId,
+               task_state            taskState,
+               task_name          as taskName,
+               origin_organ_id    as originOrganId,
+               origin_resource_id as originResourceId,
+               target_organ_id       targetOrganId,
+               target_resource_id    targetResourceId,
+               create_date           createDate,
+               update_date           updateDate
+        FROM data_exam_task
+        WHERE task_id = #{taskId}
+    </select>
+
+    <select id="selectDataExamTaskList" resultType="com.primihub.biz.entity.data.req.DataExamTaskReq">
+        SELECT
+        id,
+        task_id taskId,
+        task_state taskState,
+        task_name as taskName,
+        origin_organ_id as originOrganId,
+        origin_resource_id as originResourceId,
+        target_organ_id targetOrganId,
+        target_resource_id targetResourceId,
+        create_date createDate,
+        update_date updateDate
         FROM
-            data_exam_task
-        WHERE
-            task_id = #{taskId}
+        data_exam_task det
+        <include refid="selectDataExamTaskWhere"/>
+        ORDER BY id desc
     </select>
 </mapper>

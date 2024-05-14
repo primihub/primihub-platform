@@ -15,6 +15,7 @@ public class RecordService {
     private RecordRepository recordRepository;
     @Autowired
     private RecordPrRepository recordPrRepository;
+
     public BaseResultEntity savePsiRecord(PsiRecord record) {
         PsiRecord psiRecord = recordRepository.selectPsiRecordByRecordId(record.getRecordId());
         if (psiRecord == null) {

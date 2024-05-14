@@ -9,4 +9,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DataExamTaskReq extends PageReq {
+    private String taskName;
 }

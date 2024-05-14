@@ -33,6 +33,16 @@ public class ExamController {
     }
 
     /**
+     * for selection
+     * @param req
+     * @return
+     */
+    @GetMapping("/examine/examTaskList")
+    public BaseResultEntity examTaskList(DataExamTaskReq req) {
+        return examService.examTaskList(req);
+    }
+
+    /**
      * 一，创建审核任务
      * role: 发起方
      */
