@@ -19,6 +19,7 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,8 +61,7 @@ public class PirController {
     /**
      * @return
      */
-    // todo 前端要添加一个营销模型分
-    @RequestMapping("submitPirPhase1")
+    @PostMapping("submitPirPhase1")
     public BaseResultEntity submitPirPhase1(DataPirCopyReq req) {
         if (StringUtils.isBlank(req.getTaskName())) {
             String taskName = "PIR任务-" + req.getPsiRecordId();
@@ -146,5 +146,10 @@ public class PirController {
         } catch (Exception e) {
             log.info("downloadPirTask -- fileName:{} -- resultFilePath:{} -- e:{}", fileName, resultFilePath, e.getMessage());
         }
+    }
+
+    @GetMapping("getScoreModelList")
+    public BaseResultEntity getScoreModelList() {
+        return pirService.getScoreModelList();
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.ScoreModelRepository">
+
+    <select id="selectAll" resultType="com.primihub.biz.entity.data.po.ScoreModel">
+        select id,
+               score_model_code scoreModelCode,
+               score_model_name scoreModelName,
+               score_model_type scoreModelType,
+               score_key        scoreKey,
+               is_del           isDel,
+               create_date      createDate,
+               update_date      updateDate
+        from score_model sm
+        order by sm.id desc
+    </select>
+    
+</mapper>

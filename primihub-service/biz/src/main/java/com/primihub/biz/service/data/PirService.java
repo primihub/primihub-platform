@@ -25,10 +25,7 @@ import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
-import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
-import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
-import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
-import com.primihub.biz.repository.secondarydb.data.RecordRepository;
+import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
@@ -80,6 +77,8 @@ public class PirService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private ThreadPoolTaskExecutor primaryThreadPool;
+    @Autowired
+    private ScoreModelRepository scoreModelRepository;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -376,5 +375,9 @@ public class PirService {
         Map<String, Object> map = new HashMap<>();
         map.put("taskId", dataTask.getTaskId());
         return BaseResultEntity.success(map);
+    }
+
+    public BaseResultEntity getScoreModelList() {
+        return BaseResultEntity.success(scoreModelRepository.selectAll());
     }
 }

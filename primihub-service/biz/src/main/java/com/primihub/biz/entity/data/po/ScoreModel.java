@@ -6,7 +6,6 @@ import lombok.Setter;
 
 import java.util.Date;
 
-// todo sql ddl 和 dql
 @Getter
 @Setter
 public class ScoreModel {
