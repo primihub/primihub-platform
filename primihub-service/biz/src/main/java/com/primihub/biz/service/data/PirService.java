@@ -233,14 +233,13 @@ public class PirService {
         PirRecord record = new PirRecord();
         record.setRecordId(recordId);
         record.setPirName("PIR-" + psiRecord.getRecordId());
-//        record.setPirTaskId(dataPsi.getId());
         record.setTaskState(0);
         record.setOriginOrganId(organConfiguration.getSysLocalOrganId());
         record.setTargetOrganId(psiRecord.getTargetOrganId());
         record.setStartTime(new Date());
         record.setCommitRowsNum(idNumSet.size());
         record.setResultRowsNum(0);
-        recordPrRepository.savePsiRecord(psiRecord);
+        recordPrRepository.savePirRecord(record);
 
         req.setPirRecordId(recordId);
         req.setTargetOrganId(psiRecord.getTargetOrganId());

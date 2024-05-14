@@ -60,5 +60,61 @@
         where id = #{id}
     </update>
 
+    <insert id="savePirRecord">
+        insert into pir_record (record_id,
+                                pir_name,
+                                pir_task_id,
+                                task_state,
+                                origin_organ_id,
+                                target_organ_id,
+                                start_time,
+                                commit_rows_num,
+                                end_time,
+                                result_rows_num,
+                                is_del,
+                                create_date,
+                                update_date)
+
+        values (#{recordId},
+                #{pirName},
+                #{pirTaskId},
+                #{taskState},
+                #{originOrganId},
+                #{targetOrganId},
+                #{startTime},
+                #{commitRowsNum},
+                #{endTime},
+                #{resultRowsNum},
+                0,
+                now(),
+                now())
+    </insert>
+
+    <update id="updatePirRecord">
+        update pir_record
+        <set>
+            <if test="pirName!=null and pirName != ''">
+                pir_name = #{pirName},
+            </if>
+            <if test="taskState!=null and taskState != ''">
+                task_state = #{taskState},
+            </if>
+            <if test="originOrganId!=null and originOrganId != ''">
+                origin_organ_id = #{originOrganId},
+            </if>
+            <if test="targetOrganId!=null and targetOrganId != ''">
+                target_organ_id = #{targetOrganId},
+            </if>
+            <if test="startTime!=null">
+                start_time = #{startTime},
+            </if>
+            <if test="commitRowsNum!=null">commit_rows_num = #{commitRowsNum},</if>
+            <if test="endTime!=null">end_time = #{endTime},</if>
+            <if test="resultRowsNum!=null">result_rows_num = #{resultRowsNum},</if>
+            update_date = now()
+        </set>
+        where id = #{id}
+    </update>
+
 
 </mapper>
