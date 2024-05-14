@@ -10,5 +10,5 @@ public interface RecordRepository {
 
     PsiRecord selectPsiRecordByRecordId(@Param("recordId") String psiRecordId);
 
-    PirRecord selectPirRecordByRecordId(String recordId);
+    PirRecord selectPirRecordByRecordId(@Param("recordId") String recordId);
 }

@@ -22,5 +22,24 @@
         where record_id = #{recordId}
     </select>
 
+    <select id="selectPirRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PirRecord">
+        select id,
+               record_id,
+               pir_name,
+               pir_task_id,
+               task_state,
+               origin_organ_id,
+               target_organ_id,
+               start_time,
+               commit_rows_num,
+               end_time,
+               result_rows_num,
+               is_del,
+               create_date,
+               update_date
+        from psi_record
+        where record_id = #{recordId}
+    </select>
+
 
 </mapper>
