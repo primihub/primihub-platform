@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataCoreRepository">
+
+    <sql id="dataCoreColumn">
+        id
+        ,
+        id_num idNum,
+        phone_num phoneNum,
+        y,
+        score,
+        score_model_type scoreModelType,
+        is_del isDel,
+        create_date createDate,
+        update_date updateDate
+    </sql>
+
+    <sql id="dataCoreVoColumn">
+        score,
+        score_model_type scoreModelType
+    </sql>
+
+    <select id="selectExistentDataCore" parameterType="java.util.Set">
+        select
+        <include refid="dataCoreColumn"/>
+        from data_core
+        <if test="list != null and !list.isEmpty()">
+            where idNum in
+            <foreach collection="list" open="(" index="index" close=")" separator=",">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectDataCoreFromIdNum">
+        select
+        <include refid="dataCoreColumn"/>
+        from data_core
+        <where>
+            <if test="list != null and !list.isEmpty()">
+                and idNum in
+                <foreach collection="list" open="(" index="index" close=")" separator=",">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scoreType != null and scoreType != ''">
+                and score_model_type = #{scoreType}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDataCoreWithScore" resultType="com.primihub.biz.entity.data.vo.DataCoreVo">
+        select
+            <include refid="dataCoreVoColumn"/>
+            from data_core
+        <if test="scoreType != null and scoreType != ''">
+            where score_model_type = #{scoreType}
+        </if>
+    </select>
+
+</mapper>

@@ -6,6 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DataCoreVo {
-    private Double score;
     private String scoreModelType;
+    private Double score;
 }
