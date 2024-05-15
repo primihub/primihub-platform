@@ -4,6 +4,7 @@ package com.primihub.biz.service.data;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.data.po.PirRecord;
 import com.primihub.biz.entity.data.po.PsiRecord;
+import com.primihub.biz.entity.data.req.RecordReq;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
 import com.primihub.biz.repository.secondarydb.data.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +35,9 @@ public class RecordService {
             recordPrRepository.updatePirRecord(psiRecord);
         }
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity getPsiRecordList(RecordReq req) {
+        return BaseResultEntity.success(recordRepository.selectPsiRecordList(req));
     }
 }

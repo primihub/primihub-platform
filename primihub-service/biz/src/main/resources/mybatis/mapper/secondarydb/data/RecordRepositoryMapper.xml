@@ -2,8 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.secondarydb.data.RecordRepository">
 
-    <select id="selectPsiRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PsiRecord">
-        select id,
+    <sql id="psiRecordColumns">
+        id
+        ,
                record_id,
                psi_name,
                psi_id,
@@ -18,6 +19,11 @@
                is_del,
                create_date,
                update_date
+    </sql>
+
+
+    <select id="selectPsiRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select <include refid="psiRecordColumns"></include>
         from psi_record
         where record_id = #{recordId}
     </select>
@@ -37,9 +43,17 @@
                is_del,
                create_date,
                update_date
-        from psi_record
+        from pir_record
         where record_id = #{recordId}
     </select>
 
+    <select id="selectPsiRecordList" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select
+        <include refid="psiRecordColumns"/>
+        from psi_record
+        <if test="taskName != null and taskName != ''">
+            where psi_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
 
 </mapper>
