@@ -262,11 +262,9 @@ public class SysOrganService {
             sysOrgan.setPublicKey(info.get("publicKey").toString());
             sysOrgan.setOrganId(info.get("organId").toString());
             sysOrgan.setOrganName(info.get("organName").toString());
-            // 同意
-            sysOrgan.setExamineState(1);
+            sysOrgan.setExamineState(0);
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
-            sysAsyncService.applyForJoinNode(sysOrgan);
         }else {
             sysOrgan.setApplyId(info.get("applyId").toString());
             sysOrgan.setOrganGateway(info.get("gateway").toString());
@@ -275,18 +273,12 @@ public class SysOrganService {
             sysOrgan.setOrganName(info.get("organName").toString());
             if (info.containsKey("examineState")){
                 sysOrgan.setExamineState((Integer) info.get("examineState"));
-            } else {
-                // 默认同意
-                sysOrgan.setExamineState(1);
             }
             if (info.containsKey("examineMsg")){
                 sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+ info.get("examineMsg").toString());
             }
             if (info.containsKey("enable")){
                 sysOrgan.setEnable((Integer) info.get("enable"));
-            } else {
-                // 默认开启
-                sysOrgan.setEnable(0);
             }
             sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             sysAsyncService.applyForJoinNode(sysOrgan);
@@ -340,8 +332,7 @@ public class SysOrganService {
             sysOrgan.setEnable(0);
             sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         }
-        // 自动同意
-        sysOrgan.setExamineState(1);
+        sysOrgan.setExamineState(examineState);
         if (StringUtils.isNotBlank(examineMsg)){
             sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+examineMsg+"\n");
         }
