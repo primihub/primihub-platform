@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class RecordReq {
+public class RecordReq extends PageReq {
     private String taskName;
 }

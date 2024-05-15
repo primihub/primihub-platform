@@ -56,4 +56,58 @@
         </if>
     </select>
 
+    <select id="selectPsiRecordPage" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select <include refid="psiRecordColumns"/>
+        from psi_record
+        <if test="taskName != null and taskName != ''">
+            where psi_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="selectPsiRecordCount" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="java.lang.Integer">
+        select
+        count(id)
+        from
+        psi_record
+        <if test="taskName != null and taskName != ''">
+            where psi_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <select id="selectPirRecordPage" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="com.primihub.biz.entity.data.po.PirRecord">
+        select
+        id,
+        record_id,
+        pir_name,
+        pir_task_id,
+        task_state,
+        origin_organ_id,
+        target_organ_id,
+        start_time,
+        commit_rows_num,
+        end_time,
+        result_rows_num,
+        is_del,
+        create_date,
+        update_date
+        from pir_record
+        <if test="taskName != null and taskName != ''">
+            where pir_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="selectPirRecordCount" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="java.lang.Integer">
+        select
+        count(id)
+        from
+        pir_record
+        <if test="taskName != null and taskName != ''">
+            where pir_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
 </mapper>

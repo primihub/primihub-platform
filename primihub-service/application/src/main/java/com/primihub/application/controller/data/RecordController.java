@@ -21,4 +21,14 @@ public class RecordController {
         return recordService.getPsiRecordList(req);
     }
 
+    @GetMapping("/record/psiRecordPage")
+    public BaseResultEntity getPsiRecordPage(RecordReq req) {
+        return recordService.getPsiRecordPage(req);
+    }
+
+    @GetMapping("/record/pirRecordPage")
+    public BaseResultEntity getPirRecordPage(RecordReq req) {
+        return recordService.getPirRecordPage(req);
+    }
+
 }
