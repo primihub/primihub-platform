@@ -39,7 +39,7 @@
         <where>
             <if test="list != null and !list.isEmpty()">
                 and id_num in
-                <foreach collection="list" open="(" index="index" close=")" separator=",">
+                <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
                     #{item}
                 </foreach>
             </if>
