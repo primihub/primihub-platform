@@ -24,9 +24,9 @@ public class RecordService {
     public BaseResultEntity savePsiRecord(PsiRecord record) {
         PsiRecord psiRecord = recordRepository.selectPsiRecordByRecordId(record.getRecordId());
         if (psiRecord == null) {
-            recordPrRepository.savePsiRecord(psiRecord);
+            recordPrRepository.savePsiRecord(record);
         } else {
-            recordPrRepository.updatePsiRecord(psiRecord);
+            recordPrRepository.updatePsiRecord(record);
         }
         return BaseResultEntity.success();
     }
