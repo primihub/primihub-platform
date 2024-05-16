@@ -20,7 +20,7 @@
         score_model_type scoreModelType
     </sql>
 
-    <select id="selectExistentDataCore" parameterType="java.util.Set">
+    <select id="selectExistentDataCore" parameterType="java.util.Set" resultType="com.primihub.biz.entity.data.po.DataCore">
         select
         <include refid="dataCoreColumn"/>
         from data_core
@@ -32,7 +32,7 @@
         </if>
     </select>
 
-    <select id="selectDataCoreFromIdNum">
+    <select id="selectDataCoreFromIdNum" resultType="com.primihub.biz.entity.data.po.DataCore">
         select
         <include refid="dataCoreColumn"/>
         from data_core
