@@ -24,10 +24,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -50,10 +47,10 @@ public class RemoteClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        MultiValueMap map = new LinkedMultiValueMap<>();
-        map.put(RemoteConstant.HEAD, resembleHeadMap());
-        map.put(RemoteConstant.REQUEST, resembleRequestMap(phoneNum, clientConfiguration.getSecretKey()));
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+        map.put(RemoteConstant.HEAD, Collections.singletonList(resembleHeadMap()));
+        map.put(RemoteConstant.REQUEST, Collections.singletonList(resembleRequestMap(phoneNum, clientConfiguration.getSecretKey())));
+        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
