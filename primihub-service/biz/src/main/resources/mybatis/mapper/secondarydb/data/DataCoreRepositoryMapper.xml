@@ -24,7 +24,7 @@
         select
         <include refid="dataCoreColumn"/>
         from data_core
-        <if test="list != null">
+        <if test="list != null and !list.isEmpty()">
             where id_num in
             <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
                 #{item}
@@ -38,7 +38,7 @@
         from data_core
         <where>
             <if test="list != null and !list.isEmpty()">
-                and idNum in
+                and id_num in
                 <foreach collection="list" open="(" index="index" close=")" separator=",">
                     #{item}
                 </foreach>
