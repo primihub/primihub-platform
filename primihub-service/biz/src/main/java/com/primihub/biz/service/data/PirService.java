@@ -368,7 +368,7 @@ public class PirService {
         recordPrRepository.updatePirRecord(record);
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getTargetOrganId());
         for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPsiRecord", organ.getPublicKey());
+            return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPirRecord", organ.getPublicKey());
         }
 
         Map<String, Object> map = new HashMap<>();

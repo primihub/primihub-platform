@@ -23,7 +23,8 @@
 
 
     <select id="selectPsiRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PsiRecord">
-        select <include refid="psiRecordColumns"></include>
+        select
+        <include refid="psiRecordColumns"/>
         from psi_record
         where record_id = #{recordId}
     </select>
