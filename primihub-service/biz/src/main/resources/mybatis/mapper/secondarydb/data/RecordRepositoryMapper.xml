@@ -5,20 +5,20 @@
     <sql id="psiRecordColumns">
         id
         ,
-               record_id,
-               psi_name,
-               psi_id,
-               psi_task_id,
-               task_state,
-               origin_organ_id,
-               target_organ_id,
-               start_time,
-               commit_rows_num,
-               end_time,
-               result_rows_num,
-               is_del,
-               create_date,
-               update_date
+               record_id recordId,
+               psi_name psiName,
+               psi_id psiId,
+               psi_task_id psiTaskId,
+               task_state taskState,
+               origin_organ_id originOrganId,
+               target_organ_id targetOrganId,
+               start_time startTime,
+               commit_rows_num commitRowsNum,
+               end_time endTime,
+               result_rows_num resultRowsNum,
+               is_del isDel,
+               create_date createDate,
+               update_date updateDate
     </sql>
 
 
