@@ -267,22 +267,36 @@ public class PirService {
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
         Set<String> targetValueSet = req.getTargetValueSet();
         String scoreModelType = req.getScoreModelType();
-        Set<DataCore> dataCores = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
-        Map<String, DataCore> idNumDataCoreMap = dataCores.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
+        // 在这里得区分
+        Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
+        // 在这里不用管
+        Set<DataCore> withScore = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
 
-        idNumDataCoreMap.entrySet().parallelStream().forEach(entry -> {
-            if (entry.getValue().getScore() != null) {
+        Map<String, DataCore> withPhoneMap = withPhone.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
+
+        Map<String, DataCore> withScoreMap = withScore.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
+
+        withPhoneMap.entrySet().parallelStream().forEach(entry -> {
+            if (withScoreMap.containsKey(entry.getKey())) {
                 return;
             }
             RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModelType);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
-                entry.getValue().setScoreModelType(scoreModelType);
-                entry.getValue().setScore(Double.valueOf(respVo.getRespBody().getTruth_score()));
+                DataCore dataCore = new DataCore();
+                dataCore.setIdNum(entry.getValue().getIdNum());
+                dataCore.setPhoneNum(entry.getValue().getPhoneNum());
+                dataCore.setScoreModelType(scoreModelType);
+                dataCore.setScore(Double.valueOf(respVo.getRespBody().getTruth_score()));
+                dataCore.setY(entry.getValue().getY());
                 dataCorePrimarydbRepository.saveDataCore(entry.getValue());
             }
         });
 
         Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
+        if (CollectionUtils.isEmpty(voSet)) {
+            log.info("样本适配度太低，无法执行PIR任务");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "样本适配度太低");
+        }
         // 成功后开始生成文件
         String jsonArrayStr = JSON.toJSONString(voSet);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
