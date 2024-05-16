@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.primarydb.data.RecordPrRepository">
 
-    <insert id="savePsiRecord" keyColumn="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.PsiRecord">
+    <insert id="savePsiRecord" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.PsiRecord">
         insert into psi_record (record_id,
                                 psi_name,
                                 psi_id,
