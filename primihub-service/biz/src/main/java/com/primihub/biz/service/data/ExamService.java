@@ -432,12 +432,12 @@ public class ExamService {
 
                 // 先过滤出存在手机号的数据
                 Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(nonexistentTargetValueSet);
-                Set<DataCore> nonexistentDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
+                List<DataCore> nonexistentDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
                     DataCore dataCore = new DataCore();
                     dataCore.setIdNum(entry.getKey());
                     dataCore.setPhoneNum(entry.getValue());
                     return dataCore;
-                }).collect(Collectors.toSet());
+                }).collect(Collectors.toList());
                 dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
 
                 Set<DataCore> allDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
