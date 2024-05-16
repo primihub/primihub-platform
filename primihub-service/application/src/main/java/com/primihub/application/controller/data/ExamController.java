@@ -92,6 +92,7 @@ public class ExamController {
      */
     @PostMapping(value = "/shareData/processExamTask")
     public BaseResultEntity processExamTask(@RequestBody DataExamReq dataExamReq) {
+        log.info(JSON.toJSONString(dataExamReq));
         return examService.processExamTask(dataExamReq);
     }
 
