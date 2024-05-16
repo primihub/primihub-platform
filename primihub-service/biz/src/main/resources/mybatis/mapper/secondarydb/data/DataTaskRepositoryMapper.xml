@@ -215,7 +215,7 @@
         WHERE task_id = #{taskId}
     </select>
 
-    <select id="selectDataExamTaskList" resultType="com.primihub.biz.entity.data.req.DataExamTaskReq">
+    <select id="selectDataExamTaskList" resultType="com.primihub.biz.entity.data.vo.DataExamTaskVo">
         SELECT
         id,
         task_id taskId,
