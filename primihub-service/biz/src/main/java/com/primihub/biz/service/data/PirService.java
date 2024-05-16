@@ -17,6 +17,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.ScoreModelReq;
 import com.primihub.biz.entity.data.vo.DataCoreVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
@@ -25,6 +26,7 @@ import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
+import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
@@ -34,7 +36,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -76,9 +77,9 @@ public class PirService {
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
-    private ThreadPoolTaskExecutor primaryThreadPool;
-    @Autowired
     private ScoreModelRepository scoreModelRepository;
+    @Autowired
+    private ScoreModelPrRepository scoreModelPrRepository;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -378,5 +379,16 @@ public class PirService {
 
     public BaseResultEntity getScoreModelList() {
         return BaseResultEntity.success(scoreModelRepository.selectAll());
+    }
+
+    public BaseResultEntity submitScoreModel(ScoreModelReq req) {
+        ScoreModel scoreModel = new ScoreModel(req);
+        scoreModelPrRepository.saveScoreModel(scoreModel);
+
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOrganId());
+        for (SysOrgan organ : sysOrgans) {
+            return otherBusinessesService.syncGatewayApiData(scoreModel, organ.getOrganGateway() + "/share/shareData/submitScoreModelType", organ.getPublicKey());
+        }
+        return BaseResultEntity.success();
     }
 }

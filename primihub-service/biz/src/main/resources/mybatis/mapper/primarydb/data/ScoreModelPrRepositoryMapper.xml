@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository">
+
+    <insert id="saveScoreModel" keyProperty="id" useGeneratedKeys="true"
+            parameterType="com.primihub.biz.entity.data.po.ScoreModel">
+        insert into score_model
+        (score_key, score_model_code, score_model_name, score_model_type, is_del, create_date, update_date)
+        values
+        (#{scoreKey},#{scoreModelCode},#{scoreModelName},#{scoreModelType},0,now(),now())
+    </insert>
+
+
+</mapper>
