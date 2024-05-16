@@ -418,13 +418,16 @@ public class ExamService {
         FutureTask<Object> task = new FutureTask<>(() -> {
             log.info("====================== 预处理开始");
             Set<String> fieldValueSet = req.getFieldValueSet();
+            log.info("================ {}", fieldValueSet.size());
 
             // 已经存在的数据
             Set<DataCore> existentDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
+            log.info("================ {}", existentDataCoreSet.size());
             Set<String> existentTargetValueSet = existentDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
+            log.info("================ {}", existentTargetValueSet.size());
             // 不存在的数据
             Set<String> nonexistentTargetValueSet = fieldValueSet.stream().filter(s -> !existentTargetValueSet.contains(s)).collect(Collectors.toSet());
-
+            log.info("================ {}", nonexistentTargetValueSet.size());
 
             // 先过滤出存在手机号的数据
             Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(nonexistentTargetValueSet);
