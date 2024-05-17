@@ -38,12 +38,7 @@ public class RemoteClient {
     @Autowired
     private ScoreModelRepository scoreModelRepository;
 
-    public RemoteRespVo queryFromRemote(String phoneNum,String scoreTypeValue) {
-        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreTypeValue);
-        if (scoreModel == null) {
-            log.error("scoreModelType not found : {}", scoreTypeValue);
-            return null;
-        }
+    public RemoteRespVo queryFromRemote(String phoneNum,ScoreModel scoreModel) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
@@ -68,7 +63,7 @@ public class RemoteClient {
             try {
                 jsonResponse = SM4Util.decrypt(respVo.getResponse(), clientConfiguration.getSecretKey());
                 log.info("remote decrypt result: {}", jsonResponse);
-                RemoteRespVo.RespResp respResp = JSONObject.parseObject(jsonResponse, RemoteRespVo.RespResp.class);
+                Map respResp = JSONObject.parseObject(jsonResponse, Map.class);
                 respVo.setRespBody(respResp);
             } catch (Exception e) {
                 log.error("remote response sm4 parse error : {}", e.getMessage());

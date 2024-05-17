@@ -267,6 +267,10 @@ public class PirService {
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
         Set<String> targetValueSet = req.getTargetValueSet();
         String scoreModelType = req.getScoreModelType();
+        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
+        if (scoreModel == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "scoreModelType");
+        }
         // 在这里得区分
         Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
         // 在这里不用管
@@ -280,13 +284,14 @@ public class PirService {
             if (withScoreMap.containsKey(entry.getKey())) {
                 return;
             }
-            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModelType);
+
+            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModel);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
                 DataCore dataCore = new DataCore();
                 dataCore.setIdNum(entry.getValue().getIdNum());
                 dataCore.setPhoneNum(entry.getValue().getPhoneNum());
                 dataCore.setScoreModelType(scoreModelType);
-                dataCore.setScore(Double.valueOf(respVo.getRespBody().getTruth_score()));
+                dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
                 dataCore.setY(entry.getValue().getY());
                 dataCorePrimarydbRepository.saveDataCore(entry.getValue());
             }
