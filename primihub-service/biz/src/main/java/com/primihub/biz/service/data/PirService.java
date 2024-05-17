@@ -276,23 +276,24 @@ public class PirService {
         // 在这里不用管
         Set<DataCore> withScore = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
 
-        Map<String, DataCore> withPhoneMap = withPhone.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
+        Map<String, List<DataCore>> withPhoneGroup = withPhone.stream()
+                .collect(Collectors.groupingBy(DataCore::getIdNum));
 
         Map<String, DataCore> withScoreMap = withScore.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
 
-        withPhoneMap.entrySet().parallelStream().forEach(entry -> {
+        withPhoneGroup.entrySet().parallelStream().forEach(entry -> {
             if (withScoreMap.containsKey(entry.getKey())) {
                 return;
             }
 
-            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModel);
+            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().get(0).getPhoneNum(), scoreModel);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
                 DataCore dataCore = new DataCore();
-                dataCore.setIdNum(entry.getValue().getIdNum());
-                dataCore.setPhoneNum(entry.getValue().getPhoneNum());
+                dataCore.setIdNum(entry.getValue().get(0).getIdNum());
+                dataCore.setPhoneNum(entry.getValue().get(0).getPhoneNum());
                 dataCore.setScoreModelType(scoreModelType);
                 dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
-                dataCore.setY(entry.getValue().getY());
+                dataCore.setY(entry.getValue().get(0).getY());
                 dataCorePrimarydbRepository.saveDataCore(dataCore);
             }
         });
