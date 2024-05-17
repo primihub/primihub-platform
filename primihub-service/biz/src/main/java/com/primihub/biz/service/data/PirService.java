@@ -349,7 +349,7 @@ public class PirService {
         if (resourceColumnNameArray.length == 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表为空");
         }
-        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).stream().map(String::trim).anyMatch().contains(RemoteConstant.INPUT_FIELD_NAME);
+        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).contains(RemoteConstant.INPUT_FIELD_NAME);
         if (!containedTargetFieldFlag) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表不包含目标字段");
         }
