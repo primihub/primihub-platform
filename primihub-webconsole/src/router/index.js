@@ -106,7 +106,7 @@ export const asyncRoutes = [
     component: Layout,
     name: 'Preprocessing',
     redirect: '/preprocessing/list',
-    meta: { title: '预处理', icon: 'el-icon-search' },
+    meta: { title: '预处理', icon: 'el-icon-s-claim' },
     children: [{
       path: 'list',
       name: 'PreprocessingList',
@@ -422,7 +422,13 @@ export const asyncRoutes = [
         component: () => import('@/views/setting/ui'),
         meta: { title: '界面设置' },
         hidden: true
-      }
+      },
+      {
+        path: 'scoreModel',
+        name: 'ScoreModelManage',
+        component: () => import('@/views/setting/scoreModel'),
+        meta: { title: '模型分管理' }
+      },
     ]
   },
   {
@@ -436,6 +442,20 @@ export const asyncRoutes = [
       name: 'LogList',
       component: () => import('@/views/log/index'),
       meta: { title: '日志管理', breadcrumb: false }
+
+    }]
+  },
+  {
+    path: '/task-record',
+    component: Layout,
+    name: 'TaskRecord',
+    redirect: '/task-record/index',
+    meta: { title: '任务记录', icon: 'el-icon-tickets' },
+    children: [{
+      path: 'index',
+      name: 'LogList',
+      component: () => import('@/views/taskRecord/index'),
+      meta: { title: '任务记录', breadcrumb: false }
 
     }]
   },

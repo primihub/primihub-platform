@@ -11,3 +11,5 @@ export const getExamTaskDetailRequest = (taskId) => request({ url: '/data/examin
 export const processExamTaskRequest = (data) => request({ url: '/data/examine/processExamTask', method: 'post', type: 'json', data })
 
 export const finishExamTaskRequest = (data) => request({ url: '/data/examine/finishExamTask', method: 'post', type: 'json', data })
+
+export const examTaskListRequest = (taskName) => request({ url: '/data/examine/examTaskList', method: 'get', params: { taskName } })

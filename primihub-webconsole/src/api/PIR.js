@@ -24,3 +24,5 @@ export function pirSubmitTask(params) {
   })
 }
 
+export const submitPirPhase1Request = (data) => request({ url: '/data/pir/submitPirPhase1', method: 'post', data })
+

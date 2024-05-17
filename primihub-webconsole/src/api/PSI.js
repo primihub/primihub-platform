@@ -106,3 +106,8 @@ export function updateDataPsiResultName(data) {
     data
   })
 }
+
+export const psiRecordListRequest = (taskName) => request({ url: '/data/record/psiRecordList', method: 'get', params: { taskName } })
+export const submitPsiTaskRequest = (data) => request({ url: '/data/psi/submitPsiTask', method: 'post', data })
+
+
