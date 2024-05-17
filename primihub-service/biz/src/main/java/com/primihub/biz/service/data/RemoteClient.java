@@ -53,17 +53,20 @@ public class RemoteClient {
         HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
+        log.info("remote result: {}", JSONObject.toJSONString(respVo));
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
                 && StringUtils.isNotBlank(respVo.getResponse())) {
             String jsonResponse = null;
             try {
                 jsonResponse = SM4Util.decrypt(respVo.getResponse(), clientConfiguration.getSecretKey());
+                log.info("remote decrypt result: {}", jsonResponse);
                 RemoteRespVo.RespResp respResp = JSONObject.parseObject(jsonResponse, RemoteRespVo.RespResp.class);
                 respVo.setRespBody(respResp);
             } catch (Exception e) {
                 log.error("remote response sm4 parse error : {}", e.getMessage());
             }
         }
+        log.info("remote parse result: {}", JSONObject.toJSONString(respVo));
         return respVo;
     }
 
