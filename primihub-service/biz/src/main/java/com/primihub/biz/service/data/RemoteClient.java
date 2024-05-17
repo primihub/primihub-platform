@@ -48,7 +48,12 @@ public class RemoteClient {
 
         Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstant.HEAD, resembleHeadMap());
-        map.put(RemoteConstant.REQUEST, resembleRequestMap(phoneNum, clientConfiguration.getSecretKey()));
+
+        Map<String, Object> requestMap = resembleRequestMap(phoneNum, clientConfiguration.getSecretKey());
+        log.info("request param before encrypt: {}", JSONObject.toJSONString(requestMap));
+        String mapJson = JSONObject.toJSONString(requestMap);
+        String requestEncString = SM4Util.encrypt(mapJson, clientConfiguration.getSecretKey());
+        map.put(RemoteConstant.REQUEST, requestEncString);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
