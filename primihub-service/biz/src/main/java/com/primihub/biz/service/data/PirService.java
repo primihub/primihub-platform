@@ -293,7 +293,7 @@ public class PirService {
                 dataCore.setScoreModelType(scoreModelType);
                 dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
                 dataCore.setY(entry.getValue().getY());
-                dataCorePrimarydbRepository.saveDataCore(entry.getValue());
+                dataCorePrimarydbRepository.saveDataCore(dataCore);
             }
         });
 
