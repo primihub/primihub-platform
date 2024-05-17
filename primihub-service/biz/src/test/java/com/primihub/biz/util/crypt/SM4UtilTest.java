@@ -20,7 +20,8 @@ public class SM4UtilTest {
 
         Map<String, Object> map = new HashMap<String, Object>();
 
-        String sm3PhoneNum = SM3Util.encrypt("19953322231");
+        String sm3PhoneNum = SM3Util.encrypt("15871801048");
+        System.out.println("sm3phonenum : " + sm3PhoneNum);
         map.put("param", new HashMap<String, String>() {{
             put("mobile", sm3PhoneNum);
             put("empowerNo", String.valueOf(System.currentTimeMillis()));
