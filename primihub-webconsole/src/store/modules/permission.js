@@ -13,10 +13,9 @@ function getRoutes(routers, rootList) {
   let curRoutes = {}
   // 根据当前router authCode做比对
   const filter = (code) => {
-    // return rootList.find(cur => {
-    //   return cur.authCode === code
-    // })
-    return rootList
+    return rootList.find(cur => {
+      return cur.authCode === code
+    })
   }
   routers.forEach((item, index) => {
     const current = filter(item.name)

@@ -22,7 +22,7 @@
                 </el-option>
               </el-select>
             </el-form-item>
-            <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="next">提交任务</el-button>
+            <el-button style="margin-top: 12px;" type="primary" class="query-button" @click="next">提交任务</el-button>
           </div>
         </el-form>
       </div>
@@ -52,14 +52,6 @@ export default {
         ]
       }
     }
-  },
-  computed: {
-    hasSearchPermission() {
-      return this.buttonPermissionList.includes('PrivateSearchButton')
-    },
-    ...mapGetters([
-      'buttonPermissionList'
-    ])
   },
   async created() {
     await this.getPreprocessingList()
