@@ -87,6 +87,9 @@ public class DataProjectService {
             if (StringUtils.isNotBlank(req.getProjectDesc())&&!dataProject.getProjectDesc().equals(req.getProjectDesc())){
                 dataProject.setProjectDesc(req.getProjectDesc());
             }
+            if (StringUtils.isNotBlank(req.getProjectType())&&!dataProject.getProjectType().equals(req.getProjectType())){
+                dataProject.setProjectType(req.getProjectType());
+            }
             req.setProjectId(dataProject.getProjectId());
             updateProjectProviderOrganName(req.getProjectOrgans(),dataProject);
         }

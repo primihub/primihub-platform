@@ -13,6 +13,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
+import com.primihub.biz.entity.data.dataenum.ProjectTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
@@ -188,8 +189,15 @@ public class DataModelService {
         return BaseResultEntity.success(new PageDataEntity(tolal, req.getPageSize(), req.getPageNo(), modelListVos));
     }
 
-    public BaseResultEntity getModelComponent() {
+    public BaseResultEntity getModelComponent(String projectType) {
         List<ModelComponent> modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+        if (StringUtils.isNotBlank(projectType)){
+            ProjectTypeEnum projectTypeEnum = ProjectTypeEnum.PROJECT_TYPE_MAP.get(projectType);
+            if (Objects.isNull(projectTypeEnum)){
+                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "当前类型不支持");
+            }
+            modelComponents = modelComponents.stream().filter(modelComponent -> projectTypeEnum.getComponentNodes().contains(modelComponent.getComponentCode())).collect(Collectors.toList());
+        }
         return BaseResultEntity.success(modelComponents);
     }
 
