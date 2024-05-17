@@ -1,7 +1,6 @@
 package com.primihub.biz.service;
 
 
-import com.primihub.biz.util.crypt.SM3Util;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -12,7 +11,7 @@ public class PhoneClientService {
         HashSet<String> filteredValue = filterHashSet(fieldValueSet, 0.8);
         Map<String, String> map = new HashMap<>();
         filteredValue.forEach(value -> {
-            map.put(value, SM3Util.encrypt(generateRandomPhoneNumber()));
+            map.put(value, generateRandomPhoneNumber());
         });
         return map;
 

@@ -17,6 +17,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.ScoreModelReq;
 import com.primihub.biz.entity.data.vo.DataCoreVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
@@ -25,6 +26,7 @@ import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
+import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
@@ -34,7 +36,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -76,9 +77,9 @@ public class PirService {
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
-    private ThreadPoolTaskExecutor primaryThreadPool;
-    @Autowired
     private ScoreModelRepository scoreModelRepository;
+    @Autowired
+    private ScoreModelPrRepository scoreModelPrRepository;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -266,22 +267,42 @@ public class PirService {
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
         Set<String> targetValueSet = req.getTargetValueSet();
         String scoreModelType = req.getScoreModelType();
-        Set<DataCore> dataCores = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
-        Map<String, DataCore> idNumDataCoreMap = dataCores.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
+        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
+        if (scoreModel == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "scoreModelType");
+        }
+        // 在这里得区分
+        Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
+        // 在这里不用管
+        Set<DataCore> withScore = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
 
-        idNumDataCoreMap.entrySet().parallelStream().forEach(entry -> {
-            if (entry.getValue().getScore() != null) {
+        Map<String, List<DataCore>> withPhoneGroup = withPhone.stream()
+                .collect(Collectors.groupingBy(DataCore::getIdNum));
+
+        Map<String, DataCore> withScoreMap = withScore.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
+
+        withPhoneGroup.entrySet().parallelStream().forEach(entry -> {
+            if (withScoreMap.containsKey(entry.getKey())) {
                 return;
             }
-            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().getPhoneNum(), scoreModelType);
+
+            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().get(0).getPhoneNum(), scoreModel);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
-                entry.getValue().setScoreModelType(scoreModelType);
-                entry.getValue().setScore(Double.valueOf(respVo.getRespBody().getTruth_score()));
-                dataCorePrimarydbRepository.saveDataCore(entry.getValue());
+                DataCore dataCore = new DataCore();
+                dataCore.setIdNum(entry.getValue().get(0).getIdNum());
+                dataCore.setPhoneNum(entry.getValue().get(0).getPhoneNum());
+                dataCore.setScoreModelType(scoreModelType);
+                dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                dataCore.setY(entry.getValue().get(0).getY());
+                dataCorePrimarydbRepository.saveDataCore(dataCore);
             }
         });
 
         Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
+        if (CollectionUtils.isEmpty(voSet)) {
+            log.info("样本适配度太低，无法执行PIR任务");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "样本适配度太低");
+        }
         // 成功后开始生成文件
         String jsonArrayStr = JSON.toJSONString(voSet);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
@@ -368,7 +389,7 @@ public class PirService {
         recordPrRepository.updatePirRecord(record);
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getTargetOrganId());
         for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPsiRecord", organ.getPublicKey());
+            return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPirRecord", organ.getPublicKey());
         }
 
         Map<String, Object> map = new HashMap<>();
@@ -378,5 +399,16 @@ public class PirService {
 
     public BaseResultEntity getScoreModelList() {
         return BaseResultEntity.success(scoreModelRepository.selectAll());
+    }
+
+    public BaseResultEntity submitScoreModel(ScoreModelReq req) {
+        ScoreModel scoreModel = new ScoreModel(req);
+        scoreModelPrRepository.saveScoreModel(scoreModel);
+
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOrganId());
+        for (SysOrgan organ : sysOrgans) {
+            return otherBusinessesService.syncGatewayApiData(scoreModel, organ.getOrganGateway() + "/share/shareData/submitScoreModelType", organ.getPublicKey());
+        }
+        return BaseResultEntity.success();
     }
 }

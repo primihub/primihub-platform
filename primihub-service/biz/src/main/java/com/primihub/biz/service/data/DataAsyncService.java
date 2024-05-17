@@ -20,6 +20,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.primaryredis.data.DataRedisRepository;
@@ -27,6 +28,7 @@ import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.service.sys.SysEmailService;
@@ -75,6 +77,8 @@ public class DataAsyncService implements ApplicationContextAware {
     @Qualifier("recordPrRepository")
     @Autowired
     private RecordPrRepository recordPrRepository;
+    @Autowired
+    private SysOrganSecondarydbRepository organSecondaryDbRepository;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -331,7 +335,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi, DataTask dataTask) {
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi, DataTask dataTask, PsiRecord psiRecord, DataExamTask examTask) {
         DataResource ownDataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
         if (ownDataResource==null){
             ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
@@ -428,6 +432,23 @@ public class DataAsyncService implements ApplicationContextAware {
         dataPsiPrRepository.updateDataPsiTask(psiTask);
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
+
+        psiRecord.setTaskState(dataTask.getTaskState());
+        if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
+            List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+            if (org.apache.commons.lang.StringUtils.isNotEmpty(psiTask.getFilePath())) {
+                list = FileUtil.getAllCsvData(psiTask.getFilePath());
+            }
+            psiRecord.setResultRowsNum(list.size());
+            psiRecord.setEndTime(new Date());
+        }
+        recordPrRepository.updatePsiRecord(psiRecord);
+
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(examTask.getTargetOrganId());
+        for (SysOrgan organ : sysOrgans) {
+            otherBusinessesService.syncGatewayApiData(psiRecord, organ.getOrganGateway() + "/share/shareData/submitPsiRecord", organ.getPublicKey());
+        }
+
     }
 
     public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job){

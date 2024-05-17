@@ -43,7 +43,7 @@
                                     origin_resource_id,
                                     target_organ_id,
                                     target_resource_id,
-                                    contain_y,
+                                    contains_y,
                                     is_del,
                                     create_date,
                                     update_date)

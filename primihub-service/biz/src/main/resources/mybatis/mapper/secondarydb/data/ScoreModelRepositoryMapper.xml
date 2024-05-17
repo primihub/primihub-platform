@@ -14,5 +14,22 @@
         from score_model sm
         order by sm.id desc
     </select>
-    
+
+    <select id="selectScoreModelByScoreTypeValue" resultType="com.primihub.biz.entity.data.po.ScoreModel">
+        select id,
+        score_model_code scoreModelCode,
+        score_model_name scoreModelName,
+        score_model_type scoreModelType,
+        score_key        scoreKey,
+        is_del           isDel,
+        create_date      createDate,
+        update_date      updateDate
+        from score_model sm
+        <if test="type != null and type != ''">
+            where sm.score_model_type = #{type}
+        </if>
+        order by sm.id desc
+        limit 1
+    </select>
+
 </mapper>

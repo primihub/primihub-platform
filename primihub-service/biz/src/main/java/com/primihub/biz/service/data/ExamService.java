@@ -416,44 +416,55 @@ public class ExamService {
     private void startFutureExamTask(DataExamReq req) {
         // 进行预处理，使用异步
         FutureTask<Object> task = new FutureTask<>(() -> {
-            log.info("====================== 预处理开始");
-            Set<String> fieldValueSet = req.getFieldValueSet();
+            try {
+                log.info("====================== 预处理开始");
+                Set<String> fieldValueSet = req.getFieldValueSet();
+                log.info("================ {}", fieldValueSet.size());
 
-            // 已经存在的数据
-            Set<DataCore> existentDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
-            Set<String> existentTargetValueSet = existentDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
-            // 不存在的数据
-            Set<String> nonexistentTargetValueSet = fieldValueSet.stream().filter(s -> !existentTargetValueSet.contains(s)).collect(Collectors.toSet());
+                // 已经存在的数据
+                Set<DataCore> existentDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
+                log.info("================ {}", existentDataCoreSet.size());
+                Set<String> existentTargetValueSet = existentDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
+                log.info("================ {}", existentTargetValueSet.size());
+                // 不存在的数据
+                Set<String> nonexistentTargetValueSet = fieldValueSet.stream().filter(s -> !existentTargetValueSet.contains(s)).collect(Collectors.toSet());
+                log.info("================ {}", nonexistentTargetValueSet.size());
 
+                // 先过滤出存在手机号的数据
+                Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(nonexistentTargetValueSet);
+                List<DataCore> nonexistentDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
+                    DataCore dataCore = new DataCore();
+                    dataCore.setIdNum(entry.getKey());
+                    dataCore.setPhoneNum(entry.getValue());
+                    return dataCore;
+                }).collect(Collectors.toList());
+                dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
 
-            // 先过滤出存在手机号的数据
-            Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(nonexistentTargetValueSet);
-            Set<DataCore> nonexistentDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
-                DataCore dataCore = new DataCore();
-                dataCore.setIdNum(entry.getKey());
-                dataCore.setPhoneNum(entry.getValue());
-                return dataCore;
-            }).collect(Collectors.toSet());
-            dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
+                Set<DataCore> allDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
+                String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
+                List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
+                // 生成数据源
+                DataResource dataResource = generateTargetResource(maps);
+                if (dataResource == null) {
+                    req.setTaskState(TaskStateEnum.FAIL.getStateType());
+                    sendEndExamTask(req);
+                    log.info("====================== FAIL");
+                }
+                log.info("====================== dataResource");
 
-            Set<DataCore> allDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
-            String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
-            List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
-            // 生成数据源
-            DataResource dataResource = generateTargetResource(maps);
-            if (dataResource == null) {
+                req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                req.setTargetResourceId(dataResource.getResourceFusionId());
+                sendEndExamTask(req);
+                log.info("====================== SUCCESS");
+                log.info("====================== 预处理结束");
+                return null;
+            } catch (Exception e) {
+                log.error("异步执行异常: {}", e.toString());
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
                 sendEndExamTask(req);
                 log.info("====================== FAIL");
+                return null;
             }
-            log.info("====================== dataResource");
-
-            req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            req.setTargetResourceId(dataResource.getResourceFusionId());
-            sendEndExamTask(req);
-            log.info("====================== SUCCESS");
-            log.info("====================== 预处理结束");
-            return null;
         });
         primaryThreadPool.submit(task);
     }

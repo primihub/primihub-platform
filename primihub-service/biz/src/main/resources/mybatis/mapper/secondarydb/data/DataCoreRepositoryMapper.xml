@@ -20,26 +20,26 @@
         score_model_type scoreModelType
     </sql>
 
-    <select id="selectExistentDataCore" parameterType="java.util.Set">
+    <select id="selectExistentDataCore" resultType="com.primihub.biz.entity.data.po.DataCore">
         select
         <include refid="dataCoreColumn"/>
         from data_core
         <if test="list != null and !list.isEmpty()">
-            where idNum in
-            <foreach collection="list" open="(" index="index" close=")" separator=",">
+            where id_num in
+            <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
                 #{item}
             </foreach>
         </if>
     </select>
 
-    <select id="selectDataCoreFromIdNum">
+    <select id="selectDataCoreFromIdNum" resultType="com.primihub.biz.entity.data.po.DataCore">
         select
         <include refid="dataCoreColumn"/>
         from data_core
         <where>
             <if test="list != null and !list.isEmpty()">
-                and idNum in
-                <foreach collection="list" open="(" index="index" close=")" separator=",">
+                and id_num in
+                <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
                     #{item}
                 </foreach>
             </if>

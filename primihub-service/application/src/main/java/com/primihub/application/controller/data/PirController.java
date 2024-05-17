@@ -7,6 +7,7 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.ScoreModelReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.service.data.PirService;
@@ -151,5 +152,25 @@ public class PirController {
     @GetMapping("getScoreModelList")
     public BaseResultEntity getScoreModelList() {
         return pirService.getScoreModelList();
+    }
+
+    @PostMapping("submitScoreModel")
+    public BaseResultEntity submitScoreModel(ScoreModelReq req) {
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreModelCode())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreModelCode");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreModelName())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreModelName");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreModelType())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreModelType");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getScoreKey())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "ScoreKey");
+        }
+        if (org.apache.commons.lang.StringUtils.isBlank(req.getOrganId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "organId");
+        }
+        return pirService.submitScoreModel(req);
     }
 }

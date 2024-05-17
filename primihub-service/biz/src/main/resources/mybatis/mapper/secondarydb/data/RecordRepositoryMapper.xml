@@ -2,12 +2,38 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.secondarydb.data.RecordRepository">
 
+    <sql id="psiRecordColumns">
+        id
+        ,
+               record_id recordId,
+               psi_name psiName,
+               psi_id psiId,
+               psi_task_id psiTaskId,
+               task_state taskState,
+               origin_organ_id originOrganId,
+               target_organ_id targetOrganId,
+               start_time startTime,
+               commit_rows_num commitRowsNum,
+               end_time endTime,
+               result_rows_num resultRowsNum,
+               is_del isDel,
+               create_date createDate,
+               update_date updateDate
+    </sql>
+
+
     <select id="selectPsiRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select
+        <include refid="psiRecordColumns"/>
+        from psi_record
+        where record_id = #{recordId}
+    </select>
+
+    <select id="selectPirRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PirRecord">
         select id,
                record_id,
-               psi_name,
-               psi_id,
-               psi_task_id,
+               pir_name,
+               pir_task_id,
                task_state,
                origin_organ_id,
                target_organ_id,
@@ -18,9 +44,71 @@
                is_del,
                create_date,
                update_date
-        from psi_record
+        from pir_record
         where record_id = #{recordId}
     </select>
 
+    <select id="selectPsiRecordList" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select
+        <include refid="psiRecordColumns"/>
+        from psi_record
+        <if test="taskName != null and taskName != ''">
+            where psi_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <select id="selectPsiRecordPage" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="com.primihub.biz.entity.data.po.PsiRecord">
+        select <include refid="psiRecordColumns"/>
+        from psi_record
+        <if test="taskName != null and taskName != ''">
+            where psi_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="selectPsiRecordCount" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="java.lang.Integer">
+        select
+        count(id)
+        from
+        psi_record
+        <if test="taskName != null and taskName != ''">
+            where psi_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
+
+    <select id="selectPirRecordPage" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="com.primihub.biz.entity.data.po.PirRecord">
+        select
+        id,
+        record_id recordId,
+        pir_name pirName,
+        pir_task_id pirTaskId,
+        task_state taskState,
+        origin_organ_id originOrganId,
+        target_organ_id targetOrganId,
+        start_time startTime,
+        commit_rows_num commitRowsNum,
+        end_time endTime,
+        result_rows_num resultRowsNum,
+        is_del isDel,
+        create_date createDate,
+        update_date updateDate
+        from pir_record
+        <if test="taskName != null and taskName != ''">
+            where pir_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+        ORDER BY id desc
+        LIMIT #{offset},#{pageSize}
+    </select>
+
+    <select id="selectPirRecordCount" parameterType="com.primihub.biz.entity.data.req.RecordReq" resultType="java.lang.Integer">
+        select
+        count(id)
+        from
+        pir_record
+        <if test="taskName != null and taskName != ''">
+            where pir_name like CONCAT('%',#{taskName,jdbcType=VARCHAR},'%')
+        </if>
+    </select>
 
 </mapper>

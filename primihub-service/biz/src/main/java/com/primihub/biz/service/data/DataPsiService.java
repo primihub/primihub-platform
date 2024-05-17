@@ -197,7 +197,7 @@ public class DataPsiService {
 
         PsiRecord psiRecord = new PsiRecord();
         psiRecord.setRecordId(dataTaskId);
-        psiRecord.setPsiName(dataPsi.getResultName());
+        psiRecord.setPsiName(dataTask.getTaskName());
         psiRecord.setPsiId(dataPsi.getId());
         psiRecord.setPsiTaskId(task.getTaskId());
         psiRecord.setTaskState(0);
@@ -208,23 +208,7 @@ public class DataPsiService {
         psiRecord.setResultRowsNum(0);
         recordPrRepository.savePsiRecord(psiRecord);
 
-        dataAsyncService.psiGrpcRun(task, dataPsi, dataTask);
-
-        psiRecord.setTaskState(dataTask.getTaskState());
-        if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
-            List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-            if (org.apache.commons.lang.StringUtils.isNotEmpty(task.getFilePath())) {
-                list = FileUtil.getAllCsvData(task.getFilePath());
-            }
-            psiRecord.setResultRowsNum(list.size());
-            psiRecord.setEndTime(new Date());
-        }
-        recordPrRepository.updatePsiRecord(psiRecord);
-
-        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(examTask.getTargetOrganId());
-        for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(psiRecord, organ.getOrganGateway() + "/share/shareData/submitPsiRecord", organ.getPublicKey());
-        }
+        dataAsyncService.psiGrpcRun(task, dataPsi, dataTask, psiRecord, examTask);
 
         Map<String, Object> map = new HashMap<>();
         map.put("dataPsi", dataPsi);

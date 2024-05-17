@@ -1,6 +1,7 @@
 package com.primihub.application.controller.share;
 
 
+import com.alibaba.fastjson.JSON;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
@@ -187,6 +188,7 @@ public class ShareDataController {
      */
     @PostMapping(value = "submitPsiRecord")
     public BaseResultEntity submitPsiRecord(@RequestBody PsiRecord record) {
+        log.info("\n{}\n", JSON.toJSONString(record));
         return recordService.savePsiRecord(record);
     }
 
@@ -195,6 +197,7 @@ public class ShareDataController {
      */
     @PostMapping(value = "submitPirRecord")
     public BaseResultEntity submitPirRecord(@RequestBody PirRecord record) {
+        log.info("\n{}\n", JSON.toJSONString(record));
         return recordService.savePirRecord(record);
     }
 }

@@ -11,7 +11,6 @@ import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.util.crypt.RemoteUtil;
-import com.primihub.biz.util.crypt.SM3Util;
 import com.primihub.biz.util.crypt.SM4Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +18,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -41,32 +38,39 @@ public class RemoteClient {
     @Autowired
     private ScoreModelRepository scoreModelRepository;
 
-    public RemoteRespVo queryFromRemote(String phoneNum,String scoreTypeValue) {
-        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreTypeValue);
-        if (scoreModel == null) {
-            log.error("scoreModelType not found : {}", scoreTypeValue);
-            return null;
-        }
+    public RemoteRespVo queryFromRemote(String phoneNum,ScoreModel scoreModel) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        MultiValueMap map = new LinkedMultiValueMap<>();
+
+        Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstant.HEAD, resembleHeadMap());
-        map.put(RemoteConstant.REQUEST, resembleRequestMap(phoneNum, clientConfiguration.getSecretKey()));
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(map, headers);
+
+        Map<String, Object> requestMap = resembleRequestMap(phoneNum);
+        log.info("request param before encrypt: {}", JSONObject.toJSONString(requestMap));
+        String mapJson = JSONObject.toJSONString(requestMap);
+        String requestEncString = SM4Util.encrypt(mapJson, clientConfiguration.getSecretKey());
+        map.put(RemoteConstant.REQUEST, requestEncString);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
+        log.info("remote request body: {}", JSONObject.toJSONString(map));
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
+        log.info("remote result: {}", JSONObject.toJSONString(respVo));
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
                 && StringUtils.isNotBlank(respVo.getResponse())) {
             String jsonResponse = null;
             try {
                 jsonResponse = SM4Util.decrypt(respVo.getResponse(), clientConfiguration.getSecretKey());
-                RemoteRespVo.RespResp respResp = JSONObject.parseObject(jsonResponse, RemoteRespVo.RespResp.class);
+                log.info("remote decrypt result: {}", jsonResponse);
+                Map respResp = JSONObject.parseObject(jsonResponse, Map.class);
                 respVo.setRespBody(respResp);
             } catch (Exception e) {
                 log.error("remote response sm4 parse error : {}", e.getMessage());
+                return null;
             }
         }
+        log.info("remote parse result: {}", JSONObject.toJSONString(respVo));
         return respVo;
     }
 
@@ -81,11 +85,11 @@ public class RemoteClient {
         return headMap;
     }
 
-    public Map<String, Object> resembleRequestMap(String phoneNum, String secretKey) {
+    public Map<String, Object> resembleRequestMap(String phoneNum) {
         Map<String, Object> requestMap = new HashMap<>();
 
         Map<String, String> paramMap = new HashMap<>();
-        paramMap.put(RemoteConstant.MOBILE, SM3Util.encrypt(phoneNum, secretKey));
+        paramMap.put(RemoteConstant.MOBILE, phoneNum);
         paramMap.put(RemoteConstant.EMPOWER_NO, String.valueOf(System.currentTimeMillis()));
 
         requestMap.put(RemoteConstant.PARAM, paramMap);
