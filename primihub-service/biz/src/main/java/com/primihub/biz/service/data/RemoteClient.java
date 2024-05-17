@@ -19,8 +19,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
@@ -47,11 +45,14 @@ public class RemoteClient {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
-        MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+
+        Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstant.HEAD, Collections.singletonList(resembleHeadMap()));
         map.put(RemoteConstant.REQUEST, Collections.singletonList(resembleRequestMap(phoneNum, clientConfiguration.getSecretKey())));
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
+        log.info("remote request boyd: {}", JSONObject.toJSONString(request));
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
         log.info("remote result: {}", JSONObject.toJSONString(respVo));
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
@@ -64,6 +65,7 @@ public class RemoteClient {
                 respVo.setRespBody(respResp);
             } catch (Exception e) {
                 log.error("remote response sm4 parse error : {}", e.getMessage());
+                return null;
             }
         }
         log.info("remote parse result: {}", JSONObject.toJSONString(respVo));
