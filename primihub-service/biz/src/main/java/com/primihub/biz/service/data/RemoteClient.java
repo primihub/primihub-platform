@@ -11,7 +11,6 @@ import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.util.crypt.RemoteUtil;
-import com.primihub.biz.util.crypt.SM3Util;
 import com.primihub.biz.util.crypt.SM4Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 @Slf4j
 @Component
@@ -49,7 +51,7 @@ public class RemoteClient {
         Map<String, Object> map = new HashMap<>();
         map.put(RemoteConstant.HEAD, resembleHeadMap());
 
-        Map<String, Object> requestMap = resembleRequestMap(phoneNum, clientConfiguration.getSecretKey());
+        Map<String, Object> requestMap = resembleRequestMap(phoneNum);
         log.info("request param before encrypt: {}", JSONObject.toJSONString(requestMap));
         String mapJson = JSONObject.toJSONString(requestMap);
         String requestEncString = SM4Util.encrypt(mapJson, clientConfiguration.getSecretKey());
@@ -88,11 +90,11 @@ public class RemoteClient {
         return headMap;
     }
 
-    public Map<String, Object> resembleRequestMap(String phoneNum, String secretKey) {
+    public Map<String, Object> resembleRequestMap(String phoneNum) {
         Map<String, Object> requestMap = new HashMap<>();
 
         Map<String, String> paramMap = new HashMap<>();
-        paramMap.put(RemoteConstant.MOBILE, SM3Util.encrypt(phoneNum, secretKey));
+        paramMap.put(RemoteConstant.MOBILE, phoneNum);
         paramMap.put(RemoteConstant.EMPOWER_NO, String.valueOf(System.currentTimeMillis()));
 
         requestMap.put(RemoteConstant.PARAM, paramMap);
