@@ -1,5 +1,6 @@
 package com.primihub.biz.entity.data.po;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,8 +21,10 @@ public class PirRecord {
     private String originOrganId;
     private String targetOrganId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date startTime;
     private Integer commitRowsNum;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date endTime;
     private Integer resultRowsNum;
 
