@@ -197,7 +197,7 @@ public class DataPsiService {
 
         PsiRecord psiRecord = new PsiRecord();
         psiRecord.setRecordId(dataTaskId);
-        psiRecord.setPsiName(dataPsi.getResultName());
+        psiRecord.setPsiName(dataTask.getTaskName());
         psiRecord.setPsiId(dataPsi.getId());
         psiRecord.setPsiTaskId(task.getTaskId());
         psiRecord.setTaskState(0);
