@@ -47,12 +47,12 @@ public class RemoteClient {
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
 
         Map<String, Object> map = new HashMap<>();
-        map.put(RemoteConstant.HEAD, Collections.singletonList(resembleHeadMap()));
-        map.put(RemoteConstant.REQUEST, Collections.singletonList(resembleRequestMap(phoneNum, clientConfiguration.getSecretKey())));
+        map.put(RemoteConstant.HEAD, resembleHeadMap());
+        map.put(RemoteConstant.REQUEST, resembleRequestMap(phoneNum, clientConfiguration.getSecretKey()));
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity(map, headers);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
-        log.info("remote request boyd: {}", JSONObject.toJSONString(request));
+        log.info("remote request body: {}", JSONObject.toJSONString(map));
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
         log.info("remote result: {}", JSONObject.toJSONString(respVo));
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
