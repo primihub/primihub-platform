@@ -187,7 +187,7 @@
     </select>
     <sql id="selectDataExamTaskWhere">
         <where>
-            <if test="taskName != null and taskName != ''">and det.taskName like like CONCAT('%',#{taskName},'%')</if>
+            <if test="taskName != null and taskName != ''">and det.task_name like CONCAT('%',#{taskName},'%')</if>
         </where>
     </sql>
 
