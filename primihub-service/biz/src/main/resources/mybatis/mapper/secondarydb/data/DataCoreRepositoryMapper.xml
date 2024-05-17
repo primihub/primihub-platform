@@ -16,6 +16,7 @@
     </sql>
 
     <sql id="dataCoreVoColumn">
+        id_num idNum,
         score,
         score_model_type scoreModelType
     </sql>
