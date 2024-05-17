@@ -344,11 +344,12 @@ public class PirService {
         if (StringUtils.isBlank(resourceColumnNames)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表失败");
         }
-        String[] resourceColumnNameArray = resourceColumnNames.split(",");
+        String[] resourceColumnNameArray = Arrays.stream(resourceColumnNames.split(",")).map(String::trim).toArray(String[]::new);;
+        log.info("pir 提交数据特征: {}", Arrays.toString(resourceColumnNameArray));
         if (resourceColumnNameArray.length == 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表为空");
         }
-        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).contains("idNum");
+        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).stream().map(String::trim).anyMatch().contains(RemoteConstant.INPUT_FIELD_NAME);
         if (!containedTargetFieldFlag) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表不包含目标字段");
         }
