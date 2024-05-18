@@ -19,7 +19,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <os.detected.classifier>osx-x86_64</os.detected.classifier>
+        <os.detected.classifier>linux-x86_64</os.detected.classifier>
     </properties>
 
     <dependencies>
