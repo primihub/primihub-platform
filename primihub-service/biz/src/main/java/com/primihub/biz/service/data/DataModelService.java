@@ -2,9 +2,7 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.config.base.ComponentsConfiguration;
-import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.base.*;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
@@ -13,7 +11,6 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
-import com.primihub.biz.entity.data.dataenum.ProjectTypeEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
@@ -53,6 +50,12 @@ public class DataModelService {
     private BaseConfiguration baseConfiguration;
     @Autowired
     private ComponentsConfiguration componentsConfiguration;
+    @Autowired
+    private MpcComponentsConfiguration mpcComponentsConfiguration;
+    @Autowired
+    private HflComponentsConfiguration hflComponentsConfiguration;
+    @Autowired
+    private VflComponentsConfiguration vflComponentsConfiguration;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
@@ -190,13 +193,23 @@ public class DataModelService {
     }
 
     public BaseResultEntity getModelComponent(String projectType) {
-        List<ModelComponent> modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
-        if (StringUtils.isNotBlank(projectType)){
-            ProjectTypeEnum projectTypeEnum = ProjectTypeEnum.PROJECT_TYPE_MAP.get(projectType);
-            if (Objects.isNull(projectTypeEnum)){
+        List<ModelComponent> modelComponents;
+        if (StringUtils.isBlank(projectType)) {
+            modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+            return BaseResultEntity.success(modelComponents);
+        }
+        switch (projectType.toUpperCase()) {
+            case "MPC":
+                modelComponents = mpcComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            case "HFL":
+                modelComponents = hflComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            case "VFL":
+                modelComponents = vflComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            default:
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "当前类型不支持");
-            }
-            modelComponents = modelComponents.stream().filter(modelComponent -> projectTypeEnum.getComponentNodes().contains(modelComponent.getComponentCode())).collect(Collectors.toList());
         }
         return BaseResultEntity.success(modelComponents);
     }

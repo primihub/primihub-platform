@@ -4,19 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ProjectTypeEnum {
-    MPC("MPC", "多方安全计算", "start,dataSet,jointStatistical"),
-    HFL("HFL", "横向联邦", "start,dataSet,fitTransform,model"),
-    VFL("VFL", "纵向联邦", "start,dataSet,dataAlign,fitTransform,model");
+    MPC("MPC", "多方安全计算"),
+    HFL("HFL", "横向联邦"),
+    VFL("VFL", "纵向联邦");
 
     private final String code;
     private final String name;
 
-    private final String componentNodes;
-
-    ProjectTypeEnum(String code, String name, String componentNodes) {
+    ProjectTypeEnum(String code, String name) {
         this.code = code;
         this.name = name;
-        this.componentNodes = componentNodes;
     }
 
     public String getName() {
@@ -25,10 +22,6 @@ public enum ProjectTypeEnum {
 
     public String getCode() {
         return code;
-    }
-
-    public String getComponentNodes() {
-        return componentNodes;
     }
 
     public static Map<String, ProjectTypeEnum> PROJECT_TYPE_MAP = new HashMap() {
