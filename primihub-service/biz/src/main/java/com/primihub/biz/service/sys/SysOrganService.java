@@ -260,7 +260,7 @@ public class SysOrganService {
             sysOrgan.setOrganId(info.get("organId").toString());
             sysOrgan.setOrganName(info.get("organName").toString());
             // 同意
-            sysOrgan.setExamineState(1);
+            sysOrgan.setExamineState(0);
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
             sysAsyncService.applyForJoinNode(sysOrgan);
