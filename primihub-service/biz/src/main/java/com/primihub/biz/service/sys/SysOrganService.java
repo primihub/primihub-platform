@@ -263,7 +263,6 @@ public class SysOrganService {
             sysOrgan.setExamineState(0);
             sysOrgan.setEnable(0);
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
-            sysAsyncService.applyForJoinNode(sysOrgan);
         }else {
             sysOrgan.setApplyId(info.get("applyId").toString());
             sysOrgan.setOrganGateway(info.get("gateway").toString());
