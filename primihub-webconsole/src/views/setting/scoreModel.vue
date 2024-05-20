@@ -1,6 +1,6 @@
 <template>
   <div class="app-container">
-    <el-button v-if="hasAddPermission" type="primary" icon="el-icon-plus" @click="handelAdd">新增模型分</el-button>
+    <!-- <el-button v-if="hasAddPermission" type="primary" icon="el-icon-plus" @click="handelAdd">新增模型分</el-button> -->
     <el-table
       v-loading="listLoading"
       :data="scoreModelList"
