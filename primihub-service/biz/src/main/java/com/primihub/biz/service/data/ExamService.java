@@ -438,7 +438,9 @@ public class ExamService {
                     dataCore.setPhoneNum(entry.getValue());
                     return dataCore;
                 }).collect(Collectors.toList());
-                dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
+                if (CollectionUtils.isNotEmpty(nonexistentDataCoreSet)) {
+                    dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
+                }
 
                 Set<DataCore> allDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
                 String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
