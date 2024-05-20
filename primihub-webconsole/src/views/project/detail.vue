@@ -23,6 +23,9 @@
           </template>
           <template v-else>{{ projectDesc }}</template>
         </el-descriptions-item>
+        <el-descriptions-item label="项目类型" v-if="list && list.projectType">
+          {{ projectTypeFilter(list.projectType) }}
+        </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
     </section>
@@ -160,7 +163,8 @@ export default {
       providerOrganIds: [],
       projectStatus: -1, // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用,
       resourceId: 0,
-      localResourceId: 0
+      localResourceId: 0,
+      list: null,
     }
   },
   computed: {
@@ -179,6 +183,11 @@ export default {
     await this.fetchData()
   },
   methods: {
+    projectTypeFilter(key) {
+      const obj = { MPC: '多方安全计算', HFL: '横向联邦', VFL: '纵向联邦' }
+      return obj[key]
+    },
+
     handleProjectDescChange({ change, value }) {
       if (change) {
         this.saveParams.projectDesc = value
@@ -315,7 +324,6 @@ export default {
     },
     handleProviderOrganSubmit(data) {
       const differents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
-      console.log('handleProviderOrganSubmit differents', differents)
       if (differents.length > 0) {
         this.saveParams.projectOrgans = differents.map(item => {
           return {
@@ -475,7 +483,7 @@ export default {
     toModelCreate() {
       this.$router.push({
         name: 'ModelCreate',
-        query: { projectId: this.list.id }
+        query: { projectId: this.list.id, projectType: this.list.projectType }
       })
     },
     ...mapMutations('project', ['SET_STATUS'])

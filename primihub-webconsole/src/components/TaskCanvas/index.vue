@@ -442,11 +442,11 @@ export default {
         },
         selecting: {
           enabled: true,
-          multiple: true,
-          rubberEdge: true,
-          rubberNode: true,
+          multiple: false,
+          rubberEdge: false,
+          rubberNode: false,
           modifiers: 'shift',
-          rubberband: true
+          rubberband: false
         },
         history: true,
         clipboard: true,
@@ -627,6 +627,12 @@ export default {
     },
     deleteNode() {
       const cells = this.graph.getSelectedCells()
+
+      if ( cells[0].data.componentCode === 'start' ) {
+        this.$message.warning('开始组建不可被删除')
+        return
+      }
+
       if (cells.length) {
         this.graph.removeCells(cells)
       }
@@ -637,13 +643,15 @@ export default {
       if (index !== -1) {
         this.selectComponentList.splice(index, 1)
       }
+
       this.$emit('selectComponents', this.selectComponentList)
       this.nodeData = this.startData
-      console.log('graphData', this.startData)
     },
+
     initToolBarEvent() {
       // 画布不可编辑只可点击
       if (!this.options.isEditable) return
+
       const { history } = this.graph
       history.on('change', (args) => {
         this.canUndo = history.canUndo()
@@ -653,16 +661,43 @@ export default {
           this.saveFn()
         }
       })
+
       this.graph.bindKey(['ctrl+z', 'command+z'], () => {
         if (history.canUndo()) {
+          const cells = this.graph.getCells()
+          // The 'Start' component cannot be deleted
+          if (cells.length === 1 && cells[0].data.componentCode === 'start' ) return false
+
           history.undo()
+
+          this.selectComponentList = this.getComponentCodeOnView(this.graph.getCells())
+          this.$emit('selectComponents', this.selectComponentList)
         }
         return false
       })
     },
+
+    getComponentCodeOnView(cells){
+      const arr = []
+      cells.forEach(item => {
+        if (item.shape !== 'edge') {
+          if (item.data.componentCode !== 'start') {
+            arr.push(item.data.componentCode)
+          }
+        }
+      })
+      return arr
+    },
+
     checkModelStatisticsValidated(jointStatisticalCom) {
       let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
       featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
+
+      if (!featureValues.length) {
+        this.$message.error('联合统计所选统计项不能为空，请核验')
+        return false
+      }
+
       for (let i = 0; i < featureValues.length; i++) {
         const feature = featureValues[i]
         if (feature.type === '') {
@@ -679,10 +714,17 @@ export default {
         }
       }
     },
+
     checkRunValidated() {
       this.modelRunValidated = true
       const data = this.graph.toJSON()
       const { cells } = data
+
+      if (!this.saveParams.param) {
+        this.modelRunValidated = false
+        return
+      }
+
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
       const startCom = modelComponents.find(item => item.componentCode === START_NODE)
@@ -693,8 +735,8 @@ export default {
       const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === ARBITER_ORGAN)?.val
 
       const dataSetCom = modelComponents.find(item => item.componentCode === DATA_SET)
-      const dataValue = dataSetCom.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
-      const value = dataValue !== '' ? JSON.parse(dataValue) : ''
+      const dataValue = dataSetCom?.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
+      const value = dataValue ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
@@ -702,7 +744,7 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
-      const notSelectResource = value.find(item => item.resourceId === undefined)
+      const notSelectResource = value && value.find(item => item.resourceId === undefined)
 
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
       if (jointStatisticalCom) {
@@ -810,6 +852,8 @@ export default {
         this.modelRunValidated = false
       }
     },
+
+    /** run */
     async run() {
       // 运行前触发保存
       this.isDraft = 1
@@ -1289,14 +1333,18 @@ export default {
     },
     setComponentsDetail(data) {
       const { modelComponents, modelPointComponents } = data
+      console.log(modelPointComponents)
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0
         this.isDraft = 0
       }
+      this.selectComponentList = []
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
       this.modelComponents.forEach(item => {
+        // add selectComponentList
+        item.componentCode !=='start' && this.selectComponentList.push(item.componentCode)
         const currentData = this.components.find(c => c.componentCode === item.componentCode)
         currentData.componentTypes.map(c => {
           const componentValue = item.componentValues.find(item => item.key === c.typeCode)
@@ -1306,6 +1354,8 @@ export default {
           this.getDetailParams(c, item)
         })
       })
+
+      this.$emit('selectComponents', this.selectComponentList)
       this.initGraphShape()
       if (this.options.isEditable) {
         this.saveFn()
