@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" :model-components="modelComponents" @change="handleChange" @save="saveFn" />
     <el-dialog
       title="错误提示"
       :visible.sync="dialogVisible"
@@ -137,6 +137,10 @@ export default {
     componentsDetail: {
       type: Object,
       default: () => null
+    },
+    projectType: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -1285,11 +1289,13 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const res = await getModelComponent()
+      const res = await getModelComponent({ projectType: this.projectType })
       if (res.code === 0) {
         const { result } = res
         const model = result.find(item => item.componentCode === MODEL)
-        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        if (model) {
+          this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        }
         this.components = JSON.parse(JSON.stringify(result))
       }
     },
@@ -1329,7 +1335,9 @@ export default {
     },
     setComponentsDetail(data) {
       const { modelComponents, modelPointComponents } = data
-      console.log(modelPointComponents)
+
+
+
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0

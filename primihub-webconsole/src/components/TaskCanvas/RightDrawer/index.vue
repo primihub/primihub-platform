@@ -270,6 +270,10 @@ export default {
     defaultConfig: {
       type: Array,
       default: () => []
+    },
+    modelComponents: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -408,6 +412,26 @@ export default {
     }
   },
   watch: {
+    async modelComponents(newVal){
+      if (newVal) {
+        const dataAlignComponent = newVal.find(item => item.componentCode === 'dataAlign')
+        if (dataAlignComponent) {
+          const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
+          if (!dataSetComponent) return
+
+          const obj = {}
+          dataAlignComponent.componentValues.forEach(item => {
+            const index = item.key === 'serverIndex' ? 1 : 2
+            obj[index] = item.val
+          })
+
+          const data = JSON.parse(dataSetComponent.componentValues[0].val)
+          data.forEach((organ) => {
+            this.setDataAlignInputValues(organ, obj[organ.participationIdentity])
+          })
+        }
+      }
+    },
     dataAlignTypeValue: {
       handler(newVal) {
         if (newVal) {
@@ -830,12 +854,12 @@ export default {
       }
     },
 
-    setDataAlignInputValues(data){
+    setDataAlignInputValues(data, val){
       const dataAlignItem = {
         inputType: 'select',
         typeCode: data.participationIdentity === 1 ? 'serverIndex' : 'clientIndex',
         typeName: data.organName,
-        inputValue: '',
+        inputValue: val || '',
         isRequired: 0,
         parentValue: null,
         organId: data.organId,
