@@ -40,16 +40,18 @@
         </el-form-item>
       </template>
       <template v-else-if="nodeData.componentCode === DATA_ALIGN">
-        <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
-            <el-option
-              v-for="(v,index) in nodeData.componentTypes[0].inputValues"
-              :key="index"
-              :label="v.val"
-              :value="v.key"
-            />
-          </el-select>
-        </el-form-item>
+        <template v-for="item in nodeData.componentTypes">
+          <el-form-item :label="`选择${item.typeName}的对齐特征`" :key="item.typeCode" v-if="item.inputType === 'select'">
+            <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+              <el-option
+                v-for="(v,index) in item.inputValues"
+                :key="index"
+                :label="v.fieldName"
+                :value="v.fieldName"
+              />
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item>
           <el-row v-if="dataAlignParam">
             <el-col v-for="(param,key) in dataAlignParam" :key="key" :span="param.inputType === 'button' ? 14: 10">
@@ -268,6 +270,10 @@ export default {
     defaultConfig: {
       type: Array,
       default: () => []
+    },
+    modelComponents: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -371,7 +377,8 @@ export default {
         ]
       },
       selectedProviderOrgans: [],
-      flText: ''
+      flText: '',
+      dataAlignValues:[]
     }
   },
   computed: {
@@ -405,6 +412,26 @@ export default {
     }
   },
   watch: {
+    async modelComponents(newVal){
+      if (newVal) {
+        const dataAlignComponent = newVal.find(item => item.componentCode === 'dataAlign')
+        if (dataAlignComponent) {
+          const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
+          if (!dataSetComponent) return
+
+          const obj = {}
+          dataAlignComponent.componentValues.forEach(item => {
+            const index = item.key === 'serverIndex' ? 1 : 2
+            obj[index] = item.val
+          })
+
+          const data = JSON.parse(dataSetComponent.componentValues[0].val)
+          data.forEach((organ) => {
+            this.setDataAlignInputValues(organ, obj[organ.participationIdentity])
+          })
+        }
+      }
+    },
     dataAlignTypeValue: {
       handler(newVal) {
         if (newVal) {
@@ -437,9 +464,10 @@ export default {
           this.flText = this.filterModelValue()
           console.log(this.flText)
         } else if (newVal.componentCode === DATA_ALIGN) {
-          this.getDataSetComValue()
-          this.getFeaturesOptions()
-          this.getDataAlignParams()
+          // this.getDataSetComValue()
+          // this.getFeaturesOptions()
+          // this.getDataAlignParams()
+          this.replaceDataAlignComponentTypes()
         } else if (newVal.componentCode === MPC_STATISTICS) {
           this.getDataSetComValue()
           if (!this.graphData.cells.find(item => item.componentCode === DATA_SET) || this.inputValue === '') {
@@ -495,6 +523,7 @@ export default {
         this.featuresOptions = intersection || []
       }
     },
+
     getDataAlignParams() {
       const dataAlignType = this.nodeData.componentTypes.find(item => item.typeCode === this.DATA_ALIGN)
       this.dataAlignTypeValue = dataAlignType.inputValue
@@ -511,6 +540,7 @@ export default {
         }
       }
     },
+
     filterModelValue() {
       if (this.modelTypeValue === '2' || this.modelTypeValue === '5' || this.modelTypeValue === '9') {
         return '纵向联邦'
@@ -724,6 +754,8 @@ export default {
       const arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue || encryptionParam?.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
       return arbiterOrganId
     },
+
+    // 添加协作房
     handleProviderOrganSubmit(data) {
       console.log('data', data)
       if (this.nodeData.componentCode === DATA_SET) {
@@ -799,10 +831,11 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
+
     handleChange(value) {
-      if (this.nodeData.componentCode === DATA_ALIGN) {
-        this.dataAlignTypeValue = value
-      }
+      // if (this.nodeData.componentCode === DATA_ALIGN) {
+      //   this.dataAlignTypeValue = value
+      // }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -812,6 +845,42 @@ export default {
     handleDialogCancel() {
       this.dialogVisible = false
     },
+
+    filterDataAlignFeature(data) {
+      if (data.resourceField) {
+        return data.resourceField.filter(item => item.fieldType === 0 || item.fieldType === 1)
+      } else {
+        return data.fileFields.filter(item => item.fieldType === 'String' || item.fieldType === 'Integer')
+      }
+    },
+
+    setDataAlignInputValues(data, val){
+      const dataAlignItem = {
+        inputType: 'select',
+        typeCode: data.participationIdentity === 1 ? 'serverIndex' : 'clientIndex',
+        typeName: data.organName,
+        inputValue: val || '',
+        isRequired: 0,
+        parentValue: null,
+        organId: data.organId,
+        inputValues: this.filterDataAlignFeature(data)
+      }
+
+      const posIndex = this.dataAlignValues.findIndex(organ => organ.organId === data.organId)
+      if (posIndex > -1) {
+        this.dataAlignValues.splice(posIndex, 1, dataAlignItem)
+      } else {
+        this.dataAlignValues.push(dataAlignItem)
+      }
+    },
+
+    replaceDataAlignComponentTypes(){
+      if (this.dataAlignValues.length) {
+        this.nodeData.componentTypes = this.dataAlignValues
+      }
+    },
+
+    //选择资源
     handleDialogSubmit(data) {
       // not selecting resource
       if (!data.resourceId) {
@@ -839,6 +908,8 @@ export default {
       this.selectedResourceId = data.resourceId
       // set input value
       this.setInputValue(data)
+      // set data align
+      this.setDataAlignInputValues(data)
       // Reassign a value to the jointStatistical component
       if (this.inputValue !== '' && this.graphData.cells.find(item => item.componentCode === MPC_STATISTICS)) {
         this.getFeaturesItem()
@@ -847,6 +918,8 @@ export default {
       this.dialogVisible = false
       this.$emit('change', this.nodeData)
     },
+
+    //设置参数
     setInputValue(data) {
       if (this.inputValue) {
         this.inputValues = this.inputValue

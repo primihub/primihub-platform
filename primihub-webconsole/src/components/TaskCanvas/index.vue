@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" :model-components="modelComponents" @change="handleChange" @save="saveFn" />
     <el-dialog
       title="错误提示"
       :visible.sync="dialogVisible"
@@ -137,6 +137,10 @@ export default {
     componentsDetail: {
       type: Object,
       default: () => null
+    },
+    projectType: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -583,11 +587,9 @@ export default {
           if (!this.destroyed) {
             this.saveFn()
             this.$notify.closeAll()
-            this.$notify({
-              message: '删除成功',
-              type: 'success',
-              duration: 1000
-            })
+            this.$notify.success('删除成功')
+            this.selectComponentList = this.getComponentCodeOnView()
+            this.$emit('selectComponents', this.selectComponentList)
           }
         })
         graph.on('node:mouseenter', FunctionExt.debounce(() => {
@@ -628,7 +630,7 @@ export default {
     deleteNode() {
       const cells = this.graph.getSelectedCells()
 
-      if ( cells[0].data.componentCode === 'start' ) {
+      if ( cells[0].data && cells[0].data.componentCode === 'start' ) {
         this.$message.warning('开始组建不可被删除')
         return
       }
@@ -636,15 +638,15 @@ export default {
       if (cells.length) {
         this.graph.removeCells(cells)
       }
-      const currentCode = this.nodeData.componentCode
-      // remove duplicates
-      this.selectComponentList = [...new Set(this.selectComponentList)]
-      const index = this.selectComponentList.indexOf(currentCode)
-      if (index !== -1) {
-        this.selectComponentList.splice(index, 1)
-      }
+      // const currentCode = this.nodeData.componentCode
+      // // remove duplicates
+      // this.selectComponentList = [...new Set(this.selectComponentList)]
+      // const index = this.selectComponentList.indexOf(currentCode)
+      // if (index !== -1) {
+      //   this.selectComponentList.splice(index, 1)
+      // }
+      // this.$emit('selectComponents', this.selectComponentList)
 
-      this.$emit('selectComponents', this.selectComponentList)
       this.nodeData = this.startData
     },
 
@@ -669,15 +671,13 @@ export default {
           if (cells.length === 1 && cells[0].data.componentCode === 'start' ) return false
 
           history.undo()
-
-          this.selectComponentList = this.getComponentCodeOnView(this.graph.getCells())
-          this.$emit('selectComponents', this.selectComponentList)
         }
         return false
       })
     },
 
-    getComponentCodeOnView(cells){
+    getComponentCodeOnView(){
+      const cells = this.graph.getCells()
       const arr = []
       cells.forEach(item => {
         if (item.shape !== 'edge') {
@@ -1289,11 +1289,13 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const res = await getModelComponent()
+      const res = await getModelComponent({ projectType: this.projectType })
       if (res.code === 0) {
         const { result } = res
         const model = result.find(item => item.componentCode === MODEL)
-        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        if (model) {
+          this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        }
         this.components = JSON.parse(JSON.stringify(result))
       }
     },
@@ -1333,7 +1335,9 @@ export default {
     },
     setComponentsDetail(data) {
       const { modelComponents, modelPointComponents } = data
-      console.log(modelPointComponents)
+
+
+
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0

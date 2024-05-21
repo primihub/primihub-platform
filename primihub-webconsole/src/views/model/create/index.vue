@@ -8,7 +8,7 @@
         <div id="stencil" />
       </div>
       <div class="center-container">
-        <TaskCanvas ref="canvasRef" :model-id="modelId" :options="taskOptions" :components-detail="componentDetail" @mounted="init" @selectComponents="handleSelectComponents" @saveParams="getSaveParams" />
+        <TaskCanvas ref="canvasRef" :projectType="projectType" :model-id="modelId" :options="taskOptions" :components-detail="componentDetail" @mounted="init" @selectComponents="handleSelectComponents" @saveParams="getSaveParams" />
       </div>
     </div>
     <div class="footer-buttons">
