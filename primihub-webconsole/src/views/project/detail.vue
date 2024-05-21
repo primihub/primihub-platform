@@ -60,7 +60,7 @@
         </el-tab-pane>
         <el-tab-pane label="任务列表" name="modelTask">
           <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">新建任务</el-button>
-          <ModelTaskList :is-creator="creator" :project-status="projectStatus" />
+          <ModelTaskList :is-creator="creator" :project-status="projectStatus" :projectType="list.projectType" />
         </el-tab-pane>
         <el-tab-pane label="衍生数据" name="derivedData">
           <DerivedDataTable v-if="tabName === 'derivedData'" max-height="480" :data="derivedDataResourceList" />
@@ -164,7 +164,7 @@ export default {
       projectStatus: -1, // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用,
       resourceId: 0,
       localResourceId: 0,
-      list: null,
+      list: {},
     }
   },
   computed: {

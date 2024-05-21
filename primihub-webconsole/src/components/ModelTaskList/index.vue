@@ -108,7 +108,11 @@ export default {
     projectStatus: {
       type: Number,
       default: -1
-    }
+    },
+    projectType: {
+      type: String,
+      default: ''
+    },
   },
   data() {
     return {
@@ -174,7 +178,8 @@ export default {
         query: {
           modelId,
           projectId: this.projectId,
-          isCopy: 1
+          isCopy: 1,
+          projectType: this.projectType
         }
       })
     },
