@@ -6,7 +6,7 @@ import lombok.Data;
 public class ChangeOtherOrganInfoParam {
     private String organId;
     private String organName;
-    private String gatewayAddress;
+    private String gateway;
     private String publicKey;
     private String applyId;
 }
