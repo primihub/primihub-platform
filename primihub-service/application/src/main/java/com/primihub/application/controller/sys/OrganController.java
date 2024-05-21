@@ -116,8 +116,22 @@ public class OrganController {
      * @return
      */
     @PostMapping("changeOtherOrganInfo")
-    public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam changeOtherOrganInfoParam){
-        return sysOrganService.changeOtherOrganInfo(changeOtherOrganInfoParam);
+    public BaseResultEntity changeOtherOrganInfo(ChangeOtherOrganInfoParam param){
+        if (StringUtils.isBlank(param.getOrganId())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"organId");
+        }
+        if (StringUtils.isBlank(param.getGateway())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"gateway");
+        }
+        if (StringUtils.isBlank(param.getPublicKey())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
+        }
+        // 解决 "+" 在传输中替换为 " " 的问题
+        if (param.getPublicKey().contains(" ")) {
+            String replace = param.getPublicKey().replace(" ", "+");
+            param.setPublicKey(replace);
+        }
+        return sysOrganService.changeOtherOrganInfo(param);
     }
     /**
      * 审核申请的机构
