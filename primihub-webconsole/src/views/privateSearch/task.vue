@@ -464,8 +464,6 @@ export default {
           query: item.query
         }
       })
-      console.log('form', this.form)
-      return
       this.$refs.form.validate(valid => {
         if (valid) {
           this.listLoading = true
