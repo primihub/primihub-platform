@@ -348,10 +348,10 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             log.info("data-align serverDataFileHandleField: \n{}", JSONObject.toJSONString(guestDataFileField));
 
             Map<String, String> componentVals = getComponentVals(req.getComponentValues());
-            String clientIndexField = componentVals.get("clientIndex");
+            String guestIndexField = componentVals.get("clientIndex");
+            log.info("data-align guestIndexField: \n{}", guestIndexField);
+            String clientIndexField = componentVals.get("serverIndex");
             log.info("data-align clientIndexField: \n{}", clientIndexField);
-            String serverIndexField = componentVals.get("serverIndex");
-            log.info("data-align serverIndexField: \n{}", serverIndexField);
 
             /*String dataAlign = componentVals.get(DataComponentValue.DataComponetValueKeyEnum.DATA_ALIGN.getCode());
             if (StringUtils.isBlank(dataAlign)) {
@@ -379,7 +379,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             }*/
             //log.info("data-align fieldList : \n{}", JSONObject.toJSONString(fieldList));
             clientIndex = clientDataFileField.stream().filter(clientField ->clientField.equals(clientIndexField)).map(clientDataFileField::indexOf).collect(Collectors.toList());
-            serverIndex = guestDataFileField.stream().filter(clientField ->clientField.equals(serverIndexField)).map(guestDataFileField::indexOf).collect(Collectors.toList());
+            serverIndex = guestDataFileField.stream().filter(clientField ->clientField.equals(guestIndexField)).map(guestDataFileField::indexOf).collect(Collectors.toList());
             //clientIndex = fieldList.stream().map(clientDataFileField::indexOf).collect(Collectors.toList());
             //serverIndex = fieldList.stream().map(guestDataFileField::indexOf).collect(Collectors.toList());
             if (clientIndex.stream().anyMatch(integer -> integer < 0)) {
