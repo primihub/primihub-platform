@@ -583,11 +583,9 @@ export default {
           if (!this.destroyed) {
             this.saveFn()
             this.$notify.closeAll()
-            this.$notify({
-              message: '删除成功',
-              type: 'success',
-              duration: 1000
-            })
+            this.$notify.success('删除成功')
+            this.selectComponentList = this.getComponentCodeOnView()
+            this.$emit('selectComponents', this.selectComponentList)
           }
         })
         graph.on('node:mouseenter', FunctionExt.debounce(() => {
@@ -628,7 +626,7 @@ export default {
     deleteNode() {
       const cells = this.graph.getSelectedCells()
 
-      if ( cells[0].data.componentCode === 'start' ) {
+      if ( cells[0].data && cells[0].data.componentCode === 'start' ) {
         this.$message.warning('开始组建不可被删除')
         return
       }
@@ -636,15 +634,15 @@ export default {
       if (cells.length) {
         this.graph.removeCells(cells)
       }
-      const currentCode = this.nodeData.componentCode
-      // remove duplicates
-      this.selectComponentList = [...new Set(this.selectComponentList)]
-      const index = this.selectComponentList.indexOf(currentCode)
-      if (index !== -1) {
-        this.selectComponentList.splice(index, 1)
-      }
+      // const currentCode = this.nodeData.componentCode
+      // // remove duplicates
+      // this.selectComponentList = [...new Set(this.selectComponentList)]
+      // const index = this.selectComponentList.indexOf(currentCode)
+      // if (index !== -1) {
+      //   this.selectComponentList.splice(index, 1)
+      // }
+      // this.$emit('selectComponents', this.selectComponentList)
 
-      this.$emit('selectComponents', this.selectComponentList)
       this.nodeData = this.startData
     },
 
@@ -669,15 +667,13 @@ export default {
           if (cells.length === 1 && cells[0].data.componentCode === 'start' ) return false
 
           history.undo()
-
-          this.selectComponentList = this.getComponentCodeOnView(this.graph.getCells())
-          this.$emit('selectComponents', this.selectComponentList)
         }
         return false
       })
     },
 
-    getComponentCodeOnView(cells){
+    getComponentCodeOnView(){
+      const cells = this.graph.getCells()
       const arr = []
       cells.forEach(item => {
         if (item.shape !== 'edge') {
