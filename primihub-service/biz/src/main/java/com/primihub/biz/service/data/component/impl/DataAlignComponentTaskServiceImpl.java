@@ -341,19 +341,28 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         try {
             List<String> clientDataFileField = Arrays.stream(clientDataFileFieldStr
                     .split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+            log.info("data-align clientDataFileHandleField: \n{}", JSONObject.toJSONString(clientDataFileField));
+
             List<String> guestDataFileField = Arrays.stream(guestDataFileFieldStr
                     .split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+            log.info("data-align serverDataFileHandleField: \n{}", JSONObject.toJSONString(guestDataFileField));
+
             Map<String, String> componentVals = getComponentVals(req.getComponentValues());
-            String dataAlign = componentVals.get(DataComponentValue.DataComponetValueKeyEnum.DATA_ALIGN.getCode());
+            String clientIndexField = componentVals.get("clientIndex");
+            log.info("data-align clientIndexField: \n{}", clientIndexField);
+            String serverIndexField = componentVals.get("serverIndex");
+            log.info("data-align serverIndexField: \n{}", serverIndexField);
+
+            /*String dataAlign = componentVals.get(DataComponentValue.DataComponetValueKeyEnum.DATA_ALIGN.getCode());
             if (StringUtils.isBlank(dataAlign)) {
                 log.error("{} ---- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐选择为空");
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐选择为空");
-            }
+            }*/
             List<Integer> clientIndex;
             List<Integer> serverIndex;
-            List<String> fieldList = null;
+            //List<String> fieldList = null;
             // 1是以id单列任务特征
-            if ("1".equals(dataAlign)) {
+            /*if ("1".equals(dataAlign)) {
                 if (clientDataFileField.contains("id") && guestDataFileField.contains("id")) {
                     fieldList = Arrays.stream(new String[]{"id"}).collect(Collectors.toList());
                 } else {
@@ -367,12 +376,12 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐选择特征为空");
                 }
                 fieldList = JSONArray.parseArray(multipleSelected, String.class);
-            }
-            log.info("data-align clientDataFileHandleField: \n{}", JSONObject.toJSONString(clientDataFileField));
-            log.info("data-align serverDataFileHandleField: \n{}", JSONObject.toJSONString(guestDataFileField));
-            log.info("data-align fieldList : \n{}", JSONObject.toJSONString(fieldList));
-            clientIndex = fieldList.stream().map(clientDataFileField::indexOf).collect(Collectors.toList());
-            serverIndex = fieldList.stream().map(guestDataFileField::indexOf).collect(Collectors.toList());
+            }*/
+            //log.info("data-align fieldList : \n{}", JSONObject.toJSONString(fieldList));
+            clientIndex = clientDataFileField.stream().filter(clientField ->clientField.equals(clientIndexField)).map(clientDataFileField::indexOf).collect(Collectors.toList());
+            serverIndex = guestDataFileField.stream().filter(clientField ->clientField.equals(serverIndexField)).map(guestDataFileField::indexOf).collect(Collectors.toList());
+            //clientIndex = fieldList.stream().map(clientDataFileField::indexOf).collect(Collectors.toList());
+            //serverIndex = fieldList.stream().map(guestDataFileField::indexOf).collect(Collectors.toList());
             if (clientIndex.stream().anyMatch(integer -> integer < 0)) {
                 log.error("{} ---- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐发起方特征未查询到");
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐发起方特征未查询到");

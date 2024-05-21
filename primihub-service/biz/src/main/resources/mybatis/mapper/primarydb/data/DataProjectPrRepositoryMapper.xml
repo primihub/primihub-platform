@@ -10,7 +10,7 @@
         <set>
             <if test="projectName!=null">project_name = #{projectName},</if>
             <if test="projectDesc!=null">project_desc = #{projectDesc},</if>
-            <if test="projectType!=null">project_desc = #{projectType},</if>
+            <if test="projectType!=null">project_type = #{projectType},</if>
             <if test="createdOrganId!=null">created_organ_id = #{createdOrganId},</if>
             <if test="createdOrganName!=null">created_organ_name = #{createdOrganName},</if>
             <if test="createdUsername!=null">created_username = #{createdUsername},</if>
