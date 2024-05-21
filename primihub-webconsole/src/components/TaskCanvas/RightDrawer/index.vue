@@ -99,7 +99,15 @@
               </div>
             </div>
           </div>
-          <el-button v-if="options.isEditable && nodeData.componentTypes.find(item => item.typeCode === 'addFilling')" class="block" type="primary" @click="addFilling">添加统计项</el-button>
+          <el-button
+            v-if="options.isEditable &&
+                  nodeData.componentTypes.find(item => item.typeCode === 'addFilling') &&
+                  featureItems.length < processingType.length
+                  "
+            class="block"
+            type="primary"
+            @click="addFilling"
+          >添加统计项</el-button>
         </el-form-item>
       </template>
       <template v-else-if="nodeData.componentCode === MODEL">
