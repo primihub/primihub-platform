@@ -206,6 +206,7 @@ public class SysOrganService {
         sysOrgan.setApplyId(organConfiguration.generateUniqueCode());
         sysOrgan.setOrganGateway(gateway);
         sysOrgan.setPublicKey(publicKey);
+
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         Map<String,Object> map = new HashMap<>();
         map.put("organId",sysLocalOrganInfo.getOrganId());
@@ -265,7 +266,7 @@ public class SysOrganService {
             sysOrganPrimarydbRepository.insertSysOrgan(sysOrgan);
         }else {
             sysOrgan.setApplyId(info.get("applyId").toString());
-            sysOrgan.setOrganGateway(info.get("gateway").toString());
+            // 这里的gateway地址不能随对方而改变
             sysOrgan.setPublicKey(info.get("publicKey").toString());
             sysOrgan.setOrganId(info.get("organId").toString());
             sysOrgan.setOrganName(info.get("organName").toString());
