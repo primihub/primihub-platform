@@ -414,24 +414,22 @@ export default {
   watch: {
     async modelComponents(newVal){
       if (newVal) {
+        const obj = {}
         const dataAlignComponent = newVal.find(item => item.componentCode === 'dataAlign')
+        const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
+        if (!dataSetComponent) return
         if (dataAlignComponent) {
-          const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
-          if (!dataSetComponent) return
-
-          const obj = {}
           dataAlignComponent.componentValues.forEach(item => {
             if (item.key === 'serverIndex' || item.key === 'clientIndex') {
               const index = item.key === 'serverIndex' ? 1 : 2
               obj[index] = item.val
             }
           })
-
-          const data = JSON.parse(dataSetComponent.componentValues[0].val)
-          data.forEach((organ) => {
-            this.setDataAlignInputValues(organ, obj[organ.participationIdentity])
-          })
         }
+        const dataSetValues = JSON.parse(dataSetComponent.componentValues[0].val)
+        dataSetValues.forEach((organ) => {
+            this.setDataAlignInputValues(organ, obj[organ.participationIdentity] || '')
+        })
       }
     },
     dataAlignTypeValue: {
@@ -466,9 +464,9 @@ export default {
           this.flText = this.filterModelValue()
           console.log(this.flText)
         } else if (newVal.componentCode === DATA_ALIGN) {
-          // this.getDataSetComValue()
           // this.getFeaturesOptions()
           // this.getDataAlignParams()
+          // this.getDataSetComValue()
           this.replaceDataAlignComponentTypes()
         } else if (newVal.componentCode === MPC_STATISTICS) {
           this.getDataSetComValue()
@@ -739,9 +737,12 @@ export default {
     },
     handleProviderRemove(index) {
       if (this.inputValue !== '') {
+        const organ = this.inputValue?.find(item => item.organId === this.selectedProviderOrgans[index].organId)
         const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
         this.inputValue.splice(posIndex, 1)
         this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
+        // remove DataAlign select
+        this.removeDataAlignInputValues(organ)
         this.handleChange()
       }
 
@@ -773,12 +774,16 @@ export default {
               } else {
                 this.selectedProviderOrgans[index] = Object.assign(this.selectedProviderOrgans[index], item)
               }
+              // set DataAlign select
+              this.setDataAlignInputValues(item)
             })
           }
           this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
           this.setInputValue(this.selectedProviderOrgans)
         } else {
           this.selectedProviderOrgans.push(data)
+          // set DataAlign select
+          this.setDataAlignInputValues(item)
         }
       } else {
         this.arbiterOrganName = data.organName
@@ -852,8 +857,10 @@ export default {
     filterDataAlignFeature(data) {
       if (data.resourceField) {
         return data.resourceField.filter(item => item.fieldType === 0 || item.fieldType === 1)
-      } else {
+      } else if (data.fileFields) {
         return data.fileFields.filter(item => item.fieldType === 'String' || item.fieldType === 'Integer')
+      } else {
+        return []
       }
     },
 
@@ -876,6 +883,11 @@ export default {
       } else {
         this.dataAlignValues.push(dataAlignItem)
       }
+    },
+
+    /** remove dataAlign select*/
+    removeDataAlignInputValues(data){
+      this.dataAlignValues = this.dataAlignValues.filter(organ => organ.organId !== data.organId)
     },
 
     /** replace dataAlign ComponentTypes */
