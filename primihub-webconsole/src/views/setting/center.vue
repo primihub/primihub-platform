@@ -66,7 +66,8 @@
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
               <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link>
               <el-link v-if="row.examineState === 1 && row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
-              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply (row)">重新连接</el-link>
+              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply(row)">重新连接</el-link>
+              <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectUpdate(row)">修改</el-link>
             </div>
           </template>
         </el-table-column>
@@ -231,6 +232,20 @@ export default {
       this.organDialogTitle = '重新连接节点'
       this.connectDialogVisible = true
     },
+    reconnectUpdate({ id, publicKey, organGateway, organId, organName, applyId, enable }) {
+      console.log('reconnectApply ====>>', organId)
+      this.partnersForm.publicKey = publicKey
+      this.partnersForm.gateway = organGateway
+      this.partnersForm.organId = organId
+      this.partnersForm.organName = organName
+      this.partnersForm.enable = enable
+      this.reconnect = true
+      this.applyId = id
+      this.connectApplyId = applyId
+      this.organDialogTitle = '修改节点信息'
+      this.organInfoChanged = true
+      this.connectDialogVisible = true
+    },
     async handleConnect({ id, enable, organId, organGateway, publicKey, applyId }) {
       const status = enable === 1 ? 0 : 1
       const res = await enableStatus({ id, status })
@@ -258,7 +273,7 @@ export default {
         applyId: this.connectApplyId,
         organId: this.partnersForm.organId,
         organName: this.partnersForm.organName,
-        gatewayAddress: this.partnersForm.gateway,
+        gateway: this.partnersForm.gateway,
         publicKey: this.partnersForm.publicKey
       }
       const res = await changeOtherOrganInfo(params)
@@ -376,6 +391,7 @@ export default {
       this.$refs.partnersForm.resetFields()
       this.partnersForm.organName = ''
       this.partnersForm.organId = ''
+      this.organInfoChanged = false
       this.connectDialogVisible = false
     },
     organConfirmDialog() {
