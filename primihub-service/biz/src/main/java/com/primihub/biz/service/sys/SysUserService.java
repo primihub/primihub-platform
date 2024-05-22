@@ -82,7 +82,7 @@ public class SysUserService {
             return BaseResultEntity.failure(BaseResultEnum.ACCOUNT_NOT_FOUND);
         }
         Long number = sysUserPrimaryRedisRepository.loginVerificationNumber(sysUser.getUserId());
-        if (number >= SysConstant.SYS_USER_PASS_ERRER_NUM) {
+        if (number >= SysConstant.SYS_USER_PASS_ERROR_NUM) {
             BaseResultEntity failure = BaseResultEntity.failure(BaseResultEnum.RESTRICT_LOGIN, "限制12小时登录，当前未到自动解除时限。您可通过忘记密码解除限制。");
             failure.setResult(number);
             return failure;
