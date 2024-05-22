@@ -92,8 +92,8 @@ public class SysUserPrimaryRedisRepository {
         if (increment == null || increment == 1L){
             stringRedisTemplate.expire(userKey, 1, TimeUnit.HOURS);
         }
-        if (increment!=null && increment >= SysConstant.SYS_USER_PASS_ERRER_NUM){
-            log.info("The password exceeds the number of errors user_id:{} num:{}",userId,SysConstant.SYS_USER_PASS_ERRER_NUM);
+        if (increment!=null && increment >= SysConstant.SYS_USER_PASS_ERROR_NUM){
+            log.info("The password exceeds the number of errors user_id:{} num:{}",userId,SysConstant.SYS_USER_PASS_ERROR_NUM);
             stringRedisTemplate.expire(userKey,SysConstant.SYS_USER_LOGIN_LIMIT_NUM, TimeUnit.HOURS);
         }
         return increment;

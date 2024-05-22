@@ -2,8 +2,10 @@ package com.primihub.biz.service.test;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
+import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
 import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -18,6 +20,8 @@ import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
+import com.primihub.sdk.config.GrpcProxyConfig;
+import com.primihub.sdk.config.ProxyConfig;
 import com.primihub.sdk.task.TaskHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -49,6 +53,8 @@ public class TestService {
     private OrganConfiguration organConfiguration;
     @Autowired
     private TaskHelper taskHelper;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
 
     public void formatResources(String tag) {
@@ -81,10 +87,27 @@ public class TestService {
         }
     }
 
+    // 出代理
     public BaseResultEntity testDataSet(String id) {
         BaseResultEntity testDataSet = fusionResourceService.getTestDataSet(id);
         log.info(JSONObject.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            if (nodeHasGRPCOutProxy()) {
+                List<DataSet> result = (List<DataSet>) testDataSet.getResult();
+                for (DataSet dataSet : result) {
+                    String oldAddress = dataSet.getAddress();
+                    String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
+                    if (split.length < 3) {
+                        continue;
+                    }
+                    ProxyConfig outProxy = baseConfiguration.getGrpcProxy().getOutProxy();
+                    String oldHost = split[1];
+                    String oldPort = split[2];
+                    String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
+                    String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
+                    dataSet.setAddress(replace2);
+                }
+            }
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {
                 otherBusinessesService.syncGatewayApiData(testDataSet.getResult(),sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",null);
@@ -93,9 +116,54 @@ public class TestService {
         return BaseResultEntity.success();
     }
 
+    private boolean nodeHasGRPCOutProxy() {
+        GrpcProxyConfig grpcProxy = baseConfiguration.getGrpcProxy();
+        if (grpcProxy == null) {
+            return false;
+        }
+        ProxyConfig outProxy = grpcProxy.getOutProxy();
+        if (outProxy == null) {
+            return false;
+        }
+        if (StringUtils.isBlank(outProxy.getAddress()) || outProxy.getPort() == null) {
+            return false;
+        }
+        return true;
+    }
+
     public BaseResultEntity batchSaveTestDataSet(List<DataSet> dataSets) {
         log.info(JSONObject.toJSONString(dataSets));
+        if (nodeHasGRPCInProxy()) {
+            for (DataSet dataSet : dataSets) {
+                String oldAddress = dataSet.getAddress();
+                String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
+                if (split.length < 3) {
+                    continue;
+                }
+                ProxyConfig outProxy = baseConfiguration.getGrpcProxy().getInProxy();
+                String oldHost = split[1];
+                String oldPort = split[2];
+                String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
+                String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
+                dataSet.setAddress(replace2);
+            }
+        }
         return fusionResourceService.batchSaveTestDataSet(dataSets);
+    }
+
+    private boolean nodeHasGRPCInProxy() {
+        GrpcProxyConfig grpcProxy = baseConfiguration.getGrpcProxy();
+        if (grpcProxy == null) {
+            return false;
+        }
+        ProxyConfig outProxy = grpcProxy.getInProxy();
+        if (outProxy == null) {
+            return false;
+        }
+        if (StringUtils.isBlank(outProxy.getAddress()) || outProxy.getPort() == null) {
+            return false;
+        }
+        return true;
     }
 
     public BaseResultEntity killTask(String taskId) {
