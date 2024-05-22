@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.ResultPrRepository">
+
+    <insert id="savePsiResultList" keyProperty="id" useGeneratedKeys="true">
+        insert into psi_result (idNum,
+        psi_task_id)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.idNum}, #{item.psiTaskId})
+        </foreach>
+    </insert>
+
+    <insert id="savePirResultList" keyProperty="id" useGeneratedKeys="true">
+        insert into pir_result (idNum, scoreModelType, score, pir_task_id)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (#{item.idNum}, #{item.scoreModelType}, #{item.score}, #{item.pirTaskId})
+        </foreach>
+    </insert>
+</mapper>

@@ -24,10 +24,7 @@ import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
-import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
-import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
-import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
+import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
@@ -81,6 +78,8 @@ public class PirService {
     private ScoreModelRepository scoreModelRepository;
     @Autowired
     private ScoreModelPrRepository scoreModelPrRepository;
+    @Autowired
+    private ResultPrRepository resultPrRepository;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -234,7 +233,7 @@ public class PirService {
         String recordId = Long.toString(SnowflakeId.getInstance().nextId());
         PirRecord record = new PirRecord();
         record.setRecordId(recordId);
-        record.setPirName("PIR-" + psiRecord.getRecordId());
+        record.setPirName(req.getTaskName());
         record.setTaskState(0);
         record.setOriginOrganId(organConfiguration.getSysLocalOrganId());
         record.setTargetOrganId(psiRecord.getTargetOrganId());
@@ -384,9 +383,11 @@ public class PirService {
         String pirRecordId = req.getPirRecordId();
         PirRecord record = recordRepository.selectPirRecordByRecordId(pirRecordId);
 
+        record.setPirTaskId(dataPirTask.getTaskId());
         record.setTaskState(dataTask.getTaskState());
+
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
-            List<LinkedHashMap<String, Object>> list = new ArrayList<>();
             if (org.apache.commons.lang.StringUtils.isNotEmpty(dataTask.getTaskResultPath())) {
                 list = FileUtil.getAllCsvData(dataTask.getTaskResultPath());
             }
@@ -394,6 +395,14 @@ public class PirService {
             record.setEndTime(new Date());
         }
         recordPrRepository.updatePirRecord(record);
+
+        if (com.alibaba.nacos.common.utils.CollectionUtils.isNotEmpty(list)) {
+            list.forEach(map -> {
+                map.put("pirTaskId", dataPirTask.getTaskId());
+            });
+            resultPrRepository.savePirResultList(list);
+        }
+
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getTargetOrganId());
         for (SysOrgan organ : sysOrgans) {
             return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPirRecord", organ.getPublicKey());
