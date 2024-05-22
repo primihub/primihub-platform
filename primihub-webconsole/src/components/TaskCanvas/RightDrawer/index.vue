@@ -426,7 +426,9 @@ export default {
             }
           })
         }
-        const dataSetValues = JSON.parse(dataSetComponent.componentValues[0].val)
+
+        const dataSetValuesJson = dataSetComponent.componentValues[0].val
+        const dataSetValues = dataSetValuesJson ? JSON.parse(dataSetValuesJson) : []
         dataSetValues.forEach((organ) => {
             this.setDataAlignInputValues(organ, obj[organ.participationIdentity] || '')
         })
@@ -440,10 +442,14 @@ export default {
       },
       immediate: true
     },
-    graphData(newVal) {
-      if (newVal) {
-        this.getDataSetComValue(newVal)
-      }
+    graphData: {
+      handler: function(newVal) {
+        if (newVal) {
+          this.getDataSetComValue(newVal)
+        }
+      },
+      deep: true,
+      immediate: true
     },
     async nodeData(newVal) {
       console.log('watch newVal', newVal)
@@ -496,12 +502,29 @@ export default {
     getFillTransformData() {
       let calculationFields = []
       let resourceFields = []
+      const dataAlignMap = {}
       this.FitTransformData = []
       if (!this.inputValue) return
-      this.inputValue.map(item => {
-        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
-        calculationFields = [...new Set([...calculationFields, ...item.calculationField])]
+
+      // hide dataAlign selected value in fillTransform
+      const dataAlignComponent = this.graphData.cells.find(item => item.componentCode === DATA_ALIGN)
+      const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
+      dataAlignComponentTypes.forEach((item) => {
+        if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
+          const index = item.typeCode === 'serverIndex' ? 1 : 2
+          dataAlignMap[index] = item.inputValue
+        }
       })
+
+      this.inputValue.map(item => {
+        // hide dataAlign selected value in fillTransform
+        const field = dataAlignMap[item.participationIdentity]
+        const currentCalculationFields = item.calculationField.filter(item => item !== field)
+
+        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
+        calculationFields = [...new Set([...calculationFields, ...currentCalculationFields])]
+      })
+
       calculationFields.forEach(item => {
         const selectColumn = resourceFields.find(field => field.fieldName === item)
         if (selectColumn) {

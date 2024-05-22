@@ -9,7 +9,9 @@
       <el-checkbox-group v-model="calculationField" @change="handleCheckedChange">
         <el-checkbox v-for="(item,index) in data.fileHandleField" :key="index" :disabled="item === 'y'" :label="item" />
       </el-checkbox-group>
+      <p style="margin-top: 20px; font-size: 12px;">注：仅选中特征参与计算</p>
     </el-descriptions-item>
+    <p></p>
   </el-descriptions>
 </template>
 
