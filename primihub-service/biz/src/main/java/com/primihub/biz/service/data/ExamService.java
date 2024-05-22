@@ -9,6 +9,7 @@ import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.constant.RemoteConstant;
+import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.convert.DataExamConvert;
 import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.*;
@@ -233,7 +234,7 @@ public class ExamService {
     }
 
     //    private DataResource generateTargetResource(Map returnMap) {
-    public DataResource generateTargetResource(List<Map> metaData) {
+    public DataResource generateTargetResource(List<Map> metaData, String resourceName) {
         log.info("开始生成数据源===========================");
 
         SysFile sysFile = new SysFile();
@@ -273,8 +274,8 @@ public class ExamService {
 
         try {
             DataResource po = new DataResource();
-            po.setResourceName("预处理生成资源");
-            po.setResourceDesc("预处理生成资源");
+            po.setResourceName(resourceName);
+            po.setResourceDesc(resourceName);
             po.setResourceAuthType(1);  // 公开
             po.setResourceSource(1);    // 文件
 //            po.setUserId();
@@ -446,7 +447,12 @@ public class ExamService {
                 String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
                 List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
                 // 生成数据源
-                DataResource dataResource = generateTargetResource(maps);
+                String resourceName = new StringBuffer()
+                        .append("预处理生成资源")
+                        .append(SysConstant.HYPHEN_DELIMITER)
+                        .append(req.getTaskId())
+                        .toString();
+                DataResource dataResource = generateTargetResource(maps, resourceName);
                 if (dataResource == null) {
                     req.setTaskState(TaskStateEnum.FAIL.getStateType());
                     sendEndExamTask(req);
@@ -458,7 +464,6 @@ public class ExamService {
                 req.setTargetResourceId(dataResource.getResourceFusionId());
                 sendEndExamTask(req);
                 log.info("====================== SUCCESS");
-                log.info("====================== 预处理结束");
                 return null;
             } catch (Exception e) {
                 log.error("异步执行异常: {}", e.toString());

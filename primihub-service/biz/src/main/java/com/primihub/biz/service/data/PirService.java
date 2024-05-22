@@ -6,6 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.constant.RemoteConstant;
+import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -307,7 +308,12 @@ public class PirService {
         String jsonArrayStr = JSON.toJSONString(voSet);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
         // 生成数据源
-        DataResource dataResource = examService.generateTargetResource(maps);
+        String resourceName = new StringBuffer()
+                .append("PIR处理资源")
+                .append(SysConstant.HYPHEN_DELIMITER)
+                .append(req.getTaskName())
+                .toString();
+        DataResource dataResource = examService.generateTargetResource(maps, resourceName);
 
         req.setTargetResourceId(dataResource.getResourceFusionId());
 
