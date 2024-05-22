@@ -421,8 +421,10 @@ export default {
 
           const obj = {}
           dataAlignComponent.componentValues.forEach(item => {
-            const index = item.key === 'serverIndex' ? 1 : 2
-            obj[index] = item.val
+            if (item.key === 'serverIndex' || item.key === 'clientIndex') {
+              const index = item.key === 'serverIndex' ? 1 : 2
+              obj[index] = item.val
+            }
           })
 
           const data = JSON.parse(dataSetComponent.componentValues[0].val)
@@ -846,6 +848,7 @@ export default {
       this.dialogVisible = false
     },
 
+    /** filter  dataAlign feature*/
     filterDataAlignFeature(data) {
       if (data.resourceField) {
         return data.resourceField.filter(item => item.fieldType === 0 || item.fieldType === 1)
@@ -854,6 +857,7 @@ export default {
       }
     },
 
+    /** set dataAlign input values*/
     setDataAlignInputValues(data, val){
       const dataAlignItem = {
         inputType: 'select',
@@ -874,6 +878,7 @@ export default {
       }
     },
 
+    /** replace dataAlign ComponentTypes */
     replaceDataAlignComponentTypes(){
       if (this.dataAlignValues.length) {
         this.nodeData.componentTypes = this.dataAlignValues
