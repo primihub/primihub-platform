@@ -95,9 +95,9 @@ public class TestService {
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             if (nodeHasGRPCOutProxy()) {
                 List<LinkedHashMap> result = (List<LinkedHashMap>) testDataSet.getResult();
-
                 for (LinkedHashMap map : result) {
                     String oldAddress = (String) map.getOrDefault("address", StringUtils.EMPTY);
+                    log.info("[address][before] --- [{}]", oldAddress);
                     String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
                     if (split.length < 3) {
                         continue;
@@ -107,6 +107,7 @@ public class TestService {
                     String oldPort = split[2];
                     String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
                     String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
+                    log.info("[address][after] --- [{}]", replace2);
                     map.put("address", replace2);
                 }
             }
