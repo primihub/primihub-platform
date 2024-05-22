@@ -36,7 +36,7 @@ export default {
   },
   async created() {
     if (this.$store.state.settings.isHideNodeMap) {
-      this.$router.push('/project/list')
+      this.$router.push('/setting/center')
       return
     }
     await this.getData()
