@@ -30,6 +30,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 @Service
@@ -93,9 +94,10 @@ public class TestService {
         log.info(JSONObject.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             if (nodeHasGRPCOutProxy()) {
-                List<DataSet> result = (List<DataSet>) testDataSet.getResult();
-                for (DataSet dataSet : result) {
-                    String oldAddress = dataSet.getAddress();
+                List<LinkedHashMap> result = (List<LinkedHashMap>) testDataSet.getResult();
+
+                for (LinkedHashMap map : result) {
+                    String oldAddress = (String) map.getOrDefault("address", StringUtils.EMPTY);
                     String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
                     if (split.length < 3) {
                         continue;
@@ -105,7 +107,7 @@ public class TestService {
                     String oldPort = split[2];
                     String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
                     String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
-                    dataSet.setAddress(replace2);
+                    map.put("address", replace2);
                 }
             }
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
