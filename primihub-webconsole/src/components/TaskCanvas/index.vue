@@ -34,7 +34,7 @@ import RightDrawer from './RightDrawer'
 
 import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan, restartTaskModel } from '@/api/model'
 
-import { DATA_SET, MODEL, ARBITER_ORGAN, MPC_STATISTICS, DATA_SET_SELECT_DATA, MODEL_TYPE, START_NODE, TASK_NAME, MODEL_NAME } from '@/const/componentCode.js'
+import { DATA_SET, MODEL, ARBITER_ORGAN, MPC_STATISTICS, DATA_SET_SELECT_DATA, MODEL_TYPE, START_NODE, TASK_NAME, MODEL_NAME, DATA_ALIGN, FIT_TRANSFORM } from '@/const/componentCode.js'
 
 const lineAttr = { // 线样式
   'line': {
@@ -582,7 +582,7 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('cell:removed', () => {
+        graph.on('cell:removed', ({ cell }) => {
           this.needSave = true
           if (!this.destroyed) {
             this.saveFn()
@@ -590,6 +590,7 @@ export default {
             this.$notify.success('删除成功')
             this.selectComponentList = this.getComponentCodeOnView()
             this.$emit('selectComponents', this.selectComponentList)
+            this.graphData.cells = this.graphData.cells.filter(item => item.id !== cell.id)
           }
         })
         graph.on('node:mouseenter', FunctionExt.debounce(() => {
@@ -713,6 +714,32 @@ export default {
           return true
         }
       }
+    },
+
+    checkModelVFLValidated() {
+      if (!this.saveParams.param) return false
+      const { modelComponents, modelPointComponents } = this.saveParams.param
+      let dataAlignId = null
+      let fitTransformId = null
+      let isValidated = false
+      modelComponents.forEach(node => {
+        node.componentCode === DATA_ALIGN && (dataAlignId = node.frontComponentId)
+        node.componentCode === FIT_TRANSFORM && (fitTransformId = node.frontComponentId)
+      })
+
+      if (dataAlignId && fitTransformId) {
+        modelPointComponents.forEach(edge => {
+          if (edge.input.cell === dataAlignId && edge.output.cell === fitTransformId) {
+            isValidated = true
+            return
+          }
+        })
+      } else {
+        isValidated = true
+      }
+
+      !isValidated && this.$message.error('请确保任务流程中，数据对齐在缺失值填充之前')
+      return isValidated
     },
 
     checkRunValidated() {
@@ -851,10 +878,12 @@ export default {
         })
         this.modelRunValidated = false
       }
+      this.modelRunValidated = this.checkModelVFLValidated()
     },
 
     /** run */
     async run() {
+      console.log(this.graphData)
       // 运行前触发保存
       this.isDraft = 1
       await this.saveFn()
@@ -863,6 +892,7 @@ export default {
         this.isDraft = 0
         return
       }
+
       runTaskModel({ modelId: this.currentModelId }).then(res => {
         if (res.code !== 0) {
           if (res.code === 1007) {

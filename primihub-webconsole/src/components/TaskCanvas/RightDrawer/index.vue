@@ -414,22 +414,24 @@ export default {
   watch: {
     async modelComponents(newVal){
       if (newVal) {
+        const obj = {}
         const dataAlignComponent = newVal.find(item => item.componentCode === 'dataAlign')
+        const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
+        if (!dataSetComponent) return
         if (dataAlignComponent) {
-          const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
-          if (!dataSetComponent) return
-
-          const obj = {}
           dataAlignComponent.componentValues.forEach(item => {
-            const index = item.key === 'serverIndex' ? 1 : 2
-            obj[index] = item.val
-          })
-
-          const data = JSON.parse(dataSetComponent.componentValues[0].val)
-          data.forEach((organ) => {
-            this.setDataAlignInputValues(organ, obj[organ.participationIdentity])
+            if (item.key === 'serverIndex' || item.key === 'clientIndex') {
+              const index = item.key === 'serverIndex' ? 1 : 2
+              obj[index] = item.val
+            }
           })
         }
+
+        const dataSetValuesJson = dataSetComponent.componentValues[0].val
+        const dataSetValues = dataSetValuesJson ? JSON.parse(dataSetValuesJson) : []
+        dataSetValues.forEach((organ) => {
+            this.setDataAlignInputValues(organ, obj[organ.participationIdentity] || '')
+        })
       }
     },
     dataAlignTypeValue: {
@@ -440,10 +442,14 @@ export default {
       },
       immediate: true
     },
-    graphData(newVal) {
-      if (newVal) {
-        this.getDataSetComValue(newVal)
-      }
+    graphData: {
+      handler: function(newVal) {
+        if (newVal) {
+          this.getDataSetComValue(newVal)
+        }
+      },
+      deep: true,
+      immediate: true
     },
     async nodeData(newVal) {
       console.log('watch newVal', newVal)
@@ -464,9 +470,9 @@ export default {
           this.flText = this.filterModelValue()
           console.log(this.flText)
         } else if (newVal.componentCode === DATA_ALIGN) {
-          // this.getDataSetComValue()
           // this.getFeaturesOptions()
           // this.getDataAlignParams()
+          // this.getDataSetComValue()
           this.replaceDataAlignComponentTypes()
         } else if (newVal.componentCode === MPC_STATISTICS) {
           this.getDataSetComValue()
@@ -496,12 +502,29 @@ export default {
     getFillTransformData() {
       let calculationFields = []
       let resourceFields = []
+      const dataAlignMap = {}
       this.FitTransformData = []
       if (!this.inputValue) return
-      this.inputValue.map(item => {
-        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
-        calculationFields = [...new Set([...calculationFields, ...item.calculationField])]
+
+      // hide dataAlign selected value in fillTransform
+      const dataAlignComponent = this.graphData.cells.find(item => item.componentCode === DATA_ALIGN)
+      const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
+      dataAlignComponentTypes.forEach((item) => {
+        if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
+          const index = item.typeCode === 'serverIndex' ? 1 : 2
+          dataAlignMap[index] = item.inputValue
+        }
       })
+
+      this.inputValue.map(item => {
+        // hide dataAlign selected value in fillTransform
+        const field = dataAlignMap[item.participationIdentity]
+        const currentCalculationFields = item.calculationField.filter(item => item !== field)
+
+        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
+        calculationFields = [...new Set([...calculationFields, ...currentCalculationFields])]
+      })
+
       calculationFields.forEach(item => {
         const selectColumn = resourceFields.find(field => field.fieldName === item)
         if (selectColumn) {
@@ -737,9 +760,12 @@ export default {
     },
     handleProviderRemove(index) {
       if (this.inputValue !== '') {
+        const organ = this.inputValue?.find(item => item.organId === this.selectedProviderOrgans[index].organId)
         const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
         this.inputValue.splice(posIndex, 1)
         this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
+        // remove DataAlign select
+        this.removeDataAlignInputValues(organ)
         this.handleChange()
       }
 
@@ -771,12 +797,16 @@ export default {
               } else {
                 this.selectedProviderOrgans[index] = Object.assign(this.selectedProviderOrgans[index], item)
               }
+              // set DataAlign select
+              this.setDataAlignInputValues(item)
             })
           }
           this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
           this.setInputValue(this.selectedProviderOrgans)
         } else {
           this.selectedProviderOrgans.push(data)
+          // set DataAlign select
+          this.setDataAlignInputValues(item)
         }
       } else {
         this.arbiterOrganName = data.organName
@@ -846,14 +876,18 @@ export default {
       this.dialogVisible = false
     },
 
+    /** filter  dataAlign feature*/
     filterDataAlignFeature(data) {
       if (data.resourceField) {
         return data.resourceField.filter(item => item.fieldType === 0 || item.fieldType === 1)
-      } else {
+      } else if (data.fileFields) {
         return data.fileFields.filter(item => item.fieldType === 'String' || item.fieldType === 'Integer')
+      } else {
+        return []
       }
     },
 
+    /** set dataAlign input values*/
     setDataAlignInputValues(data, val){
       const dataAlignItem = {
         inputType: 'select',
@@ -874,6 +908,12 @@ export default {
       }
     },
 
+    /** remove dataAlign select*/
+    removeDataAlignInputValues(data){
+      this.dataAlignValues = this.dataAlignValues.filter(organ => organ.organId !== data.organId)
+    },
+
+    /** replace dataAlign ComponentTypes */
     replaceDataAlignComponentTypes(){
       if (this.dataAlignValues.length) {
         this.nodeData.componentTypes = this.dataAlignValues
