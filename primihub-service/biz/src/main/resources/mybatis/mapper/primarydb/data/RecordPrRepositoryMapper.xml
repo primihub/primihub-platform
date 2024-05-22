@@ -96,6 +96,9 @@
             <if test="pirName!=null and pirName != ''">
                 pir_name = #{pirName},
             </if>
+            <if test="pirTaskId!=null">
+                pir_task_id = #{pirTaskId},
+            </if>
             <if test="taskState!=null and taskState != ''">
                 task_state = #{taskState},
             </if>

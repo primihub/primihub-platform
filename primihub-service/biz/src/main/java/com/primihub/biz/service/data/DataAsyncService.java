@@ -3,6 +3,7 @@ package com.primihub.biz.service.data;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.nacos.common.utils.CollectionUtils;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
@@ -79,6 +80,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private RecordPrRepository recordPrRepository;
     @Autowired
     private SysOrganSecondarydbRepository organSecondaryDbRepository;
+    @Autowired
+    private ResultPrRepository resultPrRepository;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -434,8 +437,8 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(dataTask);
 
         psiRecord.setTaskState(dataTask.getTaskState());
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
         if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
-            List<LinkedHashMap<String, Object>> list = new ArrayList<>();
             if (org.apache.commons.lang.StringUtils.isNotEmpty(psiTask.getFilePath())) {
                 list = FileUtil.getAllCsvData(psiTask.getFilePath());
             }
@@ -443,6 +446,13 @@ public class DataAsyncService implements ApplicationContextAware {
             psiRecord.setEndTime(new Date());
         }
         recordPrRepository.updatePsiRecord(psiRecord);
+
+        if (CollectionUtils.isNotEmpty(list)) {
+            list.forEach(map -> {
+                map.put("psiTaskId", psiTask.getId());
+            });
+            resultPrRepository.savePsiResultList(list);
+        }
 
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(examTask.getTargetOrganId());
         for (SysOrgan organ : sysOrgans) {
