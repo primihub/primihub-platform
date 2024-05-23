@@ -93,8 +93,8 @@ public class TestService {
         BaseResultEntity testDataSet = fusionResourceService.getTestDataSet(id);
         log.info(JSONObject.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            List<LinkedHashMap> result = (List<LinkedHashMap>) testDataSet.getResult();
             if (nodeHasGRPCOutProxy()) {
-                List<LinkedHashMap> result = (List<LinkedHashMap>) testDataSet.getResult();
                 for (LinkedHashMap map : result) {
                     String oldAddress = (String) map.getOrDefault("address", StringUtils.EMPTY);
                     log.info("[address][before] --- [{}]", oldAddress);
@@ -113,7 +113,7 @@ public class TestService {
             }
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {
-                otherBusinessesService.syncGatewayApiData(testDataSet.getResult(),sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",null);
+                otherBusinessesService.syncGatewayApiData(result,sysOrgan.getOrganGateway()+"/share/shareData/batchSaveTestDataSet",null);
             }
         }
         return BaseResultEntity.success();
