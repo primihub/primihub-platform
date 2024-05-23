@@ -28,6 +28,7 @@ import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.service.sys.SysUserService;
+import com.primihub.biz.util.BaseUtil;
 import com.primihub.biz.util.DataUtil;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.SignUtil;
@@ -490,25 +491,27 @@ public class DataResourceService {
         log.info("远程查找备份的资源ids: {}", ids);
         BaseResultEntity result = fusionResourceService.getCopyResource(ids);
         log.info(JSONObject.toJSONString(result));
-        List<LinkedHashMap> mapList = (List<LinkedHashMap>) result.getResult();
-        for (LinkedHashMap map : mapList) {
-            Object dataSet = map.getOrDefault("dataSet", null);
-            if (dataSet != null) {
-                LinkedHashMap dataSetMap = (LinkedHashMap) dataSet;
-                String oldAddress = (String) dataSetMap.getOrDefault("address", StringUtils.EMPTY);
-                log.info("[address][before] --- [{}]", oldAddress);
-                if (StringUtils.isNotBlank(oldAddress)) {
-                    String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
-                    if (split.length < 3) {
-                        continue;
+        if (BaseUtil.nodeHasGRPCOutProxy(baseConfiguration)) {
+            List<LinkedHashMap> mapList = (List<LinkedHashMap>) result.getResult();
+            for (LinkedHashMap map : mapList) {
+                Object dataSet = map.getOrDefault("dataSet", null);
+                if (dataSet != null) {
+                    LinkedHashMap dataSetMap = (LinkedHashMap) dataSet;
+                    String oldAddress = (String) dataSetMap.getOrDefault("address", StringUtils.EMPTY);
+                    log.info("[address][before] --- [{}]", oldAddress);
+                    if (StringUtils.isNotBlank(oldAddress)) {
+                        String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
+                        if (split.length < 3) {
+                            continue;
+                        }
+                        ProxyConfig outProxy = baseConfiguration.getGrpcProxy().getOutProxy();
+                        String oldHost = split[1];
+                        String oldPort = split[2];
+                        String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
+                        String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
+                        log.info("[address][after] --- [{}]", replace2);
+                        dataSetMap.put("address", replace2);
                     }
-                    ProxyConfig outProxy = baseConfiguration.getGrpcProxy().getOutProxy();
-                    String oldHost = split[1];
-                    String oldPort = split[2];
-                    String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
-                    String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
-                    log.info("[address][after] --- [{}]", replace2);
-                    dataSetMap.put("address", replace2);
                 }
             }
         }
@@ -929,6 +932,25 @@ public class DataResourceService {
         try {
             log.info(dto.getCopyPart());
             List<DataResourceCopyVo> dataResourceCopyVos = JSONArray.parseArray(dto.getCopyPart(), DataResourceCopyVo.class);
+            // 这里需要入代理
+            if (BaseUtil.nodeHasGRPCInProxy(baseConfiguration)) {
+                for (DataResourceCopyVo vo : dataResourceCopyVos) {
+                    String oldAddress = (String) vo.getDataSet().getOrDefault("address", StringUtils.EMPTY);
+                    log.info("[address][before] --- [{}]", oldAddress);
+                    String[] split = oldAddress.split(SysConstant.COLON_DELIMITER);
+                    if (split.length < 3) {
+                        continue;
+                    }
+                    ProxyConfig outProxy = baseConfiguration.getGrpcProxy().getInProxy();
+                    String oldHost = split[1];
+                    String oldPort = split[2];
+                    String replace1 = oldAddress.replace(oldHost, outProxy.getAddress());
+                    String replace2 = replace1.replace(oldPort, String.valueOf(outProxy.getPort()));
+                    log.info("[address][after] --- [{}]", replace2);
+                    vo.getDataSet().put("address", replace2);
+                }
+            }
+
             BaseResultEntity resultEntity = fusionResourceService.saveResource(dto.getOrganId(), dataResourceCopyVos);
             log.info(JSONObject.toJSONString(resultEntity));
         } catch (Exception e) {
