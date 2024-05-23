@@ -405,6 +405,11 @@ public class DataModelService {
         DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
         // 组件参数
         List<DataComponentReq> modelComponents = modelComponentReq.getModelComponents();
+        // 组件顺序
+        List<DataModelPointComponent> modelPointComponents = modelComponentReq.getModelPointComponents();
+        if (modelPointComponents.size() != (modelComponents.size() - 1)){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型执行顺序错误，请检查组件编排顺序");
+        }
         List<String> zComponentCodeList;
         Map<String, DataComponentReq> modelComponentMap;
         if (modelComponents != null && !modelComponents.isEmpty()) {
