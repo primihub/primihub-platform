@@ -8,11 +8,13 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
+import com.primihub.biz.entity.data.vo.RespHead;
 import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.util.crypt.RemoteUtil;
 import com.primihub.biz.util.crypt.SM4Util;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -110,5 +112,21 @@ public class RemoteClient {
         }
         Set<ScoreModel> scoreModelSet = scoreModelRepository.selectAll();
         return BaseResultEntity.success(scoreModelSet);
+    }
+
+    public RemoteRespVo queryFromRemoteMock(String phoneNum,ScoreModel scoreModel) {
+        int randInt = RandomUtils.nextInt(0, 100);
+        RemoteRespVo respVo = new RemoteRespVo();
+        RespHead respHead = new RespHead();
+        if (randInt > 20) {
+            respHead.setResult("Y");
+            Map<String, String> map = new HashMap<>();
+            map.put(scoreModel.getScoreKey(), String.valueOf(RandomUtils.nextDouble(0.3, 1)));
+            respVo.setRespBody(map);
+        } else {
+            respHead.setResult("N");
+        }
+        respVo.setHead(respHead);
+        return respVo;
     }
 }

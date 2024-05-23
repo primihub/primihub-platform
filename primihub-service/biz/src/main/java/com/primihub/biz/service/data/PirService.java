@@ -285,8 +285,7 @@ public class PirService {
             if (withScoreMap.containsKey(entry.getKey())) {
                 return;
             }
-
-            RemoteRespVo respVo = remoteClient.queryFromRemote(entry.getValue().get(0).getPhoneNum(), scoreModel);
+            RemoteRespVo respVo = remoteClient.queryFromRemoteMock(entry.getValue().get(0).getPhoneNum(), scoreModel);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
                 DataCore dataCore = new DataCore();
                 dataCore.setIdNum(entry.getValue().get(0).getIdNum());
