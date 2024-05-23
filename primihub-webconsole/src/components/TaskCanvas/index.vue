@@ -761,6 +761,7 @@ export default {
       const modelType = modelSelectCom?.componentValues.find(item => item.key === MODEL_TYPE)?.val
       const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === ARBITER_ORGAN)?.val
 
+      const dataAlignCom = modelComponents.find(item => item.componentCode === DATA_ALIGN)
       const dataSetCom = modelComponents.find(item => item.componentCode === DATA_SET)
       const dataValue = dataSetCom?.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
       const value = dataValue ? JSON.parse(dataValue) : ''
@@ -776,6 +777,7 @@ export default {
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
       if (jointStatisticalCom) {
         this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+        if (!this.modelRunValidated) return
       }
       if (!initiateResource) {
         this.$message({
@@ -839,6 +841,17 @@ export default {
         this.modelRunValidated = false
         return
       }
+
+      // 纵向联邦
+      if (this.projectType === 'VFL' && !dataAlignCom) {
+        this.$message({
+          message: `请进行数据对齐`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
+
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
@@ -846,24 +859,28 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
+        return
       } else if (!this.modelId && this.isCopy) { // copy model task, must save
         this.$message({
           message: '模型未保存，请保存后再次尝试',
           type: 'warning'
         })
         this.modelRunValidated = false
+        return
       } else if (cells.length === 1) { // model is empty or cleared, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
         })
         this.modelRunValidated = false
+        return
       } else if (taskName === '') {
         this.$message({
           message: `运行失败：请输入任务名称`,
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       } else if (!jointStatisticalCom && (!modelSelectCom || modelName === '')) {
         this.$message({
           message: `运行失败：请输入模型名称`,
@@ -877,6 +894,7 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       }
       this.modelRunValidated = this.checkModelVFLValidated()
     },

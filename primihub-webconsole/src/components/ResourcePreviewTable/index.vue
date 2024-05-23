@@ -16,7 +16,7 @@
         :label="item"
       >
         <template slot-scope="{row}">
-          {{ row[item] }}
+          {{ trim(row[item]) }}
         </template>
       </el-table-column>
 
@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import lodash from 'lodash'
 export default {
   name: 'ResourcePreviewTable',
   props: {
@@ -50,6 +51,11 @@ export default {
         }
       }
       return data
+    }
+  },
+  methods: {
+    trim(str) {
+      return lodash.trim(str)
     }
   },
   created() {

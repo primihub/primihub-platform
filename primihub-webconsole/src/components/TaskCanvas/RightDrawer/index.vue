@@ -412,28 +412,6 @@ export default {
     }
   },
   watch: {
-    async modelComponents(newVal){
-      if (newVal) {
-        const obj = {}
-        const dataAlignComponent = newVal.find(item => item.componentCode === 'dataAlign')
-        const dataSetComponent = newVal.find(item => item.componentCode === 'dataSet')
-        if (!dataSetComponent) return
-        if (dataAlignComponent) {
-          dataAlignComponent.componentValues.forEach(item => {
-            if (item.key === 'serverIndex' || item.key === 'clientIndex') {
-              const index = item.key === 'serverIndex' ? 1 : 2
-              obj[index] = item.val
-            }
-          })
-        }
-
-        const dataSetValuesJson = dataSetComponent.componentValues[0].val
-        const dataSetValues = dataSetValuesJson ? JSON.parse(dataSetValuesJson) : []
-        dataSetValues.forEach((organ) => {
-            this.setDataAlignInputValues(organ, obj[organ.participationIdentity] || '')
-        })
-      }
-    },
     dataAlignTypeValue: {
       handler(newVal) {
         if (newVal) {
@@ -472,7 +450,8 @@ export default {
         } else if (newVal.componentCode === DATA_ALIGN) {
           // this.getFeaturesOptions()
           // this.getDataAlignParams()
-          // this.getDataSetComValue()
+          this.getDataSetComValue()
+          this.getDataAlignData()
           this.replaceDataAlignComponentTypes()
         } else if (newVal.componentCode === MPC_STATISTICS) {
           this.getDataSetComValue()
@@ -496,6 +475,25 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    getDataAlignData(){
+      if (!this.inputValue) return
+      const dataAlignMap = {}
+      const dataAlignComponent = this.graphData.cells.find(item => item.componentCode === DATA_ALIGN)
+      if (dataAlignComponent){
+        const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
+        dataAlignComponentTypes.forEach((item) => {
+          if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
+            const index = item.typeCode === 'serverIndex' ? 1 : 2
+            dataAlignMap[index] = item.inputValue
+          }
+        })
+      }
+
+      this.inputValue.forEach((organ) => {
+        this.setDataAlignInputValues(organ, dataAlignMap[organ.participationIdentity] || '')
+      })
+
+    },
     handleFitTransform() {
       this.handleChange()
     },
@@ -508,20 +506,23 @@ export default {
 
       // hide dataAlign selected value in fillTransform
       const dataAlignComponent = this.graphData.cells.find(item => item.componentCode === DATA_ALIGN)
-      const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
-      dataAlignComponentTypes.forEach((item) => {
-        if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
-          const index = item.typeCode === 'serverIndex' ? 1 : 2
-          dataAlignMap[index] = item.inputValue
-        }
-      })
+      if (dataAlignComponent){
+        const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
+        dataAlignComponentTypes.forEach((item) => {
+          if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
+            const index = item.typeCode === 'serverIndex' ? 1 : 2
+            dataAlignMap[index] = item.inputValue
+          }
+        })
+      }
 
       this.inputValue.map(item => {
         // hide dataAlign selected value in fillTransform
         const field = dataAlignMap[item.participationIdentity]
         const currentCalculationFields = item.calculationField.filter(item => item !== field)
+        const currentResourceFields = item.resourceField || item.fileFields
 
-        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
+        resourceFields = [...new Set([...resourceFields, ...currentResourceFields])]
         calculationFields = [...new Set([...calculationFields, ...currentCalculationFields])]
       })
 
@@ -797,16 +798,12 @@ export default {
               } else {
                 this.selectedProviderOrgans[index] = Object.assign(this.selectedProviderOrgans[index], item)
               }
-              // set DataAlign select
-              this.setDataAlignInputValues(item)
             })
           }
           this.providerOrganIds = this.selectedProviderOrgans.map(item => item.organId)
           this.setInputValue(this.selectedProviderOrgans)
         } else {
           this.selectedProviderOrgans.push(data)
-          // set DataAlign select
-          this.setDataAlignInputValues(item)
         }
       } else {
         this.arbiterOrganName = data.organName
@@ -878,10 +875,11 @@ export default {
 
     /** filter  dataAlign feature*/
     filterDataAlignFeature(data) {
+      // filetype is String，Integer and the fieldName is in the calculationField
       if (data.resourceField) {
-        return data.resourceField.filter(item => item.fieldType === 0 || item.fieldType === 1)
+        return data.resourceField.filter(item => (item.fieldType === 0 || item.fieldType === 1) && data.calculationField.includes(item.fieldName) )
       } else if (data.fileFields) {
-        return data.fileFields.filter(item => item.fieldType === 'String' || item.fieldType === 'Integer')
+        return data.fileFields.filter(item => (item.fieldType === 'String' || item.fieldType === 'Integer') && data.calculationField.includes(item.fieldName))
       } else {
         return []
       }
@@ -889,15 +887,16 @@ export default {
 
     /** set dataAlign input values*/
     setDataAlignInputValues(data, val){
+      const selectDataAlignFeature = this.filterDataAlignFeature(data)
       const dataAlignItem = {
         inputType: 'select',
         typeCode: data.participationIdentity === 1 ? 'serverIndex' : 'clientIndex',
         typeName: data.organName,
-        inputValue: val || '',
+        inputValue: selectDataAlignFeature.map(item => item.fieldName).includes(val) ? val : '',
         isRequired: 0,
         parentValue: null,
         organId: data.organId,
-        inputValues: this.filterDataAlignFeature(data)
+        inputValues: selectDataAlignFeature
       }
 
       const posIndex = this.dataAlignValues.findIndex(organ => organ.organId === data.organId)
@@ -948,8 +947,6 @@ export default {
       this.selectedResourceId = data.resourceId
       // set input value
       this.setInputValue(data)
-      // set data align
-      this.setDataAlignInputValues(data)
       // Reassign a value to the jointStatistical component
       if (this.inputValue !== '' && this.graphData.cells.find(item => item.componentCode === MPC_STATISTICS)) {
         this.getFeaturesItem()
@@ -967,7 +964,7 @@ export default {
       if (data.length) {
         data.forEach(item => {
           // set default feature value
-          item.calculationField = item.calculationField ? item.calculationField : item.fileHandleField ? item.fileHandleField : ''
+          item.calculationField = Array.isArray(item.calculationField) ? item.calculationField : item.fileHandleField ? item.fileHandleField : ''
           const posIndex = this.inputValues.findIndex(v => item.organId === v.organId)
           if (posIndex !== -1) {
             this.inputValues.splice(posIndex, 1, item)
@@ -977,7 +974,7 @@ export default {
         })
       } else {
         // set default feature value
-        data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
+        data.calculationField = Array.isArray(data.calculationField) ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
         const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
         const currentData = data
         if (posIndex !== -1) {

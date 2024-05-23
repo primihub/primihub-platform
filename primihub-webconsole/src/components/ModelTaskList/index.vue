@@ -25,14 +25,14 @@
           label="任务名称"
           min-width="100"
         />
-        <el-table-column
+        <!-- <el-table-column
           align="center"
           label="任务类型"
         >
           <template slot-scope="{row}">
             <span><el-tag type="primary" size="mini">{{ row.taskType | taskTypeFilter }}</el-tag></span>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           label="开始时间"
           min-width="150"
