@@ -21,6 +21,7 @@ import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.sys.SysUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
@@ -57,6 +58,8 @@ public class DataProjectService {
     private DataResourceRepository dataResourceRepository;
     @Autowired
     private SysUserService sysUserService;
+    @Autowired
+    private DataTaskService dataTaskService;
 
 
     public BaseResultEntity saveOrUpdateProject(DataProjectReq req,Long userId) {
@@ -411,6 +414,13 @@ public class DataProjectService {
         }
         dataProject.setStatus(2);
         dataProjectPrRepository.updateDataProject(dataProject);
+        // 运行中的任务
+        List<String> list = dataModelRepository.queryRunningTaskByProjectId(id);
+        if (CollectionUtils.isNotEmpty(list)){
+            list.forEach(o -> {
+                dataTaskService.cancelTask(o);
+            });
+        }
         ShareProjectVo vo = new ShareProjectVo(dataProject.getProjectId());
         vo.setProject(dataProject);
         sendTask(vo);
