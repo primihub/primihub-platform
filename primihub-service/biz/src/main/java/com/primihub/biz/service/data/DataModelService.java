@@ -195,8 +195,8 @@ public class DataModelService {
     public BaseResultEntity getModelComponent(String projectType) {
         List<ModelComponent> modelComponents;
         if (StringUtils.isBlank(projectType)) {
-            modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
-            return BaseResultEntity.success(modelComponents);
+            //modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "项目类型为空");
         }
         switch (projectType.toUpperCase()) {
             case "MPC":
