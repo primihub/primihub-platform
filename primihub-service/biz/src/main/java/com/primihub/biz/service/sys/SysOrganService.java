@@ -219,6 +219,7 @@ public class SysOrganService {
             map.put("lon",sysLocalOrganInfo.getAddressInfo().getLon());
         }
         map.put("applyId",sysOrgan.getApplyId());
+        map.put("examineState", sysOrgan.getExamineState());
         try {
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
             if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
@@ -270,11 +271,6 @@ public class SysOrganService {
             sysOrgan.setOrganName(info.get("organName").toString());
             if (info.containsKey("examineState")){
                 sysOrgan.setExamineState((Integer) info.get("examineState"));
-            } else {
-                // 不是已连接
-                if (sysOrgan.getExamineState().intValue() != 1){
-                    sysOrgan.setExamineState(0);
-                }
             }
             if (info.containsKey("examineMsg")){
                 sysOrgan.setExamineMsg(sysOrgan.getExamineMsg()+ info.get("examineMsg").toString());
