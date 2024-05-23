@@ -13,23 +13,17 @@
         </el-col>
       </el-row>
       <el-row type="flex">
-        <el-col class="desc-col" :span="6">
+        <!-- <el-col class="desc-col" :span="6">
           <div class="desc-label">任务类型:</div>
           <div class="desc-content">{{ task.taskType | taskTypeFilter }}</div>
-        </el-col>
+        </el-col> -->
         <el-col class="desc-col" :span="6">
           <div class="desc-label">开始时间:</div>
           <div class="desc-content">{{ task.taskStartDate?task.taskStartDate: '未开始' }}</div>
         </el-col>
-      </el-row>
-      <el-row type="flex">
         <el-col class="desc-col" :span="6">
           <div class="desc-label">结束时间:</div>
           <div class="desc-content">{{ task.taskEndDate? task.taskEndDate:'未结束' }}</div>
-        </el-col>
-        <el-col class="desc-col" :span="6">
-          <div class="desc-label">耗时:</div>
-          <div class="desc-content">{{ task.timeConsuming | timeFilter }}</div>
         </el-col>
       </el-row>
       <el-row type="flex">
@@ -42,6 +36,10 @@
               <span v-if="task.taskState === 3" class="error-tips">{{ task.taskErrorMsg }}</span>
             </p>
           </div>
+        </el-col>
+        <el-col class="desc-col" :span="6">
+          <div class="desc-label">耗时:</div>
+          <div class="desc-content">{{ task.timeConsuming | timeFilter }}</div>
         </el-col>
       </el-row>
       <el-row>

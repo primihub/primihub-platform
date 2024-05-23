@@ -492,7 +492,6 @@ export default {
       this.inputValue.forEach((organ) => {
         this.setDataAlignInputValues(organ, dataAlignMap[organ.participationIdentity] || '')
       })
-
     },
     handleFitTransform() {
       this.handleChange()
@@ -875,11 +874,12 @@ export default {
 
     /** filter  dataAlign feature*/
     filterDataAlignFeature(data) {
+      const Field = Array.isArray(data.calculationField) ? data.calculationField : data.fileHandleField
       // filetype is String，Integer and the fieldName is in the calculationField
       if (data.resourceField) {
-        return data.resourceField.filter(item => (item.fieldType === 0 || item.fieldType === 1) && data.calculationField.includes(item.fieldName) )
+        return data.resourceField.filter(item => (item.fieldType === 0 || item.fieldType === 1) && Field.includes(item.fieldName) )
       } else if (data.fileFields) {
-        return data.fileFields.filter(item => (item.fieldType === 'String' || item.fieldType === 'Integer') && data.calculationField.includes(item.fieldName))
+        return data.fileFields.filter(item => (item.fieldType === 'String' || item.fieldType === 'Integer') && Field.includes(item.fieldName))
       } else {
         return []
       }
@@ -931,6 +931,7 @@ export default {
         if (this.initiateOrgan.resourceId !== data.resourceId) {
           this.resourceChanged = true
         }
+
         data.organName = this.initiateOrgan.organName
         this.initiateOrgan = []
         this.initiateOrgan = data
@@ -940,8 +941,10 @@ export default {
           this.resourceChanged = true
         }
         const posIndex = this.selectedProviderOrgans.findIndex(organ => organ.organId === data.organId)
+
         data.organName = this.selectedProviderOrgans[posIndex].organName
         this.selectedProviderOrgans[posIndex] = data
+
       }
 
       this.selectedResourceId = data.resourceId
