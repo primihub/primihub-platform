@@ -220,6 +220,7 @@ public class SysOrganService {
         }
         map.put("applyId",sysOrgan.getApplyId());
         map.put("examineState", sysOrgan.getExamineState());
+        map.put("enable", sysOrgan.getEnable());
         try {
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, gateway + "/share/shareData/apply", publicKey);
             if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
