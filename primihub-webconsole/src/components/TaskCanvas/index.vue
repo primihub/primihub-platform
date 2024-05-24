@@ -423,6 +423,7 @@ export default {
               radius: 8
             }
           },
+          allowMulti:false,
           anchor: 'center',
           connectionPoint: 'anchor',
           allowBlank: false,
