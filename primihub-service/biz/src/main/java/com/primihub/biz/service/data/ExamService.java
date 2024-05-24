@@ -443,7 +443,7 @@ public class ExamService {
                     dataCorePrimarydbRepository.saveDataCoreSet(nonexistentDataCoreSet);
                 }
 
-                Set<DataCore> allDataCoreSet = dataCoreRepository.selectExistentDataCore(fieldValueSet);
+                Set<ExamResultVo> allDataCoreSet = dataCoreRepository.selectExamResultVo(fieldValueSet);
                 String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
                 List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
                 // 生成数据源
@@ -467,6 +467,7 @@ public class ExamService {
                 return null;
             } catch (Exception e) {
                 log.error("异步执行异常: {}", e.toString());
+                e.printStackTrace();
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
                 sendEndExamTask(req);
                 log.info("====================== FAIL");
