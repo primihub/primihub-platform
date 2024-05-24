@@ -480,7 +480,18 @@ export default {
       }
       return result
     },
+
+    checkOrganApprovalCompleteForMPC() {
+      return this.organs.filter(item => item.participationIdentity === 2 && item.auditStatus === 1)
+    },
+
     toModelCreate() {
+      if (this.checkOrganApprovalCompleteForMPC().length < 2) {
+        this.$message.warning('多方安全计算需要三方参与，请确保协作方已同意加入项目')
+        this.tabName = 'organ'
+        this.fetchData()
+        return
+      }
       this.$router.push({
         name: 'ModelCreate',
         query: { projectId: this.list.id, projectType: this.list.projectType }
