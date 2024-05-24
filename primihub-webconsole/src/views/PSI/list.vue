@@ -62,6 +62,10 @@
             </template>
           </el-table-column>
           <el-table-column
+            prop="taskId"
+            label="任务ID"
+          />
+          <el-table-column
             label="参与机构"
             align="center"
           >

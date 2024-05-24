@@ -66,6 +66,10 @@
           </template>
         </el-table-column>
         <el-table-column
+          prop="taskId"
+          label="任务ID"
+        />
+        <el-table-column
           prop="organName"
           label="参与机构"
           align="center"
@@ -94,11 +98,8 @@
           prop="retrievalId"
           label="查询关键词"
           min-width="100"
-        >
-          <template slot-scope="{row}">
-            <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
-          </template>
-        </el-table-column>
+          show-overflow-tooltip
+        />
         <el-table-column label="发起时间" prop="createDate" min-width="120px">
           <template slot-scope="{row}">
             <span>{{ row.createDate.split(' ')[0] }}</span><br>
