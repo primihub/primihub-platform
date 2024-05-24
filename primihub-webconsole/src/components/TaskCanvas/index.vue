@@ -925,6 +925,13 @@ export default {
         })
         this.modelRunValidated = false
         return
+      } else if(modelComponents.length - modelPointComponents.length > 1){
+        this.$message({
+          message: `连线未完成`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
       } else if (!dataSetCom) {
         this.$message({
           message: `请选择数据集`,
