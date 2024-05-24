@@ -132,7 +132,7 @@
         </el-tab-pane>
         <el-tab-pane label="预览图" name="3">
           <div class="canvas-panel">
-            <TaskCanvas v-if="tabName === '3' || restartRun" :model-id="modelId" :options="taskOptions" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
+            <TaskCanvas v-if="tabName === '3' || restartRun" :model-id="modelId" :options="taskOptions" :projectType="project.projectType" :model-data="modelComponent" :state="task.taskState" :restart-run="restartRun" @complete="handleTaskComplete" />
           </div>
         </el-tab-pane>
         <el-tab-pane label="日志" name="4">
