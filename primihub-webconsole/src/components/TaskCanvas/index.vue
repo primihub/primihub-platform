@@ -775,10 +775,7 @@ export default {
       const notSelectResource = value && value.find(item => item.resourceId === undefined)
 
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
-      if (jointStatisticalCom) {
-        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
-        if (!this.modelRunValidated) return
-      }
+
       if (!initiateResource) {
         this.$message({
           message: '请选择发起方数据集',
@@ -842,7 +839,20 @@ export default {
         return
       }
 
-      // 纵向联邦
+      // MPC
+      if (this.projectType === 'MPC' && !jointStatisticalCom){
+        this.$message({
+          message: `请选择联合统计`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (this.projectType === 'MPC' && jointStatisticalCom) {
+        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+        if (!this.modelRunValidated) return
+      }
+
+      // VFL
       if (this.projectType === 'VFL' && !dataAlignCom) {
         this.$message({
           message: `请进行数据对齐`,
