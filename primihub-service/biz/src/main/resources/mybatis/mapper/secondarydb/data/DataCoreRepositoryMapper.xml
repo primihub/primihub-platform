@@ -21,9 +21,25 @@
         score_model_type scoreModelType
     </sql>
 
+    <sql id="examResultColumn">
+        id_num idNum
+    </sql>
+
     <select id="selectExistentDataCore" resultType="com.primihub.biz.entity.data.po.DataCore">
         select
         <include refid="dataCoreColumn"/>
+        from data_core
+        <if test="list != null and !list.isEmpty()">
+            where id_num in
+            <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectExamResultVo" resultType="com.primihub.biz.entity.data.vo.ExamResultVo">
+        select
+        <include refid="examResultColumn"/>
         from data_core
         <if test="list != null and !list.isEmpty()">
             where id_num in
