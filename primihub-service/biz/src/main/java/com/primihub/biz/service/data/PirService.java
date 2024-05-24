@@ -327,7 +327,7 @@ public class PirService {
         DataPirTask dataPirTask = new DataPirTask();
         dataPirTask.setTaskId(dataTask.getTaskId());
         // retrievalId will rent in web ,need to be readable
-        dataPirTask.setRetrievalId(String.join(",", req.getTargetValueSet()));
+        dataPirTask.setRetrievalId(String.valueOf(req.getTargetValueSet().size()));
         dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(param.getResourceId());
