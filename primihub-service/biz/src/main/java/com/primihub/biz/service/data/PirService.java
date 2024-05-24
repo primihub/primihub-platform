@@ -85,52 +85,6 @@ public class PirService {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
 
-    public BaseResultEntity pirSubmitTask(DataPirReq req, String pirParam) {
-        BaseResultEntity dataResource = otherBusinessesService.getDataResource(req.getResourceId());
-        if (dataResource.getCode() != 0) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "资源查询失败");
-        }
-        Map<String, Object> pirDataResource = (LinkedHashMap) dataResource.getResult();
-        int available = Integer.parseInt(pirDataResource.getOrDefault("available", "1").toString());
-        if (available == 1) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "资源不可用");
-        }
-        // dataResource columnName list
-        String resourceColumnNames = pirDataResource.getOrDefault("resourceColumnNameList", "").toString();
-        if (StringUtils.isBlank(resourceColumnNames)) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表失败");
-        }
-        String[] resourceColumnNameArray = resourceColumnNames.split(",");
-        if (resourceColumnNameArray.length == 0) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表为空");
-        }
-
-        String[] queryColumnNames = {resourceColumnNameArray[0]};
-        // convert pirparam to query array
-        List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(pirParam, queryColumnNames);
-
-        DataTask dataTask = new DataTask();
-//        dataTask.setTaskIdName(UUID.randomUUID().toString());
-        dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
-        dataTask.setTaskName(req.getTaskName());
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskType(TaskTypeEnum.PIR.getTaskType());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTaskPrRepository.saveDataTask(dataTask);
-        DataPirTask dataPirTask = new DataPirTask();
-        dataPirTask.setTaskId(dataTask.getTaskId());
-        // retrievalId will rent in web ,need to be readable
-        dataPirTask.setRetrievalId(pirParam);
-        dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
-        dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
-        dataPirTask.setResourceId(req.getResourceId());
-        dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries);
-        Map<String, Object> map = new HashMap<>();
-        map.put("taskId", dataTask.getTaskId());
-        return BaseResultEntity.success(map);
-    }
-
     private static List<DataPirKeyQuery> convertPirParamToQueryArray(String pirParam, String[] resourceColumnNameArray) {
         DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
         dataPirKeyQuery.setKey(resourceColumnNameArray);
@@ -378,35 +332,9 @@ public class PirService {
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(param.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries);
+        dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries, req);
 
-        String pirRecordId = req.getPirRecordId();
-        PirRecord record = recordRepository.selectPirRecordByRecordId(pirRecordId);
 
-        record.setPirTaskId(dataPirTask.getTaskId());
-        record.setTaskState(dataTask.getTaskState());
-
-        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
-        if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
-            if (org.apache.commons.lang.StringUtils.isNotEmpty(dataTask.getTaskResultPath())) {
-                list = FileUtil.getAllCsvData(dataTask.getTaskResultPath());
-            }
-            record.setResultRowsNum(list.size());
-            record.setEndTime(new Date());
-        }
-        recordPrRepository.updatePirRecord(record);
-
-        if (com.alibaba.nacos.common.utils.CollectionUtils.isNotEmpty(list)) {
-            list.forEach(map -> {
-                map.put("pirTaskId", dataPirTask.getTaskId());
-            });
-            resultPrRepository.savePirResultList(list);
-        }
-
-        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getTargetOrganId());
-        for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPirRecord", organ.getPublicKey());
-        }
 
         Map<String, Object> map = new HashMap<>();
         map.put("taskId", dataTask.getTaskId());

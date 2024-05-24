@@ -25,10 +25,7 @@ import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.entity.sys.po.SysUser;
 import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.primaryredis.data.DataRedisRepository;
-import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
-import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysUserSecondarydbRepository;
 import com.primihub.biz.service.data.component.ComponentTaskService;
@@ -82,6 +79,8 @@ public class DataAsyncService implements ApplicationContextAware {
     private SysOrganSecondarydbRepository organSecondaryDbRepository;
     @Autowired
     private ResultPrRepository resultPrRepository;
+    @Autowired
+    private RecordRepository recordRepository;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -492,7 +491,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries, DataPirCopyReq req) {
         Date date = new Date();
         try {
             dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
@@ -540,6 +539,35 @@ public class DataAsyncService implements ApplicationContextAware {
         }finally {
             dataRedisRepository.deletePirTaskResultKey(dataTask.getTaskIdName());
         }
+
+        String pirRecordId = req.getPirRecordId();
+        PirRecord record = recordRepository.selectPirRecordByRecordId(pirRecordId);
+
+        record.setPirTaskId(dataPirTask.getTaskId());
+        record.setTaskState(dataTask.getTaskState());
+
+        List<LinkedHashMap<String, Object>> list = new ArrayList<>();
+        if (Objects.equals(dataTask.getTaskState(), TaskStateEnum.SUCCESS.getStateType())) {
+            if (org.apache.commons.lang.StringUtils.isNotEmpty(dataTask.getTaskResultPath())) {
+                list = FileUtil.getAllCsvData(dataTask.getTaskResultPath());
+            }
+            record.setResultRowsNum(list.size());
+            record.setEndTime(new Date());
+        }
+        recordPrRepository.updatePirRecord(record);
+
+        if (com.alibaba.nacos.common.utils.CollectionUtils.isNotEmpty(list)) {
+            list.forEach(map -> {
+                map.put("pirTaskId", dataPirTask.getTaskId());
+            });
+            resultPrRepository.savePirResultList(list);
+        }
+
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getTargetOrganId());
+        for (SysOrgan organ : sysOrgans) {
+            otherBusinessesService.syncGatewayApiData(record, organ.getOrganGateway() + "/share/shareData/submitPirRecord", organ.getPublicKey());
+        }
+
         dataTask.setTaskEndTime(System.currentTimeMillis());
         updateTaskState(dataTask);
     }
