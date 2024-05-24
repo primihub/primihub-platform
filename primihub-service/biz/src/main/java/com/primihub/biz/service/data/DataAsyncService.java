@@ -460,7 +460,7 @@ public class DataAsyncService implements ApplicationContextAware {
 
     }
 
-    public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job){
+    public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job, DataResource dataResource){
         FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = new FutureTask<>(new Callable<TaskParam<TaskPIRParam>>() {
             @Override
             public TaskParam<TaskPIRParam> call() throws Exception {
@@ -468,13 +468,14 @@ public class DataAsyncService implements ApplicationContextAware {
                 TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setJobId(String.valueOf(job));
-                // 查询目标值，同组查询目标值使用逗号的字符串隔开
+                /*// 查询目标值，同组查询目标值使用逗号的字符串隔开
                 String[] querys = new String[dataPirKeyQuery.getQuery().size()];
                 for (int i = 0; i < dataPirKeyQuery.getQuery().size(); i++) {
                     querys[i] = String.join(",", dataPirKeyQuery.getQuery().get(i));
-                }
-                taskParam.getTaskContentParam().setQueryParam(querys);
+                }*/
+                taskParam.getTaskContentParam().setQueryParam(new String[0]);
                 taskParam.getTaskContentParam().setServerData(dataPirTask.getResourceId());
+                taskParam.getTaskContentParam().setClientData(dataResource.getResourceFusionId());
                 taskParam.getTaskContentParam().setOutputFullFilename(sb.toString());
                 List<String> columns = Arrays.stream(resourceColumnNames.split(",")).map(String::trim).collect(Collectors.toList());
                 List<String> keyColumns = Arrays.asList(dataPirKeyQuery.getKey());
@@ -491,7 +492,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries, DataPirCopyReq req) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries, DataPirCopyReq req, DataResource dataResource) {
         Date date = new Date();
         try {
             dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
@@ -502,7 +503,7 @@ public class DataAsyncService implements ApplicationContextAware {
             Map<String,String> jobMap = new HashMap<>();
             List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
             for (int i = 0; i < dataPirKeyQueries.size(); i++) {
-                FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i);
+                FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i, dataResource);
                 primaryThreadPool.submit(pirTaskFutureTask);
                 futureTasks.add(pirTaskFutureTask);
                 jobMap.put(i+"",String.join("+",dataPirKeyQueries.get(i).getKey()));

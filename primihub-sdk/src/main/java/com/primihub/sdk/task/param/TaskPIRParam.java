@@ -19,6 +19,10 @@ public class TaskPIRParam {
      */
     private String serverData;
     /**
+     * 提交样本
+     */
+    private String clientData;
+    /**
      * 默认
      */
     private Integer pirType = 1;
@@ -82,5 +86,13 @@ public class TaskPIRParam {
                 ", outputFullFilename='" + outputFullFilename + '\'' +
                 ", keyColumns='" + getKeyColumnsString() + '\'' +
                 '}';
+    }
+
+    public String getClientData() {
+        return clientData;
+    }
+
+    public void setClientData(String clientData) {
+        this.clientData = clientData;
     }
 }

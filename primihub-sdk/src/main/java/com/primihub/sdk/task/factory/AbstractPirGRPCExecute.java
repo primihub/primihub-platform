@@ -73,6 +73,7 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
                     .setLanguage(Common.Language.PROTO)
                     .setCode(ByteString.copyFrom("".getBytes(StandardCharsets.UTF_8)))
                     .putPartyDatasets("SERVER", Common.Dataset.newBuilder().putData("SERVER", param.getTaskContentParam().getServerData()).build())
+                    .putPartyDatasets("CLIENT", Common.Dataset.newBuilder().putData("CLIENT", param.getTaskContentParam().getClientData()).build())
                     .build();
             log.info("grpc Common.Task :\n{}",task.toString());
             PushTaskRequest request = PushTaskRequest.newBuilder()

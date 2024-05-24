@@ -24,7 +24,10 @@ import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.repository.primarydb.data.*;
+import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
+import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
@@ -79,8 +82,7 @@ public class PirService {
     @Autowired
     private ScoreModelPrRepository scoreModelPrRepository;
     @Autowired
-    private ResultPrRepository resultPrRepository;
-
+    private DataResourceRepository dataResourceRepository;
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
@@ -183,6 +185,21 @@ public class PirService {
 
         req.setOriginOrganId(organConfiguration.getSysLocalOrganId());
         String targetOrganId = psiRecord.getTargetOrganId();
+
+
+        List<Map> mapList = idNumSet.stream().map(idNum -> {
+            Map map = new HashMap();
+            map.put(RemoteConstant.INPUT_FIELD_NAME, idNum);
+            return map;
+        }).collect(Collectors.toList());
+        // 生成数据源
+        String resourceName = new StringBuffer()
+                .append("PIR处理资源")
+                .append(SysConstant.HYPHEN_DELIMITER)
+                .append(req.getTaskName())
+                .toString();
+        DataResource dataResource = examService.generateTargetResource(mapList, resourceName);
+        req.setOriginResourceId(dataResource.getResourceFusionId());
 
         String recordId = Long.toString(SnowflakeId.getInstance().nextId());
         PirRecord record = new PirRecord();
@@ -313,6 +330,9 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表不包含目标字段");
         }
 
+        String originResourceId = req.getOriginResourceId();
+        DataResource resource = dataResourceRepository.queryDataResourceByResourceFusionId(originResourceId);
+
         String[] targetValueArray = req.getTargetValueSet().toArray(new String[0]);
         String[] queryColumnNames = {RemoteConstant.INPUT_FIELD_NAME};
         List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(targetValueArray, queryColumnNames);
@@ -332,7 +352,7 @@ public class PirService {
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(param.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries, req);
+        dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries, req, resource);
 
 
 

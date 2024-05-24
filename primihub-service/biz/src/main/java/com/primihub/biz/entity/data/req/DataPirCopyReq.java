@@ -22,4 +22,5 @@ public class DataPirCopyReq {
     private String targetResourceId;
     private String targetOrganId;
     private String originOrganId;
+    private String originResourceId;
 }
