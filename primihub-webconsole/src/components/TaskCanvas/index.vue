@@ -423,7 +423,6 @@ export default {
               radius: 8
             }
           },
-          allowMulti:false,
           anchor: 'center',
           connectionPoint: 'anchor',
           allowBlank: false,
@@ -443,7 +442,34 @@ export default {
               },
               zIndex: 0
             })
-          }
+          },
+          validateConnection({ sourceCell, targetCell, targetMagnet }) {
+            if (!targetMagnet) {
+              return false
+            }
+
+            if (targetMagnet.getAttribute('port-group') !== 'in') {
+              return false
+            }
+
+            if (targetCell) {
+              const targetId = targetCell.id
+              const sourceId = sourceCell.id
+              const model = targetCell.model
+              if (model){
+                const incomings = model.incomings
+                const outgoings = model.outgoings
+                if (incomings[targetId] && incomings[targetId].length > 0){
+                  return false
+                }
+
+                if (outgoings[sourceId] && outgoings[sourceId].length > 1){
+                  return false
+                }
+              }
+            }
+            return true
+        },
         },
         selecting: {
           enabled: true,
@@ -895,6 +921,13 @@ export default {
       } else if (!jointStatisticalCom && (!modelSelectCom || modelName === '')) {
         this.$message({
           message: `运行失败：请输入模型名称`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if(modelComponents.length - modelPointComponents.length > 1){
+        this.$message({
+          message: `连线未完成`,
           type: 'error'
         })
         this.modelRunValidated = false
