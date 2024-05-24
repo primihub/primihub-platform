@@ -452,7 +452,7 @@ export default {
 
       if (this.searchGroup.find(item => item.query.length === 0)) {
         for (let i = 0; i < this.searchGroup.length; i++) {
-          this.handleKeyInputConfirm(i)
+          !this.searchGroup[i].query.length && this.handleKeyInputConfirm(i)
         }
       }else {
         this.isOK = true
