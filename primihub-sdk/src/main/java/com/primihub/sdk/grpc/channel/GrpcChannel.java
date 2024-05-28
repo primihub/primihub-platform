@@ -53,8 +53,9 @@ public class GrpcChannel {
                     .negotiationType(NegotiationType.TLS)
                     .sslContext(sslContext)
                     .build();
+        } else {
+            getDefaultTypeChannel(grpcClientConfig.getAddress(), grpcClientConfig.getPort());
         }
-        getDefaultTypeChannel(grpcClientConfig.getAddress(), grpcClientConfig.getPort());
     }
 
     private void getDefaultTypeChannel(String grpcClientAddress,Integer grpcClientPort){
