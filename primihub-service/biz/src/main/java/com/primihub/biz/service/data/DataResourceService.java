@@ -36,6 +36,7 @@ import com.primihub.sdk.task.TaskHelper;
 import com.primihub.sdk.task.dataenum.FieldTypeEnum;
 import com.primihub.sdk.task.param.TaskDataSetParam;
 import com.primihub.sdk.task.param.TaskParam;
+import com.xkcoding.http.util.MapUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -737,94 +738,95 @@ public class DataResourceService {
             }
             List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
             log.info("saveDerivationResource fusionResourceMap：{}", JSON.toJSONString(fusionResourceMap));
-            DataResource dataResource = null;
+            Map<String, DataResource> dataResourceMap = null;
             // dataResource只是己方的数据，可以是衍生数据
             for (String resourceId : resourceIds) {
-                dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
-                if (dataResource!=null) {
+                dataResourceMap.put(resourceId, dataResourceRepository.queryDataResourceByResourceFusionId(resourceId));
+                /*if (dataResource!=null) {
                     break;
-                }
+                }*/
             }
-            if (dataResource == null) {
+            if (MapUtil.isEmpty(dataResourceMap)) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
-            StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
+
             for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
                 String resourceId = resourceMap.get("resourceId").toString();
+                DataResource dataResource = dataResourceMap.get(resourceId);
+                StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
                 if (!dataResource.getResourceFusionId().equals(resourceId)){
                     resourceNames.append(resourceMap.get("resourceName").toString());
                 }
-            }
-            List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
-            for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
-                String url = dataResource.getUrl();
-                if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
-                    url = modelDerivationDto.getPath();
-                }else {
-                    if (url.contains(".csv")) {
-                        url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                List<ModelDerivationDto> modelDerivationDtos = map.get(dataResource.getResourceFusionId());
+                for (ModelDerivationDto modelDerivationDto : modelDerivationDtos) {
+                    String url = dataResource.getUrl();
+                    if (StringUtils.isNotBlank(modelDerivationDto.getPath())){
+                        url = modelDerivationDto.getPath();
+                    }else {
+                        if (url.contains(".csv")) {
+                            url = url.replace(".csv","_"+modelDerivationDto.getType()+".csv");
+                        }
+                        if (url.contains(".db")){
+                            String[] split = url.split("\\.");
+                            url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
+                        }
                     }
-                    if (url.contains(".db")){
-                        String[] split = url.split("\\.");
-                        url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
-                    }
-                }
-                log.info(url);
-                long start = System.currentTimeMillis();
-                File file = new File(url);
+                    log.info(url);
+                    long start = System.currentTimeMillis();
+                    File file = new File(url);
 //                while ((System.currentTimeMillis() - start)< 300000){
 //                    if (file.exists()){
 //                        break;
 //                    }
 //                }
-                if (!file.exists()) {
-                    continue;
+                    if (!file.exists()) {
+                        continue;
 //                    return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
-                }
-                DataResource derivationDataResource = new DataResource();
-                derivationDataResource.setUrl(url);
-                derivationDataResource.setResourceName(resourceNames.toString() + modelDerivationDto.getDerivationType());
-                derivationDataResource.setResourceAuthType(2);
-                derivationDataResource.setResourceSource(3);
-                if (userId==null || userId==0L){
-                    derivationDataResource.setUserId(dataResource.getUserId());
-                }else {
-                    derivationDataResource.setUserId(userId);
-                }
-                derivationDataResource.setOrganId(0L);
-                derivationDataResource.setFileId(0L);
-                derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
-                derivationDataResource.setFileSuffix("csv");
-                derivationDataResource.setFileColumns(0);
-                derivationDataResource.setFileRows(0);
-                derivationDataResource.setFileHandleStatus(0);
-                derivationDataResource.setResourceNum(0);
-                derivationDataResource.setDbId(0L);
-                derivationDataResource.setResourceState(0);
-                BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
-                if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
-                    return baseResultEntity;
-                }
-                derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
-                // 保存衍生数据集信息
-                dataResourcePrRepository.saveResource(derivationDataResource);
-                List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
-                for (DataFileField dataFileField : dataFileFields) {
-                    dataFileField.setFileId(null);
-                    dataFileField.setResourceId(derivationDataResource.getResourceId());
-                }
-                dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
-                DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
-                dataResourcePrRepository.saveResourceTag(dataResourceTag);
-                dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-                List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
-                // 保存衍生数据集 fusion信息
-                //log.info("需要同步的衍生数据集：{}", JSON.toJSONString(copyResourceList));
-                DataResourceCopyVo copyVo = new DataResourceCopyVo();
-                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), copyResourceList);
+                    }
+                    DataResource derivationDataResource = new DataResource();
+                    derivationDataResource.setUrl(url);
+                    derivationDataResource.setResourceName(resourceNames.toString() + modelDerivationDto.getDerivationType());
+                    derivationDataResource.setResourceAuthType(2);
+                    derivationDataResource.setResourceSource(3);
+                    if (userId==null || userId==0L){
+                        derivationDataResource.setUserId(dataResource.getUserId());
+                    }else {
+                        derivationDataResource.setUserId(userId);
+                    }
+                    derivationDataResource.setOrganId(0L);
+                    derivationDataResource.setFileId(0L);
+                    derivationDataResource.setFileSize(Integer.parseInt(String.valueOf(file.length())));
+                    derivationDataResource.setFileSuffix("csv");
+                    derivationDataResource.setFileColumns(0);
+                    derivationDataResource.setFileRows(0);
+                    derivationDataResource.setFileHandleStatus(0);
+                    derivationDataResource.setResourceNum(0);
+                    derivationDataResource.setDbId(0L);
+                    derivationDataResource.setResourceState(0);
+                    BaseResultEntity baseResultEntity = handleDataResourceFile(derivationDataResource, url);
+                    if (!baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                        return baseResultEntity;
+                    }
+                    derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
+                    // 保存衍生数据集信息
+                    dataResourcePrRepository.saveResource(derivationDataResource);
+                    List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
+                    for (DataFileField dataFileField : dataFileFields) {
+                        dataFileField.setFileId(null);
+                        dataFileField.setResourceId(derivationDataResource.getResourceId());
+                    }
+                    dataResourcePrRepository.saveResourceFileFieldBatch(dataFileFields);
+                    DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
+                    dataResourcePrRepository.saveResourceTag(dataResourceTag);
+                    dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
+                    List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
+                    // 保存衍生数据集 fusion信息
+                    log.info("需要同步的衍生数据集：{}", JSON.toJSONString(copyResourceList));
+                    fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), copyResourceList);
 //                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+                }
             }
-            return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
+            return BaseResultEntity.success(dataResourceMap.keySet());
         }catch (Exception e){
             log.info("衍生数据异常:{}",e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据异常:"+e.getMessage());
