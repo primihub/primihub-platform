@@ -729,7 +729,13 @@ public class DataResourceService {
     public BaseResultEntity saveDerivationResource(List<ModelDerivationDto> derivationList,Long userId) {
         try {
             Map<String, List<ModelDerivationDto>> map = derivationList.stream().collect(Collectors.groupingBy(ModelDerivationDto::getResourceId));
+            log.info("saveDerivationResource map：{}", JSON.toJSONString(map));
             Set<String> resourceIds = map.keySet();
+            BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
+            if (result.getCode()!=0) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
+            }
+            List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
             DataResource dataResource = null;
             // dataResource只是己方的数据，可以是衍生数据
             for (String resourceId : resourceIds) {
@@ -741,13 +747,6 @@ public class DataResourceService {
             if (dataResource == null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
-            log.info("查询数据资源：{}", JSON.toJSONString(resourceIds));
-            BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
-            log.info("查询数据资源记过：{}", JSON.toJSONString(resourceIds));
-            if (result.getCode()!=0) {
-                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
-            }
-            List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
             StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
             for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
                 String resourceId = resourceMap.get("resourceId").toString();
