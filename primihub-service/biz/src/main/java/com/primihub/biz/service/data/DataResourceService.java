@@ -736,6 +736,7 @@ public class DataResourceService {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
             }
             List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
+            log.info("saveDerivationResource fusionResourceMap：{}", JSON.toJSONString(fusionResourceMap));
             DataResource dataResource = null;
             // dataResource只是己方的数据，可以是衍生数据
             for (String resourceId : resourceIds) {
@@ -818,7 +819,7 @@ public class DataResourceService {
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
                 List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
                 // 保存衍生数据集 fusion信息
-                log.info("需要同步的衍生数据集：{}", JSON.toJSONString(copyResourceList));
+                //log.info("需要同步的衍生数据集：{}", JSON.toJSONString(copyResourceList));
                 DataResourceCopyVo copyVo = new DataResourceCopyVo();
                 fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), copyResourceList);
 //                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
