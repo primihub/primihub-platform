@@ -137,7 +137,7 @@ public class DataTaskService {
     }
 
     public void singleDataFusionResource(String paramStr){
-//        log.info(paramStr);
+        log.info("执行简单同步任务：{}", paramStr);
         DataResource dataResource = JSONObject.parseObject(paramStr, DataResource.class);
         List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
         for (SysOrgan sysOrgan : sysOrgans) {
