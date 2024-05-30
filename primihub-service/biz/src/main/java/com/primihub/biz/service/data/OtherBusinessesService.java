@@ -178,7 +178,7 @@ public class OtherBusinessesService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<HashMap<String, Object>> request = new HttpEntity(data, headers);
-            log.info(gatewayAddressAndApi);
+            log.info("url:【{}】 - request {}",gatewayAddressAndApi,JSONObject.toJSONString(request));
             BaseResultEntity baseResultEntity = restTemplate.postForObject(gatewayAddressAndApi, request, BaseResultEntity.class);
             log.info("url:【{}】 - baseResultEntity {}",gatewayAddressAndApi,JSONObject.toJSONString(baseResultEntity));
             return baseResultEntity;

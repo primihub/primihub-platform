@@ -497,7 +497,7 @@ public class DataResourceService {
 
     public List<DataResourceCopyVo> findCopyResourceList(Long startOffset, Long endOffset){
         String localOrganShortCode = organConfiguration.getLocalOrganShortCode();
-        List<DataResource> resourceList=dataResourceRepository.findCopyResourceList(startOffset,endOffset);
+        List<DataResource> resourceList= dataResourceRepository.findCopyResourceList(startOffset,endOffset);
         if (resourceList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -814,7 +814,9 @@ public class DataResourceService {
                 DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId()));
+                List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
+                log.info("查询需要同步的数据：{}", JSON.toJSONString(copyResourceList));
+                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), copyResourceList);
 //                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
