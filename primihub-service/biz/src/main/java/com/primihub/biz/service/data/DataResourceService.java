@@ -741,7 +741,9 @@ public class DataResourceService {
             if (dataResource == null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
+            log.info("查询数据资源：{}", JSON.toJSONString(resourceIds));
             BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
+            log.info("查询数据资源记过：{}", JSON.toJSONString(resourceIds));
             if (result.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
             }
@@ -818,6 +820,7 @@ public class DataResourceService {
                 List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
                 // 保存衍生数据集 fusion信息
                 log.info("需要同步的衍生数据集：{}", JSON.toJSONString(copyResourceList));
+                DataResourceCopyVo copyVo = new DataResourceCopyVo();
                 fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), copyResourceList);
 //                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
