@@ -804,6 +804,7 @@ public class DataResourceService {
                     return baseResultEntity;
                 }
                 derivationDataResource.setResourceFusionId(modelDerivationDto.getNewResourceId());
+                // 保存衍生数据集信息
                 dataResourcePrRepository.saveResource(derivationDataResource);
                 List<DataFileField> dataFileFields = dataResourceRepository.queryDataFileFieldByFileId(dataResource.getResourceId());
                 for (DataFileField dataFileField : dataFileFields) {
@@ -815,7 +816,8 @@ public class DataResourceService {
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
                 List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
-                log.info("查询需要同步的数据：{}", JSON.toJSONString(copyResourceList));
+                // 保存衍生数据集 fusion信息
+                log.info("需要同步的衍生数据集：{}", JSON.toJSONString(copyResourceList));
                 fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(), copyResourceList);
 //                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
