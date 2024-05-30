@@ -83,7 +83,7 @@ public class TestService {
 
     public BaseResultEntity testDataSet(String id) {
         BaseResultEntity testDataSet = fusionResourceService.getTestDataSet(id);
-        log.info(JSONObject.toJSONString(testDataSet));
+        log.info("执行testDataSet：{}", JSON.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {

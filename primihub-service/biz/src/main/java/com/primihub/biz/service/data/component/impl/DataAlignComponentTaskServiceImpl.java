@@ -143,8 +143,6 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     // derivation resource data
                     log.info("after dataAlign taskReq derivationList: \n{}", JSONObject.toJSONString(taskReq.getDerivationList()));
                     BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
-                    DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(guestDatasetId);
-                    singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),dataResource))).build());
                     log.info("dataAlign derivationList save result: \n{}", JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
