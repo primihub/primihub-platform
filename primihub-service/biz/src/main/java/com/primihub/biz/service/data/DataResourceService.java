@@ -819,7 +819,7 @@ public class DataResourceService {
                 //List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
                 //log.info("copyResourceList 复制元数据：{}", JSON.toJSONString(copyResourceList));
                 //fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),copyResourceList);
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+                //singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
         }catch (Exception e){

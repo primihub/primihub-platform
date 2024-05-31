@@ -143,6 +143,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     // derivation resource data
                     log.info("after dataAlign taskReq derivationList: \n{}", JSONObject.toJSONString(taskReq.getDerivationList()));
                     BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
+                    // TODO 同步 合作方机构的 fusion 的某个数据
                     log.info("dataAlign derivationList save result: \n{}", JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
