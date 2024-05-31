@@ -148,7 +148,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName() + "组件处理失败:" + derivationResource.getMsg());
                     } else {
-                        HashSet dids = new HashSet();
+                        /*HashSet dids = new HashSet();
                         dids.add(derivationResourceIdMap.get(labelDatasetId));
                         dids.add(derivationResourceIdMap.get(guestDatasetId));
                         while (true){
@@ -162,7 +162,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                                 }
                             }
                             Thread.sleep(100L);
-                        }
+                        }*/
 
                         List<String> resourceIds = (List<String>) derivationResource.getResult();
                         for (String resourceId : resourceIds) {

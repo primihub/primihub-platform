@@ -130,7 +130,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg(req.getComponentName() + "组件处理失败:" + derivationResource.getMsg());
                 } else {
-                    HashSet dids = new HashSet();
+                    /*HashSet dids = new HashSet();
                     dids.add(labelDatasetDto.getNewDataSetId());
                     dids.add(guestDatasetDto.getNewDataSetId());
                     while (true){
@@ -144,7 +144,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                             }
                         }
                         Thread.sleep(100L);
-                    }
+                    }*/
 
                     List<String> resourceIdLst = (List<String>) derivationResource.getResult();
                     for (String resourceId : resourceIdLst) {
