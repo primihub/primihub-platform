@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -129,6 +130,22 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                     taskReq.getDataTask().setTaskErrorMsg(req.getComponentName() + "组件处理失败:" + derivationResource.getMsg());
                 } else {
+                    HashSet dids = new HashSet();
+                    dids.add(labelDatasetDto.getNewDataSetId());
+                    dids.add(guestDatasetDto.getNewDataSetId());
+                    while (true){
+                        // 休眠一秒等待数据集同步
+                        BaseResultEntity dataSets = fusionResourceService.getDataSets(dids);
+                        log.info(JSONObject.toJSONString(dataSets));
+                        if (dataSets.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                            List<Object> objectList = (List<Object>) dataSets.getResult();
+                            if (objectList.size() == dids.size()){
+                                break;
+                            }
+                        }
+                        Thread.sleep(100L);
+                    }
+
                     List<String> resourceIdLst = (List<String>) derivationResource.getResult();
                     for (String resourceId : resourceIdLst) {
                         DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
@@ -151,6 +168,8 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     if (derivationResourceIdMap.containsKey(guestDatasetId)) {
                         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_DATASET, derivationResourceIdMap.get(guestDatasetId));
                     }
+
+
                 }
             }
 

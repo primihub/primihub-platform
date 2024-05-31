@@ -20,8 +20,10 @@ import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.entity.data.req.DataComponentValue;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
@@ -60,9 +62,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Autowired
     private TaskHelper taskHelper;
     @Autowired
-    private SingleTaskChannel singleTaskChannel;
-    @Autowired
-    private DataResourceRepository dataResourceRepository;
+    private FusionResourceService fusionResourceService;
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
@@ -143,12 +143,27 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                     // derivation resource data
                     log.info("after dataAlign taskReq derivationList: \n{}", JSONObject.toJSONString(taskReq.getDerivationList()));
                     BaseResultEntity derivationResource = dataResourceService.saveDerivationResource(derivationList, taskReq.getDataTask().getTaskUserId());
-                    // TODO 同步 合作方机构的 fusion 的某个数据
                     log.info("dataAlign derivationList save result: \n{}", JSONObject.toJSONString(derivationResource));
                     if (!derivationResource.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName() + "组件处理失败:" + derivationResource.getMsg());
                     } else {
+                        HashSet dids = new HashSet();
+                        dids.add(derivationResourceIdMap.get(labelDatasetId));
+                        dids.add(derivationResourceIdMap.get(guestDatasetId));
+                        while (true){
+                            // 休眠一秒等待数据集同步
+                            BaseResultEntity dataSets = fusionResourceService.getDataSets(dids);
+                            log.info(JSONObject.toJSONString(dataSets));
+                            if (dataSets.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                                List<Object> objectList = (List<Object>) dataSets.getResult();
+                                if (objectList.size() == dids.size()){
+                                    break;
+                                }
+                            }
+                            Thread.sleep(100L);
+                        }
+
                         List<String> resourceIds = (List<String>) derivationResource.getResult();
                         for (String resourceId : resourceIds) {
                             DataModelResource dataModelResource = new DataModelResource(taskReq.getDataModel().getModelId());
