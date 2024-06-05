@@ -281,18 +281,18 @@ public class PirService {
 
         Map<String, DataCore> withScoreMap = withScore.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
 
-        withPhoneGroup.entrySet().parallelStream().forEach(entry -> {
-            if (withScoreMap.containsKey(entry.getKey())) {
+        withPhoneGroup.forEach((key, value) -> {
+            if (withScoreMap.containsKey(key)) {
                 return;
             }
-            RemoteRespVo respVo = remoteClient.queryFromRemoteMock(entry.getValue().get(0).getPhoneNum(), scoreModel);
+            RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
                 DataCore dataCore = new DataCore();
-                dataCore.setIdNum(entry.getValue().get(0).getIdNum());
-                dataCore.setPhoneNum(entry.getValue().get(0).getPhoneNum());
+                dataCore.setIdNum(value.get(0).getIdNum());
+                dataCore.setPhoneNum(value.get(0).getPhoneNum());
                 dataCore.setScoreModelType(scoreModelType);
                 dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
-                dataCore.setY(entry.getValue().get(0).getY());
+                dataCore.setY(value.get(0).getY());
                 dataCorePrimarydbRepository.saveDataCore(dataCore);
             }
         });

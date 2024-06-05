@@ -3,7 +3,6 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
@@ -89,11 +88,7 @@ public class ExamService {
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
     private DataSourceService dataSourceService;
-    @Autowired
-    private DataCoreService dataCoreService;
     @Autowired
     private PhoneClientService phoneClientService;
     @Autowired
@@ -311,7 +306,6 @@ public class ExamService {
             if (handleDataResourceFileResult.getCode() != 0) {
                 log.info("{}", JSON.toJSONString(handleDataResourceFileResult));
                 // todo 错误处理
-//                return handleDataResourceFileResult;
                 return null;
             }
 
@@ -327,8 +321,6 @@ public class ExamService {
             log.info("{}", JSON.toJSONString(taskParam));
             if (!taskParam.getSuccess()) {
                 log.info("{}", JSON.toJSONString(taskParam));
-                // todo 错误处理
-//                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"无法将资源注册到数据集中:"+taskParam.getError());
                 return null;
             }
             if (dataSource != null) {
@@ -356,64 +348,12 @@ public class ExamService {
 
             return po;
         } catch (Exception e) {
-            // todo
             log.info("save DataResource Exception：{}", e.getMessage());
-            e.printStackTrace();
-//            return BaseResultEntity.failure(BaseResultEnum.FAILURE);
+            log.error(e.getMessage(), e);
             return null;
         }
     }
 
-  /*  private List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl, List<Map<String, Object>> resultList) {
-        *//*HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
-        ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
-        return exchange.getBody();*//*
-        List<String> targetPhoneNumList = resultList.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String) stringObjectMap.get("phone")).collect(Collectors.toList());
-
-        try {
-            InputStream inputStream = ResourceReader.class.getClassLoader().getResourceAsStream("mock/score.json");
-            List<Map<String, Object>> list = objectMapper.readValue(inputStream, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {
-            });
-            // 读取JSON文件内容为字符串
-            // 将JSON字符串解析为List<Map>
-
-            List<Map<String, Object>> result = list.stream().filter(map -> map.get("phone") != null && targetPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
-            Map<String, Map<String, Object>> phoneScoreMap = result.stream().collect(Collectors.toMap(stringObjectMap -> (String) stringObjectMap.get("phone"), Function.identity()));
-            List<String> existPhoneNumList = result.stream().filter(map -> StringUtils.isNotBlank((String) map.get("phone"))).map(stringObjectMap -> (String) stringObjectMap.get("phone")).collect(Collectors.toList());
-            List<Map<String, Object>> collect = resultList.stream().filter(map -> map.get("phone") != null && existPhoneNumList.contains((String) (map.get("phone")))).collect(Collectors.toList());
-            collect.forEach(map -> {
-                map.put("score", phoneScoreMap.get(map.get("phone")).getOrDefault("score", 0));
-            });
-            return collect;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        throw new RuntimeException("数据处理出错");
-    }*/
-
-    /*private List<Map<String, Object>> getDataFromFirstSource(String firstUrl, Set<String> fieldValueSet) {
-        *//**HttpHeaders headers = new HttpHeaders();
-         //        headers.setContentType(MediaType.APPLICATION_JSON);
-         //        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
-         //        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
-         //        return exchange.getBody();
-         *//*
-
-        try {
-            // 读取JSON文件内容为字符串
-            InputStream inputStream = ResourceReader.class.getClassLoader().getResourceAsStream("mock/data.json");
-            List<Map<String, Object>> list = objectMapper.readValue(inputStream, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {
-            });
-            List<Map<String, Object>> result = list.stream().filter(map -> map.get("code") != null && fieldValueSet.contains((String) (map.get("code")))).collect(Collectors.toList());
-            return result;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        throw new RuntimeException("数据处理出错");
-    }
-*/
     private void startFutureExamTask(DataExamReq req) {
         // 进行预处理，使用异步
         FutureTask<Object> task = new FutureTask<>(() -> {
