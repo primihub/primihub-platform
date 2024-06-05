@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.primihub.grpc";
+option java_outer_classname = "LpyProto";
+option objc_class_prefix = "HLW";
+
+package primihub.rpc;
+
+// The request message containing the user's name.
+message QueryRequest {
+  repeated InputObject request_list = 1;
+}
+
+// The response message containing the greetings
+message QueryReply {
+  repeated OutputObject reply_list = 1;
+}
+
+message InputObject {
+  string id_num = 1;
+}
+
+message OutputObject {
+  string id_num = 1;
+  string phone_num = 2;
+}
+
+service Query {
+  rpc QueryData(QueryRequest) returns (QueryReply) {}
+}

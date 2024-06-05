@@ -458,8 +458,6 @@ public class ExamService {
                     sendEndExamTask(req);
                     log.info("====================== FAIL");
                 }
-                log.info("====================== dataResource");
-
                 req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 req.setTargetResourceId(dataResource.getResourceFusionId());
                 sendEndExamTask(req);

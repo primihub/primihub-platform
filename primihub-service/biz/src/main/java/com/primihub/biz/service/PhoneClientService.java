@@ -1,20 +1,30 @@
 package com.primihub.biz.service;
 
 
+import com.primihub.biz.config.base.BaseConfiguration;
+import com.primihub.biz.entity.SM3Dict;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PhoneClientService {
-    public Map<String, String> findSM3PhoneForSM3IdNum(Set<String> fieldValueSet) {
-        HashSet<String> filteredValue = filterHashSet(fieldValueSet, 0.8);
-        Map<String, String> map = new HashMap<>();
-        filteredValue.forEach(value -> {
-            map.put(value, generateRandomPhoneNumber());
-        });
-        return map;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
+    public Map<String, String> findSM3PhoneForSM3IdNum(Set<String> fieldValueSet) {
+        log.info("[grpc][address] --- [{}:{}]",
+                baseConfiguration.getLpyGrpcConfig().getAddress(),
+                baseConfiguration.getLpyGrpcConfig().getPort());
+        SM3DictClient sm3DictClient = new SM3DictClient(baseConfiguration.getLpyGrpcConfig().getAddress(), baseConfiguration.getLpyGrpcConfig().getPort());
+        List<SM3Dict> replyList = sm3DictClient.commit(fieldValueSet);
+        return replyList.stream().collect(Collectors.toMap(SM3Dict::getIdNum, SM3Dict::getPhoneNum));
     }
 
     public <T> HashSet<T> filterHashSet(Set<T> originalSet, double filterPercentage) {

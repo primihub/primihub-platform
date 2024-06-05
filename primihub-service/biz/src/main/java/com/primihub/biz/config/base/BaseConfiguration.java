@@ -5,6 +5,7 @@ import com.primihub.biz.entity.sys.config.BaseAuthConfig;
 import com.primihub.biz.entity.sys.config.LokiConfig;
 import com.primihub.sdk.config.GrpcClientConfig;
 import com.primihub.sdk.config.GrpcProxyConfig;
+import com.primihub.sdk.config.LpyGrpcConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.autoconfigure.mail.MailProperties;
@@ -26,6 +27,7 @@ public class BaseConfiguration {
     private String defaultPasswordVector;
     private GrpcClientConfig grpcClient;
     private GrpcProxyConfig grpcProxy;
+    private LpyGrpcConfig lpyGrpcConfig;
     private Integer grpcServerPort;
     private String uploadUrlDirPrefix;
     private String resultUrlDirPrefix;
