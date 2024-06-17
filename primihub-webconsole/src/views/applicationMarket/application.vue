@@ -26,6 +26,7 @@ export default {
     reasoning: () => import('./components/reasoning.vue'),
     ADPrediction: () => import('./components/ADPrediction.vue'),
     UserPortrait: () => import('./components/UserPortrait.vue'),
+    CredentialsPIR: () => import('./components/CredentialsPIR.vue'),
     TopBanner
   },
   data() {

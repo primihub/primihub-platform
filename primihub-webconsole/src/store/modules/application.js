@@ -1,5 +1,5 @@
 import data from '@/views/applicationMarket/mock/data.json'
-import { readNumber } from '@/api/market'
+import { readNumber, getMarketInfo } from '@/api/market'
 
 const state = {
   data,
@@ -7,7 +7,8 @@ const state = {
   appDescription: '',
   detailImg: '',
   type: '',
-  origin: ''
+  origin: '',
+  marketInfo: {}
 }
 
 const mutations = {
@@ -28,6 +29,9 @@ const mutations = {
   },
   SET_ORIGIN: (state, origin) => {
     state.origin = origin
+  },
+  SET_MARKET: (state, info) => {
+    state.marketInfo = info
   }
 }
 
@@ -71,8 +75,14 @@ const actions = {
      **/
     const host = window.location.host
     const origin = host.indexOf('.com') !== -1 ? host.split('.')[0] : 'other'
-    console.log('origin', origin)
     commit('SET_ORIGIN', origin)
+  },
+
+  async getMarketInfo({ commit }) {
+    const {result, code} = await getMarketInfo()
+    if (code === 0) {
+      commit('SET_MARKET', result)
+    }
   }
 }
 
