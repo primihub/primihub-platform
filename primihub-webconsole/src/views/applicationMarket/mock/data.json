@@ -46,4 +46,14 @@
   "detailImg": "user-app.png",
   "layout": "flex",
   "readNumber": 137
+},{
+  "applicationId": 6,
+  "appName": "credentialsPIR",
+  "appTitle": "账户密码泄露信息查询应用",
+  "organName": "机构B",
+  "createTime": "2024-02-20 10:00",
+  "description":"我们在使用各个网站平台时，会设置账号密码。很多平台的账号密码可能设置得相似，当某些平台的账号密码库被爆掉后，就存在我们在多个平台的账号密码被泄露的风险。<br/>该服务利用隐匿查询技术，在查询用户邮箱注册的账号密码是否被泄露过，升级传统的key-value查询方法，引入隐私保护，使得查询方无法拿到数据方其他数据，数据方也无法知晓查询方查的是哪个key，在实现账号密码风险检测的同时，也保护了双向隐私。",
+  "detailImg": "account-app.png",
+  "layout": "",
+  "readNumber": 137
 }]
