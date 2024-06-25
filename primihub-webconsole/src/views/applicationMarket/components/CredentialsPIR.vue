@@ -118,7 +118,7 @@ export default {
   methods: {
      // 设置资源id
      async setDefaultValue() {
-      this.resourceId = this.marketInfo.pir.resourceId
+      this.resourceId = this.marketInfo.credentialsPIR.resourceId
       await this.getDataResource()
       this.form.selectResources = this.resource
     },
