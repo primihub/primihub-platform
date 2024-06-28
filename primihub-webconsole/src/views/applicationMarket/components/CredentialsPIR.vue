@@ -32,9 +32,12 @@
               </el-table>
             </el-form-item>
           </div>
+          <el-form-item>
+            <p :style="{color: '#999', lineHeight: 1}">节点和数据由山东大学网安研究团队提供</p>
+          </el-form-item>
           <el-form-item label="查询内容" prop="pirParam">
-            <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10" @blur="() => form.password && (form.pirParam = `${form.mobile}:${form.password}`)"/>
-            <el-input v-model="form.password" placeholder="请输入密码" type="password" @blur="() => form.mobile && (form.pirParam = `${form.mobile}:${form.password}`)" show-password />
+            <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10" @blur="() => form.password && (form.pirParam = `${form.mobile}:${form.password}`)" />
+            <el-input v-model="form.password" placeholder="请输入密码" type="password" show-password @blur="() => form.mobile && (form.pirParam = `${form.mobile}:${form.password}`)" />
           </el-form-item>
           <el-form-item>
             <p :style="{color: '#999', lineHeight: 1}">利用隐匿查询技术在泄露密码库里查询确认您的账号密码是否泄露</p>
@@ -45,6 +48,7 @@
         </div>
       </el-form>
     </div>
+
     <el-dialog
       title="查询结果"
       :visible.sync="dialogVisible"
@@ -53,14 +57,14 @@
     >
       <div class="dialog-body">
         <div v-if="fail" class="result">
-          <p class="el-icon-error icon-error" />
-          <p><strong>{{ form.pirParam }}</strong>不在泄漏的账号密码数据资源中</p>
-          <p class="search-tip">未发现{{ form.pirParam }}的泄漏风险</p>
+          <p><i class="el-icon-success icon-success" /> </p>
+          <p><strong>{{ form.mobile }}</strong>不在泄漏的账号密码数据资源中</p>
+          <p class="search-tip">未发现{{ form.mobile }}账号关联的密码泄漏风险</p>
         </div>
         <div v-else class="result">
-          <p><i class="el-icon-success icon-success" /> </p>
-          <p><strong>{{ form.pirParam }}</strong>在泄漏的账号密码数据资源中</p>
-          <p class="search-tip">建议更新以{{ form.mobile }}为账号的账号密码{{ form.password }}</p>
+          <p class="el-icon-warning icon-error" />
+          <p><strong>{{ form.mobile }}</strong>在泄漏的账号密码数据资源中</p>
+          <p class="search-tip">建议更新{{ form.mobile }}相关的账号密码</p>
         </div>
       </div>
     </el-dialog>
@@ -102,7 +106,7 @@ export default {
           { required: true, message: '请输入完整的查询内容', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
-      },
+      }
     }
   },
   computed: {
@@ -116,8 +120,8 @@ export default {
     clearInterval(this.taskTimer)
   },
   methods: {
-     // 设置资源id
-     async setDefaultValue() {
+    // 设置资源id
+    async setDefaultValue() {
       this.resourceId = this.marketInfo.credentialsPIR.resourceId
       await this.getDataResource()
       this.form.selectResources = this.resource
@@ -152,19 +156,19 @@ export default {
 
           this.loading = true
           pirSubmitTask({
-              resourceId: this.resource[0].resourceId,
-              pirParam: hashParams
-            }).then(res => {
-              if (res.code === 0) {
-                this.taskId = res.result.taskId
-                this.getPirTaskResult()
-              } else {
-                this.$message.error(res.msg)
-                this.loading = false
-              }
-            }).catch(err => {
-              console.log(err)
+            resourceId: this.resource[0].resourceId,
+            pirParam: hashParams
+          }).then(res => {
+            if (res.code === 0) {
+              this.taskId = res.result.taskId
+              this.getPirTaskResult()
+            } else {
+              this.$message.error(res.msg)
               this.loading = false
+            }
+          }).catch(err => {
+            console.log(err)
+            this.loading = false
           })
         } else {
           console.log('error submit!!')
