@@ -33,7 +33,7 @@
             </el-form-item>
           </div>
           <el-form-item>
-            <p :style="{color: '#999', lineHeight: 1}">节点和数据由山东大学网安研究团队提供</p>
+            <p :style="{color: '#999', lineHeight: 1, marginBottom: '10px'}">节点和数据由山东大学网安研究团队提供</p>
           </el-form-item>
           <el-form-item label="查询内容" prop="pirParam">
             <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10" @blur="() => form.password && (form.pirParam = `${form.mobile}:${form.password}`)" />
