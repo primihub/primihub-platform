@@ -178,6 +178,18 @@
         </foreach>
         GROUP BY dm.project_id,dt.task_state
     </select>
+
+    <select id="queryRunningTaskByProjectId" resultType="string">
+        SELECT
+            dt.task_id
+        FROM
+            data_model_task dmt
+                LEFT JOIN data_model dm ON dm.model_id = dmt.model_id
+                LEFT JOIN data_task dt ON dmt.task_id = dt.task_id
+        WHERE
+            dm.project_id = #{projectId} AND dt.task_state = 2
+    </select>
+
     <select id="queryModelTaskById" resultType="com.primihub.biz.entity.data.po.DataModelTask">
         select
                 id,

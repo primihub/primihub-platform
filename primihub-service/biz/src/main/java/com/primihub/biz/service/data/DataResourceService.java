@@ -20,6 +20,7 @@ import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
 import com.primihub.biz.entity.event.RemoteDataResourceEvent;
+import com.primihub.biz.entity.sys.po.DataSet;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -37,6 +38,7 @@ import com.primihub.sdk.task.dataenum.FieldTypeEnum;
 import com.primihub.sdk.task.param.TaskDataSetParam;
 import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -814,8 +816,10 @@ public class DataResourceService {
                 DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId()));
-//                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+                //List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
+                //log.info("copyResourceList 复制元数据：{}", JSON.toJSONString(copyResourceList));
+                //fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),copyResourceList);
+                //singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
         }catch (Exception e){

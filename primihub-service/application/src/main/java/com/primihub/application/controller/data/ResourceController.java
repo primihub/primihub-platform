@@ -59,11 +59,21 @@ public class ResourceController {
         return dataResourceService.getDataResourceList(req,userId);
     }
 
+    /**
+     * 衍生数据列表
+     * @param req
+     * @return
+     */
     @GetMapping("getDerivationResourceList")
     public BaseResultEntity getDerivationResourceList(DerivationResourceReq req){
         return dataResourceService.getDerivationResourceList(req);
     }
 
+    /**
+     * 衍生数据详情
+     * @param req
+     * @return
+     */
     @GetMapping("getDerivationResourceData")
     public BaseResultEntity getDerivationResourceData(DerivationResourceReq req){
         if (req.getResourceId() == null || req.getResourceId() ==0L) {
@@ -230,7 +240,12 @@ public class ResourceController {
         return dataResourceService.updateDataResourceField(req,fieldTypeEnum);
     }
 
-
+    /**
+     * 修改资源状态
+     * @param resourceId
+     * @param resourceState
+     * @return
+     */
     @PostMapping("resourceStatusChange")
     public BaseResultEntity resourceStatusChange(Long resourceId,Integer resourceState){
         if (resourceId==null||resourceId==0L){
