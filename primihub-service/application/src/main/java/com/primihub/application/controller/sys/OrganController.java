@@ -24,11 +24,21 @@ public class OrganController {
     @Autowired
     private SysOrganService sysOrganService;
 
+    /**
+     * 本方机构信息
+     * @return
+     */
     @GetMapping("getLocalOrganInfo")
     public BaseResultEntity getLocalOrganInfo(){
         return sysOrganService.getLocalOrganInfo();
     }
 
+
+    /**
+     * 修改本方机构信息
+     * @param changeLocalOrganInfoParam
+     * @return
+     */
     @PostMapping("changeLocalOrganInfo")
     public BaseResultEntity changeLocalOrganInfo(ChangeLocalOrganInfoParam changeLocalOrganInfoParam){
         return sysOrganService.changeLocalOrganInfo(changeLocalOrganInfoParam);
@@ -64,10 +74,6 @@ public class OrganController {
         if (StringUtils.isBlank(publicKey)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
         }
-        // 解决 "+" 在传输中替换为 " " 的问题
-//        if (publicKey.contains(" ")) {
-//            publicKey = publicKey.replace(" ", "+");
-//        }
         return sysOrganService.joiningPartners(gateway,publicKey);
     }
 

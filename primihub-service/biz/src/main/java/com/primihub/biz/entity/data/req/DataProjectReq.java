@@ -21,6 +21,10 @@ public class DataProjectReq{
      */
     private String projectName;
     /**
+     * 项目类型 MPC HFL VFL
+     */
+    private String projectType;
+    /**
      * 项目描述
      */
     private String projectDesc;

@@ -63,8 +63,8 @@ public class ModelController {
 
     @ApiOperation(value = "获取模型组件列表",httpMethod = "GET")
     @GetMapping("getModelComponent")
-    public BaseResultEntity getModelComponent(){
-        return dataModelService.getModelComponent();
+    public BaseResultEntity getModelComponent(@RequestParam(value = "projectType", required = false) String projectType){
+        return dataModelService.getModelComponent(projectType);
     }
 
 

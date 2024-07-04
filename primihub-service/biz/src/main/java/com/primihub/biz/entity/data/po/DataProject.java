@@ -38,6 +38,11 @@ public class DataProject {
     private String projectDesc;
 
     /**
+     * 项目类型 MPC HFL VFL
+     */
+    private String projectType;
+
+    /**
      * 机构id
      */
     private String createdOrganId;

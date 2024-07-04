@@ -24,6 +24,7 @@ public class DataProjectConvert {
         dataProject.setId(req.getId());
         dataProject.setProjectId(req.getProjectId());
         dataProject.setProjectName(req.getProjectName());
+        dataProject.setProjectType(req.getProjectType());
         dataProject.setProjectDesc(req.getProjectDesc());
         dataProject.setCreatedOrganId(organInfo.getOrganId());
         dataProject.setCreatedOrganName(organInfo.getOrganName());
@@ -40,6 +41,7 @@ public class DataProjectConvert {
         dataProjectListVo.setOrganId(dataProject.getCreatedOrganId());
         dataProjectListVo.setProjectId(dataProject.getProjectId());
         dataProjectListVo.setProjectName(dataProject.getProjectName());
+        dataProjectListVo.setProjectType(dataProjectListVo.getProjectType());
         dataProjectListVo.setProjectDesc(dataProject.getProjectDesc());
         dataProjectListVo.setUserName(dataProject.getCreatedUsername());
         dataProjectListVo.setCreatedOrganName(dataProject.getCreatedOrganName());
@@ -72,6 +74,7 @@ public class DataProjectConvert {
         DataProjectDetailsVo dataProjectDetailsVo = new DataProjectDetailsVo();
         dataProjectDetailsVo.setId(dataProject.getId());
         dataProjectDetailsVo.setProjectId(dataProject.getProjectId());
+        dataProjectDetailsVo.setProjectType(dataProject.getProjectType());
         dataProjectDetailsVo.setProjectName(dataProject.getProjectName());
         dataProjectDetailsVo.setProjectDesc(dataProject.getProjectDesc());
         dataProjectDetailsVo.setUserName(dataProject.getCreatedUsername());

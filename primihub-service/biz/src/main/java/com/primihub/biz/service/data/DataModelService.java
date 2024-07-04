@@ -2,9 +2,7 @@ package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.primihub.biz.config.base.BaseConfiguration;
-import com.primihub.biz.config.base.ComponentsConfiguration;
-import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.config.base.*;
 import com.primihub.biz.config.test.TestConfiguration;
 import com.primihub.biz.convert.DataModelConvert;
 import com.primihub.biz.convert.DataProjectConvert;
@@ -52,6 +50,12 @@ public class DataModelService {
     private BaseConfiguration baseConfiguration;
     @Autowired
     private ComponentsConfiguration componentsConfiguration;
+    @Autowired
+    private MpcComponentsConfiguration mpcComponentsConfiguration;
+    @Autowired
+    private HflComponentsConfiguration hflComponentsConfiguration;
+    @Autowired
+    private VflComponentsConfiguration vflComponentsConfiguration;
     @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
@@ -188,8 +192,25 @@ public class DataModelService {
         return BaseResultEntity.success(new PageDataEntity(tolal, req.getPageSize(), req.getPageNo(), modelListVos));
     }
 
-    public BaseResultEntity getModelComponent() {
-        List<ModelComponent> modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+    public BaseResultEntity getModelComponent(String projectType) {
+        List<ModelComponent> modelComponents;
+        if (StringUtils.isBlank(projectType)) {
+            //modelComponents = componentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "项目类型为空");
+        }
+        switch (projectType.toUpperCase()) {
+            case "MPC":
+                modelComponents = mpcComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            case "HFL":
+                modelComponents = hflComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            case "VFL":
+                modelComponents = vflComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            default:
+                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "当前类型不支持");
+        }
         return BaseResultEntity.success(modelComponents);
     }
 
@@ -384,6 +405,11 @@ public class DataModelService {
         DataModelAndComponentReq modelComponentReq = taskReq.getModelComponentReq();
         // 组件参数
         List<DataComponentReq> modelComponents = modelComponentReq.getModelComponents();
+        // 组件顺序
+        List<DataModelPointComponent> modelPointComponents = modelComponentReq.getModelPointComponents();
+        if (modelPointComponents.size() != (modelComponents.size() - 1)){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型执行顺序错误，请检查组件编排顺序");
+        }
         List<String> zComponentCodeList;
         Map<String, DataComponentReq> modelComponentMap;
         if (modelComponents != null && !modelComponents.isEmpty()) {
