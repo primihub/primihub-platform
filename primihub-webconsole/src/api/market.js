@@ -23,3 +23,10 @@ export function readNumber(params) {
     params
   })
 }
+
+export function getMarketInfo() {
+  return request({
+    url: '/data/market/marketInfo',
+    method: 'GET'
+  })
+}

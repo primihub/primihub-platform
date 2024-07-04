@@ -81,4 +81,9 @@ public class MarketController {
         return BaseResultEntity.success(marketService.display(type,operation));
     }
 
+    @GetMapping("marketInfo")
+    public BaseResultEntity getMarketInfo(){
+        return marketService.getMarketInfo();
+    }
+
 }

@@ -23,47 +23,24 @@
                   prop="resourceId"
                   label="资源ID"
                   align="center"
-                  width="180"
-                />
-                <el-table-column
-                  prop="resourceContainsY"
-                  align="center"
-                  label="是否包含Y值"
-                >
-                  <template slot-scope="{row}">{{ row.resourceContainsY === 1? '是' : '否' }}</template>
-                </el-table-column>
-                <el-table-column
-                  prop="resourceColumnCount"
-                  align="center"
-                  label="特征量"
                 />
                 <el-table-column
                   prop="resourceRowsCount"
                   align="center"
                   label="样本量"
                 />
-                <el-table-column
-                  prop="resourceYRowsCount"
-                  align="center"
-                  label="正例样本数量"
-                >
-                  <template slot-scope="{row}">{{ row.resourceYRowsCount || 0 }}</template>
-                </el-table-column>
-                <el-table-column
-                  prop="resourceYRatio"
-                  align="center"
-                  label="正例样本比例"
-                >
-                  <template slot-scope="{row}">{{ row.resourceYRatio || 0 }}%</template>
-                </el-table-column>
               </el-table>
             </el-form-item>
           </div>
-          <el-form-item label="关键词" prop="pirParam">
-            <el-input v-model="form.pirParam" placeholder="请输入关键词" maxlength="50" show-word-limit />
+          <el-form-item>
+            <p :style="{color: '#999', lineHeight: 1, marginBottom: '10px'}">节点和数据由山东大学网安研究团队提供</p>
+          </el-form-item>
+          <el-form-item label="查询内容" prop="pirParam">
+            <el-input v-model="form.mobile" placeholder="请输入手机号" class="mb10" @blur="() => form.password && (form.pirParam = `${form.mobile}:${form.password}`)" />
+            <el-input v-model="form.password" placeholder="请输入密码" type="password" show-password @blur="() => form.mobile && (form.pirParam = `${form.mobile}:${form.password}`)" />
           </el-form-item>
           <el-form-item>
-            <p :style="{color: '#999', lineHeight: 1}">基于关键词的精准查询，多条件查询请使用英文,分隔。例: a,b,c</p>
+            <p :style="{color: '#999', lineHeight: 1}">利用隐匿查询技术在泄露密码库里查询确认您的账号密码是否泄露</p>
           </el-form-item>
           <el-form-item style="text-align: center">
             <el-button style="margin: 12px auto;" type="primary" class="query-button" @click="next">查询<i class="el-icon-search el-icon--right" /></el-button>
@@ -71,6 +48,7 @@
         </div>
       </el-form>
     </div>
+
     <el-dialog
       title="查询结果"
       :visible.sync="dialogVisible"
@@ -79,12 +57,14 @@
     >
       <div class="dialog-body">
         <div v-if="fail" class="result">
-          <p class="el-icon-error icon-error" />
-          <p><strong>{{ form.pirParam }}</strong>不在{{ form.selectResources[0].resourceName }} 资源中</p>
+          <p><i class="el-icon-success icon-success" /> </p>
+          <p><strong>{{ form.mobile }}</strong>不在泄漏的账号密码数据资源中</p>
+          <p class="search-tip">未发现{{ form.mobile }}账号关联的密码泄漏风险</p>
         </div>
         <div v-else class="result">
-          <p><i class="el-icon-success icon-success" /> </p>
-          <p><strong>{{ existKeyWords.join(',') }}</strong>在{{ form.selectResources[0].resourceName }} 资源中</p>
+          <p class="el-icon-warning icon-error" />
+          <p><strong>{{ form.mobile }}</strong>在泄漏的账号密码数据资源中</p>
+          <p class="search-tip">建议更新{{ form.mobile }}相关的账号密码</p>
         </div>
       </div>
     </el-dialog>
@@ -107,6 +87,8 @@ export default {
       active: 1,
       form: {
         resourceName: '',
+        mobile: '',
+        password: '',
         pirParam: '',
         selectResources: []
       },
@@ -114,14 +96,18 @@ export default {
         selectResources: [
           { required: true, message: '请选择资源', trigger: 'blur' }
         ],
+        mobile: [
+          { required: true, message: '请输入手机号', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' }
+        ],
         pirParam: [
-          { required: true, message: '请输入关键词', trigger: 'blur' },
+          { required: true, message: '请输入完整的查询内容', trigger: 'blur' },
           { max: 50, message: '长度在50个字符以内', trigger: 'blur' }
         ]
-      },
-      keyWordsMap: {}, // Plain ciphertext of keywords
-      existKeyWords: []
-   }
+      }
+    }
   },
   computed: {
     ...mapState('application', ['marketInfo'])
@@ -136,7 +122,7 @@ export default {
   methods: {
     // 设置资源id
     async setDefaultValue() {
-      this.resourceId = this.marketInfo.pir.resourceId
+      this.resourceId = this.marketInfo.credentialsPIR.resourceId
       await this.getDataResource()
       this.form.selectResources = this.resource
     },
@@ -150,16 +136,9 @@ export default {
         if (taskState !== 2) {
           this.loading = false
           timer && window.clearTimeout(timer)
+          taskState === 1 && (this.dialogVisible = true, this.fail = list.length === 0)
           taskState === 3 && this.$message.error('查询失败')
           taskState === 4 && this.$message.warning('查询已取消')
-          if (taskState === 1 ){
-            this.dialogVisible = true
-            list.forEach(item => {
-              const ele = this.keyWordsMap[item.value]
-              !this.existKeyWords.includes(ele) && this.existKeyWords.push(ele)
-            })
-            this.fail = list.length === 0
-          }
         } else {
           timer = window.setTimeout(() => {
             this.getPirTaskResult()
@@ -170,37 +149,26 @@ export default {
 
     // 查询
     next() {
-      this.keyWordsMap = {} // reset keyWordsMap
-      this.existKeyWords = [] // reset existKeyWords
       this.$refs.form.validate(valid => {
         if (valid) {
-          if (this.form.pirParam.indexOf('，') !== -1 || this.form.pirParam.indexOf('；') !== -1 || this.form.pirParam.indexOf(';') !== -1) {
-            this.$message.error('多条件查询请使用英文,分隔')
-            return
-          }
-
           // sha256加密
-          const paramsList = this.form.pirParam.split(',')
-          const hashParams = paramsList.map(item => {
-            this.keyWordsMap[CryptoJS.SHA256(item).toString()] = item
-            return CryptoJS.SHA256(item)
-          }).join(',')
+          const hashParams = CryptoJS.SHA256(this.form.pirParam).toString()
 
           this.loading = true
           pirSubmitTask({
-              resourceId: this.resource[0].resourceId,
-              pirParam: hashParams
-            }).then(res => {
-              if (res.code === 0) {
-                this.taskId = res.result.taskId
-                this.getPirTaskResult()
-              } else {
-                this.$message.error(res.msg)
-                this.loading = false
-              }
-            }).catch(err => {
-              console.log(err)
+            resourceId: this.resource[0].resourceId,
+            pirParam: hashParams
+          }).then(res => {
+            if (res.code === 0) {
+              this.taskId = res.result.taskId
+              this.getPirTaskResult()
+            } else {
+              this.$message.error(res.msg)
               this.loading = false
+            }
+          }).catch(err => {
+            console.log(err)
+            this.loading = false
           })
         } else {
           console.log('error submit!!')
@@ -208,7 +176,6 @@ export default {
         }
       })
     },
-
     handleClose() {
       this.dialogVisible = false
     },
@@ -231,6 +198,9 @@ export default {
 ::v-deep .el-dialog__body{
   padding: 0px;
 }
+.mb10{
+  margin-bottom: 10px;
+}
 .form{
   margin-top: 30px;
 }
@@ -246,12 +216,17 @@ export default {
   text-align: center;
   padding-bottom: 30px;
   p{
-    font-size: 20px;
+    font-size: 18px;
+    color: #333;
     margin: 10px auto;
     strong{
      font-weight: normal;
     }
   }
+  .search-tip{
+  font-size: 14px;
+  color: #666;
+}
   .icon-success{
     color: #67C23A;
     font-size: 80px;

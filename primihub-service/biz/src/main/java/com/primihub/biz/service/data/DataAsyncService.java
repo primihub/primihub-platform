@@ -171,10 +171,11 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataComponent.setComponentState(2);
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
                 dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-                dataComponent.setComponentState(1);
                 executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
                 if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
                     dataComponent.setComponentState(3);
+                } else {
+                    dataComponent.setComponentState(1);
                 }
                 dataComponent.setEndTime(System.currentTimeMillis());
                 req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
@@ -330,7 +331,8 @@ public class DataAsyncService implements ApplicationContextAware {
         FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = new FutureTask<>(new Callable<TaskParam<TaskPIRParam>>() {
             @Override
             public TaskParam<TaskPIRParam> call() throws Exception {
-                StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(SnowflakeId.getInstance().nextId()).append(".csv");
+                StringBuffer sb = new StringBuffer().append(baseConfiguration.getResultUrlDirPrefix())
+                        .append(formatDate).append("/").append(SnowflakeId.getInstance().nextId()).append(".csv");
                 TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setJobId(String.valueOf(job));
@@ -342,7 +344,7 @@ public class DataAsyncService implements ApplicationContextAware {
                 taskParam.getTaskContentParam().setQueryParam(querys);
                 taskParam.getTaskContentParam().setServerData(dataPirTask.getResourceId());
                 taskParam.getTaskContentParam().setOutputFullFilename(sb.toString());
-                List<String> columns = Arrays.asList(resourceColumnNames.toLowerCase().split(","));
+                List<String> columns = Arrays.asList(resourceColumnNames.split(","));
                 List<String> keyColumns = Arrays.asList(dataPirKeyQuery.getKey());
                 taskParam.getTaskContentParam().setKeyColumns(keyColumns.stream().map(columns::indexOf).toArray(Integer[]::new));
                 taskHelper.submit(taskParam);
@@ -368,6 +370,7 @@ public class DataAsyncService implements ApplicationContextAware {
 //            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
             Map<String,String> jobMap = new HashMap<>();
             List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
+            // 条件组，默认只有一个
             for (int i = 0; i < dataPirKeyQueries.size(); i++) {
                 FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i);
                 primaryThreadPool.submit(pirTaskFutureTask);

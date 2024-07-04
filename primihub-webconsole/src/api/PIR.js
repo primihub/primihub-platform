@@ -16,11 +16,11 @@ export function getPirTaskList(params) {
     showLoading: false
   })
 }
-export function pirSubmitTask(params) {
+export function pirSubmitTask(data) {
   return request({
     url: '/data/pir/pirSubmitTask',
-    method: 'get',
-    params
+    method: 'post',
+    data
   })
 }
 
