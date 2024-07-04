@@ -63,7 +63,7 @@ public class OrganInit implements CommandLineRunner {
             map.put("examineState",sysOrgan.getExamineState());
             map.put("enable",sysOrgan.getEnable());
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, sysOrgan.getOrganGateway() + "/share/shareData/apply", sysOrgan.getPublicKey());
-            if (baseResultEntity == null && baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+            if (baseResultEntity != null && baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }
         }
