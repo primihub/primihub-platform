@@ -93,8 +93,9 @@ public class TaskHelper {
                     .negotiationType(NegotiationType.TLS)
                     .sslContext(sslContext)
                     .build();
+        } else {
+            getDefaultTypeChannel(grpcClientConfig.getAddress(), grpcClientConfig.getPort());
         }
-        getDefaultTypeChannel(grpcClientConfig.getAddress(), grpcClientConfig.getPort());
     }
 
 
