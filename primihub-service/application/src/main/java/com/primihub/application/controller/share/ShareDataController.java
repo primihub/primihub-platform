@@ -43,6 +43,11 @@ public class ShareDataController {
     @Autowired
     private ShareService shareService;
 
+    /**
+     * 健康检测
+     * @param time
+     * @return
+     */
     @PostMapping("/healthConnection")
     public BaseResultEntity healthConnection(@RequestBody Object time){
         log.info("healthConnection - {}",time);
@@ -67,6 +72,11 @@ public class ShareDataController {
         return dataModelService.syncModel(vo);
     }
 
+    /**
+     * 合作方申请 加入本方
+     * @param info
+     * @return
+     */
     @PostMapping("apply")
     public BaseResultEntity applyForJoinNode(@RequestBody Map<String,Object> info){
         if (info==null){
