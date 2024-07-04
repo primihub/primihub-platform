@@ -65,6 +65,10 @@ public class OrganInit implements CommandLineRunner {
             BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(map, sysOrgan.getOrganGateway() + "/share/shareData/apply", sysOrgan.getPublicKey());
             if (baseResultEntity != null && baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
                 sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
+            } else {
+                sysOrgan.setExamineState(1);
+                sysOrgan.setEnable(1);
+                sysOrganPrimarydbRepository.updateSysOrgan(sysOrgan);
             }
         }
     }
