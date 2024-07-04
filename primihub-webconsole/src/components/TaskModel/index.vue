@@ -36,7 +36,7 @@
         </div>
         <div v-if="type=== 'model'" class="desc-col">
           <div class="desc-label">建模完成时间:</div>
-          <div class="desc-content">{{ model.createDate }}</div>
+          <div class="desc-content">{{ task.taskEndDate }}</div>
         </div>
         <div class="desc-col" style="width: 100%;">
           <div class="desc-label">模型描述:</div>
