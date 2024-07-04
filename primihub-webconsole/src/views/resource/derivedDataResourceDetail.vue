@@ -169,7 +169,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~@/styles/variables.scss";
+@import "~@/styles/variables.module.scss";
 .container{
   background: #fff;
   padding: 30px;
@@ -186,7 +186,7 @@ export default {
 .descriptions{
   line-height: 24px;
 }
-@import "~@/styles/variables.scss";
+@import "~@/styles/variables.module.scss";
 ::v-deep .detail-title{
   text-align: right;
   justify-content: flex-end;

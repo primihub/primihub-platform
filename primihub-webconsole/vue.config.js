@@ -1,6 +1,7 @@
 'use strict'
 const path = require('path')
 const defaultSettings = require('./src/settings.js')
+// const preload = require('@vue/preload-webpack-plugin')
 
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -33,13 +34,12 @@ module.exports = {
   devServer: {
     port: port,
     open: true,
-    overlay: {
-      warnings: false,
-      errors: true
+    client: {
+      overlay: false
     },
     proxy: {
       '/dev-api': {
-        target: 'http://192.168.99.10:32733',
+        target: 'http://192.168.99.13:32733',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
@@ -63,28 +63,16 @@ module.exports = {
     name: name,
     resolve: {
       alias: {
-        '@': resolve('src')
-      }
+        '@': resolve('src'),
+        '@images': path.resolve(__dirname, 'public/images')
+      },
+      fallback: { 'path': require.resolve('path-browserify') }
     }
   },
   transpileDependencies: [
     /[/\\]node_modules[/\\](.+?)?web-tracing(.*)[/\\]/
   ],
   chainWebpack(config) {
-    // it can improve the speed of the first screen, it is recommended to turn on preload
-    config.plugin('preload').tap(() => [
-      {
-        rel: 'preload',
-        // to ignore runtime.js
-        // https://github.com/vuejs/vue-cli/blob/dev/packages/@vue/cli-service/lib/config/app.js#L171
-        fileBlacklist: [/\.map$/, /hot-update\.js$/, /runtime\..*\.js$/],
-        include: 'initial'
-      }
-    ])
-
-    // when there are many pages, it will cause too many meaningless requests
-    config.plugins.delete('prefetch')
-
     // set svg-sprite-loader
     config.module
       .rule('svg')
@@ -105,14 +93,6 @@ module.exports = {
     config
       .when(process.env.NODE_ENV !== 'development',
         config => {
-          config
-            .plugin('ScriptExtHtmlWebpackPlugin')
-            .after('html')
-            .use('script-ext-html-webpack-plugin', [{
-            // `runtime` must same as runtimeChunk name. default is `runtime`
-              inline: /runtime\..*\.js$/
-            }])
-            .end()
           config
             .optimization.splitChunks({
               chunks: 'all',

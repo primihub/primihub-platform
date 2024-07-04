@@ -632,7 +632,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../styles/variables.scss";
+@import "../../styles/variables.module.scss";
 ::v-deep .el-dialog__body{
   padding: 10px 20px;
 }

@@ -49,7 +49,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~@/styles/variables.scss";
+@import "~@/styles/variables.module.scss";
 ::v-deep .el-descriptions :not(.is-bordered) .el-descriptions-item__cell{
   padding-bottom: 0px;
 }

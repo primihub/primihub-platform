@@ -444,7 +444,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "../../styles/variables.scss";
+@import "../../styles/variables.module.scss";
 h2 {
   display: block;
   font-size: 16px;
