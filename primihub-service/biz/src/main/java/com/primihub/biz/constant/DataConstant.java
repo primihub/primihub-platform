@@ -1,25 +1,23 @@
 package com.primihub.biz.constant;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class DataConstant {
-    public final static String MATCHES="[a-zA-Z]+";
-    public final static String FIELD_NAME_AS="field_";
+    public final static String MATCHES = "[a-zA-Z]+";
+    public final static String FIELD_NAME_AS = "field_";
     // Template address
-    public final static String FREEMARKER_PYTHON_EN_PATH= "hetero_xgb.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH= "hetero_xgb_infer.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_LR_PATH= "homo_lr.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_LR_INFER_PATH= "homo_lr_infer.ftl";
-    public final static String FREEMARKER_PYTHON_HETERO_LR_PATH= "hetero_lr.ftl";
-    public final static String FREEMARKER_PYTHON_HETERO_LR_INFER_PATH= "hetero_lr_infer.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH= "homo_nn_binary.ftl";
-    public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH= "homo_nn_binary_infer.ftl";
-    public final static String FREEMARKER_PYTHON_HETERO_FITTRANSFORM_PATH= "hetero_fitTransform.ftl";
+    public final static String FREEMARKER_PYTHON_EN_PATH = "hetero_xgb.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH = "hetero_xgb_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_PATH = "homo_lr.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_LR_INFER_PATH = "homo_lr_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HETERO_LR_PATH = "hetero_lr.ftl";
+    public final static String FREEMARKER_PYTHON_HETERO_LR_INFER_PATH = "hetero_lr_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_PATH = "homo_nn_binary.ftl";
+    public final static String FREEMARKER_PYTHON_HOMO_NN_BINARY_INFER_PATH = "homo_nn_binary_infer.ftl";
+    public final static String FREEMARKER_PYTHON_HETERO_FITTRANSFORM_PATH = "hetero_fitTransform.ftl";
 
-    public final static String FREEMARKER_PYTHON_EXCEPTION_PATH= "exception.ftl";
-    public final static String FREEMARKER_PYTHON_DATA_ALIGN_PATH= "data_align.ftl";
+    public final static String FREEMARKER_PYTHON_EXCEPTION_PATH = "exception.ftl";
+    public final static String FREEMARKER_PYTHON_DATA_ALIGN_PATH = "data_align.ftl";
     public final static String[] FREEMARKER_PYTHON_PATHS = new String[]{
             FREEMARKER_PYTHON_EN_PATH,
             FREEMARKER_PYTHON_HOMO_XGB_INFER_PATH,
@@ -52,8 +50,13 @@ public class DataConstant {
 
     public final static String UTF8_BOM = "\uFEFF";
 
-    /** lpy */
-    public final static String INPUT_FIELD_NAME = "IdNum";
+    /**
+     * lpy
+     */
+    public final static String INPUT_FIELD_ID_NUM = "IdNum";
+    public final static String INPUT_FIELD_IMEI = "imei";
+    public final static String INPUT_FIELD_PHONE = "phoneNum";
+    public final static String[] INPUT_FIELD_ARRAY = {INPUT_FIELD_ID_NUM, INPUT_FIELD_IMEI, INPUT_FIELD_PHONE};
 
     public static final String FIRST_URL = "FIRST_URL";
     public static final String CMCC_SCORE_URL = "CMCC_SCORE_URL";

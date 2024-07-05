@@ -14,6 +14,7 @@ public class DataExamConvert {
         po.setOriginResourceId(req.getResourceId());
         po.setOriginOrganId(localOrganInfo.getOrganId());
         po.setTargetOrganId(req.getTargetOrganId());
+        po.setTargetField(req.getTargetField());
         return po;
     }
 
@@ -32,6 +33,7 @@ public class DataExamConvert {
         req.setTargetResourceId(po.getTargetResourceId());
         req.setOriginOrganId(po.getOriginOrganId());
         req.setTargetOrganId(po.getTargetOrganId());
+        req.setTargetField(po.getTargetField());
         return req;
     }
 }

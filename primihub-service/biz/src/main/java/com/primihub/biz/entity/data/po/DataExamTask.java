@@ -36,4 +36,6 @@ public class DataExamTask {
     @JsonIgnore
     private Date updateDate;
 
+    private String targetField;
+
 }

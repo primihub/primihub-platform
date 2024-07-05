@@ -25,6 +25,7 @@ import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
+import com.primihub.biz.service.data.db.AbstractDataDBService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
@@ -90,9 +91,9 @@ public class ExamService {
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private ResourceLoader resourceLoader;
-    @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private DataSourceService dataSourceService;
 
     public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
         List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
@@ -112,25 +113,42 @@ public class ExamService {
             log.info("预处理的资源查询为空 resourceId: [{}]", resourceId);
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
         }
-        SysFile sysFile = fileRepository.selectSysFileByFileId(Optional.ofNullable(dataResource.getFileId()).orElse(0L));
-        if (sysFile == null) {
-            log.info("预处理的资源查询为空 sysFileId: [{}]", dataResource.getFileId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "sysFile");
-        }
-        BaseResultEntity<Set<String>> result = getDataResourceCsvTargetFieldList(sysFile);
-        if (!BaseResultEntity.isSuccess(result)) {
-            log.info("文件解析失败 sysFileId: [{}]", dataResource.getFileId());
-            return result;
-        }
-        Set<String> targetFieldValueSet = result.getResult();
 
+        BaseResultEntity<Set<String>> result;
+        // 文件类型
+        if (dataResource.getResourceSource() == 1) {
+            SysFile sysFile = fileRepository.selectSysFileByFileId(Optional.ofNullable(dataResource.getFileId()).orElse(0L));
+            if (sysFile == null) {
+                log.info("预处理的资源查询为空 sysFileId: [{}]", dataResource.getFileId());
+                return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "sysFile");
+            }
+            result = getTargetFieldValueListFromSysFile(sysFile, param.getTargetField());
+            if (!BaseResultEntity.isSuccess(result)) {
+                log.info("文件解析失败 sysFileId: [{}]", dataResource.getFileId());
+                return result;
+            }
+        }
+        // db类型
+        else if (dataResource.getResourceSource() == 2) {
+            DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
+            result = getTargetFieldValueListFromDb(dataSource, param.getTargetField());
+            if (!BaseResultEntity.isSuccess(result)) {
+                log.info("数据库表解析失败 dbId: [{}]", dataResource.getDbId());
+                return result;
+            }
+        } else {
+            log.info("预处理的资源类型错误 resourceId: [{}]", resourceId);
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
+        }
+
+        Set<String> targetFieldValueSet = result.getResult();
         DataExamReq req = DataExamConvert.convertPoToReq(po);
         req.setFieldValueSet(targetFieldValueSet);
         // 发送给对方机构
         return sendExamTask(req);
     }
 
-    private BaseResultEntity<Set<String>> getDataResourceCsvTargetFieldList(SysFile sysFile) {
+    private BaseResultEntity<Set<String>> getTargetFieldValueListFromSysFile(SysFile sysFile, String targetField) {
         try {
             List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), 1);
             if (fileContent == null || fileContent.isEmpty()) {
@@ -146,13 +164,69 @@ public class ExamService {
             if (headers[0].startsWith(DataConstant.UTF8_BOM)) {
                 headers[0] = headers[0].substring(1);
             }
-            if (!Arrays.asList(headers).contains(DataConstant.INPUT_FIELD_NAME)) {
-                log.info("该资源字段不包括目的字段: [{}]", DataConstant.INPUT_FIELD_NAME);
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, DataConstant.INPUT_FIELD_NAME);
+
+            if (!Arrays.asList(headers).contains(targetField)) {
+                log.info("该资源字段不包括目的字段: [{}]", targetField);
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL,targetField);
             }
             List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(), Math.toIntExact(sysFile.getFileSize()));
             // stream.filter 结果为ture的元素留下
-            Set<String> targetFieldValueSet = csvData.stream().map(stringObjectLinkedHashMap -> stringObjectLinkedHashMap.getOrDefault(DataConstant.INPUT_FIELD_NAME, StringUtils.EMPTY)).map(String::valueOf).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+            Set<String> targetFieldValueSet = csvData.stream()
+                    .map(stringObjectLinkedHashMap -> stringObjectLinkedHashMap.getOrDefault(targetField, StringUtils.EMPTY))
+                    .map(String::valueOf).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
+            return BaseResultEntity.success(targetFieldValueSet);
+        } catch (Exception e) {
+            log.info("fileUrl:[{}] Exception Message : {}", sysFile.getFileUrl(), e);
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, "请检查文件编码格式");
+        }
+    }
+
+    private BaseResultEntity<Set<String>> getTargetFieldValueListFromDb(DataSource dataSource, String targetField) {
+        AbstractDataDBService abstractDataDBService = dataSourceService.getDBServiceImpl(dataSource.getDbType());
+
+        if (abstractDataDBService != null) {
+            BaseResultEntity result = abstractDataDBService.dataSourceTableDetails(dataSource);
+            if (result == null || result.getCode() != 0) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "解析数据库表失败");
+            }
+            Map<String, Object> resultMap = (Map<String, Object>) result.getResult();
+            List<Map<String, Object>> rowMap = (List<Map<String, Object>>) resultMap.getOrDefault("dataList", Collections.emptyList());
+            if (CollectionUtils.isEmpty(rowMap)) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "数据库表中没有记录");
+            }
+            Set<String> targetFieldValueSet = rowMap.stream()
+                    .map(map -> (String) map.getOrDefault(targetField, StringUtils.EMPTY))
+                    .filter(StringUtils::isNotEmpty)
+                    .collect(Collectors.toSet());
+            return BaseResultEntity.success(targetFieldValueSet);
+        } else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DB_FAIL, "您选择的数据库暂不支持");
+        }
+    }
+
+    private BaseResultEntity<Set<String>> getDataResourceCsvTargetFieldList(SysFile sysFile, String targetField) {
+        try {
+            List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), 1);
+            if (fileContent == null || fileContent.isEmpty()) {
+                log.info("csv文件解析失败");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL);
+            }
+            String headersStr = fileContent.get(0);
+            if (StringUtils.isBlank(headersStr)) {
+                log.info("csv文件解析失败: 文件字段为空");
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL);
+            }
+            String[] headers = headersStr.split(",");
+            if (headers[0].startsWith(DataConstant.UTF8_BOM)) {
+                headers[0] = headers[0].substring(1);
+            }
+            if (!Arrays.asList(headers).contains(targetField)) {
+                log.info("该资源字段不包括目的字段: [{}]", targetField);
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, targetField);
+            }
+            List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(), Math.toIntExact(sysFile.getFileSize()));
+            // stream.filter 结果为ture的元素留下
+            Set<String> targetFieldValueSet = csvData.stream().map(stringObjectLinkedHashMap -> stringObjectLinkedHashMap.getOrDefault(targetField, StringUtils.EMPTY)).map(String::valueOf).filter(StringUtils::isNotBlank).collect(Collectors.toSet());
             return BaseResultEntity.success(targetFieldValueSet);
         } catch (Exception e) {
             log.info("fileUrl:[{}] Exception Message : {}", sysFile.getFileUrl(), e);
@@ -475,9 +549,16 @@ public class ExamService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataFileFields");
         }
         Set<String> fieldNameSet = dataFileFields.stream().map(DataFileField::getFieldName).collect(Collectors.toSet());
-        if (!fieldNameSet.contains(DataConstant.INPUT_FIELD_NAME)) {
-            log.info("该数据资源缺乏目的字段, [{}]", DataConstant.INPUT_FIELD_NAME);
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, DataConstant.INPUT_FIELD_NAME);
+
+        if (fieldNameSet.contains(DataConstant.INPUT_FIELD_ID_NUM)) {
+            req.setTargetField(DataConstant.INPUT_FIELD_ID_NUM);
+        } else if (fieldNameSet.contains(DataConstant.INPUT_FIELD_IMEI)) {
+            req.setTargetField(DataConstant.INPUT_FIELD_IMEI);
+        } else if (fieldNameSet.contains(DataConstant.INPUT_FIELD_PHONE)) {
+            req.setTargetField(DataConstant.INPUT_FIELD_PHONE);
+        } else {
+            log.info("该数据资源缺乏目的字段, [{}]", "IdNum, phoneNum, imei");
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "IdNum, phoneNum, imei");
         }
 
         req.setTaskId(String.valueOf(SnowflakeId.getInstance().nextId()));

@@ -16,5 +16,7 @@ public class DataExamReq {
     private Integer taskState;
     private String targetResourceId;
     private Set<String> fieldValueSet;
+
+    private String targetField;
 }
 
