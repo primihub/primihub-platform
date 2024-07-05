@@ -7,6 +7,8 @@ import com.primihub.biz.convert.DataResourceConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
+import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.DataOrganPsiTaskVo;
@@ -53,22 +55,22 @@ public class DataPsiService {
 
 
     public BaseResultEntity getPsiResourceList(DataResourceReq req) {
-        return dataResourceService.getDataResourceList(req,null);
+        return dataResourceService.getDataResourceList(req, null);
     }
 
-    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId,String resourceName) {
+    public BaseResultEntity getPsiResourceAllocationList(PageReq req, String organId, String resourceName) {
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
         String localOrganId = organConfiguration.getSysLocalOrganId();
-        if(StringUtils.isBlank(organId) || sysLocalOrganInfo==null || StringUtils.isBlank(sysLocalOrganInfo.getOrganId()) || sysLocalOrganInfo.getOrganId().equals(organId)){
-            Map<String,Object> paramMap = new HashMap<>();
-            paramMap.put("organId",organId);
-            paramMap.put("offset",req.getOffset());
-            paramMap.put("pageSize",req.getPageSize());
-            paramMap.put("resourceName",resourceName);
-            paramMap.put("resourceState",0);
+        if (StringUtils.isBlank(organId) || sysLocalOrganInfo == null || StringUtils.isBlank(sysLocalOrganInfo.getOrganId()) || sysLocalOrganInfo.getOrganId().equals(organId)) {
+            Map<String, Object> paramMap = new HashMap<>();
+            paramMap.put("organId", organId);
+            paramMap.put("offset", req.getOffset());
+            paramMap.put("pageSize", req.getPageSize());
+            paramMap.put("resourceName", resourceName);
+            paramMap.put("resourceState", 0);
             List<DataResource> dataResources = dataResourceRepository.queryDataResource(paramMap);
-            if (dataResources.size()==0){
-                return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+            if (dataResources.size() == 0) {
+                return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(), new ArrayList()));
             }
             Integer count = dataResourceRepository.queryDataResourceCount(paramMap);
             Set<Long> resourceIds = dataResources.stream().map(DataResource::getResourceId).collect(Collectors.toSet());
@@ -77,22 +79,22 @@ public class DataPsiService {
 //                put("relevance", 1);
             }});
             Map<Long, List<DataFileField>> fileFieldMap = dataFileField.stream().collect(Collectors.groupingBy(DataFileField::getResourceId));
-            return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataResources.stream().map(re-> DataResourceConvert.DataResourcePoConvertAllocationVo(re,fileFieldMap.get(re.getResourceId()),localOrganId)).collect(Collectors.toList())));
-        }else if (!sysLocalOrganInfo.getOrganId().equals(organId)){
+            return BaseResultEntity.success(new PageDataEntity(count.intValue(), req.getPageSize(), req.getPageNo(), dataResources.stream().map(re -> DataResourceConvert.DataResourcePoConvertAllocationVo(re, fileFieldMap.get(re.getResourceId()), localOrganId)).collect(Collectors.toList())));
+        } else if (!sysLocalOrganInfo.getOrganId().equals(organId)) {
             DataFResourceReq fResourceReq = new DataFResourceReq();
             fResourceReq.setPageNo(req.getPageNo());
             fResourceReq.setPageSize(req.getPageSize());
             fResourceReq.setOrganId(organId);
             fResourceReq.setResourceName(resourceName);
             BaseResultEntity baseResult = otherBusinessesService.getResourceList(fResourceReq);
-            if (baseResult.getCode()!=0) {
+            if (baseResult.getCode() != 0) {
                 return baseResult;
             }
-            Map<String,Object> pageData = (LinkedHashMap<String,Object>)baseResult.getResult();
-            List<LinkedHashMap<String,Object>> voList = (List<LinkedHashMap<String,Object>>)pageData.getOrDefault("data",new ArrayList<>());
-            return BaseResultEntity.success(new PageDataEntity(Integer.valueOf(pageData.getOrDefault("total","0").toString()),Integer.valueOf(pageData.getOrDefault("pageSize","0").toString()),Integer.valueOf(pageData.getOrDefault("index","0").toString()),voList.stream().map(fr->DataResourceConvert.fusionResourceConvertAllocationVo(fr,localOrganId)).collect(Collectors.toList())));
-        }else {
-            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+            Map<String, Object> pageData = (LinkedHashMap<String, Object>) baseResult.getResult();
+            List<LinkedHashMap<String, Object>> voList = (List<LinkedHashMap<String, Object>>) pageData.getOrDefault("data", new ArrayList<>());
+            return BaseResultEntity.success(new PageDataEntity(Integer.valueOf(pageData.getOrDefault("total", "0").toString()), Integer.valueOf(pageData.getOrDefault("pageSize", "0").toString()), Integer.valueOf(pageData.getOrDefault("index", "0").toString()), voList.stream().map(fr -> DataResourceConvert.fusionResourceConvertAllocationVo(fr, localOrganId)).collect(Collectors.toList())));
+        } else {
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(), new ArrayList()));
         }
     }
 
@@ -104,30 +106,30 @@ public class DataPsiService {
         task.setPsiId(dataPsi.getId());
         task.setTaskId(Long.toString(SnowflakeId.getInstance().nextId()));
         task.setTaskState(0);
-        if (dataPsi.getResultOrganIds().indexOf(",")!=-1){
+        if (dataPsi.getResultOrganIds().indexOf(",") != -1) {
             task.setAscriptionType(1);
-        }else {
+        } else {
             task.setAscriptionType(0);
         }
-        if (dataPsi.getOutputContent()==0){
+        if (dataPsi.getOutputContent() == 0) {
             task.setAscription("交集");
-        }else {
+        } else {
             task.setAscription("差集");
         }
         task.setCreateDate(new Date());
         dataPsiPrRepository.saveDataPsiTask(task);
-        dataAsyncService.psiGrpcRun(task,dataPsi,req.getTaskName());
+        dataAsyncService.psiGrpcRun(task, dataPsi, req.getTaskName());
         Map<String, Object> map = new HashMap<>();
-        map.put("dataPsi",dataPsi);
-        map.put("dataPsiTask",DataPsiConvert.DataPsiTaskConvertVo(task));
+        map.put("dataPsi", dataPsi);
+        map.put("dataPsiTask", DataPsiConvert.DataPsiTaskConvertVo(task));
         return BaseResultEntity.success(map);
     }
 
     public BaseResultEntity getPsiTaskList(DataPsiQueryReq req) {
         log.info(JSONObject.toJSONString(req));
         List<DataPsiTaskVo> dataPsiTaskVos = dataPsiRepository.selectPsiTaskPage(req);
-        if (dataPsiTaskVos.size()==0){
-            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        if (dataPsiTaskVos.size() == 0) {
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(), new ArrayList()));
         }
         Set<String> ids = dataPsiTaskVos.stream().map(DataPsiTaskVo::getOtherOrganId).collect(Collectors.toSet());
         Map<String, SysOrgan> organListMap = otherBusinessesService.getOrganListMap(new ArrayList<>(ids));
@@ -135,81 +137,82 @@ public class DataPsiService {
             dataPsiTaskVo.setOtherOrganName(organListMap.get(dataPsiTaskVo.getOtherOrganId()).getOrganName());
         }
         Long count = dataPsiRepository.selectPsiTaskPageCount(req);
-        return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataPsiTaskVos));
+        return BaseResultEntity.success(new PageDataEntity(count.intValue(), req.getPageSize(), req.getPageNo(), dataPsiTaskVos));
     }
 
     public BaseResultEntity getOrganPsiTask(Long userId, String resultName, PageReq req) {
-        Map<String,Object> paramMap = new HashMap<>();
-        paramMap.put("userId",userId);
-        paramMap.put("offset",req.getOffset());
-        paramMap.put("pageSize",req.getPageSize());
-        paramMap.put("resultName",resultName);
+        Map<String, Object> paramMap = new HashMap<>();
+        paramMap.put("userId", userId);
+        paramMap.put("offset", req.getOffset());
+        paramMap.put("pageSize", req.getPageSize());
+        paramMap.put("resultName", resultName);
         List<DataOrganPsiTaskVo> dataOrganPsiTaskVos = dataPsiRepository.selectOrganPsiTaskPage(paramMap);
-        if (dataOrganPsiTaskVos.size()==0) {
-            return BaseResultEntity.success(new PageDataEntity(0,req.getPageSize(),req.getPageNo(),new ArrayList()));
+        if (dataOrganPsiTaskVos.size() == 0) {
+            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(), new ArrayList()));
         }
         Long count = dataPsiRepository.selectOrganPsiTaskPageCount(paramMap);
-        return BaseResultEntity.success(new PageDataEntity(count.intValue(),req.getPageSize(),req.getPageNo(),dataOrganPsiTaskVos));
+        return BaseResultEntity.success(new PageDataEntity(count.intValue(), req.getPageSize(), req.getPageNo(), dataOrganPsiTaskVos));
     }
 
     public BaseResultEntity getPsiTaskDetails(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
-        if (task==null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务信息");
+        if (task == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到任务信息");
         }
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
-        if (dataPsi==null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到PSI信息");
+        if (dataPsi == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到PSI信息");
         }
         DataTask dataTask = dataTaskRepository.selectDataTaskByTaskIdName(task.getTaskId());
-        if (dataTask == null){
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到任务详情");
+        if (dataTask == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到任务详情");
         }
         DataResource dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
-        if (dataResource==null){
+        if (dataResource == null) {
             dataResource = dataResourceRepository.queryDataResourceById(Long.valueOf(dataPsi.getOwnResourceId()));
         }
         Map<String, Object> otherDataResource = null;
-        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())){
+        if (dataPsi.getOtherOrganId().equals(organConfiguration.getSysLocalOrganId())) {
             DataResource otherResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
             otherDataResource = new LinkedHashMap<>();
-            otherDataResource.put("organName",organConfiguration.getSysLocalOrganName());
-            otherDataResource.put("resourceName",otherResource.getResourceName());
-        }else {
+            otherDataResource.put("organName", organConfiguration.getSysLocalOrganName());
+            otherDataResource.put("resourceName", otherResource.getResourceName());
+        } else {
             BaseResultEntity baseResult = otherBusinessesService.getDataResource(dataPsi.getOtherResourceId());
-            if (baseResult.getCode()==0){
-                otherDataResource = (LinkedHashMap)baseResult.getResult();
+            if (baseResult.getCode() == 0) {
+                otherDataResource = (LinkedHashMap) baseResult.getResult();
             }
         }
         List<LinkedHashMap<String, Object>> list = null;
-        if (StringUtils.isNotEmpty(task.getFilePath())){
+        if (StringUtils.isNotEmpty(task.getFilePath())) {
             list = FileUtil.getCsvData(task.getFilePath(), 50);
         }
         String teeOrganName = "";
-        if (StringUtils.isNotEmpty(dataPsi.getTeeOrganId())){
+        if (StringUtils.isNotEmpty(dataPsi.getTeeOrganId())) {
             SysOrgan sysOrgan = sysOrganSecondarydbRepository.selectSysOrganByOrganId(dataPsi.getTeeOrganId());
-            if (sysOrgan!=null){
+            if (sysOrgan != null) {
                 teeOrganName = sysOrgan.getOrganName();
             }
         }
         SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-        return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task,dataPsi,dataResource,otherDataResource,sysLocalOrganInfo,dataTask,list,teeOrganName));
+        return BaseResultEntity.success(DataPsiConvert.DataPsiConvertVo(task, dataPsi, dataResource, otherDataResource, sysLocalOrganInfo, dataTask, list, teeOrganName));
     }
 
-    public DataPsiTask selectPsiTaskById(Long taskId){
+    public DataPsiTask selectPsiTaskById(Long taskId) {
         return dataPsiRepository.selectPsiTaskById(taskId);
     }
-    public DataPsi selectPsiById(Long psiId){
+
+    public DataPsi selectPsiById(Long psiId) {
         return dataPsiRepository.selectPsiById(psiId);
     }
 
     public BaseResultEntity delPsiTask(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
-        if (task==null) {
+        if (task == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL);
         }
-        if (task.getTaskState()==2) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"运行中无法删除");
+        if (task.getTaskState() == 2) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL, "运行中无法删除");
         }
         dataPsiPrRepository.delPsiTask(task.getId());
         dataPsiPrRepository.delPsi(task.getPsiId());
@@ -225,26 +228,109 @@ public class DataPsiService {
 
     public BaseResultEntity retryPsiTask(Long taskId) {
         DataPsiTask task = dataPsiRepository.selectPsiTaskById(taskId);
-        if (task.getTaskState()==1||task.getTaskState()==2) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"运行中或完成");
+        if (task.getTaskState() == 1 || task.getTaskState() == 2) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "运行中或完成");
         }
-        if (task.getTaskState()<3) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"无法运行");
+        if (task.getTaskState() < 3) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "无法运行");
         }
         DataPsi dataPsi = dataPsiRepository.selectPsiById(task.getPsiId());
         task.setTaskState(2);
         dataPsiPrRepository.updateDataPsiTask(task);
-        dataAsyncService.psiGrpcRun(task,dataPsi,null);
+        dataAsyncService.psiGrpcRun(task, dataPsi, null);
         return BaseResultEntity.success();
     }
 
     public BaseResultEntity updateDataPsiResultName(DataPsiReq req) {
         DataPsi dataPsi = dataPsiRepository.selectPsiById(req.getId());
-        if (dataPsi==null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"未查询到隐私求交信息");
+        if (dataPsi == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到隐私求交信息");
         }
         dataPsi.setResultName(req.getResultName());
         dataPsiPrRepository.updateDataPsi(dataPsi);
         return BaseResultEntity.success();
+    }
+
+    public BaseResultEntity saveDataPsi(DataPsiCopyReq req, Long userId) {
+        DataExamTask examTask = dataTaskRepository.selectDataExamByTaskId(req.getExamTaskId());
+        if (examTask == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask");
+        }
+        if (examTask.getContainsY() != null && examTask.getContainsY() == 1) {
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
+        }
+
+        DataResource dataResourcePo = dataResourceRepository.queryDataResourceByResourceFusionId(examTask.getOriginResourceId());
+        if (dataResourcePo == null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
+        }
+        if (dataResourcePo.getFileContainsY() != null && dataResourcePo.getFileContainsY() == 1) {
+            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
+        }
+        DataPsi dataPsi = new DataPsi();
+        dataPsi.setOwnOrganId(examTask.getOriginOrganId());
+        dataPsi.setOwnResourceId(examTask.getOriginResourceId());
+        dataPsi.setOwnKeyword(RemoteConstant.INPUT_FIELD_NAME);
+        dataPsi.setOtherOrganId(examTask.getTargetOrganId());
+        dataPsi.setOtherResourceId(examTask.getTargetResourceId());
+        dataPsi.setOtherKeyword(RemoteConstant.INPUT_FIELD_NAME);
+        // 0自动生成
+        dataPsi.setOutputFilePathType(0);
+        // 0不去重
+        dataPsi.setOutputNoRepeat(0);
+        // ECDH
+        dataPsi.setTag(0);
+        dataPsi.setResultName("PSI-" + examTask.getTaskId());
+        // 输出内容 默认0 0交集 1差集
+        dataPsi.setOutputContent(0);
+        dataPsi.setOutputFormat("csv");
+        dataPsi.setResultOrganIds(examTask.getOriginOrganId());
+        dataPsi.setRemarks(StringUtils.EMPTY);
+        dataPsi.setUserId(userId);
+        dataPsiPrRepository.saveDataPsi(dataPsi);
+
+        String dataTaskId = Long.toString(SnowflakeId.getInstance().nextId());
+        DataPsiTask task = new DataPsiTask();
+        task.setPsiId(dataPsi.getId());
+        task.setTaskId(dataTaskId);
+        task.setTaskState(0);
+        // 只有己方获取结果
+        task.setAscriptionType(1);
+        // 只有交集
+        task.setAscription("交集");
+        task.setCreateDate(new Date());
+        dataPsiPrRepository.saveDataPsiTask(task);
+
+        DataTask dataTask = new DataTask();
+        dataTask.setTaskIdName(task.getTaskId());
+        if (StringUtils.isBlank(req.getTaskName())) {
+            dataTask.setTaskName(dataPsi.getResultName());
+        } else {
+            dataTask.setTaskName(req.getTaskName());
+        }
+        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
+        dataTask.setTaskStartTime(System.currentTimeMillis());
+        dataTaskPrRepository.saveDataTask(dataTask);
+
+        PsiRecord psiRecord = new PsiRecord();
+        psiRecord.setRecordId(dataTaskId);
+        psiRecord.setPsiName(dataTask.getTaskName());
+        psiRecord.setPsiId(dataPsi.getId());
+        psiRecord.setPsiTaskId(task.getTaskId());
+        psiRecord.setTaskState(0);
+        psiRecord.setOriginOrganId(organConfiguration.getSysLocalOrganId());
+        psiRecord.setTargetOrganId(examTask.getTargetOrganId());
+        psiRecord.setStartTime(new Date());
+        psiRecord.setCommitRowsNum(dataResourcePo.getFileRows());
+        psiRecord.setResultRowsNum(0);
+        recordPrRepository.savePsiRecord(psiRecord);
+
+        dataAsyncService.psiGrpcRun(task, dataPsi, dataTask, psiRecord, examTask);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("dataPsi", dataPsi);
+        map.put("dataPsiTask", DataPsiConvert.DataPsiTaskConvertVo(task));
+        return BaseResultEntity.success(map);
     }
 }
