@@ -269,6 +269,7 @@ export default {
         if (data.length > 0) {
           this.resourceList = data
         }
+        this.isReset = false
       }
       this.loading = false
     },

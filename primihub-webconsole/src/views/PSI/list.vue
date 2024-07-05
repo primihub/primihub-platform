@@ -39,7 +39,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" @click="reset" />
+          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -253,7 +253,7 @@ export default {
       }).catch(() => {})
     },
     async cancelTask(row) {
-      const res = await cancelTask(row.taskId)
+      const res = await cancelTask(row.taskIdName)
       if (res.code === 0) {
         const posIndex = this.allDataPsiTask.findIndex(item => item.taskId === row.taskId)
         this.allDataPsiTask[posIndex].taskState === 4
