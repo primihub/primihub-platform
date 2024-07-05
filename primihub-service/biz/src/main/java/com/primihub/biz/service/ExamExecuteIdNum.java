@@ -1,33 +1,33 @@
-package com.primihub.biz.service.data;
-
+package com.primihub.biz.service;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.config.mq.SingleTaskChannel;
-import com.primihub.biz.convert.DataExamConvert;
+import com.primihub.biz.constant.RemoteConstant;
+import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.convert.DataResourceConvert;
-import com.primihub.biz.entity.base.*;
+import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
+import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
+import com.primihub.biz.entity.base.BaseResultEntity;
+import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.DataExamReq;
-import com.primihub.biz.entity.data.req.DataExamTaskReq;
-import com.primihub.biz.entity.data.vo.*;
+import com.primihub.biz.entity.data.vo.DataFileFieldVo;
+import com.primihub.biz.entity.data.vo.DataResourceCsvVo;
+import com.primihub.biz.entity.data.vo.ExamResultVo;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
-import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysFileSecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
-import com.primihub.biz.service.ExamEnum;
-import com.primihub.biz.service.ExamExecute;
-import com.primihub.biz.service.PhoneClientService;
+import com.primihub.biz.service.data.DataResourceService;
+import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
@@ -35,45 +35,23 @@ import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static com.primihub.biz.constant.RemoteConstant.INPUT_FIELD_ARRAY;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ExamService {
-
-    private final Lock lock = new ReentrantLock();
-
+public class ExamExecuteIdNum implements ExamExecute {
     @Autowired
-    private OrganConfiguration organConfiguration;
+    private DataCoreRepository dataCoreRepository;
     @Autowired
-    private DataTaskPrRepository dataTaskPrRepository;
+    private PhoneClientService phoneClientService;
     @Autowired
-    private DataTaskRepository dataTaskRepository;
-    @Autowired
-    private SysOrganSecondarydbRepository organSecondaryDbRepository;
-    @Autowired
-    private OtherBusinessesService otherBusinessesService;
-    @Autowired
-    private FusionResourceService fusionResourceService;
-    @Autowired
-    private ThreadPoolTaskExecutor primaryThreadPool;
-    @Autowired
-    private DataResourceRepository dataResourceRepository;
-    @Autowired
-    private SysFileSecondarydbRepository fileRepository;
+    private DataCorePrimarydbRepository dataCorePrimarydbRepository;
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -81,57 +59,90 @@ public class ExamService {
     @Autowired
     private DataResourceService dataResourceService;
     @Autowired
+    private OrganConfiguration organConfiguration;
+    @Autowired
     private DataResourcePrRepository dataResourcePrRepository;
+    @Autowired
+    private FusionResourceService fusionResourceService;
     @Autowired
     private SingleTaskChannel singleTaskChannel;
     @Autowired
-    private DataSourceService dataSourceService;
+    private SysOrganSecondarydbRepository organSecondaryDbRepository;
     @Autowired
-    private PhoneClientService phoneClientService;
-    @Autowired
-    private DataCorePrimarydbRepository dataCorePrimarydbRepository;
-    @Autowired
-    private DataCoreRepository dataCoreRepository;
-    @Autowired
-    private ApplicationContext applicationContext;
+    private OtherBusinessesService otherBusinessesService;
 
-    public BaseResultEntity<PageDataEntity<DataPirTaskVo>> getExamTaskList(DataExamTaskReq req) {
-        List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskPage(req);
-        if (dataExamTaskVos.isEmpty()) {
-            return BaseResultEntity.success(new PageDataEntity(0, req.getPageSize(), req.getPageNo(), Collections.emptyList()));
-        }
-        Integer total = dataTaskRepository.selectDataExamTaskCount(req);
-        return BaseResultEntity.success(new PageDataEntity(total, req.getPageSize(), req.getPageNo(), dataExamTaskVos));
-    }
+    /*
+    rawSet
+    oldSet, noOldSet
+    oldSet, phoneSet, noPhoneSet
+    oldSet, phoneSet, waterSet, noSet
+     */
+    @Override
+    public void processExam(DataExamReq req) {
+        log.info("process exam future task");
 
-    private BaseResultEntity sendExamTask(DataExamReq param) {
-        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(param.getTargetOrganId());
-        if (CollectionUtils.isEmpty(sysOrgans)) {
-            log.info("查询机构ID: [{}] 失败，未查询到结果", param.getTargetOrganId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
+        // rawSet
+        Set<String> rawSet = req.getFieldValueSet();
+
+        // 已经存在的数据
+        Set<DataCore> oldDataCoreSet = dataCoreRepository.selectExistentDataCore(rawSet);
+        Set<String> oldSet = oldDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
+        Collection<String> noOldSet = CollectionUtils.subtract(rawSet, oldSet);
+
+        // 先过滤出存在手机号的数据
+        log.info("process exam query phoneNum, count: {}", noOldSet.size());
+        Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(new HashSet<String>(noOldSet));
+        Set<String> phoneSet = phoneMap.entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toSet());
+        List<DataCore> phoneDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
+            DataCore dataCore = new DataCore();
+            dataCore.setIdNum(entry.getKey());
+            dataCore.setPhoneNum(entry.getValue());
+            return dataCore;
+        }).collect(Collectors.toList());
+
+        Collection<String> noPhoneSet = CollectionUtils.subtract(noOldSet, phoneSet);
+
+        List<String> noPhoneList = new ArrayList<>(noPhoneSet);
+        int halfSize = noPhoneList.size() / 2;
+        Set<String> waterSet = new HashSet<>();
+
+        // water
+        Random random = new Random();
+        for (int i = 0; i < halfSize; i++) {
+            int randomIndex = random.nextInt(noPhoneList.size());
+            String s = noPhoneList.get(randomIndex);
+            waterSet.add(s);
+            noPhoneList.remove(randomIndex);
         }
 
-        for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(param, organ.getOrganGateway() + "/share/shareData/processExamTask", organ.getPublicKey());
-        }
-        return null;
-    }
+        Set<DataCore> waterDataCoreSet = waterSet.stream().map(idNum -> {
+            DataCore dataCore = new DataCore();
+            dataCore.setIdNum(idNum);
+            dataCore.setPhoneNum(RemoteConstant.UNDEFILED);
+            return dataCore;
+        }).collect(Collectors.toSet());
 
-    public BaseResultEntity processExamTask(DataExamReq req) {
-        if (Arrays.stream(INPUT_FIELD_ARRAY).noneMatch(str -> Objects.equals(str, req.getTargetField()))) {
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, Arrays.toString(INPUT_FIELD_ARRAY));
-        }
-        if (CollectionUtils.isEmpty(req.getFieldValueSet())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "fieldValue");
+        phoneDataCoreSet.addAll(waterDataCoreSet);
+        if (CollectionUtils.isNotEmpty(phoneDataCoreSet)) {
+            dataCorePrimarydbRepository.saveDataCoreSet(phoneDataCoreSet);
         }
 
-        req.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+        Set<ExamResultVo> allDataCoreSet = dataCoreRepository.selectExamResultVo(rawSet);
+
+        String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
+        List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
+        // 生成数据源
+        String resourceName = new StringBuffer().append("预处理生成资源").append(SysConstant.HYPHEN_DELIMITER).append(req.getTaskId()).toString();
+        DataResource dataResource = generateTargetResource(maps, resourceName);
+        if (dataResource == null) {
+            req.setTaskState(TaskStateEnum.FAIL.getStateType());
+            sendEndExamTask(req);
+            log.info("====================== FAIL");
+        }
+        req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+        req.setTargetResourceId(dataResource.getResourceFusionId());
         sendEndExamTask(req);
-
-        // futureTask
-        startFutureExamTask(req);
-
-        return BaseResultEntity.success();
+        log.info("====================== SUCCESS");
     }
 
     //    private DataResource generateTargetResource(Map returnMap) {
@@ -143,8 +154,7 @@ public class ExamService {
         sysFile.setFileSuffix("csv");
         sysFile.setFileName(UUID.randomUUID().toString());
         Date date = new Date();
-        StringBuilder sb = new StringBuilder().append(baseConfiguration.getUploadUrlDirPrefix()).append(1)
-                .append("/").append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
+        StringBuilder sb = new StringBuilder().append(baseConfiguration.getUploadUrlDirPrefix()).append(1).append("/").append(DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat())).append("/");
         sysFile.setFileArea("local");
         sysFile.setFileSize(0L);
         sysFile.setFileCurrentSize(0L);
@@ -258,69 +268,6 @@ public class ExamService {
             log.error(e.getMessage(), e);
             return null;
         }
-    }
-
-    private void startFutureExamTask(DataExamReq req) {
-        // 进行预处理，使用异步
-        FutureTask<Object> task = new FutureTask<>(() -> {
-            try {
-                ExamExecute bean = (ExamExecute) DataCopyService.context.getBean(ExamEnum.EXAM_TYPE_MAP.get(req.getTargetField()));
-                bean.processExam(req);
-            } catch (Exception e) {
-                log.error("异步执行异常", e);
-                req.setTaskState(TaskStateEnum.FAIL.getStateType());
-                sendEndExamTask(req);
-            }
-            return null;
-        });
-        primaryThreadPool.submit(task);
-    }
-
-
-    private BaseResultEntity getTargetResource(String resourceId, String organId) {
-        BaseResultEntity fusionResult = fusionResourceService.getDataResource(resourceId, organId);
-        if (fusionResult.getCode() != 0 || fusionResult.getResult() == null) {
-            log.info("未找到预处理源数据 resourceId: [{}]", resourceId);
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "resourceId");
-        }
-        return fusionResult;
-    }
-
-    @Transactional
-    public BaseResultEntity finishExamTask(DataExamReq req) {
-        try {
-            lock.lock();
-            updateExamTaskAfterSelect(req);
-        } finally {
-            lock.unlock();
-        }
-        return BaseResultEntity.success();
-    }
-
-    private void updateExamTaskAfterSelect(DataExamReq req) {
-        DataExamTask task = dataTaskRepository.selectDataExamByTaskId(req.getTaskId());
-        task.setTaskState(req.getTaskState());
-        task.setTargetResourceId(req.getTargetResourceId());
-        dataTaskPrRepository.updateDataExamTask(task);
-    }
-
-    public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId) {
-        DataExamTask task = dataTaskRepository.selectDataExamByTaskId(taskId);
-        if (task == null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "未查询到任务信息");
-        }
-        DataExamTaskVo vo = DataExamConvert.convertPoToVo(task);
-        return BaseResultEntity.success(vo);
-    }
-
-
-    /**
-     * @param req
-     * @return
-     */
-    public BaseResultEntity examTaskList(DataExamTaskReq req) {
-        List<DataExamTaskVo> dataExamTaskVos = dataTaskRepository.selectDataExamTaskList(req);
-        return BaseResultEntity.success(dataExamTaskVos);
     }
 
     private BaseResultEntity sendEndExamTask(DataExamReq req) {

@@ -42,41 +42,6 @@ public class ExamController {
         return examService.examTaskList(req);
     }
 
-    /**
-     * 一，创建审核任务
-     * role: 发起方
-     */
-    @PostMapping(value = "/examine/saveExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResultEntity saveExamTask(@RequestBody DataExamReq dataExamReq) {
-        if (StringUtils.isBlank(dataExamReq.getResourceId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "resourceId");
-        }
-        if (StringUtils.isBlank(dataExamReq.getTargetOrganId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "targetOrganId");
-        }
-        if (StringUtils.isBlank(dataExamReq.getTaskName())) {
-            StringBuffer sb = new StringBuffer();
-            sb.append("预处理任务").append(dataExamReq.getResourceId())
-                    .append(SysConstant.HYPHEN_DELIMITER)
-                    .append(dataExamReq.getTargetOrganId());
-            dataExamReq.setTaskName(sb.toString());
-        }
-        return examService.saveExamTask(dataExamReq);
-    }
-
-    /**
-     * 二：发起任务
-     *
-     * @param dataExamReq
-     * @return
-     */
-    @PostMapping(value = "/examine/submitExamTask", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public BaseResultEntity submitExamTask(@RequestBody DataExamReq dataExamReq) {
-        if (StringUtils.isBlank(dataExamReq.getTaskId())) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskId");
-        }
-        return examService.submitExamTask(dataExamReq);
-    }
 
     @GetMapping(value = "/examine/getExamTaskDetail")
     public BaseResultEntity<DataPirTaskDetailVo> getExamTaskDetail(String taskId) {
@@ -92,6 +57,7 @@ public class ExamController {
      */
     @PostMapping(value = "/shareData/processExamTask")
     public BaseResultEntity processExamTask(@RequestBody DataExamReq dataExamReq) {
+        log.info("process exam task");
         log.info(JSON.toJSONString(dataExamReq));
         return examService.processExamTask(dataExamReq);
     }

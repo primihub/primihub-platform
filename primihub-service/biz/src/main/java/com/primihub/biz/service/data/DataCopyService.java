@@ -1,17 +1,17 @@
 package com.primihub.biz.service.data;
 
 import com.alibaba.fastjson.JSON;
-import com.primihub.biz.constant.DataConstant;
-import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.repository.secondarydb.data.DataCopySecondarydbRepository;
 import com.primihub.biz.config.base.OrganConfiguration;
+import com.primihub.biz.constant.DataConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.DataFusionCopyEnum;
 import com.primihub.biz.entity.data.dto.DataFusionCopyDto;
 import com.primihub.biz.entity.data.po.DataFusionCopyTask;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataCopyPrimarydbRepository;
+import com.primihub.biz.repository.secondarydb.data.DataCopySecondarydbRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.feign.FusionResourceService;
 import lombok.extern.slf4j.Slf4j;
@@ -19,27 +19,19 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 public class DataCopyService implements ApplicationContextAware {
 
-    private static ApplicationContext context;
+    static ApplicationContext context;
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context=applicationContext;
