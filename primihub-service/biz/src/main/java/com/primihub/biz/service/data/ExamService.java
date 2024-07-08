@@ -127,7 +127,7 @@ public class ExamService {
                 log.info("预处理的资源查询为空 sysFileId: [{}]", dataResource.getFileId());
                 return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "sysFile");
             }
-            result = getTargetFieldValueListFromSysFile(sysFile);
+            result = getTargetFieldValueListFromSysFile(sysFile, po.getTargetField());
             if (!BaseResultEntity.isSuccess(result)) {
                 log.info("文件解析失败 sysFileId: [{}]", dataResource.getFileId());
                 return result;
@@ -136,7 +136,7 @@ public class ExamService {
         // db类型
         else if (dataResource.getResourceSource() == 2) {
             DataSource dataSource = dataResourceRepository.queryDataSourceById(dataResource.getDbId());
-            result = getTargetFieldValueListFromDb(dataSource);
+            result = getTargetFieldValueListFromDb(dataSource, po.getTargetField());
             if (!BaseResultEntity.isSuccess(result)) {
                 log.info("数据库表解析失败 dbId: [{}]", dataResource.getDbId());
                 return result;
@@ -176,7 +176,7 @@ public class ExamService {
         }
     }
 
-    private BaseResultEntity<Set<String>> getTargetFieldValueListFromSysFile(SysFile sysFile) {
+    private BaseResultEntity<Set<String>> getTargetFieldValueListFromSysFile(SysFile sysFile, String targetField) {
         try {
             List<String> fileContent = FileUtil.getFileContent(sysFile.getFileUrl(), 1);
             if (fileContent == null || fileContent.isEmpty()) {
@@ -192,9 +192,9 @@ public class ExamService {
             if (headers[0].startsWith(DataConstant.UTF8_BOM)) {
                 headers[0] = headers[0].substring(1);
             }
-            if (!Arrays.asList(headers).contains(RemoteConstant.INPUT_FIELD_NAME)) {
-                log.info("该资源字段不包括目的字段: [{}]", RemoteConstant.INPUT_FIELD_NAME);
-                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, RemoteConstant.INPUT_FIELD_NAME);
+            if (!Arrays.asList(headers).contains(targetField)) {
+                log.info("该资源字段不包括目的字段: [{}]", targetField);
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_FILE_CHECK_FAIL, targetField);
             }
             List<LinkedHashMap<String, Object>> csvData = FileUtil.getCsvData(sysFile.getFileUrl(), Math.toIntExact(sysFile.getFileSize()));
             // stream.filter 结果为ture的元素留下
@@ -417,8 +417,8 @@ public class ExamService {
         }
     }
 
-  /*  private List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl, List<Map<String, Object>> resultList) {
-        *//*HttpHeaders headers = new HttpHeaders();
+    /*  private List<Map<String, Object>> getDataFromCMCCSource(String cmccScoreUrl, List<Map<String, Object>> resultList) {
+     *//*HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
         ResponseEntity<Map> exchange = restTemplate.exchange(cmccScoreUrl, HttpMethod.POST, request, Map.class);
@@ -447,12 +447,15 @@ public class ExamService {
     }*/
 
     /*private List<Map<String, Object>> getDataFromFirstSource(String firstUrl, Set<String> fieldValueSet) {
-        *//**HttpHeaders headers = new HttpHeaders();
-         //        headers.setContentType(MediaType.APPLICATION_JSON);
-         //        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
-         //        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
-         //        return exchange.getBody();
-         *//*
+     */
+
+    /**
+     * HttpHeaders headers = new HttpHeaders();
+     * //        headers.setContentType(MediaType.APPLICATION_JSON);
+     * //        HttpEntity<HashMap<String, Object>> request = new HttpEntity(new Object(), headers);
+     * //        ResponseEntity<Map> exchange = restTemplate.exchange(firstUrl, HttpMethod.POST, request, Map.class);
+     * //        return exchange.getBody();
+     *//*
 
         try {
             // 读取JSON文件内容为字符串
@@ -592,9 +595,10 @@ public class ExamService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataFileFields");
         }
         Set<String> fieldNameSet = dataFileFields.stream().map(DataFileField::getFieldName).collect(Collectors.toSet());
-        if (!fieldNameSet.contains(RemoteConstant.INPUT_FIELD_NAME)) {
-            log.info("该数据资源缺乏目的字段, [{}]", RemoteConstant.INPUT_FIELD_NAME);
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, RemoteConstant.INPUT_FIELD_NAME);
+
+        if (!fieldNameSet.contains(req.getTargetField())) {
+            log.info("该数据资源缺乏目的字段, [{}]", req.getTargetField());
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, req.getTargetField());
         }
 
         // 生成预处理的流水Id

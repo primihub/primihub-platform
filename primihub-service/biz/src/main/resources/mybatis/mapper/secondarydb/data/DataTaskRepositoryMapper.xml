@@ -201,32 +201,18 @@
     </select>
 
     <select id="selectDataExamByTaskId" resultType="com.primihub.biz.entity.data.po.DataExamTask">
-        select id,
-               task_id               taskId,
-               task_state            taskState,
-               task_name          as taskName,
-               origin_organ_id    as originOrganId,
-               origin_resource_id as originResourceId,
-               target_organ_id       targetOrganId,
-               target_resource_id    targetResourceId,
-               create_date           createDate,
-               update_date           updateDate
-        FROM data_exam_task
-        WHERE task_id = #{taskId}
-    </select>
-
-    <select id="selectDataExamTaskList" resultType="com.primihub.biz.entity.data.vo.DataExamTaskVo">
-        SELECT
-        id,
-        task_id taskId,
-        task_state taskState,
-        task_name as taskName,
-        origin_organ_id as originOrganId,
-        origin_resource_id as originResourceId,
-        target_organ_id targetOrganId,
-        target_resource_id targetResourceId,
-        create_date createDate,
-        update_date updateDate
+        select
+            id,
+            task_id taskId,
+            task_state taskState,
+            task_name as taskName,
+            origin_organ_id as originOrganId,
+            origin_resource_id as originResourceId,
+            target_organ_id targetOrganId,
+            target_resource_id targetResourceId,
+            create_date createDate,
+            update_date updateDate,
+            target_field targetField
         FROM
         data_exam_task det
         <include refid="selectDataExamTaskWhere"/>

@@ -57,6 +57,9 @@ public class ExamController {
         if (StringUtils.isBlank(dataExamReq.getTargetOrganId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "targetOrganId");
         }
+        if (StringUtils.isBlank(dataExamReq.getTargetField())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "targetField");
+        }
         if (StringUtils.isBlank(dataExamReq.getTaskName())) {
             StringBuffer sb = new StringBuffer();
             sb.append("预处理任务").append(dataExamReq.getResourceId())

@@ -25,6 +25,7 @@ public class DataExamReq {
     /** 字段列表 */
     private Set<String> fieldValueSet;
 
+    /** 前端也要使用 */
     private String targetField;
 }
 

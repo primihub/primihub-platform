@@ -347,8 +347,8 @@ public class DataPsiService {
         if (examTask == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask");
         }
-        if (examTask.getContainsY() != null && examTask.getContainsY() == 1) {
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
+        if (StringUtils.isBlank(examTask.getTargetField())) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask.targetField");
         }
 
         DataResource dataResourcePo = dataResourceRepository.queryDataResourceByResourceFusionId(examTask.getOriginResourceId());
@@ -361,10 +361,10 @@ public class DataPsiService {
         DataPsi dataPsi = new DataPsi();
         dataPsi.setOwnOrganId(examTask.getOriginOrganId());
         dataPsi.setOwnResourceId(examTask.getOriginResourceId());
-        dataPsi.setOwnKeyword(RemoteConstant.INPUT_FIELD_NAME);
+        dataPsi.setOwnKeyword(examTask.getTargetField());
         dataPsi.setOtherOrganId(examTask.getTargetOrganId());
         dataPsi.setOtherResourceId(examTask.getTargetResourceId());
-        dataPsi.setOtherKeyword(RemoteConstant.INPUT_FIELD_NAME);
+        dataPsi.setOtherKeyword(examTask.getTargetField());
         // 0自动生成
         dataPsi.setOutputFilePathType(0);
         // 0不去重
