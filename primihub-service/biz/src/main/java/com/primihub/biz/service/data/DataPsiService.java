@@ -138,9 +138,6 @@ public class DataPsiService {
         if (examTask == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask");
         }
-        if (examTask.getContainsY() != null && examTask.getContainsY() == 1) {
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
-        }
 
         DataResource dataResourcePo = dataResourceRepository.queryDataResourceByResourceFusionId(examTask.getOriginResourceId());
         if (dataResourcePo == null) {
@@ -152,10 +149,10 @@ public class DataPsiService {
         DataPsi dataPsi = new DataPsi();
         dataPsi.setOwnOrganId(examTask.getOriginOrganId());
         dataPsi.setOwnResourceId(examTask.getOriginResourceId());
-        dataPsi.setOwnKeyword(RemoteConstant.INPUT_FIELD_NAME);
+        dataPsi.setOwnKeyword(examTask.getTargetField());
         dataPsi.setOtherOrganId(examTask.getTargetOrganId());
         dataPsi.setOtherResourceId(examTask.getTargetResourceId());
-        dataPsi.setOtherKeyword(RemoteConstant.INPUT_FIELD_NAME);
+        dataPsi.setOtherKeyword(examTask.getTargetField());
         // 0自动生成
         dataPsi.setOutputFilePathType(0);
         // 0不去重
@@ -206,6 +203,7 @@ public class DataPsiService {
         psiRecord.setStartTime(new Date());
         psiRecord.setCommitRowsNum(dataResourcePo.getFileRows());
         psiRecord.setResultRowsNum(0);
+        psiRecord.setTargetField(examTask.getTargetField());
         recordPrRepository.savePsiRecord(psiRecord);
 
         dataAsyncService.psiGrpcRun(task, dataPsi, dataTask, psiRecord, examTask);
@@ -342,86 +340,4 @@ public class DataPsiService {
         return BaseResultEntity.success();
     }
 
-    public BaseResultEntity saveDataPsi(DataPsiCopyReq req, Long userId) {
-        DataExamTask examTask = dataTaskRepository.selectDataExamByTaskId(req.getExamTaskId());
-        if (examTask == null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask");
-        }
-        if (StringUtils.isBlank(examTask.getTargetField())) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "examTask.targetField");
-        }
-
-        DataResource dataResourcePo = dataResourceRepository.queryDataResourceByResourceFusionId(examTask.getOriginResourceId());
-        if (dataResourcePo == null) {
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "dataResource");
-        }
-        if (dataResourcePo.getFileContainsY() != null && dataResourcePo.getFileContainsY() == 1) {
-            return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "psi提交资源不能包含Y值");
-        }
-        DataPsi dataPsi = new DataPsi();
-        dataPsi.setOwnOrganId(examTask.getOriginOrganId());
-        dataPsi.setOwnResourceId(examTask.getOriginResourceId());
-        dataPsi.setOwnKeyword(examTask.getTargetField());
-        dataPsi.setOtherOrganId(examTask.getTargetOrganId());
-        dataPsi.setOtherResourceId(examTask.getTargetResourceId());
-        dataPsi.setOtherKeyword(examTask.getTargetField());
-        // 0自动生成
-        dataPsi.setOutputFilePathType(0);
-        // 0不去重
-        dataPsi.setOutputNoRepeat(0);
-        // ECDH
-        dataPsi.setTag(0);
-        dataPsi.setResultName("PSI-" + examTask.getTaskId());
-        // 输出内容 默认0 0交集 1差集
-        dataPsi.setOutputContent(0);
-        dataPsi.setOutputFormat("csv");
-        dataPsi.setResultOrganIds(examTask.getOriginOrganId());
-        dataPsi.setRemarks(StringUtils.EMPTY);
-        dataPsi.setUserId(userId);
-        dataPsiPrRepository.saveDataPsi(dataPsi);
-
-        String dataTaskId = Long.toString(SnowflakeId.getInstance().nextId());
-        DataPsiTask task = new DataPsiTask();
-        task.setPsiId(dataPsi.getId());
-        task.setTaskId(dataTaskId);
-        task.setTaskState(0);
-        // 只有己方获取结果
-        task.setAscriptionType(1);
-        // 只有交集
-        task.setAscription("交集");
-        task.setCreateDate(new Date());
-        dataPsiPrRepository.saveDataPsiTask(task);
-
-        DataTask dataTask = new DataTask();
-        dataTask.setTaskIdName(task.getTaskId());
-        if (StringUtils.isBlank(req.getTaskName())) {
-            dataTask.setTaskName(dataPsi.getResultName());
-        } else {
-            dataTask.setTaskName(req.getTaskName());
-        }
-        dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-        dataTask.setTaskType(TaskTypeEnum.PSI.getTaskType());
-        dataTask.setTaskStartTime(System.currentTimeMillis());
-        dataTaskPrRepository.saveDataTask(dataTask);
-
-        PsiRecord psiRecord = new PsiRecord();
-        psiRecord.setRecordId(dataTaskId);
-        psiRecord.setPsiName(dataTask.getTaskName());
-        psiRecord.setPsiId(dataPsi.getId());
-        psiRecord.setPsiTaskId(task.getTaskId());
-        psiRecord.setTaskState(0);
-        psiRecord.setOriginOrganId(organConfiguration.getSysLocalOrganId());
-        psiRecord.setTargetOrganId(examTask.getTargetOrganId());
-        psiRecord.setStartTime(new Date());
-        psiRecord.setCommitRowsNum(dataResourcePo.getFileRows());
-        psiRecord.setResultRowsNum(0);
-        recordPrRepository.savePsiRecord(psiRecord);
-
-        dataAsyncService.psiGrpcRun(task, dataPsi, dataTask, psiRecord, examTask);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("dataPsi", dataPsi);
-        map.put("dataPsiTask", DataPsiConvert.DataPsiTaskConvertVo(task));
-        return BaseResultEntity.success(map);
-    }
 }
