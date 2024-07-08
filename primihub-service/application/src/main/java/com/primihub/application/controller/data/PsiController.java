@@ -89,7 +89,7 @@ public class PsiController {
      */
     @PostMapping("submitPsiTask")
     public BaseResultEntity submitPsiTask(@RequestHeader("userId") Long userId,
-                                        DataPsiCopyReq req) {
+                                          DataPsiCopyReq req) {
         if (userId <= 0) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "userId");
         }
@@ -99,8 +99,6 @@ public class PsiController {
 
         return dataPsiService.saveDataPsi(req, userId);
     }
-
-
     /**
      * 根据隐私求交(psi)ID修改结果名称
      *

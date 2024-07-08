@@ -44,7 +44,7 @@ public class DataSourceService implements ApplicationContextAware {
     }
 
 
-    public AbstractDataDBService getDBServiceImpl(Integer dbType) {
+    public AbstractDataDBService getDBServiceImpl(Integer dbType){
         SourceEnum sourceEnum = SourceEnum.SOURCE_MAP.get(dbType);
         if (sourceEnum != null) {
             return (AbstractDataDBService) context.getBean(sourceEnum.getSourceServiceClass());

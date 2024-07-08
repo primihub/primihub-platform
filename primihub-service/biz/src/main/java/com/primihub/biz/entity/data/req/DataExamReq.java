@@ -24,5 +24,7 @@ public class DataExamReq {
     private String targetResourceId;
     /** 字段列表 */
     private Set<String> fieldValueSet;
+
+    private String targetField;
 }
 

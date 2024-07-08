@@ -51,6 +51,9 @@ public class ExamController {
         if (StringUtils.isBlank(dataExamReq.getResourceId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "resourceId");
         }
+        if (StringUtils.isBlank(dataExamReq.getTaskName())) {
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "taskName");
+        }
         if (StringUtils.isBlank(dataExamReq.getTargetOrganId())) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM, "targetOrganId");
         }
