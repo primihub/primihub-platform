@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
-import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -24,10 +23,7 @@ import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
-import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
-import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
-import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
+import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
@@ -182,7 +178,7 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "psi结果为空");
         }
         list = FileUtil.getAllCsvData(task.getFilePath());
-        Set<String> idNumSet = list.stream().map(map -> String.valueOf(map.getOrDefault(RemoteConstant.INPUT_FIELD_NAME, "")))
+        Set<String> idNumSet = list.stream().map(map -> String.valueOf(map.getOrDefault(psiRecord.getTargetField(), "")))
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
         req.setTargetValueSet(idNumSet);
 
@@ -192,7 +188,7 @@ public class PirService {
 
         List<Map> mapList = idNumSet.stream().map(idNum -> {
             Map map = new HashMap();
-            map.put(RemoteConstant.INPUT_FIELD_NAME, idNum);
+            map.put(psiRecord.getTargetField(), idNum);
             return map;
         }).collect(Collectors.toList());
         // 生成数据源
@@ -214,6 +210,7 @@ public class PirService {
         record.setStartTime(new Date());
         record.setCommitRowsNum(idNumSet.size());
         record.setResultRowsNum(0);
+        record.setTargetField(psiRecord.getTargetField());
         recordPrRepository.savePirRecord(record);
 
         req.setPirRecordId(recordId);
@@ -309,6 +306,8 @@ public class PirService {
      * @return
      */
     public BaseResultEntity submitPirPhase2(DataPirReq param, DataPirCopyReq req) {
+        String pirRecordId = req.getPirRecordId();
+        PirRecord pirRecord = recordRepository.selectPirRecordByRecordId(pirRecordId);
         BaseResultEntity dataResource = otherBusinessesService.getDataResource(param.getResourceId());
         if (dataResource.getCode() != 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "资源查询失败");
@@ -323,12 +322,13 @@ public class PirService {
         if (StringUtils.isBlank(resourceColumnNames)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表失败");
         }
-        String[] resourceColumnNameArray = Arrays.stream(resourceColumnNames.split(",")).map(String::trim).toArray(String[]::new);;
+        String[] resourceColumnNameArray = Arrays.stream(resourceColumnNames.split(",")).map(String::trim).toArray(String[]::new);
+        ;
         log.info("pir 提交数据特征: {}", Arrays.toString(resourceColumnNameArray));
         if (resourceColumnNameArray.length == 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表为空");
         }
-        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).contains(RemoteConstant.INPUT_FIELD_NAME);
+        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).contains(pirRecord.getTargetField());
         if (!containedTargetFieldFlag) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表不包含目标字段");
         }
@@ -337,7 +337,7 @@ public class PirService {
         DataResource resource = dataResourceRepository.queryDataResourceByResourceFusionId(originResourceId);
 
         String[] targetValueArray = req.getTargetValueSet().toArray(new String[0]);
-        String[] queryColumnNames = {RemoteConstant.INPUT_FIELD_NAME};
+        String[] queryColumnNames = {pirRecord.getTargetField()};
         List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(targetValueArray, queryColumnNames);
 
         DataTask dataTask = new DataTask();
@@ -356,7 +356,6 @@ public class PirService {
         dataPirTask.setResourceId(param.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
         dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries, req, resource);
-
 
 
         Map<String, Object> map = new HashMap<>();

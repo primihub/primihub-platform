@@ -18,7 +18,8 @@
                result_rows_num resultRowsNum,
                is_del isDel,
                create_date createDate,
-               update_date updateDate
+               update_date updateDate,
+                target_field targetField
     </sql>
 
 
@@ -31,19 +32,20 @@
 
     <select id="selectPirRecordByRecordId" resultType="com.primihub.biz.entity.data.po.PirRecord">
         select id,
-               record_id,
-               pir_name,
-               pir_task_id,
-               task_state,
-               origin_organ_id,
-               target_organ_id,
-               start_time,
-               commit_rows_num,
-               end_time,
-               result_rows_num,
-               is_del,
-               create_date,
-               update_date
+               record_id recordId,
+               pir_name pirName,
+               pir_task_id pirTaskId,
+               task_state taskState,
+               origin_organ_id originOrganId,
+               target_organ_id targetOrganId,
+               start_time startTime,
+               commit_rows_num commitRowsNum,
+               end_time endTime,
+               result_rows_num resultRowsNum,
+               is_del isDel,
+               create_date createDate,
+               update_date updateDate,
+                target_field targetField
         from pir_record
         where record_id = #{recordId}
     </select>
