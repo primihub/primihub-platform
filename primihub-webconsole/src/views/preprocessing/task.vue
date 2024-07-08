@@ -29,7 +29,8 @@ export default {
       form: {
         targetOrganId: '',
         resourceId: '',
-        taskName: ''
+        taskName: '',
+        targetField: ''
       },
       total: 0,
       currentPage: 1,
@@ -45,7 +46,10 @@ export default {
         ],
         resourceId: [
           { required: true, message: '请选择资源', trigger: 'blur' }
-        ]
+        ],
+        targetField: [
+          { required: true, message: '请选择目标字段', trigger: 'change' }
+        ],
       }
     }
   },
@@ -204,6 +208,14 @@ export default {
                 />
               </el-select>
             </el-form-item>
+            <el-form-item label="选择目标字段" prop="targetField">
+              <el-select v-model="form.targetField" style="width: 100%" placeholder="请选择目标字段" clearable>
+                <el-option label="idNum" value="idNum"/>
+                <el-option label="imei" value="imei"/>
+                <el-option label="phoneNum" value="phoneNum"/>
+              </el-select>
+            </el-form-item>
+
             <el-button v-if="hasSearchPermission" style="margin-top: 12px;" type="primary" class="query-button" @click="handelTaskSubmit">确认提交</el-button>
           </div>
         </el-form>
