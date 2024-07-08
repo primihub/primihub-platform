@@ -83,6 +83,9 @@ public class PirService {
     private ScoreModelPrRepository scoreModelPrRepository;
     @Autowired
     private DataResourceRepository dataResourceRepository;
+    @Autowired
+    private ResultPrRepository resultPrRepository;
+
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
