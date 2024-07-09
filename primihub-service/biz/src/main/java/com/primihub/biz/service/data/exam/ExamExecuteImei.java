@@ -9,6 +9,6 @@ import org.springframework.stereotype.Service;
 public class ExamExecuteImei implements ExamExecute {
     @Override
     public void processExam(DataExamReq req) {
-
+        log.info("process exam future task : imei");
     }
 }

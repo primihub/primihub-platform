@@ -12,13 +12,12 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.base.DataPirKeyQuery;
+import com.primihub.biz.entity.data.dataenum.ExamEnum;
+import com.primihub.biz.entity.data.dataenum.PirPhase1Enum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.DataPirCopyReq;
-import com.primihub.biz.entity.data.req.DataPirReq;
-import com.primihub.biz.entity.data.req.DataPirTaskReq;
-import com.primihub.biz.entity.data.req.ScoreModelReq;
+import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.DataCoreVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
@@ -27,6 +26,7 @@ import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.*;
 import com.primihub.biz.repository.secondarydb.data.*;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
+import com.primihub.biz.service.data.exam.ExamExecute;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +37,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -266,12 +267,25 @@ public class PirService {
      * @return
      */
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
-        Set<String> targetValueSet = req.getTargetValueSet();
+        log.info("processPirPhase1:");
+        log.info(JSON.toJSONString(req));
+
         String scoreModelType = req.getScoreModelType();
         ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
         if (scoreModel == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "scoreModelType");
         }
+
+        req.setTaskState(TaskStateEnum.PREPARING.getStateType());
+        sendFinishPirTask(req);
+
+        // futureTask
+        startFuturePirPhase1Task(req);
+
+        return BaseResultEntity.success();
+
+
+        Set<String> targetValueSet = req.getTargetValueSet();
         // 在这里得区分
         Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
         // 在这里不用管
@@ -325,6 +339,22 @@ public class PirService {
             return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/submitPirPhase2", organ.getPublicKey());
         }
         return null;
+    }
+
+    private void startFuturePirPhase1Task(DataPirCopyReq req) {
+        // 进行预处理，使用异步
+        FutureTask<Object> task = new FutureTask<>(() -> {
+            try {
+                ExamExecute bean = (ExamExecute) DataCopyService.context.getBean(PirPhase1Enum.PIR_PHASE1_TYPE_MAP.get(req.getTargetField()));
+                bean.processExam(req);
+            } catch (Exception e) {
+                log.error("异步执行异常", e);
+                req.setTaskState(TaskStateEnum.FAIL.getStateType());
+                sendEndExamTask(req);
+            }
+            return null;
+        });
+        primaryThreadPool.submit(task);
     }
 
     /**
@@ -428,5 +458,18 @@ public class PirService {
             return otherBusinessesService.syncGatewayApiData(scoreModel, organ.getOrganGateway() + "/share/shareData/submitScoreModelType", organ.getPublicKey());
         }
         return BaseResultEntity.success();
+    }
+
+    private BaseResultEntity sendFinishPirTask(DataPirCopyReq req) {
+        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOriginOrganId());
+        if (CollectionUtils.isEmpty(sysOrgans)) {
+            log.info("查询机构ID: [{}] 失败，未查询到结果", req.getOriginOrganId());
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
+        }
+
+        for (SysOrgan organ : sysOrgans) {
+            return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/finishPirTask", organ.getPublicKey());
+        }
+        return null;
     }
 }

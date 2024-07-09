@@ -82,7 +82,7 @@ public class ExamExecuteIdNum implements ExamExecute {
      */
     @Override
     public void processExam(DataExamReq req) {
-        log.info("process exam future task");
+        log.info("process exam future task : idNum");
 
         // rawSet
         Set<String> rawSet = req.getFieldValueSet();
