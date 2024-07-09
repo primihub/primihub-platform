@@ -1,10 +1,12 @@
-package com.primihub.biz.service;
+package com.primihub.biz.entity.data.dataenum;
+
+import com.primihub.biz.constant.RemoteConstant;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public enum ExamEnum {
-    ;
+    ID_NUM(RemoteConstant.INPUT_FIELD_ID_NUM, "examExecuteIdNum");
     private String targetValue;
     private String executeService;
 

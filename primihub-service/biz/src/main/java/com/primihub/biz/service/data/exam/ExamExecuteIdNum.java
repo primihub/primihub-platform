@@ -1,4 +1,4 @@
-package com.primihub.biz.service;
+package com.primihub.biz.service.data.exam;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -26,6 +26,7 @@ import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
+import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.DataResourceService;
 import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -43,6 +45,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Component
 @Service
 @Slf4j
 public class ExamExecuteIdNum implements ExamExecute {
@@ -138,11 +141,12 @@ public class ExamExecuteIdNum implements ExamExecute {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             sendEndExamTask(req);
             log.info("====================== FAIL");
+        } else {
+            req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+            req.setTargetResourceId(dataResource.getResourceFusionId());
+            sendEndExamTask(req);
+            log.info("====================== SUCCESS");
         }
-        req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-        req.setTargetResourceId(dataResource.getResourceFusionId());
-        sendEndExamTask(req);
-        log.info("====================== SUCCESS");
     }
 
     //    private DataResource generateTargetResource(Map returnMap) {

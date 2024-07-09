@@ -4,7 +4,7 @@ public class RemoteConstant {
     /**
      * lpy
      */
-    public static final String INPUT_FIELD_ID_NUM = "IdNum";
+    public static final String INPUT_FIELD_ID_NUM = "idNum";
     public static final String INPUT_FIELD_IMEI = "imei";
     public static final String INPUT_FIELD_PHONE = "phoneNum";
     public static final String[] INPUT_FIELD_ARRAY = {INPUT_FIELD_ID_NUM, INPUT_FIELD_IMEI, INPUT_FIELD_PHONE};

@@ -46,4 +46,6 @@ public class PsiRecord {
      */
     @JsonIgnore
     private Date updateDate;
+
+    private String targetField;
 }

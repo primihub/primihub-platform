@@ -218,12 +218,13 @@ public class PirService {
         String psiTaskId = psiRecord.getPsiTaskId();
 
         DataPsiTask task = dataPsiRepository.selectPsiTaskByTaskId(psiTaskId);
+
         List<LinkedHashMap<String, Object>> list = null;
         if (StringUtils.isEmpty(task.getFilePath())) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "psi结果为空");
         }
         list = FileUtil.getAllCsvData(task.getFilePath());
-        Set<String> idNumSet = list.stream().map(map -> String.valueOf(map.getOrDefault(RemoteConstant.INPUT_FIELD_NAME, "")))
+        Set<String> idNumSet = list.stream().map(map -> String.valueOf(map.getOrDefault(psiRecord.getTargetField(), "")))
                 .filter(StringUtils::isNotBlank).collect(Collectors.toSet());
         req.setTargetValueSet(idNumSet);
 
@@ -353,13 +354,16 @@ public class PirService {
         if (resourceColumnNameArray.length == 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表为空");
         }
-        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).contains(RemoteConstant.INPUT_FIELD_NAME);
+        String pirRecordId = req.getPirRecordId();
+        PirRecord record = recordRepository.selectPirRecordByRecordId(pirRecordId);
+
+        boolean containedTargetFieldFlag = Arrays.asList(resourceColumnNameArray).contains(record.getTargetField());
         if (!containedTargetFieldFlag) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表不包含目标字段");
         }
 
         String[] targetValueArray = req.getTargetValueSet().toArray(new String[0]);
-        String[] queryColumnNames = {RemoteConstant.INPUT_FIELD_NAME};
+        String[] queryColumnNames = {record.getTargetField()};
         List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(targetValueArray, queryColumnNames);
 
         DataTask dataTask = new DataTask();
@@ -379,8 +383,7 @@ public class PirService {
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
         dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries);
 
-        String pirRecordId = req.getPirRecordId();
-        PirRecord record = recordRepository.selectPirRecordByRecordId(pirRecordId);
+
 
         record.setPirTaskId(dataPirTask.getTaskId());
         record.setTaskState(dataTask.getTaskState());

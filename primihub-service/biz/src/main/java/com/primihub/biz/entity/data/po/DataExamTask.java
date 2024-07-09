@@ -41,4 +41,6 @@ public class DataExamTask {
      */
     private Integer containsY = 0;
 
+    private String targetField;
+
 }

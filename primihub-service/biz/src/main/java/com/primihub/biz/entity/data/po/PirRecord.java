@@ -46,4 +46,6 @@ public class PirRecord {
      */
     @JsonIgnore
     private Date updateDate;
+
+    private String targetField;
 }
