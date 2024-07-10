@@ -362,12 +362,12 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         }
         Map<String, ModelEntity> map = null;
         try {
-            List<String> clientDataFileField = Arrays.stream(clientDataFileFieldStr
-                    .split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+            String clientLowerCase = clientDataFileFieldStr.toLowerCase();
+            List<String> clientDataFileField = Arrays.stream(clientLowerCase.split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
             log.info("data-align clientDataFileHandleField: \n{}", JSONObject.toJSONString(clientDataFileField));
 
-            List<String> guestDataFileField = Arrays.stream(guestDataFileFieldStr
-                    .split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+            String guestLowerCase = guestDataFileFieldStr.toLowerCase();
+            List<String> guestDataFileField = Arrays.stream(guestLowerCase.split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
             log.info("data-align serverDataFileHandleField: \n{}", JSONObject.toJSONString(guestDataFileField));
 
             Map<String, String> componentVals = getComponentVals(req.getComponentValues());
@@ -401,8 +401,10 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 fieldList = JSONArray.parseArray(multipleSelected, String.class);
             }*/
             //log.info("data-align fieldList : \n{}", JSONObject.toJSONString(fieldList));
-            clientIndex = clientDataFileField.stream().filter(clientField ->clientField.equals(clientIndexField)).map(clientDataFileField::indexOf).collect(Collectors.toList());
-            serverIndex = guestDataFileField.stream().filter(clientField ->clientField.equals(guestIndexField)).map(guestDataFileField::indexOf).collect(Collectors.toList());
+            String clientFieldLowerCase = clientIndexField.toLowerCase();
+            String guestFieldLowerCase = guestIndexField.toLowerCase();
+            clientIndex = clientDataFileField.stream().filter(clientField ->clientField.equals(clientFieldLowerCase)).map(clientDataFileField::indexOf).collect(Collectors.toList());
+            serverIndex = guestDataFileField.stream().filter(clientField ->clientField.equals(guestFieldLowerCase)).map(guestDataFileField::indexOf).collect(Collectors.toList());
             //clientIndex = fieldList.stream().map(clientDataFileField::indexOf).collect(Collectors.toList());
             //serverIndex = fieldList.stream().map(guestDataFileField::indexOf).collect(Collectors.toList());
             if (clientIndex.stream().anyMatch(integer -> integer < 0)) {
