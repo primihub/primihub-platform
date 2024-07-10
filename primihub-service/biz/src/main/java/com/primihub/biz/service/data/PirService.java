@@ -2,31 +2,34 @@ package com.primihub.biz.service.data;
 
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
-import com.primihub.biz.constant.RemoteConstant;
-import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.base.DataPirKeyQuery;
-import com.primihub.biz.entity.data.dataenum.ExamEnum;
 import com.primihub.biz.entity.data.dataenum.PirPhase1Enum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
-import com.primihub.biz.entity.data.req.*;
-import com.primihub.biz.entity.data.vo.DataCoreVo;
+import com.primihub.biz.entity.data.req.DataPirCopyReq;
+import com.primihub.biz.entity.data.req.DataPirReq;
+import com.primihub.biz.entity.data.req.DataPirTaskReq;
+import com.primihub.biz.entity.data.req.ScoreModelReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
 import com.primihub.biz.entity.data.vo.DataPirTaskVo;
-import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.repository.primarydb.data.*;
-import com.primihub.biz.repository.secondarydb.data.*;
+import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
+import com.primihub.biz.repository.primarydb.data.RecordPrRepository;
+import com.primihub.biz.repository.primarydb.data.ResultPrRepository;
+import com.primihub.biz.repository.primarydb.data.ScoreModelPrRepository;
+import com.primihub.biz.repository.secondarydb.data.DataPsiRepository;
+import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.repository.secondarydb.data.RecordRepository;
+import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
-import com.primihub.biz.service.data.exam.ExamExecute;
+import com.primihub.biz.service.data.pirphase1.PirPhase1Execute;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +37,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -62,16 +66,6 @@ public class PirService {
     @Autowired
     private SysOrganSecondarydbRepository organSecondaryDbRepository;
     @Autowired
-    private RemoteClient remoteClient;
-    @Qualifier("dataCoreRepository")
-    @Autowired
-    private DataCoreRepository dataCoreRepository;
-    @Qualifier("dataCorePrimarydbRepository")
-    @Autowired
-    private DataCorePrimarydbRepository dataCorePrimarydbRepository;
-    @Autowired
-    private ExamService examService;
-    @Autowired
     private RecordPrRepository recordPrRepository;
     @Autowired
     private OrganConfiguration organConfiguration;
@@ -81,6 +75,8 @@ public class PirService {
     private ScoreModelPrRepository scoreModelPrRepository;
     @Autowired
     private ResultPrRepository resultPrRepository;
+    @Autowired
+    private ThreadPoolTaskExecutor primaryThreadPool;
 
     public String getResultFilePath(String taskId, String taskDate) {
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
@@ -285,7 +281,7 @@ public class PirService {
         return BaseResultEntity.success();
 
 
-        Set<String> targetValueSet = req.getTargetValueSet();
+        /*Set<String> targetValueSet = req.getTargetValueSet();
         // 在这里得区分
         Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
         // 在这里不用管
@@ -338,19 +334,19 @@ public class PirService {
         for (SysOrgan organ : sysOrgans) {
             return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/submitPirPhase2", organ.getPublicKey());
         }
-        return null;
+        return null;*/
     }
 
     private void startFuturePirPhase1Task(DataPirCopyReq req) {
         // 进行预处理，使用异步
         FutureTask<Object> task = new FutureTask<>(() -> {
             try {
-                ExamExecute bean = (ExamExecute) DataCopyService.context.getBean(PirPhase1Enum.PIR_PHASE1_TYPE_MAP.get(req.getTargetField()));
-                bean.processExam(req);
+                PirPhase1Execute bean = (PirPhase1Execute) DataCopyService.context.getBean(PirPhase1Enum.PIR_PHASE1_TYPE_MAP.get(req.getTargetField()));
+                bean.processPirPhase1(req);
             } catch (Exception e) {
                 log.error("异步执行异常", e);
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
-                sendEndExamTask(req);
+                sendFinishPirTask(req);
             }
             return null;
         });
@@ -379,7 +375,8 @@ public class PirService {
         if (StringUtils.isBlank(resourceColumnNames)) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表失败");
         }
-        String[] resourceColumnNameArray = Arrays.stream(resourceColumnNames.split(",")).map(String::trim).toArray(String[]::new);;
+        String[] resourceColumnNameArray = Arrays.stream(resourceColumnNames.split(",")).map(String::trim).toArray(String[]::new);
+        ;
         log.info("pir 提交数据特征: {}", Arrays.toString(resourceColumnNameArray));
         if (resourceColumnNameArray.length == 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "获取资源字段列表为空");
@@ -412,7 +409,6 @@ public class PirService {
         dataPirTask.setResourceId(param.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
         dataAsyncService.pirGrpcTask(dataTask, dataPirTask, resourceColumnNames, dataPirKeyQueries);
-
 
 
         record.setPirTaskId(dataPirTask.getTaskId());
@@ -460,7 +456,7 @@ public class PirService {
         return BaseResultEntity.success();
     }
 
-    private BaseResultEntity sendFinishPirTask(DataPirCopyReq req) {
+    public BaseResultEntity sendFinishPirTask(DataPirCopyReq req) {
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOriginOrganId());
         if (CollectionUtils.isEmpty(sysOrgans)) {
             log.info("查询机构ID: [{}] 失败，未查询到结果", req.getOriginOrganId());

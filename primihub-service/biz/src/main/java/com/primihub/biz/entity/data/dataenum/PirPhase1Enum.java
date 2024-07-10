@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum PirPhase1Enum {
-    ID_NUM(RemoteConstant.INPUT_FIELD_ID_NUM, "examExecuteIdNum");
+    ID_NUM(RemoteConstant.INPUT_FIELD_ID_NUM, "pirPhase1ExecuteIdNum");
     private String targetValue;
     private String executeService;
 
