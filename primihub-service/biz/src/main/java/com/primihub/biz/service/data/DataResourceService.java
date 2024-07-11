@@ -734,19 +734,23 @@ public class DataResourceService {
             Set<String> resourceIds = map.keySet();
             DataResource dataResource = null;
             // dataResource只是己方的数据，可以是衍生数据
+            log.info("{} 参与数据集", JSONObject.toJSONString(resourceIds));
             for (String resourceId : resourceIds) {
                 dataResource = dataResourceRepository.queryDataResourceByResourceFusionId(resourceId);
                 if (dataResource!=null) {
                     break;
                 }
             }
+            log.info("{} 生成衍生数据集", JSONObject.toJSONString(dataResource));
             if (dataResource == null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
             BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
+            log.info("查询中心节点数据 {}", JSONObject.toJSONString(result));
             if (result.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
             }
+            // 封装衍生数据集名称
             List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
             StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
             for (LinkedHashMap<String, Object> resourceMap : fusionResourceMap) {
@@ -769,14 +773,14 @@ public class DataResourceService {
                         url = url.replace("."+split[1],"_"+modelDerivationDto.getType()+".csv");
                     }
                 }
-                log.info(url);
+                log.info("衍生数据集文件地址 {}", url);
                 long start = System.currentTimeMillis();
                 File file = new File(url);
-//                while ((System.currentTimeMillis() - start)< 300000){
-//                    if (file.exists()){
-//                        break;
-//                    }
-//                }
+                while ((System.currentTimeMillis() - start)< 300000){
+                    if (file.exists()){
+                        break;
+                    }
+                }
                 if (!file.exists()) {
                     continue;
 //                    return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生数据文件不存在");
