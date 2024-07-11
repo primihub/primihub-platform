@@ -5,13 +5,13 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ImeiResultVo {
+public class ImeiPsiVo {
     private String imei;
 
-    public ImeiResultVo() {
+    public ImeiPsiVo() {
     }
 
-    public ImeiResultVo(String imei) {
+    public ImeiPsiVo(String imei) {
         this.imei = imei;
     }
 }

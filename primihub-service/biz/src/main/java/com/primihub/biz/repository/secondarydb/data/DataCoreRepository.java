@@ -1,7 +1,7 @@
 package com.primihub.biz.repository.secondarydb.data;
 
 import com.primihub.biz.entity.data.po.lpy.DataCore;
-import com.primihub.biz.entity.data.vo.DataCoreVo;
+import com.primihub.biz.entity.data.vo.lpy.DataCoreVo;
 import com.primihub.biz.entity.data.vo.lpy.ExamResultVo;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.stereotype.Repository;

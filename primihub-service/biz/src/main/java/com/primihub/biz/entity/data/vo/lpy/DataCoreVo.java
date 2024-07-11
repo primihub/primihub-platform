@@ -1,4 +1,4 @@
-package com.primihub.biz.entity.data.vo;
+package com.primihub.biz.entity.data.vo.lpy;
 
 import lombok.Getter;
 import lombok.Setter;

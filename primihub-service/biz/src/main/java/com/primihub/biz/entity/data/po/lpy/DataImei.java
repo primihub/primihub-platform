@@ -12,7 +12,6 @@ import java.util.Date;
 public class DataImei {
     private Long id;
     private String imei;
-    private String phoneNum;
     private Double y;
     /** 以下是营销分 */
     private Double score;

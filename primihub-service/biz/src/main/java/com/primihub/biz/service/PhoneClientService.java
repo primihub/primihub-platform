@@ -30,6 +30,13 @@ public class PhoneClientService {
     }
 
     public <T> Set<T> filterHashSet(Set<T> originalSet, double filterPercentage) {
+        if (Double.compare(filterPercentage, 1.0) == 0) {
+            return new HashSet<>(originalSet);
+        }
+
+        if (Double.compare(filterPercentage, 0.0) == 0) {
+            return new HashSet<>();
+        }
         int originalSize = originalSet.size();
         int filterSize = (int) (originalSize * filterPercentage);
         Random random = new Random();

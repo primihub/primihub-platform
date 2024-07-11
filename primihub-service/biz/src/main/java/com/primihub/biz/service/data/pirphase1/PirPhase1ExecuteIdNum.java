@@ -8,7 +8,7 @@ import com.primihub.biz.entity.data.po.lpy.DataCore;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
-import com.primihub.biz.entity.data.vo.DataCoreVo;
+import com.primihub.biz.entity.data.vo.lpy.DataCoreVo;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;

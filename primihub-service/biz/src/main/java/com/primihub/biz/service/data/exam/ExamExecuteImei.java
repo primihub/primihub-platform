@@ -7,7 +7,7 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.lpy.DataImei;
 import com.primihub.biz.entity.data.req.DataExamReq;
-import com.primihub.biz.entity.data.vo.lpy.ImeiResultVo;
+import com.primihub.biz.entity.data.vo.lpy.ImeiPsiVo;
 import com.primihub.biz.repository.primarydb.data.DataImeiPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataImeiRepository;
 import com.primihub.biz.service.PhoneClientService;
@@ -66,7 +66,7 @@ public class ExamExecuteImei implements ExamExecute {
         imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
 
         oldSet.addAll(newExistSet);
-        Set<ImeiResultVo> existResult = oldSet.stream().map(ImeiResultVo::new).collect(Collectors.toSet());
+        Set<ImeiPsiVo> existResult = oldSet.stream().map(ImeiPsiVo::new).collect(Collectors.toSet());
 
         String jsonArrayStr = JSON.toJSONString(existResult);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
