@@ -1,3 +1,4 @@
+/*
 package com.primihub.application.init;
 
 import com.alibaba.fastjson.JSONObject;
@@ -33,11 +34,13 @@ public class OrganInit implements CommandLineRunner {
     private OrganConfiguration organConfiguration;
     @Autowired
     private SysOrganPrimarydbRepository sysOrganPrimarydbRepository;
-    /**
+    */
+/**
      * 系统重启 重新链接
      * @param args
      * @throws Exception
-     */
+     *//*
+
     @Override
     public void run(String... args) throws Exception {
         // 获取 正常链接的 机构信息
@@ -74,3 +77,4 @@ public class OrganInit implements CommandLineRunner {
     }
 }
 
+*/
