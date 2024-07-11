@@ -440,27 +440,32 @@ public class DataModelService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "组件解析失败");
         }
         DataComponentReq dataSet = modelComponentMap.get("dataSet");
+        // 判断参与机构状态
         if (!Objects.isNull(dataSet)){
             Map<String, String> componentValues = dataSet.getComponentValues().stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
             List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(componentValues.get("selectData"), ModelProjectResourceVo.class);
             log.info("[模型任务][运行检测] 参与机构信息 {}", JSONObject.toJSONString(modelProjectResourceVos));
             if (CollectionUtils.isNotEmpty(modelProjectResourceVos)){
                 Set<String> organIdSet = modelProjectResourceVos.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+                SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+                organIdSet.remove(sysLocalOrganInfo.getOrganId());
                 if (CollectionUtils.isNotEmpty(organIdSet)){
-                    SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-                    organIdSet.remove(sysLocalOrganInfo.getOrganId());
                     List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
-                    if (CollectionUtils.isNotEmpty(organIdSet)){
+                    if (CollectionUtils.isEmpty(sysOrgans)){
+                        log.error("[模型任务][运行失败] 模型参与节点不可用");
+                        return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                    } else {
                         Set<String> collect = sysOrgans.stream().map(o -> o.getOrganId()).collect(Collectors.toSet());
-                        if (!collect.contains(organIdSet)){
-                            log.error("[模型任务][运行失败] 模型参与节点不可用");
-                            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                        for (String organId : organIdSet){
+                            if (!collect.contains(organId)){
+                                log.error("[模型任务][运行失败] 模型参与节点不可用");
+                                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                            }
                         }
                     }
                 }
             }
         }
-        // 判断参与机构状态
         for (String componentCode : zComponentCodeList) {
             BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponentMap.get(componentCode), taskReq);
             if (baseResultEntity.getCode() != 0) {
@@ -561,15 +566,20 @@ public class DataModelService {
             log.info("[模型任务][运行检测] 参与机构信息 {}", JSONObject.toJSONString(modelProjectResourceVos));
             if (CollectionUtils.isNotEmpty(modelProjectResourceVos)){
                 Set<String> organIdSet = modelProjectResourceVos.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+                SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+                organIdSet.remove(sysLocalOrganInfo.getOrganId());
                 if (CollectionUtils.isNotEmpty(organIdSet)){
-                    SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
-                    organIdSet.remove(sysLocalOrganInfo.getOrganId());
                     List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
-                    if (CollectionUtils.isNotEmpty(organIdSet)){
+                    if (CollectionUtils.isEmpty(sysOrgans)){
+                        log.error("[模型任务][运行失败] 模型参与节点不可用");
+                        return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                    } else {
                         Set<String> collect = sysOrgans.stream().map(o -> o.getOrganId()).collect(Collectors.toSet());
-                        if (!collect.contains(organIdSet)){
-                            log.error("[模型任务][运行失败] 模型参与节点不可用");
-                            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                        for (String organId : organIdSet){
+                            if (!collect.contains(organId)){
+                                log.error("[模型任务][运行失败] 模型参与节点不可用");
+                                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                            }
                         }
                     }
                 }
