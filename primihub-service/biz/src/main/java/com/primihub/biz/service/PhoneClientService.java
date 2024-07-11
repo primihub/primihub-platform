@@ -8,7 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,7 +29,7 @@ public class PhoneClientService {
         return replyList.stream().collect(Collectors.toMap(SM3Dict::getIdNum, SM3Dict::getPhoneNum));
     }
 
-    public <T> HashSet<T> filterHashSet(Set<T> originalSet, double filterPercentage) {
+    public <T> Set<T> filterHashSet(Set<T> originalSet, double filterPercentage) {
         int originalSize = originalSet.size();
         int filterSize = (int) (originalSize * filterPercentage);
         Random random = new Random();
@@ -60,4 +62,19 @@ public class PhoneClientService {
         return phoneNumber.toString();
     }
 
+    public Map<String, Double> generateScoreForKeySet(Set<String> set) {
+        Random random = new Random();
+        DecimalFormat format = new DecimalFormat("#.####");
+
+        return set.stream().collect(Collectors.toMap(
+                Function.identity(),
+                o -> generateRandomScore(random, format)
+        ));
+    }
+
+    private static double generateRandomScore(Random random, DecimalFormat format) {
+        double randNum = random.nextDouble();
+        return Double.parseDouble(format.format(randNum));
+
+    }
 }

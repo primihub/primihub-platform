@@ -20,7 +20,7 @@
         score_model_type scoreModelType
     </sql>
 
-    <insert id="saveDataCoreSet" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataCore">
+    <insert id="saveDataCoreSet" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.lpy.DataCore">
         insert into data_core
         (id_num,
         phone_num,
@@ -38,7 +38,7 @@
         </foreach>
     </insert>
 
-    <insert id="saveDataCore" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataCore">
+    <insert id="saveDataCore" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.lpy.DataCore">
         insert into data_core
         (id_num,
          phone_num,

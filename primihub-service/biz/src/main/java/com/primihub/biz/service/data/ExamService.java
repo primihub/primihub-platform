@@ -323,7 +323,7 @@ public class ExamService {
         return BaseResultEntity.success(dataExamTaskVos);
     }
 
-    private BaseResultEntity sendEndExamTask(DataExamReq req) {
+    public BaseResultEntity sendEndExamTask(DataExamReq req) {
         List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOriginOrganId());
         if (CollectionUtils.isEmpty(sysOrgans)) {
             log.info("查询机构ID: [{}] 失败，未查询到结果", req.getOriginOrganId());

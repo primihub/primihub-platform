@@ -25,7 +25,7 @@
         id_num idNum
     </sql>
 
-    <select id="selectExistentDataCore" resultType="com.primihub.biz.entity.data.po.DataCore">
+    <select id="selectExistentDataCore" resultType="com.primihub.biz.entity.data.po.lpy.DataCore">
         select
         <include refid="dataCoreColumn"/>
         from data_core
@@ -37,7 +37,7 @@
         </if>
     </select>
 
-    <select id="selectExamResultVo" resultType="com.primihub.biz.entity.data.vo.ExamResultVo">
+    <select id="selectExamResultVo" resultType="com.primihub.biz.entity.data.vo.lpy.ExamResultVo">
         select
         <include refid="examResultColumn"/>
         from data_core
@@ -49,7 +49,7 @@
         </if>
     </select>
 
-    <select id="selectDataCoreFromIdNum" resultType="com.primihub.biz.entity.data.po.DataCore">
+    <select id="selectDataCoreFromIdNum" resultType="com.primihub.biz.entity.data.po.lpy.DataCore">
         select
         <include refid="dataCoreColumn"/>
         from data_core

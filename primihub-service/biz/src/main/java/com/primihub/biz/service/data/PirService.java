@@ -279,62 +279,6 @@ public class PirService {
         startFuturePirPhase1Task(req);
 
         return BaseResultEntity.success();
-
-
-        /*Set<String> targetValueSet = req.getTargetValueSet();
-        // 在这里得区分
-        Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
-        // 在这里不用管
-        Set<DataCore> withScore = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
-
-        Map<String, List<DataCore>> withPhoneGroup = withPhone.stream()
-                .collect(Collectors.groupingBy(DataCore::getIdNum));
-
-        Map<String, DataCore> withScoreMap = withScore.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
-
-        withPhoneGroup.forEach((key, value) -> {
-            if (withScoreMap.containsKey(key)) {
-                return;
-            }
-            RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel);
-            if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
-                DataCore dataCore = new DataCore();
-                dataCore.setIdNum(value.get(0).getIdNum());
-                dataCore.setPhoneNum(value.get(0).getPhoneNum());
-                dataCore.setScoreModelType(scoreModelType);
-                dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
-                dataCore.setY(value.get(0).getY());
-                dataCorePrimarydbRepository.saveDataCore(dataCore);
-            }
-        });
-
-        Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
-        if (CollectionUtils.isEmpty(voSet)) {
-            log.info("样本适配度太低，无法执行PIR任务");
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "样本适配度太低");
-        }
-        // 成功后开始生成文件
-        String jsonArrayStr = JSON.toJSONString(voSet);
-        List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
-        // 生成数据源
-        String resourceName = new StringBuffer()
-                .append("PIR处理资源")
-                .append(SysConstant.HYPHEN_DELIMITER)
-                .append(req.getTaskName())
-                .toString();
-        DataResource dataResource = examService.generateTargetResource(maps, resourceName);
-
-        req.setTargetResourceId(dataResource.getResourceFusionId());
-
-        List<SysOrgan> sysOrgans = organSecondaryDbRepository.selectOrganByOrganId(req.getOriginOrganId());
-        if (CollectionUtils.isEmpty(sysOrgans)) {
-            log.info("查询机构ID: [{}] 失败，未查询到结果", req.getOriginOrganId());
-            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
-        }
-        for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/submitPirPhase2", organ.getPublicKey());
-        }
-        return null;*/
     }
 
     private void startFuturePirPhase1Task(DataPirCopyReq req) {

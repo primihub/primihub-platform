@@ -1,4 +1,4 @@
-package com.primihub.biz.entity.data.po;
+package com.primihub.biz.entity.data.po.lpy;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -9,9 +9,9 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class DataCore {
+public class DataImei {
     private Long id;
-    private String idNum;
+    private String imei;
     private String phoneNum;
     private Double y;
     /** 以下是营销分 */
