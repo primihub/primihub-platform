@@ -745,7 +745,14 @@ public class DataResourceService {
             if (dataResource == null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
-            BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
+            /*BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
+            log.info("查询中心节点数据 {}", JSONObject.toJSONString(result));
+            if (result.getCode()!=0) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
+            }*/
+            List<String> localResourceIds = new ArrayList<>();
+            localResourceIds.add(dataResource.getResourceFusionId());
+            BaseResultEntity result = otherBusinessesService.getResourceListById(localResourceIds);
             log.info("查询中心节点数据 {}", JSONObject.toJSONString(result));
             if (result.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
