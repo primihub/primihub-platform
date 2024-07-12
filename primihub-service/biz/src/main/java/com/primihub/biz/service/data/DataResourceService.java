@@ -745,18 +745,18 @@ public class DataResourceService {
             if (dataResource == null) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"衍生原始资源数据查询失败");
             }
-            /*BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
+            BaseResultEntity result = otherBusinessesService.getResourceListById(new ArrayList<>(resourceIds));
             log.info("查询中心节点数据 {}", JSONObject.toJSONString(result));
             if (result.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
-            }*/
-            List<String> localResourceIds = new ArrayList<>();
+            }
+            /*List<String> localResourceIds = new ArrayList<>();
             localResourceIds.add(dataResource.getResourceFusionId());
             BaseResultEntity result = otherBusinessesService.getResourceListById(localResourceIds);
             log.info("查询中心节点数据 {}", JSONObject.toJSONString(result));
             if (result.getCode()!=0) {
                 return BaseResultEntity.failure(BaseResultEnum.DATA_SAVE_FAIL,"查询中心节点数据失败:"+result.getMsg());
-            }
+            }*/
             // 封装衍生数据集名称
             List<LinkedHashMap<String,Object>> fusionResourceMap = (List<LinkedHashMap<String,Object>>)result.getResult();
             StringBuilder resourceNames = new StringBuilder(dataResource.getResourceName());
@@ -827,10 +827,10 @@ public class DataResourceService {
                 DataResourceTag dataResourceTag = new DataResourceTag(modelDerivationDto.getDerivationType());
                 dataResourcePrRepository.saveResourceTag(dataResourceTag);
                 dataResourcePrRepository.saveResourceTagRelation(dataResourceTag.getTagId(),derivationDataResource.getResourceId());
-                //List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
-                //log.info("copyResourceList 复制元数据：{}", JSON.toJSONString(copyResourceList));
-                //fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),copyResourceList);
-                //singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
+                List<DataResourceCopyVo> copyResourceList = findCopyResourceList(derivationDataResource.getResourceId(), derivationDataResource.getResourceId());
+                log.info("copyResourceList 复制元数据：{}", JSON.toJSONString(copyResourceList));
+                fusionResourceService.saveResource(organConfiguration.getSysLocalOrganId(),copyResourceList);
+                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SINGLE_DATA_FUSION_RESOURCE_TASK.getHandleType(),derivationDataResource))).build());
             }
             return BaseResultEntity.success(modelDerivationDtos.stream().map(ModelDerivationDto::getNewResourceId).collect(Collectors.toList()));
         }catch (Exception e){
