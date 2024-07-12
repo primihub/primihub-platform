@@ -16,16 +16,21 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
 import com.primihub.biz.entity.data.vo.*;
+import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
+import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataProjectPrRepository;
 import com.primihub.biz.repository.primarydb.data.DataTaskPrRepository;
 import com.primihub.biz.repository.secondarydb.data.DataModelRepository;
 import com.primihub.biz.repository.secondarydb.data.DataProjectRepository;
 import com.primihub.biz.repository.secondarydb.data.DataTaskRepository;
+import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +38,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -49,7 +55,7 @@ public class DataModelService {
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
-    private ComponentsConfiguration componentsConfiguration;
+    private SysOrganSecondarydbRepository sysOrganSecondarydbRepository;
     @Autowired
     private MpcComponentsConfiguration mpcComponentsConfiguration;
     @Autowired
@@ -433,6 +439,33 @@ public class DataModelService {
             log.error("[模型任务][运行失败] 组件解析失败");
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "组件解析失败");
         }
+        DataComponentReq dataSet = modelComponentMap.get("dataSet");
+        // 判断参与机构状态
+        if (!Objects.isNull(dataSet)){
+            Map<String, String> componentValues = dataSet.getComponentValues().stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
+            List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(componentValues.get("selectData"), ModelProjectResourceVo.class);
+            log.info("[模型任务][运行检测] 参与机构信息 {}", JSONObject.toJSONString(modelProjectResourceVos));
+            if (CollectionUtils.isNotEmpty(modelProjectResourceVos)){
+                Set<String> organIdSet = modelProjectResourceVos.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+                SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+                organIdSet.remove(sysLocalOrganInfo.getOrganId());
+                if (CollectionUtils.isNotEmpty(organIdSet)){
+                    List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+                    if (CollectionUtils.isEmpty(sysOrgans)){
+                        log.error("[模型任务][运行失败] 模型参与节点不可用");
+                        return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                    } else {
+                        Set<String> collect = sysOrgans.stream().map(o -> o.getOrganId()).collect(Collectors.toSet());
+                        for (String organId : organIdSet){
+                            if (!collect.contains(organId)){
+                                log.error("[模型任务][运行失败] 模型参与节点不可用");
+                                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                            }
+                        }
+                    }
+                }
+            }
+        }
         for (String componentCode : zComponentCodeList) {
             BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponentMap.get(componentCode), taskReq);
             if (baseResultEntity.getCode() != 0) {
@@ -499,9 +532,63 @@ public class DataModelService {
         if (modelComponentReq == null) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "组件解析失败");
         }
-        for (DataComponentReq modelComponent : modelComponentReq.getModelComponents()) {
-            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponent, taskReq);
+        // 组件参数
+        List<DataComponentReq> modelComponents = modelComponentReq.getModelComponents();
+        // 组件顺序
+        List<DataModelPointComponent> modelPointComponents = modelComponentReq.getModelPointComponents();
+        if (modelPointComponents.size() != (modelComponents.size() - 1)){
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型执行顺序错误，请检查组件编排顺序");
+        }
+        List<String> zComponentCodeList;
+        Map<String, DataComponentReq> modelComponentMap;
+        if (modelComponents != null && !modelComponents.isEmpty()) {
+            modelComponentMap = modelComponents.stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
+            // 将组件中的`componentCode`按照组件顺序进行排序
+            // stream.filter 会留下ture的元素，使用 input 组件为空来寻找第一个组件
+            List<DataComponentReq> firstComponentList = modelComponents.stream().filter(dataComponentReq -> dataComponentReq.getInput().isEmpty()).collect(Collectors.toList());
+            zComponentCodeList = new ArrayList<>();
+            if (firstComponentList.isEmpty()) {
+                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "未查询到模型组件信息");
+            }
+            // 开头的code
+            zComponentCodeList.add(firstComponentList.get(0).getComponentCode());
+            // 递归方法，排序componentCode
+            sortComponent(firstComponentList.get(0).getOutput(), zComponentCodeList, modelComponentMap);
+            log.info("[模型任务][组件顺序] sort后的组件顺序: [zComponentCodeList: {}]", zComponentCodeList);
+        } else {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "未查询到模型组件信息");
+        }
+        // 判断参与机构状态
+        DataComponentReq dataSet = modelComponentMap.get("dataSet");
+        if (!Objects.isNull(dataSet)){
+            Map<String, String> componentValues = dataSet.getComponentValues().stream().collect(Collectors.toMap(DataComponentValue::getKey, DataComponentValue::getVal, (key1, key2) -> key2));
+            List<ModelProjectResourceVo> modelProjectResourceVos = JSONArray.parseArray(componentValues.get("selectData"), ModelProjectResourceVo.class);
+            log.info("[模型任务][运行检测] 参与机构信息 {}", JSONObject.toJSONString(modelProjectResourceVos));
+            if (CollectionUtils.isNotEmpty(modelProjectResourceVos)){
+                Set<String> organIdSet = modelProjectResourceVos.stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toSet());
+                SysLocalOrganInfo sysLocalOrganInfo = organConfiguration.getSysLocalOrganInfo();
+                organIdSet.remove(sysLocalOrganInfo.getOrganId());
+                if (CollectionUtils.isNotEmpty(organIdSet)){
+                    List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
+                    if (CollectionUtils.isEmpty(sysOrgans)){
+                        log.error("[模型任务][运行失败] 模型参与节点不可用");
+                        return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                    } else {
+                        Set<String> collect = sysOrgans.stream().map(o -> o.getOrganId()).collect(Collectors.toSet());
+                        for (String organId : organIdSet){
+                            if (!collect.contains(organId)){
+                                log.error("[模型任务][运行失败] 模型参与节点不可用");
+                                return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "模型参与节点不可用");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        for (String componentCode : zComponentCodeList) {
+            BaseResultEntity baseResultEntity = dataAsyncService.executeBeanMethod(true, modelComponentMap.get(componentCode), taskReq);
             if (baseResultEntity.getCode() != 0) {
+                log.error("[模型任务][运行失败] 组件执行结果失败 [baseResultEntity: \n{}\n]", JSONObject.toJSONString(baseResultEntity));
                 return baseResultEntity;
             }
         }
