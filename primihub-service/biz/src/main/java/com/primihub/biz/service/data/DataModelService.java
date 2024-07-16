@@ -63,6 +63,8 @@ public class DataModelService {
     @Autowired
     private VflComponentsConfiguration vflComponentsConfiguration;
     @Autowired
+    private MflComponentsConfiguration mflComponentsConfiguration;
+    @Autowired
     private OrganConfiguration organConfiguration;
     @Autowired
     private DataTaskPrRepository dataTaskPrRepository;
@@ -213,6 +215,9 @@ public class DataModelService {
                 break;
             case "VFL":
                 modelComponents = vflComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
+                break;
+            case "MFL":
+                modelComponents = mflComponentsConfiguration.getModelComponents().stream().filter(modelComponent -> modelComponent.getIsShow() == 0).collect(Collectors.toList());
                 break;
             default:
                 return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION, "当前类型不支持");
