@@ -213,6 +213,8 @@ export default {
             message: '取消成功',
             type: 'success'
           })
+        } else {
+          this.$message.error(res.msg)
         }
       })
     },
