@@ -107,6 +107,14 @@ public class ModelComponentTaskServiceImpl extends BaseComponentServiceImpl impl
         }
         // MPC_LR 任务
         if (modelTypeEnum == ModelTypeEnum.MPC_LR) {
+            String selectData = taskReq.getValueMap().get("selectData");
+            if(StringUtils.isNotBlank(selectData)){
+                List<ModelProjectResourceVo> modelProjectResourceVos = JSONObject.parseArray(selectData, ModelProjectResourceVo.class);
+                if (modelProjectResourceVos.size() != 3){
+                    log.error("[模型任务][模型组件] 运行失败:参与数据集不正确 ");
+                    return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "需要三方数据集参与");
+                }
+            }
             return mpclr(req, taskReq);
         }
 
