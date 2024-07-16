@@ -64,6 +64,7 @@
         where
             is_del = 0 and examine_state = 1 and enable = 0
     </select>
+
     <select id="selectSysOrganByParam" resultType="com.primihub.biz.entity.sys.po.SysOrgan">
         select
             id,apply_id applyId,organ_id organId,organ_name organName,organ_gateway organGateway,public_key publicKey,

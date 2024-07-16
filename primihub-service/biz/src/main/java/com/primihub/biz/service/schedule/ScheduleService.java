@@ -68,6 +68,7 @@ public class ScheduleService {
         log.info("定时处理节点业务");
         // 上报节点状态
         sysAsyncService.collectBaseData();
+        // 获取 正常链接的 机构信息
         List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
         long time = System.currentTimeMillis();
         String data = String.format("{'time':%s}", time);

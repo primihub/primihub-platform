@@ -1,31 +1,20 @@
 package com.primihub.biz.service.data.component.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
-import com.primihub.biz.config.mq.SingleTaskChannel;
 import com.primihub.biz.constant.CommonConstant;
 import com.primihub.biz.constant.DataConstant;
-import com.primihub.biz.entity.base.BaseFunctionHandleEntity;
-import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.PSIEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dto.ModelDerivationDto;
 import com.primihub.biz.entity.data.po.DataModelResource;
-import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
-import com.primihub.biz.entity.data.req.DataComponentValue;
-import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataModelPrRepository;
-import com.primihub.biz.repository.secondarydb.data.DataResourceRepository;
-import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.data.DataResourceService;
-import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
@@ -39,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -148,7 +136,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
                         taskReq.getDataTask().setTaskErrorMsg(req.getComponentName() + "组件处理失败:" + derivationResource.getMsg());
                     } else {
-                        /*HashSet dids = new HashSet();
+                        HashSet dids = new HashSet();
                         dids.add(derivationResourceIdMap.get(labelDatasetId));
                         dids.add(derivationResourceIdMap.get(guestDatasetId));
                         while (true){
@@ -162,7 +150,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                                 }
                             }
                             Thread.sleep(100L);
-                        }*/
+                        }
 
                         List<String> resourceIds = (List<String>) derivationResource.getResult();
                         for (String resourceId : resourceIds) {
@@ -362,12 +350,12 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
         }
         Map<String, ModelEntity> map = null;
         try {
-            List<String> clientDataFileField = Arrays.stream(clientDataFileFieldStr
-                    .split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+            String clientLowerCase = clientDataFileFieldStr.toLowerCase();
+            List<String> clientDataFileField = Arrays.stream(clientLowerCase.split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
             log.info("data-align clientDataFileHandleField: \n{}", JSONObject.toJSONString(clientDataFileField));
 
-            List<String> guestDataFileField = Arrays.stream(guestDataFileFieldStr
-                    .split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+            String guestLowerCase = guestDataFileFieldStr.toLowerCase();
+            List<String> guestDataFileField = Arrays.stream(guestLowerCase.split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
             log.info("data-align serverDataFileHandleField: \n{}", JSONObject.toJSONString(guestDataFileField));
 
             Map<String, String> componentVals = getComponentVals(req.getComponentValues());
@@ -401,8 +389,10 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                 fieldList = JSONArray.parseArray(multipleSelected, String.class);
             }*/
             //log.info("data-align fieldList : \n{}", JSONObject.toJSONString(fieldList));
-            clientIndex = clientDataFileField.stream().filter(clientField ->clientField.equals(clientIndexField)).map(clientDataFileField::indexOf).collect(Collectors.toList());
-            serverIndex = guestDataFileField.stream().filter(clientField ->clientField.equals(guestIndexField)).map(guestDataFileField::indexOf).collect(Collectors.toList());
+            String clientFieldLowerCase = clientIndexField.toLowerCase();
+            String guestFieldLowerCase = guestIndexField.toLowerCase();
+            clientIndex = clientDataFileField.stream().filter(clientField -> clientField.equals(clientFieldLowerCase)).map(clientDataFileField::indexOf).collect(Collectors.toList());
+            serverIndex = guestDataFileField.stream().filter(clientField -> clientField.equals(guestFieldLowerCase)).map(guestDataFileField::indexOf).collect(Collectors.toList());
             //clientIndex = fieldList.stream().map(clientDataFileField::indexOf).collect(Collectors.toList());
             //serverIndex = fieldList.stream().map(guestDataFileField::indexOf).collect(Collectors.toList());
             if (clientIndex.stream().anyMatch(integer -> integer < 0)) {
