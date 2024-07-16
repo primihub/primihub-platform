@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -39,8 +40,9 @@ public class RemoteClient {
     private ScoreModelPrRepository scoreModelPrRepository;
     @Autowired
     private ScoreModelRepository scoreModelRepository;
+    public static final DecimalFormat format = new DecimalFormat("#.####");
 
-    public RemoteRespVo queryFromRemote(String phoneNum,ScoreModel scoreModel) {
+    public RemoteRespVo queryFromRemote(String phoneNum, ScoreModel scoreModel) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
@@ -100,7 +102,6 @@ public class RemoteClient {
     }
 
     /**
-     *
      * @param req
      * @return
      */
@@ -114,14 +115,15 @@ public class RemoteClient {
         return BaseResultEntity.success(scoreModelSet);
     }
 
-    public RemoteRespVo queryFromRemoteMock(String phoneNum,ScoreModel scoreModel) {
+    public RemoteRespVo queryFromRemoteMock(String phoneNum, ScoreModel scoreModel) {
         int randInt = RandomUtils.nextInt(0, 100);
         RemoteRespVo respVo = new RemoteRespVo();
         RespHead respHead = new RespHead();
         if (randInt > 20) {
             respHead.setResult("Y");
             Map<String, String> map = new HashMap<>();
-            map.put(scoreModel.getScoreKey(), String.valueOf(RandomUtils.nextDouble(0.3, 1)));
+            String ranDoubleStr = String.valueOf(RandomUtils.nextDouble(0.3, 1));
+            map.put(scoreModel.getScoreKey(), format.format(ranDoubleStr));
             respVo.setRespBody(map);
         } else {
             respHead.setResult("N");

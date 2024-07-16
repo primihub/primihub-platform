@@ -66,7 +66,8 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
             if (withScoreMap.containsKey(key)) {
                 return;
             }
-            RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel);
+//            RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel);
+            RemoteRespVo respVo = remoteClient.queryFromRemoteMock(value.get(0).getPhoneNum(), scoreModel);
             if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
                 DataCore dataCore = new DataCore();
                 dataCore.setIdNum(value.get(0).getIdNum());

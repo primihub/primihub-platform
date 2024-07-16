@@ -80,7 +80,7 @@ public class PhoneClientService {
     }
 
     private static double generateRandomScore(Random random, DecimalFormat format) {
-        double randNum = random.nextDouble();
+        double randNum = 0.3 + (random.nextDouble() * 0.7);
         return Double.parseDouble(format.format(randNum));
 
     }
