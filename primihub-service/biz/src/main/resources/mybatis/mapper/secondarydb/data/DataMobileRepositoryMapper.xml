@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataMobileRepository">
+
+    <sql id="dataMobileColumn">
+        id
+        ,
+        phone_num phoneNum,
+        y,
+        score,
+        score_model_type scoreModelType,
+        is_del isDel,
+        create_date createDate,
+        update_date updateDate
+    </sql>
+
+    <select id="selectMobileWithScore" resultType="com.primihub.biz.entity.data.po.lpy.DataMobile">
+        select
+        <include refid="dataMobileColumn"/>
+        from data_mobile
+        <where>
+            <if test="list != null and !list.isEmpty()">
+                and phone_num in
+                <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scoreType != null and scoreType != ''">
+                and score_model_type = #{scoreType}
+            </if>
+        </where>
+    </select>
+
+</mapper>

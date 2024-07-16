@@ -9,9 +9,6 @@ import java.util.List;
 
 @Repository
 public interface DataImeiPrimarydbRepository {
-    void saveDataCoreSet(@Param("list") List<DataCore> nonexistentDataCoreList);
-
-    void saveDataCore(DataCore dataCore);
 
     void saveImeiSet(@Param("list")List<DataImei> dataImeiList);
 }

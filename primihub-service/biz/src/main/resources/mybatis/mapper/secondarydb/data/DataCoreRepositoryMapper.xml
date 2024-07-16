@@ -68,8 +68,8 @@
 
     <select id="selectDataCoreWithScore" resultType="com.primihub.biz.entity.data.vo.lpy.DataCoreVo">
         select
-            <include refid="dataCoreVoColumn"/>
-            from data_core
+        <include refid="dataCoreVoColumn"/>
+        from data_core
         <if test="scoreType != null and scoreType != ''">
             where score_model_type = #{scoreType}
         </if>

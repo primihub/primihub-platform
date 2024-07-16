@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataImeiRepository">
+
+    <sql id="dataImeiColumn">
+        id,
+        imei,
+        y,
+        score,
+        score_model_type scoreModelType,
+        is_del isDel,
+        create_date createDate,
+        update_date updateDate
+    </sql>
+
+    <select id="selectImei" resultType="com.primihub.biz.entity.data.po.lpy.DataImei">
+        select
+        <include refid="dataImeiColumn"/>
+        from data_imei
+        <if test="list != null and !list.isEmpty()">
+            where imei in
+            <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectImeiWithScore" resultType="com.primihub.biz.entity.data.po.lpy.DataImei">
+        select
+        <include refid="dataImeiColumn"/>
+        from data_imei
+        <where>
+            <if test="list != null and !list.isEmpty()">
+                and imei in
+                <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="scoreType != null and scoreType != ''">
+                and score_model_type = #{scoreType}
+            </if>
+        </where>
+    </select>
+
+</mapper>
