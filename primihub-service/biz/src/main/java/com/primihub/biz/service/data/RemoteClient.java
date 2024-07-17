@@ -122,8 +122,8 @@ public class RemoteClient {
         if (randInt > 20) {
             respHead.setResult("Y");
             Map<String, String> map = new HashMap<>();
-            String ranDoubleStr = String.valueOf(RandomUtils.nextDouble(0.3, 1));
-            map.put(scoreModel.getScoreKey(), format.format(ranDoubleStr));
+            double random = RandomUtils.nextDouble(0.3, 1);
+            map.put(scoreModel.getScoreKey(), format.format(random));
             respVo.setRespBody(map);
         } else {
             respHead.setResult("N");

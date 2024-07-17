@@ -184,7 +184,6 @@ public class FileUtil {
             log.info(Arrays.toString(fields));
             for (int i = 1; i < list.size(); i++) {
                 String[] data = list.get(i);
-                log.info(Arrays.toString(data));
                 if (Integer.valueOf(data.length).equals(Integer.valueOf(fields.length))) {
                     dataList.add(readValues(data, fields));
                 }

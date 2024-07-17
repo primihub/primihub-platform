@@ -263,8 +263,8 @@ public class PirService {
      * @return
      */
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
-        log.info("processPirPhase1:");
-        log.info(JSON.toJSONString(req));
+        // todo 取消传输 dataPirKeyQueries
+        log.info("processPirPhase1");
 
         String scoreModelType = req.getScoreModelType();
         ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);

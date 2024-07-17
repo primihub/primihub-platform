@@ -23,7 +23,6 @@ public class DataPirCopyReq {
     private Long dataTaskId;
     private Long dataPirTaskId;
     private String resourceColumnNames;
-    private List<DataPirKeyQuery> dataPirKeyQueries;
 
     // return
     private String targetResourceId;
