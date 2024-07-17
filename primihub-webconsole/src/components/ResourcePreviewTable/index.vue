@@ -57,7 +57,8 @@ export default {
   },
   methods: {
     trim(str) {
-      return lodash.trim(str)
+      let newStr = str.replace(/\n/g,"")
+      return lodash.trim(newStr)
     }
   },
   created() {
