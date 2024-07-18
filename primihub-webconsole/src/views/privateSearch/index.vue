@@ -42,12 +42,15 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" @click="reset" />
+          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
     <div class="list">
-      <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐匿查询</el-button>
+      <div class="operate-btn-wrapper">
+        <el-button class="add-button" icon="el-icon-circle-plus-outline" type="primary" @click="toTaskPage">隐匿查询</el-button>
+        <el-button class="add-button" icon="el-icon-refresh-right"  @click="fetchData">刷新</el-button>
+      </div>
       <el-table
         :data="dataList"
       >
@@ -62,7 +65,10 @@
           label="任务名称"
         >
           <template slot-scope="{row}">
-            <el-tooltip :content="row.taskName" placement="top"><el-link type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link></el-tooltip>
+            <el-tooltip :content="row.taskName" placement="top">
+              <el-link v-if="row.taskState !== 6 && row.taskState !== 7" type="primary" @click="toTaskDetailPage(row.taskId)">{{ row.taskName }}</el-link>
+              <span v-else>{{ row.taskName }}</span>
+            </el-tooltip>
           </template>
         </el-table-column>
         <el-table-column
@@ -121,10 +127,11 @@
             {{ row.taskState | taskStatusFilter }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" min-width="120px" align="center">
+        <el-table-column label="操作" fixed="right" min-width="140px" align="center">
           <template slot-scope="{row}">
             <p class="tool-buttons">
-              <el-link type="primary" @click="toTaskDetailPage(row.taskId)">查看</el-link>
+              <el-link type="primary" v-if="row.taskState !== 6 && row.taskState !== 7" @click="toTaskDetailPage(row.taskId)">查看</el-link>
+              <el-link v-if="row.taskState === 7" type="warning" @click="executeTask(row)">执行</el-link>
               <el-link v-if="row.taskState === 2" type="warning" @click="cancelTask(row)">取消</el-link>
               <el-link type="danger" :disabled="row.taskState === 2" @click="deleteTask(row)">删除</el-link>
             </p>
@@ -138,7 +145,7 @@
 
 <script>
 import { getAvailableOrganList } from '@/api/center'
-import { getPirTaskList } from '@/api/PIR'
+import { getPirTaskList, executePirPhase2Request } from '@/api/PIR'
 import { deleteTask, cancelTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import StatusIcon from '@/components/StatusIcon'
@@ -181,19 +188,12 @@ export default {
       pageSize: 10,
       total: 0,
       pageCount: 0,
-      timer: null,
       startInterval: true
     }
   },
   async created() {
-    this.timer = window.setInterval(() => {
-      setTimeout(this.fetchData(), 0)
-    }, 1500)
     this.fetchData()
     await this.getAvailableOrganList()
-  },
-  destroyed() {
-    clearInterval(this.timer)
   },
   methods: {
     handleDateChange(val) {
@@ -238,7 +238,6 @@ export default {
               type: 'success',
               duration: 1000
             })
-            clearInterval(this.timer)
           }
         })
       }).catch(() => {})
@@ -299,11 +298,9 @@ export default {
         // No tasks are running
         if (this.searchList.length === 0) {
           this.startInterval = false
-          clearInterval(this.timer)
         }
       }).catch(err => {
         console.log(err)
-        clearInterval(this.timer)
       })
     },
     handlePagination(data) {
@@ -324,8 +321,16 @@ export default {
       const nonce = Math.floor(Math.random() * 1000 + 1)
       const token = getToken()
       window.open(`${process.env.VUE_APP_BASE_API}/data/task/downloadTaskFile?taskId=${taskId}&timestamp=${timestamp}&nonce=${nonce}&token=${token}`, '_self')
-    }
+    },
 
+    async executeTask(row) {
+      const { code, msg, result } = await executePirPhase2Request({ dataPirTaskId: row.taskId })
+      if (code === 0) {
+        this.toTaskDetailPage(result.taskId)
+      } else {
+        this.$message.error(msg)
+      }
+    }
   }
 }
 </script>
@@ -369,5 +374,9 @@ export default {
   .el-link{
     margin: 0 5px;
   }
+}
+.operate-btn-wrapper{
+  display: flex;
+  justify-content: space-between;
 }
 </style>

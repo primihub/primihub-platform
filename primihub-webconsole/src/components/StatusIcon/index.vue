@@ -13,7 +13,7 @@ export default {
   },
   methods: {
     statusStyle(status) {
-      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' : 'status-default  el-icon-error'
+      return status === 0 ? 'status-default el-icon-error' : status === 1 ? 'status-end el-icon-success' : status === 2 ? 'status-processing el-icon-loading' : status === 3 ? 'status-error el-icon-error' :status === 6 ? 'status-processing el-icon-loading' : status === 7 ? 'status-end el-icon-success' : 'status-default  el-icon-error'
     }
   }
 }

@@ -111,10 +111,8 @@ export default {
           this.listLoading = true
           submitPirPhase1Request({...this.form}).then(res => {
             if (res.code === 0) {
-              const { taskId } = res.result
               this.listLoading = false
-              this.$emit('next', taskId)
-              this.toTaskDetailPage(taskId)
+              this.toTaskListPage()
             } else {
               this.$message.error(res.msg)
               this.listLoading = false
@@ -130,10 +128,9 @@ export default {
       })
     },
 
-    toTaskDetailPage(id) {
+    toTaskListPage() {
       this.$router.push({
-        name: 'PIRDetail',
-        params: { id }
+        name: 'PrivateSearch'
       })
     }
   }

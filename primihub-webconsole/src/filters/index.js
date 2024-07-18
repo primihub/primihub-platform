@@ -20,7 +20,9 @@ const taskStatusFilter = (status) => {
     2: '执行中',
     3: '任务失败',
     4: '已取消',
-    5: '已删除'
+    5: '已删除',
+    6: '准备中',
+    7: '已就绪'
   }
   return statusMap[status]
 }
