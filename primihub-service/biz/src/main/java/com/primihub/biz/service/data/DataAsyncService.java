@@ -61,8 +61,7 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.primihub.biz.constant.DataConstant.PYTHON_GUEST_DATASET;
-import static com.primihub.biz.constant.DataConstant.PYTHON_LABEL_DATASET;
+import static com.primihub.biz.constant.DataConstant.*;
 
 /**
  * psi 异步调用实现
@@ -497,6 +496,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
+        map.put(PYTHON_CALCULATION_FIELD + "0", "null");
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model == null) {
@@ -515,6 +515,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
                     map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                    map.put(PYTHON_CALCULATION_FIELD + "1", "null");
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
             }
