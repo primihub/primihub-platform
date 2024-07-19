@@ -504,7 +504,7 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
-        List<DataFileFieldVo> labelDatasetFields = (List<DataFileFieldVo>)resourceMap.get(labelDataset).get("fieldList");
+        List<DataFileFieldVo> labelDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(labelDataset).get("fieldList")), DataFileFieldVo.class);
         if (CollectionUtils.isNotEmpty(labelDatasetFields)){
             List<String> collect = labelDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
             map.put("label_field0", collect.toArray());
@@ -527,7 +527,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
                     map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
-                    List<DataFileFieldVo> guestDatasetFields = (List<DataFileFieldVo>)resourceMap.get(guestDataset).get("fieldList");
+                    List<DataFileFieldVo> guestDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(guestDataset).get("fieldList")), DataFileFieldVo.class);
                     if (CollectionUtils.isNotEmpty(guestDatasetFields)){
                         List<String> collect = guestDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
                         map.put("label_field1", collect.toArray());
