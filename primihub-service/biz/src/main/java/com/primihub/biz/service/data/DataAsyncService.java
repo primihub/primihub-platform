@@ -44,6 +44,7 @@ import com.primihub.sdk.task.param.TaskPIRParam;
 import com.primihub.sdk.task.param.TaskPSIParam;
 import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -503,9 +504,10 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
-        String labelDatasetResourceColumnNameList = resourceMap.get(labelDataset).get("resourceColumnNameList").toString();
-        if (org.apache.commons.lang.StringUtils.isNotBlank(labelDatasetResourceColumnNameList)){
-            map.put(PYTHON_CALCULATION_FIELD + "0", Arrays.asList(labelDatasetResourceColumnNameList.split(",")));
+        List<DataFileFieldVo> labelDatasetFields = (List<DataFileFieldVo>)resourceMap.get(labelDataset).get("fieldList");
+        if (CollectionUtils.isNotEmpty(labelDatasetFields)){
+            List<String> collect = labelDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
+            map.put("label_field0", collect.toArray());
         }
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
@@ -525,9 +527,10 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
                     map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
-                    String guestResourceColumnNameList = resourceMap.get(guestDataset).get("resourceColumnNameList").toString();
-                    if (org.apache.commons.lang.StringUtils.isNotBlank(guestResourceColumnNameList)){
-                        map.put(PYTHON_CALCULATION_FIELD + "1", Arrays.asList(guestResourceColumnNameList.split(",")));
+                    List<DataFileFieldVo> guestDatasetFields = (List<DataFileFieldVo>)resourceMap.get(guestDataset).get("fieldList");
+                    if (CollectionUtils.isNotEmpty(guestDatasetFields)){
+                        List<String> collect = guestDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
+                        map.put("label_field1", collect.toArray());
                     }
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
