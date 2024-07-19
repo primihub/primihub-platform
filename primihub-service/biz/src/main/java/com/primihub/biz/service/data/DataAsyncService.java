@@ -503,13 +503,10 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
-        // todo 获取数据集字段
-        Map map1 = resourceMap.get(labelDataset);
-        /*resourceMap == null ? null : ObjectUtils.isEmpty(resourceMap.get("resourceColumnNameList")) ? null: resourceMap.get("resourceColumnNameList").toString();
-        if (org.apache.commons.lang.StringUtils.isNotBlank(resourceColumnNameList)){
-            modelProjectResourceVo.setFileHandleField();
+        String labelDatasetResourceColumnNameList = resourceMap.get(labelDataset).get("resourceColumnNameList").toString();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(labelDatasetResourceColumnNameList)){
+            map.put(PYTHON_CALCULATION_FIELD + "0", Arrays.asList(labelDatasetResourceColumnNameList.split(",")));
         }
-        map.put(PYTHON_CALCULATION_FIELD + "0", Arrays.asList(resourceColumnNameList.split(",")));*/
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model == null) {
@@ -528,8 +525,10 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
                     map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
-                    // todo 获取数据集字段
-                    map.put(PYTHON_CALCULATION_FIELD + "1", "null");
+                    String guestResourceColumnNameList = resourceMap.get(guestDataset).get("resourceColumnNameList").toString();
+                    if (org.apache.commons.lang.StringUtils.isNotBlank(guestResourceColumnNameList)){
+                        map.put(PYTHON_CALCULATION_FIELD + "1", Arrays.asList(guestResourceColumnNameList.split(",")));
+                    }
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
             }
