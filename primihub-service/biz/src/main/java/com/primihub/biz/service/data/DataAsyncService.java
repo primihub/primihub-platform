@@ -19,6 +19,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
+import com.primihub.biz.entity.data.vo.DataFileFieldVo;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -52,6 +53,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -483,6 +485,11 @@ public class DataAsyncService implements ApplicationContextAware {
             }
         }
         log.info("{}-{}", labelDataset, guestDataset);
+        List<String> resourceIds = new ArrayList<>();
+        resourceIds.add(labelDataset);
+        resourceIds.add(guestDataset);
+        Map<String, Map> resourceMap = otherBusinessesService.getResourceListMap(resourceIds);
+        log.info("[推理服务][相关数据集]-{}", resourceMap);
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(dataReasoning.getReasoningName());
@@ -496,7 +503,13 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
-        map.put(PYTHON_CALCULATION_FIELD + "0", "null");
+        // todo 获取数据集字段
+        Map map1 = resourceMap.get(labelDataset);
+        /*resourceMap == null ? null : ObjectUtils.isEmpty(resourceMap.get("resourceColumnNameList")) ? null: resourceMap.get("resourceColumnNameList").toString();
+        if (org.apache.commons.lang.StringUtils.isNotBlank(resourceColumnNameList)){
+            modelProjectResourceVo.setFileHandleField();
+        }
+        map.put(PYTHON_CALCULATION_FIELD + "0", Arrays.asList(resourceColumnNameList.split(",")));*/
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model == null) {
@@ -515,6 +528,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
                     map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                    // todo 获取数据集字段
                     map.put(PYTHON_CALCULATION_FIELD + "1", "null");
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
