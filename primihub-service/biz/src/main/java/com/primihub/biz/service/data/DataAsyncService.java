@@ -507,7 +507,7 @@ public class DataAsyncService implements ApplicationContextAware {
         List<DataFileFieldVo> labelDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(labelDataset).get("fieldList")), DataFileFieldVo.class);
         if (CollectionUtils.isNotEmpty(labelDatasetFields)){
             List<String> collect = labelDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
-            map.put("label_field0", collect.toArray());
+            map.put("label_field0", JSONObject.toJSONString(collect.toArray()));
         }
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
@@ -530,7 +530,7 @@ public class DataAsyncService implements ApplicationContextAware {
                     List<DataFileFieldVo> guestDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(guestDataset).get("fieldList")), DataFileFieldVo.class);
                     if (CollectionUtils.isNotEmpty(guestDatasetFields)){
                         List<String> collect = guestDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
-                        map.put("label_field1", collect.toArray());
+                        map.put("label_field1", JSONObject.toJSONString(collect.toArray()));
                     }
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
