@@ -2,14 +2,15 @@ package com.primihub.biz.service.data.pirphase1;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
-import com.primihub.biz.entity.data.po.lpy.DataCore;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.ScoreModel;
+import com.primihub.biz.entity.data.po.lpy.DataCore;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
-import com.primihub.biz.entity.data.vo.lpy.DataCoreVo;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
+import com.primihub.biz.entity.data.vo.lpy.DataCoreVo;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -66,16 +68,33 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
             if (withScoreMap.containsKey(key)) {
                 return;
             }
-//            RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel);
-            RemoteRespVo respVo = remoteClient.queryFromRemoteMock(value.get(0).getPhoneNum(), scoreModel);
-            if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+            if (
+                    value.stream().anyMatch(dataCore -> {
+                        return Objects.equals(dataCore.getPhoneNum(), RemoteConstant.UNDEFILED);
+                    })
+            ) {
                 DataCore dataCore = new DataCore();
                 dataCore.setIdNum(value.get(0).getIdNum());
-                dataCore.setPhoneNum(value.get(0).getPhoneNum());
+                dataCore.setPhoneNum(RemoteConstant.UNDEFILED);
                 dataCore.setScoreModelType(scoreModelType);
-                dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                dataCore.setScore(
+                        Double.valueOf(RemoteClient.getRandomScore())
+                );
                 dataCore.setY(value.get(0).getY());
                 dataCorePrimarydbRepository.saveDataCore(dataCore);
+                // if watermark, need not to call cmcc api
+            } else {
+                RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel.getScoreModelCode());
+//                RemoteRespVo respVo = remoteClient.queryFromRemoteMock(value.get(0).getPhoneNum(), scoreModel);
+                if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                    DataCore dataCore = new DataCore();
+                    dataCore.setIdNum(value.get(0).getIdNum());
+                    dataCore.setPhoneNum(value.get(0).getPhoneNum());
+                    dataCore.setScoreModelType(scoreModelType);
+                    dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                    dataCore.setY(value.get(0).getY());
+                    dataCorePrimarydbRepository.saveDataCore(dataCore);
+                }
             }
         });
 
@@ -101,6 +120,7 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
         log.info("==================== SUCCESS ====================");
         req.setTargetResourceId(dataResource.getResourceFusionId());
         req.setTaskState(TaskStateEnum.READY.getStateType());
+        // todo
         pirService.sendFinishPirTask(req);
 
     }

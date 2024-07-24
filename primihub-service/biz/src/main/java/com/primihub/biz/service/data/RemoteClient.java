@@ -42,7 +42,7 @@ public class RemoteClient {
     private ScoreModelRepository scoreModelRepository;
     public static final DecimalFormat format = new DecimalFormat("#.####");
 
-    public RemoteRespVo queryFromRemote(String phoneNum, ScoreModel scoreModel) {
+    public RemoteRespVo queryFromRemote(String phoneNum, String scoreModelCode) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.set(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE + ";charset=UTF-8");
@@ -57,7 +57,7 @@ public class RemoteClient {
         map.put(RemoteConstant.REQUEST, requestEncString);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(map, headers);
-        String url = RemoteConstant.REMOTE_SCORE_URL + scoreModel.getScoreModelCode();
+        String url = RemoteConstant.REMOTE_SCORE_URL + scoreModelCode;
         log.info("remote request body: {}", JSONObject.toJSONString(map));
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
         log.info("remote result: {}", JSONObject.toJSONString(respVo));
@@ -130,5 +130,10 @@ public class RemoteClient {
         }
         respVo.setHead(respHead);
         return respVo;
+    }
+
+    public static String getRandomScore() {
+        double random = RandomUtils.nextDouble(0.3, 1);
+        return format.format(random);
     }
 }

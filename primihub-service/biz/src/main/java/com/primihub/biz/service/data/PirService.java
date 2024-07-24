@@ -263,7 +263,6 @@ public class PirService {
      * @return
      */
     public BaseResultEntity processPirPhase1(DataPirCopyReq req) {
-        // todo 取消传输 dataPirKeyQueries
         log.info("processPirPhase1");
 
         String scoreModelType = req.getScoreModelType();
@@ -273,6 +272,7 @@ public class PirService {
         }
 
         req.setTaskState(TaskStateEnum.PREPARING.getStateType());
+        req.setDataPirKeyQueries(null);
         sendFinishPirTask(req);
 
         // futureTask
@@ -407,6 +407,7 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
         }
 
+        req.setTargetValueSet(null);
         for (SysOrgan organ : sysOrgans) {
             return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/finishPirTask", organ.getPublicKey());
         }

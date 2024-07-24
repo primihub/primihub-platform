@@ -1,7 +1,7 @@
 package com.primihub.sdk.config;
 
 public class LpyGrpcConfig {
-    private String address = "172.21.1.64";
+    private String address = "192.168.99.34";
     private Integer port = 50051;
 
     public String getAddress() {

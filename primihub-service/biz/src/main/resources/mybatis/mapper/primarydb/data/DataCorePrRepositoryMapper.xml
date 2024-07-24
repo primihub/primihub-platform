@@ -48,7 +48,7 @@
          is_del,
          create_date,
          update_date)
-        values (#{idNum}, #{phoneNum}, #{y}, #{score}, #{scoreModelType}, #{isDel}, now(), now())
+        values (#{idNum}, #{phoneNum}, #{y}, #{score}, #{scoreModelType}, 0, now(), now())
     </insert>
 
 </mapper>

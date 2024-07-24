@@ -37,4 +37,18 @@
         </foreach>
     </insert>
 
+    <insert id="saveImei" keyProperty="id" useGeneratedKeys="true"
+            parameterType="com.primihub.biz.entity.data.po.lpy.DataImei">
+        insert into data_imei
+        (imei,
+        y,
+        score,
+        score_model_type,
+        is_del,
+        create_date,
+        update_date)
+        values
+        (#{imei}, #{y}, #{score}, #{scoreModelType}, 0, now(), now())
+    </insert>
+
 </mapper>

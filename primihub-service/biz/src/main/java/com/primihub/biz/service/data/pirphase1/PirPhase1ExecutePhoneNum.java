@@ -5,22 +5,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.po.lpy.DataMobile;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
+import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.repository.primarydb.data.DataMobilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataMobileRepository;
+import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.ExamService;
 import com.primihub.biz.service.data.PirService;
+import com.primihub.biz.service.data.RemoteClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,6 +37,10 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
     private PirService pirService;
     @Autowired
     private ExamService examService;
+    @Autowired
+    private ScoreModelRepository scoreModelRepository;
+    @Autowired
+    private RemoteClient remoteClient;
 
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
@@ -54,7 +59,7 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
         Set<String> newSet = new HashSet<String>(CollectionUtils.subtract(rawSet, oldSet));
 
         // todo 这里要对接真实的接口
-        Set<String> strings = phoneClientService.filterHashSet(newSet, 0.8);
+        /*Set<String> strings = phoneClientService.filterHashSet(newSet, 0.8);
         Map<String, Double> filteredString = phoneClientService.generateScoreForKeySet(strings);
         List<DataMobile> newExistDataMobileList = filteredString.entrySet().stream().map(entry -> {
             DataMobile mobile = new DataMobile();
@@ -62,9 +67,22 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
             mobile.setScore(entry.getValue());
             mobile.setScoreModelType(req.getScoreModelType());
             return mobile;
-        }).collect(Collectors.toList());
-
-        dataMobilePrimarydbRepository.saveMobileList(newExistDataMobileList);
+        }).collect(Collectors.toList());*/
+        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(req.getScoreModelType());
+        List<DataMobile> newMobileSet = new ArrayList<>();
+        for (String mobile : newSet) {
+            RemoteRespVo respVo = remoteClient.queryFromRemote(mobile, scoreModel.getScoreModelCode());
+            if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                DataMobile dataMobile = new DataMobile();
+                dataMobile.setPhoneNum(mobile);
+                dataMobile.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                dataMobile.setScoreModelType(scoreModel.getScoreModelType());
+                newMobileSet.add(dataMobile);
+            }
+        }
+        if (CollectionUtils.isNotEmpty(newMobileSet)) {
+            dataMobilePrimarydbRepository.saveMobileList(newMobileSet);
+        }
 
         dataMobileSet = dataMobileRepository.selectMobileWithScore(req.getTargetValueSet(), req.getScoreModelType());
 

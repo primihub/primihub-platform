@@ -7,11 +7,12 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.lpy.DataImei;
 import com.primihub.biz.entity.data.req.DataExamReq;
+import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.data.vo.lpy.ImeiPsiVo;
 import com.primihub.biz.repository.primarydb.data.DataImeiPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataImeiRepository;
-import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.ExamService;
+import com.primihub.biz.service.data.RemoteClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,9 @@ public class ExamExecuteImei implements ExamExecute {
     @Autowired
     private DataImeiPrimarydbRepository imeiPrimaryDbRepository;
     @Autowired
-    private PhoneClientService phoneClientService;
-    @Autowired
     private ExamService examService;
+    @Autowired
+    private RemoteClient remoteClient;
 
     @Override
     public void processExam(DataExamReq req) {
@@ -52,18 +53,33 @@ public class ExamExecuteImei implements ExamExecute {
         // 先过滤出存在手机号的数据
         log.info("process exam query imei, count: {}", newSet.size());
 
-        Set<String> newExistSet = phoneClientService.filterHashSet(new HashSet<>(newSet), 0.8);
-        Map<String, Double> scoreMap = phoneClientService.generateScoreForKeySet(newExistSet);
+        // 预处理使用模型分
+        List<DataImei> newExistDataSet = new ArrayList<>();
+        for (String imei : newSet) {
+            RemoteRespVo respVo = remoteClient.queryFromRemote(imei, "AME000818");
+            if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                DataImei dataImei = new DataImei();
+                dataImei.setImei(imei);
+                dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get("yhhhwd_score"))));
+                dataImei.setY(dataImei.getY());
+                dataImei.setScoreModelType("yhhhwd_score");
+                imeiPrimaryDbRepository.saveImei(dataImei);
+                newExistDataSet.add(dataImei);
+            }
+        }
+        List<String> newExistSet = newExistDataSet.stream().map(DataImei::getImei).collect(Collectors.toList());
+//        Set<String> newExistSet = phoneClientService.filterHashSet(new HashSet<>(newSet), 0.8);
+//        Map<String, Double> scoreMap = phoneClientService.generateScoreForKeySet(newExistSet);
 
-        List<DataImei> newExistDataSet = scoreMap.entrySet().stream().map(entry -> {
+        /*List<DataImei> newExistDataSet = scoreMap.entrySet().stream().map(entry -> {
             DataImei po = new DataImei();
             po.setImei(entry.getKey());
             po.setScore(entry.getValue());
             po.setScoreModelType("truth_score");
             return po;
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList());*/
 
-        imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
+//        imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
 
         oldSet.addAll(newExistSet);
         Set<ImeiPsiVo> existResult = oldSet.stream().map(ImeiPsiVo::new).collect(Collectors.toSet());

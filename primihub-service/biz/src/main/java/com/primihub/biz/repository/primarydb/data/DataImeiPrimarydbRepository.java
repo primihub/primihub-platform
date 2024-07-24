@@ -11,4 +11,6 @@ import java.util.List;
 public interface DataImeiPrimarydbRepository {
 
     void saveImeiSet(@Param("list")List<DataImei> dataImeiList);
+
+    void saveImei(DataImei dataImei);
 }

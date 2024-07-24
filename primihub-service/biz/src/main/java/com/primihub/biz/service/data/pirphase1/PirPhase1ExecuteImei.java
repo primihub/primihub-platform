@@ -5,14 +5,16 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.po.lpy.DataImei;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
+import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.repository.primarydb.data.DataImeiPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataImeiRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
-import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.ExamService;
 import com.primihub.biz.service.data.PirService;
+import com.primihub.biz.service.data.RemoteClient;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,13 +31,15 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
     @Autowired
     private DataImeiPrimarydbRepository dataImeiPrimarydbRepository;
     @Autowired
-    private PhoneClientService phoneClientService;
-    @Autowired
     private ScoreModelRepository scoreModelRepository;
     @Autowired
     private PirService pirService;
     @Autowired
     private ExamService examService;
+    @Autowired
+    private RemoteClient remoteClient;
+    @Autowired
+    private DataImeiPrimarydbRepository imeiPrimaryDbRepository;
 
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
@@ -45,7 +49,7 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
         String scoreModelType = req.getScoreModelType();
 
         Set<DataImei> dataImeiSet = null;
-        if ("truth_score".equals(req.getScoreModelType())) {
+        if ("yhhhwd_score".equals(req.getScoreModelType())) {
             dataImeiSet = dataImeiRepository.selectImei(req.getTargetValueSet());
         } else {
             /*
@@ -59,15 +63,22 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             Collection<String> liDongNewSet = CollectionUtils.subtract(liDongSet, liDongOldSet);
 
             // todo 这里要对接真实的接口
-            Set<String> strings = phoneClientService.filterHashSet(new HashSet<>(liDongNewSet), 1.0);
-            Map<String, Double> stringDoubleMap = phoneClientService.generateScoreForKeySet(strings);
-            List<DataImei> liDongNewImeiList = stringDoubleMap.entrySet().stream().map(entry -> {
-                DataImei imei = new DataImei();
-                imei.setImei(entry.getKey());
-                imei.setScore(entry.getValue());
-                imei.setScoreModelType(req.getScoreModelType());
-                return imei;
-            }).collect(Collectors.toList());
+//            Set<String> strings = phoneClientService.filterHashSet(new HashSet<>(liDongNewSet), 1.0);
+//            Map<String, Double> stringDoubleMap = phoneClientService.generateScoreForKeySet(strings);
+
+            ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
+            List<DataImei> liDongNewImeiList = new ArrayList<>();
+            for (String imei : liDongNewSet) {
+                RemoteRespVo respVo = remoteClient.queryFromRemote(imei, scoreModel.getScoreModelCode());
+                if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                    DataImei dataImei = new DataImei();
+                    dataImei.setImei(imei);
+                    dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                    dataImei.setScoreModelType(scoreModelType);
+                    imeiPrimaryDbRepository.saveImei(dataImei);
+                    liDongNewImeiList.add(dataImei);
+                }
+            }
 
             dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
 
