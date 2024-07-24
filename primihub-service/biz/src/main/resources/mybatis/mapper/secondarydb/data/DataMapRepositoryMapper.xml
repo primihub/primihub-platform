@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.secondarydb.data.DataMapRepository">
+
+    <sql id="dataMapColumn">
+        id
+        ,
+        id_num idNum,
+        phone_num phoneNum
+    </sql>
+
+    <sql id="examResultColumn">
+        id_num idNum
+    </sql>
+
+    <select id="selectDataMap" resultType="com.primihub.biz.entity.data.po.lpy.DataMap">
+        select
+        <include refid="dataMapColumn"/>
+        from data_map
+        <if test="list != null and !list.isEmpty()">
+            where id_num in
+            <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectExamResultVo" resultType="com.primihub.biz.entity.data.vo.lpy.ExamResultVo">
+        select
+        <include refid="examResultColumn"/>
+        from data_map
+        <if test="list != null and !list.isEmpty()">
+            where id_num in
+            <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>

@@ -13,8 +13,12 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
-import com.primihub.biz.entity.data.po.*;
+import com.primihub.biz.entity.data.po.DataFileField;
+import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.DataResourceTag;
+import com.primihub.biz.entity.data.po.DataSource;
 import com.primihub.biz.entity.data.po.lpy.DataCore;
+import com.primihub.biz.entity.data.po.lpy.DataMap;
 import com.primihub.biz.entity.data.req.DataExamReq;
 import com.primihub.biz.entity.data.vo.DataFileFieldVo;
 import com.primihub.biz.entity.data.vo.DataResourceCsvVo;
@@ -23,9 +27,11 @@ import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
+import com.primihub.biz.repository.primarydb.data.DataMapPrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
+import com.primihub.biz.repository.secondarydb.data.DataMapRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.DataResourceService;
@@ -57,6 +63,8 @@ public class ExamExecuteIdNum implements ExamExecute {
     @Autowired
     private DataCorePrimarydbRepository dataCorePrimarydbRepository;
     @Autowired
+    private DataMapPrimarydbRepository dataMapPrimarydbRepository;
+    @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
     private SysFilePrimarydbRepository sysFilePrimarydbRepository;
@@ -74,6 +82,8 @@ public class ExamExecuteIdNum implements ExamExecute {
     private SysOrganSecondarydbRepository organSecondaryDbRepository;
     @Autowired
     private OtherBusinessesService otherBusinessesService;
+    @Autowired
+    private DataMapRepository dataMapRepository;
 
     /*
     rawSet
@@ -88,25 +98,30 @@ public class ExamExecuteIdNum implements ExamExecute {
         // rawSet
         Set<String> rawSet = req.getFieldValueSet();
 
-        // 已经存在的数据
-        Set<DataCore> oldDataCoreSet = dataCoreRepository.selectExistentDataCore(rawSet);
-        Set<String> oldSet = oldDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
-        Collection<String> noOldSet = CollectionUtils.subtract(rawSet, oldSet);
+        // 已经存在的数据，这个时候还没有模型分，所以用DataMap查询
+        /*
+        rawSet
+        oldMapSet, noMapSet
+        oldMapSet, newMapSet, stillNoMapSet
+        oldMapSet, newMapSet, waterMapSet , lastNoMapSet
+         */
+        Set<DataMap> dataMapSet = dataMapRepository.selectDataMap(rawSet);
+        Set<String> oldMapSet = dataMapSet.stream().map(DataMap::getIdNum).collect(Collectors.toSet());
+        Collection<String> noMapSet = CollectionUtils.subtract(rawSet, oldMapSet);
 
-        // 先过滤出存在手机号的数据
-        log.info("process exam query phoneNum, count: {}", noOldSet.size());
-        Map<String, String> phoneMap = phoneClientService.findSM3PhoneForSM3IdNum(new HashSet<String>(noOldSet));
-        Set<String> phoneSet = phoneMap.entrySet().stream().map(Map.Entry::getKey).collect(Collectors.toSet());
-        List<DataCore> phoneDataCoreSet = phoneMap.entrySet().stream().map(entry -> {
-            DataCore dataCore = new DataCore();
-            dataCore.setIdNum(entry.getKey());
-            dataCore.setPhoneNum(entry.getValue());
-            return dataCore;
-        }).collect(Collectors.toList());
+        // 旧数据中不存在数据，查询api
+        Map<String, String> newMapSet = phoneClientService.findSM3PhoneForSM3IdNum(new HashSet<>(noMapSet));
+        // newMap保存一下
+        Set<DataMap> newMapDataSet = newMapSet.entrySet().stream().map(entry -> {
+            return new DataMap(entry.getKey(), entry.getValue());
+        }).collect(Collectors.toSet());
+        dataMapPrimarydbRepository.saveDataMapList(newMapDataSet);
+        Set<String> newMapMapSet = newMapDataSet.stream().map(DataMap::getIdNum).collect(Collectors.toSet());
 
-        Collection<String> noPhoneSet = CollectionUtils.subtract(noOldSet, phoneSet);
+        // noMap过滤
+        Collection<String> stillNoMapSet = CollectionUtils.subtract(noMapSet, newMapMapSet);
 
-        List<String> noPhoneList = new ArrayList<>(noPhoneSet);
+        List<String> noPhoneList = new ArrayList<>(stillNoMapSet);
         int halfSize = noPhoneList.size() / 2;
         Set<String> waterSet = new HashSet<>();
 
@@ -119,19 +134,13 @@ public class ExamExecuteIdNum implements ExamExecute {
             noPhoneList.remove(randomIndex);
         }
 
-        Set<DataCore> waterDataCoreSet = waterSet.stream().map(idNum -> {
-            DataCore dataCore = new DataCore();
-            dataCore.setIdNum(idNum);
-            dataCore.setPhoneNum(RemoteConstant.UNDEFILED);
-            return dataCore;
+        Set<DataMap> waterMapSet = waterSet.stream().map(idNum -> {
+            DataMap dataMap = new DataMap(idNum, RemoteConstant.UNDEFILED);
+            return dataMap;
         }).collect(Collectors.toSet());
+        dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
 
-        phoneDataCoreSet.addAll(waterDataCoreSet);
-        if (CollectionUtils.isNotEmpty(phoneDataCoreSet)) {
-            dataCorePrimarydbRepository.saveDataCoreSet(phoneDataCoreSet);
-        }
-
-        Set<ExamResultVo> allDataCoreSet = dataCoreRepository.selectExamResultVo(rawSet);
+        Set<ExamResultVo> allDataCoreSet = dataMapRepository.selectIdNumExamResultVo(rawSet);
 
         String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);

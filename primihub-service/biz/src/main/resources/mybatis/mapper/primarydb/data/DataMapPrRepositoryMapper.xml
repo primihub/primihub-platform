@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.primihub.biz.repository.primarydb.data.DataMapPrimarydbRepository">
+
+    <sql id="dataMapColumn">
+        id
+        ,
+        id_num idNum,
+        phone_num phoneNum
+    </sql>
+
+    <insert id="saveDataMapList" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.lpy.DataMap">
+        insert into data_map
+        (id,
+        id_num,
+        phone_num
+        )
+        values
+        <foreach collection="list" index="index" item="item" separator=",">
+            (
+            #{item.id}, #{item.idNum}, #{item.phoneNum}
+            )
+        </foreach>
+    </insert>
+
+</mapper>

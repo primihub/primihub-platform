@@ -8,11 +8,13 @@ import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.po.lpy.DataCore;
+import com.primihub.biz.entity.data.po.lpy.DataMap;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.data.vo.lpy.DataCoreVo;
 import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
+import com.primihub.biz.repository.secondarydb.data.DataMapRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
 import com.primihub.biz.service.data.ExamService;
 import com.primihub.biz.service.data.PirService;
@@ -22,11 +24,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,59 +42,53 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
     private ExamService examService;
     @Autowired
     private PirService pirService;
+    @Autowired
+    private DataMapRepository dataMapRepository;
 
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
         log.info("processPirPhase1: {}", req.getTargetField());
         log.info(JSON.toJSONString(req));
 
+        /*
+        rawSet: PSI的结果
+        oldScore, noScore
+        oldScore, newScore, fail
+         */
+
         Set<String> targetValueSet = req.getTargetValueSet();
-        // 在这里得区分
-        Set<DataCore> withPhone = dataCoreRepository.selectExistentDataCore(targetValueSet);
-        // 在这里不用管
-        Set<DataCore> withScore = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, req.getScoreModelType());
-
-        Map<String, List<DataCore>> withPhoneGroup = withPhone.stream()
-                .collect(Collectors.groupingBy(DataCore::getIdNum));
-
-        Map<String, DataCore> withScoreMap = withScore.stream().collect(Collectors.toMap(DataCore::getIdNum, Function.identity()));
-
         String scoreModelType = req.getScoreModelType();
-        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
 
-        withPhoneGroup.forEach((key, value) -> {
-            if (withScoreMap.containsKey(key)) {
-                return;
-            }
-            if (
-                    value.stream().anyMatch(dataCore -> {
-                        return Objects.equals(dataCore.getPhoneNum(), RemoteConstant.UNDEFILED);
-                    })
-            ) {
-                DataCore dataCore = new DataCore();
-                dataCore.setIdNum(value.get(0).getIdNum());
-                dataCore.setPhoneNum(RemoteConstant.UNDEFILED);
-                dataCore.setScoreModelType(scoreModelType);
-                dataCore.setScore(
-                        Double.valueOf(RemoteClient.getRandomScore())
-                );
-                dataCore.setY(value.get(0).getY());
-                dataCorePrimarydbRepository.saveDataCore(dataCore);
-                // if watermark, need not to call cmcc api
+        // 查询idNum存在且有分值的记录
+        Set<DataCore> oldScoreDataCoreSet = dataCoreRepository.selectDataCoreFromIdNum(targetValueSet, scoreModelType);
+        Set<String> oldScoreSet = oldScoreDataCoreSet.stream().map(DataCore::getIdNum).collect(Collectors.toSet());
+
+        // 没有模型对应分值记录需要重新查询
+        Collection noScore = CollectionUtils.subtract(targetValueSet, oldScoreSet);
+        Set<DataMap> noScoreDataMapSet = dataMapRepository.selectDataMap(new HashSet<String>(noScore));
+
+        List<DataCore> newScoreDataScoreList = new ArrayList<>();
+        ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
+        double score;
+        for (DataMap dataMap : noScoreDataMapSet) {
+            if (Objects.equals(dataMap.getPhoneNum(), RemoteConstant.UNDEFILED)) {
+                score = Double.parseDouble(RemoteClient.getRandomScore());
             } else {
-                RemoteRespVo respVo = remoteClient.queryFromRemote(value.get(0).getPhoneNum(), scoreModel.getScoreModelCode());
-//                RemoteRespVo respVo = remoteClient.queryFromRemoteMock(value.get(0).getPhoneNum(), scoreModel);
+                RemoteRespVo respVo = remoteClient.queryFromRemote(dataMap.getPhoneNum(), scoreModel.getScoreModelCode());
                 if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
-                    DataCore dataCore = new DataCore();
-                    dataCore.setIdNum(value.get(0).getIdNum());
-                    dataCore.setPhoneNum(value.get(0).getPhoneNum());
-                    dataCore.setScoreModelType(scoreModelType);
-                    dataCore.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
-                    dataCore.setY(value.get(0).getY());
-                    dataCorePrimarydbRepository.saveDataCore(dataCore);
+                    score = Double.parseDouble((String) (respVo.getRespBody().get(scoreModel.getScoreKey())));
+                } else {
+                    continue;
                 }
             }
-        });
+            DataCore dataCore = new DataCore();
+            dataCore.setIdNum(dataMap.getIdNum());
+            dataCore.setPhoneNum(dataMap.getPhoneNum());
+            dataCore.setScoreModelType(scoreModelType);
+            dataCore.setScore(score);
+            newScoreDataScoreList.add(dataCore);
+        }
+        dataCorePrimarydbRepository.saveDataCoreSet(newScoreDataScoreList);
 
         Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
         if (CollectionUtils.isEmpty(voSet)) {
@@ -120,7 +112,7 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
         log.info("==================== SUCCESS ====================");
         req.setTargetResourceId(dataResource.getResourceFusionId());
         req.setTaskState(TaskStateEnum.READY.getStateType());
-        // todo
+
         pirService.sendFinishPirTask(req);
 
     }
