@@ -4,12 +4,13 @@ import com.primihub.biz.entity.data.base.DataPirKeyQuery;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
-public class DataPirCopyReq {
+public class DataPirCopyReq implements Serializable {
     /** 营销分模型 */
     private String scoreModelType;
     private String taskName;

@@ -1,7 +1,6 @@
 package com.primihub.biz.service.data;
 
 
-import com.alibaba.fastjson.JSON;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.OrganConfiguration;
 import com.primihub.biz.convert.DataTaskConvert;
@@ -34,6 +33,7 @@ import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.snowflake.SnowflakeId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -407,9 +407,13 @@ public class PirService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL, "organ");
         }
 
+        // deep copy
+        Set<String> targetSet = req.getTargetValueSet();
         req.setTargetValueSet(null);
+        DataPirCopyReq reqCopy = SerializationUtils.clone(req);
+        req.setTargetValueSet(targetSet);
         for (SysOrgan organ : sysOrgans) {
-            return otherBusinessesService.syncGatewayApiData(req, organ.getOrganGateway() + "/share/shareData/finishPirTask", organ.getPublicKey());
+            return otherBusinessesService.syncGatewayApiData(reqCopy, organ.getOrganGateway() + "/share/shareData/finishPirTask", organ.getPublicKey());
         }
         return null;
     }

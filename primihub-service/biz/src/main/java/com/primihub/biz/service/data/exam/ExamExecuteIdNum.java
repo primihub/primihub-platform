@@ -193,7 +193,7 @@ public class ExamExecuteIdNum implements ExamExecute {
 
         // resourceFilePreview
         BaseResultEntity resultEntity = dataResourceService.getDataResourceCsvVo(sysFile);
-        log.info("resultEntity: {}", JSON.toJSONString(resultEntity));
+        log.info("resultEntity");
         DataResourceCsvVo csvVo = (DataResourceCsvVo) resultEntity.getResult();
 
         try {
