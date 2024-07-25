@@ -115,7 +115,9 @@ public class ExamExecuteIdNum implements ExamExecute {
         Set<DataMap> newMapDataSet = newMapSet.entrySet().stream().map(entry -> {
             return new DataMap(entry.getKey(), entry.getValue());
         }).collect(Collectors.toSet());
-        dataMapPrimarydbRepository.saveDataMapList(newMapDataSet);
+        if (CollectionUtils.isNotEmpty(newMapDataSet)) {
+            dataMapPrimarydbRepository.saveDataMapList(newMapDataSet);
+        }
         Set<String> newMapMapSet = newMapDataSet.stream().map(DataMap::getIdNum).collect(Collectors.toSet());
 
         // noMap过滤

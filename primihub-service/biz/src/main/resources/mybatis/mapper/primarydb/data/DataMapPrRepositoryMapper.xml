@@ -11,14 +11,14 @@
 
     <insert id="saveDataMapList" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.lpy.DataMap">
         insert into data_map
-        (id,
+        (
         id_num,
         phone_num
         )
         values
         <foreach collection="list" index="index" item="item" separator=",">
             (
-            #{item.id}, #{item.idNum}, #{item.phoneNum}
+            #{item.idNum}, #{item.phoneNum}
             )
         </foreach>
     </insert>
