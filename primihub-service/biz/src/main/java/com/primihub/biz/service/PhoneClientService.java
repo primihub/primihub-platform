@@ -26,7 +26,7 @@ public class PhoneClientService {
                 baseConfiguration.getLpyGrpcConfig().getPort());
         SM3DictClient sm3DictClient = new SM3DictClient(baseConfiguration.getLpyGrpcConfig().getAddress(), baseConfiguration.getLpyGrpcConfig().getPort());
         List<SM3Dict> replyList = sm3DictClient.commit(fieldValueSet);
-        return replyList.stream().collect(Collectors.toMap(SM3Dict::getIdNum, SM3Dict::getPhoneNum));
+        return replyList.stream().collect(Collectors.toMap(SM3Dict::getIdNum, SM3Dict::getPhoneNum, (oldDict, newDict) -> oldDict));
     }
 
     public <T> Set<T> filterHashSet(Set<T> originalSet, double filterPercentage) {
