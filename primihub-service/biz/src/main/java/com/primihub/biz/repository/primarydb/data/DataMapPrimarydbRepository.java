@@ -10,5 +10,5 @@ import java.util.Set;
 
 @Repository
 public interface DataMapPrimarydbRepository {
-    void saveDataMapList(@Param("list") Set<DataMap> newMapDataSet);
+    void saveDataMapList(@Param("list") List<DataMap> newMapDataSet);
 }

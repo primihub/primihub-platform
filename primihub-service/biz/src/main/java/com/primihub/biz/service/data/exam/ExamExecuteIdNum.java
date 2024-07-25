@@ -17,7 +17,6 @@ import com.primihub.biz.entity.data.po.DataFileField;
 import com.primihub.biz.entity.data.po.DataResource;
 import com.primihub.biz.entity.data.po.DataResourceTag;
 import com.primihub.biz.entity.data.po.DataSource;
-import com.primihub.biz.entity.data.po.lpy.DataCore;
 import com.primihub.biz.entity.data.po.lpy.DataMap;
 import com.primihub.biz.entity.data.req.DataExamReq;
 import com.primihub.biz.entity.data.vo.DataFileFieldVo;
@@ -112,9 +111,9 @@ public class ExamExecuteIdNum implements ExamExecute {
         // 旧数据中不存在数据，查询api
         Map<String, String> newMapSet = phoneClientService.findSM3PhoneForSM3IdNum(new HashSet<>(noMapSet));
         // newMap保存一下
-        Set<DataMap> newMapDataSet = newMapSet.entrySet().stream().map(entry -> {
+        List<DataMap> newMapDataSet = newMapSet.entrySet().stream().map(entry -> {
             return new DataMap(entry.getKey(), entry.getValue());
-        }).collect(Collectors.toSet());
+        }).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(newMapDataSet)) {
             dataMapPrimarydbRepository.saveDataMapList(newMapDataSet);
         }
@@ -136,10 +135,8 @@ public class ExamExecuteIdNum implements ExamExecute {
             noPhoneList.remove(randomIndex);
         }
 
-        Set<DataMap> waterMapSet = waterSet.stream().map(idNum -> {
-            DataMap dataMap = new DataMap(idNum, RemoteConstant.UNDEFILED);
-            return dataMap;
-        }).collect(Collectors.toSet());
+        List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFILED))
+                .collect(Collectors.toList());
         dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
 
         Set<ExamResultVo> allDataCoreSet = dataMapRepository.selectIdNumExamResultVo(rawSet);
