@@ -9,10 +9,10 @@ import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.po.lpy.DataMobile;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
+import com.primihub.biz.entity.data.vo.lpy.MobilePirVo;
 import com.primihub.biz.repository.primarydb.data.DataMobilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataMobileRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
-import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.ExamService;
 import com.primihub.biz.service.data.PirService;
 import com.primihub.biz.service.data.RemoteClient;
@@ -32,8 +32,6 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
     @Autowired
     private DataMobilePrimarydbRepository dataMobilePrimarydbRepository;
     @Autowired
-    private PhoneClientService phoneClientService;
-    @Autowired
     private PirService pirService;
     @Autowired
     private ExamService examService;
@@ -45,7 +43,6 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
         log.info("process exam future task : phoneNum");
-//        log.info(JSON.toJSONString(req));
 
         Set<String> rawSet = req.getTargetValueSet();
         Set<DataMobile> dataMobileSet = null;
@@ -58,16 +55,6 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
         Set<String> oldSet = oldDataMobileSet.stream().map(DataMobile::getPhoneNum).collect(Collectors.toSet());
         Set<String> newSet = new HashSet<String>(CollectionUtils.subtract(rawSet, oldSet));
 
-        // todo 这里要对接真实的接口
-        /*Set<String> strings = phoneClientService.filterHashSet(newSet, 0.8);
-        Map<String, Double> filteredString = phoneClientService.generateScoreForKeySet(strings);
-        List<DataMobile> newExistDataMobileList = filteredString.entrySet().stream().map(entry -> {
-            DataMobile mobile = new DataMobile();
-            mobile.setPhoneNum(entry.getKey());
-            mobile.setScore(entry.getValue());
-            mobile.setScoreModelType(req.getScoreModelType());
-            return mobile;
-        }).collect(Collectors.toList());*/
         ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(req.getScoreModelType());
         List<DataMobile> newMobileSet = new ArrayList<>();
         for (String mobile : newSet) {
@@ -94,8 +81,10 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
             pirService.sendFinishPirTask(req);
             return;
         }
+
+        Set<MobilePirVo> collect = dataMobileSet.stream().map(MobilePirVo::new).collect(Collectors.toSet());
         // 成功后开始生成文件
-        String jsonArrayStr = JSON.toJSONString(dataMobileSet);
+        String jsonArrayStr = JSON.toJSONString(collect);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
         // 生成数据源
         String resourceName = new StringBuffer()
