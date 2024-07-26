@@ -79,8 +79,9 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
                     liDongNewImeiList.add(dataImei);
                 }
             }
-
-            dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
+            if (CollectionUtils.isNotEmpty(liDongNewImeiList)) {
+                dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
+            }
 
             dataImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), req.getScoreModelType());
         }

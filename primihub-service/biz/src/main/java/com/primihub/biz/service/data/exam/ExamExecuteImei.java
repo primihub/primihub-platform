@@ -66,25 +66,14 @@ public class ExamExecuteImei implements ExamExecute {
                 newExistDataSet.add(dataImei);
             }
         }
-        // todo
-        List<String> newExistSet = newExistDataSet.stream().map(DataImei::getImei).collect(Collectors.toList());
-        imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
 
+        if (CollectionUtils.isNotEmpty(newExistDataSet)) {
+            List<String> newExistSet = newExistDataSet.stream().map(DataImei::getImei).collect(Collectors.toList());
+            imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
+            oldSet.addAll(newExistSet);
+        }
 
-
-        /*List<DataImei> newExistDataSet = scoreMap.entrySet().stream().map(entry -> {
-            DataImei po = new DataImei();
-            po.setImei(entry.getKey());
-            po.setScore(entry.getValue());
-            po.setScoreModelType("truth_score");
-            return po;
-        }).collect(Collectors.toList());*/
-
-
-        oldSet.addAll(newExistSet);
-        Set<ImeiPsiVo> existResult = oldSet.stream().map(imei -> {
-            return new ImeiPsiVo(imei);
-        }).collect(Collectors.toSet());
+        Set<ImeiPsiVo> existResult = oldSet.stream().map(ImeiPsiVo::new).collect(Collectors.toSet());
 
         String jsonArrayStr = JSON.toJSONString(existResult);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
