@@ -42,6 +42,7 @@ public class RemoteClient {
     private ScoreModelRepository scoreModelRepository;
     public static final DecimalFormat format = new DecimalFormat("#.####");
 
+    /** 输入都是 SM3加密后的 */
     public RemoteRespVo queryFromRemote(String phoneNum, String scoreModelCode) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

@@ -11,4 +11,6 @@ public interface DataImeiRepository {
     Set<DataImei> selectImei(@Param("list") Set<String> set);
 
     Set<DataImei> selectImeiWithScore(@Param("list") Set<String> liDongSet, @Param("scoreType") String scoreType);
+
+    Set<DataImei> selectImeiPirResultVo(Set<String> targetValueSet, String scoreModelType);
 }

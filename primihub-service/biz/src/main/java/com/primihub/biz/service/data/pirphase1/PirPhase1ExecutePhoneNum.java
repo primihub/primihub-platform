@@ -45,7 +45,7 @@ public class PirPhase1ExecutePhoneNum implements PirPhase1Execute {
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
         log.info("process exam future task : phoneNum");
-        log.info(JSON.toJSONString(req));
+//        log.info(JSON.toJSONString(req));
 
         Set<String> rawSet = req.getTargetValueSet();
         Set<DataMobile> dataMobileSet = null;

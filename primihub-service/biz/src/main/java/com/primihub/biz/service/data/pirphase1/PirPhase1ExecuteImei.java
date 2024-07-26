@@ -9,6 +9,7 @@ import com.primihub.biz.entity.data.po.ScoreModel;
 import com.primihub.biz.entity.data.po.lpy.DataImei;
 import com.primihub.biz.entity.data.req.DataPirCopyReq;
 import com.primihub.biz.entity.data.vo.RemoteRespVo;
+import com.primihub.biz.entity.data.vo.lpy.ImeiPirVo;
 import com.primihub.biz.repository.primarydb.data.DataImeiPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataImeiRepository;
 import com.primihub.biz.repository.secondarydb.data.ScoreModelRepository;
@@ -75,7 +76,6 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
                     dataImei.setImei(imei);
                     dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
                     dataImei.setScoreModelType(scoreModelType);
-                    imeiPrimaryDbRepository.saveImei(dataImei);
                     liDongNewImeiList.add(dataImei);
                 }
             }
@@ -93,8 +93,11 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             pirService.sendFinishPirTask(req);
             return;
         }
+
+        Set<ImeiPirVo> collect = dataImeiSet.stream().map(ImeiPirVo::new).collect(Collectors.toSet());
+
         // 成功后开始生成文件
-        String jsonArrayStr = JSON.toJSONString(dataImeiSet);
+        String jsonArrayStr = JSON.toJSONString(collect);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
         // 生成数据源
         String resourceName = new StringBuffer()

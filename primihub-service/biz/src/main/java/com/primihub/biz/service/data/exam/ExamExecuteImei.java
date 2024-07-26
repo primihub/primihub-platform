@@ -63,13 +63,14 @@ public class ExamExecuteImei implements ExamExecute {
                 dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get("yhhhwd_score"))));
                 dataImei.setY(dataImei.getY());
                 dataImei.setScoreModelType("yhhhwd_score");
-                imeiPrimaryDbRepository.saveImei(dataImei);
                 newExistDataSet.add(dataImei);
             }
         }
+        // todo
         List<String> newExistSet = newExistDataSet.stream().map(DataImei::getImei).collect(Collectors.toList());
-//        Set<String> newExistSet = phoneClientService.filterHashSet(new HashSet<>(newSet), 0.8);
-//        Map<String, Double> scoreMap = phoneClientService.generateScoreForKeySet(newExistSet);
+        imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
+
+
 
         /*List<DataImei> newExistDataSet = scoreMap.entrySet().stream().map(entry -> {
             DataImei po = new DataImei();
@@ -79,25 +80,32 @@ public class ExamExecuteImei implements ExamExecute {
             return po;
         }).collect(Collectors.toList());*/
 
-//        imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
 
         oldSet.addAll(newExistSet);
-        Set<ImeiPsiVo> existResult = oldSet.stream().map(ImeiPsiVo::new).collect(Collectors.toSet());
+        Set<ImeiPsiVo> existResult = oldSet.stream().map(imei -> {
+            return new ImeiPsiVo(imei);
+        }).collect(Collectors.toSet());
 
         String jsonArrayStr = JSON.toJSONString(existResult);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
-        // 生成数据源
-        String resourceName = "预处理生成资源" + SysConstant.HYPHEN_DELIMITER + req.getTaskId();
-        DataResource dataResource = examService.generateTargetResource(maps, resourceName);
-        if (dataResource == null) {
+        if (CollectionUtils.isEmpty(maps)) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             examService.sendEndExamTask(req);
             log.info("====================== FAIL");
         } else {
-            req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-            req.setTargetResourceId(dataResource.getResourceFusionId());
-            examService.sendEndExamTask(req);
-            log.info("====================== SUCCESS");
+            // 生成数据源
+            String resourceName = "预处理生成资源" + SysConstant.HYPHEN_DELIMITER + req.getTaskId();
+            DataResource dataResource = examService.generateTargetResource(maps, resourceName);
+            if (dataResource == null) {
+                req.setTaskState(TaskStateEnum.FAIL.getStateType());
+                examService.sendEndExamTask(req);
+                log.info("====================== FAIL");
+            } else {
+                req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                req.setTargetResourceId(dataResource.getResourceFusionId());
+                examService.sendEndExamTask(req);
+                log.info("====================== SUCCESS");
+            }
         }
     }
 }
