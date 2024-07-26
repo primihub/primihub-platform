@@ -11,7 +11,7 @@
 		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
-        "psi": ${psiType!"KKRT"},
+		"psi": ${psiType!"KKRT"},
 		"learning_rate": ${learningRate!1},
 		"alpha": ${alpha!0.0001},
 		"epoch": ${epoch!10},
