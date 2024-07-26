@@ -61,8 +61,8 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     @Override
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         // 调整 数据对齐的顺序 先判断有没有新的数据集，然后再进行数据对齐操作
-        //BaseResultEntity baseResultEntity = runPsi(req, taskReq);
-        BaseResultEntity baseResultEntity = getDataAlignDetail(req, taskReq);
+        BaseResultEntity baseResultEntity = runPsi(req, taskReq);
+        //BaseResultEntity baseResultEntity = getDataAlignDetail(req, taskReq);
         if (baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
             runAssemblyData((Map<String, ModelEntity>) baseResultEntity.getResult(), req, taskReq);
         } else {
