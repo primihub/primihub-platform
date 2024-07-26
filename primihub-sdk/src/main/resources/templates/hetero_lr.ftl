@@ -11,9 +11,8 @@
 		"method": "${encryption!"Plaintext"}",
 		"process": "train",
 		"task_name": "VFL_logistic_regression_plaintext_train",
-        "psi": null,
+        "psi": ${psiType!"KKRT"},
 		"learning_rate": ${learningRate!1},
-		"psi": null,
 		"alpha": ${alpha!0.0001},
 		"epoch": ${epoch!10},
 		"shuffle_seed":${shuffleSeed!0},
@@ -24,7 +23,7 @@
 		"Bob": {
 			"data_set": "${label_dataset}",
 			"selected_column": ${label_field0},
-			"id": "id",
+			"id": "${label_id!"id"}",
 			"label": "y",
 			"model_path": "${hostModelFileName}",
 			"metric_path": "${indicatorFileName}"
@@ -32,7 +31,7 @@
 		"Charlie": {
 			"data_set": "${guest_dataset}",
 			"selected_column": ${label_field1},
-			"id": "id",
+			"id": "${guest_id!"id"}",
 			"model_path": "${guestModelFileName}"
 		},
 		"Alice": {

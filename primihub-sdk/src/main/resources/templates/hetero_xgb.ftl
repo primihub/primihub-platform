@@ -8,7 +8,7 @@
     "common_params": {
         "model": "HeteroXGB",
         "task_name": "train",
-        "psi": null,
+        "psi": ${psiType!"KKRT"},
         "num_tree": ${numTree!5},
         "max_depth": ${maxDepth!5},
         "reg_lambda": ${regLambda!1},
@@ -33,7 +33,7 @@
     "role_params": {
         "Bob": {
             "data_set": "${label_dataset}",
-            "id": "id",
+            "id": "${label_id!"id"}",
             "secure_bits": 112,
             "selected_column": ${label_field0},
             "objective": "linear",
@@ -45,7 +45,7 @@
         },
         "Charlie": {
             "data_set": "${guest_dataset}",
-            "id": "id",
+            "id": "${guest_id!"id"}",
             "model_path": "${guestModelFileName}",
             "selected_column": ${label_field1},
             "lookup_table": "${guestLookupTable}",
