@@ -6,7 +6,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ExamEnum {
-    ID_NUM(RemoteConstant.INPUT_FIELD_ID_NUM, "examExecuteIdNum");
+    ID_NUM(RemoteConstant.INPUT_FIELD_ID_NUM, "examExecuteIdNum"),
+    IMEI(RemoteConstant.INPUT_FIELD_IMEI, "examExecuteImei"),
+    PHONE_NUM(RemoteConstant.INPUT_FIELD_PHONE, "examExecutePhoneNum"),
+    ;
     private String targetValue;
     private String executeService;
 

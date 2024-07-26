@@ -170,6 +170,7 @@ public class ExamService {
 
         // resourceFilePreview
         BaseResultEntity resultEntity = dataResourceService.getDataResourceCsvVo(sysFile);
+        // 这里最多50行，所以不用考虑传输和日志消耗
         log.info("resultEntity: {}", JSON.toJSONString(resultEntity));
         DataResourceCsvVo csvVo = (DataResourceCsvVo) resultEntity.getResult();
 

@@ -58,9 +58,9 @@ public class RemoteClient {
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(map, headers);
         String url = RemoteConstant.REMOTE_SCORE_URL + scoreModelCode;
-        log.info("remote request body: {}", JSONObject.toJSONString(map));
+//        log.info("remote request body: {}", JSONObject.toJSONString(map));
         RemoteRespVo respVo = restTemplate.postForObject(url, request, RemoteRespVo.class);
-        log.info("remote result: {}", JSONObject.toJSONString(respVo));
+//        log.info("remote result: {}", JSONObject.toJSONString(respVo));
         if (Objects.nonNull(respVo) && Objects.equals(respVo.getHead().getResult(), "Y")
                 && StringUtils.isNotBlank(respVo.getResponse())) {
             String jsonResponse = null;
