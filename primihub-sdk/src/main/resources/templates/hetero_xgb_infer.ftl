@@ -8,7 +8,7 @@
 	"common_params": {
 		"model": "HeteroXGBInfer",
 		"task_name": "predict",
-		"psi": ${psiType!"KKRT"},
+		"psi": "${psiType!"KKRT"}",
 		"metric_path": "${indicatorFileName}",
 		"model_pred": "${predictFileName}"
 	},

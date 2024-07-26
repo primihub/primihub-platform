@@ -8,7 +8,7 @@
 	"common_params": {
 		"model": "${model}",
 		"process": "predict",
-		"psi": ${psiType!"KKRT"},
+		"psi": "${psiType!"KKRT"}",
 		"task_name": "VFL_logistic_regression_predict"
 	},
 	"role_params": {
