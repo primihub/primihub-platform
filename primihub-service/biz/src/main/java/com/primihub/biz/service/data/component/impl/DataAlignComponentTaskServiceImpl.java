@@ -54,21 +54,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
 
     @Override
     public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
-        BaseResultEntity baseResultEntity = componentTypeVerification(req, componentsConfiguration.getModelComponents(), taskReq);
-        if (baseResultEntity.getCode() != 0) {
-            return baseResultEntity;
-        }
-        String labelResourceId = (String) taskReq.getFreemarkerMap().getOrDefault(DataConstant.PYTHON_LABEL_DATASET, StringUtils.EMPTY);
-        String guestResourceId = (String) taskReq.getFreemarkerMap().getOrDefault(DataConstant.PYTHON_GUEST_DATASET, StringUtils.EMPTY);
-        if (StringUtils.isBlank(labelResourceId)) {
-            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
-        }
-        if (StringUtils.isBlank(guestResourceId)) {
-            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
-            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
-        }
-        return baseResultEntity;
+        return componentTypeVerification(req, componentsConfiguration.getModelComponents(), taskReq);
     }
 
 
@@ -453,6 +439,14 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     public BaseResultEntity getDataAlignDetail(DataComponentReq req, ComponentTaskReq taskReq) {
         String labelResourceId = (String) taskReq.getFreemarkerMap().getOrDefault(DataConstant.PYTHON_LABEL_DATASET, StringUtils.EMPTY);
         String guestResourceId = (String) taskReq.getFreemarkerMap().getOrDefault(DataConstant.PYTHON_GUEST_DATASET, StringUtils.EMPTY);
+        if (StringUtils.isBlank(labelResourceId)) {
+            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
+        }
+        if (StringUtils.isBlank(guestResourceId)) {
+            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
+        }
         Map<String, String> fusionResourceMap = taskReq.getFusionResourceList()
                 .stream().collect(Collectors.toMap(fMap -> fMap.get("resourceId").toString(), fMap -> fMap.getOrDefault("resourceColumnNameList", "").toString()));
 
