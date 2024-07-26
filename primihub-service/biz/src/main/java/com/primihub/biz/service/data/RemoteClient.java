@@ -40,7 +40,7 @@ public class RemoteClient {
     private ScoreModelPrRepository scoreModelPrRepository;
     @Autowired
     private ScoreModelRepository scoreModelRepository;
-    public static final DecimalFormat format = new DecimalFormat("#.####");
+    public static final DecimalFormat format = new DecimalFormat("#.###");
 
     /** 输入都是 SM3加密后的 */
     public RemoteRespVo queryFromRemote(String phoneNum, String scoreModelCode) {
@@ -134,7 +134,7 @@ public class RemoteClient {
     }
 
     public static String getRandomScore() {
-        double random = RandomUtils.nextDouble(0.3, 1);
+        double random = RandomUtils.nextDouble(0.3, 0.7);
         return format.format(random);
     }
 }
