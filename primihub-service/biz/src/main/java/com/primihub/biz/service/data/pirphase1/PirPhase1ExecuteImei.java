@@ -51,7 +51,7 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
 
         Set<DataImei> dataImeiSet = null;
         if ("yhhhwd_score".equals(req.getScoreModelType())) {
-            dataImeiSet = dataImeiRepository.selectImei(req.getTargetValueSet());
+            dataImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), scoreModelType);
         } else {
             /*
             liDong non
@@ -83,7 +83,7 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
                 dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
             }
 
-            dataImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), req.getScoreModelType());
+            dataImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), scoreModelType);
         }
 
         if (CollectionUtils.isEmpty(dataImeiSet)) {
