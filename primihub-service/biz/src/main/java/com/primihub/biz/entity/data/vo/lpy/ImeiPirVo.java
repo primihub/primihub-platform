@@ -25,6 +25,8 @@ public class ImeiPirVo {
     }
 
     public ImeiPirVo(DataImei imei) {
-        new ImeiPirVo(imei.getImei(), String.valueOf(imei.getScore()), imei.getScoreModelType());
+        this.imei = imei.getImei();
+        this.score= String.valueOf(imei.getScore());
+        this.scoreModelType= imei.getScoreModelType();
     }
 }
