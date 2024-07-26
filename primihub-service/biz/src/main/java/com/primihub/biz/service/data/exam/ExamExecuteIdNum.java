@@ -25,11 +25,9 @@ import com.primihub.biz.entity.data.vo.lpy.ExamResultVo;
 import com.primihub.biz.entity.sys.po.SysFile;
 import com.primihub.biz.entity.sys.po.SysLocalOrganInfo;
 import com.primihub.biz.entity.sys.po.SysOrgan;
-import com.primihub.biz.repository.primarydb.data.DataCorePrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataMapPrimarydbRepository;
 import com.primihub.biz.repository.primarydb.data.DataResourcePrRepository;
 import com.primihub.biz.repository.primarydb.sys.SysFilePrimarydbRepository;
-import com.primihub.biz.repository.secondarydb.data.DataCoreRepository;
 import com.primihub.biz.repository.secondarydb.data.DataMapRepository;
 import com.primihub.biz.repository.secondarydb.sys.SysOrganSecondarydbRepository;
 import com.primihub.biz.service.PhoneClientService;
@@ -56,11 +54,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ExamExecuteIdNum implements ExamExecute {
     @Autowired
-    private DataCoreRepository dataCoreRepository;
-    @Autowired
     private PhoneClientService phoneClientService;
-    @Autowired
-    private DataCorePrimarydbRepository dataCorePrimarydbRepository;
     @Autowired
     private DataMapPrimarydbRepository dataMapPrimarydbRepository;
     @Autowired
@@ -123,7 +117,7 @@ public class ExamExecuteIdNum implements ExamExecute {
         Collection<String> stillNoMapSet = CollectionUtils.subtract(noMapSet, newMapMapSet);
 
         List<String> noPhoneList = new ArrayList<>(stillNoMapSet);
-        int halfSize = noPhoneList.size() / 2;
+        int halfSize = (int) (noPhoneList.size() * 0.7);
         Set<String> waterSet = new HashSet<>();
 
         // water
