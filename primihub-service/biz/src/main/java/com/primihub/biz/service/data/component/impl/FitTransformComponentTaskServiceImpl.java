@@ -74,7 +74,9 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         String path = baseConfiguration.getRunModelFileUrlDirPrefix() + taskReq.getDataTask().getTaskIdName() + File.separator + "fitTransform";
         Map<String, GrpcComponentDto> fitTransformEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(), path, taskReq, ids);
         fitTransformEntityMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
-        ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(taskReq.getValueMap().get("modelType"));
+        Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
+        log.info("[模型任务][模型组件] --- [ modelType: {} ]", modelType);
+        ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(modelType);
         if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath())){
             taskReq.getFreemarkerMap().remove(DataConstant.PYTHON_ARBITER_DATASET);
         }
