@@ -526,11 +526,13 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
-                    map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
-                    List<DataFileFieldVo> guestDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(guestDataset).get("fieldList")), DataFileFieldVo.class);
-                    if (CollectionUtils.isNotEmpty(guestDatasetFields)){
-                        List<String> collect = guestDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
-                        map.put("label_field1", JSONObject.toJSONString(collect.toArray()));
+                    if (StringUtils.isNotBlank(guestDataset)){
+                        map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                        List<DataFileFieldVo> guestDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(guestDataset).get("fieldList")), DataFileFieldVo.class);
+                        if (CollectionUtils.isNotEmpty(guestDatasetFields)){
+                            List<String> collect = guestDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
+                            map.put("label_field1", JSONObject.toJSONString(collect.toArray()));
+                        }
                     }
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
