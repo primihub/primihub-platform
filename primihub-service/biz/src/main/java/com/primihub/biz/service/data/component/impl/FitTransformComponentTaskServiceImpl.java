@@ -74,12 +74,6 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         String path = baseConfiguration.getRunModelFileUrlDirPrefix() + taskReq.getDataTask().getTaskIdName() + File.separator + "fitTransform";
         Map<String, GrpcComponentDto> fitTransformEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(), path, taskReq, ids);
         fitTransformEntityMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
-        Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
-        log.info("[模型任务][模型组件] --- [ modelType: {} ]", modelType);
-        ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(modelType);
-        if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath())){
-            taskReq.getFreemarkerMap().remove(DataConstant.PYTHON_ARBITER_DATASET);
-        }
         log.info("fitTransform-1: \n{}", JSONObject.toJSONString(fitTransformEntityMap));
         log.info("[模型任务][缺失值组件] 缺失值组件任务提交的参数 [ freemarkerMap: \n{}\n]", JSON.toJSONString(taskReq.getFreemarkerMap()));
         try {
@@ -94,6 +88,17 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
             taskParam.setJobId(String.valueOf(taskReq.getJob()));
             taskParam.getTaskContentParam().setFitTransform(true);
             taskParam.getTaskContentParam().setModelType(ModelTypeEnum.MODEL_TYPE_MAP.get(taskReq.getDataModel().getModelType()));
+            Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
+            log.info("[模型任务][模型组件] --- [ modelType: {} ]", modelType);
+            ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(modelType);
+            // 纵向缺失值填充 去除 可信第三方
+            if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath())){
+                Map<String, Object> freemarkerMap = taskReq.getFreemarkerMap();
+                freemarkerMap.remove(DataConstant.PYTHON_ARBITER_DATASET);
+                taskParam.getTaskContentParam().setFreemarkerMap(freemarkerMap);
+            } else {
+                taskParam.getTaskContentParam().setFreemarkerMap(taskReq.getFreemarkerMap());
+            }
             taskParam.getTaskContentParam().setFreemarkerMap(taskReq.getFreemarkerMap());
             taskHelper.submit(taskParam);
             if (!taskParam.getSuccess()) {
