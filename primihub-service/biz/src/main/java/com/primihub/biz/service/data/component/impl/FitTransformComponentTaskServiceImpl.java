@@ -23,6 +23,7 @@ import com.primihub.sdk.task.param.TaskComponentParam;
 import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,8 +76,11 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         String path = baseConfiguration.getRunModelFileUrlDirPrefix() + taskReq.getDataTask().getTaskIdName() + File.separator + "fitTransform";
         Map<String, GrpcComponentDto> fitTransformEntityMap = getGrpcComponentDataSetMap(taskReq.getFusionResourceList(), path, taskReq, ids);
         fitTransformEntityMap.remove(taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET));
-
-        String arbiterDataset = taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET).toString();
+        String arbiterDataset = null;
+        Object o = taskReq.getFreemarkerMap().get(DataConstant.PYTHON_ARBITER_DATASET);
+        if (ObjectUtils.isNotEmpty(o)){
+            arbiterDataset = o.toString();
+        }
         Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
         log.info("[模型任务][模型组件] --- [ modelType: {} ]", modelType);
         ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(modelType);
