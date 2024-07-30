@@ -99,7 +99,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
             } else {
                 taskParam.getTaskContentParam().setFreemarkerMap(taskReq.getFreemarkerMap());
             }
-            taskParam.getTaskContentParam().setFreemarkerMap(taskReq.getFreemarkerMap());
+            //taskParam.getTaskContentParam().setFreemarkerMap(taskReq.getFreemarkerMap());
             taskHelper.submit(taskParam);
             if (!taskParam.getSuccess()) {
                 taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
