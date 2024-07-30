@@ -306,7 +306,7 @@
             dp.created_organ_id createdOrganId,
             dp.created_organ_name createdOrgan,
             dp.provider_organ_names providerOrganNames,
-            (select count(id) from data_mr where task_id = dt.task_id) resourceNum
+            (select count(id) from data_mr where task_id = dt.task_id and take_part_type = 0) resourceNum
         FROM
             data_task dt left join data_model_task dmt on dt.task_id = dmt.task_id
                          left join data_model dm on dmt.model_id = dm.model_id
