@@ -23,6 +23,7 @@ import com.primihub.sdk.task.param.TaskComponentParam;
 import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -79,7 +80,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
         Integer modelType = Integer.valueOf(taskReq.getValueMap().get("modelType"));
         log.info("[模型任务][模型组件] --- [ modelType: {} ]", modelType);
         ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(modelType);
-        if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath())){
+        if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath()) && StringUtils.isNotBlank(arbiterDataset)){
             taskReq.getFreemarkerMap().remove(DataConstant.PYTHON_ARBITER_DATASET);
         }
         log.info("fitTransform-1: \n{}", JSONObject.toJSONString(fitTransformEntityMap));
@@ -176,7 +177,7 @@ public class FitTransformComponentTaskServiceImpl extends BaseComponentServiceIm
                     if (derivationResourceIdMap.containsKey(guestDatasetId)) {
                         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_GUEST_DATASET, derivationResourceIdMap.get(guestDatasetId));
                     }
-                    if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath())){
+                    if ("hetero_fitTransform.ftl".equals(modelTypeEnum.getFitTransformFtlPath()) && StringUtils.isNotBlank(arbiterDataset)){
                         taskReq.getFreemarkerMap().put(DataConstant.PYTHON_ARBITER_DATASET, arbiterDataset);
                     }
 
