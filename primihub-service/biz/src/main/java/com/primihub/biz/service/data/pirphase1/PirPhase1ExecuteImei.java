@@ -63,10 +63,6 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             List<String> liDongOldSet = liDongOldImeiSet.stream().map(DataImei::getImei).collect(Collectors.toList());
             Collection<String> liDongNewSet = CollectionUtils.subtract(liDongSet, liDongOldSet);
 
-            // todo 这里要对接真实的接口
-//            Set<String> strings = phoneClientService.filterHashSet(new HashSet<>(liDongNewSet), 1.0);
-//            Map<String, Double> stringDoubleMap = phoneClientService.generateScoreForKeySet(strings);
-
             ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
             List<DataImei> liDongNewImeiList = new ArrayList<>();
             for (String imei : liDongNewSet) {
@@ -82,7 +78,7 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             if (CollectionUtils.isNotEmpty(liDongNewImeiList)) {
                 dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
             }
-
+            // todo 从这里开始
             dataImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), scoreModelType);
         }
 
