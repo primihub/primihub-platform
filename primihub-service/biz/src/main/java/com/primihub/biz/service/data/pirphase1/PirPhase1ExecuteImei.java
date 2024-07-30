@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.primihub.biz.constant.RemoteConstant.UNDEFILED;
+
 @Service
 @Slf4j
 public class PirPhase1ExecuteImei implements PirPhase1Execute {
@@ -39,8 +41,6 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
     private ExamService examService;
     @Autowired
     private RemoteClient remoteClient;
-    @Autowired
-    private DataImeiPrimarydbRepository imeiPrimaryDbRepository;
 
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
@@ -57,28 +57,39 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             liDong non
             liDongOld liDongNew non
              */
-            Set<DataImei> liDongImeiSet = dataImeiRepository.selectImei(req.getTargetValueSet());
+            Set<DataImei> liDongImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), "yhhhwd_score");
             Set<String> liDongSet = liDongImeiSet.stream().map(DataImei::getImei).collect(Collectors.toSet());
             Set<DataImei> liDongOldImeiSet = dataImeiRepository.selectImeiWithScore(liDongSet, req.getScoreModelType());
-            List<String> liDongOldSet = liDongOldImeiSet.stream().map(DataImei::getImei).collect(Collectors.toList());
-            Collection<String> liDongNewSet = CollectionUtils.subtract(liDongSet, liDongOldSet);
+//            List<String> liDongOldSet = liDongOldImeiSet.stream().map(DataImei::getImei).collect(Collectors.toList());
+//            Collection<String> liDongNewSet = CollectionUtils.subtract(liDongSet, liDongOldSet);
+            Collection<DataImei> loDongNewDataImeiSet = CollectionUtils.subtract(liDongImeiSet, liDongOldImeiSet);
 
             ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
             List<DataImei> liDongNewImeiList = new ArrayList<>();
-            for (String imei : liDongNewSet) {
-                RemoteRespVo respVo = remoteClient.queryFromRemote(imei, scoreModel.getScoreModelCode());
-                if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+            for (DataImei imei : loDongNewDataImeiSet) {
+                if (Objects.equals(imei.getPhoneNum(), "yhhhwd_score")) {
+                    // water
                     DataImei dataImei = new DataImei();
-                    dataImei.setImei(imei);
-                    dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                    dataImei.setImei(imei.getImei());
+                    dataImei.setScore(Double.valueOf(RemoteClient.getRandomScore()));
                     dataImei.setScoreModelType(scoreModelType);
+                    dataImei.setPhoneNum(UNDEFILED);
                     liDongNewImeiList.add(dataImei);
+                } else {
+                    // query
+                    RemoteRespVo respVo = remoteClient.queryFromRemote(imei.getImei(), scoreModel.getScoreModelCode());
+                    if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                        DataImei dataImei = new DataImei();
+                        dataImei.setImei(imei.getImei());
+                        dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                        dataImei.setScoreModelType(scoreModelType);
+                        liDongNewImeiList.add(dataImei);
+                    }
                 }
             }
             if (CollectionUtils.isNotEmpty(liDongNewImeiList)) {
                 dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
             }
-            // todo 从这里开始
             dataImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), scoreModelType);
         }
 

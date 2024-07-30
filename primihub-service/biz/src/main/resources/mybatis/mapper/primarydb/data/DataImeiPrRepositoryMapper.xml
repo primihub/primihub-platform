@@ -9,6 +9,7 @@
         y,
         score,
         score_model_type scoreModelType,
+        phone_num phoneNum,
         is_del isDel,
         create_date createDate,
         update_date updateDate
@@ -26,13 +27,14 @@
         y,
         score,
         score_model_type,
+        phone_num,
         is_del,
         create_date,
         update_date)
         values
         <foreach collection="list" index="index" item="item" separator=",">
             (
-            #{item.imei}, #{item.y}, #{item.score}, #{item.scoreModelType}, 0, now(), now()
+            #{item.imei}, #{item.y}, #{item.score}, #{item.scoreModelType}, #{phoneNum}, 0, now(), now()
             )
         </foreach>
     </insert>
@@ -44,11 +46,12 @@
         y,
         score,
         score_model_type,
+        phone_num,
         is_del,
         create_date,
         update_date)
         values
-        (#{imei}, #{y}, #{score}, #{scoreModelType}, 0, now(), now())
+        (#{imei}, #{y}, #{score}, #{scoreModelType}, #{phoneNum}, 0, now(), now())
     </insert>
 
 </mapper>

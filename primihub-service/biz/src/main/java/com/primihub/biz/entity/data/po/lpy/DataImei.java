@@ -16,6 +16,9 @@ public class DataImei {
     /** 以下是营销分 */
     private Double score;
     private String scoreModelType;
+    /** 手机号码 */
+    private String phoneNum;
+
     @JsonIgnore
     private Integer isDel;
     @JsonIgnore

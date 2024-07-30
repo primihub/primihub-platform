@@ -8,6 +8,7 @@
         y,
         score,
         score_model_type scoreModelType,
+        phone_num phoneNum,
         is_del isDel,
         create_date createDate,
         update_date updateDate
