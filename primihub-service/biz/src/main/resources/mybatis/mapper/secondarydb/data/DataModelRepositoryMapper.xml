@@ -372,7 +372,7 @@
         <if test="isAdmin == 0">AND dt.task_user_id = #{userId}</if>
         <if test="modelId!=null and modelId!=0">and dm.model_id =#{modelId}</if>
         <if test="modelType!=null and modelType!=0">and dm.model_type =#{modelType}</if>
-        <if test="listType!=null and listType!=0">and dp.project_type in ('VFL','HFL')</if>
+        <if test="listType!=null and listType!=''">and dp.project_type in ('VFL','HFL')</if>
         <if test="modelName!=null">and dm.model_name like CONCAT('%',#{modelName,jdbcType=VARCHAR},'%')</if>
         <choose>
             <when test="startTime!=null and startTime!=0 and endTime!=null and endTime!=0">
