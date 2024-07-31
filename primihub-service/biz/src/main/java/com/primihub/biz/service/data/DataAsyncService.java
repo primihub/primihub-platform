@@ -455,7 +455,8 @@ public class DataAsyncService implements ApplicationContextAware {
     public void deleteModelTask(DataTask dataTask) {
         DataModelTask modelTask = dataModelRepository.queryModelTaskById(dataTask.getTaskId());
         // 模型存在 并且 不是 任务状态 不是成功的 就删除生成的模型
-        if (!ObjectUtils.isEmpty(modelTask) && dataTask.getTaskState().intValue() != 1){
+        if (!ObjectUtils.isEmpty(modelTask) && dataTask.getTaskState() != 1){
+            log.info("执行任务模型删除{}，当前任务状态{}", modelTask.getTaskId(), dataTask.getTaskState());
             modelTask.setIsDel(1);
             dataModelRepository.delModelTaskById(dataTask.getTaskId());
         }
