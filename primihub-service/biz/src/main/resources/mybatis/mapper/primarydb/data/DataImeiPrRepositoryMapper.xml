@@ -34,7 +34,7 @@
         values
         <foreach collection="list" index="index" item="item" separator=",">
             (
-            #{item.imei}, #{item.y}, #{item.score}, #{item.scoreModelType}, #{phoneNum}, 0, now(), now()
+            #{item.imei}, #{item.y}, #{item.score}, #{item.scoreModelType}, #{item.phoneNum}, 0, now(), now()
             )
         </foreach>
     </insert>
