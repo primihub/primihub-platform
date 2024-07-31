@@ -39,6 +39,8 @@ public interface DataModelRepository {
 
     DataModelTask queryModelTaskById(@Param("taskId") Long taskId);
 
+    DataModelTask delModelTaskById(@Param("taskId") Long taskId);
+
     List<DataModelTask> queryModelTaskByModelId(Map<String,Object> map);
 
     /**

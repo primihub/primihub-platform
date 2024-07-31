@@ -201,6 +201,11 @@
         from data_model_task
         where task_id = #{taskId}
     </select>
+
+    <update id="delModelTaskById">
+        update data_model_task set is_del = 1 where task_id = #{taskId}
+    </update>
+
     <select id="queryModelTaskByModelId" resultType="com.primihub.biz.entity.data.po.DataModelTask">
         select
             id,
