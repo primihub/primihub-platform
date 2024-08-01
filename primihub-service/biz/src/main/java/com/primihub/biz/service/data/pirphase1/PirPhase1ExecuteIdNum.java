@@ -71,7 +71,7 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
         ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
         double score;
         for (DataMap dataMap : noScoreDataMapSet) {
-            if (Objects.equals(dataMap.getPhoneNum(), RemoteConstant.UNDEFILED)) {
+            if (Objects.equals(dataMap.getPhoneNum(), RemoteConstant.UNDEFINED)) {
                 score = Double.parseDouble(RemoteClient.getRandomScore());
             } else {
                 RemoteRespVo respVo = remoteClient.queryFromRemote(dataMap.getPhoneNum(), scoreModel.getScoreModelCode());

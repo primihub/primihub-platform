@@ -2,7 +2,6 @@ package com.primihub.biz.service.data.exam;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
@@ -23,7 +22,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.primihub.biz.constant.RemoteConstant.UNDEFILED;
+import static com.primihub.biz.constant.RemoteConstant.UNDEFINED;
 
 @Service
 @Slf4j
@@ -97,7 +96,7 @@ public class ExamExecuteImei implements ExamExecute {
             if (CollectionUtils.isNotEmpty(waterSet)) {
                 List<DataImei> collect = waterSet.stream().map(imei -> {
                     DataImei data = new DataImei();
-                    data.setPhoneNum(UNDEFILED);
+                    data.setPhoneNum(UNDEFINED);
                     data.setImei(imei);
                     data.setScore(Double.parseDouble(RemoteClient.getRandomScore()));
                     data.setScoreModelType("yhhhwd_score");

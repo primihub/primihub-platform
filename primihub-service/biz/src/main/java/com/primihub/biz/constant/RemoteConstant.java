@@ -8,7 +8,7 @@ public class RemoteConstant {
     public static final String INPUT_FIELD_IMEI = "imei";
     public static final String INPUT_FIELD_PHONE = "phoneNum";
     public static final String[] INPUT_FIELD_ARRAY = {INPUT_FIELD_ID_NUM, INPUT_FIELD_IMEI, INPUT_FIELD_PHONE};
-    public static final String UNDEFILED = "undefined";
+    public static final String UNDEFINED = "undefined";
 
     public static final String FIRST_URL = "FIRST_URL";
     public static final String REMOTE_SCORE_URL = "http://117.132.181.254:9000/";

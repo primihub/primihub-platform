@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.primihub.biz.constant.RemoteConstant.UNDEFILED;
+import static com.primihub.biz.constant.RemoteConstant.UNDEFINED;
 
 @Service
 @Slf4j
@@ -67,13 +67,13 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
             List<DataImei> liDongNewImeiList = new ArrayList<>();
             for (DataImei imei : loDongNewDataImeiSet) {
-                if (Objects.equals(imei.getPhoneNum(), "yhhhwd_score")) {
+                if (Objects.equals(imei.getPhoneNum(), UNDEFINED)) {
                     // water
                     DataImei dataImei = new DataImei();
                     dataImei.setImei(imei.getImei());
                     dataImei.setScore(Double.valueOf(RemoteClient.getRandomScore()));
                     dataImei.setScoreModelType(scoreModelType);
-                    dataImei.setPhoneNum(UNDEFILED);
+                    dataImei.setPhoneNum(UNDEFINED);
                     liDongNewImeiList.add(dataImei);
                 } else {
                     // query

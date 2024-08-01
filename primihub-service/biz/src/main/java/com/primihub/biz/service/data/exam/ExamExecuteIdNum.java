@@ -129,7 +129,7 @@ public class ExamExecuteIdNum implements ExamExecute {
             noPhoneList.remove(randomIndex);
         }
 
-        List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFILED))
+        List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFINED))
                 .collect(Collectors.toList());
         dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
 
