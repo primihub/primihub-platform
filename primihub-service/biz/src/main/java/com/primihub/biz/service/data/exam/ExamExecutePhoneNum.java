@@ -5,16 +5,20 @@ import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
+import com.primihub.biz.entity.data.po.lpy.DataMobile;
 import com.primihub.biz.entity.data.req.DataExamReq;
+import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.data.vo.lpy.MobilePsiVo;
+import com.primihub.biz.repository.primarydb.data.DataMobilePrimarydbRepository;
+import com.primihub.biz.repository.secondarydb.data.DataMobileRepository;
 import com.primihub.biz.service.data.ExamService;
+import com.primihub.biz.service.data.RemoteClient;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,30 +26,73 @@ import java.util.stream.Collectors;
 public class ExamExecutePhoneNum implements ExamExecute {
     @Autowired
     private ExamService examService;
+    @Autowired
+    private DataMobileRepository mobileRepository;
+    @Autowired
+    private RemoteClient remoteClient;
+    @Autowired
+    private DataMobilePrimarydbRepository mobilePrimaryDbRepository;
 
     @Override
     public void processExam(DataExamReq req) {
         log.info("process exam future task : phoneNum");
 
-        String resourceName = new StringBuffer().append("预处理生成资源").append(SysConstant.HYPHEN_DELIMITER).append(req.getTaskId()).toString();
+        Set<String> rawSet = req.getFieldValueSet();
         /*
         rawSet
         oldSet, newSet
+        oldSet, newExistSet, noExistSet
          */
-        Set<String> rawSet = req.getFieldValueSet();
-        Set<MobilePsiVo> rawDataMobileSet = rawSet.stream().map(MobilePsiVo::new).collect(Collectors.toSet());
+        Set<DataMobile> dataMobileSet = mobileRepository.selectMobile(rawSet);
+        Set<String> oldSet = dataMobileSet.stream().map(DataMobile::getPhoneNum).collect(Collectors.toSet());
+        Collection<String> newSet = CollectionUtils.subtract(rawSet, oldSet);
 
-        String jsonArrayStr = JSON.toJSONString(rawDataMobileSet);
-        List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
-        DataResource dataResource = examService.generateTargetResource(maps, resourceName);
-        if (dataResource == null) {
+        // 先过滤出存在手机号的数据
+        log.info("process exam query mobile size, count: {}", newSet.size());
+
+        // 预处理使用模型分
+        // 预处理使用模型分
+        List<DataMobile> newExistDataSet = new ArrayList<>();
+        for (String mobile : newSet) {
+            RemoteRespVo respVo = remoteClient.queryFromRemote(mobile, "AME000818");
+            if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                DataMobile dataMobile = new DataMobile();
+                dataMobile.setPhoneNum(mobile);
+                dataMobile.setScore(Double.valueOf((String) (respVo.getRespBody().get("yhhhwd_score"))));
+                dataMobile.setY(null);
+                dataMobile.setScoreModelType("yhhhwd_score");
+                newExistDataSet.add(dataMobile);
+            }
+        }
+        Set<String> newExistSet = newExistDataSet.stream().map(DataMobile::getPhoneNum).collect(Collectors.toSet());
+        if (CollectionUtils.isNotEmpty(newExistDataSet)) {
+            mobilePrimaryDbRepository.saveMobileList(newExistDataSet);
+            oldSet.addAll(newExistSet);
+        }
+
+        Set<MobilePsiVo> existResult = oldSet.stream().map(MobilePsiVo::new).collect(Collectors.toSet());
+
+        if (CollectionUtils.isEmpty(existResult)) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             examService.sendEndExamTask(req);
-            log.info("====================== FAIL");
+            log.info("====================== FAIL ======================");
+            log.error("samples size after exam is zero!");
+        } else {
+            String jsonArrayStr = JSON.toJSONString(existResult);
+            List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
+            String resourceName = "预处理生成资源" + SysConstant.HYPHEN_DELIMITER + req.getTaskId();
+            DataResource dataResource = examService.generateTargetResource(maps, resourceName);
+            if (dataResource == null) {
+                req.setTaskState(TaskStateEnum.FAIL.getStateType());
+                examService.sendEndExamTask(req);
+                log.info("====================== FAIL ======================");
+                log.error("generate target resource failed!");
+            } else {
+                req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+                req.setTargetResourceId(dataResource.getResourceFusionId());
+                examService.sendEndExamTask(req);
+                log.info("====================== SUCCESS ======================");
+            }
         }
-        req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-        req.setTargetResourceId(dataResource.getResourceFusionId());
-        examService.sendEndExamTask(req);
-        log.info("====================== SUCCESS");
     }
 }

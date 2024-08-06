@@ -74,7 +74,7 @@ public class ExamExecuteImei implements ExamExecute {
         }
         Set<String> newExistSet = newExistDataSet.stream().map(DataImei::getImei).collect(Collectors.toSet());
         if (CollectionUtils.isNotEmpty(newExistDataSet)) {
-            imeiPrimaryDbRepository.saveImeiSet(new ArrayList<>(newExistDataSet));
+            imeiPrimaryDbRepository.saveImeiSet(newExistDataSet);
             oldSet.addAll(newExistSet);
         }
 

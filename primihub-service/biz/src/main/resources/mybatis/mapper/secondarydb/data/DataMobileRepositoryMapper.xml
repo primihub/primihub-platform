@@ -31,4 +31,16 @@
         </where>
     </select>
 
+    <select id="selectMobile" resultType="com.primihub.biz.entity.data.po.lpy.DataMobile">
+        select
+        <include refid="dataMobileColumn"/>
+        from data_mobile
+        <if test="list != null and !list.isEmpty()">
+            where phone_num in
+            <foreach collection="list" open="(" index="index" close=")" separator="," item="item">
+                #{item}
+            </foreach>
+        </if>
+    </select>
+
 </mapper>

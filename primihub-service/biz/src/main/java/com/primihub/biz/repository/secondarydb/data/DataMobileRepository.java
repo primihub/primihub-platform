@@ -9,4 +9,6 @@ import java.util.Set;
 @Repository
 public interface DataMobileRepository {
     Set<DataMobile> selectMobileWithScore(@Param("list") Set<String> targetValueSet, @Param("scoreType") String scoreType);
+
+    Set<DataMobile> selectMobile(@Param("list") Set<String> set);
 }
