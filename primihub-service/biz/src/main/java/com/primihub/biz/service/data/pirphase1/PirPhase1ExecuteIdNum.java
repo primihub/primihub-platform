@@ -2,6 +2,7 @@ package com.primihub.biz.service.data.pirphase1;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.RemoteConstant;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
@@ -44,6 +45,8 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
     private PirService pirService;
     @Autowired
     private DataMapRepository dataMapRepository;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
@@ -70,30 +73,58 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
         List<DataCore> newScoreDataScoreList = new ArrayList<>();
         ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
         double score;
-        for (DataMap dataMap : noScoreDataMapSet) {
-            if (Objects.equals(dataMap.getPhoneNum(), RemoteConstant.UNDEFINED)) {
-                score = Double.parseDouble(RemoteClient.getRandomScore());
-            } else {
-                RemoteRespVo respVo = remoteClient.queryFromRemote(dataMap.getPhoneNum(), scoreModel.getScoreModelCode());
-                if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
-                    score = Double.parseDouble((String) (respVo.getRespBody().get(scoreModel.getScoreKey())));
+        if (baseConfiguration.getWaterSwitch()) {
+            // water
+            for (DataMap dataMap : noScoreDataMapSet) {
+                if (Objects.equals(dataMap.getPhoneNum(), RemoteConstant.UNDEFINED)) {
+                    score = Double.parseDouble(RemoteClient.getRandomScore());
                 } else {
-                    continue;
+                    RemoteRespVo respVo = remoteClient.queryFromRemote(dataMap.getPhoneNum(), scoreModel.getScoreModelCode());
+                    if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                        score = Double.parseDouble((String) (respVo.getRespBody().get(scoreModel.getScoreKey())));
+                    } else {
+                        continue;
+                    }
                 }
+                DataCore dataCore = new DataCore();
+                dataCore.setIdNum(dataMap.getIdNum());
+                dataCore.setPhoneNum(dataMap.getPhoneNum());
+                dataCore.setScoreModelType(scoreModelType);
+                dataCore.setScore(score);
+                newScoreDataScoreList.add(dataCore);
             }
-            DataCore dataCore = new DataCore();
-            dataCore.setIdNum(dataMap.getIdNum());
-            dataCore.setPhoneNum(dataMap.getPhoneNum());
-            dataCore.setScoreModelType(scoreModelType);
-            dataCore.setScore(score);
-            newScoreDataScoreList.add(dataCore);
+            if (CollectionUtils.isNotEmpty(newScoreDataScoreList)) {
+                dataCorePrimarydbRepository.saveDataCoreSet(newScoreDataScoreList);
+            }
+        } else {
+            // noWater
+            for (DataMap dataMap : noScoreDataMapSet) {
+                if (Objects.equals(dataMap.getPhoneNum(), RemoteConstant.UNDEFINED)) {
+                    continue;
+                } else {
+                    RemoteRespVo respVo = remoteClient.queryFromRemote(dataMap.getPhoneNum(), scoreModel.getScoreModelCode());
+                    if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                        score = Double.parseDouble((String) (respVo.getRespBody().get(scoreModel.getScoreKey())));
+                    } else {
+                        continue;
+                    }
+                }
+                DataCore dataCore = new DataCore();
+                dataCore.setIdNum(dataMap.getIdNum());
+                dataCore.setPhoneNum(dataMap.getPhoneNum());
+                dataCore.setScoreModelType(scoreModelType);
+                dataCore.setScore(score);
+                newScoreDataScoreList.add(dataCore);
+            }
+            if (CollectionUtils.isNotEmpty(newScoreDataScoreList)) {
+                dataCorePrimarydbRepository.saveDataCoreSet(newScoreDataScoreList);
+            }
         }
-        dataCorePrimarydbRepository.saveDataCoreSet(newScoreDataScoreList);
 
         Set<DataCoreVo> voSet = dataCoreRepository.selectDataCoreWithScore(scoreModelType);
         if (CollectionUtils.isEmpty(voSet)) {
             log.info("==================== FAIL ====================");
-            log.info("样本适配度太低，无法执行PIR任务");
+            log.error("样本适配度太低，无法执行PIR任务");
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             pirService.sendFinishPirTask(req);
             return;
@@ -109,11 +140,16 @@ public class PirPhase1ExecuteIdNum implements PirPhase1Execute {
                 .toString();
         DataResource dataResource = examService.generateTargetResource(maps, resourceName);
 
-        log.info("==================== SUCCESS ====================");
-        req.setTargetResourceId(dataResource.getResourceFusionId());
-        req.setTaskState(TaskStateEnum.READY.getStateType());
-
-        pirService.sendFinishPirTask(req);
-
+        if (dataResource == null) {
+            req.setTaskState(TaskStateEnum.FAIL.getStateType());
+            pirService.sendFinishPirTask(req);
+            log.info("====================== FAIL ======================");
+            log.error("generate target resource failed!");
+        } else {
+            req.setTargetResourceId(dataResource.getResourceFusionId());
+            req.setTaskState(TaskStateEnum.READY.getStateType());
+            pirService.sendFinishPirTask(req);
+            log.info("==================== SUCCESS ====================");
+        }
     }
 }

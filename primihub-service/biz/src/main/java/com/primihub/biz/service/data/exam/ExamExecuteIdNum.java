@@ -136,13 +136,12 @@ public class ExamExecuteIdNum implements ExamExecute {
             }
         }
 
-
         Set<ExamResultVo> allDataCoreSet = dataMapRepository.selectIdNumExamResultVo(rawSet);
         if (CollectionUtils.isEmpty(allDataCoreSet)) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             sendEndExamTask(req);
             log.info("====================== FAIL ======================");
-            log.info("samples size after exam is zero!");
+            log.error("samples size after exam is zero!");
             return;
         }
 
@@ -154,12 +153,13 @@ public class ExamExecuteIdNum implements ExamExecute {
         if (dataResource == null) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             sendEndExamTask(req);
-            log.info("====================== FAIL");
+            log.info("====================== FAIL ======================");
+            log.error("generate target resource failed!");
         } else {
             req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
             req.setTargetResourceId(dataResource.getResourceFusionId());
             sendEndExamTask(req);
-            log.info("====================== SUCCESS");
+            log.info("====================== SUCCESS ======================");
         }
     }
 

@@ -2,6 +2,7 @@ package com.primihub.biz.service.data.pirphase1;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 
 import static com.primihub.biz.constant.RemoteConstant.UNDEFINED;
 
+// todo
 @Service
 @Slf4j
 public class PirPhase1ExecuteImei implements PirPhase1Execute {
@@ -41,6 +43,8 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
     private ExamService examService;
     @Autowired
     private RemoteClient remoteClient;
+    @Autowired
+    private BaseConfiguration baseConfiguration;
 
     @Override
     public void processPirPhase1(DataPirCopyReq req) {
@@ -60,33 +64,49 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
             Set<DataImei> liDongImeiSet = dataImeiRepository.selectImeiWithScore(req.getTargetValueSet(), "yhhhwd_score");
             Set<String> liDongSet = liDongImeiSet.stream().map(DataImei::getImei).collect(Collectors.toSet());
             Set<DataImei> liDongOldImeiSet = dataImeiRepository.selectImeiWithScore(liDongSet, req.getScoreModelType());
-//            List<String> liDongOldSet = liDongOldImeiSet.stream().map(DataImei::getImei).collect(Collectors.toList());
-//            Collection<String> liDongNewSet = CollectionUtils.subtract(liDongSet, liDongOldSet);
             Collection<DataImei> loDongNewDataImeiSet = CollectionUtils.subtract(liDongImeiSet, liDongOldImeiSet);
 
             ScoreModel scoreModel = scoreModelRepository.selectScoreModelByScoreTypeValue(scoreModelType);
             List<DataImei> liDongNewImeiList = new ArrayList<>();
-            for (DataImei imei : loDongNewDataImeiSet) {
-                if (Objects.equals(imei.getPhoneNum(), UNDEFINED)) {
-                    // water
-                    DataImei dataImei = new DataImei();
-                    dataImei.setImei(imei.getImei());
-                    dataImei.setScore(Double.valueOf(RemoteClient.getRandomScore()));
-                    dataImei.setScoreModelType(scoreModelType);
-                    dataImei.setPhoneNum(UNDEFINED);
-                    liDongNewImeiList.add(dataImei);
-                } else {
-                    // query
-                    RemoteRespVo respVo = remoteClient.queryFromRemote(imei.getImei(), scoreModel.getScoreModelCode());
-                    if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+            if (baseConfiguration.getWaterSwitch()) {
+                for (DataImei imei : loDongNewDataImeiSet) {
+                    if (Objects.equals(imei.getPhoneNum(), UNDEFINED)) {
+                        // water
                         DataImei dataImei = new DataImei();
                         dataImei.setImei(imei.getImei());
-                        dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                        dataImei.setScore(Double.valueOf(RemoteClient.getRandomScore()));
                         dataImei.setScoreModelType(scoreModelType);
+                        dataImei.setPhoneNum(UNDEFINED);
                         liDongNewImeiList.add(dataImei);
+                    } else {
+                        // query
+                        RemoteRespVo respVo = remoteClient.queryFromRemote(imei.getImei(), scoreModel.getScoreModelCode());
+                        if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                            DataImei dataImei = new DataImei();
+                            dataImei.setImei(imei.getImei());
+                            dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                            dataImei.setScoreModelType(scoreModelType);
+                            liDongNewImeiList.add(dataImei);
+                        }
+                    }
+                }
+            } else {
+                for (DataImei imei : loDongNewDataImeiSet) {
+                    if (Objects.equals(imei.getPhoneNum(), UNDEFINED)) {
+                    } else {
+                        // query
+                        RemoteRespVo respVo = remoteClient.queryFromRemote(imei.getImei(), scoreModel.getScoreModelCode());
+                        if (respVo != null && ("Y").equals(respVo.getHead().getResult())) {
+                            DataImei dataImei = new DataImei();
+                            dataImei.setImei(imei.getImei());
+                            dataImei.setScore(Double.valueOf((String) (respVo.getRespBody().get(scoreModel.getScoreKey()))));
+                            dataImei.setScoreModelType(scoreModelType);
+                            liDongNewImeiList.add(dataImei);
+                        }
                     }
                 }
             }
+
             if (CollectionUtils.isNotEmpty(liDongNewImeiList)) {
                 dataImeiPrimarydbRepository.saveImeiSet(liDongNewImeiList);
             }
@@ -95,9 +115,8 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
 
         if (CollectionUtils.isEmpty(dataImeiSet)) {
             log.info("==================== FAIL ====================");
-            log.info("样本适配度太低，无法执行PIR任务");
+            log.error("样本适配度太低，无法执行PIR任务");
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
-
             pirService.sendFinishPirTask(req);
             return;
         }
@@ -115,9 +134,16 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
                 .toString();
         DataResource dataResource = examService.generateTargetResource(maps, resourceName);
 
-        log.info("==================== SUCCESS ====================");
-        req.setTargetResourceId(dataResource.getResourceFusionId());
-        req.setTaskState(TaskStateEnum.READY.getStateType());
-        pirService.sendFinishPirTask(req);
+        if (dataResource == null) {
+            req.setTaskState(TaskStateEnum.FAIL.getStateType());
+            pirService.sendFinishPirTask(req);
+            log.info("====================== FAIL ======================");
+            log.error("generate target resource failed!");
+        } else {
+            req.setTargetResourceId(dataResource.getResourceFusionId());
+            req.setTaskState(TaskStateEnum.READY.getStateType());
+            pirService.sendFinishPirTask(req);
+            log.info("==================== SUCCESS ====================");
+        }
     }
 }

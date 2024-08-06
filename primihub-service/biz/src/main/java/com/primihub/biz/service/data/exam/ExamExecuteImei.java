@@ -2,6 +2,7 @@ package com.primihub.biz.service.data.exam;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.constant.SysConstant;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.po.DataResource;
@@ -11,7 +12,6 @@ import com.primihub.biz.entity.data.vo.RemoteRespVo;
 import com.primihub.biz.entity.data.vo.lpy.ImeiPsiVo;
 import com.primihub.biz.repository.primarydb.data.DataImeiPrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataImeiRepository;
-import com.primihub.biz.service.PhoneClientService;
 import com.primihub.biz.service.data.ExamService;
 import com.primihub.biz.service.data.RemoteClient;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class ExamExecuteImei implements ExamExecute {
     @Autowired
     private RemoteClient remoteClient;
     @Autowired
-    private PhoneClientService phoneClientService;
+    private BaseConfiguration baseConfiguration;
 
     @Override
     public void processExam(DataExamReq req) {
@@ -78,57 +78,59 @@ public class ExamExecuteImei implements ExamExecute {
             oldSet.addAll(newExistSet);
         }
 
-        Collection<String> newNoExistSet = CollectionUtils.subtract(newSet, newExistSet);
+        if (baseConfiguration.getWaterSwitch()) {
+            Collection<String> newNoExistSet = CollectionUtils.subtract(newSet, newExistSet);
+            if (CollectionUtils.isNotEmpty(newNoExistSet)) {
+                // water
+                List<String> waterList = new ArrayList<>(newNoExistSet);
+                int halfSize = (int) Math.ceil((waterList.size() * 0.7));
+                Set<String> waterSet = new HashSet<>();
+                Random random = new Random();
+                for (int i = 0; i < halfSize; i++) {
+                    int randomIndex = random.nextInt(waterList.size());
+                    String s = waterList.get(randomIndex);
+                    waterSet.add(s);
+                    waterList.remove(randomIndex);
+                }
 
-        if (CollectionUtils.isNotEmpty(newNoExistSet)) {
-            // water
-            List<String> waterList = new ArrayList<>(newNoExistSet);
-            int halfSize = (int) Math.ceil((waterList.size() * 0.7));
-            Set<String> waterSet = new HashSet<>();
-            Random random = new Random();
-            for (int i = 0; i < halfSize; i++) {
-                int randomIndex = random.nextInt(waterList.size());
-                String s = waterList.get(randomIndex);
-                waterSet.add(s);
-                waterList.remove(randomIndex);
-            }
-
-            if (CollectionUtils.isNotEmpty(waterSet)) {
-                List<DataImei> collect = waterSet.stream().map(imei -> {
-                    DataImei data = new DataImei();
-                    data.setPhoneNum(UNDEFINED);
-                    data.setImei(imei);
-                    data.setScore(Double.parseDouble(RemoteClient.getRandomScore()));
-                    data.setScoreModelType("yhhhwd_score");
-                    return data;
-                }).collect(Collectors.toList());
-                imeiPrimaryDbRepository.saveImeiSet(collect);
-                oldSet.addAll(waterSet);
+                if (CollectionUtils.isNotEmpty(waterSet)) {
+                    List<DataImei> collect = waterSet.stream().map(imei -> {
+                        DataImei data = new DataImei();
+                        data.setPhoneNum(UNDEFINED);
+                        data.setImei(imei);
+                        data.setScore(Double.parseDouble(RemoteClient.getRandomScore()));
+                        data.setScoreModelType("yhhhwd_score");
+                        return data;
+                    }).collect(Collectors.toList());
+                    imeiPrimaryDbRepository.saveImeiSet(collect);
+                    oldSet.addAll(waterSet);
+                }
             }
         }
 
-
         Set<ImeiPsiVo> existResult = oldSet.stream().map(ImeiPsiVo::new).collect(Collectors.toSet());
 
-        String jsonArrayStr = JSON.toJSONString(existResult);
-        List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
-        if (CollectionUtils.isEmpty(maps)) {
+        if (CollectionUtils.isEmpty(existResult)) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             examService.sendEndExamTask(req);
-            log.info("====================== FAIL");
+            log.info("====================== FAIL ======================");
+            log.error("samples size after exam is zero!");
         } else {
+            String jsonArrayStr = JSON.toJSONString(existResult);
+            List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
             // 生成数据源
             String resourceName = "预处理生成资源" + SysConstant.HYPHEN_DELIMITER + req.getTaskId();
             DataResource dataResource = examService.generateTargetResource(maps, resourceName);
             if (dataResource == null) {
                 req.setTaskState(TaskStateEnum.FAIL.getStateType());
                 examService.sendEndExamTask(req);
-                log.info("====================== FAIL");
+                log.info("====================== FAIL ======================");
+                log.error("generate target resource failed!");
             } else {
                 req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 req.setTargetResourceId(dataResource.getResourceFusionId());
                 examService.sendEndExamTask(req);
-                log.info("====================== SUCCESS");
+                log.info("====================== SUCCESS ======================");
             }
         }
     }
