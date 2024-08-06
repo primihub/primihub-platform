@@ -117,7 +117,7 @@ public class ExamExecuteIdNum implements ExamExecute {
         Collection<String> stillNoMapSet = CollectionUtils.subtract(noMapSet, newMapMapSet);
 
         List<String> noPhoneList = new ArrayList<>(stillNoMapSet);
-        int halfSize = (int) (noPhoneList.size() * 0.7);
+        int halfSize = (int) Math.ceil(noPhoneList.size() * 0.7);
         Set<String> waterSet = new HashSet<>();
 
         // water
@@ -129,11 +129,19 @@ public class ExamExecuteIdNum implements ExamExecute {
             noPhoneList.remove(randomIndex);
         }
 
-        List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFINED))
-                .collect(Collectors.toList());
-        dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
+        if (CollectionUtils.isNotEmpty(waterSet)) {
+            List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFINED))
+                    .collect(Collectors.toList());
+            dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
+        }
 
         Set<ExamResultVo> allDataCoreSet = dataMapRepository.selectIdNumExamResultVo(rawSet);
+        if (CollectionUtils.isEmpty(allDataCoreSet)) {
+            req.setTaskState(TaskStateEnum.FAIL.getStateType());
+            sendEndExamTask(req);
+            log.info("====================== FAIL");
+            return;
+        }
 
         String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);

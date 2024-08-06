@@ -83,7 +83,7 @@ public class ExamExecuteImei implements ExamExecute {
         if (CollectionUtils.isNotEmpty(newNoExistSet)) {
             // water
             List<String> waterList = new ArrayList<>(newNoExistSet);
-            int halfSize = (int) (waterList.size() * 0.7);
+            int halfSize = (int) Math.ceil((waterList.size() * 0.7));
             Set<String> waterSet = new HashSet<>();
             Random random = new Random();
             for (int i = 0; i < halfSize; i++) {
