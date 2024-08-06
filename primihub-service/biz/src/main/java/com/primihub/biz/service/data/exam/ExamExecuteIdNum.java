@@ -111,35 +111,38 @@ public class ExamExecuteIdNum implements ExamExecute {
         if (CollectionUtils.isNotEmpty(newMapDataSet)) {
             dataMapPrimarydbRepository.saveDataMapList(newMapDataSet);
         }
-        Set<String> newMapMapSet = newMapDataSet.stream().map(DataMap::getIdNum).collect(Collectors.toSet());
 
-        // noMap过滤
-        Collection<String> stillNoMapSet = CollectionUtils.subtract(noMapSet, newMapMapSet);
 
-        List<String> noPhoneList = new ArrayList<>(stillNoMapSet);
-        int halfSize = (int) Math.ceil(noPhoneList.size() * 0.7);
-        Set<String> waterSet = new HashSet<>();
-
-        // water
-        Random random = new Random();
-        for (int i = 0; i < halfSize; i++) {
-            int randomIndex = random.nextInt(noPhoneList.size());
-            String s = noPhoneList.get(randomIndex);
-            waterSet.add(s);
-            noPhoneList.remove(randomIndex);
+        // water1
+        if (baseConfiguration.getWaterSwitch()) {
+            Set<String> newMapMapSet = newMapDataSet.stream().map(DataMap::getIdNum).collect(Collectors.toSet());
+            // noMap过滤
+            Collection<String> stillNoMapSet = CollectionUtils.subtract(noMapSet, newMapMapSet);
+            List<String> noPhoneList = new ArrayList<>(stillNoMapSet);
+            int halfSize = (int) Math.ceil(noPhoneList.size() * 0.7);
+            Set<String> waterSet = new HashSet<>();
+            // water
+            Random random = new Random();
+            for (int i = 0; i < halfSize; i++) {
+                int randomIndex = random.nextInt(noPhoneList.size());
+                String s = noPhoneList.get(randomIndex);
+                waterSet.add(s);
+                noPhoneList.remove(randomIndex);
+            }
+            // save
+            if (CollectionUtils.isNotEmpty(waterSet)) {
+                List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFINED)).collect(Collectors.toList());
+                dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
+            }
         }
 
-        if (CollectionUtils.isNotEmpty(waterSet)) {
-            List<DataMap> waterMapSet = waterSet.stream().map(idNum -> new DataMap(idNum, RemoteConstant.UNDEFINED))
-                    .collect(Collectors.toList());
-            dataMapPrimarydbRepository.saveDataMapList(waterMapSet);
-        }
 
         Set<ExamResultVo> allDataCoreSet = dataMapRepository.selectIdNumExamResultVo(rawSet);
         if (CollectionUtils.isEmpty(allDataCoreSet)) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             sendEndExamTask(req);
-            log.info("====================== FAIL");
+            log.info("====================== FAIL ======================");
+            log.info("samples size after exam is zero!");
             return;
         }
 

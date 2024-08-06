@@ -17,7 +17,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Component
-@NacosConfigurationProperties(dataId = "base.json",autoRefreshed = true)
+@NacosConfigurationProperties(dataId = "base.json", autoRefreshed = true)
 public class BaseConfiguration {
     private Set<String> tokenValidateUriBlackList;
     private Set<String> needSignUriList;
@@ -60,4 +60,8 @@ public class BaseConfiguration {
     private Boolean openDynamicTuning = false;
 
     private Integer uploadSize = 10;
+    /**
+     * 注水开关
+     */
+    private Boolean waterSwitch = true;
 }
