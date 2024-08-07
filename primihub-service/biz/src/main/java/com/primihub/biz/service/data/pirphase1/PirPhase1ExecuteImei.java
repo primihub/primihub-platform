@@ -122,7 +122,6 @@ public class PirPhase1ExecuteImei implements PirPhase1Execute {
         }
 
         Set<ImeiPirVo> collect = dataImeiSet.stream().map(ImeiPirVo::new).collect(Collectors.toSet());
-
         // 成功后开始生成文件
         String jsonArrayStr = JSON.toJSONString(collect);
         List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
