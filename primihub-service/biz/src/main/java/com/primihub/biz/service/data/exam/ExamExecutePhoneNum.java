@@ -13,6 +13,7 @@ import com.primihub.biz.repository.primarydb.data.DataMobilePrimarydbRepository;
 import com.primihub.biz.repository.secondarydb.data.DataMobileRepository;
 import com.primihub.biz.service.data.ExamService;
 import com.primihub.biz.service.data.RemoteClient;
+import com.primihub.biz.util.crypt.SM3Util;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -73,26 +74,27 @@ public class ExamExecutePhoneNum implements ExamExecute {
         Set<MobilePsiVo> existResult = oldSet.stream().map(MobilePsiVo::new).collect(Collectors.toSet());
 
         if (CollectionUtils.isEmpty(existResult)) {
+//            req.setTaskState(TaskStateEnum.FAIL.getStateType());
+//            examService.sendEndExamTask(req);
+//            log.info("====================== FAIL ======================");
+            log.error("samples size after exam is zero!");
+            existResult.add(new MobilePsiVo(SM3Util.encrypt(UUID.randomUUID().toString().replace("-", ""))));
+        }
+        String jsonArrayStr = JSON.toJSONString(existResult);
+        List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
+        String resourceName = "预处理生成资源" + SysConstant.HYPHEN_DELIMITER + req.getTaskId();
+        DataResource dataResource = examService.generateTargetResource(maps, resourceName);
+        if (dataResource == null) {
             req.setTaskState(TaskStateEnum.FAIL.getStateType());
             examService.sendEndExamTask(req);
             log.info("====================== FAIL ======================");
-            log.error("samples size after exam is zero!");
+            log.error("generate target resource failed!");
         } else {
-            String jsonArrayStr = JSON.toJSONString(existResult);
-            List<Map> maps = JSONObject.parseArray(jsonArrayStr, Map.class);
-            String resourceName = "预处理生成资源" + SysConstant.HYPHEN_DELIMITER + req.getTaskId();
-            DataResource dataResource = examService.generateTargetResource(maps, resourceName);
-            if (dataResource == null) {
-                req.setTaskState(TaskStateEnum.FAIL.getStateType());
-                examService.sendEndExamTask(req);
-                log.info("====================== FAIL ======================");
-                log.error("generate target resource failed!");
-            } else {
-                req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                req.setTargetResourceId(dataResource.getResourceFusionId());
-                examService.sendEndExamTask(req);
-                log.info("====================== SUCCESS ======================");
-            }
+            req.setTaskState(TaskStateEnum.SUCCESS.getStateType());
+            req.setTargetResourceId(dataResource.getResourceFusionId());
+            examService.sendEndExamTask(req);
+            log.info("====================== SUCCESS ======================");
         }
+
     }
 }

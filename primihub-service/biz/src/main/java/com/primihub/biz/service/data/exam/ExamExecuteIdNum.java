@@ -36,6 +36,7 @@ import com.primihub.biz.service.data.OtherBusinessesService;
 import com.primihub.biz.service.feign.FusionResourceService;
 import com.primihub.biz.util.FileUtil;
 import com.primihub.biz.util.crypt.DateUtil;
+import com.primihub.biz.util.crypt.SM3Util;
 import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -138,11 +139,14 @@ public class ExamExecuteIdNum implements ExamExecute {
 
         Set<ExamResultVo> allDataCoreSet = dataMapRepository.selectIdNumExamResultVo(rawSet);
         if (CollectionUtils.isEmpty(allDataCoreSet)) {
-            req.setTaskState(TaskStateEnum.FAIL.getStateType());
-            sendEndExamTask(req);
-            log.info("====================== FAIL ======================");
+//            req.setTaskState(TaskStateEnum.FAIL.getStateType());
+//            sendEndExamTask(req);
+//            log.info("====================== FAIL ======================");
             log.error("samples size after exam is zero!");
-            return;
+//            return;
+            ExamResultVo vo = new ExamResultVo();
+            vo.setIdNum(SM3Util.encrypt(UUID.randomUUID().toString().replace("-", "")));
+            allDataCoreSet.add(new ExamResultVo());
         }
 
         String jsonArrayStr = JSON.toJSONString(allDataCoreSet);
