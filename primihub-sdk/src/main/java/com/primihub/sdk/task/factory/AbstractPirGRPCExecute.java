@@ -82,7 +82,7 @@ public class AbstractPirGRPCExecute extends AbstractGRPCExecuteFactory {
                     .setClientProcessedUpTo(22)
                     .build();
             PushTaskReply reply = runVMNodeGrpc(o -> o.submitTask(request),channel);
-            log.info("grpc结果:"+reply);
+            log.info("grpc result:"+reply);
             if (reply.getRetCode()==0){
                 param.setPartyCount(reply.getPartyCount());
                 if (param.getOpenGetStatus()){
