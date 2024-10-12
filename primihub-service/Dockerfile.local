@@ -2,8 +2,11 @@ FROM ibmjava:8-jre
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update \
-  && apt install tzdata \
+RUN sed -i "s@http://.*archive.ubuntu.com@http://mirrors.aliyun.com@g" /etc/apt/sources.list
+RUN sed -i "s@http://.*security.ubuntu.com@http://mirrors.aliyun.com@g" /etc/apt/sources.list
+
+RUN apt-get update \
+  && apt-get install tzdata -y \
   && ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 ADD application/target/*-SNAPSHOT.jar /applications/application.jar

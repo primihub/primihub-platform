@@ -1,6 +1,7 @@
 package com.primihub.biz.service.data;
 
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.convert.DataTaskConvert;
 import com.primihub.biz.entity.base.BaseResultEntity;
@@ -68,8 +69,6 @@ public class PirService {
         String[] queryColumnNames = {
                 resourceColumnNameArray[0]
         };
-        // convert pirParam to query array
-        List<DataPirKeyQuery> dataPirKeyQueries = convertPirParamToQueryArray(pirParam,queryColumnNames);
 
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
