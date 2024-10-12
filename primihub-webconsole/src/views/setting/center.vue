@@ -62,9 +62,9 @@
         >
           <template slot-scope="{row}">
             <div class="buttons">
-              <!-- <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleAgree(row)">同意</el-link>
+              <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleAgree(row)">同意</el-link>
               <el-link v-if="row.identity === 1 && row.examineState === 0" size="mini" type="primary" @click="handleRefuse(row)">拒绝</el-link>
-              <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link> -->
+              <el-link v-if="row.identity === 0 && row.examineState === 2" size="mini" type="primary" @click="handleApply(row)">申请</el-link>
               <el-link v-if="row.examineState === 1 && row.enable === 0" size="mini" type="primary" @click="handleConnect(row)">断开连接</el-link>
               <el-link v-if="row.examineState === 1 && row.enable === 1" size="mini" type="primary" @click="reconnectApply (row)">重新连接</el-link>
             </div>
@@ -377,6 +377,8 @@ export default {
       this.partnersForm.organName = ''
       this.partnersForm.organId = ''
       this.connectDialogVisible = false
+      // 刷新机构列表
+      this.getOrganList()
     },
     organConfirmDialog() {
       const params = {
@@ -449,6 +451,10 @@ export default {
         this.$message.error(result.msg)
       }
     },
+    // setExamineState() {
+    //   const index = this.organList.findIndex(item => item.id === this.applyId)
+    //   this.organList[index].examineState = this.examineState
+    // },
     joiningPartners(publicKey, gateway, id, applyId) {
       this.loading = true
       const params = {

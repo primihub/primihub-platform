@@ -7,7 +7,7 @@
       <div v-if="options.showMinimap" ref="mapContainerRef" class="minimap-container" />
     </div>
     <!--右侧工具栏-->
-    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" @change="handleChange" @save="saveFn" />
+    <right-drawer v-if="showDataConfig" ref="drawerRef" class="right-drawer" :default-config="defaultComponentsConfig" :graph-data="graphData" :node-data="nodeData" :options="drawerOptions" :model-components="modelComponents" @change="handleChange" @save="saveFn" />
     <el-dialog
       title="错误提示"
       :visible.sync="dialogVisible"
@@ -34,7 +34,7 @@ import RightDrawer from './RightDrawer'
 
 import { getModelComponent, saveModelAndComponent, getModelComponentDetail, getProjectResourceData, runTaskModel, getTaskModelComponent, getProjectResourceOrgan, restartTaskModel } from '@/api/model'
 
-import { DATA_SET, MODEL, ARBITER_ORGAN, MPC_STATISTICS, DATA_SET_SELECT_DATA, MODEL_TYPE, START_NODE, TASK_NAME, MODEL_NAME } from '@/const/componentCode.js'
+import { DATA_SET, MODEL, ARBITER_ORGAN, MPC_STATISTICS, DATA_SET_SELECT_DATA, MODEL_TYPE, START_NODE, TASK_NAME, MODEL_NAME, DATA_ALIGN, FIT_TRANSFORM } from '@/const/componentCode.js'
 
 const lineAttr = { // 线样式
   'line': {
@@ -137,6 +137,10 @@ export default {
     componentsDetail: {
       type: Object,
       default: () => null
+    },
+    projectType: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -438,15 +442,42 @@ export default {
               },
               zIndex: 0
             })
-          }
+          },
+          validateConnection({ sourceCell, targetCell, targetMagnet }) {
+            if (!targetMagnet) {
+              return false
+            }
+
+            if (targetMagnet.getAttribute('port-group') !== 'in') {
+              return false
+            }
+
+            if (targetCell) {
+              const targetId = targetCell.id
+              const sourceId = sourceCell.id
+              const model = targetCell.model
+              if (model){
+                const incomings = model.incomings
+                const outgoings = model.outgoings
+                if (incomings[targetId] && incomings[targetId].length > 0){
+                  return false
+                }
+
+                if (outgoings[sourceId] && outgoings[sourceId].length > 1){
+                  return false
+                }
+              }
+            }
+            return true
+        },
         },
         selecting: {
           enabled: true,
-          multiple: true,
-          rubberEdge: true,
-          rubberNode: true,
+          multiple: false,
+          rubberEdge: false,
+          rubberNode: false,
           modifiers: 'shift',
-          rubberband: true
+          rubberband: false
         },
         history: true,
         clipboard: true,
@@ -578,16 +609,15 @@ export default {
           })
           this.needSave = true
         })
-        graph.on('cell:removed', () => {
+        graph.on('cell:removed', ({ cell }) => {
           this.needSave = true
           if (!this.destroyed) {
             this.saveFn()
             this.$notify.closeAll()
-            this.$notify({
-              message: '删除成功',
-              type: 'success',
-              duration: 1000
-            })
+            this.$notify.success('删除成功')
+            this.selectComponentList = this.getComponentCodeOnView()
+            this.$emit('selectComponents', this.selectComponentList)
+            this.graphData.cells = this.graphData.cells.filter(item => item.id !== cell.id)
           }
         })
         graph.on('node:mouseenter', FunctionExt.debounce(() => {
@@ -627,23 +657,31 @@ export default {
     },
     deleteNode() {
       const cells = this.graph.getSelectedCells()
+
+      if ( cells[0].data && cells[0].data.componentCode === 'start' ) {
+        this.$message.warning('开始组建不可被删除')
+        return
+      }
+
       if (cells.length) {
         this.graph.removeCells(cells)
       }
-      const currentCode = this.nodeData.componentCode
-      // remove duplicates
-      this.selectComponentList = [...new Set(this.selectComponentList)]
-      const index = this.selectComponentList.indexOf(currentCode)
-      if (index !== -1) {
-        this.selectComponentList.splice(index, 1)
-      }
-      this.$emit('selectComponents', this.selectComponentList)
+      // const currentCode = this.nodeData.componentCode
+      // // remove duplicates
+      // this.selectComponentList = [...new Set(this.selectComponentList)]
+      // const index = this.selectComponentList.indexOf(currentCode)
+      // if (index !== -1) {
+      //   this.selectComponentList.splice(index, 1)
+      // }
+      // this.$emit('selectComponents', this.selectComponentList)
+
       this.nodeData = this.startData
-      console.log('graphData', this.startData)
     },
+
     initToolBarEvent() {
       // 画布不可编辑只可点击
       if (!this.options.isEditable) return
+
       const { history } = this.graph
       history.on('change', (args) => {
         this.canUndo = history.canUndo()
@@ -653,16 +691,41 @@ export default {
           this.saveFn()
         }
       })
+
       this.graph.bindKey(['ctrl+z', 'command+z'], () => {
         if (history.canUndo()) {
+          const cells = this.graph.getCells()
+          // The 'Start' component cannot be deleted
+          if (cells.length === 1 && cells[0].data.componentCode === 'start' ) return false
+
           history.undo()
         }
         return false
       })
     },
+
+    getComponentCodeOnView(){
+      const cells = this.graph.getCells()
+      const arr = []
+      cells.forEach(item => {
+        if (item.shape !== 'edge') {
+          if (item.data.componentCode !== 'start') {
+            arr.push(item.data.componentCode)
+          }
+        }
+      })
+      return arr
+    },
+
     checkModelStatisticsValidated(jointStatisticalCom) {
       let featureValues = jointStatisticalCom.componentValues.find(item => item.key === MPC_STATISTICS)?.val
       featureValues = featureValues && featureValues !== '' ? JSON.parse(featureValues) : []
+
+      if (!featureValues.length) {
+        this.$message.error('联合统计所选统计项不能为空，请核验')
+        return false
+      }
+
       for (let i = 0; i < featureValues.length; i++) {
         const feature = featureValues[i]
         if (feature.type === '') {
@@ -679,10 +742,43 @@ export default {
         }
       }
     },
+
+    checkModelVFLValidated() {
+      if (!this.saveParams.param) return false
+      const { modelComponents, modelPointComponents } = this.saveParams.param
+      let dataAlignId = null
+      let fitTransformId = null
+      let isValidated = false
+      modelComponents.forEach(node => {
+        node.componentCode === DATA_ALIGN && (dataAlignId = node.frontComponentId)
+        node.componentCode === FIT_TRANSFORM && (fitTransformId = node.frontComponentId)
+      })
+
+      if (dataAlignId && fitTransformId) {
+        modelPointComponents.forEach(edge => {
+          if (edge.input.cell === dataAlignId && edge.output.cell === fitTransformId) {
+            isValidated = true
+            return
+          }
+        })
+      } else {
+        isValidated = true
+      }
+
+      !isValidated && this.$message.error('请确保任务流程中，数据对齐在缺失值填充之前')
+      return isValidated
+    },
+
     checkRunValidated() {
       this.modelRunValidated = true
       const data = this.graph.toJSON()
       const { cells } = data
+
+      if (!this.saveParams.param) {
+        this.modelRunValidated = false
+        return
+      }
+
       const { modelComponents, modelPointComponents } = this.saveParams.param
 
       const startCom = modelComponents.find(item => item.componentCode === START_NODE)
@@ -692,9 +788,10 @@ export default {
       const modelType = modelSelectCom?.componentValues.find(item => item.key === MODEL_TYPE)?.val
       const arbiterOrganId = modelSelectCom?.componentValues.find(item => item.key === ARBITER_ORGAN)?.val
 
+      const dataAlignCom = modelComponents.find(item => item.componentCode === DATA_ALIGN)
       const dataSetCom = modelComponents.find(item => item.componentCode === DATA_SET)
-      const dataValue = dataSetCom.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
-      const value = dataValue !== '' ? JSON.parse(dataValue) : ''
+      const dataValue = dataSetCom?.componentValues.find(item => item.key === DATA_SET_SELECT_DATA).val
+      const value = dataValue ? JSON.parse(dataValue) : ''
       const initiateResource = value && value.filter(v => v.participationIdentity === 1)[0]
       const providerResource = value && value.filter(v => v.participationIdentity === 2)[0]
 
@@ -702,12 +799,10 @@ export default {
       const initiateCalculationField = initiateResource?.calculationField || []
       const providerCalculationField = providerResource?.calculationField || []
 
-      const notSelectResource = value.find(item => item.resourceId === undefined)
+      const notSelectResource = value && value.find(item => item.resourceId === undefined)
 
       const jointStatisticalCom = modelComponents.find(item => item.componentCode === MPC_STATISTICS)
-      if (jointStatisticalCom) {
-        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
-      }
+
       if (!initiateResource) {
         this.$message({
           message: '请选择发起方数据集',
@@ -770,6 +865,30 @@ export default {
         this.modelRunValidated = false
         return
       }
+
+      // MPC
+      if (this.projectType === 'MPC' && !jointStatisticalCom){
+        this.$message({
+          message: `请选择联合统计`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if (this.projectType === 'MPC' && jointStatisticalCom) {
+        this.modelRunValidated = this.checkModelStatisticsValidated(jointStatisticalCom)
+        if (!this.modelRunValidated) return
+      }
+
+      // VFL
+      if (this.projectType === 'VFL' && !dataAlignCom) {
+        this.$message({
+          message: `请进行数据对齐`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      }
+
       // model is running, can't run again
       if (this.modelStartRun) {
         this.$message({
@@ -777,27 +896,38 @@ export default {
           type: 'warning'
         })
         this.modelRunValidated = false
+        return
       } else if (!this.modelId && this.isCopy) { // copy model task, must save
         this.$message({
           message: '模型未保存，请保存后再次尝试',
           type: 'warning'
         })
         this.modelRunValidated = false
+        return
       } else if (cells.length === 1) { // model is empty or cleared, can't run
         this.$message({
           message: '当前画布为空，无法运行，请绘制',
           type: 'warning'
         })
         this.modelRunValidated = false
+        return
       } else if (taskName === '') {
         this.$message({
           message: `运行失败：请输入任务名称`,
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       } else if (!jointStatisticalCom && (!modelSelectCom || modelName === '')) {
         this.$message({
           message: `运行失败：请输入模型名称`,
+          type: 'error'
+        })
+        this.modelRunValidated = false
+        return
+      } else if(modelComponents.length - modelPointComponents.length > 1){
+        this.$message({
+          message: `连线未完成`,
           type: 'error'
         })
         this.modelRunValidated = false
@@ -808,9 +938,14 @@ export default {
           type: 'error'
         })
         this.modelRunValidated = false
+        return
       }
+      this.modelRunValidated = this.checkModelVFLValidated()
     },
+
+    /** run */
     async run() {
+      console.log(this.graphData)
       // 运行前触发保存
       this.isDraft = 1
       await this.saveFn()
@@ -819,6 +954,7 @@ export default {
         this.isDraft = 0
         return
       }
+
       runTaskModel({ modelId: this.currentModelId }).then(res => {
         if (res.code !== 0) {
           if (res.code === 1007) {
@@ -1083,7 +1219,6 @@ export default {
       }
       return obj
     },
-    // 保存模板文件
     async saveFn() { // 0 草稿
       const data = this.graph.toJSON()
       const { cells } = data
@@ -1246,11 +1381,13 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const res = await getModelComponent()
+      const res = await getModelComponent({ projectType: this.projectType })
       if (res.code === 0) {
         const { result } = res
         const model = result.find(item => item.componentCode === MODEL)
-        this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        if (model) {
+          this.defaultComponentsConfig = model.componentTypes.find(item => item.typeCode === MODEL_TYPE)?.inputValues
+        }
         this.components = JSON.parse(JSON.stringify(result))
       }
     },
@@ -1290,14 +1427,20 @@ export default {
     },
     setComponentsDetail(data) {
       const { modelComponents, modelPointComponents } = data
+
+
+
       // 复制任务，需重置重新生成modelId
       if (this.isCopy) {
         this.currentModelId = 0
         this.isDraft = 0
       }
+      this.selectComponentList = []
       this.modelPointComponents = modelPointComponents
       this.modelComponents = modelComponents
       this.modelComponents.forEach(item => {
+        // add selectComponentList
+        item.componentCode !=='start' && this.selectComponentList.push(item.componentCode)
         const currentData = this.components.find(c => c.componentCode === item.componentCode)
         currentData.componentTypes.map(c => {
           const componentValue = item.componentValues.find(item => item.key === c.typeCode)
@@ -1307,6 +1450,8 @@ export default {
           this.getDetailParams(c, item)
         })
       })
+
+      this.$emit('selectComponents', this.selectComponentList)
       this.initGraphShape()
       if (this.options.isEditable) {
         this.saveFn()

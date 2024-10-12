@@ -24,16 +24,31 @@ public class OrganController {
     @Autowired
     private SysOrganService sysOrganService;
 
+    /**
+     * 本方机构信息
+     * @return
+     */
     @GetMapping("getLocalOrganInfo")
     public BaseResultEntity getLocalOrganInfo(){
         return sysOrganService.getLocalOrganInfo();
     }
 
+
+    /**
+     * 修改本方机构信息
+     * @param changeLocalOrganInfoParam
+     * @return
+     */
     @PostMapping("changeLocalOrganInfo")
     public BaseResultEntity changeLocalOrganInfo(ChangeLocalOrganInfoParam changeLocalOrganInfoParam){
         return sysOrganService.changeLocalOrganInfo(changeLocalOrganInfoParam);
     }
 
+    /**
+     * 修改 Home 配置
+     * @param homeMap
+     * @return
+     */
     @PostMapping("changeHomepage")
     public BaseResultEntity changeHomepage(@RequestBody Map<String,Object> homeMap){
         homeMap.remove("token");
@@ -45,13 +60,17 @@ public class OrganController {
         return sysOrganService.changeHomepage(homeMap);
     }
 
+    /**
+     * 获取 Home 配置
+     * @return
+     */
     @GetMapping("getHomepage")
     public BaseResultEntity getHomepage(){
         return sysOrganService.getHomepage();
     }
 
     /**
-     * 加入合作方
+     * 添加合作方
      * @param gateway
      * @param publicKey
      * @return
@@ -63,10 +82,6 @@ public class OrganController {
         }
         if (StringUtils.isBlank(publicKey)) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"publicKey");
-        }
-        // 解决 "+" 在传输中替换为 " " 的问题
-        if (publicKey.contains(" ")) {
-            publicKey = publicKey.replace(" ", "+");
         }
         return sysOrganService.joiningPartners(gateway,publicKey);
     }
@@ -122,7 +137,7 @@ public class OrganController {
     /**
      * 审核申请的机构
      * @param id                申请数字ID
-     * @param examineState      审核状态    0再次申请 1同意 2拒绝
+     * @param examineState      审核状态  0再次申请 1同意 2拒绝
      * @param examineMsg        审核意见
      * @return
      */
@@ -134,7 +149,7 @@ public class OrganController {
         if (examineState==null) {
             return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"examineState");
         }
-        if (examineState!=0 &&examineState!=1 &&examineState!=2) {
+        if (examineState != 0 &&examineState != 1 &&examineState != 2) {
             return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"examineState");
         }
         return sysOrganService.examineJoining(id,examineState,examineMsg);

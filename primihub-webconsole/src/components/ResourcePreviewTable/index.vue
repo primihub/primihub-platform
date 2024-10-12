@@ -7,16 +7,18 @@
       v-bind="$attrs"
       class="table-list"
       :empty-text="emptyText"
+      ref="tableRef"
     >
-      <el-table-column v-if="data.length >0" align="center" label="序号" type="index" width="50" />
+      <el-table-column v-if="data.length >0" fixed="left" align="center" label="序号" type="index" width="50" />
       <el-table-column
+        min-width="100"
         v-for="(item,index) in tableHeader"
         :key="index"
         :prop="item"
         :label="item"
       >
         <template slot-scope="{row}">
-          {{ row[item] }}
+          {{ trim(row[item]) }}
         </template>
       </el-table-column>
 
@@ -26,6 +28,7 @@
 </template>
 
 <script>
+import lodash from 'lodash'
 export default {
   name: 'ResourcePreviewTable',
   props: {
@@ -50,6 +53,12 @@ export default {
         }
       }
       return data
+    }
+  },
+  methods: {
+    trim(str) {
+      let newStr = str.replace(/\n/g,"")
+      return lodash.trim(newStr)
     }
   },
   created() {

@@ -294,23 +294,17 @@ export const asyncRoutes = [
         component: () => import('@/views/resource/list'),
         meta: { title: '我的资源' }
       },
+      /*{
+        path: 'derivedDataList',
+        name: 'DerivedDataList',
+        component: () => import('@/views/resource/derivedDataList'),
+        meta: { title: '衍生数据资源' }
+      },*/
       {
         path: 'unionList',
         name: 'UnionList',
         component: () => import('@/views/resource/unionList'),
         meta: { title: '协作方资源' }
-      },
-      {
-        path: 'availableResources',
-        name: 'AvailableResources',
-        component: () => import('@/views/resource/availableResources'),
-        meta: { title: '可申请的资源' }
-      },
-      {
-        path: 'derivedDataList',
-        name: 'DerivedDataList',
-        component: () => import('@/views/resource/derivedDataList'),
-        meta: { title: '衍生数据资源' }
       },
       {
         path: 'create',

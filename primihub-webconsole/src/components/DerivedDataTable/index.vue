@@ -67,7 +67,7 @@
     >
       <template slot-scope="{row}">
         <el-button v-if="row.resourceState === 0" type="text" @click="toResourceDetailPage(row.id)">查看</el-button>
-        <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>
+<!--        <el-button type="text" @click="changeResourceStatus(row)">{{ row.resourceState === 0 ? '下线': '上线' }}</el-button>-->
       </template>
     </el-table-column>
   </el-table>

@@ -1,5 +1,6 @@
 package com.primihub.biz.service.schedule;
 
+import com.alibaba.fastjson.JSONObject;
 import com.primihub.biz.constant.RedisKeyConstant;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
@@ -67,14 +68,15 @@ public class ScheduleService {
         log.info("定时处理节点业务");
         // 上报节点状态
         sysAsyncService.collectBaseData();
+        // 获取 正常链接的 机构信息
         List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
         long time = System.currentTimeMillis();
         String data = String.format("{'time':%s}", time);
         for (SysOrgan sysOrgan : sysOrgans) {
             try {
                 BaseResultEntity baseResultEntity = otherBusinessesService.syncGatewayApiData(data, sysOrgan.getOrganGateway() + "/share/shareData/healthConnection", sysOrgan.getPublicKey());
-                if (baseResultEntity==null || !baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
-                    Set<String> services = (Set<String>) baseResultEntity.getResult();
+                if (baseResultEntity != null && baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
+                    Set<String> services = new HashSet<>((Collection) baseResultEntity.getResult());
                     sysOrgan.setPlatformState(services.contains("platform")?1:0);
                     sysOrgan.setNodeState(services.contains("node")?1:0);
                     sysOrgan.setFusionState(services.contains("fusion")?1:0);
@@ -83,10 +85,14 @@ public class ScheduleService {
                     sysOrgan.setNodeState(0);
                     sysOrgan.setFusionState(0);
                 }
+                if ((sysOrgan.getPlatformState() | sysOrgan.getNodeState() | sysOrgan.getFusionState()) == 0) {
+                    sysOrgan.setEnable(1);
+                }
             }catch (Exception e){
                 sysOrgan.setPlatformState(0);
                 sysOrgan.setNodeState(0);
                 sysOrgan.setFusionState(0);
+                sysOrgan.setEnable(1);
                 log.info("机构ID:{} - 机构名称:{} - 机构网关地址:{} - 状态获取失败",sysOrgan.getOrganId(),sysOrgan.getOrganName(),sysOrgan.getOrganGateway());
                 e.printStackTrace();
             }

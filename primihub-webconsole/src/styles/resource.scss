@@ -1,5 +1,11 @@
 @import "~@/styles/variables.scss";
 
+::v-deep .el-dialog__body{
+  padding: 20px;
+  p{
+    line-height: 1.5;
+  }
+}
 ::v-deep .resource-disabled{
   color: gray;
   filter:progid:DXImageTransform.Microsoft.BasicImage(graysale=1);

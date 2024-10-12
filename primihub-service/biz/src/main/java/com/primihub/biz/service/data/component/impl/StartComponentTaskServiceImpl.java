@@ -12,6 +12,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
+/**
+ * 开始组件
+ */
 @Service("startComponentTaskServiceImpl")
 @Slf4j
 public class StartComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
@@ -21,17 +24,17 @@ public class StartComponentTaskServiceImpl extends BaseComponentServiceImpl impl
     private ComponentsConfiguration componentsConfiguration;
 
     @Override
-    public BaseResultEntity check(DataComponentReq req,  ComponentTaskReq taskReq) {
+    public BaseResultEntity check(DataComponentReq req, ComponentTaskReq taskReq) {
         Map<String, String> componentVals = getComponentVals(req.getComponentValues());
         DataTask dataTask = new DataTask();
-        if (componentVals.containsKey("taskName")){
+        if (componentVals.containsKey("taskName")) {
             dataTask.setTaskName(componentVals.get("taskName"));
         }
-        if (componentVals.containsKey("taskDesc")){
+        if (componentVals.containsKey("taskDesc")) {
             dataTask.setTaskDesc(componentVals.get("taskDesc"));
         }
         taskReq.setDataTask(dataTask);
-        return componentTypeVerification(req,componentsConfiguration.getModelComponents(),taskReq);
+        return componentTypeVerification(req, componentsConfiguration.getModelComponents(), taskReq);
     }
 
     @Override

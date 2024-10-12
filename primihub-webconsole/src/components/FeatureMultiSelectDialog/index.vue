@@ -83,6 +83,7 @@ export default {
           }
         }
       })
+
       for (let i = 0; i < features.length; i++) {
         const difference = this.compareFeature(features[i], features[i + 1])
         if (difference) {
@@ -105,10 +106,9 @@ export default {
         for (let i = 0; i < arr.length; i++) {
           if (!arr2.find(item => item === arr[i])) {
             return true
-          } else {
-            return false
           }
         }
+        return false
       }
     }
   }

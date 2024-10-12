@@ -15,7 +15,6 @@ import com.primihub.biz.service.share.ShareService;
 import com.primihub.biz.service.sys.SysOrganService;
 import com.primihub.biz.service.test.TestService;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -44,7 +43,11 @@ public class ShareDataController {
     @Autowired
     private ShareService shareService;
 
-    @ApiOperation(value = "通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
+    /**
+     * 健康检测
+     * @param time
+     * @return
+     */
     @PostMapping("/healthConnection")
     public BaseResultEntity healthConnection(@RequestBody Object time){
         log.info("healthConnection - {}",time);
@@ -69,6 +72,11 @@ public class ShareDataController {
         return dataModelService.syncModel(vo);
     }
 
+    /**
+     * 合作方申请 加入本方
+     * @param info
+     * @return
+     */
     @PostMapping("apply")
     public BaseResultEntity applyForJoinNode(@RequestBody Map<String,Object> info){
         if (info==null){
@@ -114,7 +122,6 @@ public class ShareDataController {
         return testService.batchSaveTestDataSet(dataSets);
     }
 
-    @ApiOperation(value = "网关通信检测",httpMethod = "POST",consumes = MediaType.APPLICATION_JSON_VALUE)
     @PostMapping("verifyGateway")
     public BaseResultEntity verifyGatewayConnection(@RequestBody String uniqueIdentification){
         if (org.apache.commons.lang3.StringUtils.isBlank(uniqueIdentification)){

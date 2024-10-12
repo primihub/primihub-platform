@@ -28,6 +28,16 @@
           />
         </div>
       </el-form-item>
+      <el-form-item label="项目类型" prop="projectType">
+        <el-select v-model="dataForm.projectType" placeholder="请选择项目类型" class="item-wrap-normal">
+          <el-option
+            v-for="item in projectTypeList"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item label="发起方" prop="initiateOrganId">
         <p class="organ"><i class="el-icon-office-building" />  {{ dataForm.initiateOrganName }}</p>
         <el-button type="primary" plain @click="openDialog(dataForm.initiateOrganId)">添加资源到此项目</el-button>
@@ -98,9 +108,16 @@ export default {
   data() {
     return {
       loading: false,
+      projectTypeList: [
+        { label: '多方安全计算', value: 'MPC' },
+        { label: '横向联邦', value: 'HFL' },
+        { label: '纵向联邦', value: 'VFL' },
+        { label: '多方联邦', value: 'MFL' }
+      ],
       dataForm: {
         projectName: '',
         projectDesc: '',
+        projectType: '',
         initiateOrganId: '',
         providerOrganIds: []
       },
@@ -125,6 +142,9 @@ export default {
         projectDesc: [
           { required: true, message: '请输入项目描述', trigger: 'blur' },
           { min: 0, max: 200, message: '长度200字符以内', trigger: 'blur' }
+        ],
+        projectType: [
+          { required: true, message: '请选择项目类型', trigger: 'change' },
         ],
         initiateOrganId: [
           { required: true, message: '请选择发起方', trigger: 'blur' }
@@ -167,11 +187,12 @@ export default {
       return this.resourceList[organId] || []
     },
     submitForm() {
-      const { projectName, projectDesc } = this.dataForm
+      const { projectName, projectDesc, projectType } = this.dataForm
       this.getProjectOrgans()
       const params = {
         projectName,
         projectDesc,
+        projectType,
         projectOrgans: this.saveParams.projectOrgans
       }
       this.$refs.dataForm.validate((valid) => {

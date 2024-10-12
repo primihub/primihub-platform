@@ -137,7 +137,7 @@ public class DataTaskService {
     }
 
     public void singleDataFusionResource(String paramStr){
-//        log.info(paramStr);
+        log.info("执行简单同步任务：{}", paramStr);
         DataResource dataResource = JSONObject.parseObject(paramStr, DataResource.class);
         List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
         for (SysOrgan sysOrgan : sysOrgans) {
@@ -153,7 +153,7 @@ public class DataTaskService {
         log.info(paramStr);
         ShareProjectVo shareProjectVo = JSONObject.parseObject(paramStr, ShareProjectVo.class);
         shareProjectVo.supplement();
-        shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjcetOrganByProjectId(shareProjectVo.getProjectId()));
+        shareProjectVo.getProjectOrgans().addAll(dataProjectRepository.selectDataProjectOrganByProjectId(shareProjectVo.getProjectId()));
         if (shareProjectVo.getProjectResources().size()==0) {
             shareProjectVo.getProjectResources().addAll(dataProjectRepository.selectProjectResourceByProjectId(shareProjectVo.getProjectId()));
         }
@@ -321,9 +321,9 @@ public class DataTaskService {
         map.put("app",lokiConfig.getApp());
         map.put("taskIdName", rawDataTask.getTaskIdName());
         if (rawDataTask.getTaskStartTime()==null){
-            map.put("start",(System.currentTimeMillis()* 1_000_000));
+            map.put("start",(System.currentTimeMillis() * 1_000_000));
         }else {
-            map.put("start",(rawDataTask.getTaskStartTime()* 1_000_000));
+            map.put("start",(rawDataTask.getTaskStartTime() * 1_000_000));
         }
         return BaseResultEntity.success(map);
     }

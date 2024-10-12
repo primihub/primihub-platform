@@ -45,7 +45,7 @@ public class PirService {
     public String getResultFilePath(String taskId,String taskDate){
         return new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(taskDate).append("/").append(taskId).append(".csv").toString();
     }
-    public BaseResultEntity pirSubmitTask(DataPirReq req, String pirParam) {
+    public BaseResultEntity pirSubmitTask(DataPirReq req) {
         BaseResultEntity dataResource = otherBusinessesService.getDataResource(req.getResourceId());
         if (dataResource.getCode()!=0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源查询失败");
@@ -55,11 +55,11 @@ public class PirService {
         if (available == 1) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"资源不可用");
         }
-        // dataResource columnName list
         String resourceColumnNames = pirDataResource.getOrDefault("resourceColumnNameList", "").toString();
         if (StringUtils.isBlank(resourceColumnNames)){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表失败");
         }
+
         String[] resourceColumnNameArray = resourceColumnNames.split(",");
         if (resourceColumnNameArray.length == 0) {
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表为空");
@@ -81,13 +81,12 @@ public class PirService {
         dataTaskPrRepository.saveDataTask(dataTask);
         DataPirTask dataPirTask = new DataPirTask();
         dataPirTask.setTaskId(dataTask.getTaskId());
-        // retrievalId will rent in web ,need to be readable
-        dataPirTask.setRetrievalId(pirParam);
+        dataPirTask.setRetrievalId(JSONObject.toJSONString(req.getKeyQuerys()));
         dataPirTask.setProviderOrganName(pirDataResource.get("organName").toString());
         dataPirTask.setResourceName(pirDataResource.get("resourceName").toString());
         dataPirTask.setResourceId(req.getResourceId());
         dataTaskPrRepository.saveDataPirTask(dataPirTask);
-        dataAsyncService.pirGrpcTask(dataTask,dataPirTask,resourceColumnNames,dataPirKeyQueries);
+        dataAsyncService.pirGrpcTask(dataTask,dataPirTask,resourceColumnNames);
         Map<String, Object> map = new HashMap<>();
         map.put("taskId",dataTask.getTaskId());
         return BaseResultEntity.success(map);

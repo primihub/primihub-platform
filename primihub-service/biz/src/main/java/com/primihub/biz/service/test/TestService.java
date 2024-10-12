@@ -76,14 +76,13 @@ public class TestService {
         if (tag.contains("copy")){
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {
-                singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
+                singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.BATCH_DATA_FUSION_RESOURCE_TASK.getHandleType(),sysOrgan.getOrganGateway()))).build());
             }
         }
     }
 
     public BaseResultEntity testDataSet(String id) {
         BaseResultEntity testDataSet = fusionResourceService.getTestDataSet(id);
-        log.info(JSONObject.toJSONString(testDataSet));
         if (testDataSet.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
             List<SysOrgan> sysOrgans = sysOrganSecondarydbRepository.selectSysOrganByExamine();
             for (SysOrgan sysOrgan : sysOrgans) {

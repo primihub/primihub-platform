@@ -41,6 +41,12 @@ public interface DataModelRepository {
 
     List<DataModelTask> queryModelTaskByModelId(Map<String,Object> map);
 
+    /**
+     * 查询当前项目 的 正在运行的任务
+     * @param projectId
+     * @return
+     */
+    List<String> queryRunningTaskByProjectId(@Param("projectId") Long projectId);
 
     List<DataModelTask> queryModelTaskByTaskIds(@Param("taskIds") Set<Long> taskIds);
 

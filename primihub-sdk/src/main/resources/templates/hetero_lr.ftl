@@ -13,6 +13,7 @@
 		"task_name": "VFL_logistic_regression_plaintext_train",
         "psi": null,
 		"learning_rate": ${learningRate!1},
+		"psi": null,
 		"alpha": ${alpha!0.0001},
 		"epoch": ${epoch!10},
 		"shuffle_seed":${shuffleSeed!0},

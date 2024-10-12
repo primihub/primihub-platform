@@ -18,16 +18,6 @@
         <el-form-item>
           <el-input v-model="query.retrievalId" placeholder="请输入查询关键词" clearable @clear="handleClear('retrievalId')" />
         </el-form-item>
-        <!-- <el-form-item>
-          <el-select v-model="query.taskState" placeholder="请选择查询状态" clearable @clear="handleClear('taskState')">
-            <el-option
-              v-for="item in statusOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item> -->
         <el-form-item>
           <el-date-picker
             v-model="query.createDate"
@@ -42,7 +32,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-search" @click="search">查询</el-button>
-          <el-button icon="el-icon-refresh-right" @click="reset" />
+          <el-button icon="el-icon-refresh-right" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -68,7 +58,7 @@
         <el-table-column
           prop="organName"
           label="参与机构"
-          align="center"
+          min-width="100"
         />
         <el-table-column
           prop="resourceName"
@@ -93,10 +83,10 @@
         <el-table-column
           prop="retrievalId"
           label="查询关键词"
-          min-width="100"
+          min-width="150"
         >
           <template slot-scope="{row}">
-            <el-tooltip :content="row.retrievalId" placement="top"><span>{{ row.retrievalId }}</span></el-tooltip>
+            <el-tooltip :content="row.searchKeyword && row.searchKeyword.length > 0 ? row.searchKeyword.join('，') : row.retrievalId" placement="top"><span>{{ row.searchKeyword && row.searchKeyword.length > 0 ? row.searchKeyword.join('，') : row.retrievalId }}</span></el-tooltip>
           </template>
         </el-table-column>
         <el-table-column label="发起时间" prop="createDate" min-width="120px">
@@ -142,6 +132,7 @@ import { deleteTask, cancelTask } from '@/api/task'
 import Pagination from '@/components/Pagination'
 import StatusIcon from '@/components/StatusIcon'
 import { getToken } from '@/utils/auth'
+import { checkIsJsonString } from '@/utils/index'
 
 export default {
   components: {
@@ -228,15 +219,12 @@ export default {
       }).then(() => {
         deleteTask(row.taskId).then(res => {
           if (res.code === 0) {
-            const posIndex = this.dataList.findIndex(item => item.taskId === row.taskId)
-            if (posIndex !== -1) {
-              this.dataList.splice(posIndex, 1)
-            }
             this.$message({
               message: '删除成功',
               type: 'success',
               duration: 1000
             })
+            this.fetchData()
             clearInterval(this.timer)
           }
         })
@@ -293,6 +281,18 @@ export default {
         this.dataList = result.data
         this.total = result.total
         this.pageCount = result.totalPage
+        this.dataList.map(item => {
+          // format search keyword
+          if (checkIsJsonString(item.retrievalId)) {
+            const searchKeyword = JSON.parse(item.retrievalId)
+            item.searchKeyword = searchKeyword.map(item => {
+              const query = item.query.map(val => {
+                return val.join(' | ')
+              })
+              return query.join('、')
+            })
+          }
+        })
         // filter the running task
         this.searchList = this.dataList.filter(item => item.taskState === 2)
         // No tasks are running
@@ -329,6 +329,13 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+::v-deep .el-table .cell{
+  word-break: break-all;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
 ::v-deep .el-input--suffix .el-input__inner{
   padding-right: 0;
 }

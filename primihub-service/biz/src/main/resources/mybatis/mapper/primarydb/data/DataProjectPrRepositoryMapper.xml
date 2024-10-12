@@ -2,14 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.primihub.biz.repository.primarydb.data.DataProjectPrRepository">
     <insert id="saveDataProject" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProject">
-        insert into data_project (project_id, project_name, project_desc, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, status, is_del, create_date, update_date)
-        values (#{projectId},#{projectName},#{projectDesc},#{createdOrganId},#{createdOrganName},#{createdUsername},#{resourceNum},#{providerOrganNames},#{status},0,now(),now())
+        insert into data_project (project_id, project_name, project_desc, project_type, created_organ_id, created_organ_name, created_username, resource_num, provider_organ_names, status, is_del, create_date, update_date)
+        values (#{projectId},#{projectName},#{projectDesc},#{projectType},#{createdOrganId},#{createdOrganName},#{createdUsername},#{resourceNum},#{providerOrganNames},#{status},0,now(),now())
     </insert>
     <update id="updateDataProject" parameterType="com.primihub.biz.entity.data.po.DataProject">
         update data_project
         <set>
             <if test="projectName!=null">project_name = #{projectName},</if>
             <if test="projectDesc!=null">project_desc = #{projectDesc},</if>
+            <if test="projectType!=null">project_type = #{projectType},</if>
             <if test="createdOrganId!=null">created_organ_id = #{createdOrganId},</if>
             <if test="createdOrganName!=null">created_organ_name = #{createdOrganName},</if>
             <if test="createdUsername!=null">created_username = #{createdUsername},</if>
@@ -41,11 +42,11 @@
             <if test="projectId!=null">project_id = #{projectId}</if>
         </where>
     </delete>
-    <insert id="saveDataProjcetOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
+    <insert id="saveDataProjectOrgan" keyProperty="id" useGeneratedKeys="true" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         insert into data_project_organ (po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date)
         values (#{poId},#{projectId},#{organId},#{initiateOrganId},#{participationIdentity},#{auditStatus},#{auditOpinion},0,now(),now())
     </insert>
-    <update id="updateDataProjcetOrgan" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
+    <update id="updateDataProjectOrgan" parameterType="com.primihub.biz.entity.data.po.DataProjectOrgan">
         update data_project_organ
         <set>
             <if test="auditStatus!=null">audit_status = #{auditStatus},</if>
@@ -73,7 +74,7 @@
     </sql>
 
 
-    <sql id="DataProjcetOrganBaseColumnList">
+    <sql id="DataProjectOrganBaseColumnList">
         id, po_id, project_id, organ_id, initiate_organ_id, participation_identity, audit_status, audit_opinion, is_del, create_date, update_date
     </sql>
 

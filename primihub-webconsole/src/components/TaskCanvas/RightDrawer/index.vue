@@ -40,16 +40,18 @@
         </el-form-item>
       </template>
       <template v-else-if="nodeData.componentCode === DATA_ALIGN">
-        <el-form-item :label="nodeData.componentTypes[0].typeName">
-          <el-select v-model="nodeData.componentTypes[0].inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
-            <el-option
-              v-for="(v,index) in nodeData.componentTypes[0].inputValues"
-              :key="index"
-              :label="v.val"
-              :value="v.key"
-            />
-          </el-select>
-        </el-form-item>
+        <template v-for="item in nodeData.componentTypes">
+          <el-form-item :label="`选择${item.typeName}的对齐特征`" :key="item.typeCode" v-if="item.inputType === 'select'">
+            <el-select v-model="item.inputValue" :disabled="!options.isEditable" class="block" placeholder="请选择" @change="handleChange">
+              <el-option
+                v-for="(v,index) in item.inputValues"
+                :key="index"
+                :label="v.fieldName"
+                :value="v.fieldName"
+              />
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item>
           <el-row v-if="dataAlignParam">
             <el-col v-for="(param,key) in dataAlignParam" :key="key" :span="param.inputType === 'button' ? 14: 10">
@@ -99,7 +101,15 @@
               </div>
             </div>
           </div>
-          <el-button v-if="options.isEditable && nodeData.componentTypes.find(item => item.typeCode === 'addFilling')" class="block" type="primary" @click="addFilling">添加统计项</el-button>
+          <el-button
+            v-if="options.isEditable &&
+                  nodeData.componentTypes.find(item => item.typeCode === 'addFilling') &&
+                  featureItems.length < processingType.length
+                  "
+            class="block"
+            type="primary"
+            @click="addFilling"
+          >添加统计项</el-button>
         </el-form-item>
       </template>
       <template v-else-if="nodeData.componentCode === MODEL">
@@ -135,6 +145,7 @@
               <el-radio v-for="(radio,index) in param.inputValues" :key="index" :disabled="!options.isEditable" :label="radio.val" />
             </el-radio-group>
             <el-col v-if="param.inputType === 'text'" :span="12">
+              <p style="font-size: 12px;" v-if="param.typeCode === 'ColumnsExclude'">将数据中需排除的字段名，填于此处，多个排除字段之间使用英文逗号隔开填写</p>
               <el-input v-model="param.inputValue" :disabled="!options.isEditable" size="mini" @change="handleChange" />
             </el-col>
             <el-col v-if="param.inputType === 'select'" :span="12">
@@ -259,6 +270,10 @@ export default {
     defaultConfig: {
       type: Array,
       default: () => []
+    },
+    modelComponents: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -362,7 +377,8 @@ export default {
         ]
       },
       selectedProviderOrgans: [],
-      flText: ''
+      flText: '',
+      dataAlignValues:[]
     }
   },
   computed: {
@@ -404,10 +420,14 @@ export default {
       },
       immediate: true
     },
-    graphData(newVal) {
-      if (newVal) {
-        this.getDataSetComValue(newVal)
-      }
+    graphData: {
+      handler: function(newVal) {
+        if (newVal) {
+          this.getDataSetComValue(newVal)
+        }
+      },
+      deep: true,
+      immediate: true
     },
     async nodeData(newVal) {
       console.log('watch newVal', newVal)
@@ -428,16 +448,20 @@ export default {
           this.flText = this.filterModelValue()
           console.log(this.flText)
         } else if (newVal.componentCode === DATA_ALIGN) {
+          // this.getFeaturesOptions()
+          // this.getDataAlignParams()
           this.getDataSetComValue()
-          this.getFeaturesOptions()
-          this.getDataAlignParams()
+          this.getDataAlignData()
+          this.replaceDataAlignComponentTypes()
         } else if (newVal.componentCode === MPC_STATISTICS) {
           this.getDataSetComValue()
           if (!this.graphData.cells.find(item => item.componentCode === DATA_SET) || this.inputValue === '') {
             this.$message.error('请先选择数据集')
           } else {
             this.getFeaturesItem()
-            this.setFeaturesValue()
+            if (this.options.isEditable) {
+              this.handleChange()
+            }
           }
         } else if (newVal.componentCode === FIT_TRANSFORM) {
           this.getDataSetComValue()
@@ -451,18 +475,56 @@ export default {
     await this.getProjectResourceOrgan()
   },
   methods: {
+    getDataAlignData(){
+      if (!this.inputValue) return
+      const dataAlignMap = {}
+      const dataAlignComponent = this.graphData.cells.find(item => item.componentCode === DATA_ALIGN)
+      if (dataAlignComponent){
+        const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
+        dataAlignComponentTypes.forEach((item) => {
+          if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
+            const index = item.typeCode === 'serverIndex' ? 1 : 2
+            dataAlignMap[index] = item.inputValue
+          }
+        })
+      }
+
+      this.inputValue.forEach((organ) => {
+        this.setDataAlignInputValues(organ, dataAlignMap[organ.participationIdentity] || '')
+      })
+    },
     handleFitTransform() {
       this.handleChange()
     },
     getFillTransformData() {
       let calculationFields = []
       let resourceFields = []
+      const dataAlignMap = {}
       this.FitTransformData = []
       if (!this.inputValue) return
+
+      // hide dataAlign selected value in fillTransform
+      const dataAlignComponent = this.graphData.cells.find(item => item.componentCode === DATA_ALIGN)
+      if (dataAlignComponent){
+        const dataAlignComponentTypes = dataAlignComponent.data.componentTypes
+        dataAlignComponentTypes.forEach((item) => {
+          if (item.typeCode === 'serverIndex' || item.typeCode === 'clientIndex'){
+            const index = item.typeCode === 'serverIndex' ? 1 : 2
+            dataAlignMap[index] = item.inputValue
+          }
+        })
+      }
+
       this.inputValue.map(item => {
-        resourceFields = [...new Set([...resourceFields, ...item.resourceField])]
-        calculationFields = [...new Set([...calculationFields, ...item.calculationField])]
+        // hide dataAlign selected value in fillTransform
+        const field = dataAlignMap[item.participationIdentity]
+        const currentCalculationFields = item.calculationField.filter(item => item !== field)
+        const currentResourceFields = item.resourceField || item.fileFields
+
+        resourceFields = [...new Set([...resourceFields, ...currentResourceFields])]
+        calculationFields = [...new Set([...calculationFields, ...currentCalculationFields])]
       })
+
       calculationFields.forEach(item => {
         const selectColumn = resourceFields.find(field => field.fieldName === item)
         if (selectColumn) {
@@ -484,6 +546,7 @@ export default {
         this.featuresOptions = intersection || []
       }
     },
+
     getDataAlignParams() {
       const dataAlignType = this.nodeData.componentTypes.find(item => item.typeCode === this.DATA_ALIGN)
       this.dataAlignTypeValue = dataAlignType.inputValue
@@ -500,6 +563,7 @@ export default {
         }
       }
     },
+
     filterModelValue() {
       if (this.modelTypeValue === '2' || this.modelTypeValue === '5' || this.modelTypeValue === '9') {
         return '纵向联邦'
@@ -548,7 +612,7 @@ export default {
           organId: item.organId,
           organName: item.organName,
           resourceId: item.resourceId,
-          resourceField: item.resourceField && item.resourceField.map(resource => {
+          resourceField: item?.resourceField && item?.resourceField.map(resource => {
             return {
               fieldName: resource.fieldName,
               fieldType: resource.fieldType
@@ -696,9 +760,12 @@ export default {
     },
     handleProviderRemove(index) {
       if (this.inputValue !== '') {
+        const organ = this.inputValue?.find(item => item.organId === this.selectedProviderOrgans[index].organId)
         const posIndex = this.inputValue?.findIndex(item => item.organId === this.selectedProviderOrgans[index].organId)
         this.inputValue.splice(posIndex, 1)
         this.nodeData.componentTypes[0].inputValue = JSON.stringify(this.inputValue)
+        // remove DataAlign select
+        this.removeDataAlignInputValues(organ)
         this.handleChange()
       }
 
@@ -713,6 +780,8 @@ export default {
       const arbiterOrganId = this.modelParams.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue || encryptionParam?.find(item => item.typeCode === ARBITER_ORGAN)?.inputValue
       return arbiterOrganId
     },
+
+    // 添加协作房
     handleProviderOrganSubmit(data) {
       console.log('data', data)
       if (this.nodeData.componentCode === DATA_SET) {
@@ -788,10 +857,11 @@ export default {
       await this.getProjectResourceData()
       this.dialogVisible = true
     },
+
     handleChange(value) {
-      if (this.nodeData.componentCode === DATA_ALIGN) {
-        this.dataAlignTypeValue = value
-      }
+      // if (this.nodeData.componentCode === DATA_ALIGN) {
+      //   this.dataAlignTypeValue = value
+      // }
       this.$emit('change', this.nodeData)
     },
     handleProviderOrganChange(value) {
@@ -801,6 +871,55 @@ export default {
     handleDialogCancel() {
       this.dialogVisible = false
     },
+
+    /** filter  dataAlign feature*/
+    filterDataAlignFeature(data) {
+      const Field = Array.isArray(data.calculationField) ? data.calculationField : data.fileHandleField
+      // filetype is String，Integer and the fieldName is in the calculationField
+      if (data.resourceField) {
+        return data.resourceField.filter(item => (item.fieldType === 0 || item.fieldType === 1) && Field.includes(item.fieldName) )
+      } else if (data.fileFields) {
+        return data.fileFields.filter(item => (item.fieldType === 'String' || item.fieldType === 'Integer') && Field.includes(item.fieldName))
+      } else {
+        return []
+      }
+    },
+
+    /** set dataAlign input values*/
+    setDataAlignInputValues(data, val){
+      const selectDataAlignFeature = this.filterDataAlignFeature(data)
+      const dataAlignItem = {
+        inputType: 'select',
+        typeCode: data.participationIdentity === 1 ? 'serverIndex' : 'clientIndex',
+        typeName: data.organName,
+        inputValue: selectDataAlignFeature.map(item => item.fieldName).includes(val) ? val : '',
+        isRequired: 0,
+        parentValue: null,
+        organId: data.organId,
+        inputValues: selectDataAlignFeature
+      }
+
+      const posIndex = this.dataAlignValues.findIndex(organ => organ.organId === data.organId)
+      if (posIndex > -1) {
+        this.dataAlignValues.splice(posIndex, 1, dataAlignItem)
+      } else {
+        this.dataAlignValues.push(dataAlignItem)
+      }
+    },
+
+    /** remove dataAlign select*/
+    removeDataAlignInputValues(data){
+      this.dataAlignValues = this.dataAlignValues.filter(organ => organ.organId !== data.organId)
+    },
+
+    /** replace dataAlign ComponentTypes */
+    replaceDataAlignComponentTypes(){
+      if (this.dataAlignValues.length) {
+        this.nodeData.componentTypes = this.dataAlignValues
+      }
+    },
+
+    //选择资源
     handleDialogSubmit(data) {
       // not selecting resource
       if (!data.resourceId) {
@@ -812,6 +931,7 @@ export default {
         if (this.initiateOrgan.resourceId !== data.resourceId) {
           this.resourceChanged = true
         }
+
         data.organName = this.initiateOrgan.organName
         this.initiateOrgan = []
         this.initiateOrgan = data
@@ -821,8 +941,10 @@ export default {
           this.resourceChanged = true
         }
         const posIndex = this.selectedProviderOrgans.findIndex(organ => organ.organId === data.organId)
+
         data.organName = this.selectedProviderOrgans[posIndex].organName
         this.selectedProviderOrgans[posIndex] = data
+
       }
 
       this.selectedResourceId = data.resourceId
@@ -836,6 +958,8 @@ export default {
       this.dialogVisible = false
       this.$emit('change', this.nodeData)
     },
+
+    //设置参数
     setInputValue(data) {
       if (this.inputValue) {
         this.inputValues = this.inputValue
@@ -843,7 +967,7 @@ export default {
       if (data.length) {
         data.forEach(item => {
           // set default feature value
-          item.calculationField = item.calculationField ? item.calculationField : item.fileHandleField ? item.fileHandleField : ''
+          item.calculationField = Array.isArray(item.calculationField) ? item.calculationField : item.fileHandleField ? item.fileHandleField : ''
           const posIndex = this.inputValues.findIndex(v => item.organId === v.organId)
           if (posIndex !== -1) {
             this.inputValues.splice(posIndex, 1, item)
@@ -853,7 +977,7 @@ export default {
         })
       } else {
         // set default feature value
-        data.calculationField = data.calculationField ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
+        data.calculationField = Array.isArray(data.calculationField) ? data.calculationField : data.fileHandleField ? data.fileHandleField : ''
         const posIndex = this.inputValues.findIndex(item => item.organId === data.organId)
         const currentData = data
         if (posIndex !== -1) {
@@ -924,6 +1048,9 @@ export default {
       this.featureItems[this.featureIndex].features = data
       this.multiFeaturesVisible = false
       this.setFeaturesValue()
+      if (this.options.isEditable) {
+        this.handleChange()
+      }
     },
     compareFeature(arr, arr2) {
       if (!arr2) return
@@ -961,13 +1088,13 @@ export default {
     handleTypeChange(index, value) {
       this.featureItems[index].type = value
       this.setFeaturesValue()
+      if (this.options.isEditable) {
+        this.handleChange()
+      }
     },
     setFeaturesValue() {
       if (this.nodeData.componentTypes[this.featureConfigIndex]) {
         this.nodeData.componentTypes[this.featureConfigIndex].inputValue = JSON.stringify(this.featureItems)
-        if (this.options.isEditable) {
-          this.handleChange()
-        }
       }
     }
   }

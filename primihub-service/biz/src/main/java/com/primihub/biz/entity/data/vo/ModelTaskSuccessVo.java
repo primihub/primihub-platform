@@ -16,7 +16,7 @@ public class ModelTaskSuccessVo {
     private String taskName;
     @JsonIgnore
     private Long taskEndTime;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date taskEndDate;
     private Long modelId;
     private Long projectId;

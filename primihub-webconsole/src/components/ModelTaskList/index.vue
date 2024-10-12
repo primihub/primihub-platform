@@ -25,14 +25,14 @@
           label="任务名称"
           min-width="100"
         />
-        <el-table-column
+        <!-- <el-table-column
           align="center"
           label="任务类型"
         >
           <template slot-scope="{row}">
             <span><el-tag type="primary" size="mini">{{ row.taskType | taskTypeFilter }}</el-tag></span>
           </template>
-        </el-table-column>
+        </el-table-column> -->
         <el-table-column
           label="开始时间"
           min-width="150"
@@ -108,7 +108,11 @@ export default {
     projectStatus: {
       type: Number,
       default: -1
-    }
+    },
+    projectType: {
+      type: String,
+      default: ''
+    },
   },
   data() {
     return {
@@ -174,7 +178,8 @@ export default {
         query: {
           modelId,
           projectId: this.projectId,
-          isCopy: 1
+          isCopy: 1,
+          projectType: this.projectType
         }
       })
     },
@@ -208,6 +213,8 @@ export default {
             message: '取消成功',
             type: 'success'
           })
+        } else {
+          this.$message.error(res.msg)
         }
       })
     },

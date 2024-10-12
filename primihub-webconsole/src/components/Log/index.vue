@@ -260,7 +260,7 @@ export default {
   height: 500px;
   .item{
     display: inline-block;
-    margin: 3px 0;
+    margin: 10px 0;
     line-height: 1.5;
     word-break:break-all;
     .state-error{

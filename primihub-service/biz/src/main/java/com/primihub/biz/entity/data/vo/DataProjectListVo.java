@@ -18,6 +18,10 @@ public class DataProjectListVo {
      */
     private String projectId;
     /**
+     * 项目类型 MPC HFL VFL
+     */
+    private String projectType;
+    /**
      * 项目名称
      */
     private String projectName;

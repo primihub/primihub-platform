@@ -4,6 +4,7 @@ import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.base.PageDataEntity;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
+import com.primihub.biz.entity.data.req.DataModelAndComponentReq;
 import com.primihub.biz.entity.data.req.DataPirReq;
 import com.primihub.biz.entity.data.req.DataPirTaskReq;
 import com.primihub.biz.entity.data.vo.DataPirTaskDetailVo;
@@ -50,12 +51,21 @@ public class PirController {
             sb.append("PIR任务").append("-").append(resourceId);
             taskName = sb.toString();
         }
-        if (StringUtils.isBlank(pirParam)) {
-            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"pirParam");
+        if (param.getKeyQuerys() == null || param.getKeyQuerys().size()==0){
+            return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys");
         }
-        param.setResourceId(resourceId);
-        param.setTaskName(taskName);
-        return pirService.pirSubmitTask(param, pirParam);
+        for (DataPirKeyQuery keyQuery : param.getKeyQuerys()) {
+            if (keyQuery.getKey()==null){
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.key");
+            }
+            if (keyQuery.getQuery()==null){
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"keyQuerys.query");
+            }
+//            if (keyQuery.getKey().length!=keyQuery.getQuery().size()){
+//                return BaseResultEntity.failure(BaseResultEnum.PARAM_INVALIDATION,"The number of key queries is not equal");
+//            }
+        }
+        return pirService.pirSubmitTask(param);
     }
 
 

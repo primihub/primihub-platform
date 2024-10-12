@@ -8,7 +8,7 @@
         <div id="stencil" />
       </div>
       <div class="center-container">
-        <TaskCanvas ref="canvasRef" :model-id="modelId" :options="taskOptions" :components-detail="componentDetail" @mounted="init" @selectComponents="handleSelectComponents" @saveParams="getSaveParams" />
+        <TaskCanvas ref="canvasRef" :projectType="projectType" :model-id="modelId" :options="taskOptions" :components-detail="componentDetail" @mounted="init" @selectComponents="handleSelectComponents" @saveParams="getSaveParams" />
       </div>
     </div>
     <div class="footer-buttons">
@@ -44,6 +44,7 @@ export default {
       modelId: 0,
       taskId: 0,
       projectId: 0,
+      projectType: this.$route.query.projectType || '',
       projectName: '',
       modelStartRun: false,
       canUndo: false,
@@ -275,6 +276,7 @@ export default {
         },
         validateNode: (node) => {
           const current = node.store.data.data.componentCode
+          console.log(this.selectComponentList)
           const currentArr = this.selectComponentList.filter(item => item === current)
           if (currentArr.length > 1) { // 存在两个
             this.$message({
@@ -314,7 +316,7 @@ export default {
     },
     // 获取左侧组件
     async getModelComponentsInfo() {
-      const { result, code } = await getModelComponent()
+      const { result, code } = await getModelComponent({ projectType: this.projectType })
       if (code === 0) {
         this.components = result
         this.componentsList = result.slice(1)

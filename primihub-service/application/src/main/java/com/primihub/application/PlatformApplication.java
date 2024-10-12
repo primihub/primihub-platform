@@ -15,6 +15,9 @@ import org.springframework.boot.autoconfigure.hazelcast.HazelcastAutoConfigurati
 @NacosPropertySources({
         @NacosPropertySource(dataId = "base.json" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "components.json" ,autoRefreshed = true),
+        @NacosPropertySource(dataId = "mpc_components.json" ,autoRefreshed = true),
+        @NacosPropertySource(dataId = "hfl_components.json" ,autoRefreshed = true),
+        @NacosPropertySource(dataId = "vfl_components.json" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "database.yaml" ,autoRefreshed = true),
         @NacosPropertySource(dataId = "redis.yaml" ,autoRefreshed = true)})
 @SpringBootApplication(scanBasePackages="com.primihub",exclude = {HazelcastAutoConfiguration.class})

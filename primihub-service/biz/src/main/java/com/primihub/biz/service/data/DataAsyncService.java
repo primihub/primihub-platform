@@ -12,6 +12,7 @@ import com.primihub.biz.entity.base.BaseFunctionHandleEnum;
 import com.primihub.biz.entity.base.BaseResultEntity;
 import com.primihub.biz.entity.base.BaseResultEnum;
 import com.primihub.biz.entity.data.base.DataPirKeyQuery;
+import com.primihub.biz.entity.data.dataenum.ComponentNodeEnum;
 import com.primihub.biz.entity.data.dataenum.ModelStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskStateEnum;
 import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
@@ -76,6 +77,7 @@ public class DataAsyncService implements ApplicationContextAware {
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         context = applicationContext;
     }
+
     @Autowired
     private BaseConfiguration baseConfiguration;
     @Autowired
@@ -113,93 +115,117 @@ public class DataAsyncService implements ApplicationContextAware {
     @Autowired
     private TaskHelper taskHelper;
 
-    public TaskHelper getTaskHelper(){
+    public TaskHelper getTaskHelper() {
         return taskHelper;
     }
 
 
     public BaseResultEntity executeBeanMethod(boolean isCheck, DataComponentReq req, ComponentTaskReq taskReq) {
-        String baenName = req.getComponentCode() + DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
-        log.info("execute : {}", baenName);
+        String beanName = req.getComponentCode() + DataConstant.COMPONENT_BEAN_NAME_SUFFIX;
+        log.info("[模型任务][执行任务] execute [ isCheck: {}, beanName: {} ]", isCheck, beanName);
         try {
-            ComponentTaskService taskService = (ComponentTaskService) context.getBean(baenName);
+            ComponentTaskService taskService = (ComponentTaskService) context.getBean(beanName);
             if (taskService == null) {
+                log.error("[模型任务][执行失败] 组件无实现方法 [ component: {}]", req.getComponentName());
                 return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, req.getComponentName() + "组件无实现方法");
             }
             return isCheck ? taskService.check(req, taskReq) : taskService.runTask(req, taskReq);
         } catch (Exception e) {
-            log.info("ComponentCode:{} -- e:{}", req.getComponentCode(), e.getMessage());
+            log.error("[模型任务][执行失败] 组件执行异常 [ ComponentCode: {}, exception: {}]", req.getComponentCode(), e.getMessage());
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, req.getComponentName() + "组件执行异常");
         }
     }
 
 
     @Async
-    public void runModelTask(ComponentTaskReq req) {
-        log.info("start model task grpc modelId:{} modelName:{} end time:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName(), System.currentTimeMillis());
-        for (DataComponent dataComponent : req.getDataComponents()) {
-            dataComponent.setModelId(req.getDataModelTask().getModelId());
-            dataComponent.setTaskId(req.getDataModelTask().getTaskId());
+    public void runModelTask(ComponentTaskReq taskReq) {
+        log.info("[模型任务][执行任务] 开始执行模型任务 [modelId: {}, modelName: {}, modelType: {}, start time: {}]",
+                taskReq.getDataModel().getModelId(), taskReq.getDataModel().getModelName(),
+                taskReq.getDataModel().getModelType(),
+                System.currentTimeMillis());
+        // dataComponent在每次执行的时候才会添加，这里没有组件
+        // 保存组件
+        for (DataComponent dataComponent : taskReq.getDataComponents()) {
+            dataComponent.setModelId(taskReq.getDataModelTask().getModelId());
+            dataComponent.setTaskId(taskReq.getDataModelTask().getTaskId());
             dataModelPrRepository.saveDataComponent(dataComponent);
         }
         try {
-            Map<String, DataComponent> dataComponentMap = req.getDataComponents().stream().collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
-            for (DataModelComponent dataModelComponent : req.getDataModelComponents()) {
-                dataModelComponent.setModelId(req.getDataModelTask().getModelId());
-                dataModelComponent.setTaskId(req.getDataModelTask().getTaskId());
-                dataModelComponent.setInputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId());
-                dataModelComponent.setOutputComponentId(dataModelComponent.getInputComponentCode() == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null : dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId());
+            Map<String, DataComponent> dataComponentMap = taskReq.getDataComponents().stream()
+                    .collect(Collectors.toMap(DataComponent::getComponentCode, Function.identity()));
+            // 保存模型组件
+            for (DataModelComponent dataModelComponent : taskReq.getDataModelComponents()) {
+                dataModelComponent.setModelId(taskReq.getDataModelTask().getModelId());
+                dataModelComponent.setTaskId(taskReq.getDataModelTask().getTaskId());
+                dataModelComponent.setInputComponentId(
+                        dataModelComponent.getInputComponentCode() == null ? null :
+                                dataComponentMap.get(dataModelComponent.getInputComponentCode()) == null ? null :
+                                        dataComponentMap.get(dataModelComponent.getInputComponentCode()).getComponentId()
+                );
+                dataModelComponent.setOutputComponentId(
+                        dataModelComponent.getInputComponentCode() == null ? null :
+                                dataComponentMap.get(dataModelComponent.getOutputComponentCode()) == null ? null :
+                                        dataComponentMap.get(dataModelComponent.getOutputComponentCode()).getComponentId()
+                );
                 dataModelPrRepository.saveDataModelComponent(dataModelComponent);
             }
-            // 重新组装json
-            req.getDataModel().setComponentJson(formatModelComponentJson(req.getModelComponentReq(), dataComponentMap));
-            req.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
-            req.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
-            Map<String, DataComponentReq> dataComponentReqMap = req.getModelComponentReq().getModelComponents().stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
-            if (dataComponentReqMap.containsKey("jointStatistical")) {
-                req.getDataTask().setTaskType(TaskTypeEnum.JOINT_STATISTICAL.getTaskType());
+            // 重新组装json, 主要是添加 componentId
+            taskReq.getDataModel().setComponentJson(formatModelComponentJson(taskReq.getModelComponentReq(), dataComponentMap));
+            taskReq.getDataModel().setIsDraft(ModelStateEnum.SAVE.getStateType());
+            taskReq.getDataTask().setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
+            Map<String, DataComponentReq> dataComponentReqMap = taskReq.getModelComponentReq().getModelComponents()
+                    .stream().collect(Collectors.toMap(DataComponentReq::getComponentCode, Function.identity()));
+            // 联合统计
+            if (dataComponentReqMap.containsKey(ComponentNodeEnum.MPC_STATISTICS.getCode())) {
+                taskReq.getDataTask().setTaskType(TaskTypeEnum.JOINT_STATISTICAL.getTaskType());
             }
-            dataTaskPrRepository.updateDataTask(req.getDataTask());
-            req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-            dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-            for (DataComponent dataComponent : req.getDataComponents()) {
-                if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())
-                        || req.getDataTask().getTaskState().equals(TaskStateEnum.CANCEL.getStateType())) {
+            dataTaskPrRepository.updateDataTask(taskReq.getDataTask());
+            taskReq.getDataModelTask().setComponentJson(JSONObject.toJSONString(taskReq.getDataComponents()));
+            dataModelPrRepository.updateDataModelTask(taskReq.getDataModelTask());
+
+            for (DataComponent dataComponent : taskReq.getDataComponents()) {
+                if (taskReq.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())
+                        || taskReq.getDataTask().getTaskState().equals(TaskStateEnum.CANCEL.getStateType())) {
                     break;
                 }
                 dataComponent.setStartTime(System.currentTimeMillis());
-                dataComponent.setComponentState(2);
-                req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-                dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
-                executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), req);
-                if (req.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
-                    dataComponent.setComponentState(3);
+                dataComponent.setComponentState(TaskStateEnum.IN_OPERATION.getStateType());
+                taskReq.getDataModelTask().setComponentJson(JSONObject.toJSONString(taskReq.getDataComponents()));
+                dataModelPrRepository.updateDataModelTask(taskReq.getDataModelTask());
+                // 组件运行
+                executeBeanMethod(false, dataComponentReqMap.get(dataComponent.getComponentCode()), taskReq);
+                if (taskReq.getDataTask().getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
+                    dataComponent.setComponentState(TaskStateEnum.FAIL.getStateType());
                 } else {
-                    dataComponent.setComponentState(1);
+                    dataComponent.setComponentState(TaskStateEnum.SUCCESS.getStateType());
                 }
                 dataComponent.setEndTime(System.currentTimeMillis());
-                req.getDataModelTask().setComponentJson(JSONObject.toJSONString(req.getDataComponents()));
-                dataModelPrRepository.updateDataModelTask(req.getDataModelTask());
+                taskReq.getDataModelTask().setComponentJson(JSONObject.toJSONString(taskReq.getDataComponents()));
+                dataModelPrRepository.updateDataModelTask(taskReq.getDataModelTask());
             }
         } catch (Exception e) {
-            req.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
+            taskReq.getDataTask().setTaskState(TaskStateEnum.FAIL.getStateType());
             log.info(e.getMessage());
             e.printStackTrace();
         }
-        req.getDataTask().setTaskEndTime(System.currentTimeMillis());
-        updateTaskState(req.getDataTask());
-        log.info("end model task grpc modelId:{} modelName:{} end time:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName(), System.currentTimeMillis());
-        log.info("Share model task modelId:{} modelName:{}", req.getDataModel().getModelId(), req.getDataModel().getModelName());
+        taskReq.getDataTask().setTaskEndTime(System.currentTimeMillis());
+        updateTaskState(taskReq.getDataTask());
+        log.info("[模型任务][执行任务] 执行模型任务完毕 [modelId: {}, modelName: {}, end time: {}]",
+                taskReq.getDataModel().getModelId(), taskReq.getDataModel().getModelName(), System.currentTimeMillis());
+        log.info("[模型任务][执行任务] 同步模型任务 [modelId: {}, modelName: {}, start time: {}]",
+                taskReq.getDataModel().getModelId(), taskReq.getDataModel().getModelName(), System.currentTimeMillis());
+        // 机构同步模型
         ShareModelVo vo = new ShareModelVo();
-        vo.setDataModel(req.getDataModel());
-        vo.setDataTask(req.getDataTask());
-        vo.setDataModelTask(req.getDataModelTask());
-        vo.setDmrList(req.getDmrList());
-        vo.setShareOrganId(req.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
-        vo.setDerivationList(req.getDerivationList());
+        vo.setDataModel(taskReq.getDataModel());
+        vo.setDataTask(taskReq.getDataTask());
+        vo.setDataModelTask(taskReq.getDataModelTask());
+        vo.setDmrList(taskReq.getDmrList());
+        vo.setShareOrganId(taskReq.getResourceList().stream().map(ModelProjectResourceVo::getOrganId).collect(Collectors.toList()));
+        vo.setDerivationList(taskReq.getDerivationList());
         sendShareModelTask(vo);
-        sendModelTaskMail(req.getDataTask(), req.getDataModel().getProjectId());
-        dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(req.getDataModel().getProjectId(), null));
+        // 发送邮件是 demo 版本的内容
+//        sendModelTaskMail(taskReq.getDataTask(), taskReq.getDataModel().getProjectId());
+        dataProjectPrRepository.updateDataProject(dataProjectRepository.selectDataProjectByProjectId(taskReq.getDataModel().getProjectId(), null));
     }
 
     private String formatModelComponentJson(DataModelAndComponentReq params, Map<String, DataComponent> dataComponentMap) {
@@ -217,9 +243,9 @@ public class DataAsyncService implements ApplicationContextAware {
 
 
     @Async
-    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi,String taskName) {
+    public void psiGrpcRun(DataPsiTask psiTask, DataPsi dataPsi, String taskName) {
         DataResource ownDataResource = dataResourceRepository.queryDataResourceByResourceFusionId(dataPsi.getOwnResourceId());
-        if (ownDataResource==null){
+        if (ownDataResource == null) {
             ownDataResource = dataResourceRepository.queryDataResourceById(Long.parseLong(dataPsi.getOwnResourceId()));
         }
         String resourceId, resourceColumnNameList;
@@ -241,9 +267,9 @@ public class DataAsyncService implements ApplicationContextAware {
         }
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(psiTask.getTaskId());
-        if (taskName == null){
+        if (taskName == null) {
             dataTask.setTaskName(dataPsi.getResultName());
-        }else {
+        } else {
             dataTask.setTaskName(taskName);
         }
         dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
@@ -251,22 +277,22 @@ public class DataAsyncService implements ApplicationContextAware {
         dataTask.setTaskStartTime(System.currentTimeMillis());
         dataTaskPrRepository.saveDataTask(dataTask);
         String teeResourceId = "";
-        if (dataPsi.getTag().equals(2)){
+        if (dataPsi.getTag().equals(2)) {
             DataFResourceReq fresourceReq = new DataFResourceReq();
             fresourceReq.setOrganId(dataPsi.getTeeOrganId());
             BaseResultEntity resourceList = otherBusinessesService.getResourceList(fresourceReq);
-            if (resourceList.getCode()!=0) {
+            if (resourceList.getCode() != 0) {
                 psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataPsiPrRepository.updateDataPsiTask(psiTask);
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataTask.setTaskEndTime(System.currentTimeMillis());
-                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:"+resourceList.getMsg());
+                dataTask.setTaskErrorMsg("TEE 机构资源查询失败:" + resourceList.getMsg());
                 dataTaskPrRepository.updateDataTask(dataTask);
                 return;
             }
-            LinkedHashMap<String,Object> data = (LinkedHashMap<String,Object>)resourceList.getResult();
-            List<LinkedHashMap<String,Object>> resourceDataList = (List<LinkedHashMap<String,Object>>)data.get("data");
-            if (resourceDataList==null || resourceDataList.size()==0) {
+            LinkedHashMap<String, Object> data = (LinkedHashMap<String, Object>) resourceList.getResult();
+            List<LinkedHashMap<String, Object>> resourceDataList = (List<LinkedHashMap<String, Object>>) data.get("data");
+            if (resourceDataList == null || resourceDataList.size() == 0) {
                 psiTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                 dataPsiPrRepository.updateDataPsiTask(psiTask);
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
@@ -302,9 +328,9 @@ public class DataAsyncService implements ApplicationContextAware {
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setTaskContentParam(psiParam);
                 taskHelper.submit(taskParam);
-                if (taskParam.getSuccess()){
+                if (taskParam.getSuccess()) {
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
-                }else {
+                } else {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg(taskParam.getError());
                 }
@@ -327,7 +353,7 @@ public class DataAsyncService implements ApplicationContextAware {
         updateTaskState(dataTask);
     }
 
-    public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery,DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames,String formatDate,int job){
+    public FutureTask<TaskParam<TaskPIRParam>> getPirTaskFutureTask(DataPirKeyQuery dataPirKeyQuery, DataTask dataTask, DataPirTask dataPirTask, String resourceColumnNames, String formatDate, int job) {
         FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = new FutureTask<>(new Callable<TaskParam<TaskPIRParam>>() {
             @Override
             public TaskParam<TaskPIRParam> call() throws Exception {
@@ -336,7 +362,6 @@ public class DataAsyncService implements ApplicationContextAware {
                 TaskParam<TaskPIRParam> taskParam = new TaskParam(new TaskPIRParam());
                 taskParam.setTaskId(dataTask.getTaskIdName());
                 taskParam.setJobId(String.valueOf(job));
-                // 查询目标值，同组查询目标值使用逗号的字符串隔开
                 String[] querys = new String[dataPirKeyQuery.getQuery().size()];
                 for (int i = 0; i < dataPirKeyQuery.getQuery().size(); i++) {
                     querys[i] = String.join(",", dataPirKeyQuery.getQuery().get(i));
@@ -348,8 +373,8 @@ public class DataAsyncService implements ApplicationContextAware {
                 List<String> keyColumns = Arrays.asList(dataPirKeyQuery.getKey());
                 taskParam.getTaskContentParam().setKeyColumns(keyColumns.stream().map(columns::indexOf).toArray(Integer[]::new));
                 taskHelper.submit(taskParam);
-                if (taskParam.getSuccess()){
-                    dataRedisRepository.pirTaskResultHandle(dataTask.getTaskIdName(),CsvUtil.csvReader(sb.toString(), null));
+                if (taskParam.getSuccess()) {
+                    dataRedisRepository.pirTaskResultHandle(dataTask.getTaskIdName(), CsvUtil.csvReader(sb.toString(), null));
                     Files.delete(Paths.get(sb.toString()));
                 }
                 return taskParam;
@@ -359,7 +384,7 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     @Async
-    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames, List<DataPirKeyQuery> dataPirKeyQueries) {
+    public void pirGrpcTask(DataTask dataTask, DataPirTask dataPirTask,String resourceColumnNames) {
         Date date = new Date();
         try {
             dataTask.setTaskState(TaskStateEnum.IN_OPERATION.getStateType());
@@ -367,7 +392,7 @@ public class DataAsyncService implements ApplicationContextAware {
             String formatDate = DateUtil.formatDate(date, DateUtil.DateStyle.HOUR_FORMAT_SHORT.getFormat());
             StringBuilder sb = new StringBuilder().append(baseConfiguration.getResultUrlDirPrefix()).append(formatDate).append("/").append(dataTask.getTaskIdName()).append(".csv");
             dataTask.setTaskResultPath(sb.toString());
-//            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
+            List<DataPirKeyQuery> dataPirKeyQueries = JSONArray.parseArray(dataPirTask.getRetrievalId(), DataPirKeyQuery.class);
             Map<String,String> jobMap = new HashMap<>();
             List<FutureTask<TaskParam<TaskPIRParam>>> futureTasks = new ArrayList<>();
             // 条件组，默认只有一个
@@ -375,26 +400,26 @@ public class DataAsyncService implements ApplicationContextAware {
                 FutureTask<TaskParam<TaskPIRParam>> pirTaskFutureTask = getPirTaskFutureTask(dataPirKeyQueries.get(i), dataTask, dataPirTask, resourceColumnNames, formatDate, i);
                 primaryThreadPool.submit(pirTaskFutureTask);
                 futureTasks.add(pirTaskFutureTask);
-                jobMap.put(i+"",String.join("+",dataPirKeyQueries.get(i).getKey()));
+                jobMap.put(i + "", String.join("+", dataPirKeyQueries.get(i).getKey()));
             }
             List<TaskParam<TaskPIRParam>> listTaskParams = new ArrayList<>();
             for (FutureTask<TaskParam<TaskPIRParam>> futureTask : futureTasks) {
                 listTaskParams.add(futureTask.get());
             }
             for (TaskParam<TaskPIRParam> listTaskParam : listTaskParams) {
-                if (dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())){
-                    if (!listTaskParam.getSuccess()){
-                        dataTask.setTaskErrorMsg("\n【"+jobMap.get(listTaskParam.getJobId())+"】匹配规则出错:"+listTaskParam.getError());
+                if (dataTask.getTaskState().equals(TaskStateEnum.FAIL.getStateType())) {
+                    if (!listTaskParam.getSuccess()) {
+                        dataTask.setTaskErrorMsg("\n【" + jobMap.get(listTaskParam.getJobId()) + "】匹配规则出错:" + listTaskParam.getError());
                     }
                 }
-                if (!listTaskParam.getSuccess()){
+                if (!listTaskParam.getSuccess()) {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                    dataTask.setTaskErrorMsg("\n【"+jobMap.get(listTaskParam.getJobId())+"】匹配规则出错:"+listTaskParam.getError());
-                }else {
+                    dataTask.setTaskErrorMsg("\n【" + jobMap.get(listTaskParam.getJobId()) + "】匹配规则出错:" + listTaskParam.getError());
+                } else {
                     dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 }
             }
-            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())){
+            if (dataTask.getTaskState().equals(TaskStateEnum.SUCCESS.getStateType())) {
                 List<String> pirTaskResultData = dataRedisRepository.getPirTaskResultData(dataTask.getTaskIdName());
 //                log.info("数据写入文件sb:{} -  pirTaskResultDataSize:{}",sb.toString(),pirTaskResultData.size());
                 boolean b = CsvUtil.csvWrite(sb.toString(), pirTaskResultData);
@@ -406,7 +431,7 @@ public class DataAsyncService implements ApplicationContextAware {
             dataTask.setTaskErrorMsg(e.getMessage());
             log.info("grpc pirSubmitTask Exception:{}", e.getMessage());
             e.printStackTrace();
-        }finally {
+        } finally {
             dataRedisRepository.deletePirTaskResultKey(dataTask.getTaskIdName());
         }
         dataTask.setTaskEndTime(System.currentTimeMillis());
@@ -414,14 +439,14 @@ public class DataAsyncService implements ApplicationContextAware {
     }
 
     public void sendShareModelTask(ShareModelVo shareModelVo) {
-        singleTaskChannel.input().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(), shareModelVo))).build());
+        singleTaskChannel.output().send(MessageBuilder.withPayload(JSON.toJSONString(new BaseFunctionHandleEntity(BaseFunctionHandleEnum.SPREAD_MODEL_DATA_TASK.getHandleType(), shareModelVo))).build());
     }
 
     public void deleteModel(ShareModelVo vo) {
         Long projectId = vo.getDataModel().getProjectId();
         DataProject dataProject = dataProjectRepository.selectDataProjectByProjectId(projectId, null);
         vo.setProjectId(dataProject.getProjectId());
-        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjectOrganByProjectId(dataProject.getProjectId());
         vo.setShareOrganId(dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList()));
         sendShareModelTask(vo);
     }
@@ -436,7 +461,7 @@ public class DataAsyncService implements ApplicationContextAware {
         vo.setDataModelTask(modelTask);
         dataModel.setIsDel(1);
         vo.setDataModel(dataModel);
-        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjcetOrganByProjectId(dataProject.getProjectId());
+        List<DataProjectOrgan> dataProjectOrgans = dataProjectRepository.selectDataProjectOrganByProjectId(dataProject.getProjectId());
         vo.setShareOrganId(dataProjectOrgans.stream().map(DataProjectOrgan::getOrganId).collect(Collectors.toList()));
         sendShareModelTask(vo);
     }
@@ -487,10 +512,10 @@ public class DataAsyncService implements ApplicationContextAware {
                 dataTask.setTaskErrorMsg("未能获取到模型类型信息");
             } else {
                 ModelTypeEnum modelTypeEnum = ModelTypeEnum.MODEL_TYPE_MAP.get(Integer.valueOf(modelType.getVal()));
-                if (modelTypeEnum==null){
+                if (modelTypeEnum == null) {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
-                }else {
+                } else {
                     map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
@@ -562,13 +587,13 @@ public class DataAsyncService implements ApplicationContextAware {
             taskParam.getTaskContentParam().setFreemarkerMap(map);
             log.info(taskParam.toString());
             taskHelper.submit(taskParam);
-            if (taskParam.getSuccess()){
+            if (taskParam.getSuccess()) {
                 dataTask.setTaskState(TaskStateEnum.SUCCESS.getStateType());
                 dataTask.setTaskResultPath(modelOutputPathDto.getPredictFileName());
                 dataReasoning.setReleaseDate(new Date());
-            }else {
+            } else {
                 dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
-                dataTask.setTaskErrorMsg("运行失败:"+taskParam.getError());
+                dataTask.setTaskErrorMsg("运行失败:" + taskParam.getError());
             }
         } catch (Exception e) {
             dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());

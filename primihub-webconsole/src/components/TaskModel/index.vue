@@ -36,7 +36,7 @@
         </div>
         <div v-if="type=== 'model'" class="desc-col">
           <div class="desc-label">建模完成时间:</div>
-          <div class="desc-content">{{ model.createDate }}</div>
+          <div class="desc-content">{{ task.taskEndDate }}</div>
         </div>
         <div class="desc-col" style="width: 100%;">
           <div class="desc-label">模型描述:</div>
@@ -73,9 +73,7 @@
     <div v-if="hasModelSelectComponent" class="section">
       <h3>模型评估分数</h3>
       <el-table style="width: 100%" border :data="modelQuotas">
-        <template v-for="(item,index) in tableHead">
-          <el-table-column :key="index" :prop="item.column_name" :label="item.column_comment" />
-        </template>
+        <el-table-column v-for="(item,index) in tableHead" :key="index" :prop="item.column_name" :label="item.column_comment" />
       </el-table>
     </div>
     <div v-if="hasModelSelectComponent && chartData.length > 0" class="section">
@@ -186,7 +184,7 @@ export default {
               type: 'success',
               duration: 1000
             })
-            this.fetchData()
+            this.$router.push({ name: 'ModelList' })
           }
           this.listLoading = false
         }).catch(() => {

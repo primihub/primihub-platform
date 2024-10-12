@@ -23,6 +23,9 @@
           </template>
           <template v-else>{{ projectDesc }}</template>
         </el-descriptions-item>
+        <el-descriptions-item label="项目类型" v-if="list && list.projectType">
+          {{ projectTypeFilter(list.projectType) }}
+        </el-descriptions-item>
       </el-descriptions>
       <ProjectAudit v-if="isShowAuditForm" class="audit" :project-id="currentOrgan.id" />
     </section>
@@ -57,7 +60,7 @@
         </el-tab-pane>
         <el-tab-pane label="任务列表" name="modelTask">
           <el-button v-if="creator" type="primary" class="add-provider-button" :disabled="projectStatus === 2" @click="toModelCreate">新建任务</el-button>
-          <ModelTaskList :is-creator="creator" :project-status="projectStatus" />
+          <ModelTaskList :is-creator="creator" :project-status="projectStatus" :projectType="list.projectType" />
         </el-tab-pane>
         <el-tab-pane label="衍生数据" name="derivedData">
           <DerivedDataTable v-if="tabName === 'derivedData'" max-height="480" :data="derivedDataResourceList" />
@@ -160,7 +163,8 @@ export default {
       providerOrganIds: [],
       projectStatus: -1, // 项目状态 0审核中 1可用 2关闭 11 全部可用 12 部分可用,
       resourceId: 0,
-      localResourceId: 0
+      localResourceId: 0,
+      list: {},
     }
   },
   computed: {
@@ -179,6 +183,11 @@ export default {
     await this.fetchData()
   },
   methods: {
+    projectTypeFilter(key) {
+      const obj = { MPC: '多方安全计算', HFL: '横向联邦', VFL: '纵向联邦', MFL: '多方联邦' }
+      return obj[key]
+    },
+
     handleProjectDescChange({ change, value }) {
       if (change) {
         this.saveParams.projectDesc = value
@@ -315,7 +324,6 @@ export default {
     },
     handleProviderOrganSubmit(data) {
       const differents = this.getArrDifSameValue(this.providerOrganIds, data, 'globalId')
-      console.log('handleProviderOrganSubmit differents', differents)
       if (differents.length > 0) {
         this.saveParams.projectOrgans = differents.map(item => {
           return {
@@ -472,10 +480,21 @@ export default {
       }
       return result
     },
+
+    checkOrganApprovalCompleteForMPC() {
+      return this.organs.filter(item => item.participationIdentity === 2 && item.auditStatus === 1)
+    },
+
     toModelCreate() {
+      if (this.list.projectType === 'MPC' && this.checkOrganApprovalCompleteForMPC().length < 2) {
+        this.$message.warning('多方安全计算需要三方参与，请确保协作方已同意加入项目')
+        this.tabName = 'organ'
+        this.fetchData()
+        return
+      }
       this.$router.push({
         name: 'ModelCreate',
-        query: { projectId: this.list.id }
+        query: { projectId: this.list.id, projectType: this.list.projectType }
       })
     },
     ...mapMutations('project', ['SET_STATUS'])

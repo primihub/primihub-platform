@@ -66,12 +66,14 @@
 .el-pagination__jump{
   margin-left: 0;
 }
-
+.el-table .cell{
+  // line-height: 1.5;
+}
 .el-table th.el-table__cell{
   background-color: #EEEEEE;
   color: #333333;
 }
-
-.el-message-box__status.el-icon-info{
-  color: #E6A23C;
+.el-tooltip__popper{
+  max-width: 300px;
+  line-height: 1.5;
 }

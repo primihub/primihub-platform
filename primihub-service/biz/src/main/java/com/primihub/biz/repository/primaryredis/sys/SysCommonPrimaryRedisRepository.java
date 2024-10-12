@@ -55,5 +55,4 @@ public class SysCommonPrimaryRedisRepository {
     public void setValue(String key,String value){
         primaryStringRedisTemplate.opsForValue().set(key,value);
     }
-
 }

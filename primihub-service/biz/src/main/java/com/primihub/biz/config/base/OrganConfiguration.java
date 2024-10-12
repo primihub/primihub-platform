@@ -66,6 +66,7 @@ public class OrganConfiguration {
 
     public String generateUniqueCode() {
         if (sysLocalOrganInfo == null || sysLocalOrganInfo.getOrganId() == null) {
+            log.error("未初始化本方机构Id，请先填写本方机构信息以生成机构Id");
             return null;
         }
         return getLocalOrganShortCode() + "-" + UUID.randomUUID().toString();

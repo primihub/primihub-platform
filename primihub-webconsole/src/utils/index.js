@@ -2,6 +2,19 @@
  * Created by PanJiaChen on 16/11/18.
  */
 
+export function checkIsJsonString(str) {
+  try {
+    const obj = JSON.parse(str)
+    if (typeof obj === 'object' && obj) {
+      return true
+    } else {
+      return false
+    }
+  } catch (error) {
+    return false
+  }
+}
+
 /**
  * Parse the time to string
  * @param {(Object|string|number)} time

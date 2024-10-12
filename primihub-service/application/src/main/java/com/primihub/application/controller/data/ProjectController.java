@@ -40,6 +40,9 @@ public class ProjectController {
             if (req.getProjectOrgans()==null||req.getProjectOrgans().isEmpty()) {
                 return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectOrgans");
             }
+            if (req.getProjectType()==null||req.getProjectType().isEmpty()) {
+                return BaseResultEntity.failure(BaseResultEnum.LACK_OF_PARAM,"projectType");
+            }
         }
         return dataProjectService.saveOrUpdateProject(req,userId);
     }

@@ -1,15 +1,16 @@
 package com.primihub.biz.service.data.component.impl;
 
-import com.primihub.biz.config.base.BaseConfiguration;
 import com.primihub.biz.config.base.ComponentsConfiguration;
 import com.primihub.biz.entity.base.BaseResultEntity;
-import com.primihub.biz.entity.data.po.DataModel;
 import com.primihub.biz.entity.data.req.ComponentTaskReq;
 import com.primihub.biz.entity.data.req.DataComponentReq;
 import com.primihub.biz.service.data.component.ComponentTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * 没有使用
+ */
 @Service("assessmentComponentTaskServiceImpl")
 public class AssessmentComponentTaskServiceImpl extends BaseComponentServiceImpl implements ComponentTaskService {
     @Autowired
