@@ -69,7 +69,7 @@
 
 <script>
 import { mapActions, mapState } from 'vuex'
-import { pirSubmitTask, getPirTaskDetail } from '@/api/PIR'
+import {pirSubmitTask, getPirTaskDetail, pirSubmitTaskMarket} from '@/api/PIR'
 import { getDataResource } from '@/api/fusionResource'
 import CryptoJS from 'crypto-js'
 
@@ -151,7 +151,7 @@ export default {
           const hashParams = CryptoJS.SHA256(this.form.pirParam).toString()
 
           this.loading = true
-          pirSubmitTask({
+          pirSubmitTaskMarket({
               resourceId: this.resource[0].resourceId,
               pirParam: hashParams
             }).then(res => {

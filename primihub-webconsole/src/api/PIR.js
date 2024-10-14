@@ -20,7 +20,15 @@ export function pirSubmitTask(data) {
   return request({
     url: '/data/pir/pirSubmitTask',
     method: 'post',
+    type: 'json',
     data
   })
 }
 
+export function pirSubmitTaskMarket(data) {
+  return request({
+    url: '/data/pir/pirSubmitTaskMarket',
+    method: 'post',
+    data
+  })
+}
