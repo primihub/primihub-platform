@@ -53,14 +53,14 @@
     >
       <div class="dialog-body">
         <div v-if="fail" class="result">
-          <p class="el-icon-error icon-error" />
-          <p><strong>{{ form.pirParam }}</strong>不在泄漏的账号密码数据资源中</p>
-          <p class="search-tip">未发现{{ form.pirParam }}的泄漏风险</p>
+          <p><i class="el-icon-success icon-success" /> </p>
+          <p><strong>{{ form.mobile }}</strong>不在泄漏的账号密码数据资源中</p>
+          <p class="search-tip">未发现{{ form.mobile }}账号关联的密码泄漏风险</p>
         </div>
         <div v-else class="result">
-          <p><i class="el-icon-success icon-success" /> </p>
-          <p><strong>{{ form.pirParam }}</strong>在泄漏的账号密码数据资源中</p>
-          <p class="search-tip">建议更新以{{ form.mobile }}为账号的账号密码{{ form.password }}</p>
+          <p class="el-icon-warning icon-error" />
+          <p><strong>{{ form.mobile }}</strong>在泄漏的账号密码数据资源中</p>
+          <p class="search-tip">建议更新{{ form.mobile }}相关的账号密码</p>
         </div>
       </div>
     </el-dialog>
@@ -118,7 +118,7 @@ export default {
   methods: {
      // 设置资源id
      async setDefaultValue() {
-      this.resourceId = this.marketInfo.pir.resourceId
+      this.resourceId = this.marketInfo.credentialsPIR.resourceId
       await this.getDataResource()
       this.form.selectResources = this.resource
     },
