@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum ProjectTypeEnum {
-    MPC("MPC", "多方安全计算"),
+    MPC("MPC", "联合统计"),
     HFL("HFL", "横向联邦"),
     VFL("VFL", "纵向联邦");
 

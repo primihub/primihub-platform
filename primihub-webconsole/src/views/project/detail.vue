@@ -184,7 +184,7 @@ export default {
   },
   methods: {
     projectTypeFilter(key) {
-      const obj = { MPC: '多方安全计算', HFL: '横向联邦', VFL: '纵向联邦', MFL: '多方联邦' }
+      const obj = { MPC: '联合统计', HFL: '横向联邦', VFL: '纵向联邦', MFL: 'MPC建模' }
       return obj[key]
     },
 

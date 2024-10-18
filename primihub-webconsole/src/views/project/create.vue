@@ -109,10 +109,10 @@ export default {
     return {
       loading: false,
       projectTypeList: [
-        { label: '多方安全计算', value: 'MPC' },
+        { label: '联合统计', value: 'MPC' },
         { label: '横向联邦', value: 'HFL' },
         { label: '纵向联邦', value: 'VFL' },
-        { label: '多方联邦', value: 'MFL' }
+        { label: 'MPC建模', value: 'MFL' }
       ],
       dataForm: {
         projectName: '',
