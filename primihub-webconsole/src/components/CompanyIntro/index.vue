@@ -1,7 +1,7 @@
 <template>
   <div v-if="loaded" class="intro">
     <div class="intro-container">
-      <h1><img v-if="isShowLogo && loginLogoUrl" class="logo" :src="loginLogoUrl" alt="logo"></h1>
+      <img v-if="isShowLogo && loginLogoUrl" class="logo" :src="loginLogoUrl" alt="logo">
       <div v-html="description" />
     </div>
   </div>
@@ -40,8 +40,6 @@ export default {
   .logo{
     height: 50px;
     width: auto;
-    display: block;
-    margin: 0 auto;
   }
 }
 </style>
