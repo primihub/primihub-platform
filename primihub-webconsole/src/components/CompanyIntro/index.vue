@@ -38,7 +38,7 @@ export default {
     padding: 0px 90px 30px 90px;
   }
   .logo{
-    height: 50px;
+    height: 40px;
     width: auto;
   }
 }
