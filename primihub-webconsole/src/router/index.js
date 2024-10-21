@@ -61,7 +61,7 @@ export const constantRoutes = [
     name: 'BigModel',
     hidden: true,
     component: () => import('@/views/bigModel/index'),
-    meta: { title: 'PrimiHub隐私计算大模型' }
+    meta: { title: '隐私计算大模型' }
   },
   {
     path: '/applicationIndex/detail/:name',
