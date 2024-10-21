@@ -19,6 +19,7 @@ import com.primihub.biz.entity.data.dataenum.TaskTypeEnum;
 import com.primihub.biz.entity.data.dto.ModelOutputPathDto;
 import com.primihub.biz.entity.data.po.*;
 import com.primihub.biz.entity.data.req.*;
+import com.primihub.biz.entity.data.vo.DataFileFieldVo;
 import com.primihub.biz.entity.data.vo.ModelProjectResourceVo;
 import com.primihub.biz.entity.data.vo.ShareModelVo;
 import com.primihub.biz.entity.sys.po.SysUser;
@@ -43,6 +44,7 @@ import com.primihub.sdk.task.param.TaskPIRParam;
 import com.primihub.sdk.task.param.TaskPSIParam;
 import com.primihub.sdk.task.param.TaskParam;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -61,8 +64,7 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.primihub.biz.constant.DataConstant.PYTHON_GUEST_DATASET;
-import static com.primihub.biz.constant.DataConstant.PYTHON_LABEL_DATASET;
+import static com.primihub.biz.constant.DataConstant.*;
 
 /**
  * psi 异步调用实现
@@ -542,6 +544,11 @@ public class DataAsyncService implements ApplicationContextAware {
             }
         }
         log.info("{}-{}", labelDataset, guestDataset);
+        List<String> resourceIds = new ArrayList<>();
+        resourceIds.add(labelDataset);
+        resourceIds.add(guestDataset);
+        Map<String, Map> resourceMap = otherBusinessesService.getResourceListMap(resourceIds);
+        log.info("[推理服务][相关数据集]-{}", resourceMap);
         DataTask dataTask = new DataTask();
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
         dataTask.setTaskName(dataReasoning.getReasoningName());
@@ -555,6 +562,11 @@ public class DataAsyncService implements ApplicationContextAware {
         dataReasoningPrRepository.updateDataReasoning(dataReasoning);
         Map<String, Object> map = new HashMap<>();
         map.put(PYTHON_LABEL_DATASET, labelDataset);  // 放入发起方资源
+        List<DataFileFieldVo> labelDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(labelDataset).get("fieldList")), DataFileFieldVo.class);
+        if (CollectionUtils.isNotEmpty(labelDatasetFields)){
+            List<String> collect = labelDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
+            map.put("label_field0", JSONObject.toJSONString(collect.toArray()));
+        }
         List<DataComponent> dataComponents = JSONArray.parseArray(modelTask.getComponentJson(), DataComponent.class);
         DataComponent model = dataComponents.stream().filter(dataComponent -> "model".equals(dataComponent.getComponentCode())).findFirst().orElse(null);
         if (model == null) {
@@ -572,7 +584,14 @@ public class DataAsyncService implements ApplicationContextAware {
                     dataTask.setTaskState(TaskStateEnum.FAIL.getStateType());
                     dataTask.setTaskErrorMsg("未能匹配到模型类型信息");
                 } else {
-                    map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                    if (StringUtils.isNotBlank(guestDataset)){
+                        map.put(PYTHON_GUEST_DATASET, guestDataset);  // 放入合作方资源
+                        List<DataFileFieldVo> guestDatasetFields = JSONArray.parseArray(JSONArray.toJSONString(resourceMap.get(guestDataset).get("fieldList")), DataFileFieldVo.class);
+                        if (CollectionUtils.isNotEmpty(guestDatasetFields)){
+                            List<String> collect = guestDatasetFields.stream().map(o -> o.getFieldName()).collect(Collectors.toList());
+                            map.put("label_field1", JSONObject.toJSONString(collect.toArray()));
+                        }
+                    }
                     grpc(dataReasoning, dataTask, modelTypeEnum, map);
                 }
             }

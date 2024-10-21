@@ -17,6 +17,8 @@ public class ModelTaskSuccessReq extends PageReq {
     private String startDate;
     @ApiModelProperty(value = "结束时间")
     private String endDate;
+    @ApiModelProperty(value = "查询类型")
+    private String listType;
     private Long startTime;
     private Long endTime;
     private Long userId;
