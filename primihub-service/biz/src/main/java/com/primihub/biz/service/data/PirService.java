@@ -60,6 +60,16 @@ public class PirService {
         if (StringUtils.isBlank(resourceColumnNames)){
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表失败");
         }
+
+        String[] resourceColumnNameArray = resourceColumnNames.split(",");
+        if (resourceColumnNameArray.length == 0) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL,"获取资源字段列表为空");
+        }
+
+        String[] queryColumnNames = {
+                resourceColumnNameArray[0]
+        };
+
         DataTask dataTask = new DataTask();
 //        dataTask.setTaskIdName(UUID.randomUUID().toString());
         dataTask.setTaskIdName(Long.toString(SnowflakeId.getInstance().nextId()));
@@ -83,15 +93,12 @@ public class PirService {
 
     private static List<DataPirKeyQuery> convertPirParamToQueryArray(String pirParam, String[] resourceColumnNameArray) {
         DataPirKeyQuery dataPirKeyQuery = new DataPirKeyQuery();
+        // 默认只有第一列
         dataPirKeyQuery.setKey(resourceColumnNameArray);
-        String[] array = {
-                pirParam
-        };
-        List<String[]> queries = new ArrayList<>(resourceColumnNameArray.length);
-        for (int i = 0; i < resourceColumnNameArray.length; i++) {
-            queries.add(i, array);
-        }
-        dataPirKeyQuery.setQuery(queries);
+        String[] split = pirParam.split(",");
+        List<String[]> singleValueQuery = Arrays.stream(split).map(String::trim).filter(StringUtils::isNotBlank)
+                .map(s -> new String[]{s}).collect(Collectors.toList());
+        dataPirKeyQuery.setQuery(singleValueQuery);
         return Collections.singletonList(dataPirKeyQuery);
     }
 

@@ -111,7 +111,8 @@ export default {
       this.listLoading = true
       const res = await getModelTaskSuccessList({
         pageSize: this.pageSize,
-        pageNo: this.pageNo
+        pageNo: this.pageNo,
+        listType: 'select'
       })
       this.modelList = res.result.data.map(item => {
         item.selected = false
