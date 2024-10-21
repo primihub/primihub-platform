@@ -487,7 +487,7 @@ export default {
 
     toModelCreate() {
       if (this.list.projectType === 'MPC' && this.checkOrganApprovalCompleteForMPC().length < 2) {
-        this.$message.warning('多方安全计算需要三方参与，请确保协作方已同意加入项目')
+        this.$message.warning('联合统计需要三方参与，请确保协作方已同意加入项目')
         this.tabName = 'organ'
         this.fetchData()
         return

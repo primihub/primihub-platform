@@ -50,7 +50,7 @@ export default {
   },
   computed: {
     maxlength() {
-      return this.$attrs.type === 'textarea' ? 200 : 30
+      return this.$attrs.type === 'textarea' ? 2000 : 30
     }
   },
   watch: {
