@@ -10,7 +10,7 @@
       </div>
     </div>
     <div class="right-menu">
-      <el-link v-if="!isHideBigModel" slot="reference" type="primary" style="margin-right: 10px;" @click="toBigModelPage">PrimiHub隐私计算大模型</el-link>
+      <el-link v-if="!isHideBigModel" slot="reference" type="primary" style="margin-right: 10px;" @click="toBigModelPage">隐私计算大模型</el-link>
       <el-button v-if="!isHideAppMarket" type="primary" size="small" style="margin-right: 10px;" @click="toApplicationPage">应用市场</el-button>
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
