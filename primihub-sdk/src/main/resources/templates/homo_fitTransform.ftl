@@ -24,7 +24,7 @@
                 "fill_value": null,
                 "copy": true,
                 "add_indicator": false,
-                "keep_empty_features": false
+                "keep_empty_features": true
             },
             "SimpleImputer_numeric": {
                 "column": null,
@@ -33,7 +33,7 @@
                 "fill_value": null,
                 "copy": true,
                 "add_indicator": false,
-                "keep_empty_features": false
+                "keep_empty_features": true
             }
         }
     },

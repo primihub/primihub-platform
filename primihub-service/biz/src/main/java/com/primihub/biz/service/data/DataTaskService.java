@@ -44,6 +44,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -269,6 +270,11 @@ public class DataTaskService {
             return BaseResultEntity.failure(BaseResultEnum.DATA_DEL_FAIL,"任务运行中无法删除");
         }
         if (dataTask.getTaskType().equals(TaskTypeEnum.MODEL.getTaskType())){
+            // 任务状态 不是成功的 就删除生成的模型
+            if (dataTask.getTaskState() != 1){
+                log.info("执行任务模型删除{}，当前任务状态{}", dataTask.getTaskId(), dataTask.getTaskState());
+                dataModelRepository.delModelTaskById(dataTask.getTaskId());
+            }
             dataAsyncService.deleteModelTask(dataTask);
             dataTask.setTaskState(TaskStateEnum.DELETE.getStateType());
             dataTaskPrRepository.updateDataTask(dataTask);

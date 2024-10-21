@@ -62,6 +62,7 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
     public BaseResultEntity runTask(DataComponentReq req, ComponentTaskReq taskReq) {
         // 调整 数据对齐的顺序 先判断有没有新的数据集，然后再进行数据对齐操作
         BaseResultEntity baseResultEntity = runPsi(req, taskReq);
+        //BaseResultEntity baseResultEntity = getDataAlignDetail(req, taskReq);
         if (baseResultEntity.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
             runAssemblyData((Map<String, ModelEntity>) baseResultEntity.getResult(), req, taskReq);
         } else {
@@ -139,13 +140,13 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
                         HashSet dids = new HashSet();
                         dids.add(derivationResourceIdMap.get(labelDatasetId));
                         dids.add(derivationResourceIdMap.get(guestDatasetId));
-                        while (true){
+                        while (true) {
                             // 休眠一秒等待数据集同步
                             BaseResultEntity dataSets = fusionResourceService.getDataSets(dids);
                             log.info(JSONObject.toJSONString(dataSets));
-                            if (dataSets.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())){
+                            if (dataSets.getCode().equals(BaseResultEnum.SUCCESS.getReturnCode())) {
                                 List<Object> objectList = (List<Object>) dataSets.getResult();
-                                if (objectList.size() == dids.size()){
+                                if (objectList.size() == dids.size()) {
                                     break;
                                 }
                             }
@@ -433,5 +434,82 @@ public class DataAlignComponentTaskServiceImpl extends BaseComponentServiceImpl 
             return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐PSI 异常:" + e.getMessage());
         }
 
+    }
+
+    public BaseResultEntity getDataAlignDetail(DataComponentReq req, ComponentTaskReq taskReq) {
+        String labelResourceId = (String) taskReq.getFreemarkerMap().getOrDefault(DataConstant.PYTHON_LABEL_DATASET, StringUtils.EMPTY);
+        String guestResourceId = (String) taskReq.getFreemarkerMap().getOrDefault(DataConstant.PYTHON_GUEST_DATASET, StringUtils.EMPTY);
+        if (StringUtils.isBlank(labelResourceId)) {
+            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
+        }
+        if (StringUtils.isBlank(guestResourceId)) {
+            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
+        }
+        Map<String, String> fusionResourceMap = taskReq.getFusionResourceList()
+                .stream().collect(Collectors.toMap(fMap -> fMap.get("resourceId").toString(), fMap -> fMap.getOrDefault("resourceColumnNameList", "").toString()));
+
+        String originLabelResourceId = null;
+        String originGuestResourceId = null;
+        // 如果是 衍生数据集
+        if (CollectionUtils.isNotEmpty(taskReq.getNewest())) {
+            originLabelResourceId = taskReq.getOriginResourceIdMap().get(labelResourceId);
+            originGuestResourceId = taskReq.getOriginResourceIdMap().get(guestResourceId);
+        } else {
+            originLabelResourceId = labelResourceId;
+            originGuestResourceId = guestResourceId;
+        }
+
+        log.info("[模型任务][数据对齐] 找到衍生资源的原始资源 [originLabelResourceId: {}, originGuestResourceId: {}]", originLabelResourceId, originGuestResourceId);
+        String clientDataFileFieldStr = fusionResourceMap.get(originLabelResourceId);
+        String guestDataFileFieldStr = fusionResourceMap.get(originGuestResourceId);
+        if (StringUtils.isBlank(clientDataFileFieldStr)) {
+            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到发起方资源");
+        }
+        if (StringUtils.isBlank(guestDataFileFieldStr)) {
+            log.error("{} --- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐查询不到协作方资源");
+        }
+
+        Map<String, ModelEntity> map = null;
+        String clientLowerCase = clientDataFileFieldStr.toLowerCase();
+        List<String> clientDataFileField = Arrays.stream(clientLowerCase.split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+        log.info("data-align clientDataFileHandleField: \n{}", JSONObject.toJSONString(clientDataFileField));
+
+        String guestLowerCase = guestDataFileFieldStr.toLowerCase();
+        List<String> guestDataFileField = Arrays.stream(guestLowerCase.split(CommonConstant.COMMA_SEPARATOR)).map(String::toLowerCase).collect(Collectors.toList());
+        log.info("data-align serverDataFileHandleField: \n{}", JSONObject.toJSONString(guestDataFileField));
+
+        Map<String, String> componentVals = getComponentVals(req.getComponentValues());
+        String guestIndexField = componentVals.get("clientIndex");
+        log.info("data-align guestIndexField: \n{}", guestIndexField);
+        String clientIndexField = componentVals.get("serverIndex");
+        log.info("data-align clientIndexField: \n{}", clientIndexField);
+
+
+        List<Integer> clientIndex;
+        List<Integer> serverIndex;
+        String clientFieldLowerCase = clientIndexField.toLowerCase();
+        String guestFieldLowerCase = guestIndexField.toLowerCase();
+        clientIndex = clientDataFileField.stream().filter(clientField -> clientField.equals(clientFieldLowerCase)).map(clientDataFileField::indexOf).collect(Collectors.toList());
+        serverIndex = guestDataFileField.stream().filter(clientField -> clientField.equals(guestFieldLowerCase)).map(guestDataFileField::indexOf).collect(Collectors.toList());
+        if (clientIndex.stream().anyMatch(integer -> integer < 0)) {
+            log.error("{} ---- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐发起方特征未查询到");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐发起方特征未查询到");
+        }
+        if (serverIndex.stream().anyMatch(integer -> integer < 0)) {
+            log.error("{} ---- {}", BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐协作方特征未查询到");
+            return BaseResultEntity.failure(BaseResultEnum.DATA_RUN_TASK_FAIL, "数据对齐协作方特征未查询到");
+        }
+        StringBuilder baseSb = new StringBuilder().append(baseConfiguration.getRunModelFileUrlDirPrefix())
+                .append(taskReq.getDataTask().getTaskIdName()).append("/");
+        ModelEntity clientEntity = new ModelEntity(baseSb.toString(), clientIndex, labelResourceId);
+        ModelEntity serverEntity = new ModelEntity(baseSb.toString(), serverIndex, guestResourceId);
+        map = new HashMap<>();
+        map.put(labelResourceId, clientEntity);
+        map.put(guestResourceId, serverEntity);
+        return BaseResultEntity.success(map);
     }
 }
