@@ -1,7 +1,7 @@
 <template>
   <div v-if="loaded" class="intro">
     <div class="intro-container">
-      <h1 class="h1"><img v-if="isShowLogo && loginLogoUrl" class="logo" :src="loginLogoUrl" alt="logo"></h1>
+      <img v-if="isShowLogo && loginLogoUrl" class="logo" :src="loginLogoUrl" alt="logo">
       <div v-html="description" />
     </div>
   </div>
@@ -37,13 +37,10 @@ export default {
     transform: translate3d(-50%,-50%,0);
     padding: 0px 90px 30px 90px;
   }
-  .h1{
-    font-size: 2em;
-    margin: .67em 0;
-  }
   .logo{
     height: 44px;
     width: auto;
+    margin-bottom: 10px;
   }
 }
 </style>
