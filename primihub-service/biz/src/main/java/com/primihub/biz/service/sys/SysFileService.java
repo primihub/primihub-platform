@@ -86,6 +86,9 @@ public class SysFileService {
 
     public BaseResultEntity getFileById(Long fileId){
         SysFile sysFile=sysFileSecondarydbRepository.selectSysFileByFileId(fileId);
+        if (sysFile==null) {
+            return BaseResultEntity.failure(BaseResultEnum.DATA_QUERY_NULL,"无文件信息");
+        }
         Map map=new HashMap<>();
         map.put("sysFile",sysFile);
         BigDecimal statusPercent=new BigDecimal(sysFile.getFileCurrentSize()).divide(new BigDecimal(sysFile.getFileSize()),4,BigDecimal.ROUND_HALF_EVEN);

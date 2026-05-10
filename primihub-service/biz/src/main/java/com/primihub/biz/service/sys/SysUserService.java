@@ -173,7 +173,7 @@ public class SysUserService {
     }
 
     public BaseResultEntity logout(String token,Long userId){
-        if(token!=null&& "".equals(token)&&userId==null) {
+        if(token!=null&& !"".equals(token)&&userId!=null) {
             sysUserPrimaryRedisRepository.deleteUserLoginStatus(token, userId);
         }
         return BaseResultEntity.success();

@@ -213,7 +213,7 @@ public class DateUtil {
     public static String getMinute(int second){
         String time = "";
         int minute = 0;
-        if (second>60){
+        if (second>=60){
             minute = second/60;
             second = second%60;
         }
@@ -224,6 +224,6 @@ public class DateUtil {
     public static int getDayOfMonth(Date date) {
         Calendar c = Calendar.getInstance(Locale.CHINA);
         c.setTime(date);
-        return c.DAY_OF_MONTH;
+        return c.get(Calendar.DAY_OF_MONTH);
     }
 }
