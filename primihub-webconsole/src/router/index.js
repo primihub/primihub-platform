@@ -542,6 +542,19 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/federatedSql',
+    component: Layout,
+    name: 'FederatedSql',
+    redirect: '/federatedSql/query',
+    meta: { title: '联邦SQL查询', icon: 'el-icon-data-analysis' },
+    children: [{
+      path: 'query',
+      name: 'FederatedSqlQuery',
+      component: () => import('@/views/federatedSql/index'),
+      meta: { title: '联邦SQL查询', breadcrumb: false }
+    }]
+  },
+  {
     path: '/evidence',
     component: Layout,
     name: 'Evidence',
